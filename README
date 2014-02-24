@@ -1,0 +1,44 @@
+Updated 23.9.2002 based on versio 1.00.
+
+
+Because vnStat is quite simple to use and the description is already
+on the webpage I wont repeat it here.
+
+How to install:
+
+ vnStat can be installed either to be used only with a single user or by
+ every users (or some limited group) of the system. Installing vnStat in
+ multiuser mode is probably what most will do:
+
+      (log in as root)
+      make
+      make install
+
+ and after that vnStat is installed and ready to be configured. Still logged
+ as root run 'vnstat -u -i eth0' (replace eth0 with the interface you'd like
+ to use). Now just wait for 10 min. (and enough traffic) and you should get
+ some output by running 'vnstat'.
+
+
+ If for some reason vnStat needs to be installed in single user mode (you
+ don't have root permissions?) then the procedure is the following:
+
+      make singleuser
+
+ and copy the vnstat binary to some directory included in your $PATH,
+ something like ~/bin/ might work. After that run 'vnstat -u -i eth0'
+ (replace eth0...) and make a crontab entry for 'vnstat -u' that will
+ run it every 5 min. It might look something like this:
+
+      0-55/5 * * * * ~/bin/vnstat -u
+
+ Again wait for some traffic to logged and should output should be shown
+ with 'vnstat'.
+
+Contacting the author:
+
+ email:    Teemu Toivola <tst@iki.fi>
+ irc:      Vergo (IRCNet)
+
+ The current version of vnStat is always available from 
+ http://torus.lnet.lut.fi/vnstat/

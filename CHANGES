@@ -1,0 +1,10 @@
+22-Nov-02
+
+ - Renamed the cron script file that would be installed to /etc/cron.d
+   from vnstat.cron to vnstat because debian systems didn't execute scripts
+   containing dots. (Thanks to frangen / Simo Salminen for this note)
+
+
+1.00 / 23-Sep-02
+
+ - Initial public release.
