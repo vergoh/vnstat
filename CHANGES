@@ -1,3 +1,21 @@
+1.10 / 2-Jan-10
+
+ - Fix: Buffer overflow was possible in hourly image output when RateUnit=1
+   and HourlyRate=1
+ - Fix: Minor memory leak was possible in the handling of HUP signal in daemon
+ - Fix: Graphical elements weren't correctly aligned in summary image
+   when header wasn't visible (-nh)
+ - Fix: --delete didn't work
+ - Possibility to merge statistics from several databases and save
+   the end result to a new database (--mergesaved)
+ - Added validation of database cache in daemon in order to be more robust
+   in case of system memory corruption
+ - Support for --style to -l (live mode)
+ - Alternative print mode to -l (live mode) with optional parameter
+ - Present options and elements in man pages in alphabetical order
+ - Code cleanup
+
+
 1.9 / 12-Sep-09
 
  - Fix: TrafficlessDays configuration option was enabled when set to zero

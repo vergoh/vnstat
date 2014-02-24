@@ -1,4 +1,4 @@
-(Updated 7.9.2009 for version 1.9)
+(Updated 2.1.2010 for version 1.10)
 
 
 What is vnStat
@@ -10,7 +10,7 @@ What is vnStat
  ensures light use of system resources. Optional image output is available
  starting from version 1.7.
 
- See the webpage for 'screenshots'.
+ See the webpage http://humdi.net/vnstat/ for output examples.
 
 
 Getting started
@@ -59,6 +59,9 @@ Contacting the author
 
  The current version of vnStat is always available from 
  http://humdi.net/vnstat/
+
+ Discussion forum
+ http://forums.humdi.net/
 
  Email alerts about new versions are available by subscription at
  http://freshmeat.net/projects/vnstat/

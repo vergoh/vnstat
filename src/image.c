@@ -172,9 +172,9 @@ void drawdonut(int x, int y, float rxp, float txp)
 {
 	int rxarc = 0, txarc = 0;
 
-	if ( (rxp + txp) > 0 ) {
+	if ( (int)(rxp + txp) > 0 ) {
 		rxarc = 360 * (rxp / (float)100);
-		if ( (rxp + txp) == 100 ) {
+		if ( (int)(rxp + txp) == 100 ) {
 			txarc = 360 - rxarc;
 		} else {
 			txarc = 360 * (txp / (float)100);
@@ -192,7 +192,7 @@ void drawdonut(int x, int y, float rxp, float txp)
 
 	gdImageFilledArc(im, x, y, DOUTRAD, DOUTRAD, 0, 360, cbgoffset, 0);
 
-	if ( (rxp + txp) > 0 ) {
+	if ( (int)(rxp + txp) > 0 ) {
 		gdImageFilledArc(im, x, y, DOUTRAD, DOUTRAD, 270, 270+txarc, ctx, 0);
 		gdImageFilledArc(im, x, y, DOUTRAD, DOUTRAD, 270, 270+txarc, ctxd, gdEdged|gdNoFill);
 		gdImageFilledArc(im, x, y, DOUTRAD, DOUTRAD, 270+txarc, 270+txarc+rxarc, crx, 0);
@@ -211,7 +211,6 @@ void drawhours(int x, int y, int rate)
 	float ratediv;
 	uint64_t max=1, scaleunit=0;
 	char buffer[32];
-	time_t current;
 	struct tm *d;
 	
 	current = time(NULL);
@@ -274,7 +273,7 @@ void drawhours(int x, int y, int rate)
 		step = 1;
 	}
 	
-	for (i=step; scaleunit*i <= max; i=i+step) {
+	for (i=step; (uint64_t)(scaleunit*i) <= max; i=i+step) {
 		s = 121 * ((scaleunit * i) / (float)max);
 		gdImageLine(im, x+36, y+124-s, x+460, y+124-s, cline);
 		gdImageLine(im, x+36, y+124-((s+prev)/2), x+460, y+124-((s+prev)/2), clinel);
@@ -299,7 +298,7 @@ void drawhours(int x, int y, int rate)
 		if (s<0) {
 			s+=24;
 		}
-		sprintf(buffer, "%02d ", s);
+		snprintf(buffer, 32, "%02d ", s);
 		gdImageString(im, gdFontGetTiny(), x+440-(i*17), y+128, (unsigned char*)buffer, ctext);
 		drawpole(x+438-(i*17), y, 124, data.hour[s].rx, data.hour[s].tx, max);
 	}
@@ -356,9 +355,9 @@ void drawsummary(int type, int showheader, int showedge, int rate)
 	colorinit();
 	
 	if (strcmp(data.nick, data.interface)==0) {
-		sprintf(buffer, "%s", data.interface);	
+		snprintf(buffer, 512, "%s", data.interface);	
 	} else {
-		sprintf(buffer, "%s (%s)", data.nick, data.interface);
+		snprintf(buffer, 512, "%s (%s)", data.nick, data.interface);
 	}
 	
 	layoutinit(buffer, width, height, showheader, showedge);
@@ -394,7 +393,7 @@ void drawsummary(int type, int showheader, int showedge, int rate)
 		offset = 0;
 	}
 		
-	drawdonut(150+offset, 75, rxp, txp);
+	drawdonut(150+offset, 75-headermod, rxp, txp);
 
 	textx = 100+offset;
 	texty = 30-headermod;
@@ -459,7 +458,7 @@ void drawsummary(int type, int showheader, int showedge, int rate)
 			txp = txp * mod;
 		}
 
-		drawdonut(330, 75, rxp, txp);
+		drawdonut(330, 75-headermod, rxp, txp);
 
 		textx = 280;
 		texty = 30-headermod;
@@ -530,7 +529,7 @@ void drawsummary(int type, int showheader, int showedge, int rate)
 		offset = 0;
 	}
 
-	drawdonut(150+offset, 163, rxp, txp);
+	drawdonut(150+offset, 163-headermod, rxp, txp);
 
 	textx = 100+offset;
 	texty = 118-headermod;
@@ -584,7 +583,7 @@ void drawsummary(int type, int showheader, int showedge, int rate)
 			txp = txp * mod;
 		}
 
-		drawdonut(330, 163, rxp, txp);
+		drawdonut(330, 163-headermod, rxp, txp);
 
 		textx = 280;
 		texty = 118-headermod;
@@ -689,9 +688,9 @@ void drawoldsummary(int type, int showheader, int showedge, int rate)
 	colorinit();
 	
 	if (strcmp(data.nick, data.interface)==0) {
-		sprintf(buffer, "%s", data.interface);	
+		snprintf(buffer, 512, "%s", data.interface);	
 	} else {
-		sprintf(buffer, "%s (%s)", data.nick, data.interface);
+		snprintf(buffer, 512, "%s (%s)", data.nick, data.interface);
 	}
 	
 	layoutinit(buffer, width, height, showheader, showedge);
@@ -736,11 +735,11 @@ void drawoldsummary(int type, int showheader, int showedge, int rate)
 	texty = 48-headermod;
 
 	/* totals */
-	sprintf(buffer, "   received: %s  (%.1f%%)", getvalue(data.totalrx, data.totalrxk, 14, 1), rxp);
+	snprintf(buffer, 512, "   received: %s  (%.1f%%)", getvalue(data.totalrx, data.totalrxk, 14, 1), rxp);
 	gdImageString(im, gdFontGetLarge(), textx, texty, (unsigned char*)buffer, ctext);
-	sprintf(buffer, "transmitted: %s  (%.1f%%)", getvalue(data.totaltx, data.totaltxk, 14, 1), txp);
+	snprintf(buffer, 512, "transmitted: %s  (%.1f%%)", getvalue(data.totaltx, data.totaltxk, 14, 1), txp);
 	gdImageString(im, gdFontGetLarge(), textx, texty+15, (unsigned char*)buffer, ctext);
-	sprintf(buffer, "      total: %s", getvalue(data.totalrx+data.totaltx, data.totalrxk+data.totaltxk, 14, 1));
+	snprintf(buffer, 512, "      total: %s", getvalue(data.totalrx+data.totaltx, data.totalrxk+data.totaltxk, 14, 1));
 	gdImageString(im, gdFontGetLarge(), textx, texty+30, (unsigned char*)buffer, ctext);
 	
 	/* get formated date for yesterday */
@@ -797,7 +796,7 @@ void drawoldsummary(int type, int showheader, int showedge, int rate)
 	strncat(buffer, getvalue(data.day[0].rx+data.day[0].tx, data.day[0].rxk+data.day[0].txk, 10, 1), 32);
 	gdImageString(im, gdFontGetSmall(), textx, texty+32, (unsigned char*)buffer, ctext);
 
-	sprintf(buffer, "estimated   ");
+	snprintf(buffer, 32, "estimated   ");
 	strncat(buffer, getvalue(e_rx, 0, 10, 2), 32);
 	strcat(buffer, "   ");
 	strncat(buffer, getvalue(e_tx, 0, 10, 2), 32);
@@ -861,9 +860,9 @@ void drawhourly(int showheader, int showedge, int rate)
 	colorinit();
 	
 	if (strcmp(data.nick, data.interface)==0) {
-		sprintf(buffer, "%s / hourly", data.interface);	
+		snprintf(buffer, 512, "%s / hourly", data.interface);	
 	} else {
-		sprintf(buffer, "%s (%s) / hourly", data.nick, data.interface);
+		snprintf(buffer, 512, "%s (%s) / hourly", data.nick, data.interface);
 	}
 	
 	layoutinit(buffer, width, height, showheader, showedge);
@@ -906,9 +905,9 @@ void drawdaily(int showheader, int showedge)
 	colorinit();
 	
 	if (strcmp(data.nick, data.interface)==0) {
-		sprintf(buffer, "%s / daily", data.interface);	
+		snprintf(buffer, 512, "%s / daily", data.interface);	
 	} else {
-		sprintf(buffer, "%s (%s) / daily", data.nick, data.interface);
+		snprintf(buffer, 512, "%s (%s) / daily", data.nick, data.interface);
 	}
 	
 	layoutinit(buffer, width, height, showheader, showedge);
@@ -1013,7 +1012,7 @@ void drawdaily(int showheader, int showedge)
 			e_rx=((data.day[0].rx)/(float)(d->tm_hour*60+d->tm_min))*1440;
 			e_tx=((data.day[0].tx)/(float)(d->tm_hour*60+d->tm_min))*1440;
 		}
-		sprintf(buffer, " estimated   ");
+		snprintf(buffer, 32, " estimated   ");
 		strncat(buffer, getvalue(e_rx, 0, 10, 2), 32);
 		strcat(buffer, "   ");
 		strncat(buffer, getvalue(e_tx, 0, 10, 2), 32);
@@ -1056,9 +1055,9 @@ void drawmonthly(int showheader, int showedge)
 	colorinit();
 	
 	if (strcmp(data.nick, data.interface)==0) {
-		sprintf(buffer, "%s / monthly", data.interface);	
+		snprintf(buffer, 512, "%s / monthly", data.interface);	
 	} else {
-		sprintf(buffer, "%s (%s) / monthly", data.nick, data.interface);
+		snprintf(buffer, 512, "%s (%s) / monthly", data.nick, data.interface);
 	}
 	
 	layoutinit(buffer, width, height, showheader, showedge);
@@ -1163,7 +1162,7 @@ void drawmonthly(int showheader, int showedge)
 			e_rx=(data.month[0].rx/(float)(mosecs()))*(dmonth(d->tm_mon)*86400);
 			e_tx=(data.month[0].tx/(float)(mosecs()))*(dmonth(d->tm_mon)*86400);
 		}
-		sprintf(buffer, " estimated   ");
+		snprintf(buffer, 32, " estimated   ");
 		strncat(buffer, getvalue(e_rx, 0, 10, 2), 32);
 		strcat(buffer, "   ");
 		strncat(buffer, getvalue(e_tx, 0, 10, 2), 32);
@@ -1219,9 +1218,9 @@ void drawtop(int showheader, int showedge)
 	colorinit();
 	
 	if (strcmp(data.nick, data.interface)==0) {
-		sprintf(buffer, "%s / top 10", data.interface);	
+		snprintf(buffer, 512, "%s / top 10", data.interface);	
 	} else {
-		sprintf(buffer, "%s (%s) / top 10", data.nick, data.interface);
+		snprintf(buffer, 512, "%s (%s) / top 10", data.nick, data.interface);
 	}
 	
 	layoutinit(buffer, width, height, showheader, showedge);
@@ -1305,14 +1304,14 @@ void hextorgb(char *input, int *rgb)
 		offset = 0;
 	}
 
-	sprintf(hex, "%c%c", input[(0+offset)], input[(1+offset)]);
-	sprintf(dec, "%d", (int)strtol(hex, NULL, 16));
+	snprintf(hex, 3, "%c%c", input[(0+offset)], input[(1+offset)]);
+	snprintf(dec, 4, "%d", (int)strtol(hex, NULL, 16));
 	rgb[0] = atoi(dec);
-	sprintf(hex, "%c%c", input[(2+offset)], input[(3+offset)]);
-	sprintf(dec, "%d", (int)strtol(hex, NULL, 16));
+	snprintf(hex, 3, "%c%c", input[(2+offset)], input[(3+offset)]);
+	snprintf(dec, 4, "%d", (int)strtol(hex, NULL, 16));
 	rgb[1] = atoi(dec);
-	sprintf(hex, "%c%c", input[(4+offset)], input[(5+offset)]);
-	sprintf(dec, "%d", (int)strtol(hex, NULL, 16));
+	snprintf(hex, 3, "%c%c", input[(4+offset)], input[(5+offset)]);
+	snprintf(dec, 4, "%d", (int)strtol(hex, NULL, 16));
 	rgb[2] = atoi(dec);
 
 	if (debug) {
@@ -1367,28 +1366,28 @@ char *getimagevalue(uint64_t kb, int len, int rate)
 	int declen=0;
 
 	if (kb==0){
-		sprintf(buffer, "%*s", len, "--");
+		snprintf(buffer, 64, "%*s", len, "--");
 	} else {
 		/* try to figure out what unit to use */
 		if (rate) {
 			if (kb>=1000000000) { /* 1000*1000*1000 - value >=1000 Gbps -> show in Tbps */
-				sprintf(buffer, "%*.*f", len, declen, kb/(float)1000000000); /* 1000*1000*1000 */
+				snprintf(buffer, 64, "%*.*f", len, declen, kb/(float)1000000000); /* 1000*1000*1000 */
 			} else if (kb>=1000000) { /* 1000*1000 - value >=1000 Mbps -> show in Gbps */
-				sprintf(buffer, "%*.*f", len, declen, kb/(float)1000000); /* 1000*1000 */
+				snprintf(buffer, 64, "%*.*f", len, declen, kb/(float)1000000); /* 1000*1000 */
 			} else if (kb>=1000) {
-				sprintf(buffer, "%*.*f", len, declen, kb/(float)1000);
+				snprintf(buffer, 64, "%*.*f", len, declen, kb/(float)1000);
 			} else {
-				sprintf(buffer, "%*"PRIu64"", len, kb);
-			}		
+				snprintf(buffer, 64, "%*"PRIu64"", len, kb);
+			}
 		} else {
 			if (kb>=1048576000) { /* 1024*1024*1000 - value >=1000 GiB -> show in TiB */
-				sprintf(buffer, "%*.*f", len, declen, kb/(float)1073741824); /* 1024*1024*1024 */
+				snprintf(buffer, 64, "%*.*f", len, declen, kb/(float)1073741824); /* 1024*1024*1024 */
 			} else if (kb>=1024000) { /* 1024*1000 - value >=1000 MiB -> show in GiB */
-				sprintf(buffer, "%*.*f", len, declen, kb/(float)1048576); /* 1024*1024 */
+				snprintf(buffer, 64, "%*.*f", len, declen, kb/(float)1048576); /* 1024*1024 */
 			} else if (kb>=1000) {
-				sprintf(buffer, "%*.*f", len, declen, kb/(float)1024);
+				snprintf(buffer, 64, "%*.*f", len, declen, kb/(float)1024);
 			} else {
-				sprintf(buffer, "%*"PRIu64"", len, kb);
+				snprintf(buffer, 64, "%*"PRIu64"", len, kb);
 			}
 		}
 	}
@@ -1398,12 +1397,12 @@ char *getimagevalue(uint64_t kb, int len, int rate)
 
 char *getimagescale(uint64_t kb, int rate)
 {
-	static char buffer[6];
+	static char buffer[8];
 	uint32_t limit[3];
 	int unit;
 	
 	if (kb==0) {
-		sprintf(buffer, "--");
+		snprintf(buffer, 8, "--");
 	} else {
 	
 		if (rate) {
@@ -1422,23 +1421,23 @@ char *getimagescale(uint64_t kb, int rate)
 			}
 
 			if (kb>=limit[2]) {
-				sprintf(buffer, "%s", getrateunit(unit, 4));
+				snprintf(buffer, 8, "%s", getrateunit(unit, 4));
 			} else if (kb>=limit[1]) {
-				sprintf(buffer, "%s", getrateunit(unit, 3));
+				snprintf(buffer, 8, "%s", getrateunit(unit, 3));
 			} else if (kb>=limit[0]) {
-				sprintf(buffer, "%s", getrateunit(unit, 2));
+				snprintf(buffer, 8, "%s", getrateunit(unit, 2));
 			} else {
-				sprintf(buffer, "%s", getrateunit(unit, 1));
+				snprintf(buffer, 8, "%s", getrateunit(unit, 1));
 			}		
 		} else {
 			if (kb>=1048576000) { /* 1024*1024*1000 - value >=1000 GiB -> show in TiB */
-				sprintf(buffer, "%s", getunit(4));
+				snprintf(buffer, 8, "%s", getunit(4));
 			} else if (kb>=1024000) { /* 1024*1000 - value >=1000 MiB -> show in GiB */
-				sprintf(buffer, "%s", getunit(3));
+				snprintf(buffer, 8, "%s", getunit(3));
 			} else if (kb>=1000) {
-				sprintf(buffer, "%s", getunit(2));
+				snprintf(buffer, 8, "%s", getunit(2));
 			} else {
-				sprintf(buffer, "%s", getunit(1));
+				snprintf(buffer, 8, "%s", getunit(1));
 			}		
 		}
 	

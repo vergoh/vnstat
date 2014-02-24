@@ -1,9 +1,14 @@
-.TH VNSTAT.CONF 5 "SEPTEMBER 2009" "version 1.9" "User Manuals"
+.TH VNSTAT.CONF 5 "JANUARY 2010" "version 1.10" "User Manuals"
 .SH NAME
+
 vnstat.conf \- vnStat configuration file
+
 .SH SYNOPSIS
+
 .B /etc/vnstat.conf
+
 .SH DESCRIPTION
+
 .BR vnstat (1),
 .BR vnstati (1)
 and
@@ -16,40 +21,61 @@ Arguments may optionally be enclosed in double quotes (") in order
 to represent arguments containing spaces. Arguments can be padded
 with spaces or tabulator characters. A hardcoded default value
 will be used if a keyword can't be found from the configuration file.
+
 .SH COMMON KEYWORDS
+
+.TP
+.BI BootVariation
+Time in seconds how much the boot time reported by system kernel can variate
+between updates.
+
+.TP
+.BI CheckDiskSpace
+Enable or disable the checking of at least some free disk space before
+a database write. 1 = enabled, 0 = disabled.
+
 .TP
 .BI DatabaseDir
 Specifies the directory where interface databases are to be stored.
 A full path must be given and a leading '/' isn't required.
+
+.TP
+.BI "DayFormat, MonthFormat, TopFormat"
+Formatting of date in available outputs. Uses the same format as
+.BR date (1).
+(vnstat and vnstati only)
+
+.TP
+.BI Interface
+Default interface used when no other interface is specified on
+the command line. (vnstat and vnstati only)
+
 .TP
 .BI Locale
 Locale setting to be used for prints. This replaces the LC_ALL
 environment variable. Set to "-" in order to use the system default
 value. (vnstat and vnstati only)
+
+.TP
+.BI MaxBandwidth
+Maximum bandwidth for all interfaces. If the counted traffic exceeds
+the given value then the data is assumed to be invalid and rejected.
+Set to 0 in order to disable the feature. (vnstat and vnstatd only)
+
+.TP
+.BI MaxBW
+Same as MaxBandwidth but can be used for setting individual limits
+for selected interfaces. The name of the interface is specified directly
+after the MaxBW keyword without spaces. For example MaxBWeth0 for eth0
+and MaxBWppp0 for ppp0. (vnstat and vnstatd only)
+
 .TP
 .BI MonthRotate
 Day of month that months are expected to change. Usually set to
 1 but can be set to alternative values for example for tracking
 monthly billed traffic where the billing period doesn't start on
 the first day. (vnstat and vnstatd only)
-.TP
-.BI "DayFormat, MonthFormat, TopFormat"
-Formatting of date in available outputs. Uses the same format as
-.BR date (1).
-(vnstat and vnstati only)
-.TP
-.BI "RXCharacter, TXCharacter"
-Character used for representing the percentual share of received
-and transmitted traffic in daily output. (vnstat only)
-.TP
-.BI "RXHourCharacter, TXHourCharacter"
-Character used for representing the percentual share of received
-and transmitted traffic in hourly output. (vnstat only)
-.TP
-.BI UnitMode
-Select how units are prefixed. 0 = IEC standard prefixes
-(KiB/MiB/GiB/TiB), 1 = old style binary prefixes (KB/MB/GB/TB).
-(vnstat and vnstati only)
+
 .TP
 .BI OutputStyle
 Modify the content and style of text outputs. 0 = minimal and
@@ -57,146 +83,177 @@ narrow output for terminal with limited width, 1 = normal output with
 bar column visible, 2 = same as 1 except rate is visible in summary
 and weekly outputs, 3 = rate column is visible in all outputs where it
 is supported. (vnstat and vnstati only)
-.TP
-.BI RateUnit
-Select which unit is used when traffic rate is visible. 0 = bytes, 1 = bits.
-(vnstat and vnstati only)
-.TP
-.BI Interface
-Default interface used when no other interface is specified on
-the command line. (vnstat and vnstati only)
-.TP
-.BI MaxBandwidth
-Maximum bandwidth for all interfaces. If the counted traffic exceeds
-the given value then the data is assumed to be invalid and rejected.
-Set to 0 in order to disable the feature. (vnstat and vnstatd only)
-.TP
-.BI MaxBW
-Same as MaxBandwidth but can be used for setting individual limits
-for selected interfaces. The name of the interface is specified directly
-after the MaxBW keyword without spaces. For example MaxBWeth0 for eth0
-and MaxBWppp0 for ppp0. (vnstat and vnstatd only)
-.TP
-.BI Sampletime
-Defines how many seconds the -tr option will sample traffic. (vnstat only)
+
 .TP
 .BI QueryMode
 Default query mode when no parameters are given. 0 = normal, 1 = days,
 2 = months, 3 = top10, 4 = dumpdb, 5 = short, 6 = weeks, 7 = hours and
 8 = xml.
 (vnstat only)
+
 .TP
-.BI CheckDiskSpace
-Enable or disable the checking of at least some free disk space before
-a database write. 1 = enabled, 0 = disabled.
+.BI RateUnit
+Select which unit is used when traffic rate is visible. 0 = bytes, 1 = bits.
+(vnstat and vnstati only)
+
+.TP
+.BI "RXCharacter, TXCharacter"
+Character used for representing the percentual share of received
+and transmitted traffic in daily output. (vnstat only)
+
+.TP
+.BI "RXHourCharacter, TXHourCharacter"
+Character used for representing the percentual share of received
+and transmitted traffic in hourly output. (vnstat only)
+
+.TP
+.BI Sampletime
+Defines how many seconds the -tr option will sample traffic. (vnstat only)
+
+.TP
+.BI TrafficlessDays
+Log days without any traffic to daily list. 1 = enabled, 0 = disabled.
+(vnstat and vnstatd only)
+
+.TP
+.BI UnitMode
+Select how units are prefixed. 0 = IEC standard prefixes
+(KiB/MiB/GiB/TiB), 1 = old style binary prefixes (KB/MB/GB/TB).
+(vnstat and vnstati only)
+
 .TP
 .BI UseFileLocking
 Enable or disable the use of file locking during database access. Disabling
 file locking may cause database corruption if several processes are trying
 to write to the file at the same time.
-.TP
-.BI BootVariation
-Time in seconds how much the boot time reported by system kernel can variate
-between updates.
-.TP
-.BI TrafficlessDays
-Log days without any traffic to daily list. 1 = enabled, 0 = disabled.
-(vnstat and vnstatd only)
+
 .SH DAEMON RELATED KEYWORDS
+
 .TP
-.BI UpdateInterval
-How often in seconds the interface data is updated.
-.TP
-.BI PollInterval
-How often in seconds interfaces are checked for status changes.
-.TP
-.BI SaveInterval
-How often in minutes cached interface data is saved to file.
+.BI LogFile
+Specify log file path and name to be used if UseLogging is set to 1.
+
 .TP
 .BI OfflineSaveInterval
 How often in minutes cached interface data is saved to file when all monitored
 interfaces are offline.
+
+.TP
+.BI PidFile
+Specify pid file path and name to be used.
+
+.TP
+.BI PollInterval
+How often in seconds interfaces are checked for status changes.
+
+.TP
+.BI SaveInterval
+How often in minutes cached interface data is saved to file.
+
 .TP
 .BI SaveOnStatusChange
 Enable or disable the additional saving to file of cached interface data
 when the availability of an interface changes, i.e., when an interface goes
 offline or comes online. 1 = enabled, 0 = disabled.
+
+.TP
+.BI UpdateInterval
+How often in seconds the interface data is updated.
+
 .TP
 .BI UseLogging
 Enable or disable logging. 0 = disabled, 1 = logfile and 2 = syslog.
-.TP
-.BI LogFile
-Specify log file path and name to be used if UseLogging is set to 1.
-.TP
-.BI PidFile
-Specify pid file path and name to be used.
+
 .SH IMAGE OUTPUT RELATED KEYWORDS
+
+.TP
+.BI CBackground
+Background color.
+
+.TP
+.BI CEdge
+Edge color if visible.
+
+.TP
+.BI CHeader
+Header background color.
+
+.TP
+.BI CHeaderTitle
+Header title text color.
+
+.TP
+.BI CHeaderDate
+Header date text color.
+
+.TP
+.BI CLine
+Line color.
+
+.TP
+.BI CLineL
+Lighter version of line color. Set to '-' in order to use a calculated
+value based on CLine.
+
+.TP
+.BI CRx
+Color for received data.
+
+.TP
+.BI CRxD
+Darker version of received data color. Set to '-' in order to use
+a calculated value based on CRx.
+
+.TP
+.BI CText
+Common text color.
+
+.TP
+.BI CTx
+Color for transmitted data.
+
+.TP
+.BI CTxD
+Darker version of transmitted data color. Set to '-' in order to use
+a calculated value based on CTx.
+
 .TP
 .BI HeaderFormat
 Formatting of date in header. Uses the same format as
 .BR date (1).
+
 .TP
 .BI HourlyRate
 Show hours with rate instead of transfered amount. 1 = enabled, 0 = disabled.
-.TP
-.BI SummaryRate
-Show rate in summary output if available. 1 = enabled, 0 = disabled.
+
 .TP
 .BI SummaryLayout
 Select the used layout of the summary output. 1 = layout introduced in version
 1.8 with monthly traffic included, 0 = layout used before version 1.8, doesn't
 contain monthly traffic and doesn't support average rate.
+
+.TP
+.BI SummaryRate
+Show rate in summary output if available. 1 = enabled, 0 = disabled.
+
 .TP
 .BI TransparentBg
 Set background color as transparent. 1 = enabled, 0 = disabled.
-.TP
-.BI CBackground
-Background color.
-.TP
-.BI CEdge
-Edge color if visible.
-.TP
-.BI CHeader
-Header background color.
-.TP
-.BI CHeaderTitle
-Header title text color.
-.TP
-.BI CHeaderDate
-Header date text color.
-.TP
-.BI CText
-Common text color.
-.TP
-.BI CLine
-Line color.
-.TP
-.BI CLineL
-Lighter version of line color. Set to '-' in order to use a calculated
-value based on CLine.
-.TP
-.BI CRx
-Color for received data.
-.TP
-.BI CTx
-Color for transmitted data.
-.TP
-.BI CRxD
-Darker version of received data color. Set to '-' in order to use
-a calculated value based on CRx.
-.TP
-.BI CTxD
-Darker version of transmitted data color. Set to '-' in order to use
-a calculated value based on CTx.
+
 .SH FILES
+
 .TP
 .I /etc/vnstat.conf
 Config file that will be used unless
 .I $HOME/.vnstatrc
 exists or alternative value is given as command line parameter.
+
 .SH AUTHOR
+
 Teemu Toivola <tst at iki dot fi>
+
 .SH "SEE ALSO"
+
 .BR vnstat (1),
 .BR vnstati (1),
 .BR vnstatd (1),

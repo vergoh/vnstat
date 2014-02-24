@@ -1,4 +1,4 @@
-(Updated 7.9.2009 for version 1.9)
+(Updated 2.1.2010 for version 1.10)
 
 
 Compiling the binaries
@@ -143,4 +143,4 @@ Installing without root access
 
  Now you should get some stats about your network usage. See the config
  file ~/.vnstatrc for interface and other settings.
- 
+

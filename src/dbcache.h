@@ -13,7 +13,7 @@ datanode *cacheremove(const char *iface);
 int cacheupdate(void);
 void cacheshow(void);
 void cachestatus(void);
-int cacheget(const datanode *dn);
+int cacheget(datanode *dn);
 void cacheflush(const char *dirname);
 int cachecount(void);
 int cacheactivecount(void);

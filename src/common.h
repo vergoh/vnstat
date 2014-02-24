@@ -38,10 +38,10 @@ and most can be changed later from the config file.
 */
 
 /* location of the database directory */
-#if defined(__linux__)
-#define DATABASEDIR "/var/lib/vnstat"
-#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__)
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__)
 #define DATABASEDIR "/var/db/vnstat"
+#else
+#define DATABASEDIR "/var/lib/vnstat"
 #endif
 
 /* on which day should months change */
@@ -129,7 +129,7 @@ and most can be changed later from the config file.
 #define DBVERSION 3
 
 /* version string */
-#define VNSTATVERSION "1.9"
+#define VNSTATVERSION "1.10"
 
 /* xml format version */
 /* 1 = 1.7- */

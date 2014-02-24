@@ -16,7 +16,7 @@ struct cfgsetting {
 	char *locc;
 	short *loci;
 	short namelen;
-	short found;;
+	short found;
 };
 
 #endif

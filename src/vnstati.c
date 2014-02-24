@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
 				strncpy(interface, argv[currentarg+1], 32);
 				interface[31] = '\0';
 				if (debug)
-					printf("Used interface: \"%s\"\n", filename);
+					printf("Used interface: \"%s\"\n", interface);
 				currentarg++;
 				continue;
 			} else {
@@ -196,6 +196,9 @@ int main(int argc, char *argv[])
 				cfg.rateunit = atoi(argv[currentarg+1]);
 				if (cfg.rateunit > 1 || cfg.rateunit < 0) {
 					printf("Error: Invalid parameter \"%d\" for --rateunit.\n", cfg.rateunit);
+					printf(" Valid parameters:\n");
+					printf("    0 - bytes\n");
+					printf("    1 - bits\n");
 					return 1;
 				}
 				if (debug)
@@ -343,6 +346,9 @@ int main(int argc, char *argv[])
 	gdImagePng(im, pngout);
 	fclose(pngout);
 	gdImageDestroy(im);
+
+	/* cleanup */
+	ibwflush();
 
 	if (debug)
 		printf("all done\n");

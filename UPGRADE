@@ -1,8 +1,10 @@
-(Updated 7.9.2009 for version 1.9)
+(Updated 2.1.2010 for version 1.10)
 
 
 New configuration settings
 ::::::::::::::::::::::::::
+
+1.10: (none)
 
 1.9: OutputStyle, SummaryLayout, SummaryRate, SaveOnStatusChange,
      OfflineSaveInterval
@@ -12,8 +14,8 @@ New configuration settings
 1.7: UnitMode + all settings under vnstatd and vnstati
 
 
-Upgrading from versions 1.1 - 1.8 to 1.9
-::::::::::::::::::::::::::::::::::::::::
+Upgrading from versions 1.1 - 1.9 to 1.10
+:::::::::::::::::::::::::::::::::::::::::
 
 1) Follow the normal install procedure, 'make install' will not overwrite
    your configuration file

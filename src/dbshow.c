@@ -72,7 +72,11 @@ void showsummary(void)
 		strncpy(daytemp2, "    today", 32);
 	}
 
-	printf("Database updated: %s\n",(char*)asctime(localtime(&data.lastupdated)));
+	if (data.lastupdated) {
+		printf("Database updated: %s\n",(char*)asctime(localtime(&data.lastupdated)));
+	} else {
+		printf("\n");
+	}
 
 	indent(3);
 	if (strcmp(data.interface, data.nick)==0) {
@@ -855,11 +859,10 @@ void showweeks(void)
 
 void showhours(void)
 {
-	int i, j, k;
-	int tmax=0, max=0, s=0, dots=0;
-	char matrix[24][80];
-	
-	int hour, min;
+	int i, k, s=0, hour, minute;
+	unsigned int j, tmax=0, dots=0;
+	uint64_t max=0;
+	char matrix[24][81]; /* width is one over 80 so that snprintf can write the end char */
 	struct tm *d;
 	
 	/* tmax = time max = current hour */
@@ -867,7 +870,7 @@ void showhours(void)
 	
 	d=localtime(&data.lastupdated);
 	hour=d->tm_hour;
-	min=d->tm_min;
+	minute=d->tm_min;
 	
 	for (i=0;i<=23;i++) {
 		if (data.hour[i].date>=data.hour[tmax].date) {
@@ -883,18 +886,18 @@ void showhours(void)
 	
 	/* mr. proper */
 	for (i=0;i<24;i++) {
-		for (j=0;j<80;j++) {
+		for (j=0;j<81;j++) {
 			matrix[i][j]=' ';
 		}
 	}
 	
 	
 	/* structure */
-	sprintf(matrix[11]," -+--------------------------------------------------------------------------->");
+	snprintf(matrix[11], 81, " -+--------------------------------------------------------------------------->");
 	if (cfg.unit==0) {
-		sprintf(matrix[14]," h  rx (KiB)   tx (KiB)      h  rx (KiB)   tx (KiB)      h  rx (KiB)   tx (KiB)");
+		snprintf(matrix[14], 81, " h  rx (KiB)   tx (KiB)      h  rx (KiB)   tx (KiB)      h  rx (KiB)   tx (KiB)");
 	} else {
-		sprintf(matrix[14]," h   rx (KB)    tx (KB)      h   rx (KB)    tx (KB)      h   rx (KB)    tx (KB)");
+		snprintf(matrix[14], 81, " h   rx (KB)    tx (KB)      h   rx (KB)    tx (KB)      h   rx (KB)    tx (KB)");
 	}
 
 	for (i=10;i>1;i--)
@@ -906,18 +909,18 @@ void showhours(void)
 	/* title */
 	if (strcmp(data.interface, data.nick)==0) {
 		if (data.active)
-			sprintf(matrix[0]," %s", data.interface);
+			snprintf(matrix[0], 81, " %s", data.interface);
 		else
-			sprintf(matrix[0]," %s [disabled]", data.interface);
+			snprintf(matrix[0], 81, " %s [disabled]", data.interface);
 	} else {
 		if (data.active)
-			sprintf(matrix[0]," %s (%s)", data.nick, data.interface);
+			snprintf(matrix[0], 81, " %s (%s)", data.nick, data.interface);
 		else
-			sprintf(matrix[0]," %s (%s) [disabled]", data.nick, data.interface);
+			snprintf(matrix[0], 81, " %s (%s) [disabled]", data.nick, data.interface);
 	}
 	
 	/* time to the corner */
-	sprintf(matrix[0]+74,"%02d:%02d", hour, min);
+	snprintf(matrix[0]+74, 7, "%02d:%02d", hour, minute);
 	
 	/* numbers under x-axis and graphics :) */
 	k=5;
@@ -926,7 +929,7 @@ void showhours(void)
 		if (s<0)
 			s+=24;
 			
-		sprintf(matrix[12]+k,"%02d ",s);
+		snprintf(matrix[12]+k, 81-k, "%02d ", s);
 
 		dots=10*(data.hour[s].rx/(float)max);
 		for (j=0;j<dots;j++)
@@ -943,9 +946,9 @@ void showhours(void)
 	for (i=0;i<=7;i++) {
 		s=tmax+i+1;
 #if !defined(__OpenBSD__)
-		sprintf(matrix[15+i],"%02d %'10"PRIu64" %'10"PRIu64"    %02d %'10"PRIu64" %'10"PRIu64"    %02d %'10"PRIu64" %'10"PRIu64"",s%24, data.hour[s%24].rx, data.hour[s%24].tx, (s+8)%24, data.hour[(s+8)%24].rx, data.hour[(s+8)%24].tx, (s+16)%24, data.hour[(s+16)%24].rx, data.hour[(s+16)%24].tx);
+		snprintf(matrix[15+i], 81, "%02d %'10"PRIu64" %'10"PRIu64"    %02d %'10"PRIu64" %'10"PRIu64"    %02d %'10"PRIu64" %'10"PRIu64"",s%24, data.hour[s%24].rx, data.hour[s%24].tx, (s+8)%24, data.hour[(s+8)%24].rx, data.hour[(s+8)%24].tx, (s+16)%24, data.hour[(s+16)%24].rx, data.hour[(s+16)%24].tx);
 #else
-		sprintf(matrix[15+i],"%02d %10"PRIu64" %10"PRIu64"    %02d %10"PRIu64" %10"PRIu64"    %02d %10"PRIu64" %10"PRIu64"",s%24, data.hour[s%24].rx, data.hour[s%24].tx, (s+8)%24, data.hour[(s+8)%24].rx, data.hour[(s+8)%24].tx, (s+16)%24, data.hour[(s+16)%24].rx, data.hour[(s+16)%24].tx);
+		snprintf(matrix[15+i], 81, "%02d %10"PRIu64" %10"PRIu64"    %02d %10"PRIu64" %10"PRIu64"    %02d %10"PRIu64" %10"PRIu64"",s%24, data.hour[s%24].rx, data.hour[s%24].tx, (s+8)%24, data.hour[(s+8)%24].rx, data.hour[(s+8)%24].tx, (s+16)%24, data.hour[(s+16)%24].rx, data.hour[(s+16)%24].tx);
 #endif
 	}
 	
@@ -1025,8 +1028,8 @@ void dumpdb(void)
 	printf("active;%d\n", data.active);
 	printf("interface;%s\n", data.interface);
 	printf("nick;%s\n", data.nick);
-	printf("created;%d\n", (int)data.created);
-	printf("updated;%d\n", (int)data.lastupdated);
+	printf("created;%u\n", (unsigned int)data.created);
+	printf("updated;%u\n", (unsigned int)data.lastupdated);
 
 	printf("totalrx;%"PRIu64"\n", data.totalrx);
 	printf("totaltx;%"PRIu64"\n", data.totaltx);
@@ -1037,19 +1040,19 @@ void dumpdb(void)
 	printf("btime;%"PRIu64"\n", data.btime);
 
 	for (i=0;i<=29;i++) {
-		printf("d;%d;%d;%"PRIu64";%"PRIu64";%d;%d;%d\n", i, (int)data.day[i].date, data.day[i].rx, data.day[i].tx, data.day[i].rxk, data.day[i].txk, data.day[i].used);
+		printf("d;%d;%u;%"PRIu64";%"PRIu64";%d;%d;%d\n", i, (unsigned int)data.day[i].date, data.day[i].rx, data.day[i].tx, data.day[i].rxk, data.day[i].txk, data.day[i].used);
 	}
 
 	for (i=0;i<=11;i++) {
-		printf("m;%d;%d;%"PRIu64";%"PRIu64";%d;%d;%d\n", i, (int)data.month[i].month, data.month[i].rx, data.month[i].tx, data.month[i].rxk, data.month[i].txk, data.month[i].used);
+		printf("m;%d;%u;%"PRIu64";%"PRIu64";%d;%d;%d\n", i, (unsigned int)data.month[i].month, data.month[i].rx, data.month[i].tx, data.month[i].rxk, data.month[i].txk, data.month[i].used);
 	}
 
 	for (i=0;i<=9;i++) {
-		printf("t;%d;%d;%"PRIu64";%"PRIu64";%d;%d;%d\n", i, (int)data.top10[i].date, data.top10[i].rx, data.top10[i].tx, data.top10[i].rxk, data.top10[i].txk, data.top10[i].used);
+		printf("t;%d;%u;%"PRIu64";%"PRIu64";%d;%d;%d\n", i, (unsigned int)data.top10[i].date, data.top10[i].rx, data.top10[i].tx, data.top10[i].rxk, data.top10[i].txk, data.top10[i].used);
 	}
 
 	for (i=0;i<=23;i++) {
-		printf("h;%d;%d;%"PRIu64";%"PRIu64"\n", i, (int)data.hour[i].date, data.hour[i].rx, data.hour[i].tx);
+		printf("h;%d;%u;%"PRIu64";%"PRIu64"\n", i, (unsigned int)data.hour[i].date, data.hour[i].rx, data.hour[i].tx);
 	}			
 }
 

@@ -210,6 +210,7 @@ int main(int argc, char *argv[])
 									close(pidfile);
 									unlink(cfg.pidfile);
 								}
+								ibwflush();
 								return 1;
 							}
 							
@@ -241,6 +242,7 @@ int main(int argc, char *argv[])
 						close(pidfile);
 						unlink(cfg.pidfile);
 					}
+					ibwflush();
 					return 1;
 				}
 
@@ -321,6 +323,7 @@ int main(int argc, char *argv[])
 								close(pidfile);
 								unlink(cfg.pidfile);
 							}
+							ibwflush();
 							return 1;
 						} else {
 							datalist = datalist->next;
@@ -385,6 +388,7 @@ int main(int argc, char *argv[])
 					snprintf(errorstring, 512, "SIGHUP received, flushing data to disk and reloading config.");
 					printe(PT_Info);
 					cacheflush(dirname);
+					ibwflush();
 					if (loadcfg(cfgfile)) {
 						strncpy(dirname, cfg.dbdir, 512);
 					}
@@ -417,6 +421,7 @@ int main(int argc, char *argv[])
 	} /* while */
 
 	cacheflush(dirname);
+	ibwflush();
 
 	/* clean daemon stuff */
 	if (rundaemon && !debug) {
@@ -436,14 +441,14 @@ void daemonize(void)
 		return; /* already a daemon */
 	}
 	
-	i = fork();
+	i = (int)fork();
 	
 	if (i<0) { /* fork error */
 		perror("fork");
-		exit(1); 
+		exit(EXIT_FAILURE); 
 	}
 	if (i>0) { /* parent exits */
-		exit(0);
+		exit(EXIT_SUCCESS);
 	}
 	/* child (daemon) continues */
 
@@ -453,7 +458,7 @@ void daemonize(void)
 		snprintf(errorstring, 512, "vnStat daemon %s started.", VNSTATVERSION);
 		if (!printe(PT_Info)) {
 			printf("Error: Unable to use logfile. Exiting.\n");
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 	}
 
@@ -463,13 +468,13 @@ void daemonize(void)
 		perror("pidfile");
 		snprintf(errorstring, 512, "pidfile failed, exiting.");
 		printe(PT_Error);
-		exit(1); /* can't open */
+		exit(EXIT_FAILURE); /* can't open */
 	}
 	if (lockf(pidfile,F_TLOCK,0)<0) {
 		perror("pidfile lock");
 		snprintf(errorstring, 512, "pidfile lock failed, exiting.");
 		printe(PT_Error);
-		exit(1); /* can't lock */
+		exit(EXIT_FAILURE); /* can't lock */
 	}
 
 	/* close all descriptors except lock file */
@@ -487,14 +492,14 @@ void daemonize(void)
 		perror("dup(stdout)");
 		snprintf(errorstring, 512, "dup(stdout) failed, exiting.");
 		printe(PT_Error);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	/* stderr */
 	if (dup(i) < 0) {
 		perror("dup(stderr)");
 		snprintf(errorstring, 512, "dup(stderr) failed, exiting.");
 		printe(PT_Error);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	
 	umask(027); /* set newly created file permissions */
@@ -504,18 +509,18 @@ void daemonize(void)
 		perror("chdir(/)");
 		snprintf(errorstring, 512, "directory change to / failed, exiting.");
 		printe(PT_Error);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	/* first instance continues */
-	snprintf(str, 10, "%d\n", getpid());
+	snprintf(str, 10, "%d\n", (int)getpid());
 
 	/* record pid to lockfile */
 	if (write(pidfile,str,strlen(str)) < 0) {
 		perror("write(pidfile)");
 		snprintf(errorstring, 512, "writing to pidfile %s failed, exiting.", cfg.pidfile);
 		printe(PT_Error);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	signal(SIGCHLD,SIG_IGN); /* ignore child */
@@ -524,7 +529,7 @@ void daemonize(void)
 	signal(SIGTTIN,SIG_IGN);
 
 	if (cfg.uselogging==1) {
-		snprintf(errorstring, 512, "Daemon running with pid %d.", getpid());
+		snprintf(errorstring, 512, "Daemon running with pid %d.", (int)getpid());
 		printe(PT_Info);
 	}
 }

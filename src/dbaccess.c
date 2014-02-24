@@ -55,7 +55,7 @@ int readdb(const char *iface, const char *dirname)
 						if (noexit) {
 							return -1;
 						} else {
-							exit(1);
+							exit(EXIT_FAILURE);
 						}
 					} else {
 						if (debug) {
@@ -72,7 +72,7 @@ int readdb(const char *iface, const char *dirname)
 							if (noexit) {
 								return -1;
 							} else {
-								exit(1);
+								exit(EXIT_FAILURE);
 							}
 						}
 					}
@@ -84,7 +84,7 @@ int readdb(const char *iface, const char *dirname)
 					if (noexit) {
 						return -1;
 					} else {
-						exit(1);
+						exit(EXIT_FAILURE);
 					}
 				}
 			}
@@ -97,7 +97,7 @@ int readdb(const char *iface, const char *dirname)
 			if (noexit) {
 				return -1;
 			} else {
-				exit(1);
+				exit(EXIT_FAILURE);
 			}		
 		}
 
@@ -229,7 +229,11 @@ int writedb(const char *iface, const char *dirname, int newdb)
 			return 0;
 		}
 
-		data.lastupdated=time(NULL);
+		/* update timestamp when not merging */
+		if (newdb!=2) {
+			data.lastupdated=time(NULL);
+		}
+
 		if (fwrite(&data,sizeof(DATA),1,db)==0) {
 			snprintf(errorstring, 512, "Unable to write database \"%s\".", file);
 			printe(PT_Error);
@@ -273,7 +277,7 @@ int backupdb(const char *current, const char *backup)
 	b = fileno(bf);
 
 	/* copy data */
-	while((bytes = read(c, buffer, sizeof(buffer))) > 0) {
+	while((bytes = (int)read(c, buffer, sizeof(buffer))) > 0) {
 		if (write(b, buffer, bytes) < 0) {
 			close(c);
 			fclose(bf);
@@ -342,7 +346,8 @@ int convertdb(FILE *db)
 				data12.day[i].date=current-(i*86400);
 				data12.day[i].used=1;
 			} else {
-				data12.day[i].rx=data12.day[i].tx=0;
+				data12.day[i].rx=0;
+				data12.day[i].tx=0;
 				data12.day[i].used=0;
 			}			
 		}
@@ -362,7 +367,8 @@ int convertdb(FILE *db)
 				days+=dmonth(mod);
 				data12.month[i].used=1;
 			} else {
-				data12.month[i].rx=data12.month[i].tx=0;
+				data12.month[i].rx=0;
+				data12.month[i].tx=0;
 				data12.month[i].used=0;
 			}			
 		}		
@@ -423,7 +429,8 @@ int convertdb(FILE *db)
 
 			} else {
 				data12.top10[i].used=0;
-				data12.top10[i].rx=data12.top10[i].tx=0;
+				data12.top10[i].rx=0;
+				data12.top10[i].tx=0;
 			}
 			
 			
@@ -622,7 +629,7 @@ int removedb(const char *iface, const char *dirname)
 	unlink(file);
 	
 	snprintf(file, 512, "%s/%s", dirname, iface);
-	if (!unlink(file)) {
+	if (unlink(file)!=0) {
 		perror("unlink");
 		return 0;
 	}
@@ -645,7 +652,7 @@ void cleanhours(void)
 			data.hour[i].tx=0;
 			data.hour[i].date=0;
 			if (debug) {
-				printf("db: Hour %d (%d) cleaned.\n", i, (int)data.hour[i].date);
+				printf("db: Hour %d (%u) cleaned.\n", i, (unsigned int)data.hour[i].date);
 			}
 		}
 	}
@@ -659,7 +666,7 @@ void cleanhours(void)
 			data.hour[hour].rx=0;
 			data.hour[hour].tx=0;
 			if (debug) {
-				printf("db: Current hour %d (%d) cleaned.\n", hour, (int)data.hour[hour].date);
+				printf("db: Current hour %d (%u) cleaned.\n", hour, (unsigned int)data.hour[hour].date);
 			}
 			data.hour[hour].date=current;
 	}

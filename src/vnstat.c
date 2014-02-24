@@ -1,5 +1,5 @@
 /*
-vnStat - Copyright (c) 2002-09 Teemu Toivola <tst@iki.fi>
+vnStat - Copyright (c) 2002-10 Teemu Toivola <tst@iki.fi>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -29,14 +29,14 @@ vnStat - Copyright (c) 2002-09 Teemu Toivola <tst@iki.fi>
 int main(int argc, char *argv[]) {
 
 	int i;
-	int currentarg, update=0, query=1, newdb=0, reset=0, sync=0, merged=0;
+	int currentarg, update=0, query=1, newdb=0, reset=0, sync=0, merged=0, savemerged=0;
 	int active=-1, files=0, force=0, cleartop=0, rebuildtotal=0, traffic=0;
-	int livetraffic=0, defaultiface=1, delete=0;
+	int livetraffic=0, defaultiface=1, delete=0, livemode=0;
 	char interface[32], dirname[512], nick[32];
-	char definterface[32], cfgfile[512], *ifacelist;
+	char definterface[32], cfgfile[512], *ifacelist=NULL;
 	time_t current;
-	DIR *dir;
-	struct dirent *di;
+	DIR *dir=NULL;
+	struct dirent *di=NULL;
 
 	noexit = 0; /* allow functions to exit in case of error */
 	debug = 0; /* debug disabled by default */
@@ -121,12 +121,13 @@ int main(int argc, char *argv[]) {
 			printf("         -v,  --version        show version\n");
 			printf("         -tr, --traffic        calculate traffic\n");
 			printf("         -l,  --live           show transfer rate in real time\n");
-			printf("         --style               select output style (0-3)\n");
+			printf("         --style               select output style (0-4)\n");
 			printf("         --delete              delete database and stop monitoring\n");
 			printf("         --iflist              show list of available interfaces\n");
 			printf("         --dbdir               select database directory\n");
 			printf("         --locale              set locale\n");
 			printf("         --config              select config file\n");
+			printf("         --savemerged          save merged database to current directory\n");
 			printf("         --showconfig          dump config file with current settings\n");
 			printf("         --testkernel          check if the kernel is broken\n");
 			printf("         --longhelp            display this help\n\n");
@@ -188,8 +189,14 @@ int main(int argc, char *argv[]) {
 		} else if ((strcmp(argv[currentarg],"--style"))==0) {
 			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
 				cfg.ostyle = atoi(argv[currentarg+1]);
-				if (cfg.ostyle > 3 || cfg.ostyle < 0) {
+				if (cfg.ostyle > 4 || cfg.ostyle < 0) {
 					printf("Error: Invalid style parameter \"%d\" for --style.\n", cfg.ostyle);
+					printf(" Valid parameters:\n");
+					printf("    0 - a more narrow output\n");
+					printf("    1 - enable bar column if available\n");
+					printf("    2 - average traffic rate in summary and weekly outputs\n");
+					printf("    3 - average traffic rate in all outputs if available\n");
+					printf("    4 - disable terminal control characters in -l / --live\n");
 					return 1;
 				}
 				if (debug)
@@ -198,6 +205,12 @@ int main(int argc, char *argv[]) {
 				continue;
 			} else {
 				printf("Error: Style parameter for --style missing.\n");
+				printf(" Valid parameters:\n");
+				printf("    0 - a more narrow output\n");
+				printf("    1 - enable bar column if available\n");
+				printf("    2 - average traffic rate in summary and weekly outputs\n");
+				printf("    3 - average traffic rate in all outputs if available\n");
+				printf("    4 - disable terminal control characters in -l / --live\n");
 				return 1;
 			}
 		} else if ((strcmp(argv[currentarg],"--dbdir"))==0) {
@@ -249,11 +262,16 @@ int main(int argc, char *argv[]) {
 			cfg.qmode=9;
 		} else if (strcmp(argv[currentarg],"--xml")==0) {
 			cfg.qmode=8;
+		} else if (strcmp(argv[currentarg],"--savemerged")==0) {
+			savemerged=1;
 		} else if ((strcmp(argv[currentarg],"-ru")==0) || (strcmp(argv[currentarg],"--rateunit"))==0) {
 			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
 				cfg.rateunit = atoi(argv[currentarg+1]);
 				if (cfg.rateunit > 1 || cfg.rateunit < 0) {
 					printf("Error: Invalid parameter \"%d\" for --rateunit.\n", cfg.rateunit);
+					printf(" Valid parameters:\n");
+					printf("    0 - bytes\n");
+					printf("    1 - bits\n");
 					return 1;
 				}
 				if (debug)
@@ -281,6 +299,17 @@ int main(int argc, char *argv[]) {
 			traffic=1;
 			query=0;
 		} else if ((strcmp(argv[currentarg],"-l")==0) || (strcmp(argv[currentarg],"--live")==0)) {
+			if (currentarg+1<argc && argv[currentarg+1][0]!='-') {
+				livemode = atoi(argv[currentarg+1]);
+				if (!isdigit(argv[currentarg+1][0]) || livemode > 1 || livemode < 0) {
+					printf("Error: Invalid mode parameter \"%s\" for -l / --live.\n", argv[currentarg+1]);
+					printf(" Valid parameters:\n");
+					printf("    0 - show packets per second (default)\n");
+					printf("    1 - show transfer counters\n");
+					return 1;
+				}
+				currentarg++;
+			}
 			livetraffic=1;
 			query=0;
 		} else if (strcmp(argv[currentarg],"--force")==0) {
@@ -298,7 +327,7 @@ int main(int argc, char *argv[]) {
 		} else if (strcmp(argv[currentarg],"--showconfig")==0) {
 			printcfgfile();
 			return 0;			
-		} else if (strcmp(argv[currentarg],"--showconfig")==0) {
+		} else if (strcmp(argv[currentarg],"--delete")==0) {
 			delete=1;
 			query=0;
 		} else if (strcmp(argv[currentarg],"--iflist")==0) {
@@ -360,6 +389,15 @@ int main(int argc, char *argv[]) {
 		} else {
 			return 1;
 		}
+	}
+
+	/* save merged database */
+	if (merged && savemerged) {
+		data.lastupdated = 0;
+		if (writedb("mergeddb", ".", 2)) {
+			printf("Database saved as \"mergeddb\" in the current directory.\n");
+		}
+		return 0;
 	}
 
 	/* counter reset */
@@ -688,7 +726,7 @@ int main(int argc, char *argv[]) {
 
 	/* live traffic */
 	if (livetraffic) {
-		livetrafficmeter(interface);
+		livetrafficmeter(interface, livemode);
 	}
 	
 	/* if nothing was shown previously */
@@ -707,6 +745,9 @@ int main(int argc, char *argv[]) {
 			printf("Nothing to do. Use --help for help.\n");
 		}
 	}
+
+	/* cleanup */
+	ibwflush();
 	
 	return 0;
 }

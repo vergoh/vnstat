@@ -155,7 +155,7 @@ void cachestatus(void)
 	int b = 13, count = 0;
 	datanode *p = dataptr;
 
-	sprintf(buffer, "Monitoring: ");
+	snprintf(buffer, b, "Monitoring: ");
 	
 	if (p != NULL) {
 
@@ -182,10 +182,25 @@ void cachestatus(void)
 	printe(PT_Info);
 }
 
-int cacheget(const datanode *dn)
+int cacheget(datanode *dn)
 {
 	if (dn->filled) {
 		memcpy(&data, &dn->data, sizeof(data));
+		
+		/* do simple data validation */
+		if (data.version != DBVERSION ||
+			data.created == 0 ||
+			data.lastupdated == 0 ||
+			data.interface[0] == '\0' ||
+			data.active > 1 ||
+			data.active < 0) {
+			
+			if (debug)
+				printf("cache get: validation failed (%d/%u/%u/%d/%d)\n", data.version, (unsigned int)data.created, (unsigned int)data.lastupdated, data.interface[0], data.active);
+			
+			/* force reading of database file */
+			dn->filled = 0;
+		}
 	}
 
 	if (debug) {
@@ -256,7 +271,7 @@ uint32_t dbcheck(uint32_t dbhash, int *forcesave)
 		return 0;
 	}
 
-	newhash = simplehash(ifacelist, strlen(ifacelist));
+	newhash = simplehash(ifacelist, (int)strlen(ifacelist));
 
 	/* search for changes if hash doesn't match */
 	if (newhash!=dbhash) {
@@ -270,13 +285,13 @@ uint32_t dbcheck(uint32_t dbhash, int *forcesave)
 			if (p->filled) {
 				found = offset = 0;
 			
-				while (offset <= strlen(ifacelist)) {
+				while (offset <= (int)strlen(ifacelist)) {
 					sscanf(ifacelist+offset, "%32s", interface);
 					if (strcmp(p->data.interface, interface)==0) {
 						found = 1;
 						break;
 					}
-					offset += strlen(interface)+1;
+					offset += (int)strlen(interface)+1;
 				}
 				
 				if (p->data.active==1 && found==0) {

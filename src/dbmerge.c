@@ -2,7 +2,7 @@
 #include "dbaccess.h"
 #include "dbmerge.h"
 
-int mergedb(char iface[32], char dirname[512])
+int mergedb(char iface[], char dirname[])
 {
 	DATA mergedata;
 	char *ifaceptr;

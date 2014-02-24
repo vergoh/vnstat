@@ -127,7 +127,7 @@ int logprint(PrintType type)
 
 int dmonth(int month)
 {
-	static int dmonth[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+	static int dmon[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 	int year;
 	time_t current;
 	
@@ -141,7 +141,7 @@ int dmonth(int month)
 			return 28;
 		}
 	} else {
-		return dmonth[month];
+		return dmon[month];
 	}
 }
 
@@ -150,6 +150,10 @@ uint32_t mosecs(void)
 	struct tm *d;
 	
 	d = localtime(&data.month[0].month);
+	
+	if (d == NULL) {
+		return 0;
+	}
 	
 	if (d->tm_mday < cfg.monthrotate) {
 		return 0;

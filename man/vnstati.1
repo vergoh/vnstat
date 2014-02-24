@@ -1,39 +1,54 @@
-.TH VNSTATI 1 "SEPTEMBER 2009" "version 1.9" "User Manuals"
+.TH VNSTATI 1 "JANUARY 2010" "version 1.10" "User Manuals"
 .SH NAME
+
 vnStat image output \- png image output support for vnStat
+
 .SH SYNOPSIS
+
 .B vnstati
 [
 .B \-cdhimostv?
 ] [
-.B \-i
-.I interface
+.B \-\-cache
+.I time
 ] [
-.B \-\-hours
+.B \-\-config
+.I file
 ] [
 .B \-\-days
 ] [
-.B \-\-months
+.B \-\-dbdir
+.I directory
 ] [
-.B \-\-top10
+.B \-\-help
 ] [
-.B \-\-summary
+.B \-\-hours
 ] [
 .B \-hs
 ] [
 .B \-\-hsummary
 ] [
-.B \-vs
+.B \-i
+.I interface
 ] [
-.B \-\-vsummary
+.B \-\-iface
+.I interface
+] [
+.B \-\-locale
+.I locale
+] [
+.B \-\-months
 ] [
 .B \-ne
 ] [
-.B \-\-noedge
-] [
 .B \-nh
 ] [
+.B \-\-noedge
+] [
 .B \-\-noheader
+] [
+.B \-\-output
+.I file
 ] [
 .B \-ru
 ] [
@@ -42,31 +57,21 @@ vnStat image output \- png image output support for vnStat
 .B \-\-style
 .I number
 ] [
+.B \-\-summary
+] [
+.B \-\-top10
+] [
 .B \-\-transparent
 ] [
-.B \-\-output
-.I file
-] [
-.B \-\-cache
-.I time
-] [
-.B \-\-iface
-.I interface
-] [
-.B \-\-config
-.I file
-] [
-.B \-\-dbdir
-.I directory
-] [
-.B \-\-locale
-.I locale
-] [
-.B \-\-help
-] [
 .B \-\-version
+] [
+.B \-vs
+] [
+.B \-\-vsummary
 ]
+
 .SH DESCRIPTION
+
 The purpose of
 .B vnstati
 is to provide image output support for statistics collected using
@@ -74,35 +79,73 @@ is to provide image output support for statistics collected using
 The image file format is limited to png. All basic outputs
 of vnStat are supported excluding live traffic features. The image
 can be outputted either to a file or to standard output.
+
 .SH OPTIONS
+
 .TP
-.BI "-s, --summary"
-Output traffic summary.
+.BI "-c, --cache " time
+Update output file only if at least
+.I time
+minutes have passed since the previous file update. This option is ignored if
+stdout is used as output.
+
 .TP
-.BI "-hs, --hsummary"
-Output traffic summary including hourly data using a horizontal layout.
-.TP
-.BI "-vs, --vsummary"
-Output traffic summary including hourly data using a vertical layout.
+.BI "--config " file
+Use
+.I file
+as config file instead of using normal config file search function.
+
 .TP
 .BI "-d, --days"
 Output traffic for days.
+
+.TP
+.BI "--dbdir " directory
+Use
+.I directory
+as database directory instead of using the directory specified in the configuration
+file or the hardcoded default if no configuration file is available.
+
 .TP
 .BI "-h, --hours"
 Output traffic for the last 24 hours.
+
+.TP
+.BI "-hs, --hsummary"
+Output traffic summary including hourly data using a horizontal layout.
+
+.TP
+.BI "-i, --iface " interface
+Use
+.I interface
+instead of default or configured interface.
+
+.TP
+.BI "--locale " locale
+Use
+.I locale
+instead of using the locale setting specified in the configuration file or the system
+default if no configuration file is available.
+
 .TP
 .BI "-m, --months"
 Output traffic for months.
-.TP
-.BI "-t, --top10"
-Output all time top10 traffic days.
+
 .TP
 .BI "-ne, --noedge"
 Remove darker edges from around the image.
+
 .TP
 .BI "-nh, --noheader"
 Remove header containing title and update time. Time of the previous update
 will still be visible in the lower right corner using a less visible color.
+
+.TP
+.BI "-o, --output " file
+Write png image to
+.I file
+and exit. Output can be directed to stdout by giving "-" as filename.
+
 .TP
 .BI "-ru, --rateunit"
 Swap the configured rate unit. If rate has been configured to be shown in
@@ -111,58 +154,43 @@ way, if rate has been configured to be shown in bits then rate will be shown
 in bytes when this option is present. Alternatively 0 or 1 can be given as
 parameter for this option in order to select between bytes (0) and bits
 (1) regardless of the configuration file setting.
+
 .TP
 .BI "--style " number
 Modify the content and style of outputs. Setting
 .I number
 to 3 will show average traffic rate in all outputs where it is supported.
 Other values will show bar graphics instead.
+
+.TP
+.BI "-s, --summary"
+Output traffic summary.
+
+.TP
+.BI "-t, --top10"
+Output all time top10 traffic days.
+
 .TP
 .BI "--transparent"
 Toggle background color transparency depending of the TransparentBg setting
 in the configuration file. Alternatively 0 or 1 can be given as parameter
 for this option in order to either disable (0) or enable (1) transparency
 regardless of the configuration file setting.
-.TP
-.BI "-o, --output " file
-Write png image to
-.I file
-and exit. Output can be directed to stdout by giving "-" as filename.
-.TP
-.BI "-c, --cache " time
-Update output file only if at least
-.I time
-minutes have passed since the previous file update. This option is ignored if
-stdout is used as output.
-.TP
-.BI "-i, --iface " interface
-Use
-.I interface
-instead of default or configured interface.
-.TP
-.BI "--config " file
-Use
-.I file
-as config file instead of using normal config file search function.
-.TP
-.BI "--dbdir " directory
-Use
-.I directory
-as database directory instead of using the directory specified in the configuration
-file or the hardcoded default if no configuration file is available.
-.TP
-.BI "--locale " locale
-Use
-.I locale
-instead of using the locale setting specified in the configuration file or the system
-default if no configuration file is available.
-.TP
-.BI "-?, --help"
-Show a command summary.
+
 .TP
 .BI "-v, --version"
 Show current version.
+
+.TP
+.BI "-vs, --vsummary"
+Output traffic summary including hourly data using a vertical layout.
+
+.TP
+.BI "-?, --help"
+Show a command summary.
+
 .SH FILES
+
 .TP
 .I /var/lib/vnstat/
 Default database directory. Files are named according to the monitored interfaces.
@@ -174,28 +202,37 @@ exists. See
 .BR vnstat.conf (5)
 for more information.
 .SH EXAMPLES
+
 .TP
 .BI "vnstati -s -i eth0 -o /tmp/vnstat.png" 
 Output traffic summary for interface eth0 to file /tmp/vnstat.png.
+
 .TP
 .BI "vnstati -vs -i eth0+eth1+eth2 -o /tmp/vnstat.png" 
 Output traffic summary with hourly data under the normal summary for a merge of
 interfaces eth0, eth1 and eth2 to file /tmp/vnstat.png.
+
 .TP
 .BI "vnstati -h -c 15 -o /tmp/vnstat_h.png"
 Output hourly traffic statistics for default interface to file /tmp/vnstat_h.png
 if the file has not been updated within the last 15 minutes.
+
 .TP
 .BI "vnstati -d -ne -nh -o -"
 Output daily traffic statistics without displaying the header section and edges
 for default interface to standard output (stdout).
+
 .TP
 .BI "vnstati -m --config /home/me/vnstat.cfg -i -o -"
 Output monthly traffic statistics for default interface specified in configuration
 file /home/me/vnstat.cfg to standard output (stdout).
+
 .SH AUTHOR
+
 Teemu Toivola <tst at iki dot fi>
+
 .SH "SEE ALSO"
+
 .BR vnstat (1),
 .BR vnstatd (1),
 .BR vnstat.conf (5),

@@ -262,7 +262,7 @@ int loadcfg(const char *cfgfile)
 			break;
 		}
 		
-		linelen = strlen(cfgline);
+		linelen = (int)strlen(cfgline);
 		if (linelen>2 && cfgline[0]!='#') {
 		
 			for (i=0; cset[i].name!=0; i++) {
@@ -271,7 +271,7 @@ int loadcfg(const char *cfgfile)
 					continue;
 				}
 
-				cfglen = strlen(cset[i].name);
+				cfglen = (int)strlen(cset[i].name);
 				if ( (linelen>=(cfglen+2)) && (strncasecmp(cfgline, cset[i].name, cfglen)==0) ) {
 				
 					/* clear value buffer */
@@ -323,6 +323,9 @@ int loadcfg(const char *cfgfile)
 				} /* if */
 			
 			} /* for */
+
+			if ((debug) && (!cset[i].found) && (strncasecmp(cfgline, "MaxBW", 5)!=0))
+				printf("Unknown configuration line: %s", cfgline);
 		
 		} /* if */
 	
@@ -546,16 +549,45 @@ void defaultcfg(void)
 
 int ibwadd(const char *iface, int limit)
 {
-	ibwnode *p = malloc(sizeof(ibwnode));
+	ibwnode *n, *p = ifacebw;
 
+	/* add new node if list is empty */
 	if (p == NULL) {
-		return 0;
-	}
 
-	p->next = ifacebw;
-	ifacebw = p;
-	strncpy(p->interface, iface, 32);
-	p->limit = limit;
+		n = malloc(sizeof(ibwnode));
+
+		if (n == NULL) {
+			return 0;
+		}
+
+		n->next = ifacebw;
+		ifacebw = n;
+		strncpy(n->interface, iface, 32);
+		n->limit = limit;
+
+	} else {
+
+		/* update previous value if already in list */
+		while (p != NULL) {
+			if (strcmp(p->interface, iface)==0) {
+				p->limit = limit;
+				return 1;
+			}
+			p = p->next;
+		}
+
+		/* add new node if not found */
+		n = malloc(sizeof(ibwnode));
+
+		if (n == NULL) {
+			return 0;
+		}
+
+		n->next = ifacebw;
+		ifacebw = n;
+		strncpy(n->interface, iface, 32);
+		n->limit = limit;
+	}
 
 	return 1;
 }
@@ -634,7 +666,7 @@ int ibwcfgread(FILE *fd)
 			break;
 		}
 
-		linelen = strlen(cfgline);
+		linelen = (int)strlen(cfgline);
 
 		if (linelen>8 && cfgline[0]!='#') {
 

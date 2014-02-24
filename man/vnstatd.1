@@ -1,30 +1,35 @@
-.TH VNSTATD 1 "SEPTEMBER 2009" "version 1.9" "User Manuals"
+.TH VNSTATD 1 "JANUARY 2010" "version 1.10" "User Manuals"
 .SH NAME
+
 vnStat daemon \- the alternative for cron based updating
+
 .SH SYNOPSIS
+
 .B vnstatd
 [
 .B \-Ddnpsv?
 ] [
+.B \-\-config
+.I file
+] [
 .B \-\-daemon
-] [
-.B \-\-nodaemon
-] [
-.B \-\-sync
 ] [
 .B \-\-debug
 ] [
 .B \-\-help
 ] [
-.B \-\-version
+.B \-\-nodaemon
 ] [
 .B \-\-pidfile
 .I file
 ] [
-.B \-\-config
-.I file
+.B \-\-sync
+] [
+.B \-\-version
 ]
+
 .SH DESCRIPTION
+
 The purpose of
 .B vnstatd
 is to provide a more flexible way for updating
@@ -46,14 +51,38 @@ in the database directory that has been specified in the configuration
 file and exit if no databases can be found. The reason for this behaviour
 is to avoid starting the daemon when it's clear that it wouldn't have
 anything to do.
+
 .SH OPTIONS
+
+.TP
+.BI "--config " file
+Use
+.I file
+as config file instead of using normal config file search function.
+
 .TP
 .BI "-d, --daemon"
 Fork process to background and run as a daemon.
+
+.TP
+.BI "-D, --debug"
+Provide additional output for debug purposes. The process will stay
+attached to the terminal for output.
+
 .TP
 .BI "-n, --nodaemon"
 Stay in foreground attached to the current terminal and start update
 process.
+
+.TP
+.BI "-p, --pidfile " file
+Write the process id to
+.I file
+and use it for locking so that another instance of the daemon cannot
+be started if the same
+.I file
+is specified.
+
 .TP
 .BI "-s, --sync"
 Synchronize internal counters in the database with interface
@@ -64,49 +93,31 @@ isn't required in normal use because the daemon will automatically synchronize
 the internal counters after a system reboot, if enought time has passed
 since the daemon was previously running or if the internal counters are
 clearly out of sync.
-.TP
-.BI "-D, --debug"
-Provide additional output for debug purposes. The process will stay
-attached to the terminal for output.
-.TP
-.BI "-?, --help"
-Show a command summary.
+
 .TP
 .BI "-v, --version"
 Show current version.
+
 .TP
-.BI "-p, --pidfile " file
-Write the process id to
-.I file
-and use it for locking so that another instance of the daemon cannot
-be started if the same
-.I file
-is specified.
-.TP
-.BI "--config " file
-Use
-.I file
-as config file instead of using normal config file search function.
+.BI "-?, --help"
+Show a command summary.
+
 .SH CONFIGURATION
+
 The behaviour of the daemon is configured mainly using the configuration
 keywords
 .BR "UpdateInterval, PollInterval"
 and
 .BR SaveInterval
 in the configuration file.
+
 .PP
 .BR UpdateInterval
 defines in seconds how often the interface data is updated.
 This is similar to the run interval for alternative cron based updating.
 However, the difference is that the data doesn't get written to disk
 during updates.
-.PP
-.BR SaveInterval
-defines in minutes how often cached interface data is written to disk.
-A write can only occur during the updating of interface data. Therefore,
-the value should be a multiple of
-.BR UpdateInterval
-with a maximum value of 60 minutes.
+
 .PP
 .BR PollInterval
 defines in seconds how often the list of available interfaces is checked
@@ -114,6 +125,15 @@ for possible changes. The minimum value is 2 seconds and the maximum 60
 seconds.
 .BR PollInterval
 also defines the resolution for other intervals.
+
+.PP
+.BR SaveInterval
+defines in minutes how often cached interface data is written to disk.
+A write can only occur during the updating of interface data. Therefore,
+the value should be a multiple of
+.BR UpdateInterval
+with a maximum value of 60 minutes.
+
 .PP
 The default values of
 .BR UpdateInterval
@@ -124,6 +144,7 @@ The default values of
 2 are usually suitable for most systems and provide a similar behaviour
 as cron based updating does but with a better resolution for interface
 changes and fast interfaces.
+
 .PP
 For embedded and/or low power systems more tuned configurations are possible.
 In such cases if the interfaces are mostly static the
@@ -135,7 +156,9 @@ interface speed is 10 Mbit or less.
 .BR SaveInterval
 can be rised for example to 15, 30 or even 60 minutes depending on how
 often the data needs to be viewed.
+
 .SH SIGNALS
+
 The daemon is listening to signals
 .BR "SIGHUP, SIGINT"
 and
@@ -146,13 +169,16 @@ signal to the daemon will cause cached data to be written to disk,
 a rescan of the database directory and a reload of settings from the
 configuration file. However, the pid file will not be updated even if
 it's configuration setting has been changed.
+
 .PP
 .BR SIGTERM
 and
 .BR SIGINT
 signals will cause the daemon to write all cached data to disk and
 then exit.
+
 .SH FILES
+
 .TP
 .I /var/lib/vnstat/
 Default database directory. Files are named according to the monitored
@@ -172,7 +198,9 @@ is specified in the config file.
 .I /var/run/vnstat.pid
 File used for storing the process id if no other file is specified in the
 configuration file or using the command line parameter.
+
 .SH RESTRICTIONS
+
 Updates needs to be executed at least as often as it is possible for the interface
 to generate enough traffic to wrap the kernel interface traffic counter. Otherwise
 it is possible that some traffic won't be seen. This isn't an issue for 64 bit kernels
@@ -182,9 +210,9 @@ interface can transfer 4 GiB. Calculated theoretical times are:
 .RS
 .TS
 l l.
-10 Mbit:	54 minutes
-100 Mbit:	 5 minutes
-1000 Mbit:	30 seconds
+10 Mbit:        54 minutes
+100 Mbit:        5 minutes
+1000 Mbit:      30 seconds
 .TE
 .RE
 
@@ -195,9 +223,13 @@ Virtual and aliased interfaces cannot be monitored because the kernel doesn't
 provide traffic information for that type of interfaces. Such interfaces are
 usually named eth0:0, eth0:1, eth0:2 etc. where eth0 is the actual interface
 being aliased.
+
 .SH AUTHOR
+
 Teemu Toivola <tst at iki dot fi>
+
 .SH "SEE ALSO"
+
 .BR vnstat (1),
 .BR vnstati (1),
 .BR vnstat.conf (5),
