@@ -19,7 +19,7 @@ void printcfgfile(void)
 
 	printf("# on which day should months change\n");
 	printf("MonthRotate %d\n\n", cfg.monthrotate);
-	
+
 	printf("# date output formats for -d, -m, -t and -w\n");
 	printf("# see 'man date' for control codes\n");
 	printf("DayFormat    \"%s\"\n", cfg.dformat);
@@ -57,7 +57,7 @@ void printcfgfile(void)
 		printf("MaxBW%s %d\n", p->interface, p->limit);
 		p = p->next;
 	}
-	
+
 	printf("\n");
 
 	printf("# how many seconds should sampling for -tr take by default\n");
@@ -70,7 +70,7 @@ void printcfgfile(void)
 
 	printf("# filesystem disk space check (1 = enabled, 0 = disabled)\n");
 	printf("CheckDiskSpace %d\n\n", cfg.spacecheck);
-	
+
 	printf("# database file locking (1 = enabled, 0 = disabled)\n");
 	printf("UseFileLocking %d\n\n", cfg.flock);
 
@@ -111,7 +111,7 @@ void printcfgfile(void)
 	printf("\n\n");
 
 	printf("# vnstati\n##\n\n");
-	
+
 	printf("# title timestamp format\n");
 	printf("HeaderFormat \"%s\"\n\n", cfg.hformat);
 
@@ -215,7 +215,7 @@ int loadcfg(const char *cfgfile)
 	/* possible config files: 1) --config   2) $HOME/.vnstatrc   3) /etc/vnstat.conf   4) none */
 
 	if (cfgfile[0]!='\0') {
-	
+
 		/* try to open given file */
 		if ((fd=fopen(cfgfile, "r"))!=NULL) {
 			if (debug)
@@ -225,7 +225,7 @@ int loadcfg(const char *cfgfile)
 			printe(PT_Error);
 			return 0;
 		}
-	
+
 	} else {
 
 		if (getenv("HOME")) {
@@ -254,17 +254,17 @@ int loadcfg(const char *cfgfile)
 
 	/* parse every config file line */
 	while (!feof(fd)) {
-	
+
 		cfgline[0] = '\0';
-		
+
 		/* get current line */
 		if (fgets(cfgline, 512, fd)==NULL) {
 			break;
 		}
-		
+
 		linelen = (int)strlen(cfgline);
 		if (linelen>2 && cfgline[0]!='#') {
-		
+
 			for (i=0; cset[i].name!=0; i++) {
 
 				if (cset[i].found) {
@@ -273,12 +273,12 @@ int loadcfg(const char *cfgfile)
 
 				cfglen = (int)strlen(cset[i].name);
 				if ( (linelen>=(cfglen+2)) && (strncasecmp(cfgline, cset[i].name, cfglen)==0) ) {
-				
+
 					/* clear value buffer */
 					for (j=0; j<512; j++) {
 						value[j]='\0';
 					}
-				
+
 					/* search value */
 					j = 0;
 					for (k=cfglen; k<linelen; k++) {
@@ -299,7 +299,7 @@ int loadcfg(const char *cfgfile)
 							}
 						}
 					}
-					
+
 					/* set value and get new line if valid value was found */
 					if (strlen(value)!=0) {
 
@@ -315,25 +315,25 @@ int loadcfg(const char *cfgfile)
 						} else {
 							continue;
 						}
-						
+
 						cset[i].found = 1;
 						break;
 					}
-				
+
 				} /* if */
-			
+
 			} /* for */
 
 			if ((debug) && (!cset[i].found) && (strncasecmp(cfgline, "MaxBW", 5)!=0))
 				printf("Unknown configuration line: %s", cfgline);
-		
+
 		} /* if */
-	
+
 	} /* while */
 
 	/* search for interface specific limits */
 	ibwcfgread(fd);
-	
+
 	fclose(fd);
 
 	if (debug)
@@ -531,7 +531,7 @@ void defaultcfg(void)
 	cfg.uselogging = USELOGGING;
 	strncpy(cfg.logfile, LOGFILE, 512);
 	strncpy(cfg.pidfile, PIDFILE, 512);
-	
+
 	cfg.transbg = TRANSBG;
 	strncpy(cfg.cbg, CBACKGROUND, 7);
 	strncpy(cfg.cedge, CEDGE, 7);
@@ -596,12 +596,12 @@ void ibwlist(void)
 {
 	int i=1;
 	ibwnode *p = ifacebw;
-	
+
 	if (p == NULL) {
 		printf("ibw list is empty.\n");
 
 	} else {
-	
+
 		printf("ibw:\n");
 		while (p != NULL) {
 			printf(" %2d: \"%s\" \"%d\"\n", i, p->interface, p->limit);
@@ -644,7 +644,7 @@ void ibwflush(void)
 		p = p->next;
 		free(f);
 	}
-	
+
 	ifacebw = NULL;
 }
 
@@ -675,7 +675,7 @@ int ibwcfgread(FILE *fd)
 				/* clear name and value buffers */
 				for (j=0; j<512; j++) {
 					name[j]=value[j]='\0';
-				}			
+				}
 
 				/* get interface name */
 				j=0;
@@ -718,7 +718,7 @@ int ibwcfgread(FILE *fd)
 				if ((strlen(value)==0) || (!isdigit(value[0])) ) {
 					continue;
 				}
-			
+
 				/* add interface and limit to list if value is within limits */
 				ivalue = atoi(value);
 				if (ivalue<0 || ivalue>10000) {

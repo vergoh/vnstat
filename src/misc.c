@@ -6,14 +6,14 @@ int kerneltest(void)
 	int i=0, bmax, bmin, btemp;
 
 	bmax=bmin=getbtime();
-	
+
 	printf("This test will take about 60 seconds.\n");
 	printf("[                              ]");
 	for (i=0; i<=30; i++) {
 		printf("\b");
 	}
 	fflush(stdout);
-	
+
 	for (i=0;i<30;i++) {
 		sleep(2);
 		fflush(stdout);
@@ -30,7 +30,7 @@ int kerneltest(void)
 		printf("=");
 		fflush(stdout);	
 	}
-	
+
 	printf("] done.\n\n");
 
 	printf("Detected boot time variation during test:  %2d\n", bmax-bmin);
@@ -106,7 +106,7 @@ void sighandler(int sig)
 
 	if (debug) {
 		switch (sig) {
-		
+
 			case SIGHUP:
 				snprintf(errorstring, 512, "DEBUG: SIGHUP (%d)", sig);
 				break;
@@ -118,11 +118,11 @@ void sighandler(int sig)
 			case SIGINT:
 				snprintf(errorstring, 512, "DEBUG: SIGINT (%d)", sig);
 				break;
-			
+
 			default:
 				snprintf(errorstring, 512, "DEBUG: Unknown signal %d", sig);
 				break;
-		
+
 		}
 		printe(PT_Info);
 	}
@@ -145,7 +145,7 @@ int getbtime(void)
 			exit(1);
 		}
 	}
-	
+
 	check=0;
 	while (fgets(statline,128,fp)!=NULL) {
 		sscanf(statline,"%64s",temp);
@@ -156,7 +156,7 @@ int getbtime(void)
 			break;
 		}
 	}
-	
+
 	if (check==0) {
 		snprintf(errorstring, 512, "btime missing from /proc/stat.");
 		printe(PT_Error);
@@ -166,21 +166,21 @@ int getbtime(void)
 			exit(1);
 		}
 	}
-	
+
 	result = strtoul(statline+6, (char **)NULL, 0);
 	fclose(fp);
 
-#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__)
+#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__FreeBSD_kernel__)
 	struct timeval btm;
 	size_t len = sizeof(btm);
 	int mib[2] = {CTL_KERN, KERN_BOOTTIME};
-	
+
 	if (sysctl(mib, 2, &btm, &len, NULL, 0) < 0) {
 		if (debug)
 			printf("sysctl(kern.boottime) failed.\n");
 		return 0;
 	}
-	
+
 	result = btm.tv_sec;
 #endif
 
@@ -258,7 +258,7 @@ char *getvalue(uint64_t mb, uint64_t kb, int len, int type)
 		}
 #endif
 	}
-	
+
 	return buffer;
 }
 
@@ -284,7 +284,7 @@ char *getrate(uint64_t mb, uint64_t kb, uint32_t interval, int len)
 	} else {
 		kB=kb;
 	}
-	
+
 	/* convert to proper unit */
 	if (cfg.rateunit) {
 		limit[0] = 1000;
@@ -342,7 +342,7 @@ uint64_t getscale(uint64_t kb)
 	uint64_t result;
 
 	result = kb;
-	
+
 	/* get unit */
 	for (i=0; result>1024; i++) {
 		result = result / 1024;
@@ -356,7 +356,7 @@ uint64_t getscale(uint64_t kb)
 	} else {
 		result = result/4;
 	}
-	
+
 	/* put unit back */
 	if (i) {
 		result = result * pow(1024, i);

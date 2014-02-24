@@ -45,35 +45,35 @@ int cacheadd(const char *iface, int sync)
 datanode *cacheremove(const char *iface)
 {
 	datanode *p, *o;
-	
+
 	p = dataptr;
-	
+
 	if (p == NULL) {
 		return NULL;
 	} else {
-		
+
 		/* handle list head remove */
 		if (strcmp(p->data.interface, iface)==0) {
 			dataptr = p->next;
-			free(p);
 			if (debug) {
 				printf("cache: h %s removed\n", iface);
 			}
+			free(p);
 			return dataptr;
 		}
-		
+
 		o = p;
 		p = p->next;
-		
+
 		/* handle other locations */
 		while (p != NULL) {
 
 			if (strcmp(p->data.interface, iface)==0) {
 				o->next = p->next;
-				free(p);
 				if (debug) {
 					printf("cache: %s removed\n", iface);
 				}
+				free(p);
 				return o->next;
 			}
 
@@ -81,7 +81,7 @@ datanode *cacheremove(const char *iface)
 			p = p->next;
 		}
 	}
-	
+
 	return NULL;
 }
 
@@ -133,12 +133,12 @@ void cacheshow(void)
 {
 	int i = 1;
 	datanode *p = dataptr;
-	
+
 	if (p == NULL) {
 		printf("cache: empty.\n");
 
 	} else {
-	
+
 		printf("cache:");
 		while (p != NULL) {
 			printf(" %d. \"%s\"  ", i, p->data.interface);
@@ -156,7 +156,7 @@ void cachestatus(void)
 	datanode *p = dataptr;
 
 	snprintf(buffer, b, "Monitoring: ");
-	
+
 	if (p != NULL) {
 
 		while (p != NULL) {
@@ -186,7 +186,7 @@ int cacheget(datanode *dn)
 {
 	if (dn->filled) {
 		memcpy(&data, &dn->data, sizeof(data));
-		
+
 		/* do simple data validation */
 		if (data.version != DBVERSION ||
 			data.created == 0 ||
@@ -194,10 +194,10 @@ int cacheget(datanode *dn)
 			data.interface[0] == '\0' ||
 			data.active > 1 ||
 			data.active < 0) {
-			
+
 			if (debug)
 				printf("cache get: validation failed (%d/%u/%u/%d/%d)\n", data.version, (unsigned int)data.created, (unsigned int)data.lastupdated, data.interface[0], data.active);
-			
+
 			/* force reading of database file */
 			dn->filled = 0;
 		}
@@ -227,7 +227,7 @@ void cacheflush(const char *dirname)
 
 		free(f);
 	}
-	
+
 	dataptr = NULL;
 }
 
@@ -240,7 +240,7 @@ int cachecount(void)
 		c++;
 		p = p->next;
 	}
-	
+
 	return c;
 }
 
@@ -255,7 +255,7 @@ int cacheactivecount(void)
 		}
 		p = p->next;
 	}
-	
+
 	return c;
 }
 
@@ -284,7 +284,7 @@ uint32_t dbcheck(uint32_t dbhash, int *forcesave)
 
 			if (p->filled) {
 				found = offset = 0;
-			
+
 				while (offset <= (int)strlen(ifacelist)) {
 					sscanf(ifacelist+offset, "%32s", interface);
 					if (strcmp(p->data.interface, interface)==0) {
@@ -293,7 +293,7 @@ uint32_t dbcheck(uint32_t dbhash, int *forcesave)
 					}
 					offset += (int)strlen(interface)+1;
 				}
-				
+
 				if (p->data.active==1 && found==0) {
 					p->data.active = 0;
 					p->data.currx = p->data.curtx = 0;
@@ -315,9 +315,9 @@ uint32_t dbcheck(uint32_t dbhash, int *forcesave)
 			p = p->next;
 		}
 	}
-	
+
 	free(ifacelist);
-	
+
 	return newhash;
 }
 

@@ -59,7 +59,7 @@ void showxml(void)
 		}
 	}	
 	printf("   </hours>\n");
-	
+
 	printf("  </traffic>\n");
 	printf(" </interface>\n");
 
@@ -72,7 +72,7 @@ void xmldate(time_t *date, int type)
 	char *type1 = "<date><year>%Y</year><month>%m</month><day>%d</day></date>";
 	char *type2 = "<date><year>%Y</year><month>%m</month><day>%d</day></date><time><hour>%H</hour><minute>%M</minute></time>";
 	char *type3 = "<date><year>%Y</year><month>%m</month></date>";
-	
+
 	d = localtime(date);
 
 	if (type == 1) {

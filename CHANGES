@@ -1,3 +1,16 @@
+1.11 / 1-Jun-11
+
+ - Fix: Memory allocation was miscalculated when creating interface list from
+   /sys/class/net when /proc/net/dev wasn't available which in turn could
+   crash the daemon
+ - Fix: Daemon database cache could remain empty after a -HUP signal
+ - Fix: Don't make temp directory in vnstat.cgi writable for everyone
+ - Import GNU/kFreeBSD support from Debian
+   (#608963, patch by Mats Erik Andersson)
+ - Remove usage of GNU only '-D' option for install for BSD in Makefile
+ - The daemon now automatically creates databases for available interfaces
+   if no databases are found during startup
+
 1.10 / 2-Jan-10
 
  - Fix: Buffer overflow was possible in hourly image output when RateUnit=1

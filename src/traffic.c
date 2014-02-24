@@ -45,13 +45,13 @@ void trafficmeter(char iface[], int sampletime)
 	if ((sampletime/3)*3!=sampletime) {
 		sleep(sampletime-((sampletime/3)*3));
 	}	
-	
+
 	len=strlen(buffer)+3;
-	
+
 	for (i=0;i<len;i++) {
 		printf("\b \b");
 	}
-	
+
 	/* read those values again... */
 	if (!getifinfo(iface)) {
 		printf("Error: Interface \"%s\" not available, exiting.\n", iface);
@@ -103,7 +103,7 @@ void livetrafficmeter(char iface[32], int mode)
 	rxpmin=txpmin=FP64;
 	rxmax=txmax=0.0;
 	rxmin=txmin=-1.0;
-	
+
 	timespent = (uint64_t)time(NULL);
 
 	/* read /proc/net/dev and get values to the first list */
@@ -165,7 +165,7 @@ void livetrafficmeter(char iface[32], int mode)
 		if (txmax<txc) {
 			txmax = txc;
 		}
-		
+
 		if ((rxpmin==FP64) || (rxpmin>rxpc)) {
 			rxpmin = rxpc;
 		}
@@ -198,7 +198,7 @@ void livetrafficmeter(char iface[32], int mode)
 			}
 		}
 		strncat(buffer, buffer2, 127);
-		
+
 		if (len>1 && cfg.ostyle!=4) {
 			if (debug) {
 				printf("\nlinelen: %d\n", len);
@@ -216,7 +216,7 @@ void livetrafficmeter(char iface[32], int mode)
 			printf("%s\n", buffer);
 		}
 		len=strlen(buffer);
-	
+
 	}
 
 	timespent = (uint64_t)time(NULL) - timespent;
@@ -256,5 +256,5 @@ void livetrafficmeter(char iface[32], int mode)
 
 		printf("\n");
 	}
-	
+
 }

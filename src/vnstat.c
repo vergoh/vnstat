@@ -1,5 +1,5 @@
 /*
-vnStat - Copyright (c) 2002-10 Teemu Toivola <tst@iki.fi>
+vnStat - Copyright (c) 2002-11 Teemu Toivola <tst@iki.fi>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	}
-	
+
 	/* load config if available */
 	if (!loadcfg(cfgfile)) {
 		return 1;
@@ -88,9 +88,9 @@ int main(int argc, char *argv[]) {
 		if (debug)
 			printf("arg %d: \"%s\"\n",currentarg,argv[currentarg]);
 		if (strcmp(argv[currentarg],"--longhelp")==0) {
-		
+
 			printf(" vnStat %s by Teemu Toivola <tst at iki dot fi>\n\n", VNSTATVERSION);
-			
+
 			printf("   Update:\n");
 			printf("         -u, --update          update database\n");
 			printf("         -r, --reset           reset interface counters\n");
@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
 			printf("         --nick                set a nickname for interface\n");
 			printf("         --cleartop            clear the top10\n");
 			printf("         --rebuildtotal        rebuild total transfers from months\n");
-			
+
 			printf("   Query:\n");
 			printf("         -q, --query           query database\n");
 			printf("         -h, --hours           show hours\n");
@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
 			printf("         --oneline             show simple parseable format\n");
 			printf("         --dumpdb              show database in parseable format\n");
 			printf("         --xml                 show database in xml format\n");
-			
+
 			printf("   Misc:\n");
 			printf("         -i,  --iface          select interface (default: %s)\n", definterface);
 			printf("         -?,  --help           short help\n");
@@ -348,7 +348,7 @@ int main(int argc, char *argv[]) {
 			printf("Unknown parameter \"%s\". Use --help for help.\n",argv[currentarg]);
 			return 1;
 		}
-		
+
 	}
 
 	/* check if the database dir exists and if it contains files */
@@ -532,19 +532,19 @@ int main(int argc, char *argv[]) {
 			printf("Interface \"%s\" is already disabled.\n", data.interface);
 		}	
 	}
-	
+
 	/* update */
 	if (update) {
-	
+
 		/* check that there's some free diskspace left */
 		if (!spacecheck(dirname) && !force) {
 			printf("Error: Not enough free diskspace available.\n");
 			return 1;
 		}
-		
+
 		/* update every file if -i isn't specified */
 		if (defaultiface) {
-			
+
 			dir=opendir(dirname);
 
 			files=0;
@@ -563,7 +563,7 @@ int main(int argc, char *argv[]) {
 							continue;
 						}
 						parseifinfo(newdb);
-						
+
 						/* check that the time is correct */
 						if ((current>=data.lastupdated) || force) {
 							writedb(interface, dirname, newdb);
@@ -593,7 +593,7 @@ int main(int argc, char *argv[]) {
 				// printf("No database found.\n");
 				update=0;
 			}
-			
+
 		/* update only selected file */
 		} else {
 			newdb=readdb(interface, dirname);
@@ -630,13 +630,13 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	}
-	
+
 	/* show databases */
 	if (query) {
-	
+
 		/* show all interfaces if -i isn't specified */
 		if (defaultiface) {
-			
+
 			if (files==0) {
 				/* printf("No database found.\n"); */
 				query=0;
@@ -671,7 +671,7 @@ int main(int argc, char *argv[]) {
 				if (cfg.qmode==8) {
 					printf("</vnstat>\n");
 				}
-				
+
 			/* show in qmode if there's only one file or qmode!=0 */
 			} else {
 				if (!merged) {
@@ -694,7 +694,7 @@ int main(int argc, char *argv[]) {
 					}
 				}
 			}
-		
+
 		/* show only specified file */
 		} else {
 			if (!merged) {
@@ -718,7 +718,7 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	}
-	
+
 	/* calculate traffic */
 	if (traffic) {
 		trafficmeter(interface, cfg.sampletime);
@@ -728,10 +728,10 @@ int main(int argc, char *argv[]) {
 	if (livetraffic) {
 		livetrafficmeter(interface, livemode);
 	}
-	
+
 	/* if nothing was shown previously */
 	if (!query && !update && !reset && !sync && active==-1 && !cleartop && !rebuildtotal && !traffic && !livetraffic) {
-		
+
 		/* give more help if there's no database */
 		if (files==0) {
 			getiflist(&ifacelist);
@@ -748,7 +748,7 @@ int main(int argc, char *argv[]) {
 
 	/* cleanup */
 	ibwflush();
-	
+
 	return 0;
 }
 
@@ -764,7 +764,7 @@ int synccounters(const char *iface, const char *dirname)
 	/* set counters to current without counting traffic */
 	data.currx = ifinfo.rx;
 	data.curtx = ifinfo.tx;
-	
+
 	writedb(iface, dirname, 0);
 	return 1;
 }

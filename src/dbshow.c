@@ -53,12 +53,12 @@ void showsummary(void)
 	uint64_t e_rx, e_tx, t_rx, t_tx;
 	int t_rxk, t_txk;
 	time_t current, yesterday;
-	
+
 	current=time(NULL);
 	yesterday=current-86400;
-	
+
 	e_rx=e_tx=t_rx=t_tx=t_rxk=t_txk=0;
-	
+
 	/* get formated date for today */
 	d=localtime(&current);
 	strftime(datebuff, 16, cfg.dformat, d);
@@ -372,11 +372,7 @@ void showdays(void)
 	char datebuff[16];
 	uint64_t e_rx, e_tx, t_rx, t_tx, max;
 	int t_rxk, t_txk;
-	time_t current, yesterday;
-	
-	current=time(NULL);
-	yesterday=current-86400;
-	
+
 	e_rx=e_tx=t_rx=t_tx=t_rxk=t_txk=0;
 
 	printf("\n");
@@ -494,11 +490,7 @@ void showmonths(void)
 	char datebuff[16];
 	uint64_t e_rx, e_tx, t_rx, t_tx, max;
 	int t_rxk, t_txk;
-	time_t current, yesterday;
-	
-	current=time(NULL);
-	yesterday=current-86400;
-	
+
 	e_rx=e_tx=t_rx=t_tx=t_rxk=t_txk=0;
 
 	printf("\n");
@@ -513,7 +505,7 @@ void showmonths(void)
 		else
 			printf(" %s (%s) [disabled]  /  monthly\n\n", data.nick, data.interface);
 	}
-	
+
 	if (cfg.ostyle == 3) {
 		printf("       month        rx      |     tx      |    total    |   avg. rate\n");
 		printf("    ------------------------+-------------+-------------+---------------\n");
@@ -612,14 +604,10 @@ void showtop(void)
 	int i, used;
 	struct tm *d;
 	char datebuff[16];
-	uint64_t e_rx, e_tx, t_rx, t_tx, max;
+	uint64_t t_rx, t_tx, max;
 	int t_rxk, t_txk;
-	time_t current, yesterday;
-	
-	current=time(NULL);
-	yesterday=current-86400;
-	
-	e_rx=e_tx=t_rx=t_tx=t_rxk=t_txk=0;
+
+	t_rx=t_tx=t_rxk=t_txk=0;
 
 	printf("\n");
 	if (strcmp(data.interface, data.nick)==0) {
@@ -658,7 +646,7 @@ void showtop(void)
 				t_rx+=t_rxk/1024;
 				t_rxk-=(t_rxk/1024)*1024;
 			}
-			
+
 			t_rx=(t_rx*1024)+t_rxk;
 
 			if (t_rx>max) {
@@ -707,11 +695,10 @@ void showweeks(void)
 	char daytemp[32];
 	uint64_t e_rx, e_tx, t_rx, t_tx;
 	int t_rxk, t_txk;
-	time_t current, yesterday;
-	
+	time_t current;
+
 	current=time(NULL);
-	yesterday=current-86400;
-	
+
 	e_rx=e_tx=t_rx=t_tx=t_rxk=t_txk=0;
 
 	printf("\n");
@@ -864,14 +851,14 @@ void showhours(void)
 	uint64_t max=0;
 	char matrix[24][81]; /* width is one over 80 so that snprintf can write the end char */
 	struct tm *d;
-	
+
 	/* tmax = time max = current hour */
 	/* max = transfer max */
-	
+
 	d=localtime(&data.lastupdated);
 	hour=d->tm_hour;
 	minute=d->tm_min;
-	
+
 	for (i=0;i<=23;i++) {
 		if (data.hour[i].date>=data.hour[tmax].date) {
 			tmax=i;
@@ -883,15 +870,15 @@ void showhours(void)
 			max=data.hour[i].tx;
 		}
 	}
-	
+
 	/* mr. proper */
 	for (i=0;i<24;i++) {
 		for (j=0;j<81;j++) {
 			matrix[i][j]=' ';
 		}
 	}
-	
-	
+
+
 	/* structure */
 	snprintf(matrix[11], 81, " -+--------------------------------------------------------------------------->");
 	if (cfg.unit==0) {
@@ -902,10 +889,10 @@ void showhours(void)
 
 	for (i=10;i>1;i--)
 		matrix[i][2]='|';
-		
+
 	matrix[1][2]='^';
 	matrix[12][2]='|';
-	
+
 	/* title */
 	if (strcmp(data.interface, data.nick)==0) {
 		if (data.active)
@@ -918,17 +905,17 @@ void showhours(void)
 		else
 			snprintf(matrix[0], 81, " %s (%s) [disabled]", data.nick, data.interface);
 	}
-	
+
 	/* time to the corner */
 	snprintf(matrix[0]+74, 7, "%02d:%02d", hour, minute);
-	
+
 	/* numbers under x-axis and graphics :) */
 	k=5;
 	for (i=23;i>=0;i--) {
 		s=tmax-i;
 		if (s<0)
 			s+=24;
-			
+
 		snprintf(matrix[12]+k, 81-k, "%02d ", s);
 
 		dots=10*(data.hour[s].rx/(float)max);
@@ -941,7 +928,7 @@ void showhours(void)
 
 		k=k+3;
 	}
-	
+
 	/* hours and traffic */
 	for (i=0;i<=7;i++) {
 		s=tmax+i+1;
@@ -951,7 +938,7 @@ void showhours(void)
 		snprintf(matrix[15+i], 81, "%02d %10"PRIu64" %10"PRIu64"    %02d %10"PRIu64" %10"PRIu64"    %02d %10"PRIu64" %10"PRIu64"",s%24, data.hour[s%24].rx, data.hour[s%24].tx, (s+8)%24, data.hour[(s+8)%24].rx, data.hour[(s+8)%24].tx, (s+16)%24, data.hour[(s+16)%24].rx, data.hour[(s+16)%24].tx);
 #endif
 	}
-	
+
 	/* clean \0 */
 	for (i=0;i<23;i++) {
 		for (j=0;j<80;j++) {
@@ -960,7 +947,7 @@ void showhours(void)
 			}
 		}
 	} 	
-	
+
 	/* show matrix (yes, the last line isn't shown) */
 	for (i=0;i<23;i++) {
 		for (j=0;j<80;j++) {
@@ -1059,7 +1046,7 @@ void dumpdb(void)
 void showbar(uint64_t rx, int rxk, uint64_t tx, int txk, uint64_t max, int len)
 {
 	int i, l;
-	
+
 	if (rxk>=1024) {
 		rx+=rxk/1024;
 		rxk-=(rxk/1024)*1024;
@@ -1072,7 +1059,7 @@ void showbar(uint64_t rx, int rxk, uint64_t tx, int txk, uint64_t max, int len)
 
 	rx=(rx*1024)+rxk;
 	tx=(tx*1024)+txk;
-	
+
 	if ((rx+tx)!=max) {
 		len=((rx+tx)/(float)max)*len;
 	}
@@ -1092,7 +1079,7 @@ void showbar(uint64_t rx, int rxk, uint64_t tx, int txk, uint64_t max, int len)
 			}
 		} else {
 			l=rintf((tx/(float)(rx+tx)*len));
-			
+
 			for (i=0;i<(len-l);i++) {
 				printf("%c", cfg.rxchar[0]);
 			}
@@ -1100,9 +1087,9 @@ void showbar(uint64_t rx, int rxk, uint64_t tx, int txk, uint64_t max, int len)
 				printf("%c", cfg.txchar[0]);
 			}		
 		}
-		
+
 	}
-	
+
 }
 
 void indent(int i)

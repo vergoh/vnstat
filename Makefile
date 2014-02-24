@@ -126,7 +126,7 @@ bsdinstall:
 	fi
 
 # install binaries
-	install -dm 755 $(DESTDIR)/var/db/vnstat
+	install -d -m 755 $(DESTDIR)/var/db/vnstat
 	install -s -m 755 src/vnstat $(BIN_BSD)
 	install -s -m 755 src/vnstatd $(SBIN_BSD)
 
@@ -138,7 +138,8 @@ bsdinstall:
 # install default config if such doesn't exist
 	@if [ ! -f $(DESTDIR)/etc/vnstat.conf ]; \
 	then echo "Installing config to $(DESTDIR)/etc/vnstat.conf"; \
-	install -D -m 644 cfg/vnstat.conf $(DESTDIR)/etc/vnstat.conf; \
+	install -d -m 755 $(DESTDIR)/etc; \
+	install -m 644 cfg/vnstat.conf $(DESTDIR)/etc/vnstat.conf; \
 	sed -e 's/lib/db/g' $(DESTDIR)/etc/vnstat.conf >$(DESTDIR)/etc/vnstat.conf.bsd; \
 	mv -f $(DESTDIR)/etc/vnstat.conf.bsd $(DESTDIR)/etc/vnstat.conf; \
 	fi

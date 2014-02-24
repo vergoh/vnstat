@@ -20,7 +20,7 @@ int mergedb(char iface[], char dirname[])
 		printf("iface merge: %s\n", iface);
 
 	ifaceptr = strtok(iface, "+");
-	
+
 	/* merge all databases in given string */
 	while (ifaceptr != NULL) {
 		if (debug)
@@ -80,7 +80,7 @@ void emptydb(DATA *dat)
 		dat->day[i].used = 1;
 		d->tm_mday--;
 	}
-		
+
 	/* months */
 	d = localtime(&current);
 	for (i=0;i<=11;i++) {
@@ -92,7 +92,7 @@ void emptydb(DATA *dat)
 		dat->month[i].used = 1;
 		d->tm_mon--;
 	}
-		
+
 	/* top10 */
 	for (i=0;i<=9;i++) {
 		dat->top10[i].rx = 0;
@@ -134,7 +134,7 @@ int mergewith(DATA *dat)
 
 	/* clean hours from loaded db */
 	cleanhours();
-	
+
 	/* merge hours */
 	for (i=0;i<=23;i++) {
 		if (data.hour[i].date!=0) {
@@ -149,7 +149,7 @@ int mergewith(DATA *dat)
 		if (data.day[i].used) {
 			d = localtime(&data.day[i].date);
 			orig = d->tm_year * 1000 + d->tm_yday;
-			
+
 			for (j=0;j<=29;j++) {
 				d = localtime(&dat->day[j].date);
 				merged = d->tm_year * 1000 + d->tm_yday;
@@ -166,7 +166,7 @@ int mergewith(DATA *dat)
 					break;
 				}
 			}
-			
+
 		}
 	}
 
@@ -175,7 +175,7 @@ int mergewith(DATA *dat)
 		if (data.month[i].used) {
 			d = localtime(&data.month[i].month);
 			orig = d->tm_year * 100 + d->tm_mon;
-			
+
 			for (j=0;j<=11;j++) {
 				d = localtime(&dat->month[j].month);
 				merged = d->tm_year * 100 + d->tm_mon;
@@ -192,7 +192,7 @@ int mergewith(DATA *dat)
 					break;
 				}
 			}
-			
+
 		}
 	}
 

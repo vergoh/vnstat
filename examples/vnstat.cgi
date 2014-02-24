@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # vnstat.cgi -- example cgi for vnStat image output
-# copyright (c) 2008-2009 Teemu Toivola <tst at iki dot fi>
+# copyright (c) 2008-2011 Teemu Toivola <tst at iki dot fi>
 #
 # based on mailgraph.cgi
 # copyright (c) 2000-2007 ETH Zurich
@@ -31,7 +31,7 @@ my @graphs = (
 ################
 
 
-my $VERSION = "1.2";
+my $VERSION = "1.3";
 
 sub graph($$$)
 {
@@ -138,7 +138,7 @@ sub send_image($)
 
 sub main()
 {
-	mkdir $tmp_dir, 0777 unless -d $tmp_dir;
+	mkdir $tmp_dir, 0755 unless -d $tmp_dir;
 
 	my $img = $ENV{QUERY_STRING};
 	if(defined $img and $img =~ /\S/) {

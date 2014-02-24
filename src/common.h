@@ -20,7 +20,7 @@
 #include <syslog.h>
 #include <sys/statvfs.h>
 
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__)
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__FreeBSD_kernel__)
 #include <sys/param.h>
 #include <sys/mount.h>
 #include <sys/socket.h>
@@ -129,7 +129,7 @@ and most can be changed later from the config file.
 #define DBVERSION 3
 
 /* version string */
-#define VNSTATVERSION "1.10"
+#define VNSTATVERSION "1.11"
 
 /* xml format version */
 /* 1 = 1.7- */

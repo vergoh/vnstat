@@ -1,5 +1,5 @@
 /*
-vnStat image output - Copyright (c) 2007-09 Teemu Toivola <tst@iki.fi>
+vnStat image output - Copyright (c) 2007-11 Teemu Toivola <tst@iki.fi>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
-	
+
 	/* load config if available */
 	if (!loadcfg(cfgfile)) {
 		return 1;

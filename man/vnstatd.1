@@ -1,4 +1,4 @@
-.TH VNSTATD 1 "JANUARY 2010" "version 1.10" "User Manuals"
+.TH VNSTATD 1 "JUNE 2011" "version 1.11" "User Manuals"
 .SH NAME
 
 vnStat daemon \- the alternative for cron based updating
@@ -17,6 +17,8 @@ vnStat daemon \- the alternative for cron based updating
 .B \-\-debug
 ] [
 .B \-\-help
+] [
+.B \-\-noadd
 ] [
 .B \-\-nodaemon
 ] [
@@ -48,9 +50,8 @@ It supports logging to a user selectable file or using syslog.
 .PP
 Once started, the daemon will check if there are any databases available
 in the database directory that has been specified in the configuration
-file and exit if no databases can be found. The reason for this behaviour
-is to avoid starting the daemon when it's clear that it wouldn't have
-anything to do.
+file. New databases will be created for all available interfaces excluding
+pseudo interfaces lo, lo0 and sit0 if no databases are found during startup.
 
 .SH OPTIONS
 
@@ -68,6 +69,12 @@ Fork process to background and run as a daemon.
 .BI "-D, --debug"
 Provide additional output for debug purposes. The process will stay
 attached to the terminal for output.
+
+.TP
+.BI "--noadd"
+Disable automatic creation of new databases for all available interfaces
+if the daemon is started with zero database found. Pseudo interfaces
+lo, lo0 and sit0 are excluded from getting added.
 
 .TP
 .BI "-n, --nodaemon"

@@ -1,5 +1,5 @@
 /*
-vnStat daemon - Copyright (c) 2008-09 Teemu Toivola <tst@iki.fi>
+vnStat daemon - Copyright (c) 2008-11 Teemu Toivola <tst@iki.fi>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ vnStat daemon - Copyright (c) 2008-09 Teemu Toivola <tst@iki.fi>
 int main(int argc, char *argv[])
 {
 	int currentarg, running = 1, updateinterval, dbcount, dodbsave, rundaemon;
-	int dbsaved = 1, showhelp = 1, sync = 0, saveinterval, forcesave = 0;
+	int dbsaved = 1, showhelp = 1, sync = 0, saveinterval, forcesave = 0, noadd = 0;
 	uint32_t dbhash = 0;
 	char cfgfile[512], dirname[512];
 	DIR *dir;
@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
-	
+
 	/* load config if available */
 	if (!loadcfg(cfgfile)) {
 		return 1;
@@ -90,6 +90,8 @@ int main(int argc, char *argv[])
 			showhelp = 0;
 		} else if ((strcmp(argv[currentarg],"-s")==0) || (strcmp(argv[currentarg],"--sync")==0)) {
 			sync = 1;
+		} else if (strcmp(argv[currentarg],"--noadd")==0) {
+			noadd = 1;
 		} else if ((strcmp(argv[currentarg],"-v")==0) || (strcmp(argv[currentarg],"--version")==0)) {
 			printf("vnStat daemon %s by Teemu Toivola <tst at iki dot fi>\n", VNSTATVERSION);
 			return 0;
@@ -122,6 +124,7 @@ int main(int argc, char *argv[])
 		printf("         -v, --version        show version\n");
 		printf("         -p, --pidfile        select used pid file\n");
 		printf("         --config             select used config file\n\n");
+		printf("         --noadd              don't add found interfaces if no dbs are found\n");
 		printf("See also \"man vnstatd\".\n");
 		return 0;
 	}
@@ -142,8 +145,21 @@ int main(int argc, char *argv[])
 		}
 		closedir(dir);
 		if (dbcount==0) {
-			printf("Zero database found, exiting.\n");
-			return 1;
+			if (noadd) {
+				printf("Zero database found, exiting.\n");
+				return 1;
+			} else {
+				if (!spacecheck(dirname)) {
+					printf("Error: Not enough free diskspace available, exiting.\n");
+					return 1;
+				}
+				printf("Zero database found, adding available interfaces...\n");
+				if (!addinterfaces(dirname)) {
+					printf("Nothing to do, exiting.\n");
+					return 1;
+				}
+				dbcount = 0;
+			}
 		} else {
 			/* set counter back to zero so that dbs will be cached later */
 			dbcount = 0;
@@ -183,7 +199,7 @@ int main(int argc, char *argv[])
 		}
 
 		if ((current-prevdbupdate)>=updateinterval) {
-		
+
 			updateinterval = cfg.updateinterval;
 
 			if (debug) {
@@ -192,7 +208,7 @@ int main(int argc, char *argv[])
 
 			/* read database list if cache is empty */
 			if (dbcount==0) {
-		
+
 				if ((dir=opendir(dirname))!=NULL) {
 
 					while ((di=readdir(dir))) {
@@ -200,7 +216,7 @@ int main(int argc, char *argv[])
 							if (debug) {
 								printf("\nProcessing file \"%s/%s\"...\n", dirname, di->d_name);
 							}
-							
+
 							if (!cacheadd(di->d_name, sync)) {
 								snprintf(errorstring, 512, "Cache memory allocation failed, exiting.");
 								printe(PT_Error);
@@ -213,7 +229,7 @@ int main(int argc, char *argv[])
 								ibwflush();
 								return 1;
 							}
-							
+
 							dbcount++;
 						}
 					}
@@ -232,7 +248,7 @@ int main(int argc, char *argv[])
 					} else {
 						updateinterval = 120;
 					}
-				
+
 				} else {
 					snprintf(errorstring, 512, "Unable to access database directory \"%s\", exiting.", dirname);
 					printe(PT_Error);
@@ -275,7 +291,7 @@ int main(int argc, char *argv[])
 
 					/* get data from cache if available */
 					if (cacheget(datalist)==0) {
-						
+
 						/* try to read data from file if not cached */
 						if (readdb(datalist->data.interface, dirname)!=-1) {
 							/* mark cache as filled on read success and force interface status update */
@@ -317,7 +333,7 @@ int main(int argc, char *argv[])
 						if (data.lastupdated>(current+86400)) {
 							snprintf(errorstring, 512, "Interface \"%s\" has previous update date too much in the future, exiting.", data.interface);
 							printe(PT_Error);
-							
+
 							/* clean daemon stuff before exit */
 							if (rundaemon && !debug) {
 								close(pidfile);
@@ -366,7 +382,7 @@ int main(int argc, char *argv[])
 							continue;
 						}
 					}
-		
+
 					datalist = datalist->next;
 				}
 
@@ -388,24 +404,25 @@ int main(int argc, char *argv[])
 					snprintf(errorstring, 512, "SIGHUP received, flushing data to disk and reloading config.");
 					printe(PT_Info);
 					cacheflush(dirname);
+					dbcount = 0;
 					ibwflush();
 					if (loadcfg(cfgfile)) {
 						strncpy(dirname, cfg.dbdir, 512);
 					}
 					break;
-				
+
 				case SIGINT:
 					snprintf(errorstring, 512, "SIGINT received, exiting.");
 					printe(PT_Info);
 					running = 0;
 					break;
-				
+
 				case SIGTERM:
 					snprintf(errorstring, 512, "SIGTERM received, exiting.");
 					printe(PT_Info);
 					running = 0;
 					break;
-			
+
 				case 42:
 					break;
 
@@ -414,7 +431,7 @@ int main(int argc, char *argv[])
 					printe(PT_Info);
 					break;
 			}
-			
+
 			intsignal = 0;
 		}
 
@@ -436,13 +453,13 @@ void daemonize(void)
 {
 	int i;
 	char str[10];
-	
+
 	if (getppid()==1) {
 		return; /* already a daemon */
 	}
-	
+
 	i = (int)fork();
-	
+
 	if (i<0) { /* fork error */
 		perror("fork");
 		exit(EXIT_FAILURE); 
@@ -501,9 +518,9 @@ void daemonize(void)
 		printe(PT_Error);
 		exit(EXIT_FAILURE);
 	}
-	
+
 	umask(027); /* set newly created file permissions */
-	
+
 	/* change running directory */
 	if (chdir("/") < 0) {
 		perror("chdir(/)");
@@ -532,4 +549,67 @@ void daemonize(void)
 		snprintf(errorstring, 512, "Daemon running with pid %d.", (int)getpid());
 		printe(PT_Info);
 	}
+}
+
+int addinterfaces(const char *dirname)
+{
+	char *ifacelist, interface[32];
+	int index = 0, count = 0;
+
+	/* get list of currently visible interfaces */
+	if (getiflist(&ifacelist)==0) {
+		return 0;
+	}
+
+	if (strlen(ifacelist)<2) {
+		return 0;
+	}
+
+	if (debug)
+		printf("Interface list: \"%s\"\n", ifacelist);
+
+	while (sscanf(ifacelist+index, "%32s", interface)!=EOF) {
+		if (debug)
+			printf("Processing: \"%s\"\n", interface);
+
+		index += strlen(interface)+1;
+
+		/* skip local interfaces */
+		if ((strcmp(interface,"lo")==0) || (strcmp(interface,"lo0")==0) || (strcmp(interface,"sit0")==0)) {
+			if (debug)
+				printf("skip\n");
+			continue;
+		}
+
+		/* create database for interface */
+		initdb();
+		strncpy(data.interface, interface, 32);
+		strncpy(data.nick, data.interface, 32);
+		if (!getifinfo(interface)) {
+			if (debug)
+				printf("getifinfo failed, skip\n");
+			continue;
+		}
+		parseifinfo(1);
+		if (!writedb(interface, dirname, 1)) {
+			continue;
+		}
+		count++;
+		printf("\"%s\" added, %d Mbit bandwidth limit.\n", interface, ibwget(interface));
+	}
+
+	if (count==1) {
+		printf("-> %d interface added.", count);
+	} else {
+		printf("-> %d interfaces added.", count);
+	}
+
+	if (count) {
+		printf(" Limits can be modified using the configuration file.");
+	}
+
+	printf("\n");
+
+	free(ifacelist);
+	return count;
 }

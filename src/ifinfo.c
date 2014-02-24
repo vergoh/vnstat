@@ -29,12 +29,14 @@ int getifinfo(const char *iface)
 			return 0;
 		}
 	}
-#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__)
+#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__)  || defined(__FreeBSD_kernel__)
 	if (readifaddrs(inface)!=1) {
 		snprintf(errorstring, 512, "Unable to get interface \"%s\" statistics.", inface);
 		printe(PT_Error);
 		return 0;
 	}
+#else
+	return 0;
 #endif
 
 	return 1;
@@ -48,14 +50,14 @@ int getiflist(char **ifacelist)
 	DIR *dp;
 	struct dirent *di;
 	char procline[512], temp[64];
-#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__)
+#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__FreeBSD_kernel__)
 	struct ifaddrs *ifap, *ifa;
 #endif
 
 	/* initialize list */
 	*ifacelist = malloc(sizeof(char));
 	*ifacelist[0] = '\0';
-	
+
 #if defined(__linux__)
 	if ((fp=fopen(PROCNETDEV, "r"))!=NULL) {
 
@@ -64,8 +66,8 @@ int getiflist(char **ifacelist)
 			sscanf(procline, "%64s", temp);
 			if (isdigit(temp[(strlen(temp)-1)]) || temp[(strlen(temp)-1)]==':') {
 				sscanf(temp, "%32[^':']s", interface);
-				*ifacelist = realloc(*ifacelist, ( ((strlen(*ifacelist)+1) + (strlen(interface)+1)) * sizeof(char)) );
-				strncat(*ifacelist, interface, 32);
+				*ifacelist = realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(interface) + 2 ) * sizeof(char)) );
+				strncat(*ifacelist, interface, strlen(interface));
 				strcat(*ifacelist, " ");
 			}
 		}
@@ -80,8 +82,8 @@ int getiflist(char **ifacelist)
 			/* make list of interfaces */
 			while ((di=readdir(dp))) {
 				if (di->d_name[0]!='.') {
-					*ifacelist = realloc(*ifacelist, ( ((strlen(*ifacelist)+1) + (strlen(interface)+1)) * sizeof(char)) );
-					strncat(*ifacelist, di->d_name, 32);
+					*ifacelist = realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(di->d_name) + 2 ) * sizeof(char)) );
+					strncat(*ifacelist, di->d_name, strlen(di->d_name));
 					strcat(*ifacelist, " ");
 				}
 			}
@@ -92,18 +94,18 @@ int getiflist(char **ifacelist)
 		}	
 	}
 
-#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__)
+#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__FreeBSD_kernel__)
 	if (getifaddrs(&ifap) >= 0) {
 
 		/* make list of interfaces */
 		for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
 			if (ifa->ifa_addr->sa_family == AF_LINK) {
-				*ifacelist = realloc(*ifacelist, ( ((strlen(*ifacelist)+1) + (strlen(ifa->ifa_name)+1)) * sizeof(char)) );
-				strncat(*ifacelist, ifa->ifa_name, 32);
+				*ifacelist = realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(ifa->ifa_name) + 2 ) * sizeof(char)) );
+				strncat(*ifacelist, ifa->ifa_name, strlen(ifa->ifa_name));
 				strcat(*ifacelist, " ");
 			}
 		}
-		
+
 		freeifaddrs(ifap);
 		return 1;
 	}
@@ -118,7 +120,7 @@ int readproc(const char *iface)
 	FILE *fp;
 	char temp[4][64], procline[512], *proclineptr, ifaceid[33];
 	int check;
-	
+
 	if ((fp=fopen(PROCNETDEV, "r"))==NULL) {
 		if (debug)
 			printf("Error: Unable to read %s.\n", PROCNETDEV);
@@ -139,7 +141,7 @@ int readproc(const char *iface)
 		}
 	}
 	fclose(fp);
-	
+
 	if (check==0) {
 		if (debug)
 			printf("Requested interface \"%s\" not found.\n", iface);
@@ -293,7 +295,7 @@ void parseifinfo(int newdb)
 		maxbw = ibwget(data.interface);
 
 		if (maxbw > 0) {
-		
+
 			/* calculate maximum possible transfer since last update based on set maximum rate */
 			/* and add 10% in order to be on the safe side */
 			maxtransfer = ceil((maxbw/(float)8)*interval*(float)1.1);
@@ -348,13 +350,13 @@ void parseifinfo(int newdb)
 			hour=23;
 		}
 	}
-	
+
 	/* clean and update hourly */
 	cleanhours();
 	data.hour[shift].date=current;   /* avoid shifting timestamp */
 	data.hour[hour].rx+=krxchange;
 	data.hour[hour].tx+=ktxchange;
-	
+
 	/* rotate days in database if needed */
 	d=localtime(&data.day[0].date);
 	if ((d->tm_mday!=day) || (d->tm_mon!=month) || (d->tm_year!=year)) {
@@ -399,13 +401,13 @@ uint64_t countercalc(uint64_t a, uint64_t b)
 	}
 }
 
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__)
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__FreeBSD_kernel__)
 int readifaddrs(const char *iface)
 {
 	struct ifaddrs *ifap, *ifa;
 	struct if_data *ifd = NULL;
 	int check = 0;
-	
+
 	if (getifaddrs(&ifap) < 0) {
 		if (debug)
 			printf("getifaddrs() failed.. exiting.\n");
@@ -419,7 +421,7 @@ int readifaddrs(const char *iface)
 		}
 	}
 	freeifaddrs(ifap);
-	
+
 	if (check == 0) {
 		if (debug)
 			printf("Requested interface \"%s\" not found.\n", iface);

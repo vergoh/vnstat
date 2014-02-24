@@ -2,6 +2,7 @@
 #define IMAGE_H
 
 void colorinit(void);
+void colorinitcheck(char *color, int value, char *cfgtext, int *rgb);
 void layoutinit(char *title, int width, int height, int showheader, int showedge);
 void drawlegend(int x, int y);
 void drawbar(int x, int y, int len, uint64_t rx, int rxk, uint64_t tx, int txk, uint64_t max);
