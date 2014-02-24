@@ -1,37 +1,22 @@
-(Updated 2.12.2007 based on version 1.5)
+(Updated 1.1.2008 for version 1.6 and later)
+
 
 'I don't read manuals' install
 ::::::::::::::::::::::::::::::
 
- make && make install ; vnstat --testkernel && vnstat -u -i eth0
+ Run as root:
 
-
-Installing vnStat
-:::::::::::::::::
-
- vnStat supports two different types of installing: 'root' and 'singleuser'.
- The difference is that in 'root' ('multiuser' in version 1.0) every user
- having required rights to run the vnStat binary can access stats but don't
- need to worry about updating related things. On the other hand, 'singleuser'
- makes it possible to install vnStat even for users who don't have access
- to the root account.
-
- So which type should be chosen? If you have access to the root account then
- 'root' is the right selection. Otherwise 'singleuser' is the only option.
-
- Those upgrading from version 1.0 should read the UPGRADE file before
- proceeding.
+     make && make install ; vnstat --testkernel && vnstat -u -i eth0
 
 
 Installing as root
 ::::::::::::::::::
 
- First login as root and run the following two commands:
+ First login as root and run the following command:
 
-     make
-     make install
+     make && make install
 
- If there was no errors, vnStat should now be installed  (warnings aren't
+ If there was no errors, vnStat should now be installed (warnings aren't
  aren't considered as errors). During version 1.0 it became clear that some
  kernels are broken and don't provide to correct boot time for the system.
  vnStat requires this information so there's a test to see if the kernel is
@@ -61,13 +46,13 @@ Installing without root access
  This install method is a little bit more complicated but shouldn't be
  impossible. :) First compile the binary.
 
-     make single
+     make
 
  If there was no errors, copy src/vnstat to some directory included in your
- $PATH (~/bin/ is an example)  and make the database directory.
+ $PATH (~/bin/ is an example) and make the database directory.
 
      cp src/vnstat ~/bin/
-	 cp cfg/vnstat.conf ~/.vnstatrc
+     cp cfg/vnstat.conf ~/.vnstatrc
      mkdir ~/.vnstat
 
  During version 1.0 it became clear that some kernels are broken and don't
@@ -80,6 +65,21 @@ Installing without root access
  a faulty kernel (afaik) is to compile/install a newer one. This can't be done
  without the root account so you'll have to solve this problem with your
  sysadmin if the kernel is broken.
+
+ Now open the config file ~/.vnstatrc with your favorite text editor and locate
+ the following line:
+ 
+     DatabaseDir "/var/lib/vnstat"
+
+ and replace it with
+ 
+     DatabaseDir "/pathtomyhomedir/.vnstat"
+
+ and save the file. If you are unsure about you homedir path execute
+ 
+     cd ; pwd
+
+ The ouput should tell your homedir. 
 
  Next every interface that should be monitored needs to be introduced
  to vnStat. Replace 'eth0' in the command with any available interface if
@@ -101,5 +101,4 @@ Installing without root access
      vnstat
 
  Now you should get some stats about your network usage. See the config
- file ~/vnstatrc for interface and other settings.
-
+ file ~/.vnstatrc for interface and other settings.

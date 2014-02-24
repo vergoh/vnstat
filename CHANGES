@@ -1,3 +1,16 @@
+1.6 / 1-Jan-08
+
+ - Fix: Segmentation fault when environment variable "HOME" wasn't defined,
+   this broke most CGI and PHP scripts that used vnStat
+ - Support for /sys/class/net/* if /proc/net/dev is unavailable
+ - Config file parser redesigned
+ - --config parameter for selecting config file
+ - Consistent exit status for all operations (0 for success, 1 for error)
+ - Improved file locking
+ - Man page restrictions paragraph updated
+ - Minor non-visible fixes and code cleanup
+
+
 1.5 / 3-Dec-07
 
  - Fix: compile time warnings solved

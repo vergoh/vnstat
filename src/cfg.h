@@ -1,7 +1,6 @@
 void printcfgfile(void);
-int loadcfg(void);
+int loadcfg(char *cfgfile);
 void defaultcfg(void);
-int getcfgvalue(FILE *fd, char *search);
 int ibwadd(char *iface, int limit);
 void ibwlist(void);
 int ibwget(char *iface);

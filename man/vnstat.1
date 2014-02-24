@@ -1,4 +1,4 @@
-.TH VNSTAT 1 "DECEMBER 2007" Linux "User Manuals"
+.TH VNSTAT 1 "JANUARY 2008" "version 1.6" "User Manuals"
 .SH NAME
 vnStat \- a console-based network traffic monitor
 .SH SYNOPSIS
@@ -13,6 +13,9 @@ vnStat \- a console-based network traffic monitor
 .I time
 ] [
 .B \-\-cleartop
+] [
+.B \-\-config
+.I file
 ] [
 .B \-\-days
 ] [
@@ -158,6 +161,11 @@ as an alias the will be displayed in queries. Usage of
 .B -u
 is required to save the change.
 .TP
+.BI "--config " file
+Use
+.I file
+as config file instead of using normal config file search function.
+.TP
 .BI "--rebuildtotal"
 Reset the total traffic counters and recount those using recorded months.
 .TP
@@ -190,15 +198,15 @@ custom  webpage. The dump uses ; as field delimeter.
 Then follows 30 lines like the following
 
   d;0;1078696800;559;7433;68;557;1
- 
+
 where d = days, 0 = day number in database (0 is today), 1077314401 date in
 Unix time, 559 = rx MB, 7433 = tx MB, 68 = rx kB, 557 = tx kB and 1 tells that
 vnStat has filled this value and it is in use.
-   
+
   m;0;1078092000;48649;139704;527;252;1   (x12)
   t;0;1078351200;5979;47155;362;525;1     (x10)
   h;0;1078699800;118265;516545            (x24)
-                                   
+
 m = months, t = top10 and h = hours, all other fields are in the same order as in days
 except hours that doesn't have a separate kB value. For hours the forth and fifth fields
 have values in kB.
@@ -239,6 +247,20 @@ and disables it from being updated before enabled again with the
 parameter. This feature is especially useful for interfaces like ppp0
 that aren't always active.
 .SH RESTRICTIONS
+Updates needs to be executed at least as often as it is possible for the interface
+to generate enough traffic to wrap the kernel interface traffic counter. Otherwise
+it is possible that some traffic won't be seen. This isn't an issue for 64 bit kernels
+but at least one update every hour is always required in order to provide proper input.
+With 32 bit kernels the maximum time between two updates depends on how fast the
+interface can transfer 4 GB. Calculated theoretical times are:
+.PP
+    10 Mbit:  54 minutes
+   100 Mbit:   5 minutes
+  1000 Mbit:  30 seconds
+.PP
+However, for 1000 Mbit interfaces updating once every minute is usually a
+working solution.
+.PP
 Estimated traffic values are likely to be somewhat inaccurate if daily
 traffic is low because only the MB counter is used to calculate the
 estimate.

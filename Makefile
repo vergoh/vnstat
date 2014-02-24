@@ -6,9 +6,6 @@ CRON = $(DESTDIR)/etc/cron.d
 vnstat:
 	+make -C src vnstat
 
-single:
-	+make -C src single
-
 clean:
 	make -C src clean
 

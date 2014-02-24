@@ -62,16 +62,19 @@ void printcfgfile(void) {
 
 }
 
-int loadcfg(void) {
+int loadcfg(char *cfgfile) {
 
 	FILE *fd;
 	char buffer[512];
-	int i;
+	int i, j, k, linelen, cfglen, tryhome;
 
+	char value[512], cfgline[512];
+    
 	char *cfgname[] = { "DatabaseDir", "Locale", "MonthRotate", "DayFormat", "MonthFormat", "TopFormat", "RXCharacter", "TXCharacter", "RXHourCharacter", "TXHourCharacter", "Interface", "MaxBandwidth", "Sampletime", "QueryMode", "UseFileLocking", "BootVariation", 0 };
 	char *cfglocc[] = { cfg.dbdir, cfg.locale, 0, cfg.dformat, cfg.mformat, cfg.tformat, cfg.rxchar, cfg.txchar, cfg.rxhourchar, cfg.txhourchar, cfg.iface, 0, 0, 0, 0, 0 };
 	int *cfgloci[] = { 0, 0, &cfg.monthrotate, 0, 0, 0, 0, 0, 0, 0, 0, &cfg.maxbw, &cfg.sampletime, &cfg.qmode, &cfg.flock, &cfg.bvar };
 	int cfgnamelen[] = { 512, 32, 0, 64, 64, 64, 1, 1, 1, 1, 32, 0, 0, 0, 0, 0 };
+	int cfgfound[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 	ifacebw = NULL;
 
@@ -83,41 +86,111 @@ int loadcfg(void) {
 	/* load default config */
 	defaultcfg();
 
-	/* possible config files: 1) $HOME/.vnstatrc   2) /etc/vnstat.conf   3) none */
+	/* possible config files: 1) --config   2) $HOME/.vnstatrc   3) /etc/vnstat.conf   4) none */
 
-	strncpy(buffer, getenv("HOME"), 500);
-	strcat(buffer, "/.vnstatrc");
-
-	/* try to open first available config file */
-	if ((fd=fopen(buffer,"r"))!=NULL) {
-		if (debug)
-			printf("Config file: $HOME/.vnstatrc\n");
-	} else if ((fd=fopen("/etc/vnstat.conf","r"))!=NULL) {
-		if (debug)
-			printf("Config file: /etc/vnstat.conf\n");
-/*	} else if ((fd=fopen("vnstat.conf","r"))!=NULL) {
-		if (debug)
-			printf("Config file: ./vnstat.conf\n"); */
+	if (cfgfile[0]!='\0') {
+	
+		/* try to open given file */
+		if ((fd=fopen(cfgfile, "r"))!=NULL) {
+			if (debug)
+				printf("Config file: --config\n");
+		} else {
+			printf("Error:\nUnable to open given config file \"%s\".\n", cfgfile);
+		}
+	
 	} else {
-		if (debug)
-			printf("Config file: none\n");
-		return 0;
+
+		if (getenv("HOME")) {
+			strncpy(buffer, getenv("HOME"), 500);
+			strcat(buffer, "/.vnstatrc");
+			tryhome = 1;
+		} else {
+			tryhome = 0;
+		}
+
+		/* try to open first available config file */
+		if (tryhome && (fd=fopen(buffer, "r"))!=NULL) {
+			if (debug)
+				printf("Config file: $HOME/.vnstatrc\n");
+		} else if ((fd=fopen("/etc/vnstat.conf", "r"))!=NULL) {
+			if (debug)
+				printf("Config file: /etc/vnstat.conf\n");
+		} else {
+			if (debug)
+				printf("Config file: none\n");
+			return 0;
+		}
 	}
 
 	rewind(fd);
 
-	/* try to read all config options from file */
-	for (i=0; cfgname[i]!=0; i++) {
-		strcpy(buffer, cfgname[i]);
-		if (getcfgvalue(fd, buffer)) {
-			if (cfgnamelen[i]>0) {
-				strncpy(cfglocc[i], buffer, cfgnamelen[i]);
+	/* parse every config file line */
+	while (!feof(fd)) {
+	
+		cfgline[0] = '\0';
+		
+		/* get current line */
+		fgets(cfgline, 512, fd);
+		
+		linelen = strlen(cfgline);
+		if (linelen>2 && cfgline[0]!='#') {
+		
+			for (i=0; cfgname[i]!=0; i++) {
 
-			} else if (isdigit(buffer[0])) {
-				*cfgloci[i] = atoi(buffer);
-			}
-		}
-	}
+				cfglen = strlen(cfgname[i]);
+				if ( (cfgfound[i]==0) && (linelen>=(cfglen+2)) && (strncasecmp(cfgline, cfgname[i], cfglen)==0) ) {
+				
+					/* clear value buffer */
+					for (j=0; j<512; j++) {
+						value[j]='\0';
+					}
+				
+					/* search value */
+					j = 0;
+					for (k=cfglen; k<linelen; k++) {
+						if (cfgline[k]=='\n' || cfgline[k]=='\r') {
+							break;
+						} else if (cfgline[k]=='\"') {
+							if (j==0) {
+								continue;
+							} else {
+								break;
+							}
+						} else {
+							if (j==0 && (cfgline[k]==' ' || cfgline[k]=='=' || cfgline[k]=='\t')) {
+								continue;
+							} else {
+								value[j] = cfgline[k];
+								j++;
+							}
+						}
+					}
+					
+					/* set value and get new line if valid value was found */
+					if (strlen(value)!=0) {
+
+						if (cfgnamelen[i]>0) {
+							strncpy(cfglocc[i], value, cfgnamelen[i]);
+						} else if (isdigit(value[0])) {
+							*cfgloci[i] = atoi(value);
+						} else {
+							continue;
+						}
+						
+						cfgfound[i] = 1;
+						
+						if (debug)
+							printf("  %s   -> \"%s\": \"%s\"\n", cfgline, cfgname[i], value);						
+						break;
+					}
+				
+				} /* if */
+			
+			} /* for */
+		
+		} /* if */
+	
+	} /* while */
 
 	/* search for interface specific limits */
 	ibwcfgread(fd);
@@ -138,13 +211,8 @@ void defaultcfg(void) {
 	cfg.sampletime = DEFSAMPTIME;
 	cfg.monthrotate = MONTHROTATE;
 	cfg.maxbw = DEFMAXBW;
-	cfg.flock = USEFLOCK;	
-#ifdef SINGLE
-	strncpy(cfg.dbdir, getenv("HOME"), 500);
-	strcat(cfg.dbdir, "/.vnstat");
-#else
+	cfg.flock = USEFLOCK;
 	strncpy(cfg.dbdir, DATABASEDIR, 512);
-#endif
 	strncpy(cfg.iface, DEFIFACE, 32);
 	strncpy(cfg.locale, LOCALE, 32);
 	strncpy(cfg.dformat, DFORMAT, 64);
@@ -155,97 +223,6 @@ void defaultcfg(void) {
 	strncpy(cfg.rxhourchar, RXHOURCHAR, 1);
 	strncpy(cfg.txhourchar, TXHOURCHAR, 1);
 	
-}
-
-int getcfgvalue(FILE *fd, char *search) {
-
-	char value[512], cfgline[512];
-	int i, j, linelen, searchlen, rewinds;
-	long startpos;
-	
-	rewinds = 0;
-	searchlen = strlen(search);
-	
-	/* rewind file if needed */
-	if (feof(fd)) {
-		rewind(fd);
-		rewinds++;
-	}
-
-	/* get current position in file */
-	startpos = ftell(fd);
-	
-	if (debug)
-		printf(" search & startpos: '%s' '%ld'\n", search, startpos);
-
-	/* cycle all lines if needed */
-	while (!feof(fd)) {
-
-		cfgline[0] = '\0';
-
-		/* get current line */
-		fgets(cfgline, 512, fd);
-
-		linelen = strlen(cfgline);
-
-		if (linelen>2 && cfgline[0]!='#') {
-
-			if ( (strncasecmp(cfgline, search, searchlen)==0) && (linelen>=searchlen+2) ) {
-
-				/* value buffers */
-				for (j=0; j<512; j++) {
-					value[j]='\0';
-				}
-			
-				/* search value */
-				j=0;
-				for (i=searchlen; i<linelen; i++) {
-					if (cfgline[i]=='\n' || cfgline[i]=='\r') {
-						break;
-					} else if (cfgline[i]=='\"') {
-						if (j==0) {
-							continue;
-						} else {
-							break;
-						}
-					} else {
-						if (j==0 && (cfgline[i]==' ' || cfgline[i]=='=' || cfgline[i]=='\t')) {
-							continue;
-						} else {
-							value[j]=cfgline[i];
-							j++;
-						}
-					}
-				}
-			
-				/* continue search if found value wasn't suitable */
-				if (strlen(value)==0) {
-					continue;
-				} else {
-				
-					if (debug)
-						printf("  %s   -> \"%s\"\n", cfgline, value);
-						
-					/* fill answer and return to caller */
-					strcpy(search, value);
-					return 1;
-				}
-			}
-		}
-		
-		/* rewind file if end of file was reached and 
-		   reading didn't start from the beginning */
-		if (feof(fd) && startpos && !rewinds)  {
-			rewind(fd);
-			rewinds++;
-			
-			if (debug)
-				printf(" rewind\n");
-		}
-
-	}
-
-	return 0;
 }
 
 int ibwadd(char *iface, int limit)

@@ -4,3 +4,115 @@ That FAQ is located at
    http://humdi.net/vnstat/FAQ 
 
 since that's the easiest way to keep it updated.
+
+
+----
+
+
+A snapshot of the FAQ (updated 30.12.2007):
+
+
+Is there some kind of support forum available?
+
+  The forum is located at http://forums.humdi.net/ and is back in use again
+  as of 18.12.2007 including old messages. User accounts have however been
+  wiped. The forum was previously closed in summer 2006 after cleaning spam
+  messages started to take much more time than replying to actual user posts.
+
+
+How should dialup users use vnStat? There's some errors because the interface
+isn't available when offline.
+
+  That's all explained at the end of the README. The idea is to include
+  vnStat with enable/disable parameters in scripts related with the used
+  interface. Example scripts can be found from the pppd directory that came
+  with the source package.
+
+
+Does vnStat work for PPPoE users?
+
+  Yes. PPPoE is basically like a dialup connection and it can be monitored
+  in the same way as any ppp interface. However, with PPPoE it's usually also
+  possible to bring up the LAN interface used for the connection without
+  configuring any ip to it. Monitoring that interface is a good alternative
+  since it doesn't go down and up when the connection is closed and opened
+  again.
+
+
+How do I stop monitoring an interface?
+
+  Go to the vnStat database directory (default: /var/lib/vnstat) and delete
+  the database file named according to the interface you want to stop
+  monitoring.
+
+
+How do I uninstall vnStat?
+
+  You only need to run 'make uninstall' in the directory that comes when the
+  .tar.gz is extracted. Just make sure it's the same version you have
+  installed. If you've used a binary package included with the distribution
+  then refer to intructions provided by the package manager.
+
+
+Is the MB value reported by vnStat 10^6 or 2^20 bytes?
+
+  2^20 bytes. It could as well be MiB but due to space limitations in some
+  outputs that isn't used.
+
+
+Why kB and not KB?
+
+  Because it's kilo (k) and not kelvin (K) bytes.
+
+
+What does the 'estimated' value mean?
+
+  The estimated value is an calculated average that tries to predict the total
+  traffic for the current day/month based on previous traffic. This estimate
+  works fairly well if the monitored interface has constant traffic of the same
+  magnitude (like game servers). It can't predic peaks but the accuracy
+  usually gets better by the end of the day/month.
+
+
+Why isn't the estimated value shown with --dumpdb?
+
+  That features only dumps the database and since the estimate is always
+  calculated in real time, there's no reason to write it into the database.
+
+
+How is the estimated value calculated?
+
+  estimate = ( x / y ) * z
+
+    x = traffic so far for the day/month
+    y = passed minutes/hours ...
+    z = total minutes/hours ...
+
+
+Why does vnStat show sometimes multiple GB of traffic although my network
+connection can't even transfer that much?
+     OR
+Each update adds the complete amount of traffic and 'vnstat -u -D' claims that
+the system has been rebooted between updates.
+
+  That's most likely a broken kernel. Run with --testkernel (version 1.2+ 
+  required) and see the result. See the next question for some explanation.
+
+
+Why is there problems with most 2.4.18 kernels?
+
+  Every current kernel has a btime (boot time) value in /proc/stat that
+  indicates when the system was booted. vnStat uses this to know when the
+  interface counters in the database should be reseted. Unfortunately, some
+  kernels don't keep the btime value static even when the system isn't
+  rebooted.
+
+
+About bug reports
+
+  Any bug report should at least include an explanation about how the bug can
+  be reproduced. Having output dumps usually helps and the --dumpdb feature
+  should be used if there's some reason to assume the bug has something to do
+  with the database. Also include information about the used distribution,
+  kernel (uname -a), compiler (gcc --version) and network interface card.
+  Read the report again before sending it. :)

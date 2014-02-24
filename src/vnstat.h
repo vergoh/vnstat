@@ -78,7 +78,7 @@ and most can be changed later from the config file.
 #define DBVERSION 3
 
 /* version string */
-#define VNSTATVERSION "1.5"
+#define VNSTATVERSION "1.6"
 
 /* integer limits */
 #define FP32 4294967295ULL
@@ -103,6 +103,15 @@ typedef struct {
 	char rxchar[2], txchar[2], rxhourchar[2], txhourchar[2];
 } CFG;
 
+/* internal interface information structure */
+typedef struct {
+	char name[32];
+	int filled;
+	uint64_t rx;
+	uint64_t tx;
+	uint64_t rxp;
+	uint64_t txp;
+} IFINFO;
 
 typedef struct {
 	time_t date;
@@ -148,7 +157,7 @@ typedef struct ibw {
 /* global variables */
 DATA data;
 CFG cfg;
+IFINFO ifinfo;
 ibwnode *ifacebw;
-char procline[512], statline[128];
 int debug;
 int intsignal;
