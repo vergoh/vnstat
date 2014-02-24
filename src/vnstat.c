@@ -1,5 +1,5 @@
 /*
-vnStat - Copyright (c) 2002-08 Teemu Toivola <tst@iki.fi>
+vnStat - Copyright (c) 2002-09 Teemu Toivola <tst@iki.fi>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,12 +15,15 @@ vnStat - Copyright (c) 2002-08 Teemu Toivola <tst@iki.fi>
    Foundation, Inc., 675 Mass Ave., Cambridge, MA 02139, USA.
 */
 
-#include "vnstat.h"
+#include "common.h"
 #include "ifinfo.h"
-#include "db.h"
+#include "traffic.h"
+#include "dbxml.h"
+#include "dbshow.h"
 #include "dbaccess.h"
 #include "misc.h"
 #include "cfg.h"
+#include "vnstat.h"
 
 int main(int argc, char *argv[]) {
 
@@ -29,11 +32,12 @@ int main(int argc, char *argv[]) {
 	int active=-1, files=0, force=0, cleartop=0, rebuildtotal=0, traffic=0;
 	int livetraffic=0;
 	char interface[32], dirname[512], nick[32];
-	char definterface[32], cfgfile[512];
+	char definterface[32], cfgfile[512], *ifacelist;
 	time_t current;
 	DIR *dir;
 	struct dirent *di;
 
+	noexit = 0; /* allow functions to exit in case of error */
 	debug = 0; /* debug disabled by default */
 	cfgfile[0] = '\0';
 
@@ -50,7 +54,7 @@ int main(int argc, char *argv[]) {
 					currentarg++;
 					continue;
 				} else {
-					printf("Error:\nFile for --config missing.\n");
+					printf("Error: File for --config missing.\n");
 					return 1;
 				}
 			}
@@ -58,7 +62,9 @@ int main(int argc, char *argv[]) {
 	}
 	
 	/* load config if available */
-	loadcfg(cfgfile);
+	if (!loadcfg(cfgfile)) {
+		return 1;
+	}
 
 	setlocale(LC_ALL, cfg.locale);
 	strncpy(interface, "default", 32);
@@ -97,6 +103,7 @@ int main(int argc, char *argv[]) {
 			printf("         -t, --top10           show top10\n");
 			printf("         -s, --short           use short output\n");
 			printf("         --dumpdb              show database in parseable format\n");
+			printf("         --xml                 show database in xml format\n");
 			
 			printf("   Misc:\n");
 			printf("         -i,  --iface          select interface (default: %s)\n", definterface);
@@ -105,6 +112,7 @@ int main(int argc, char *argv[]) {
 			printf("         -v,  --version        show version\n");
 			printf("         -tr, --traffic        calculate traffic\n");
 			printf("         -l,  --live           show transfer rate in real time\n");
+			printf("         --iflist              show list of available interfaces\n");
 			printf("         --config              select used config file\n");
 			printf("         --showconfig          dump config file with current settings\n");
 			printf("         --testkernel          check if the kernel is broken\n");
@@ -144,7 +152,7 @@ int main(int argc, char *argv[]) {
 				currentarg++;
 				continue;
 			} else {
-				printf("Error:\nInterface for -i missing.\n");
+				printf("Error: Interface for -i missing.\n");
 				return 1;
 			}
 		} else if (strcmp(argv[currentarg],"--config")==0) {
@@ -159,7 +167,7 @@ int main(int argc, char *argv[]) {
 				currentarg++;
 				continue;
 			} else {
-				printf("Error:\nNick for --nick missing.\n");
+				printf("Error: Nick for --nick missing.\n");
 				return 1;
 			}
 		} else if ((strcmp(argv[currentarg],"-u")==0) || (strcmp(argv[currentarg],"--update")==0)) {
@@ -185,6 +193,8 @@ int main(int argc, char *argv[]) {
 			cfg.qmode=7;
 		} else if (strcmp(argv[currentarg],"--dumpdb")==0) {
 			cfg.qmode=4;
+		} else if (strcmp(argv[currentarg],"--xml")==0) {
+			cfg.qmode=8;
 		} else if (strcmp(argv[currentarg],"--enable")==0) {
 			active=1;
 			query=0;
@@ -218,6 +228,11 @@ int main(int argc, char *argv[]) {
 		} else if (strcmp(argv[currentarg],"--showconfig")==0) {
 			printcfgfile();
 			return 0;			
+		} else if (strcmp(argv[currentarg],"--iflist")==0) {
+			getiflist(&ifacelist);
+			printf("Available interfaces: %s\n", ifacelist);
+			free(ifacelist);
+			return 0;	
 		} else if ((strcmp(argv[currentarg],"-v")==0) || (strcmp(argv[currentarg],"--version")==0)) {
 			printf("vnStat %s by Teemu Toivola <tst at iki dot fi>\n", VNSTATVERSION);
 			return 0;
@@ -228,7 +243,7 @@ int main(int argc, char *argv[]) {
 			sync=1;
 			query=0;			
 		} else {
-			printf("Unknown arg \"%s\". Use --help for help.\n",argv[currentarg]);
+			printf("Unknown parameter \"%s\". Use --help for help.\n",argv[currentarg]);
 			return 1;
 		}
 		
@@ -252,7 +267,7 @@ int main(int argc, char *argv[]) {
 			}
 			closedir(dir);
 		} else {
-			printf("Error:\nUnable to open database directory \"%s\".\n", dirname);
+			printf("Error: Unable to open database directory \"%s\".\n", dirname);
 			printf("Make sure it exists and is at least read enabled for current user.\n");
 			printf("Exiting...\n");
 			return 1;
@@ -262,7 +277,7 @@ int main(int argc, char *argv[]) {
 	/* counter reset */
 	if (reset) {
 		if (!spacecheck(dirname) && !force) {
-			printf("Error:\nNot enough free diskspace available.\n");
+			printf("Error: Not enough free diskspace available.\n");
 			return 1;
 		}
 		if (strcmp(interface, "default")==0)
@@ -278,12 +293,14 @@ int main(int argc, char *argv[]) {
 	/* counter sync */
 	if (sync) {
 		if (!spacecheck(dirname) && !force) {
-			printf("Error:\nNot enough free diskspace available.\n");
+			printf("Error: Not enough free diskspace available.\n");
 			return 1;
 		}
 		if (strcmp(interface, "default")==0)
 			strncpy(interface, definterface, 32);
-		synccounters(interface, dirname);
+		if (!synccounters(interface, dirname)) {
+			return 1;
+		}
 		if (debug)
 			printf("Counters synced for \"%s\"\n", data.interface);
 	}
@@ -291,7 +308,7 @@ int main(int argc, char *argv[]) {
 	/* clear top10 */
 	if (cleartop) {
 		if (!spacecheck(dirname) && !force) {
-			printf("Error:\nNot enough free diskspace available.\n");
+			printf("Error: Not enough free diskspace available.\n");
 			return 1;
 		}
 		if (strcmp(interface, "default")==0)
@@ -318,7 +335,7 @@ int main(int argc, char *argv[]) {
 	/* rebuild total */
 	if (rebuildtotal) {
 		if (!spacecheck(dirname)) {
-			printf("Error:\nNot enough free diskspace available.\n");
+			printf("Error: Not enough free diskspace available.\n");
 			return 1;
 		}
 		if (strcmp(interface, "default")==0)
@@ -347,7 +364,7 @@ int main(int argc, char *argv[]) {
 	/* enable & disable */
 	if (active==1) {
 		if (!spacecheck(dirname) && !force) {
-			printf("Error:\nNot enough free diskspace available.\n");
+			printf("Error: Not enough free diskspace available.\n");
 			return 1;
 		}
 		if (strcmp(interface, "default")==0)
@@ -363,7 +380,7 @@ int main(int argc, char *argv[]) {
 		}
 	} else if (active==0) {
 		if (!spacecheck(dirname) && !force) {
-			printf("Error:\nNot enough free diskspace available.\n");
+			printf("Error: Not enough free diskspace available.\n");
 			return 1;
 		}
 		if (strcmp(interface, "default")==0)
@@ -384,7 +401,7 @@ int main(int argc, char *argv[]) {
 	
 		/* check that there's some free diskspace left */
 		if (!spacecheck(dirname) && !force) {
-			printf("Error:\nNot enough free diskspace available.\n");
+			printf("Error: Not enough free diskspace available.\n");
 			return 1;
 		}
 		
@@ -402,18 +419,30 @@ int main(int argc, char *argv[]) {
 						printf("\nProcessing file \"%s/%s\"...\n", dirname, interface);
 					newdb=readdb(interface, dirname);
 					if (data.active) {
-						getifinfo(data.interface);
+						/* skip interface if not available */
+						if (!getifinfo(data.interface)) {
+							if (debug)
+								printf("Interface \"%s\" not available, skipping.\n", data.interface);
+							continue;
+						}
 						parseifinfo(newdb);
 						
 						/* check that the time is correct */
 						if ((current>=data.lastupdated) || force) {
 							writedb(interface, dirname, newdb);
 						} else {
-							printf("Error:\nThe previous update was after the current date.\n\n");
-							printf("Previous update: %s", (char*)asctime(localtime(&data.lastupdated)));
-							printf("   Current time: %s\n", (char*)asctime(localtime(&current)));
-							printf("Use --force to override this message.\n");
-							return 1;
+							/* print error if previous update is more than 6 hours in the future */
+							/* otherwise do nothing */
+							if (data.lastupdated>=(current+21600)) {
+								printf("Error: The previous update was after the current date.\n\n");
+								printf("Previous update: %s", (char*)asctime(localtime(&data.lastupdated)));
+								printf("   Current time: %s\n", (char*)asctime(localtime(&current)));
+								printf("Use --force to override this message.\n");
+								return 1;
+							} else {
+								if (debug)
+									printf("\"%s\" not updated, %s > %s.\n", data.interface, (char*)asctime(localtime(&data.lastupdated)), (char*)asctime(localtime(&current)));
+							}
 						}
 					} else {
 						if (debug)
@@ -435,18 +464,31 @@ int main(int argc, char *argv[]) {
 		} else {
 			newdb=readdb(interface, dirname);
 			if (data.active) {
-				getifinfo(data.interface);
+				if (!getifinfo(data.interface)) {
+					getiflist(&ifacelist);
+					printf("Error: Interface \"%s\" couldn't be found.\n Only available interfaces can be added for monitoring.\n", data.interface);
+					printf("\n The following interfaces are currently available:\n    %s\n", ifacelist);
+					free(ifacelist);
+					return 1;
+				}
 				parseifinfo(newdb);
 				if ((current>=data.lastupdated) || force) {
 					if (strcmp(nick, "none")!=0)
 						strncpy(data.nick, nick, 32);
 					writedb(interface, dirname, newdb);
 				} else {
-					printf("Error:\nThe previous update was after the current date.\n\n");
-					printf("Previous update: %s", (char*)asctime(localtime(&data.lastupdated)));
-					printf("   Current time: %s\n", (char*)asctime(localtime(&current)));
-					printf("Use --force to override this message.\n");
-					return 1;
+					/* print error if previous update is more than 6 hours in the future */
+					/* otherwise do nothing */
+					if (data.lastupdated>=(current+21600)) {
+						printf("Error: The previous update was after the current date.\n\n");
+						printf("Previous update: %s", (char*)asctime(localtime(&data.lastupdated)));
+						printf("   Current time: %s\n", (char*)asctime(localtime(&current)));
+						printf("Use --force to override this message.\n");
+						return 1;
+					} else {
+						if (debug)
+							printf("\"%s\" not updated, %s > %s.\n", data.interface, (char*)asctime(localtime(&data.lastupdated)), (char*)asctime(localtime(&current)));
+					}
 				}
 			} else {
 				if (debug)
@@ -462,42 +504,65 @@ int main(int argc, char *argv[]) {
 		if (strcmp(interface, "default")==0) {
 			
 			if (files==0) {
-				// printf("No database found.\n");
+				/* printf("No database found.\n"); */
 				query=0;
-			} else if ((cfg.qmode==0) && (files>1)) {
+			} else if ((cfg.qmode==0 || cfg.qmode==8) && (files>1)) {
 
+				if (cfg.qmode==0) {
+					printf("\n                      rx      /      tx      /     total    /   estimated\n");
+				} else {
+					printf("<vnstat version=\"%s\" xmlversion=\"%d\">\n", VNSTATVERSION, XMLVERSION);
+				}
 				dir=opendir(dirname);
-				printf("\n                     rx      /     tx      /    total    /  estimated\n");
 				while ((di=readdir(dir))) {
 					if (di->d_name[0]!='.') {
 						strncpy(interface, di->d_name, 32);
 						if (debug)
 							printf("\nProcessing file \"%s/%s\"...\n", dirname, interface);
-						readdb(interface, dirname);
-						if (!newdb)
-							showdb(5);
-						
+						newdb=readdb(interface, dirname);
+						if (!newdb) {
+							if (cfg.qmode==0) {
+								showdb(5);
+							} else {
+								showxml();
+							}
+						}
 					}
 				}
 				closedir(dir);
+				if (cfg.qmode==8) {
+					printf("</vnstat>\n");
+				}
 				
 			/* show in qmode if there's only one file or qmode!=0 */
 			} else {
-				readdb(definterface, dirname);
+				newdb=readdb(definterface, dirname);
 				if (!newdb) {
 					if (cfg.qmode==5)
 						printf("\n                     rx      /     tx      /    total    /  estimated\n");
-					showdb(cfg.qmode);
+					if (cfg.qmode!=8) {
+						showdb(cfg.qmode);
+					} else {
+						printf("<vnstat version=\"%s\" xmlversion=\"%d\">\n", VNSTATVERSION, XMLVERSION);
+						showxml();
+						printf("</vnstat>\n");
+					}
 				}
 			}
 		
 		/* show only specified file */
 		} else {
-			readdb(interface, dirname);
+			newdb=readdb(interface, dirname);
 			if (!newdb) {
 				if (cfg.qmode==5)
 					printf("\n                     rx      /     tx      /    total    /  estimated\n");
-				showdb(cfg.qmode);
+				if (cfg.qmode!=8) {
+					showdb(cfg.qmode);
+				} else {
+					printf("<vnstat version=\"%s\" xmlversion=\"%d\">\n", VNSTATVERSION, XMLVERSION);
+					showxml();
+					printf("</vnstat>\n");
+				}
 			}
 		}
 	}
@@ -522,15 +587,34 @@ int main(int argc, char *argv[]) {
 		
 		/* give more help if there's no database */
 		if (files==0) {
+			getiflist(&ifacelist);
 			printf("No database found, nothing to do. Use --help for help.\n\n");
 			printf("A new database can be created with the following command:\n");
 			printf("    %s -u -i eth0\n\n", argv[0]);
-			printf("Replace 'eth0' with the interface that should be monitored. A list\n");
-			printf("of available interfaces can be seen with the 'ifconfig' command.\n");
+			printf("Replace 'eth0' with the interface that should be monitored.\n\n");
+			printf("The following interfaces are currently available:\n    %s\n", ifacelist);
+			free(ifacelist);
 		} else {
 			printf("Nothing to do. Use --help for help.\n");
 		}
 	}
 	
 	return 0;
+}
+
+
+int synccounters(char iface[32], char dirname[512])
+{
+	readdb(iface, dirname);
+	if (!getifinfo(iface)) {
+		printf("Error: Unable to sync unavailable interface \"%s\".", iface);
+		return 0;
+	}
+
+	/* set counters to current without counting traffic */
+	data.currx = ifinfo.rx;
+	data.curtx = ifinfo.tx;
+	
+	writedb(iface, dirname, 0);
+	return 1;
 }

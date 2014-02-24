@@ -1,3 +1,7 @@
 
-Run 'make uninstall' and follow the instructions.
+Linux:
+   Run 'make uninstall' and follow the instructions.
+
+BSD:
+   Run 'make bsduninstall' and follow the instructions.
 

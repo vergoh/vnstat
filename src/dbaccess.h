@@ -1,7 +1,15 @@
+#ifndef DBACCESS_H
+#define DBACCESS_H
+
 int readdb(char iface[32], char dirname[512]);
-void writedb(char iface[32], char dirname[512], int newdb);
+int writedb(char iface[32], char dirname[512], int newdb);
+int backupdb(char *current, char *backup);
 int convertdb(FILE *db);
-void lockdb(int fd, int dbwrite);
+int lockdb(int fd, int dbwrite);
+void cleanhours(void);
+void rotatedays(void);
+void rotatemonths(void);
+
 
 /* version 1.0 database format aka db v1 */
 typedef struct {
@@ -53,3 +61,5 @@ typedef struct {
 	DAY12 top10[10];
 	uint64_t btime;
 } DATA12;
+
+#endif

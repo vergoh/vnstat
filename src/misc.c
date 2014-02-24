@@ -1,4 +1,4 @@
-#include "vnstat.h"
+#include "common.h"
 #include "misc.h"
 
 int kerneltest(void)
@@ -60,24 +60,33 @@ int kerneltest(void)
 
 int spacecheck(char *path)
 {
-	struct statfs buf;
+	struct statvfs buf;
 	uint64_t free;
 
-	if (statfs(path, &buf)) {
-		perror("Free diskspace check");
-		exit(1);
+	/* do space check only when configured for it */
+	if (!cfg.spacecheck) {
+		return 1;
+	}
+
+	if (statvfs(path, &buf)) {
+		snprintf(errorstring, 512, "Free diskspace check failed.");
+		printe(PT_Error);
+		if (noexit) {
+			return 0;
+		} else {
+			exit(1);
+		}
 	}
 
 	free=(buf.f_bavail/(float)1024)*buf.f_bsize;
 
 	if (debug) {
-		printf("bsize %d\n", buf.f_bsize);
-		printf("blocks %lu\n", buf.f_blocks);
-		printf("bfree %lu\n", buf.f_bfree);
-		printf("bavail %lu\n", buf.f_bavail);
-		printf("ffree %lu\n", buf.f_ffree);
-		
-		printf("%Lu free space left\n", free);
+		printf("bsize %d\n", (int)buf.f_bsize);
+		printf("blocks %lu\n", (unsigned long int)buf.f_blocks);
+		printf("bfree %lu\n", (unsigned long int)buf.f_bfree);
+		printf("bavail %lu\n", (unsigned long int)buf.f_bavail);
+		printf("ffree %lu\n", (unsigned long int)buf.f_ffree);
+		printf("%"PRIu64" free space left\n", free);
 	}	
 
 	/* the database is less than 3kB but let's require */
@@ -90,42 +99,90 @@ int spacecheck(char *path)
 	}
 }
 
-void intr(int sig)
+void sighandler(int sig)
 {
-	intsignal=1;
-	if (debug)
-		printf("Got signal: %d\n", sig);	
+	/* set signal */
+	intsignal = sig;
+
+	if (debug) {
+		switch (sig) {
+		
+			case SIGHUP:
+				snprintf(errorstring, 512, "DEBUG: SIGHUP (%d)", sig);
+				break;
+
+			case SIGTERM:
+				snprintf(errorstring, 512, "DEBUG: SIGTERM (%d)", sig);
+				break;
+
+			case SIGINT:
+				snprintf(errorstring, 512, "DEBUG: SIGINT (%d)", sig);
+				break;
+			
+			default:
+				snprintf(errorstring, 512, "DEBUG: Unknown signal %d", sig);
+				break;
+		
+		}
+		printe(PT_Info);
+	}
 }
 
 int getbtime(void)
 {
+	int result=0;
+#if defined(__linux__)
 	FILE *fp;
-	int check, result=0;
+	int check;
 	char temp[64], statline[128];
 
 	if ((fp=fopen("/proc/stat","r"))==NULL) {
-		printf("Error:\nUnable to read /proc/stat.\n");
-		exit(1);
+		snprintf(errorstring, 512, "Unable to read /proc/stat.");
+		printe(PT_Error);
+		if (noexit) {
+			return 0;
+		} else {
+			exit(1);
+		}
 	}
 	
 	check=0;
 	while (fgets(statline,128,fp)!=NULL) {
-		sscanf(statline,"%s",temp);
+		sscanf(statline,"%64s",temp);
 		if (strcmp(temp,"btime")==0) {
-			if (debug)
-				printf("\n%s\n",statline);
+			/* if (debug)
+				printf("\n%s\n",statline); */
 			check=1;
 			break;
 		}
 	}
 	
 	if (check==0) {
-		printf("Error:\nbtime missing from /proc/stat.\n");
-		exit(1);
+		snprintf(errorstring, 512, "btime missing from /proc/stat.");
+		printe(PT_Error);
+		if (noexit) {
+			return 0;
+		} else {
+			exit(1);
+		}
 	}
 	
 	result = strtoul(statline+6, (char **)NULL, 0);
 	fclose(fp);
+
+#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__)
+	struct timeval btm;
+	size_t len = sizeof(btm);
+	int mib[2] = {CTL_KERN, KERN_BOOTTIME};
+	
+	if (sysctl(mib, 2, &btm, &len, NULL, 0) < 0) {
+		if (debug)
+			printf("sysctl(kern.boottime) failed.\n");
+		return 0;
+	}
+	
+	result = btm.tv_sec;
+#endif
 
 	return result;
 }
@@ -141,16 +198,24 @@ void addtraffic(uint64_t *destmb, int *destkb, uint64_t srcmb, int srckb)
         }
 }
 
-char *getvalue(uint64_t mb, uint64_t kb, int len)
+char *getvalue(uint64_t mb, uint64_t kb, int len, int type)
 {
 	static char buffer[64];
-	int declen=2;
+	int declen=2, pad=-3;
 	uint64_t kB;
 
-	/* don't show decimals .00 if len was negative (set that way for estimates) */
-	if (len<0) {
+	/* negative type disables left padding of value */
+	if (type<0) {
+		type=type*-1;
+		pad=0;
+		if (cfg.unit>0) {
+			len++;
+		}
+	}
+
+	/* request types: 1) normal  2) estimate  3) image scale */
+	if (type==3) {
 		declen=0;
-		len=abs(len);
 	}
 
 	if (mb!=0) {
@@ -163,71 +228,99 @@ char *getvalue(uint64_t mb, uint64_t kb, int len)
 		kB=kb;
 	}
 
-
-	if ( (declen==0) && (kB==0) ){
-		sprintf(buffer, "%*s   ", len, "--");
+	if ( (type==2) && (kB==0) ){
+		sprintf(buffer, "%*s    ", len, "--");
 	} else {
+#if !defined(__OpenBSD__)
 		/* try to figure out what unit to use */
-		if (kB>=(1024*1024*1000)) {
-			sprintf(buffer, "%'*.2f TB", len, kB/(float)1024/(float)1024/(float)1024);
-		} else if (kB>=(1024*1000)) {
-			sprintf(buffer, "%'*.2f GB", len, kB/(float)1024/(float)1024);
+		if (kB>=1048576000) { /* 1024*1024*1000 - value >=1000 GiB -> show in TiB */
+			sprintf(buffer, "%'*.*f %*s", len, declen, kB/(float)1073741824, pad, getunit(4)); /* 1024*1024*1024 */
+		} else if (kB>=1024000) { /* 1024*1000 - value >=1000 MiB -> show in GiB */
+			sprintf(buffer, "%'*.*f %*s", len, declen, kB/(float)1048576, pad, getunit(3)); /* 1024*1024 */
 		} else if (kB>=1000) {
-			sprintf(buffer, "%'*.*f MB", len, declen, kB/(float)1024);
+			if (type==2) {
+				declen=0;
+			}
+			sprintf(buffer, "%'*.*f %*s", len, declen, kB/(float)1024, pad, getunit(2));
 		} else {
-			sprintf(buffer, "%'*Lu kB", len, kB);
+			sprintf(buffer, "%'*"PRIu64" %*s", len, kB, pad, getunit(1));
 		}
+#else
+		/* try to figure out what unit to use */
+		if (kB>=1048576000) { /* 1024*1024*1000 - value >=1000 GiB -> show in TiB */
+			sprintf(buffer, "%*.*f %*s", len, declen, kB/(float)1073741824, pad, getunit(4)); /* 1024*1024*1024 */
+		} else if (kB>=1024000) { /* 1024*1000 - value >=1000 MiB -> show in GiB */
+			sprintf(buffer, "%*.*f %*s", len, declen, kB/(float)1048576, pad, getunit(3)); /* 1024*1024 */
+		} else if (kB>=1000) {
+			if (type==2) {
+				declen=0;
+			}
+			sprintf(buffer, "%*.*f %*s", len, declen, kB/(float)1024, pad, getunit(2));
+		} else {
+			sprintf(buffer, "%'*"PRIu64" %*s", len, kB, pad, getunit(1));
+		}
+#endif
 	}
 	
 	return buffer;
 }
 
-
-void showbar(uint64_t rx, int rxk, uint64_t tx, int txk, uint64_t max, int len)
+uint64_t getscale(uint64_t kb)
 {
-	int i, l;
+	int i;
+	uint64_t result;
+
+	result = kb;
 	
-	if (rxk>=1024) {
-		rx+=rxk/1024;
-		rxk-=(rxk/1024)*1024;
+	/* get unit */
+	for (i=0; result>1024; i++) {
+		result = result / 1024;
 	}
 
-	if (txk>=1024) {
-		tx+=txk/1024;
-		txk-=(txk/1024)*1024;
-	}
-
-	rx=(rx*1024)+rxk;
-	tx=(tx*1024)+txk;
-	
-	if ((rx+tx)!=max) {
-		len=((rx+tx)/(float)max)*len;
-	}
-
-
-	if (len!=0) {
-		printf("   ");
-
-		if (tx>rx) {
-			l=rint((rx/(float)(rx+tx)*len));
-
-			for (i=0;i<l;i++) {
-				printf("%c", cfg.rxchar[0]);
-			}
-			for (i=0;i<(len-l);i++) {
-				printf("%c", cfg.txchar[0]);
-			}
-		} else {
-			l=rint((tx/(float)(rx+tx)*len));
-			
-			for (i=0;i<(len-l);i++) {
-				printf("%c", cfg.rxchar[0]);
-			}
-			for (i=0;i<l;i++) {
-				printf("%c", cfg.txchar[0]);
-			}		
-		}
-		
+	/* round result depending of scale */
+	if (result>300) {
+		result = result/4 + (100 - ((result/4) % 100));
+	} else if (result>20) {
+		result = result/4 + (10 - ((result/4) % 10));
+	} else {
+		result = result/4;
 	}
 	
+	/* put unit back */
+	if (i) {
+		result = result * pow(1024, i);
+	}
+
+	/* make sure result isn't zero */
+	if (!result) {
+		result = pow(1024, i);
+	}
+
+	return result;
+}
+
+char *getunit(int index)
+{
+	static char *unit[] = { "na", "KiB", "MiB", "GiB", "TiB",
+                                   "KB",  "MB",  "GB",  "TB",
+                                   "kB",  "MB",  "GB",  "TB" };
+
+	if (index>UNITCOUNT) {
+		return unit[0];
+	} else {
+		return unit[(cfg.unit*UNITCOUNT)+index];
+	}
+}
+
+char *getbunit(int unit, int index)
+{
+	static char *bunit[] = { "na", "Kibit", "Mibit", "Gibit", "Tibit",
+                                    "Kbit",  "Mbit",  "Gbit",  "Tbit",
+                                    "kbit",  "Mbit",  "Gbit",  "Tbit" };
+
+	if (index>UNITCOUNT) {
+		return bunit[0];
+	} else {
+		return bunit[(unit*UNITCOUNT)+index];
+	}
 }

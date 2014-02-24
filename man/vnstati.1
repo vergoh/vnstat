@@ -1,0 +1,158 @@
+.TH VNSTATI 1 "APRIL 2009" "version 1.7" "User Manuals"
+.SH NAME
+vnStat image output \- png image output support for vnStat
+.SH SYNOPSIS
+.B vnstati
+[
+.B \-cdhimorstv?
+] [
+.B \-i
+.I interface
+] [
+.B \-\-hours
+] [
+.B \-\-days
+] [
+.B \-\-months
+] [
+.B \-\-top10
+] [
+.B \-\-summary
+] [
+.B \-hs
+] [
+.B \-\-hsummary
+] [
+.B \-vs
+] [
+.B \-\-vsummary
+] [
+.B \-ne
+] [
+.B \-\-noedge
+] [
+.B \-nh
+] [
+.B \-\-noheader
+] [
+.B \-\-rate
+] [
+.B \-\-output
+.I file
+] [
+.B \-\-cache
+.I time
+] [
+.B \-\-iface
+.I interface
+] [
+.B \-\-config
+.I file
+] [
+.B \-\-help
+] [
+.B \-\-version
+]
+.SH DESCRIPTION
+The purpose of
+.B vnstati
+is to provide image output support for statistics collected using
+.BR vnstat (1).
+The image file format is limited to png. All basic outputs
+of vnStat are supported excluding live traffic features. The image
+can be outputted either to a file or to standard output.
+.SH OPTIONS
+.TP
+.BI "-s, --summary"
+Output traffic summary.
+.TP
+.BI "-hs, --hsummary"
+Output traffic summary including hourly data using a horizontal layout.
+.TP
+.BI "-vs, --vsummary"
+Output traffic summary including hourly data using a vertical layout.
+.TP
+.BI "-d, --days"
+Output traffic for days.
+.TP
+.BI "-h, --hours"
+Output traffic for the last 24 hours.
+.TP
+.BI "-m, --months"
+Output traffic for months.
+.TP
+.BI "-t, --top10"
+Output all time top10 traffic days.
+.TP
+.BI "-ne, --noedge"
+Remove darker edges from around the image.
+.TP
+.BI "-nh, --noheader"
+Remove header containing title and update time. Time of the previous update
+will still be visible in the lower right corner using a less visible color.
+.TP
+.BI "-r, --rate"
+Show traffic in hourly output as hourly average rate instead of showing
+how much was transferred. This option has effect only when the selected output
+contains the hourly output.
+.TP
+.BI "-o, --output " file
+Write png image to
+.I file
+and exit. Output can be directed to stdout by giving "-" as filename.
+.TP
+.BI "-c, --cache " time
+Update output file only if at least
+.I time
+minutes have passed since the previous file update. This option is ignored if
+stdout is used as output.
+.TP
+.BI "-i, --iface " interface
+Use
+.I interface
+instead of default or configured interface.
+.TP
+.BI "--config " file
+Use
+.I file
+as config file instead of using normal config file search function.
+.TP
+.BI "-?, --help"
+Show a command summary.
+.TP
+.BI "-v, --version"
+Show current version.
+.SH FILES
+.TP
+.I /var/lib/vnstat/
+Default database directory. Files are named according to the monitored interfaces.
+.TP
+.I /etc/vnstat.conf
+Config file that will be used unless
+.I $HOME/.vnstatrc
+exists. See
+.BR vnstat.conf (1)
+for more information.
+.SH EXAMPLES
+.TP
+.BI "vnstati -s -i eth0 -o /tmp/vnstat.png" 
+Output traffic summary for interface eth0 to file /tmp/vnstat.png.
+.TP
+.BI "vnstati -h -c 15 -o /tmp/vnstat_h.png"
+Output hourly traffic statistics for default interface to file /tmp/vnstat_h.png
+if the file has not been updated within the last 15 minutes.
+.TP
+.BI "vnstati -d -ne -nh -o -"
+Output daily traffic statistics without displaying the header section and edges
+for default interface to standard output (stdout).
+.TP
+.BI "vnstati -m --config /home/me/vnstat.cfg -i -o -"
+Output monthly traffic statistics for default interface specified in configuration
+file /home/me/vnstat.cfg to standard output (stdout).
+.SH AUTHOR
+Teemu Toivola <tst at iki dot fi>
+.SH "SEE ALSO"
+.BR vnstat (1),
+.BR vnstatd (1),
+.BR vnstat.conf (1),
+.BR units (7)

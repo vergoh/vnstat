@@ -1,26 +1,35 @@
 CC = gcc
 CFLAGS = -O2
-OBJS = ifinfo.o db.o dbaccess.o misc.o cfg.o
+LDLIBS = -lm
+OBJS = vnstat.o ifinfo.o dbxml.o dbshow.o dbaccess.o common.o misc.o cfg.o traffic.o
+DOBJS = vnstatd.o ifinfo.o dbaccess.o dbcache.o common.o misc.o cfg.o
+IOBJS = vnstati.o image.o dbaccess.o common.o misc.o cfg.o
 
-default: vnstat
+default: vnstat vnstatd
 
-vnstat: $(OBJS) vnstat.c vnstat.h
-	$(CC) $(CFLAGS) -lm -o vnstat vnstat.c $(OBJS)
+all: vnstat vnstatd vnstati
 
-ifinfo.o: ifinfo.c ifinfo.h vnstat.h db.h misc.h cfg.h
-	$(CC) $(CFLAGS) -c ifinfo.c
+vnstat: $(OBJS)
+	$(CC) $(LDFLAGS) $(OBJS) $(LDLIBS) -o vnstat
+vnstatd: $(DOBJS)
+	$(CC) $(LDFLAGS) $(DOBJS) $(LDLIBS) -o vnstatd
+vnstati: $(IOBJS)
+	$(CC) $(LDFLAGS) $(IOBJS) $(LDLIBS) -lgd -o vnstati
 
-db.o: db.c db.h dbaccess.h ifinfo.h misc.h vnstat.h
-	$(CC) $(CFLAGS) -c db.c
+vnstat.o: vnstat.c vnstat.h common.h ifinfo.h traffic.h dbxml.h dbshow.h dbaccess.h misc.h cfg.h
+vnstatd.o: vnstatd.c vnstatd.h common.h ifinfo.h dbaccess.h dbcache.h misc.h cfg.h
+vnstati.o: vnstati.c vnstati.h common.h image.h cfg.h dbaccess.h
 
-dbaccess.o: dbaccess.c dbaccess.h vnstat.h
-	$(CC) $(CFLAGS) -c dbaccess.c
-
-misc.o: misc.c misc.h vnstat.h
-	$(CC) $(CFLAGS) -c misc.c
-
-cfg.o: cfg.c cfg.h
-	$(CC) $(CFLAGS) -c cfg.c
+ifinfo.o: ifinfo.c ifinfo.h common.h dbaccess.h misc.h cfg.h
+traffic.o: traffic.c traffic.h common.h ifinfo.h misc.h
+dbxml.o: dbxml.c dbxml.h common.h
+dbshow.o: dbshow.c dbshow.h misc.h common.h
+dbaccess.o: dbaccess.c dbaccess.h common.h
+dbcache.o: dbcache.c dbcache.h dbaccess.h common.h ifinfo.h
+common.o: common.c common.h
+misc.o: misc.c misc.h common.h
+cfg.o: cfg.c cfg.h common.h
+image.o: image.c image.h vnstati.h common.h misc.h
 
 clean:
-	rm -f *.o *~ core *.i vnstat
+	rm -f *.o *~ core *.i vnstat vnstatd vnstati

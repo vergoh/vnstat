@@ -9,7 +9,7 @@ since that's the easiest way to keep it updated.
 ----
 
 
-A snapshot of the FAQ (updated 30.12.2007):
+A snapshot of the FAQ (updated 12.4.2009):
 
 
 Is there some kind of support forum available?
@@ -23,10 +23,12 @@ Is there some kind of support forum available?
 How should dialup users use vnStat? There's some errors because the interface
 isn't available when offline.
 
-  That's all explained at the end of the README. The idea is to include
-  vnStat with enable/disable parameters in scripts related with the used
-  interface. Example scripts can be found from the pppd directory that came
-  with the source package.
+  Dialup users should use the daemon for updates. It will take care of
+  enabling and disabling the database every time the interface comes and goes.
+  It is still also possible to use cron based updates even with a dialup
+  interface but that requires proper setup of scripts with enable/disable
+  commands every time the status of the interface changes. Example scripts
+  can be founds from the pppd directory that came with the source packages.
 
 
 Does vnStat work for PPPoE users?
@@ -43,7 +45,8 @@ How do I stop monitoring an interface?
 
   Go to the vnStat database directory (default: /var/lib/vnstat) and delete
   the database file named according to the interface you want to stop
-  monitoring.
+  monitoring. The daemon needs to be stopped before this procedure if it's
+  being used for updates.
 
 
 How do I uninstall vnStat?
@@ -54,15 +57,15 @@ How do I uninstall vnStat?
   then refer to intructions provided by the package manager.
 
 
+What is this KiB/MiB/GiB/TiB thing?
+
+  See http://en.wikipedia.org/wiki/Binary_prefix#Prefixes
+
+
 Is the MB value reported by vnStat 10^6 or 2^20 bytes?
 
-  2^20 bytes. It could as well be MiB but due to space limitations in some
-  outputs that isn't used.
-
-
-Why kB and not KB?
-
-  Because it's kilo (k) and not kelvin (K) bytes.
+  2^20 bytes. The prefix can be configured to show MiB from the configuration
+  file instead of MB if that looks better.
 
 
 What does the 'estimated' value mean?
@@ -96,7 +99,9 @@ Each update adds the complete amount of traffic and 'vnstat -u -D' claims that
 the system has been rebooted between updates.
 
   That's most likely a broken kernel. Run with --testkernel (version 1.2+ 
-  required) and see the result. See the next question for some explanation.
+  required) and see the result. Also make sure that the maximun bandwidth
+  setting has been configured properly according to the network connection.
+  See the next question for some explanation about possible kernel problems.
 
 
 Why is there problems with most 2.4.18 kernels?

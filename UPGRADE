@@ -1,10 +1,11 @@
-(Updated 31.12.2007 for version 1.6)
+(Updated 30.3.2009 for version 1.7)
 
 
 This file will try to explain how vnStat is supposed to be upgraded 
-from version 1.0. The makefile should handle upgrades from version 1.1
-to 1.6 without user interaction. But for those still using 1.0, please
-read the instructions once before executing step by step.
+from version 1.0. The makefile should handle upgrades from any other
+older version to 1.7 without user interaction. But for those still
+using 1.0, please read the instructions once before executing step by
+step.
 
 But once again to make this clear:
 
@@ -36,4 +37,4 @@ What to do before upgrading from version 1.0?
 
  Now your all set to continue the install process like the INSTALL file
  tells. Remember that there's no need to uninstall version 1.0 before
- installing 1.6.
+ installing 1.7.

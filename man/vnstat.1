@@ -1,4 +1,4 @@
-.TH VNSTAT 1 "JANUARY 2008" "version 1.6" "User Manuals"
+.TH VNSTAT 1 "APRIL 2009" "version 1.7" "User Manuals"
 .SH NAME
 vnStat \- a console-based network traffic monitor
 .SH SYNOPSIS
@@ -34,6 +34,8 @@ vnStat \- a console-based network traffic monitor
 .B \-\-iface
 .I interface
 ] [
+.B \-\-iflist
+] [
 .B \-\-live
 ] [
 .B \-\-longhelp
@@ -53,6 +55,8 @@ vnStat \- a console-based network traffic monitor
 ] [
 .B \-\-showconfig
 ] [
+.B \-\-sync
+] [
 .B \-\-testkernel
 ] [
 .B \-\-top10
@@ -65,6 +69,8 @@ vnStat \- a console-based network traffic monitor
 .B \-\-version
 ] [
 .B \-\-weeks
+] [
+.B \-\-xml
 ]
 .SH DESCRIPTION
 .B vnStat
@@ -72,7 +78,10 @@ is a console-based network traffic monitor. It keeps a log of hourly,
 daily and monthly network traffic for the selected interface(s). However,
 it isn't a packet sniffer. The traffic information is analyzed from the
 .BR proc (5)
-filesystem. That way vnStat can be used even without root permissions.
+and
+.BR sys
+filesystems depending on availability. That way vnStat can be used even
+without root permissions on most systems.
 .SH OPTIONS
 .TP
 .BI "-d, --days"
@@ -111,6 +120,9 @@ was more than 10 seconds.
 Select one specific
 .I interface
 and apply actions to only it.
+.TP
+.BI "--iflist"
+Show list of currently available interfaces.
 .TP
 .BI "-q, --query"
 Force database query mode.
@@ -176,40 +188,48 @@ if it's shifting.
 .BI "-D, --debug"
 Show additional debug output.
 .TP
+.BI "--xml"
+Show database content for selected interface or all interfaces in xml format. All
+traffic values in the output are in KiB.
+.TP
 .BI "--dumpdb"
 Instead of showing the database with a formated output, this output will
 dump the whole database in a format that should be easy to parse with most
 script languages. Use this for example with PHP, Perl or Python to make a
 custom  webpage. The dump uses ; as field delimeter.
-
-  active;1                        activity status
-  interface;eth0                  name for the interface
-  nick;inet                       nick (if given)
-  created;1023895272              creation date in Unix time
-  updated;1065467100              when the database was updated
-  totalrx;569605                  all time total received MB
-  totaltx;2023708                 all time total transmitted MB
-  currx;621673719                 latest rx value in /proc
-  curtx;981730184                 latest tx value in /proc
-  totalrxk;644                    total rx kB counter
-  totaltxk;494                    total tx kB counter
-  btime;1059414541                system boot time in Unix time
+.TS
+l l.
+      active;1	activity status
+      interface;eth0	name for the interface
+      nick;inet	nick (if given)
+      created;1023895272	creation date in Unix time
+      updated;1065467100	when the database was updated
+      totalrx;569605	all time total received MiB
+      totaltx;2023708	all time total transmitted MiB
+      currx;621673719	latest rx value in /proc
+      curtx;981730184	latest tx value in /proc
+      totalrxk;644	total rx KiB counter
+      totaltxk;494	total tx KiB counter
+      btime;1059414541	system boot time in Unix time
+.TE
 
 Then follows 30 lines like the following
 
-  d;0;1078696800;559;7433;68;557;1
+      d;0;1078696800;559;7433;68;557;1
 
 where d = days, 0 = day number in database (0 is today), 1077314401 date in
-Unix time, 559 = rx MB, 7433 = tx MB, 68 = rx kB, 557 = tx kB and 1 tells that
+Unix time, 559 = rx MiB, 7433 = tx MiB, 68 = rx KiB, 557 = tx KiB and 1 tells that
 vnStat has filled this value and it is in use.
-
-  m;0;1078092000;48649;139704;527;252;1   (x12)
-  t;0;1078351200;5979;47155;362;525;1     (x10)
-  h;0;1078699800;118265;516545            (x24)
+.TS
+l l.
+      m;0;1078092000;48649;139704;527;252;1	(x12)
+      t;0;1078351200;5979;47155;362;525;1	(x10)
+      h;0;1078699800;118265;516545	(x24)
+.TE
 
 m = months, t = top10 and h = hours, all other fields are in the same order as in days
-except hours that doesn't have a separate kB value. For hours the forth and fifth fields
-have values in kB.
+except hours that doesn't have a separate KiB value. For hours the forth and fifth fields
+have values in KiB.
 .SH FILES
 .TP
 .I /var/lib/vnstat/
@@ -219,7 +239,9 @@ named according to the monitored interfaces.
 .I /etc/vnstat.conf
 Config file that will be used unless
 .I $HOME/.vnstatrc
-exists.
+exists. See
+.BR vnstat.conf (1)
+for more information.
 .SH EXAMPLES
 .BI "vnstat -u -i" 
 .I interface
@@ -252,25 +274,33 @@ to generate enough traffic to wrap the kernel interface traffic counter. Otherwi
 it is possible that some traffic won't be seen. This isn't an issue for 64 bit kernels
 but at least one update every hour is always required in order to provide proper input.
 With 32 bit kernels the maximum time between two updates depends on how fast the
-interface can transfer 4 GB. Calculated theoretical times are:
-.PP
-    10 Mbit:  54 minutes
-   100 Mbit:   5 minutes
-  1000 Mbit:  30 seconds
-.PP
+interface can transfer 4 GiB. Calculated theoretical times are:
+.RS
+.TS
+l l.
+10 Mbit:	54 minutes
+100 Mbit:	 5 minutes
+1000 Mbit:	30 seconds
+.TE
+.RE
+
 However, for 1000 Mbit interfaces updating once every minute is usually a
 working solution.
 .PP
 Estimated traffic values are likely to be somewhat inaccurate if daily
-traffic is low because only the MB counter is used to calculate the
+traffic is low because only the MiB counter is used to calculate the
 estimate.
 .PP
-Virtual and aliased interfaces can't be monitored because the kernel doesn't
+Virtual and aliased interfaces cannot be monitored because the kernel doesn't
 provide traffic information for that type of interfaces. Such interfaces are
 usually named eth0:0, eth0:1, eth0:2 etc. where eth0 is the actual interface
 being aliased.
 .SH AUTHOR
 Teemu Toivola <tst at iki dot fi>
 .SH "SEE ALSO"
+.BR vnstatd (1),
+.BR vnstati (1),
+.BR vnstat.conf (1),
 .BR proc (5),
-.BR ifconfig (8)
+.BR ifconfig (8),
+.BR units (7)

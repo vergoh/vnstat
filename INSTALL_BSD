@@ -10,17 +10,21 @@ Compiling the binaries
      make
 
  will compile 'vnstat' and 'vnstatd' without requiring additional libraries.
- The optional image output however requires libgd2 to be available. The
- required extra packages are usually named libgd2 and libgd2-dev (or
- libgd2-noxpm and libgd2-noxpm-dev in Debian/Ubuntu, xpm version can also
- be used). Executing
+ The optional image output however requires libgd2 to be available. In 
+ BSD ports libgd2 is usually named simply 'gd'. Executing
 
      make all
 
- will compile everything including the image output support. An example
+ will compile everything including the image output support.  An example
  cgi ('vnstat.cgi') to be used with http server with the image output
  support has been provided in the 'examples' directory. Configuration
  options for the cgi are in the beginning of the file.
+ 
+ Some BSD users might need to use
+
+     LIBRARY_PATH="/usr/local/lib" CPATH="/usr/local/include" make all
+
+ instead if libgd2 is installed but still not found.
 
 
 Installing as root
@@ -28,18 +32,12 @@ Installing as root
 
  Login as root and run the following command:
 
-     make install
+     make bsdinstall
 
  If there were no errors, vnStat binaries, man pages and a config file
- should now be installed. Next the used kernel should be checked that it
- is able to provide static information about the system boot time.
-
-     vnstat --testkernel
-
- The only way to fix a faulty kernel (afaik) is to compile/install a newer
- one. Next every interface that should be monitored needs to be introduced
- to vnStat. Replace 'eth0' in the command with any available interface if
- needed.
+ should now be installed. Next every interface that should be monitored 
+ needs to be introduced to vnStat. Replace 'eth0' in the command with any
+ available interface if needed.
 
      vnstat -u -i eth0
 
@@ -59,7 +57,7 @@ Installing as root
  for updating interface data, daemon and cron. It is suggested to use daemon
  based updating because it generated less disk access and is more accurate
  especially when monitoring interfaces that aren't always available. Select
- ONLY ONE of these two:
+ only one of these two:
 
  1) daemon based updating
  ::::::::::::::::::::::::
@@ -75,12 +73,13 @@ Installing as root
  2) cron based updating
  ::::::::::::::::::::::
 
-   Copy the example cron file to /etc/cron.d
+   Add the following line to /etc/crontab (or with minor modifications
+   to the personal crontab of the user responsible for updates):
 
-       cp cron/vnstat /etc/cron.d
+       */5 * * * *  root  /usr/local/bin/vnstat -u
 
-   and edit the cron file is the default 5 minute update interval is too
-   long. See the vnStat man page 'restrictions' section for limitations
+   That will update interface every 5 minutes. Modify the update interval
+   if needed. See the vnStat man page 'restrictions' section for limitations
    regarding fast interfaces and 32 bit interface traffic counters. Devices
    like ppp0 also require vnStat enable and disable commands to be added
    to suitable script file when cron based updating is used. Example scripts
@@ -97,19 +96,8 @@ Installing without root access
      cp cfg/vnstat.conf ~/.vnstatrc
      mkdir ~/.vnstat
 
- During version 1.0 it became clear that some kernels are broken and don't
- provide to correct boot time for the system. vnStat requires this information
- so there's a test to see if the kernel is working correctly.
-
-     vnstat --testkernel
-
- If this gives 'command not found' then check your $PATH. The only way to fix
- a faulty kernel (afaik) is to compile/install a newer one. This can't be done
- without the root account so you'll have to solve this problem with your
- sysadmin if the kernel is broken.
-
- Now open the config file ~/.vnstatrc with your favorite text editor and locate
- the following line:
+ Next open the config file ~/.vnstatrc with your favorite text editor and
+ locate the following line:
  
      DatabaseDir "/var/lib/vnstat"
 
@@ -154,3 +142,4 @@ Installing without root access
 
  Now you should get some stats about your network usage. See the config
  file ~/.vnstatrc for interface and other settings.
+ 

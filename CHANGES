@@ -1,3 +1,27 @@
+1.7 / 12-Apr-09
+
+ - Fix: Timezone changes shouldn't cause a flood of errors anymore
+ - Fix: Statvfs used instead of statfs for BSD compatibility
+   (Thanks to Mark Mitchell for pointing this out)
+ - Fix: Makefile didn't properly support LDFLAGS and -lm was misplaced
+ - Fix: MonthRotate value in config wasn't used
+ - Fix: Unreadable configuration file doesn't cause a segmentation fault
+ - Fix: /proc/net/dev parser didn't see the difference between eth10 and eth1
+ - Fix: Updating a database from two of more processes at the same time
+   was able to sometimes cause data loss
+ - Fix: Estimates are calculated based on last database update
+ - Fix: Each interface update had a possibility of losing 1023 bytes of
+   traffic at most due to improper rounding
+   (Thanks to Michael Berlin for suggesting a suitable correction)
+ - Daemon support as alternative for cron based updates
+ - PNG image output (hourly rate based on patch by Sergio Ammirata)
+ - XML output
+ - BSD support
+ - Diskspace check can be disabled from configuration file
+ - IEC standard prefixes (KiB/MiB/GiB/TiB)
+ - List of available interfaces if wrong of unavailable interface is selected
+
+
 1.6 / 1-Jan-08
 
  - Fix: Segmentation fault when environment variable "HOME" wasn't defined,

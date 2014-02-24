@@ -1,30 +1,38 @@
-(Updated 27.11.2007 for version 1.5 and later)
+(Updated 6.4.2009 for version 1.7)
 
 
 What is vnStat
 ::::::::::::::
 
  In short, vnStat is a console-based network traffic monitor that uses the
- /proc filesystem to get the needed information. This means that vnStat
- won't actually be sniffing any traffic. 
+ network interface statistics provided by the kernel as information source.
+ This means that vnStat won't actually be sniffing any traffic and also
+ ensures light use of system resources. Optional image output is available
+ starting from version 1.7.
 
- See the webpage for few 'screenshots'.
+ See the webpage for 'screenshots'.
 
 
 Getting started
 :::::::::::::::
 
- First you should install vnStat. See the INSTALL file, it contains all needed
- information for the installing process. Users of version 1.0 should see the 
- UPGRADE file first.
+ First you should install vnStat. See the INSTALL or INSTALL_BSD file
+ depending on used operating system, it contains all needed information
+ for the installing process. Users of version 1.0 should see the UPGRADE
+ file first.
 
 
-Available options
-:::::::::::::::::
+Available options and documentation
+:::::::::::::::::::::::::::::::::::
 
  A list of commonly used options is available with 'vnstat --help'. The
- complete list can be accessed with 'vnstat --longhelp'. See the man(1)
- page for option explanations.
+ complete list can be accessed with 'vnstat --longhelp'. The following
+ man pages are available with more detailed descriptions:
+ 
+    vnstat          general documentation and console query parameters
+	vnstatd         daemon documentation
+	vnstati         image output documentation
+	vnstat.conf     configuration file
 
 
 Usage tips
@@ -38,10 +46,12 @@ Usage tips
     vnstat --showconfig >newconfig
 
  The config file contains comments before any settings describing with
- the purpose and usage of each setting is.
+ the purpose and usage of each setting is. More detailed descriptions
+ about each setting and suggested usage can be found from the vnstat.conf
+ man page.
 
- By default vnStat will use dd.mm.yy format in timestamps. For example
- this can be changed from the config file by locating lines
+ Note that by default vnStat will use dd.mm.yy format in timestamps.
+ For example this can be changed from the config file by locating lines
 
 DayFormat    "%d.%m."
 MonthFormat  "%b '%y"
@@ -53,7 +63,7 @@ DayFormat    "%m/%d"
 MonthFormat  "%b '%y"
 TopFormat    "%%m/%d/%y"
 
- Note that some field have space limits and giving too long parameters
+ Some of these field have space limitations and giving too long parameters
  might affect the readability of the output. Changing date formats won't
  affect the database(s) in any way.
 
