@@ -41,7 +41,7 @@
 #define DBVERSION 3
 
 /* version string */
-#define VNSTATVERSION "1.3"
+#define VNSTATVERSION "1.4"
 
 #ifdef BLIMIT
 /* 64 bit limit */

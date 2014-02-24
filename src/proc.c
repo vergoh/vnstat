@@ -181,7 +181,7 @@ void parseproc(int newdb)
 
 	/* rotate months in database if needed */
 	d=localtime(&data.month[0].month);
-	if ((d->tm_mon!=month) && (day==atoi(MONTHROTATE)))
+	if ((d->tm_mon!=month) && (day>=atoi(MONTHROTATE)))
 		rotatemonths();
 
 }

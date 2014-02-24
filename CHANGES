@@ -1,3 +1,12 @@
+1.4 / 26-Mar-04
+
+ - Fix: major output problems when compiled with some compilers
+        (thanks to DukePyrolator for reporting this bug and 
+         Juha / vlu for testing the patch)
+ - Fix: month rotation if database isn't updated every day
+ - Minor non-visible fixes and code cleanup
+
+
 1.3 / 8-Mar-04
 
  - Fix: support for 64bit counters

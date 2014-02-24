@@ -1,8 +1,8 @@
-(Updated 29.2.2004 based on version 1.3)
+(Updated 26.3.2004 based on version 1.4)
 
 This file will try to explain how vnStat is supposed to be upgraded 
 from version 1.0. The makefile should handle upgrades from version 1.1
-to 1.3 without user interaction. But for those still using 1.0, please
+to 1.4 without user interaction. But for those still using 1.0, please
 read the instructions once before executing step by step.
 
 But once again to make this clear:

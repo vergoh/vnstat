@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -O2 -Wall
+CFLAGS = -O2
 OBJS = proc.o db.o misc.o
 OBJS64 = proc64.o db.o misc.o
 
@@ -23,8 +23,8 @@ proc.o: proc.c proc.h vnstat.h db.h
 proc64.o: proc.c proc.h vnstat.h db.h
 	$(CC) $(CFLAGS) -c proc.c -o proc64.o -DBLIMIT
 
-db.o: db.c db.h vnstat.h
-	$(CC) -O2 -c db.c
+db.o: db.c db.h proc.h vnstat.h
+	$(CC) $(CFLAGS) -c db.c
 
 misc.o: misc.c misc.h
 	$(CC) $(CFLAGS) -c misc.c
