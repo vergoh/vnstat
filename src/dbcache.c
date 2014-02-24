@@ -3,7 +3,7 @@
 #include "dbaccess.h"
 #include "dbcache.h"
 
-int dataadd(char *iface, int sync)
+int cacheadd(const char *iface, int sync)
 {
 	datanode *p, *n;
 
@@ -31,6 +31,7 @@ int dataadd(char *iface, int sync)
 	dataptr = n;
 	strncpy(n->data.interface, iface, 32);
 	n->data.interface[31] = '\0';
+	n->data.active = 1;
 	n->filled = 0;
 	n->sync = sync;
 
@@ -41,7 +42,50 @@ int dataadd(char *iface, int sync)
 	return 1;
 }
 
-int dataupdate(void)
+datanode *cacheremove(const char *iface)
+{
+	datanode *p, *o;
+	
+	p = dataptr;
+	
+	if (p == NULL) {
+		return NULL;
+	} else {
+		
+		/* handle list head remove */
+		if (strcmp(p->data.interface, iface)==0) {
+			dataptr = p->next;
+			free(p);
+			if (debug) {
+				printf("cache: h %s removed\n", iface);
+			}
+			return dataptr;
+		}
+		
+		o = p;
+		p = p->next;
+		
+		/* handle other locations */
+		while (p != NULL) {
+
+			if (strcmp(p->data.interface, iface)==0) {
+				o->next = p->next;
+				free(p);
+				if (debug) {
+					printf("cache: %s removed\n", iface);
+				}
+				return o->next;
+			}
+
+			o = p;
+			p = p->next;
+		}
+	}
+	
+	return NULL;
+}
+
+int cacheupdate(void)
 {
 	datanode *p, *n;
 
@@ -85,7 +129,7 @@ int dataupdate(void)
 	return n->filled;
 }
 
-void datashow(void)
+void cacheshow(void)
 {
 	int i = 1;
 	datanode *p = dataptr;
@@ -105,35 +149,54 @@ void datashow(void)
 	}
 }
 
-int dataget(char *iface)
+void cachestatus(void)
 {
+	char buffer[512];
+	int b = 13, count = 0;
 	datanode *p = dataptr;
+
+	sprintf(buffer, "Monitoring: ");
 	
-	if (debug) {
-		printf("cache search: %s... ", iface);
-	}
-	
-	while (p != NULL) {
-		if (strcmp(p->data.interface, iface)==0) {
-			if (p->filled) {
-				memcpy(&data, &p->data, sizeof(data));
+	if (p != NULL) {
+
+		while (p != NULL) {
+			if ((b+strlen(p->data.interface)+1) < 508) {
+				strncat(buffer, p->data.interface, strlen(p->data.interface));
+				strcat(buffer, " ");
+				b = b+strlen(p->data.interface)+1;
+			} else {
+				strcat(buffer, "...");
+				break;
 			}
-			if (debug) {
-				printf("found (%d)\n", p->filled);
-			}
-			return p->filled;
+			count++;
+			p = p->next;
 		}
-		p = p->next;
+	}
+
+	if (count) {
+		strncpy(errorstring, buffer, 512);
+		errorstring[511] = '\0';
+	} else {
+		snprintf(errorstring, 512, "Nothing to monitor");
+	}
+	printe(PT_Info);
+}
+
+int cacheget(const datanode *dn)
+{
+	if (dn->filled) {
+		memcpy(&data, &dn->data, sizeof(data));
 	}
 
 	if (debug) {
-		printf("not found\n");
+		printf("cache get: %s (%d/%d)\n", dn->data.interface, dn->filled, dn->data.active);
 	}
-	return 0;
+
+	return dn->filled;
 }
 
 /* flush cached data to disk and free all memory allocted for it */
-void dataflush(char *dirname)
+void cacheflush(const char *dirname)
 {
 	datanode *f, *p = dataptr;
 
@@ -153,20 +216,35 @@ void dataflush(char *dirname)
 	dataptr = NULL;
 }
 
-int datacount(void)
+int cachecount(void)
 {
 	datanode *p = dataptr;
-	int i = 0;
+	int c = 0;
 
 	while (p != NULL) {
-		i++;
+		c++;
 		p = p->next;
 	}
 	
-	return i;
+	return c;
 }
 
-uint32_t dbcheck(uint32_t dbhash)
+int cacheactivecount(void)
+{
+	datanode *p = dataptr;
+	int c = 0;
+
+	while (p != NULL) {
+		if (p->data.active) {
+			c++;
+		}
+		p = p->next;
+	}
+	
+	return c;
+}
+
+uint32_t dbcheck(uint32_t dbhash, int *forcesave)
 {
 	char *ifacelist, interface[32];
 	datanode *p = dataptr;
@@ -204,11 +282,17 @@ uint32_t dbcheck(uint32_t dbhash)
 				if (p->data.active==1 && found==0) {
 					p->data.active = 0;
 					p->data.currx = p->data.curtx = 0;
+					if (cfg.savestatus) {
+						*forcesave = 1;
+					}
 					snprintf(errorstring, 512, "Interface \"%s\" disabled.", p->data.interface);
 					printe(PT_Info);
 				} else if (p->data.active==0 && found==1) {
 					p->data.active = 1;
 					p->data.currx = p->data.curtx = 0;
+					if (cfg.savestatus) {
+						*forcesave = 1;
+					}
 					snprintf(errorstring, 512, "Interface \"%s\" enabled.", p->data.interface);
 					printe(PT_Info);
 				}

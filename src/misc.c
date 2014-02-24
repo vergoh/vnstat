@@ -69,11 +69,11 @@ int spacecheck(char *path)
 	}
 
 	if (statvfs(path, &buf)) {
-		snprintf(errorstring, 512, "Free diskspace check failed.");
-		printe(PT_Error);
 		if (noexit) {
 			return 0;
 		} else {
+			snprintf(errorstring, 512, "Free diskspace check failed.");
+			printe(PT_Error);
 			exit(1);
 		}
 	}

@@ -113,6 +113,37 @@ int main(int argc, char *argv[])
 				printf("Error: Parameter for -c missing or invalid.\n");
 				return 1;
 			}
+		} else if ((strcmp(argv[currentarg],"--style"))==0) {
+			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
+				cfg.ostyle = atoi(argv[currentarg+1]);
+				if (cfg.ostyle > 3 || cfg.ostyle < 0) {
+					printf("Error: Invalid style parameter \"%d\" for --style.\n", cfg.ostyle);
+					return 1;
+				}
+				if (debug)
+					printf("Style changed: %d\n", cfg.ostyle);
+				currentarg++;
+				continue;
+			} else {
+				printf("Error: Style parameter for --style missing.\n");
+				return 1;
+			}
+		} else if ((strcmp(argv[currentarg],"--transparent"))==0) {
+			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
+				cfg.transbg = atoi(argv[currentarg+1]);
+				if (cfg.transbg > 1 || cfg.transbg < 0) {
+					printf("Error: Invalid parameter \"%d\" for --transparent.\n", cfg.transbg);
+					return 1;
+				}
+				if (debug)
+					printf("Transparency changed: %d\n", cfg.transbg);
+				currentarg++;
+				continue;
+			} else {
+				cfg.transbg = !cfg.transbg;
+				if (debug)
+					printf("Transparency changed: %d\n", cfg.transbg);
+			}
 		} else if ((strcmp(argv[currentarg],"--dbdir"))==0) {
 			if (currentarg+1<argc) {
 				strncpy(dirname, argv[currentarg+1], 512);
@@ -161,7 +192,21 @@ int main(int argc, char *argv[])
 		} else if ((strcmp(argv[currentarg],"-ne")==0) || (strcmp(argv[currentarg],"--noedge"))==0) {
 			showedge = 0;
 		} else if ((strcmp(argv[currentarg],"-ru")==0) || (strcmp(argv[currentarg],"--rateunit"))==0) {
-			cfg.rateunit =! cfg.rateunit;
+			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
+				cfg.rateunit = atoi(argv[currentarg+1]);
+				if (cfg.rateunit > 1 || cfg.rateunit < 0) {
+					printf("Error: Invalid parameter \"%d\" for --rateunit.\n", cfg.rateunit);
+					return 1;
+				}
+				if (debug)
+					printf("Rateunit changed: %d\n", cfg.rateunit);
+				currentarg++;
+				continue;
+			} else {
+				cfg.rateunit = !cfg.rateunit;
+				if (debug)
+					printf("Rateunit changed: %d\n", cfg.rateunit);
+			}
 		} else if ((strcmp(argv[currentarg],"-v")==0) || (strcmp(argv[currentarg],"--version"))==0) {
 			printf("vnStat image output %s by Teemu Toivola <tst at iki dot fi>\n", VNSTATVERSION);
 			return 0;
@@ -190,8 +235,10 @@ int main(int argc, char *argv[])
 		printf("         -D,  --debug          show some additional debug information\n");
 		printf("         -v,  --version        show version\n");
 		printf("         --dbdir               select database directory\n");
+		printf("         --style               select output style (0-3)\n");
 		printf("         --locale              set locale\n");
-		printf("         --config              select config file\n\n");
+		printf("         --config              select config file\n");
+		printf("         --transparent         toggle background transparency\n\n");
 		printf("See also \"man vnstati\".\n");
 		return 0;
 	}
@@ -260,13 +307,25 @@ int main(int argc, char *argv[])
 			drawtop(showheader, showedge);
 			break;
 		case 5:
-			drawsummary(0, showheader, showedge, 0);
+			if (cfg.slayout) {
+				drawsummary(0, showheader, showedge, 0);
+			} else {
+				drawoldsummary(0, showheader, showedge, 0);
+			}
 			break;
 		case 51:
-			drawsummary(1, showheader, showedge, cfg.hourlyrate);
+			if (cfg.slayout) {
+				drawsummary(1, showheader, showedge, cfg.hourlyrate);
+			} else {
+				drawoldsummary(1, showheader, showedge, cfg.hourlyrate);
+			}
 			break;
 		case 52:
-			drawsummary(2, showheader, showedge, cfg.hourlyrate);
+			if (cfg.slayout) {
+				drawsummary(2, showheader, showedge, cfg.hourlyrate);
+			} else {
+				drawoldsummary(2, showheader, showedge, cfg.hourlyrate);
+			}
 			break;
 		case 7:
 			drawhourly(showheader, showedge, cfg.hourlyrate);

@@ -64,8 +64,17 @@ and most can be changed later from the config file.
 /* 0 = KiB/MiB/GiB/TiB, 1 = KB/MB/GB/TB */
 #define UNITMODE 0
 
-/* rate column */
-#define SHOWRATE 1
+/* output style */
+/* 0 = minimal/narrow, 1 = bars everywhere */
+/* 2 = same as 1 + rate in summary and weekly */
+/* 3 = rate everywhere */
+#define OSTYLE 3
+
+/* rate in vnstati summary output */
+#define SUMMARYRATE 1
+
+/* layout of summary output in vnstati */
+#define SUMMARYLAYOUT 1
 
 /* rate in vnstati hourly output */
 #define HOURLYRATE 1
@@ -120,11 +129,14 @@ and most can be changed later from the config file.
 #define DBVERSION 3
 
 /* version string */
-#define VNSTATVERSION "1.8"
+#define VNSTATVERSION "1.9"
 
 /* xml format version */
 /* 1 = 1.7- */
 #define XMLVERSION 1
+
+/* --oneline format version */
+#define ONELINEVERSION 1
 
 /* integer limits */
 #define FP32 4294967295ULL
@@ -141,6 +153,8 @@ and most can be changed later from the config file.
 #define UPDATEINTERVAL 30
 #define POLLINTERVAL 5
 #define SAVEINTERVAL 5
+#define OFFSAVEINTERVAL 30
+#define SAVESTATUS 1
 #define USELOGGING 2
 #define LOGFILE "/var/log/vnstat.log"
 #define PIDFILE "/var/run/vnstat.pid"
@@ -164,17 +178,17 @@ and most can be changed later from the config file.
 
 /* internal config structure */
 typedef struct {
-	char dformat[64], mformat[64], tformat[64], hformat[32];
+	char dformat[64], mformat[64], tformat[64], hformat[64];
 	char iface[32];
 	char locale[32];
 	char dbdir[512];
 	char rxchar[2], txchar[2], rxhourchar[2], txhourchar[2];
 	char cbg[8], cedge[8], cheader[8], cheadertitle[8], cheaderdate[8], ctext[8];
 	char cline[8], clinel[8], cvnstat[8], crx[8], crxd[8], ctx[8], ctxd[8];
-	short unit, showrate, rateunit, bvar, qmode, sampletime, hourlyrate;
-	short monthrotate, maxbw, flock, spacecheck, traflessday, transbg;
+	short unit, ostyle, rateunit, bvar, qmode, sampletime, hourlyrate, summaryrate;
+	short monthrotate, maxbw, flock, spacecheck, traflessday, transbg, slayout;
 	char logfile[512], pidfile[512];
-	short updateinterval, pollinterval, saveinterval, uselogging;
+	short updateinterval, pollinterval, saveinterval, offsaveinterval, savestatus, uselogging;
 } CFG;
 
 /* internal interface information structure */

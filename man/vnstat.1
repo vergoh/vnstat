@@ -1,4 +1,4 @@
-.TH VNSTAT 1 "JULY 2009" "version 1.8" "User Manuals"
+.TH VNSTAT 1 "SEPTEMBER 2009" "version 1.9" "User Manuals"
 .SH NAME
 vnStat \- a console-based network traffic monitor
 .SH SYNOPSIS
@@ -20,6 +20,8 @@ vnStat \- a console-based network traffic monitor
 .I file
 ] [
 .B \-\-days
+] [
+.B \-\-delete
 ] [
 .B \-\-dbdir
 .I directory
@@ -53,6 +55,8 @@ vnStat \- a console-based network traffic monitor
 .B \-\-nick
 .I nickname
 ] [
+.B \-\-oneline
+] [
 .B \-\-query
 ] [
 .B \-\-rateunit
@@ -64,6 +68,9 @@ vnStat \- a console-based network traffic monitor
 .B \-\-short
 ] [
 .B \-\-showconfig
+] [
+.B \-\-style
+.I number
 ] [
 .B \-\-sync
 ] [
@@ -113,6 +120,14 @@ Show all time top10 traffic days.
 .BI "-w, --weeks"
 Show traffic for 7 days, current and previous week.
 .TP
+.BI "--style " number
+Modify the content and style of outputs. Set
+.I number
+to 0 for a more narrow output, 1 for enabling bar column, 2
+for same as previous but with average traffic rate visible in summary
+and weekly outputs and 3 for enabling average traffic rate in all
+outputs where it is supported.
+.TP
 .BI "-tr " time
 Calculate how much traffic goes through the selected interface during
 the given
@@ -130,7 +145,9 @@ was more than 10 seconds.
 Swap the configured rate unit. If rate has been configured to be shown in
 bytes then rate will be shown in bits if this option is present. In the same
 way, if rate has been configured to be shown in bits then rate will be shown
-in bytes when this option is present.
+in bytes when this option is present. Alternatively 0 or 1 can be given as
+parameter for this option in order to select between bytes (0) and bits
+(1) regardless of the configuration file setting.
 .TP
 .BI "-i, --iface " interface
 Select one specific
@@ -168,7 +185,10 @@ like
 to the script that's executed when
 the interface goes down and
 .B "vnstat --enable -i ppp0"
-to the up script.
+to the up script. These two options aren't needed when the daemon is used.
+.TP
+.BI "--delete"
+Delete the database for the selected interface and stop monitoring it.
 .TP
 .BI "-v, --version"
 Show current version.
@@ -219,6 +239,17 @@ Show additional debug output.
 .BI "--xml"
 Show database content for selected interface or all interfaces in xml format. All
 traffic values in the output are in KiB.
+.TP
+.BI "--oneline"
+Show traffic summary for selected interface using one line with a parseable
+format. The output contains 15 fields with ; used as field delimeter. The 1st
+field contains the version information of the output that will be changed
+in future versions of vnStat if the field structure changes. The following
+fields in order 2) interface name, 3) timestamp for today, 4) rx for today,
+5) tx for today, 6) total for today, 7) average traffic rate for today,
+8) timestamp for current month, 9) rx for current month, 10) tx for current
+month, 11) total for current month, 12) average traffic rate for today,
+13) all time total rx, 14) all time total tx, 15) all time total traffic.
 .TP
 .BI "--dumpdb"
 Instead of showing the database with a formated output, this output will
@@ -289,6 +320,9 @@ exist. This is usually the first command used after a fresh install.
 Give interface eth0 the nickname "local". That information will be later
 later visible as a label when eth0 is queried. The database will also be updated
 when this command is executed or created if the database doesn't exist.
+.TP
+.BI "vnstat -i eth2 --delete"
+Delete database of interface eth2 and stop monitoring it.
 .SH RESTRICTIONS
 Updates needs to be executed at least as often as it is possible for the interface
 to generate enough traffic to wrap the kernel interface traffic counter. Otherwise

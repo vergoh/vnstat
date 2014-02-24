@@ -1,13 +1,13 @@
 #include "common.h"
 #include "dbaccess.h"
 
-int readdb(char iface[32], char dirname[512])
+int readdb(const char *iface, const char *dirname)
 {
 	FILE *db;
 	char file[512], backup[512];
-	int newdb=0, i;
+	int newdb=0;
 
-	snprintf(file, 512, "%s/%s", dirname, iface);	
+	snprintf(file, 512, "%s/%s", dirname, iface);
 	snprintf(backup, 512, "%s/.%s", dirname, iface);
 
 	if ((db=fopen(file,"r"))!=NULL) {
@@ -122,65 +122,89 @@ int readdb(char iface[32], char dirname[512])
 		printe(PT_Error);
 		
 		newdb=1;
-		
-		/* set default values for a new database */
+		initdb();
 		strncpy(data.interface, iface, 32);
 		strncpy(data.nick, data.interface, 32);
-		data.version=DBVERSION;
-		data.active=1;
-		data.totalrx=0;
-		data.totaltx=0;
-		data.currx=0;
-		data.curtx=0;
-		data.totalrxk=0;
-		data.totaltxk=0;
-		data.lastupdated=time(NULL);
-		data.created=time(NULL);
-		
-		/* days */
-		for (i=0;i<=29;i++) {
-			data.day[i].rx=0;
-			data.day[i].tx=0;
-			data.day[i].rxk=0;
-			data.day[i].txk=0;
-			data.day[i].date=0;
-			data.day[i].used=0;
-		}
-		
-		/* months */
-		for (i=0;i<=11;i++) {
-			data.month[i].rx=0;
-			data.month[i].tx=0;
-			data.month[i].rxk=0;
-			data.month[i].txk=0;
-			data.month[i].month=0;
-			data.month[i].used=0;
-		}
-		
-		/* top10 */
-		for (i=0;i<=9;i++) {
-			data.top10[i].rx=0;
-			data.top10[i].tx=0;
-			data.top10[i].rxk=0;
-			data.top10[i].txk=0;
-			data.top10[i].date=0;
-			data.top10[i].used=0;
-		}
-		
-		/* hours */
-		for (i=0;i<=23;i++) {
-			data.hour[i].rx=0;
-			data.hour[i].tx=0;
-			data.hour[i].date=0;
-		}
-		data.day[0].used=data.month[0].used=1;
-		data.day[0].date=data.month[0].month=time(NULL);
-		data.btime=FP32;
 	}
 	return newdb;
 }
 
-int writedb(char iface[32], char dirname[512], int newdb)
+void initdb(void)
+{
+	int i;
+	time_t current;
+	struct tm *d;
+	
+	current=time(NULL);
+	d=localtime(&current);
+
+	/* set default values for a new database */
+	data.version=DBVERSION;
+	data.active=1;
+	data.totalrx=0;
+	data.totaltx=0;
+	data.currx=0;
+	data.curtx=0;
+	data.totalrxk=0;
+	data.totaltxk=0;
+	data.lastupdated=current;
+	data.created=current;
+
+	/* days */
+	for (i=0;i<=29;i++) {
+		data.day[i].rx=0;
+		data.day[i].tx=0;
+		data.day[i].rxk=0;
+		data.day[i].txk=0;
+		data.day[i].date=0;
+		data.day[i].used=0;
+	}
+	
+	/* months */
+	for (i=0;i<=11;i++) {
+		data.month[i].rx=0;
+		data.month[i].tx=0;
+		data.month[i].rxk=0;
+		data.month[i].txk=0;
+		data.month[i].month=0;
+		data.month[i].used=0;
+	}
+	
+	/* top10 */
+	for (i=0;i<=9;i++) {
+		data.top10[i].rx=0;
+		data.top10[i].tx=0;
+		data.top10[i].rxk=0;
+		data.top10[i].txk=0;
+		data.top10[i].date=0;
+		data.top10[i].used=0;
+	}
+
+	/* hours */
+	for (i=0;i<=23;i++) {
+		data.hour[i].rx=0;
+		data.hour[i].tx=0;
+		data.hour[i].date=0;
+	}
+	
+	data.day[0].used=data.month[0].used=1;
+	data.day[0].date=current;
+
+	/* calculate new date for current month if current day is less
+           than the set monthrotate value so that new databases begin
+           from the right month */
+	if (d->tm_mday < cfg.monthrotate) {
+		d->tm_mday=cfg.monthrotate;
+		d->tm_mon--;
+		data.month[0].month=mktime(d);
+	} else {
+		data.month[0].month=current;
+	}
+
+	data.btime=FP32;
+}
+
+int writedb(const char *iface, const char *dirname, int newdb)
 {
 	FILE *db;
 	char file[512], backup[512];
@@ -230,7 +254,7 @@ int writedb(char iface[32], char dirname[512], int newdb)
 	return 1;
 }
 
-int backupdb(char *current, char *backup)
+int backupdb(const char *current, const char *backup)
 {
 	FILE *bf;
 	int c, b, bytes;
@@ -572,6 +596,37 @@ int lockdb(int fd, int dbwrite)
 			locktry++;
 		}
 	}
+	return 1;
+}
+
+int checkdb(const char *iface, const char *dirname)
+{
+	char file[512];
+	struct statvfs buf;
+	
+	snprintf(file, 512, "%s/%s", dirname, iface);
+	
+	if (statvfs(file, &buf)==0) {
+		return 1; /* file exists */	
+	} else {
+		return 0; /* no file or some other error */
+	}
+}
+
+int removedb(const char *iface, const char *dirname)
+{
+	char file[512];
+	
+	/* remove backup first */
+	snprintf(file, 512, "%s/.%s", dirname, iface);
+	unlink(file);
+	
+	snprintf(file, 512, "%s/%s", dirname, iface);
+	if (!unlink(file)) {
+		perror("unlink");
+		return 0;
+	}
+	
 	return 1;
 }
 

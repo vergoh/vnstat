@@ -1,15 +1,18 @@
-(Updated 1.8.2009 for version 1.8)
+(Updated 7.9.2009 for version 1.9)
 
 
 New configuration settings
 ::::::::::::::::::::::::::
+
+1.9: OutputStyle, SummaryLayout, SummaryRate, SaveOnStatusChange,
+     OfflineSaveInterval
 
 1.8: ShowRate, RateUnit, TrafficlessDays, HourlyRate, TransparentBg
 
 1.7: UnitMode + all settings under vnstatd and vnstati
 
 
-Upgrading from versions 1.1 - 1.7 to 1.8
+Upgrading from versions 1.1 - 1.8 to 1.9
 ::::::::::::::::::::::::::::::::::::::::
 
 1) Follow the normal install procedure, 'make install' will not overwrite
@@ -64,4 +67,4 @@ Upgrading from version 1.0
 
  Now your all set to continue the install process like the INSTALL file
  tells. Remember that there's no need to uninstall version 1.0 before
- installing 1.8.
+ installing a more recent version.

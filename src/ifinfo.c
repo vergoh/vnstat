@@ -4,7 +4,7 @@
 #include "cfg.h"
 #include "ifinfo.h"
 
-int getifinfo(char iface[32])
+int getifinfo(const char *iface)
 {
 	char inface[32];
 
@@ -113,7 +113,7 @@ int getiflist(char **ifacelist)
 	return 0;
 }
 
-int readproc(char iface[32])
+int readproc(const char *iface)
 {
 	FILE *fp;
 	char temp[4][64], procline[512], *proclineptr, ifaceid[33];
@@ -167,7 +167,7 @@ int readproc(char iface[32])
 	return 1;
 }
 
-int readsysclassnet(char iface[32])
+int readsysclassnet(const char *iface)
 {
 	FILE *fp;
 	char path[64], file[76], buffer[64];
@@ -303,10 +303,10 @@ void parseifinfo(int newdb)
 
 			/* sync counters if traffic is greater than set maximum */
 			if ( (rxchange > maxtransfer) || (txchange > maxtransfer) ) {
+				snprintf(errorstring, 512, "Traffic rate for \"%s\" higher than set maximum %d Mbit (%"PRIu64"->%"PRIu64", r%"PRIu64" t%"PRIu64"), syncing.", data.interface, maxbw, (uint64_t)interval, maxtransfer, rxchange, txchange);
+				printe(PT_Info);
 				rxchange = krxchange = rxkchange = txchange = ktxchange = txkchange = 0;
 				ifinfo.rxp = ifinfo.txp = 0;
-				snprintf(errorstring, 512, "Traffic rate for \"%s\" higher than set maximum %d Mbit, syncing.", data.interface, maxbw);
-				printe(PT_Info);
 			}
 		}
 
@@ -360,7 +360,7 @@ void parseifinfo(int newdb)
 	if ((d->tm_mday!=day) || (d->tm_mon!=month) || (d->tm_year!=year)) {
 
 		/* make a new entry only if there's something to remember (configuration dependent) */
-		if ( (data.day[0].rx==0) && (data.day[0].tx==0) && (data.day[0].rxk==0) && (data.day[0].txk==0) && (cfg.traflessday) ) {
+		if ( (data.day[0].rx==0) && (data.day[0].tx==0) && (data.day[0].rxk==0) && (data.day[0].txk==0) && (cfg.traflessday==0) ) {
 			data.day[0].date=current;
 		} else {
 			rotatedays();
@@ -400,7 +400,7 @@ uint64_t countercalc(uint64_t a, uint64_t b)
 }
 
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__)
-int readifaddrs(char iface[32])
+int readifaddrs(const char *iface)
 {
 	struct ifaddrs *ifap, *ifa;
 	struct if_data *ifd = NULL;

@@ -1,3 +1,26 @@
+1.9 / 12-Sep-09
+
+ - Fix: TrafficlessDays configuration option was enabled when set to zero
+   when it should have been disabled
+ - Fix: MonthRotate setting was getting ignored for the first month if 
+   the database is created when day of month < MonthRotate value
+ - Configurable summary layout in image output (1.7 <> 1.8 layouts)
+ - --oneline, a simple parseable one line output
+ - --transparent for setting image background transparency from the
+   command line
+ - --delete for deleting databases and stopping monitoring, doesn't require
+   restarting the daemon
+ - A database write can be configure to occur after interface status changes
+ - Different database write interval can be configure to be used when 
+   all monitored interfaces are offline
+ - Better configurability for the content of outputs, including a narrow
+   output for space limited terminals (OutputStyle and --style)
+ - Code cleanup
+ - New configuration file settings:
+   OutputStyle, SummaryLayout, SummaryRate, SaveOnStatusChange,
+   OfflineSaveInterval
+
+
 1.8 / 1-Aug-09
 
  - Fix: OpenBSD print issues (was: ' used for formatting in sprintf)

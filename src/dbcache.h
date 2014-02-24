@@ -1,21 +1,24 @@
 #ifndef DBCACHE_H
 #define DBCACHE_H
 
-int dataadd(char *iface, int sync);
-int dataupdate(void);
-void datashow(void);
-int dataget(char *iface);
-void dataflush(char *dirname);
-int datacount(void);
-uint32_t dbcheck(uint32_t dbhash);
-uint32_t simplehash(const char *data, int len);
-
 typedef struct datanode {
 	DATA data;
 	short filled;
 	short sync;
 	struct datanode *next;
 } datanode;
+
+int cacheadd(const char *iface, int sync);
+datanode *cacheremove(const char *iface);
+int cacheupdate(void);
+void cacheshow(void);
+void cachestatus(void);
+int cacheget(const datanode *dn);
+void cacheflush(const char *dirname);
+int cachecount(void);
+int cacheactivecount(void);
+uint32_t dbcheck(uint32_t dbhash, int *forcesave);
+uint32_t simplehash(const char *data, int len);
 
 /* global variables */
 datanode *dataptr;

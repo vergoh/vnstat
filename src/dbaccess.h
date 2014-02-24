@@ -1,11 +1,14 @@
 #ifndef DBACCESS_H
 #define DBACCESS_H
 
-int readdb(char iface[32], char dirname[512]);
-int writedb(char iface[32], char dirname[512], int newdb);
-int backupdb(char *current, char *backup);
+int readdb(const char *iface, const char *dirname);
+void initdb(void);
+int writedb(const char *iface, const char *dirname, int newdb);
+int backupdb(const char *current, const char *backup);
 int convertdb(FILE *db);
 int lockdb(int fd, int dbwrite);
+int checkdb(const char *iface, const char *dirname);
+int removedb(const char *iface, const char *dirname);
 void cleanhours(void);
 void rotatedays(void);
 void rotatemonths(void);

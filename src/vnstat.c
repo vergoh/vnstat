@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
 	int i;
 	int currentarg, update=0, query=1, newdb=0, reset=0, sync=0, merged=0;
 	int active=-1, files=0, force=0, cleartop=0, rebuildtotal=0, traffic=0;
-	int livetraffic=0, defaultiface=1;
+	int livetraffic=0, defaultiface=1, delete=0;
 	char interface[32], dirname[512], nick[32];
 	char definterface[32], cfgfile[512], *ifacelist;
 	time_t current;
@@ -110,6 +110,7 @@ int main(int argc, char *argv[]) {
 			printf("         -t, --top10           show top10\n");
 			printf("         -s, --short           use short output\n");
 			printf("         -ru, --rateunit       swap configured rate unit\n");
+			printf("         --oneline             show simple parseable format\n");
 			printf("         --dumpdb              show database in parseable format\n");
 			printf("         --xml                 show database in xml format\n");
 			
@@ -120,6 +121,8 @@ int main(int argc, char *argv[]) {
 			printf("         -v,  --version        show version\n");
 			printf("         -tr, --traffic        calculate traffic\n");
 			printf("         -l,  --live           show transfer rate in real time\n");
+			printf("         --style               select output style (0-3)\n");
+			printf("         --delete              delete database and stop monitoring\n");
 			printf("         --iflist              show list of available interfaces\n");
 			printf("         --dbdir               select database directory\n");
 			printf("         --locale              set locale\n");
@@ -182,6 +185,21 @@ int main(int argc, char *argv[]) {
 				printf("Error: Nick for --nick missing.\n");
 				return 1;
 			}
+		} else if ((strcmp(argv[currentarg],"--style"))==0) {
+			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
+				cfg.ostyle = atoi(argv[currentarg+1]);
+				if (cfg.ostyle > 3 || cfg.ostyle < 0) {
+					printf("Error: Invalid style parameter \"%d\" for --style.\n", cfg.ostyle);
+					return 1;
+				}
+				if (debug)
+					printf("Style changed: %d\n", cfg.ostyle);
+				currentarg++;
+				continue;
+			} else {
+				printf("Error: Style parameter for --style missing.\n");
+				return 1;
+			}
 		} else if ((strcmp(argv[currentarg],"--dbdir"))==0) {
 			if (currentarg+1<argc) {
 				strncpy(dirname, argv[currentarg+1], 512);
@@ -227,10 +245,26 @@ int main(int argc, char *argv[]) {
 			cfg.qmode=7;
 		} else if (strcmp(argv[currentarg],"--dumpdb")==0) {
 			cfg.qmode=4;
+		} else if (strcmp(argv[currentarg],"--oneline")==0) {
+			cfg.qmode=9;
 		} else if (strcmp(argv[currentarg],"--xml")==0) {
 			cfg.qmode=8;
 		} else if ((strcmp(argv[currentarg],"-ru")==0) || (strcmp(argv[currentarg],"--rateunit"))==0) {
-			cfg.rateunit=!cfg.rateunit;
+			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
+				cfg.rateunit = atoi(argv[currentarg+1]);
+				if (cfg.rateunit > 1 || cfg.rateunit < 0) {
+					printf("Error: Invalid parameter \"%d\" for --rateunit.\n", cfg.rateunit);
+					return 1;
+				}
+				if (debug)
+					printf("Rateunit changed: %d\n", cfg.rateunit);
+				currentarg++;
+				continue;
+			} else {
+				cfg.rateunit = !cfg.rateunit;
+				if (debug)
+					printf("Rateunit changed: %d\n", cfg.rateunit);
+			}
 		} else if (strcmp(argv[currentarg],"--enable")==0) {
 			active=1;
 			query=0;
@@ -264,6 +298,9 @@ int main(int argc, char *argv[]) {
 		} else if (strcmp(argv[currentarg],"--showconfig")==0) {
 			printcfgfile();
 			return 0;			
+		} else if (strcmp(argv[currentarg],"--showconfig")==0) {
+			delete=1;
+			query=0;
 		} else if (strcmp(argv[currentarg],"--iflist")==0) {
 			getiflist(&ifacelist);
 			printf("Available interfaces: %s\n", ifacelist);
@@ -350,6 +387,29 @@ int main(int argc, char *argv[]) {
 		}
 		if (debug)
 			printf("Counters synced for \"%s\"\n", data.interface);
+	}
+
+	/* delete */
+	if (delete) {
+		if (force) {
+			if (checkdb(interface, dirname)) {
+				if (removedb(interface, dirname)) {
+					printf("Database for interface \"%s\" deleted.\n", interface);
+					printf("The interface will no longer be monitored.\n");
+					return 0;
+				} else {
+					printf("Error: Deleting database for interface \"%s\" failed.\n", interface);
+					return 1;
+				}
+			} else {
+					printf("Error: No database found for interface \"%s\".\n", interface);
+					return 1;				
+			}
+		} else {
+			printf("Warning:\nThe current option would delete the database for \"%s\".\n", interface);
+			printf("Use --force in order to really do that.\n");
+			return 1;
+		}		
 	}
 
 	/* clear top10 */
@@ -545,7 +605,11 @@ int main(int argc, char *argv[]) {
 			} else if ((cfg.qmode==0 || cfg.qmode==8) && (files>1)) {
 
 				if (cfg.qmode==0) {
-					printf("\n                      rx      /      tx      /     total    /   estimated\n");
+					if (cfg.ostyle!=0) {
+						printf("\n                      rx      /      tx      /     total    /   estimated\n");
+					} else {
+						printf("\n                      rx      /      tx      /     total\n");
+					}
 				} else {
 					printf("<vnstat version=\"%s\" xmlversion=\"%d\">\n", VNSTATVERSION, XMLVERSION);
 				}
@@ -576,8 +640,13 @@ int main(int argc, char *argv[]) {
 					newdb=readdb(definterface, dirname);
 				}
 				if (!newdb) {
-					if (cfg.qmode==5)
-						printf("\n                      rx      /      tx      /     total    /   estimated\n");
+					if (cfg.qmode==5) {
+						if (cfg.ostyle!=0) {
+							printf("\n                      rx      /      tx      /     total    /   estimated\n");
+						} else {
+							printf("\n                      rx      /      tx      /     total\n");
+						}
+					}
 					if (cfg.qmode!=8) {
 						showdb(cfg.qmode);
 					} else {
@@ -594,8 +663,13 @@ int main(int argc, char *argv[]) {
 				newdb=readdb(interface, dirname);
 			}
 			if (!newdb) {
-				if (cfg.qmode==5)
-					printf("\n                     rx      /     tx      /    total    /  estimated\n");
+				if (cfg.qmode==5) {
+					if (cfg.ostyle!=0) {
+						printf("\n                      rx      /      tx      /     total    /   estimated\n");
+					} else {
+						printf("\n                      rx      /      tx      /     total\n");
+					}
+				}
 				if (cfg.qmode!=8) {
 					showdb(cfg.qmode);
 				} else {
@@ -638,7 +712,7 @@ int main(int argc, char *argv[]) {
 }
 
 
-int synccounters(char iface[32], char dirname[512])
+int synccounters(const char *iface, const char *dirname)
 {
 	readdb(iface, dirname);
 	if (!getifinfo(iface)) {

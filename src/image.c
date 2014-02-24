@@ -62,11 +62,11 @@ void colorinit(void)
 void layoutinit(char *title, int width, int height, int showheader, int showedge)
 {
 	struct tm *d;
-	char datestring[32];
+	char datestring[64];
 
 	/* get time in given format */
 	d = localtime(&data.lastupdated);
-	strftime(datestring, 32, cfg.hformat, d);
+	strftime(datestring, 64, cfg.hformat, d);
 
 	/* background, edges */
 	gdImageFill(im, 0, 0, cbackground);
@@ -415,7 +415,7 @@ void drawsummary(int type, int showheader, int showedge, int rate)
 	snprintf(buffer, 32, "%12s", daytemp);
 	gdImageString(im, gdFontGetLarge(), textx-54, texty-1, (unsigned char*)buffer, ctext);
 
-	if (cfg.showrate) {
+	if (cfg.summaryrate) {
 		d = localtime(&data.lastupdated);
 		snprintf(buffer, 16, "%15s", getrate(data.day[0].rx+data.day[0].tx, data.day[0].rxk+data.day[0].txk, d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600), 15));
 		gdImageString(im, gdFontGetSmall(), textx-74, texty+58, (unsigned char*)buffer, ctext);
@@ -480,7 +480,7 @@ void drawsummary(int type, int showheader, int showedge, int rate)
 		snprintf(buffer, 32, "%12s", daytemp);
 		gdImageString(im, gdFontGetLarge(), textx-54, texty-1, (unsigned char*)buffer, ctext);
 
-		if (cfg.showrate) {
+		if (cfg.summaryrate) {
 			snprintf(buffer, 16, "%15s", getrate(data.day[1].rx+data.day[1].tx, data.day[1].rxk+data.day[1].txk, 86400, 15));
 			gdImageString(im, gdFontGetSmall(), textx-74, texty+58, (unsigned char*)buffer, ctext);
 		} else {
@@ -541,7 +541,7 @@ void drawsummary(int type, int showheader, int showedge, int rate)
 	snprintf(buffer, 32, "%12s", daytemp);
 	gdImageString(im, gdFontGetLarge(), textx-54, texty-1, (unsigned char*)buffer, ctext);
 
-	if (cfg.showrate) {
+	if (cfg.summaryrate) {
 		snprintf(buffer, 16, "%15s", getrate(data.month[0].rx+data.month[0].tx, data.month[0].rxk+data.month[0].txk, mosecs(), 15));
 		gdImageString(im, gdFontGetSmall(), textx-74, texty+58, (unsigned char*)buffer, ctext);
 	} else {
@@ -595,7 +595,7 @@ void drawsummary(int type, int showheader, int showedge, int rate)
 		snprintf(buffer, 32, "%12s", daytemp);
 		gdImageString(im, gdFontGetLarge(), textx-54, texty-1, (unsigned char*)buffer, ctext);
 
-		if (cfg.showrate) {
+		if (cfg.summaryrate) {
 			snprintf(buffer, 16, "%15s", getrate(data.month[1].rx+data.month[1].tx, data.month[1].rxk+data.month[1].txk, dmonth(d->tm_mon)*86400, 15));
 			gdImageString(im, gdFontGetSmall(), textx-74, texty+58, (unsigned char*)buffer, ctext);
 		} else {
@@ -914,7 +914,7 @@ void drawdaily(int showheader, int showedge)
 	layoutinit(buffer, width, height, showheader, showedge);
 	
 	if (lines) {
-		if (cfg.showrate) {
+		if (cfg.ostyle>2) {
 			drawlegend(432, 40-headermod);
 		} else {
 			drawlegend(385, 40-headermod);
@@ -924,7 +924,7 @@ void drawdaily(int showheader, int showedge)
 	textx = 10;
 	texty = 40-headermod;
 	
-	if (cfg.showrate) {
+	if (cfg.ostyle>2) {
 		gdImageString(im, gdFontGetSmall(), textx, texty, (unsigned char*)"     day        rx           tx          total       avg. rate", ctext);
 		gdImageLine(im, textx+2, texty+16, textx+392, texty+16, cline);
 		gdImageLine(im, textx+144, texty+2, textx+144, texty+40+(12*lines), cline);
@@ -974,7 +974,7 @@ void drawdaily(int showheader, int showedge)
 			strncat(buffer, getvalue(data.day[i].tx, data.day[i].txk, 10, 1), 32);
 			strcat(buffer, "   ");
 			strncat(buffer, getvalue(data.day[i].rx+data.day[i].tx, data.day[i].rxk+data.day[i].txk, 10, 1), 32);
-			if (cfg.showrate) {
+			if (cfg.ostyle>2) {
 				strcat(buffer, "  ");
 				if (i==0) {
 					d = localtime(&data.lastupdated);
@@ -984,7 +984,7 @@ void drawdaily(int showheader, int showedge)
 				}
 			}
 			gdImageString(im, gdFontGetSmall(), textx, texty, (unsigned char*)buffer, ctext);
-			if (cfg.showrate) {
+			if (cfg.ostyle>2) {
 				drawbar(textx+400, texty+4, 78, data.day[i].rx, data.day[i].rxk, data.day[i].tx, data.day[i].txk, max);
 			} else {
 				drawbar(textx+304, texty+4, 170, data.day[i].rx, data.day[i].rxk, data.day[i].tx, data.day[i].txk, max);
@@ -998,7 +998,7 @@ void drawdaily(int showheader, int showedge)
 		texty += 12;
 	}
 
-	if (cfg.showrate) {
+	if (cfg.ostyle>2) {
 		gdImageLine(im, textx+2, texty+5, textx+392, texty+5, cline);
 	} else {
 		gdImageLine(im, textx+2, texty+5, textx+296, texty+5, cline);
@@ -1064,7 +1064,7 @@ void drawmonthly(int showheader, int showedge)
 	layoutinit(buffer, width, height, showheader, showedge);
 	
 	if (lines) {
-		if (cfg.showrate) {
+		if (cfg.ostyle>2) {
 			drawlegend(432, 40-headermod);
 		} else {
 			drawlegend(385, 40-headermod);
@@ -1074,14 +1074,14 @@ void drawmonthly(int showheader, int showedge)
 	textx = 10;
 	texty = 40-headermod;
 	
-	if (cfg.showrate) {
-		gdImageString(im, gdFontGetSmall(), textx, texty, (unsigned char*)"   month        rx           tx          total       avg. rate", ctext);
+	if (cfg.ostyle>2) {
+		gdImageString(im, gdFontGetSmall(), textx, texty, (unsigned char*)"    month       rx           tx          total       avg. rate", ctext);
 		gdImageLine(im, textx+2, texty+16, textx+392, texty+16, cline);
 		gdImageLine(im, textx+144, texty+2, textx+144, texty+40+(12*lines), cline);
 		gdImageLine(im, textx+222, texty+2, textx+222, texty+40+(12*lines), cline);
 		gdImageLine(im, textx+300, texty+2, textx+300, texty+40+(12*lines), cline);
 	} else {
-		gdImageString(im, gdFontGetSmall(), textx, texty, (unsigned char*)"   month        rx           tx          total", ctext);
+		gdImageString(im, gdFontGetSmall(), textx, texty, (unsigned char*)"    month       rx           tx          total", ctext);
 		gdImageLine(im, textx+2, texty+16, textx+296, texty+16, cline);
 		gdImageLine(im, textx+144, texty+2, textx+144, texty+40+(12*lines), cline);
 		gdImageLine(im, textx+222, texty+2, textx+222, texty+40+(12*lines), cline);
@@ -1115,8 +1115,8 @@ void drawmonthly(int showheader, int showedge)
 		if (data.month[i].used) {
 
 			d = localtime(&data.month[i].month);
-			if (strftime(datebuff, 16, cfg.mformat, d)<=8) {
-				snprintf(buffer, 32, " %8s    ", datebuff);
+			if (strftime(datebuff, 16, cfg.mformat, d)<=9) {
+				snprintf(buffer, 32, " %9s   ", datebuff);
 			} else {
 				snprintf(buffer, 32, " %-11s ", datebuff);
 			}
@@ -1125,7 +1125,7 @@ void drawmonthly(int showheader, int showedge)
 			strncat(buffer, getvalue(data.month[i].tx, data.month[i].txk, 10, 1), 32);
 			strcat(buffer, "   ");
 			strncat(buffer, getvalue(data.month[i].rx+data.month[i].tx, data.month[i].rxk+data.month[i].txk, 10, 1), 32);
-			if (cfg.showrate) {
+			if (cfg.ostyle>2) {
 				strcat(buffer, "  ");
 				if (i==0) {
 					strncat(buffer, getrate(data.month[0].rx+data.month[0].tx, data.month[0].rxk+data.month[0].txk, mosecs(), 14), 32);
@@ -1134,7 +1134,7 @@ void drawmonthly(int showheader, int showedge)
 				}
 			}
 			gdImageString(im, gdFontGetSmall(), textx, texty, (unsigned char*)buffer, ctext);
-			if (cfg.showrate) {
+			if (cfg.ostyle>2) {
 				drawbar(textx+400, texty+4, 78, data.month[i].rx, data.month[i].rxk, data.month[i].tx, data.month[i].txk, max);
 			} else {
 				drawbar(textx+304, texty+4, 170, data.month[i].rx, data.month[i].rxk, data.month[i].tx, data.month[i].txk, max);
@@ -1148,7 +1148,7 @@ void drawmonthly(int showheader, int showedge)
 		texty += 12;
 	}
 
-	if (cfg.showrate) {
+	if (cfg.ostyle>2) {
 		gdImageLine(im, textx+2, texty+5, textx+392, texty+5, cline);
 	} else {
 		gdImageLine(im, textx+2, texty+5, textx+296, texty+5, cline);
@@ -1200,7 +1200,12 @@ void drawtop(int showheader, int showedge)
 	}
 	
 	width = 500;
-	height = 86 + (12 * lines);
+	
+	if (lines) {
+		height = 86 + (12 * lines);
+	} else {
+		height = 98;
+	}
 
 	if (!showheader) {
 		headermod = 26;
@@ -1222,7 +1227,7 @@ void drawtop(int showheader, int showedge)
 	layoutinit(buffer, width, height, showheader, showedge);
 	
 	if (lines) {
-		if (!cfg.showrate) {
+		if (cfg.ostyle<=2) {
 			drawlegend(398, 40-headermod);
 		}
 	}
@@ -1230,7 +1235,7 @@ void drawtop(int showheader, int showedge)
 	textx = 10;
 	texty = 40-headermod;
 	
-	if (cfg.showrate) {
+	if (cfg.ostyle>2) {
 		gdImageString(im, gdFontGetSmall(), textx, texty, (unsigned char*)"   #      day        rx           tx          total       avg. rate", ctext);
 		gdImageLine(im, textx+2, texty+16, textx+422, texty+16, cline);
 		if (lines) {
@@ -1263,12 +1268,12 @@ void drawtop(int showheader, int showedge)
 			strncat(buffer, getvalue(data.top10[i].tx, data.top10[i].txk, 10, 1), 32);
 			strcat(buffer, "   ");
 			strncat(buffer, getvalue(data.top10[i].rx+data.top10[i].tx, data.top10[i].rxk+data.top10[i].txk, 10, 1), 32);
-			if (cfg.showrate) {
+			if (cfg.ostyle>2) {
 				strcat(buffer, "  ");
 				strncat(buffer, getrate(data.top10[i].rx+data.top10[i].tx, data.top10[i].rxk+data.top10[i].txk, 86400, 14), 32);
 			}
 			gdImageString(im, gdFontGetSmall(), textx, texty, (unsigned char*)buffer, ctext);
-			if (cfg.showrate) {
+			if (cfg.ostyle>2) {
 				drawbar(textx+428, texty+4, 52, data.top10[i].rx, data.top10[i].rxk, data.top10[i].tx, data.top10[i].txk, max);
 			} else {
 				drawbar(textx+336, texty+4, 140, data.top10[i].rx, data.top10[i].rxk, data.top10[i].tx, data.top10[i].txk, max);
@@ -1282,7 +1287,7 @@ void drawtop(int showheader, int showedge)
 		texty += 12;
 	}
 
-	if (cfg.showrate) {
+	if (cfg.ostyle>2) {
 		gdImageLine(im, textx+2, texty+5, textx+422, texty+5, cline);
 	} else {
 		gdImageLine(im, textx+2, texty+5, textx+326, texty+5, cline);

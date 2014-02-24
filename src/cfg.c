@@ -8,6 +8,9 @@ void printcfgfile(void)
 	printf("# vnStat %s config file\n", VNSTATVERSION);
 	printf("##\n\n");
 
+	printf("# default interface\n");
+	printf("Interface \"%s\"\n\n", cfg.iface);
+
 	printf("# location of the database directory\n");
 	printf("DatabaseDir \"%s\"\n\n", cfg.dbdir);
 
@@ -34,14 +37,14 @@ void printcfgfile(void)
 	printf("# 1 = old style binary prefixes (KB/MB/GB/TB)\n");
 	printf("UnitMode %d\n\n", cfg.unit);
 
-	printf("# show average rate column (1 = enabled, 0 = disabled)\n");
-	printf("ShowRate %d\n\n", cfg.showrate);
+	printf("# output style\n");
+	printf("# 0 = minimal & narrow, 1 = bar column visible\n");
+	printf("# 2 = same as 1 except rate in summary and weekly\n");
+	printf("# 3 = rate column visible\n");
+	printf("OutputStyle %d\n\n", cfg.ostyle);
 
 	printf("# used rate unit (0 = bytes, 1 = bits)\n");
 	printf("RateUnit %d\n\n", cfg.rateunit);
-
-	printf("# default interface\n");
-	printf("Interface \"%s\"\n\n", cfg.iface);
 
 	printf("# maximum bandwidth (Mbit) for all interfaces, 0 = disable feature\n# (unless interface specific limit is given)\n");
 	printf("MaxBandwidth %d\n\n", cfg.maxbw);
@@ -87,8 +90,14 @@ void printcfgfile(void)
 	printf("# how often (in seconds) interface status changes are checked\n");
 	printf("PollInterval %d\n\n", cfg.pollinterval);
 
-	printf("# how often (in minutes) interface data is saved to file\n");
+	printf("# how often (in minutes) data is saved to file\n");
 	printf("SaveInterval %d\n\n", cfg.saveinterval);
+
+	printf("# how often (in minutes) data is saved when all interface are offline\n");
+	printf("OfflineSaveInterval %d\n\n", cfg.offsaveinterval);
+
+	printf("# force data save when interface status changes (1 = enabled, 0 = disabled)\n");
+	printf("SaveOnStatusChange %d\n\n", cfg.savestatus);
 
 	printf("# enable / disable logging (0 = disabled, 1 = logfile, 2 = syslog)\n");
 	printf("UseLogging %d\n\n", cfg.uselogging);
@@ -109,6 +118,12 @@ void printcfgfile(void)
 	printf("# show hours with rate (1 = enabled, 0 = disabled)\n");
 	printf("HourlyRate %d\n\n", cfg.hourlyrate);
 
+	printf("# show rate in summary (1 = enabled, 0 = disabled)\n");
+	printf("SummaryRate %d\n\n", cfg.summaryrate);
+
+	printf("# layout of summary (1 = with monthly, 0 = without monthly)\n");
+	printf("SummaryLayout %d\n\n", cfg.slayout);
+
 	printf("# transparent background (1 = enabled, 0 = disabled)\n");
 	printf("TransparentBg %d\n\n", cfg.transbg);
 
@@ -128,19 +143,64 @@ void printcfgfile(void)
 
 }
 
-int loadcfg(char *cfgfile)
+int loadcfg(const char *cfgfile)
 {
 	FILE *fd;
 	char buffer[512];
 	int i, j, k, linelen, cfglen, tryhome;
 
 	char value[512], cfgline[512];
-    
-	char *cfgname[] = { "DatabaseDir", "Locale", "MonthRotate", "DayFormat", "MonthFormat", "TopFormat", "RXCharacter", "TXCharacter", "RXHourCharacter", "TXHourCharacter", "UnitMode", "ShowRate", "RateUnit", "Interface", "MaxBandwidth", "Sampletime", "QueryMode", "CheckDiskSpace", "UseFileLocking", "BootVariation", "UpdateInterval", "PollInterval", "SaveInterval", "UseLogging", "LogFile", "PidFile", "CBackground", "CEdge", "CHeader", "CHeaderTitle", "CHeaderDate", "CText", "CLine", "CLineL", "CRx", "CRxD", "CTx", "CTxD", "HeaderFormat", "TransparentBg", "HourlyRate", "TrafficlessDays", 0 };
-	char *cfglocc[] = { cfg.dbdir, cfg.locale, 0, cfg.dformat, cfg.mformat, cfg.tformat, cfg.rxchar, cfg.txchar, cfg.rxhourchar, cfg.txhourchar, 0, 0, 0, cfg.iface, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, cfg.logfile, cfg.pidfile, cfg.cbg, cfg.cedge, cfg.cheader, cfg.cheadertitle, cfg.cheaderdate, cfg.ctext, cfg.cline, cfg.clinel, cfg.crx, cfg.crxd, cfg.ctx, cfg.ctxd, cfg.hformat, 0, 0, 0 };
-	short *cfgloci[] = { 0, 0, &cfg.monthrotate, 0, 0, 0, 0, 0, 0, 0, &cfg.unit, &cfg.showrate, &cfg.rateunit, 0, &cfg.maxbw, &cfg.sampletime, &cfg.qmode, &cfg.spacecheck, &cfg.flock, &cfg.bvar, &cfg.updateinterval, &cfg.pollinterval, &cfg.saveinterval, &cfg.uselogging, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, &cfg.transbg, &cfg.hourlyrate, &cfg.traflessday };
-	short cfgnamelen[] = { 512, 32, 0, 64, 64, 64, 2, 2, 2, 2, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 512, 512, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 32, 0, 0, 0 };
-	short cfgfound[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+	struct cfgsetting cset[] =
+	{
+		{ "Interface", cfg.iface, 0, 32, 0 },
+		{ "DatabaseDir", cfg.dbdir, 0, 512, 0 },
+		{ "Locale", cfg.locale, 0, 32, 0 },
+		{ "MonthRotate", 0, &cfg.monthrotate, 0, 0 },
+		{ "DayFormat", cfg.dformat, 0, 64, 0 },
+		{ "MonthFormat", cfg.mformat, 0, 64, 0 },
+		{ "TopFormat", cfg.tformat, 0, 64, 0 },
+		{ "RXCharacter", cfg.rxchar, 0, 2, 0 },
+		{ "TXCharacter", cfg.txchar, 0, 2, 0 },
+		{ "RXHourCharacter", cfg.rxhourchar, 0, 2, 0 },
+		{ "TXHourCharacter", cfg.txhourchar, 0, 2, 0 },
+		{ "UnitMode", 0, &cfg.unit, 0, 0 },
+		{ "OutputStyle", 0, &cfg.ostyle, 0, 0 },
+		{ "RateUnit", 0, &cfg.rateunit, 0, 0 },
+		{ "MaxBandwidth", 0, &cfg.maxbw, 0, 0 },
+		{ "Sampletime", 0, &cfg.sampletime, 0, 0 },
+		{ "QueryMode", 0, &cfg.qmode, 0, 0 },
+		{ "CheckDiskSpace", 0, &cfg.spacecheck, 0, 0 },
+		{ "UseFileLocking", 0, &cfg.flock, 0, 0 },
+		{ "BootVariation", 0, &cfg.bvar, 0, 0 },
+		{ "TrafficlessDays", 0, &cfg.traflessday, 0, 0 },
+		{ "UpdateInterval", 0, &cfg.updateinterval, 0, 0 },
+		{ "PollInterval", 0, &cfg.pollinterval, 0, 0 },
+		{ "SaveInterval", 0, &cfg.saveinterval, 0, 0 },
+		{ "OfflineSaveInterval", 0, &cfg.offsaveinterval, 0, 0 },
+		{ "SaveOnStatusChange", 0, &cfg.savestatus, 0, 0 },
+		{ "UseLogging", 0, &cfg.uselogging, 0, 0 },
+		{ "LogFile", cfg.logfile, 0, 512, 0 },
+		{ "PidFile", cfg.pidfile, 0, 512, 0 },
+		{ "HeaderFormat", cfg.hformat, 0, 64, 0 },
+		{ "HourlyRate", 0, &cfg.hourlyrate, 0, 0 },
+		{ "SummaryRate", 0, &cfg.summaryrate, 0, 0 },
+		{ "SummaryLayout", 0, &cfg.slayout, 0, 0 },
+		{ "TransparentBg", 0, &cfg.transbg, 0, 0 },
+		{ "CBackground", cfg.cbg, 0, 8, 0 },
+		{ "CEdge", cfg.cedge, 0, 8, 0 },
+		{ "CHeader", cfg.cheader, 0, 8, 0 },
+		{ "CHeaderTitle", cfg.cheadertitle, 0, 8, 0 },
+		{ "CHeaderDate", cfg.cheaderdate, 0, 8, 0 },
+		{ "CText", cfg.ctext, 0, 8, 0 },
+		{ "CLine", cfg.cline, 0, 8, 0 },
+		{ "CLineL", cfg.clinel, 0, 8, 0 },
+		{ "CRx", cfg.crx, 0, 8, 0 },
+		{ "CRxD", cfg.crxd, 0, 8, 0 },
+		{ "CTx", cfg.ctx, 0, 8, 0 },
+		{ "CTxD", cfg.ctxd, 0, 8, 0 },
+		{ 0, 0, 0, 0, 0 }
+	};
 
 	ifacebw = NULL;
 
@@ -205,10 +265,14 @@ int loadcfg(char *cfgfile)
 		linelen = strlen(cfgline);
 		if (linelen>2 && cfgline[0]!='#') {
 		
-			for (i=0; cfgname[i]!=0; i++) {
+			for (i=0; cset[i].name!=0; i++) {
 
-				cfglen = strlen(cfgname[i]);
-				if ( (cfgfound[i]==0) && (linelen>=(cfglen+2)) && (strncasecmp(cfgline, cfgname[i], cfglen)==0) ) {
+				if (cset[i].found) {
+					continue;
+				}
+
+				cfglen = strlen(cset[i].name);
+				if ( (linelen>=(cfglen+2)) && (strncasecmp(cfgline, cset[i].name, cfglen)==0) ) {
 				
 					/* clear value buffer */
 					for (j=0; j<512; j++) {
@@ -239,20 +303,20 @@ int loadcfg(char *cfgfile)
 					/* set value and get new line if valid value was found */
 					if (strlen(value)!=0) {
 
-						if (cfgnamelen[i]>0) {
-							strncpy(cfglocc[i], value, cfgnamelen[i]);
-							cfglocc[i][cfgnamelen[i]-1]='\0';
+						if (cset[i].namelen>0) {
+							strncpy(cset[i].locc, value, cset[i].namelen);
+							cset[i].locc[cset[i].namelen-1]='\0';
 							if (debug)
-								printf("  c: %s   -> \"%s\": \"%s\"\n", cfgline, cfgname[i], cfglocc[i]);
+								printf("  c: %s   -> \"%s\": \"%s\"\n", cfgline, cset[i].name, cset[i].locc);
 						} else if (isdigit(value[0])) {
-							*cfgloci[i] = atoi(value);
+							*cset[i].loci = atoi(value);
 							if (debug)
-								printf("  i: %s   -> \"%s\": %d\n", cfgline, cfgname[i], *cfgloci[i]);
+								printf("  i: %s   -> \"%s\": %d\n", cfgline, cset[i].name, *cset[i].loci);
 						} else {
 							continue;
 						}
 						
-						cfgfound[i] = 1;
+						cset[i].found = 1;
 						break;
 					}
 				
@@ -284,6 +348,12 @@ void validatecfg(void)
 	if (cfg.unit<0 || cfg.unit>1) {
 		cfg.unit = UNITMODE;
 		snprintf(errorstring, 512, "Invalid value for UnitMode, resetting to \"%d\".", cfg.unit);
+		printe(PT_Config);
+	}
+
+	if (cfg.ostyle<0 || cfg.ostyle>3) {
+		cfg.ostyle = OSTYLE;
+		snprintf(errorstring, 512, "Invalid value for OutputStyle, resetting to \"%d\".", cfg.ostyle);
 		printe(PT_Config);
 	}
 
@@ -355,6 +425,22 @@ void validatecfg(void)
 		printe(PT_Config);
 	}
 
+	if (cfg.offsaveinterval<cfg.saveinterval || cfg.offsaveinterval>60) {
+		if (cfg.saveinterval>OFFSAVEINTERVAL) {
+			cfg.offsaveinterval = cfg.saveinterval;
+		} else {
+			cfg.offsaveinterval = OFFSAVEINTERVAL;
+		}
+		snprintf(errorstring, 512, "Invalid value for OfflineSaveInterval, resetting to \"%d\".", cfg.offsaveinterval);
+		printe(PT_Config);
+	}
+
+	if (cfg.savestatus<0 || cfg.savestatus>1) {
+		cfg.savestatus = SAVESTATUS;
+		snprintf(errorstring, 512, "Invalid value for SaveOnStatusChange, resetting to \"%d\".", cfg.savestatus);
+		printe(PT_Config);
+	}
+
 	if (cfg.uselogging<0 || cfg.uselogging>2) {
 		cfg.uselogging = USELOGGING;
 		snprintf(errorstring, 512, "Invalid value for UseLogging, resetting to \"%d\".", cfg.uselogging);
@@ -385,6 +471,18 @@ void validatecfg(void)
 		printe(PT_Config);
 	}
 
+	if (cfg.summaryrate<0 || cfg.summaryrate>1) {
+		cfg.summaryrate = SUMMARYRATE;
+		snprintf(errorstring, 512, "Invalid value for SummaryRate, resetting to \"%d\".", cfg.summaryrate);
+		printe(PT_Config);
+	}
+
+	if (cfg.slayout<0 || cfg.slayout>1) {
+		cfg.slayout = SUMMARYLAYOUT;
+		snprintf(errorstring, 512, "Invalid value for SummaryLayout, resetting to \"%d\".", cfg.slayout);
+		printe(PT_Config);
+	}
+
 	if (cfg.traflessday<0 || cfg.traflessday>1) {
 		cfg.traflessday = TRAFLESSDAY;
 		snprintf(errorstring, 512, "Invalid value for TrafficlessDays, resetting to \"%d\".", cfg.transbg);
@@ -401,12 +499,14 @@ void defaultcfg(void)
 	cfg.sampletime = DEFSAMPTIME;
 	cfg.monthrotate = MONTHROTATE;
 	cfg.unit = UNITMODE;
-	cfg.showrate = SHOWRATE;
+	cfg.ostyle = OSTYLE;
 	cfg.rateunit = RATEUNIT;
 	cfg.maxbw = DEFMAXBW;
 	cfg.spacecheck = USESPACECHECK;
 	cfg.flock = USEFLOCK;
 	cfg.hourlyrate = HOURLYRATE;
+	cfg.summaryrate = SUMMARYRATE;
+	cfg.slayout = SUMMARYLAYOUT;
 	cfg.traflessday = TRAFLESSDAY;
 	strncpy(cfg.dbdir, DATABASEDIR, 512);
 	strncpy(cfg.iface, DEFIFACE, 32);
@@ -414,7 +514,7 @@ void defaultcfg(void)
 	strncpy(cfg.dformat, DFORMAT, 64);
 	strncpy(cfg.mformat, MFORMAT, 64);
 	strncpy(cfg.tformat, TFORMAT, 64);
-	strncpy(cfg.hformat, HFORMAT, 32);
+	strncpy(cfg.hformat, HFORMAT, 64);
 	strncpy(cfg.rxchar, RXCHAR, 1);
 	strncpy(cfg.txchar, TXCHAR, 1);
 	strncpy(cfg.rxhourchar, RXHOURCHAR, 1);
@@ -423,6 +523,8 @@ void defaultcfg(void)
 	cfg.updateinterval = UPDATEINTERVAL;
 	cfg.pollinterval = POLLINTERVAL;
 	cfg.saveinterval = SAVEINTERVAL;
+	cfg.offsaveinterval = OFFSAVEINTERVAL;
+	cfg.savestatus = SAVESTATUS;
 	cfg.uselogging = USELOGGING;
 	strncpy(cfg.logfile, LOGFILE, 512);
 	strncpy(cfg.pidfile, PIDFILE, 512);
@@ -442,7 +544,7 @@ void defaultcfg(void)
 	strncpy(cfg.ctxd, CTXD, 7);
 }
 
-int ibwadd(char *iface, int limit)
+int ibwadd(const char *iface, int limit)
 {
 	ibwnode *p = malloc(sizeof(ibwnode));
 
@@ -477,7 +579,7 @@ void ibwlist(void)
 	}
 }
 
-int ibwget(char *iface)
+int ibwget(const char *iface)
 {
 	ibwnode *p = ifacebw;
 
