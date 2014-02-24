@@ -1,4 +1,4 @@
-(Updated 13.7.2003 based on version 1.1)
+(Updated 7.10.2003 based on version 1.2)
 
 Installing vnStat
 :::::::::::::::::
@@ -20,16 +20,17 @@ Installing vnStat
 'root' install
 ::::::::::::::
 
- First login as root and run the following two commands.
+ First login as root and run the following two commands:
 
      make
      make install
 
- If there was no errors, vnStat should now be installed (warnings aren't
- aren't considered as errors). During version 1.0 it became clear that
- some kernels are broken and don't provide to correct boot time for the
- system. vnStat requires this information so there's a test to see if
- the kernel if working right.
+ Those having 64bit counters in /proc/net/dev should use 'make 64bit'
+ instead of 'make'. If there was no errors, vnStat should now be installed
+ (warnings aren't aren't considered as errors). During version 1.0 it
+ became clear that some kernels are broken and don't provide to correct
+ boot time for the system. vnStat requires this information so there's a
+ test to see if the kernel if working right.
 
      vnstat --testkernel
 
@@ -55,8 +56,10 @@ Installing vnStat
 
      make single
 
- If there was no errors, copy src/vnstat to some directory included
- in your $PATH (~/bin/ is an example)  and make the database directory.
+ Those having 64bit counters in /proc/net/dev should use 'make 64bitsingle'
+ instead of 'make single'. If there was no errors, copy src/vnstat to some
+ directory included in your $PATH (~/bin/ is an example)  and make the
+ database directory.
 
      cp src/vnstat ~/bin/
      mkdir ~/.vnstat

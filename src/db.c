@@ -90,14 +90,16 @@ void writedb(char file[512], int newdb)
 void showdb(int qmode)
 {
 	float rx, tx;
-	int i, used;
+	int i, used, week, temp;
 	struct tm *d;
 	char datebuff[16];
-	uint64_t e_rx, e_tx;
-	time_t current;
+	char daytemp[128];
+	uint64_t e_rx, e_tx, t_rx, t_tx;
+	time_t current, yesterday;
 	
 	current=time(NULL);
-		
+	yesterday=current-86400;
+					
 	if (data.totalrx+data.totaltx==0) {
 		
 		printf(" %s: Not enough data available yet.\n", data.interface);
@@ -130,16 +132,29 @@ void showdb(int qmode)
 					printf("\t%s (%s) [disabled]\n\n", data.nick, data.interface);
 			}
 			
-			printf("\t   Received: %'14Lu MB (%.1f%%)\n",data.totalrx,rx);
-			printf("\tTransmitted: %'14Lu MB (%.1f%%)\n",data.totaltx,tx);
-			printf("\t      Total: %'14Lu MB\n\n",data.totalrx+data.totaltx);
+			/* get formated date for yesterday */
+			d=localtime(&yesterday);
+			strftime(datebuff, 16, DFORMAT, d);
+			
+			/* get formated date for previous day in database */
+			d=localtime(&data.day[1].date);
+			strftime(daytemp, 16, DFORMAT, d);
+			
+			/* change daytemp to yesterday if formated days match */
+			if (strcmp(datebuff, daytemp)==0) {
+				strcpy(daytemp, "yesterday");
+			}
+			
+			printf("\t   received: %'14Lu MB (%.1f%%)\n",data.totalrx,rx);
+			printf("\ttransmitted: %'14Lu MB (%.1f%%)\n",data.totaltx,tx);
+			printf("\t      total: %'14Lu MB\n\n",data.totalrx+data.totaltx);
 			
 			printf("\t                rx     |     tx     |  total\n");
 			printf("\t-----------------------+------------+-----------\n");
-			printf("\tYesterday   %'7Lu MB | %'7Lu MB | %'7Lu MB\n",data.day[1].rx,data.day[1].tx,data.day[1].rx+data.day[1].tx);
-			printf("\t    Today   %'7Lu MB | %'7Lu MB | %'7Lu MB\n",data.day[0].rx,data.day[0].tx,data.day[0].rx+data.day[0].tx);
+			printf("\t%9s   %'7Lu MB | %'7Lu MB | %'7Lu MB\n",daytemp,data.day[1].rx,data.day[1].tx,data.day[1].rx+data.day[1].tx);
+			printf("\t    today   %'7Lu MB | %'7Lu MB | %'7Lu MB\n",data.day[0].rx,data.day[0].tx,data.day[0].rx+data.day[0].tx);
 			printf("\t-----------------------+------------+-----------\n");
-			printf("\tEstimated   %'7Lu MB | %'7Lu MB | %'7Lu MB\n",e_rx, e_tx, e_rx+e_tx);
+			printf("\testimated   %'7Lu MB | %'7Lu MB | %'7Lu MB\n",e_rx, e_tx, e_rx+e_tx);
 
 		} else if (qmode==1) {
 
@@ -169,7 +184,7 @@ void showdb(int qmode)
 				}
 			}
 			if (used==0)
-				printf("\t                 No data available\n");
+				printf("\t                 no data available\n");
 			printf("\t------------------------+-------------+--------------\n");
 			if (used!=0) {
 				d=localtime(&current);
@@ -193,26 +208,26 @@ void showdb(int qmode)
 					printf("\t%s (%s) [disabled]\n\n", data.nick, data.interface);
 			}
 			
-			printf("\t   month       rx      |      tx      |   total\n");
-			printf("\t-----------------------+--------------+----------------\n");
+			printf("\t   month        rx      |       tx      |    total\n");
+			printf("\t------------------------+---------------+---------------\n");
 			
 			used=0;
 			for (i=11;i>=0;i--) {
 				if (data.month[i].used) {
 					d=localtime(&data.month[i].month);
 					strftime(datebuff, 16, MFORMAT, d);
-					printf("\t  %7s %'8Lu MB  | %'8Lu MB  | %'8Lu MB\n",datebuff, data.month[i].rx,data.month[i].tx,data.month[i].rx+data.month[i].tx);
+					printf("\t  %7s %'9Lu MB  | %'9Lu MB  | %'9Lu MB\n",datebuff, data.month[i].rx,data.month[i].tx,data.month[i].rx+data.month[i].tx);
 					used++;
 				}
 			}
 			if (used==0)
-				printf("\t                 No data available\n");
-			printf("\t-----------------------+--------------+----------------\n");			
+				printf("\t                 no data available\n");
+			printf("\t------------------------+---------------+---------------\n");			
 			if (used!=0) {
 				d=localtime(&current);
 				e_rx=((data.month[0].rx)/(float)((d->tm_mday-1)*24+d->tm_hour))*(dmonth[d->tm_mon]*24);
 				e_tx=((data.month[0].tx)/(float)((d->tm_mday-1)*24+d->tm_hour))*(dmonth[d->tm_mon]*24);
-				printf("\testimated %'8Lu MB  | %'8Lu MB  | %'8Lu MB\n", e_rx, e_tx, e_rx+e_tx);
+				printf("\testimated %'9Lu MB  | %'9Lu MB  | %'9Lu MB\n", e_rx, e_tx, e_rx+e_tx);
 			}
 			
 		} else if (qmode==3) {
@@ -230,21 +245,21 @@ void showdb(int qmode)
 					printf("\t%s (%s) [disabled]\n\n", data.nick, data.interface);
 			}
 			
-			printf("\t    #       day          rx      |     tx      |  total\n");
-			printf("\t---------------------------------+-------------+--------------\n");
+			printf("\t   #       day          rx      |     tx      |  total\n");
+			printf("\t--------------------------------+-------------+-------------\n");
 
 			used=0;
 			for (i=0;i<=9;i++) {
 				if (data.top10[i].used) {
 					d=localtime(&data.top10[i].date);
 					strftime(datebuff, 16, TFORMAT, d);
-					printf("\t   %2d    %8s    %'7Lu MB  | %'7Lu MB  | %'7Lu MB\n", i+1, datebuff, data.top10[i].rx,data.top10[i].tx,data.top10[i].rx+data.top10[i].tx);
+					printf("\t  %2d    %8s    %'7Lu MB  | %'7Lu MB  | %'7Lu MB\n", i+1, datebuff, data.top10[i].rx,data.top10[i].tx,data.top10[i].rx+data.top10[i].tx);
 					used++;
 				}
 			}
 			if (used==0)
-				printf("\t                     No data available\n");
-			printf("\t---------------------------------+-------------+--------------\n");
+				printf("\t                    no data available\n");
+			printf("\t--------------------------------+-------------+-------------\n");
 		
 		} else if (qmode==4) {
 		
@@ -287,14 +302,121 @@ void showdb(int qmode)
 				else
 					printf(" %s (%s) [disabled]:\n", data.nick, data.interface);
 			}
+			/* time needed for estimates */
 			d=localtime(&current);
 			e_rx=((data.day[0].rx)/(float)(d->tm_hour*60+d->tm_min))*1440;
 			e_tx=((data.day[0].tx)/(float)(d->tm_hour*60+d->tm_min))*1440;
+
+			/* get formated date for yesterday */
+			d=localtime(&yesterday);
+			strftime(datebuff, 16, DFORMAT, d);
+			
+			/* get formated date for previous day in database */
+			d=localtime(&data.day[1].date);
+			strftime(daytemp, 16, DFORMAT, d);
+			
+			/* change daytemp to yesterday if formated days match */
+			if (strcmp(datebuff, daytemp)==0) {
+				strcpy(daytemp, "yesterday");
+			}
 						
-			printf("         Today   %'7Lu MB  / %'7Lu MB  / %'7Lu MB  / %'7Lu MB\n",data.day[0].rx, data.day[0].tx, data.day[0].rx+data.day[0].tx, e_rx+e_tx);
-			printf("     Yesterday   %'7Lu MB  / %'7Lu MB  / %'7Lu MB\n\n",data.day[1].rx, data.day[1].tx, data.day[1].rx+data.day[1].tx);
+			printf("     %9s   %'7Lu MB  / %'7Lu MB  / %'7Lu MB\n",daytemp,data.day[1].rx, data.day[1].tx, data.day[1].rx+data.day[1].tx);
+			printf("         today   %'7Lu MB  / %'7Lu MB  / %'7Lu MB  / %'7Lu MB\n\n",data.day[0].rx, data.day[0].tx, data.day[0].rx+data.day[0].tx, e_rx+e_tx);
+
+		} else if (qmode==6) {
 		
+			printf("\n");
+			if (strcmp(data.interface, data.nick)==0) {
+				if (data.active)
+					printf("\t%s\n\n", data.interface);
+				else
+					printf("\t%s [disabled]\n\n", data.interface);
+			} else {
+				if (data.active)
+					printf("\t%s (%s)\n\n", data.nick, data.interface);
+				else
+					printf("\t%s (%s) [disabled]\n\n", data.nick, data.interface);
+			}	
+
+			printf("\t                    rx      |       tx      |    total\n");
+			printf("\t----------------------------+---------------+--------------\n");
+			
+			/* get current week number */
+			d=localtime(&current);
+			strftime(daytemp, 16, "%V", d);
+			week=atoi(daytemp);
+			
+			/* last 7 days */
+			used=0;
+			temp=0;
+			t_rx=t_tx=0;
+			for (i=0;i<30;i++) {
+				if ((data.day[i].used) && (data.day[i].date>=current-604800)) {
+					t_rx+=data.day[i].rx;
+					t_tx+=data.day[i].tx;
+					used++;
+				}
+			}
+
+			if (used!=0) {
+				printf("\t  last 7 days %'9Lu MB  | %'9Lu MB  | %'9Lu MB\n", t_rx, t_tx, t_rx+t_tx);
+				temp++;
+			}
+
+			/* traffic for previous week */
+			used=0;
+			t_rx=t_tx=0;
+			for (i=0;i<30;i++) {
+				if (data.day[i].used) {
+					d=localtime(&data.day[i].date);
+					strftime(daytemp, 16, "%V", d);
+					if (atoi(daytemp)==week-1) {
+						t_rx+=data.day[i].rx;
+						t_tx+=data.day[i].tx;
+						used++;
+					}
+				}
+			}
+			
+			if (used!=0) {
+				printf("\t    last week %'9Lu MB  | %'9Lu MB  | %'9Lu MB\n", t_rx, t_tx, t_rx+t_tx);
+				temp++;
+			}
+
+			/* this week */
+			used=0;
+			t_rx=t_tx=0;
+			for (i=0;i<30;i++) {
+				if (data.day[i].used) {
+					d=localtime(&data.day[i].date);
+					strftime(daytemp, 16, "%V", d);
+					if (atoi(daytemp)==week) {
+						t_rx+=data.day[i].rx;
+						t_tx+=data.day[i].tx;
+						used++;
+					}
+				}
+			}
+
+			/* get estimate for current week */
+			if (used!=0) {
+				d=localtime(&current);
+				strftime(daytemp, 16, "%u", d);
+				e_rx=((t_rx)/(float)((atoi(daytemp)-1)*24+d->tm_hour)*168);
+				e_tx=((t_tx)/(float)((atoi(daytemp)-1)*24+d->tm_hour)*168);
+				printf("\t current week %'9Lu MB  | %'9Lu MB  | %'9Lu MB\n", t_rx, t_tx, t_rx+t_tx);
+				temp++;
+			}
+			
+			if (temp==0)
+				printf("\t                         no data available\n");
+			
+			printf("\t----------------------------+---------------+--------------\n");
+			if (used!=0)
+				printf("\t    estimated %'9Lu MB  | %'9Lu MB  | %'9Lu MB\n", e_rx, e_tx, e_rx+e_tx);
+
 		} else {
+			/* users shouldn't see this text... */
 			printf("Not such query mode: %d\n", qmode);
 		}
 

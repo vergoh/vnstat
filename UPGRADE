@@ -1,9 +1,9 @@
-(Updated 13.7.2003 based on version 1.1)
+(Updated 5.10.2003 based on version 1.2)
 
 This file will try to explain how vnStat is supposed to be upgraded 
-from a previous version. In this case the upgrade for everyone should
-be 1.0 -> 1.1. Please read the instructions once before executing step
-by step.
+from version 1.0. The makefile should handle upgrades from version 1.1
+to 1.2 without user interaction. But for those still using 1.0, please
+read the instructions once before executing step by step.
 
 What to do before installing?
 :::::::::::::::::::::::::::::
@@ -12,7 +12,7 @@ What to do before installing?
  would be /var/spool/vnstat/db and for singleuser it's ~/.vnstatdb
  Copy that file to some other directory that isn't in any relation with
  vnStat. All this is only for backup so the file can be removed once
- 1.1 has been installed and working.
+ 1.2 has been installed and working.
 
  The next thing is to rename that database according to the interface it's
  monitoring. Here's an example if the interface would be eth0.
@@ -28,4 +28,4 @@ What to do before installing?
 
  Now your all set to continue the install process like the INSTALL file
  tells. Remember that there's no need to uninstall version 1.0 before
- installing 1.1.
+ installing 1.2.

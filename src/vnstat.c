@@ -24,7 +24,8 @@ int main(int argc, char *argv[]) {
 
 	int i;
 	int currentarg, update=0, query=0, newdb=0, qmode=0, reset=0;
-	int active=-1, files=0, force=0, cleartop=0, rebuildtotal=0;
+	int active=-1, files=0, force=0, cleartop=0, rebuildtotal=0, traffic=0;
+	int sampletime;
 	char interface[32], filename[512], dirname[512], nick[32];
 	char definterface[32];
 	time_t current;
@@ -38,18 +39,19 @@ int main(int argc, char *argv[]) {
 	strcpy(definterface, DEFIFACE);
 	strcpy(nick, "none");
 	qmode=atoi(DEFQMODE);
+	sampletime=atoi(DEFSAMPTIME);
 
 	current=time(NULL);
 
 	/* init dirname */
-#ifndef SINGLE
-	strcpy(dirname, DATABASEDIR);
-#else
+#ifdef SINGLE
 	strcpy(dirname, getenv("HOME"));
 	strcat(dirname,"/.vnstat");
+#else
+	strcpy(dirname, DATABASEDIR);
 #endif
 
-	/* check if the database dir exists and if it contais files */
+	/* check if the database dir exists and if it contains files */
 	if ((dir=opendir(dirname))!=NULL) {
 		if (debug)
 			printf("Dir OK\n");
@@ -96,6 +98,7 @@ int main(int argc, char *argv[]) {
 			printf("\t -q, --query\t query database\n");	
 			printf("\t -d, --days\t show days\n");
 			printf("\t -m, --months\t show months\n");
+			printf("\t -w, --weeks\t show weeks\n");
 			printf("\t -t, --top10\t show top10\n");
 			printf("\t -s, --short\t use short output\n");
 			printf("\t --dumpdb\t show database in parseable format\n");
@@ -105,6 +108,7 @@ int main(int argc, char *argv[]) {
 			printf("\t -h, --help\t help\n");
 			printf("\t -D, --debug\t show some additional debug information\n");
 			printf("\t -v, --version\t show version\n");
+			printf("\t -tr, --traffic\t calculate traffic\n");
 			printf("\t --testkernel\t check if the kernel is broken\n");
 
 			exit(0);
@@ -148,10 +152,24 @@ int main(int argc, char *argv[]) {
 			qmode=3;
 		} else if ((strcmp(argv[currentarg],"-s")==0) || (strcmp(argv[currentarg],"--short"))==0) {
 			qmode=5;
+		} else if ((strcmp(argv[currentarg],"-w")==0) || (strcmp(argv[currentarg],"--weeks"))==0) {
+			qmode=6;			
 		} else if (strcmp(argv[currentarg],"--dumpdb")==0) {
 			qmode=4;
 		} else if (strcmp(argv[currentarg],"--enable")==0) {
 			active=1;
+			query=0;
+		} else if ((strcmp(argv[currentarg],"-tr")==0) || (strcmp(argv[currentarg],"--traffic"))==0) {
+			if (currentarg+1<argc) {
+				if (isdigit(argv[currentarg+1][0])) {
+					sampletime=atoi(argv[currentarg+1]);
+					currentarg++;
+					traffic=1;
+					query=0;
+					continue;
+				}
+			}
+			traffic=1;
 			query=0;
 		} else if (strcmp(argv[currentarg],"--force")==0) {
 			force=1;
@@ -169,10 +187,17 @@ int main(int argc, char *argv[]) {
 			printf("vnStat %s by Teemu Toivola <tst@iki.fi>\n", VNSTATVERSION);
 #ifndef SINGLE
 			if (debug)
-				printf("(Root install)\n");
+				printf("Root ");
 #else
 			if (debug)
-				printf("(Singleuser install)\n");
+				printf("Singleuser ");
+#endif
+#ifndef BLIMIT
+			if (debug)
+				printf("32bit install\n");
+#else
+			if (debug)
+				printf("64bit install\n");
 #endif
 			exit(0);
 		} else if ((strcmp(argv[currentarg],"-r")==0) || (strcmp(argv[currentarg],"--reset"))==0) {
@@ -421,8 +446,15 @@ int main(int argc, char *argv[]) {
 		}
 	}
 	
+	/* calculate traffic */
+	if (traffic) {
+		if (strcmp(interface, "default")==0)
+			strcpy(interface, definterface);
+		trafficmeter(interface, sampletime);
+	}
+	
 	/* if nothing was shown previously */
-	if (!query && !update && !reset && active==-1 && !cleartop && !rebuildtotal)
+	if (!query && !update && !reset && active==-1 && !cleartop && !rebuildtotal && !traffic)
 		printf("Nothing to do. Use -h for help\n");
 	
 	return 0;

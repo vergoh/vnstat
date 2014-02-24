@@ -7,8 +7,14 @@ default: vnstat
 vnstat: $(OBJS) vnstat.c vnstat.h
 	$(CC) $(CFLAGS) -o vnstat vnstat.c $(OBJS)
 
+64bit: $(OBJS) vnstat.c vnstat.h
+	$(CC) $(CFLAGS) -o vnstat vnstat.c $(OBJS) -DBLIMIT
+
 single: $(OBJS) vnstat.c vnstat.h
 	$(CC) $(CFLAGS) -o vnstat vnstat.c $(OBJS) -DSINGLE
+
+64bitsingle: $(OBJS) vnstat.c vnstat.h
+	$(CC) $(CFLAGS) -o vnstat vnstat.c $(OBJS) -DSINGLE -DBLIMIT
 
 proc.o: proc.c proc.h vnstat.h db.h
 	$(CC) $(CFLAGS) -c proc.c
@@ -21,21 +27,3 @@ misc.o: misc.c misc.h
 
 clean:
 	rm -f *.o *~ core *.i vnstat
-
-install: vnstat
-	@echo "Installing vnStat..."
-	mkdir -p /var/spool/vnstat
-	install -m 755 vnstat /usr/local/bin
-	install -m 644 cron/vnstat /etc/cron.d
-
-uninstall:
-	@echo "Uninstalling vnStat..."
-	rm -fr /var/spool/vnstat
-	rm -f /usr/local/bin/vnstat
-	rm -f /etc/cron.d/vnstat
-
-plop:
-	make -C plop
-
-plip:
-	make -C plop plip

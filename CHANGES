@@ -1,3 +1,21 @@
+1.2 / 7-Oct-03
+
+ - Changed file paths to conform with FHS (http://www.pathname.com/fhs/).
+      /usr/local/bin/vnstat -> /usr/bin/vnstat
+      /var/spool/vnstat -> /var/lib/vnstat
+ - Added FAQ.
+ - Included sample scripts for pppd users.
+ - Support for 64bit counters in /proc/net/dev. 
+   (Thanks to Stephan van Hienen for the test account)
+ - Actual date is shown if the previous day in the database isn't
+   yesterday.
+ - Weekly and last 7 days traffic can be shown. 
+   (Thanks to Derk-Jan Hartman for the suggestion)
+ - Average kB/s meter.
+ - --testkernel fixed.
+ - Documentation for --dumpdb included in the README.
+
+
 1.1 / 13-Jul-03
 
  - Support for multiple interfaces.

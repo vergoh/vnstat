@@ -71,8 +71,9 @@ void parseproc(int newdb)
 
 	btime=strtoul(statline+6, (char **)NULL, 0);
 
-	/* btime in /proc/stat seems to vary ±1 second so we use btime-5 just to be safe */
-	if (data.btime<btime-5) {
+	/* btime in /proc/stat seems to vary ±1 second so we use btime-BVAR just to be safe */
+	/* the variation is also slightly different between various kernels... */
+	if (data.btime<btime-atoi(BVAR)) {
 		data.currx=0;
 		data.curtx=0;
 		if (debug)
@@ -83,8 +84,13 @@ void parseproc(int newdb)
 
 	current=time(NULL);
 
-	/* get rx from procline, easy since it's always procline+1 */
+	/* get rx from procline, easy since it's always procline+7 */
+
+#ifdef BLIMIT
+	rx=strtoull(procline+7, (char **)NULL, 0);
+#else
 	rx=strtoul(procline+7, (char **)NULL, 0);
+#endif
 
 	if (newdb!=1) {
 		if (data.currx<=rx) {
@@ -110,7 +116,12 @@ void parseproc(int newdb)
 
 	/* get tx from procline, ugly code but it works */
 	sscanf(procline+7,"%s %s %s %s %s %s %s %s %s",temp,temp,temp,temp,temp,temp,temp,temp,temp);
+
+#ifdef BLIMIT
+	tx=strtoull(temp, (char **)NULL, 0);
+#else
 	tx=strtoul(temp, (char **)NULL, 0);
+#endif
 
 	if (newdb!=1) {
 		if (data.curtx<=tx) {
@@ -151,5 +162,79 @@ void parseproc(int newdb)
 	d=localtime(&data.month[0].month);
 	if ((d->tm_mon!=month) && (day==atoi(MONTHROTATE)))
 		rotatemonths();
+
+}
+
+void trafficmeter(char iface[32], int sampletime)
+{
+	/* received bytes packets errs drop fifo frame compressed multicast */
+	/* transmitted bytes packets errs drop fifo colls carrier compressed */
+	unsigned long int p1[16], p2[16];
+	int i, j;
+	char temp[64];
+
+	/* less than 5 seconds if probably too inaccurate */
+	if (sampletime<5) {
+		printf("Error:\nTime for sampling too short.\n");
+		exit(1);
+	}
+
+	/* read /proc/net/dev and get those values to the first list */
+	j=0;
+	readproc(iface);
+	for (i=7;i<strlen(procline);i++) {
+		if (procline[i]!=' ') {
+			sscanf(procline+i,"%s",temp);
+			i+=strlen(temp);
+			if (debug)
+				printf("%8d '%s'\n",j,temp);
+#ifdef BLIMIT
+			p1[j]=strtoull(temp, (char **)NULL, 0);
+#else
+			p1[j]=strtoul(temp, (char **)NULL, 0);
+#endif
+			j++;
+		}
+	}
+
+	/* wait sampletime and print some nice dots so that the user thinks
+	something is done :) */
+	printf("Sampling %s (%d seconds average)",iface,sampletime);
+	fflush(stdout);
+	sleep(sampletime/3);
+	printf(".");
+	fflush(stdout);
+	sleep(sampletime/3);
+	printf(".");
+	fflush(stdout);
+	sleep(sampletime/3);
+	printf(".");
+	fflush(stdout);
+	if ((sampletime/3)*3!=sampletime) {
+		sleep(sampletime-((sampletime/3)*3));
+	}	
+	printf("\n");
+		
+	/* read those value again... */
+	j=0;
+	readproc(iface);
+	for (i=7;i<strlen(procline);i++) {
+		if (procline[i]!=' ') {
+			sscanf(procline+i,"%s",temp);
+			i+=strlen(temp);
+			if (debug)
+				printf("%8d '%s'\n",j,temp);
+#ifdef BLIMIT
+			p2[j]=strtoull(temp, (char **)NULL, 0);
+#else
+			p2[j]=strtoul(temp, (char **)NULL, 0);
+#endif
+			j++;
+		}
+	}
+
+	/* show the difference in a readable form */
+	printf("\n      rx     %10.2f kB/s          %5lu packets/s\n", (p2[0]-p1[0])/(float)sampletime/(float)1024, (p2[1]-p1[1])/sampletime);
+	printf("      tx     %10.2f kB/s          %5lu packets/s\n\n", (p2[8]-p1[8])/(float)sampletime/(float)1024, (p2[9]-p1[9])/sampletime);
 
 }

@@ -1,4 +1,4 @@
-(Updated 13.7.2003 based on version 1.1)
+(Updated 7.10.2003 based on version 1.2)
 
 What is vnStat
 ::::::::::::::
@@ -42,7 +42,10 @@ Available options
  goes down it should be disabled in order to avoid errors. Add something
  like 'vnstat -r --disable -i ppp0' to the script that's executed when
  the interface goes down and 'vnstat --enable -i ppp0' to the up script.
- Locations of those scripts most likely vary between distributions.
+ Example scripts are available in the pppd directory. The location where
+ those scripts should be installed will likely vary between distributions.
+ Afaik for at least Debian and SuSe that's /etc/ppp/ip-up.d and
+ /etc/ppp/ip-down.d. Gentoo uses the files /etc/ppp/ip-up and /etc/ip-down.
 
 --nick
 
@@ -61,13 +64,46 @@ Available options
  Instead of showing the database with a formated output, this output will
  dump the whole database in a format that should be easy to parse with most
  script languages. Use this for example with php or perl to make a custom
- webpage.
+ webpage. The dump uses ; as field delimeter.
+   
+   active;1                        1 if the selected interface is enabled
+   interface;eth0                  name for the interface
+   nick;inet                       nick (if given)
+   created;1023895272              creation date in Unix time
+                                   (seconds since '00:00:00 1970-01-01 UTC')
+   updated;1065467100              when the database was updated
+   totalrx;569605                  all time total received MB
+   totaltx;2023708                 all time total transmitted MB
+   currx;621673719                 last seen rx value in /proc/net/dev
+   curtx;981730184                 last seen rx value in /proc/net/dev
+   totalrxk;644                    total rx kB counter
+   totaltxk;494                    total tx kB counter
+   btime;1059414541                system boot time in Unix time
+ 
+ Then follows 30 lines like the following
+   
+   d;0;1065387600;584;3564;1
+
+ where d = days, 0 = day number in database (0 is today), 1065387600 date in
+ Unix time, 584 = rx MB, 3564 = tx MB and 1 tells that vnStat has filled this
+ value and its in use.
+ 
+   m;0;1064955600;4304;17677;1     (x12)
+   t;0;1043722416;7499;30662;1     (x10)
+  
+ m = months and t = top10, all other fields are in the same order as in days.
 
 -D, --debug
 
  Some debug output is included within vnStat and that output can be activated
  with this option. The output is somewhat self explaining and should give some
  clues what vnStat is doing.
+
+-tr, --traffic
+
+ This will make vnStat calculation how much traffic goes through the selected
+ interface during the given time. The time will be 5 seconds if a number
+ parameter isn't included.
 
 --testkernel
 
@@ -87,7 +123,7 @@ Usage tips
 
  However, it's likely that someone will ask anyway how to change the date
  format so here's a short howto about that. First go to the src directory
- and open vnstat.h. Search lines 20-22, those should look like these:
+ and open vnstat.h. Search lines 21-23, those should look like these:
 
 #define DFORMAT "%d.%m."
 #define MFORMAT "%b '%y"
@@ -106,7 +142,7 @@ Usage tips
  
  Next, copy the binary over the old one
 
-   cp vnstat /usr/local/bin/vnstat
+   cp vnstat /usr/bin/vnstat
 
  or some other path that you've used. Changing the date format wont affect
  the database in any way.
@@ -120,3 +156,7 @@ Contacting the author
 
  The current version of vnStat is always available from 
  http://torus.lnet.lut.fi/vnstat/
+
+ My email address is static, but the url for vnStat is likely to change
+ some day. The project page at freshmeat http://freshmeat.net/projects/vnstat/
+ will be updated after any change.
