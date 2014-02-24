@@ -1,0 +1,232 @@
+.TH VNSTAT 1 "MARCH 2004" Linux "User Manuals"
+.SH NAME
+vnStat \- a console-based network traffic monitor
+.SH SYNOPSIS
+.B vnstat
+[
+.B \-Ddhmqrstuvw?
+] [
+.B \-i
+.I interface
+] [
+.B \-tr
+.I time
+] [
+.B \-\-cleartop
+] [
+.B \-\-days
+] [
+.B \-\-debug
+] [
+.B \-\-disable
+] [
+.B \-\-dumpdb
+] [
+.B \-\-enable
+] [
+.B \-\-help
+] [
+.B \-\-hours
+] [
+.B \-\-iface
+.I interface
+] [
+.B \-\-longhelp
+] [
+.B \-\-months
+] [
+.B \-\-nick
+.I nickname
+] [
+.B \-\-query
+] [
+.B \-\-rebuildtotal
+] [
+.B \-\-reset
+] [
+.B \-\-short
+] [
+.B \-\-testkernel
+] [
+.B \-\-top10
+] [
+.B \-\-traffic
+.I time
+] [
+.B \-\-update
+] [
+.B \-\-version
+] [
+.B \-\-weeks
+]
+.SH DESCRIPTION
+.B vnStat
+is a console-base network traffic monitor that keeps a log of
+daily and monthly network traffic for the selected interface(s).
+However, it isn't a packet sniffer. The traffic information is
+analyzed from the
+.BR proc (5)
+-filesystem, so that vnStat can be used without root permissions.
+.SH OPTIONS
+.TP
+.BI "-D, --debug"
+Show additional debug output.
+.TP
+.BI "-d, --days"
+Show traffic for days.
+.TP
+.BI "-h, --hours"
+Show traffic for the last 24 hours.
+.TP
+.BI "-i, --iface " interface
+Select one specific
+.I interface
+and apply actions to only it.
+.TP
+.BI "-m, --months"
+Show traffic for months.
+.TP
+.BI "-q, --query"
+Force database query mode.
+.TP
+.BI "-r, --reset"
+Reset the internal counters in the database for the selected
+interface. Use this if the interface goes down and back up,
+otherwise that interface will get some extra traffic to its database.
+.TP
+.BI "-s, --short"
+Use short output mode. This mode is also used if more than one
+database is available.
+.TP
+.BI "-t, --top10"
+Show all time top10 traffic days.
+.TP
+.BI "-tr " time
+Calculate how much traffic goes through the selected interface during
+the given
+.I time 
+seconds. The 
+.I time
+will be 5 seconds if a number parameter isn't included.
+.TP
+.BI "-u, --update"
+Update all enabled databases or only the one specified with
+.B -i
+parameter.
+.TP
+.BI "-v, --version"
+Show current version.
+.TP
+.BI "-w, --weeks"
+Show traffic for 7 days, current and previous week.
+.TP
+.BI "--cleartop"
+Remove all top10 entries.
+.TP
+.BI "--dumpdb"
+Instead of showing the database with a formated output, this output will
+dump the whole database in a format that should be easy to parse with most
+script languages. Use this for example with php or perl to make a custom 
+webpage. The dump uses ; as field delimeter.
+
+  active;1                        activity status
+  interface;eth0                  name for the interface
+  nick;inet                       nick (if given)
+  created;1023895272              creation date in Unix time
+  updated;1065467100              when the database was updated
+  totalrx;569605                  all time total received MB
+  totaltx;2023708                 all time total transmitted MB
+  currx;621673719                 latest rx value in /proc
+  curtx;981730184                 latest tx value in /proc
+  totalrxk;644                    total rx kB counter
+  totaltxk;494                    total tx kB counter
+  btime;1059414541                system boot time in Unix time
+
+Then follows 30 lines like the following
+
+  d;0;1078696800;559;7433;68;557;1
+ 
+where d = days, 0 = day number in database (0 is today), 1077314401 date in
+Unix time, 559 = rx MB, 7433 = tx MB, 68 = rx kB, 557 = tx kB and 1 tells that
+vnStat has filled this value and it is in use.
+   
+  m;0;1078092000;48649;139704;527;252;1   (x12)
+  t;0;1078351200;5979;47155;362;525;1     (x10)
+  h;0;1078699800;118265;516545            (x24)
+                                   
+m = months, t = top10 and h = hours, all other fields are in the same order as in days
+except hours that doesn't have a separate kB value. For hours the forth and fifth fields
+have values in kB.
+.TP
+.BI "--enable, --disable"
+Enable or disable updates for selected interface. Useful for
+interfaces that aren't always available, like ppp0. If the interface
+goes down it should be disabled in order to avoid errors. Add something
+like
+.B "vnstat -r --disable -i ppp0"
+to the script that's executed when
+the interface goes down and
+.B "vnstat --enable -i ppp0"
+to the up script.
+.TP
+.BI "-?, --help"
+Show a command summary.
+.TP
+.BI "--longhelp"
+Show complete options list.
+.TP
+.BI "--nick " nickname
+Set the selected interfaces
+.I nickname
+as an alias the will be displayed in queries. Usage of
+.B -u
+is required to save the change.
+.TP
+.BI "--rebuildtotal"
+Reset the total traffic counters and recount those using recorded months.
+.TP
+.BI "--testkernel"
+Test if the kernel btime stays always to same like it should or
+if it's shifting.
+.SH FILES
+.I /var/lib/vnstat/
+.RS
+This directory contains all databases the program uses. Files are
+named according to the monitored interfaces.
+.SH EXAMPLES
+.BI "vnstat -u -i" 
+.I interface
+forces a database update for
+.I interface
+or creates the database if it doesn't exist. This is usually the
+first command used after a fresh install.
+.PP
+.BI "vnstat -u -i"
+.I interface
+.BI "--nick"
+.I nick
+gives
+.I interface
+the nickname
+.I "nick"
+and that information will be later included with queries.
+.PP
+.BI "vnstat -u -r --disable -i
+.I interface
+resets the internal counters of
+.I interface
+and disables it from being updated before enabled again with the
+.BI "--enable"
+parameter. This feature is especially useful for interfaces like ppp0
+that aren't always active.
+.SH RESTRICTIONS
+64bit counters can't currently be automatically detected, therefore
+support must be specified before compiling.
+.PP
+Estimated traffic values are likely to be somewhat inaccurate if daily
+traffic is low because only the MB counter is used to calculate the
+estimate.
+.SH AUTHOR
+Teemu Toivola <tst at iki dot fi>
+.SH "SEE ALSO"
+.BR proc (5)

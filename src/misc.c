@@ -72,19 +72,29 @@ void kerneltest(void)
 int spacecheck(char *path)
 {
 	struct statfs buf;
-	int free;
+	uint64_t free;
 
 	if (statfs(path, &buf)) {
 		perror("Free diskspace check");
 		exit(0);
 	}
 
-	free=(buf.f_bavail/(float)buf.f_blocks)*100;
+	free=(buf.f_bavail/(float)1024)*buf.f_bsize;
 
-	if (debug)
-		printf("%d%% free space left\n", free);
+	if (debug) {
+		printf("bzise %d\n", buf.f_bsize);
+		printf("blocks %lu\n", buf.f_blocks);
+		printf("bfree %lu\n", buf.f_bfree);
+		printf("bavail %lu\n", buf.f_bavail);
+		printf("ffree %lu\n", buf.f_ffree);
+		
+		printf("%Lu free space left\n", free);
+	}	
 
-	if (free<=1)
+	/* the database is less than 3kB but let's require */
+	/* 1MB to be on the safe side, anyway, the filesystem should */
+	/* always have more free space than that */
+	if (free<=1024)
 		return 0;
 	else
 		return 1;

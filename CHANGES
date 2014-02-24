@@ -1,42 +1,55 @@
+1.3 / 8-Mar-04
+
+ - Fix: support for 64bit counters
+ - Fix: 'yesterday' was showing 01.01. with new databases
+ - Fix: free space warning changed from 1% to 1MB
+ - Fix: minor security exploit
+ - A man page has been included
+ - Hourly output with textgraphical view
+ - kBs are visible when traffic is under 1000 MB
+ - Webpage moved to http://humdi.net/vnstat/
+ - Minor visual updates
+
+
 1.2 / 7-Oct-03
 
- - Changed file paths to conform with FHS (http://www.pathname.com/fhs/).
+ - Changed file paths to conform with FHS (http://www.pathname.com/fhs/)
       /usr/local/bin/vnstat -> /usr/bin/vnstat
       /var/spool/vnstat -> /var/lib/vnstat
- - Added FAQ.
- - Included sample scripts for pppd users.
- - Support for 64bit counters in /proc/net/dev. 
+ - Added FAQ
+ - Included sample scripts for pppd users
+ - Support for 64bit counters in /proc/net/dev
    (Thanks to Stephan van Hienen for the test account)
  - Actual date is shown if the previous day in the database isn't
-   yesterday.
- - Weekly and last 7 days traffic can be shown. 
+   yesterday
+ - Weekly and last 7 days traffic can be shown.
    (Thanks to Derk-Jan Hartman for the suggestion)
- - Average kB/s meter.
- - --testkernel fixed.
- - Documentation for --dumpdb included in the README.
+ - Average kB/s meter
+ - --testkernel fixed
+ - Documentation for --dumpdb included in the README
 
 
 1.1 / 13-Jul-03
 
- - Support for multiple interfaces.
- - Date checking (update shouldn't be before previous update).
- - New database structure.
- - Possibility to change date output format.
- - Test tool for faulty kernels.
- - Parseable output.
- - Better support for ppp/dsl users.
- - Free diskspace check.
- - Possibility to change month rotation day (like 25. instead of 1.).
- - Daily/monthly traffic estimation.
+ - Support for multiple interfaces
+ - Date checking (update shouldn't be before previous update)
+ - New database structure
+ - Possibility to change date output format
+ - Test tool for faulty kernels
+ - Parseable output
+ - Better support for ppp/dsl users
+ - Free diskspace check
+ - Possibility to change month rotation day (like 25. instead of 1.)
+ - Daily/monthly traffic estimation
 
 
 22-Nov-02
 
  - Renamed the cron script file that would be installed to /etc/cron.d
    from vnstat.cron to vnstat because debian systems didn't execute scripts
-   containing dots. (Thanks to frangen / Simo Salminen for this note)
+   containing dots (Thanks to frangen / Simo Salminen for this note)
 
 
 1.0 / 23-Sep-02
 
- - Initial public release.
+ - Initial public release

@@ -1,3 +1,8 @@
+# bin, man and cron dirs
+BIN = $(DESTDIR)/usr/bin
+MAN = $(DESTDIR)/usr/share/man
+CRON = $(DESTDIR)/etc/cron.d
+
 vnstat:
 	+make -C src vnstat
 
@@ -16,16 +21,17 @@ clean:
 install:
 	@echo "Installing vnStat..."
 
-	@if [ -d /var/spool/vnstat ]; then echo "Moving old database(s) to new location..."; mv -f /var/spool/vnstat /var/lib/; fi
-	mkdir -p /var/lib/vnstat
+	@if [ -d $(DESTDIR)/var/spool/vnstat ]; then echo "Moving old database(s) to new location..."; mv -f $(DESTDIR)/var/spool/vnstat $(DESTDIR)/var/lib/; fi
 
-	@if [ -x /usr/local/bin/vnstat ]; then echo "Removing old binary..."; rm -f /usr/local/bin/vnstat; fi
+	@if [ -x $(DESTDIR)/usr/local/bin/vnstat ]; then echo "Removing old binary..."; rm -f $(DESTDIR)/usr/local/bin/vnstat; fi
 
-	@if [ -d /etc/ppp/ip-up.d ]; then echo "Installing ppp/ip-up script"; cp -f pppd/vnstat_ip-up /etc/ppp/ip-up.d/vnstat; fi
-	@if [ -d /etc/ppp/ip-down.d ]; then echo "Installing ppp/ip-down script"; cp -f pppd/vnstat_ip-down /etc/ppp/ip-down.d/vnstat; fi
+	@if [ -d $(DESTDIR)/etc/ppp/ip-up.d ]; then echo "Installing ppp/ip-up script"; cp -f pppd/vnstat_ip-up $(DESTDIR)/etc/ppp/ip-up.d/vnstat; fi
+	@if [ -d $(DESTDIR)/etc/ppp/ip-down.d ]; then echo "Installing ppp/ip-down script"; cp -f pppd/vnstat_ip-down $(DESTDIR)/etc/ppp/ip-down.d/vnstat; fi
 
-	install -m 755 src/vnstat /usr/bin
-	install -m 644 cron/vnstat /etc/cron.d
+	install -d $(BIN) $(MAN)/man1 $(CRON) $(DESTDIR)/var/lib/vnstat
+	install -m 755 src/vnstat $(BIN)
+	install -m 644 man/vnstat.1 $(MAN)/man1
+	install -m 644 cron/vnstat $(CRON)
 
 uninstall:
 	@echo "Uninstalling vnStat..."
@@ -35,8 +41,9 @@ uninstall:
 	@echo
 	@echo "Press CTRL-C to abort within 10 sec."
 	@sleep 10
-	rm -fr /var/lib/vnstat
-	rm -f /usr/bin/vnstat
-	rm -f /etc/cron.d/vnstat
-	rm -f /etc/ppp/ip-up.d/vnstat
-	rm -f /etc/ppp/ip-down.d/vnstat
+	rm -fr $(DESTDIR)/var/lib/vnstat
+	rm -f $(BIN)/vnstat
+	rm -f $(MAN)/man1/vnstat.1
+	rm -f $(CRON)/vnstat
+	rm -f $(DESTDIR)/etc/ppp/ip-up.d/vnstat
+	rm -f $(DESTDIR)/etc/ppp/ip-down.d/vnstat

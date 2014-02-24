@@ -14,9 +14,9 @@ void readproc(char iface[32])
 	}
 
 	if (strcmp(iface,"default")==0) {
-		strcpy(inface,"eth0");
+		strncpy(inface,"eth0", 32);
 	} else {
-		strcpy(inface,iface);
+		strncpy(inface,iface, 32);
 	}
 
 	check=0;
@@ -64,10 +64,12 @@ void readproc(char iface[32])
 void parseproc(int newdb)
 {
 	char temp[64];
-	uint64_t rx, tx, rxchange=0, txchange=0, btime;
+	uint64_t rx, tx, rxchange=0, txchange=0, btime;   /* rxchange = rx change in MB */
+	uint64_t krxchange=0, ktxchange=0;                /* krxchange = rx change in kB */
 	time_t current;
 	struct tm *d;
-	int day, month, year;
+	int day, month, year, hour, min, shift;
+	int rxkchange=0, txkchange=0;			/* changes in the kB counters */
 
 	btime=strtoul(statline+6, (char **)NULL, 0);
 
@@ -95,26 +97,25 @@ void parseproc(int newdb)
 	if (newdb!=1) {
 		if (data.currx<=rx) {
 			rxchange=(rx-data.currx)/1024/1024;
-			data.totalrxk+=((rx-data.currx)/1024)%1024;
+			krxchange=(rx-data.currx)/1024;
+			rxkchange=((rx-data.currx)/1024)%1024;
 			if (debug)
-				printf("rx: %Lu - %Lu = %Lu\nrxk: %d\n",rx,data.currx,rx-data.currx,data.totalrxk);
+				printf("rx: %Lu - %Lu = %Lu\n",rx,data.currx,rx-data.currx);
 		} else {
 			rxchange=(FPOINT-data.currx+rx)/1024/1024;
-			data.totalrxk+=((FPOINT-data.currx+rx)/1024)%1024;
+			krxchange=(FPOINT-data.currx+rx)/1024;
+			rxkchange=((FPOINT-data.currx+rx)/1024)%1024;
 			if (debug)
-				printf("rx: %Lu - %Lu + %Lu = %Lu\nrxk: %d\n",FPOINT,data.currx,rx,FPOINT-data.currx+rx,data.totalrxk);
+				printf("rx: %Lu - %Lu + %Lu = %Lu\n",FPOINT,data.currx,rx,FPOINT-data.currx+rx);
 		}
 	}
 	
-	if (data.totalrxk>=1024) {
-		rxchange++;
-		data.totalrxk-=1024;
-	}
-		
-	data.currx=rx;
-	data.totalrx+=rxchange;
+	data.currx=rx;	
 
-	/* get tx from procline, ugly code but it works */
+	addtraffic(&data.totalrx, &data.totalrxk, rxchange, rxkchange);
+	
+
+	/* get tx from procline, ugly hack */
 	sscanf(procline+7,"%s %s %s %s %s %s %s %s %s",temp,temp,temp,temp,temp,temp,temp,temp,temp);
 
 #ifdef BLIMIT
@@ -126,39 +127,59 @@ void parseproc(int newdb)
 	if (newdb!=1) {
 		if (data.curtx<=tx) {
 			txchange=(tx-data.curtx)/1024/1024;
-			data.totaltxk+=((tx-data.curtx)/1024)%1024;
+			ktxchange=(tx-data.curtx)/1024;
+			txkchange=((tx-data.curtx)/1024)%1024;
 			if (debug)
-				printf("tx: %Lu - %Lu = %Lu\ntxk: %d\n",tx,data.curtx,tx-data.curtx,data.totaltxk);
+				printf("tx: %Lu - %Lu = %Lu\n",tx,data.curtx,tx-data.curtx);
 		} else {
 			txchange=(FPOINT-data.curtx+tx)/1024/1024;
-			data.totaltxk+=((FPOINT-data.curtx+tx)/1024)%1024;
+			ktxchange=(FPOINT-data.curtx+tx)/1024;
+			txkchange=((FPOINT-data.curtx+tx)/1024)%1024;
 			if (debug)
-				printf("tx: %Lu - %Lu + %Lu = %Lu\ntxk: %d\n",FPOINT,data.curtx,tx,FPOINT-data.curtx+tx,data.totaltxk);
+				printf("tx: %Lu - %Lu + %Lu = %Lu\n",FPOINT,data.curtx,tx,FPOINT-data.curtx+tx);
 		}
 	}
-	
-	if (data.totaltxk>=1024) {
-		txchange++;
-		data.totaltxk-=1024;
-	}
-	
-	data.curtx=tx;
-	data.totaltx+=txchange;
-	
-	data.day[0].rx+=rxchange;
-	data.day[0].tx+=txchange;
-	data.month[0].rx+=rxchange;
-	data.month[0].tx+=txchange;
 
+	data.curtx=tx;
+	
+	addtraffic(&data.totaltx, &data.totaltxk, txchange, txkchange);
+
+	/* update days and months */
+	addtraffic(&data.day[0].rx, &data.day[0].rxk, rxchange, rxkchange);
+	addtraffic(&data.day[0].tx, &data.day[0].txk, txchange, txkchange);
+	addtraffic(&data.month[0].rx, &data.month[0].rxk, rxchange, rxkchange);
+	addtraffic(&data.month[0].tx, &data.month[0].txk, txchange, txkchange);	
+
+	/* fill some variables from current date & time */
 	d=localtime(&current);
 	day=d->tm_mday;
 	month=d->tm_mon;
 	year=d->tm_year;
+	hour=d->tm_hour;
+	min=d->tm_min;
 	
+	/* shift traffic to previous hour when update happens at X:00 */
+	if (min==0) {
+		shift=hour;
+		hour--;
+		if (hour<0)
+			hour+=24;     /* hour can't be -1 :) */
+	} else {
+		shift=hour;
+	}
+	
+	/* clean and update hourly */
+	cleanhours();
+	data.hour[shift].date=current;   /* avoid shifting timestamp */
+	data.hour[hour].rx+=krxchange;
+	data.hour[hour].tx+=ktxchange;
+	
+	/* rotate days in database if needed */
 	d=localtime(&data.day[0].date);
 	if ((d->tm_mday!=day) || (d->tm_mon!=month) || (d->tm_year!=year))
 		rotatedays();
 
+	/* rotate months in database if needed */
 	d=localtime(&data.month[0].month);
 	if ((d->tm_mon!=month) && (day==atoi(MONTHROTATE)))
 		rotatemonths();
@@ -169,9 +190,9 @@ void trafficmeter(char iface[32], int sampletime)
 {
 	/* received bytes packets errs drop fifo frame compressed multicast */
 	/* transmitted bytes packets errs drop fifo colls carrier compressed */
-	unsigned long int p1[16], p2[16];
-	int i, j;
-	char temp[64];
+	uint64_t p1[16], p2[16];
+	int i, j, len;
+	char temp[64], buffer[256];
 
 	/* less than 5 seconds if probably too inaccurate */
 	if (sampletime<5) {
@@ -186,20 +207,21 @@ void trafficmeter(char iface[32], int sampletime)
 		if (procline[i]!=' ') {
 			sscanf(procline+i,"%s",temp);
 			i+=strlen(temp);
-			if (debug)
-				printf("%8d '%s'\n",j,temp);
 #ifdef BLIMIT
 			p1[j]=strtoull(temp, (char **)NULL, 0);
 #else
 			p1[j]=strtoul(temp, (char **)NULL, 0);
 #endif
+			if (debug)
+				printf("%8d '%s' -> '%Lu'\n",j,temp,p1[j]);
 			j++;
 		}
 	}
 
 	/* wait sampletime and print some nice dots so that the user thinks
 	something is done :) */
-	printf("Sampling %s (%d seconds average)",iface,sampletime);
+	sprintf(buffer,"Sampling %s (%d seconds average)",iface,sampletime);
+	printf("%s",buffer);
 	fflush(stdout);
 	sleep(sampletime/3);
 	printf(".");
@@ -213,8 +235,12 @@ void trafficmeter(char iface[32], int sampletime)
 	if ((sampletime/3)*3!=sampletime) {
 		sleep(sampletime-((sampletime/3)*3));
 	}	
-	printf("\n");
-		
+	
+	len=strlen(buffer)+3;
+	
+	for (i=0;i<len;i++)
+		printf("\b \b");
+	
 	/* read those value again... */
 	j=0;
 	readproc(iface);
@@ -222,19 +248,31 @@ void trafficmeter(char iface[32], int sampletime)
 		if (procline[i]!=' ') {
 			sscanf(procline+i,"%s",temp);
 			i+=strlen(temp);
-			if (debug)
-				printf("%8d '%s'\n",j,temp);
 #ifdef BLIMIT
 			p2[j]=strtoull(temp, (char **)NULL, 0);
 #else
 			p2[j]=strtoul(temp, (char **)NULL, 0);
 #endif
+			if (debug)
+				printf("%8d '%s' -> '%Lu'\n",j,temp,p2[j]);
 			j++;
 		}
 	}
 
 	/* show the difference in a readable form */
-	printf("\n      rx     %10.2f kB/s          %5lu packets/s\n", (p2[0]-p1[0])/(float)sampletime/(float)1024, (p2[1]-p1[1])/sampletime);
-	printf("      tx     %10.2f kB/s          %5lu packets/s\n\n", (p2[8]-p1[8])/(float)sampletime/(float)1024, (p2[9]-p1[9])/sampletime);
+	printf("%Lu packets sampled in %d seconds\n", (p2[1]-p1[1])+(p2[9]-p1[9]), sampletime);
+	printf("Traffic average for %s\n", iface);
+	printf("\n      rx     %10.2f kB/s          %5Lu packets/s\n", (p2[0]-p1[0])/(float)sampletime/(float)1024, (uint64_t)((p2[1]-p1[1])/sampletime));
+	printf("      tx     %10.2f kB/s          %5Lu packets/s\n\n", (p2[8]-p1[8])/(float)sampletime/(float)1024, (uint64_t)((p2[9]-p1[9])/sampletime));
+}
 
+void addtraffic(uint64_t *destmb, int *destkb, uint64_t srcmb, int srckb)
+{
+	*destmb=*destmb+srcmb;
+	*destkb=*destkb+srckb;
+	
+	while (*destkb>=1024) {
+		*destmb=*destmb+1;
+		*destkb=*destkb-1024;
+	}
 }

@@ -1,5 +1,5 @@
 /*
-vnStat - Copyright (c) 2003 Teemu Toivola <tst@iki.fi>
+vnStat - Copyright (c) 2002-04 Teemu Toivola <tst@iki.fi>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -35,9 +35,9 @@ int main(int argc, char *argv[]) {
 	debug=0; /* debug disabled by default */
 
 	setlocale(LC_ALL, "en_US");
-	strcpy(interface, "default");
-	strcpy(definterface, DEFIFACE);
-	strcpy(nick, "none");
+	strncpy(interface, "default", 32);
+	strncpy(definterface, DEFIFACE, 32);
+	strncpy(nick, "none", 32);
 	qmode=atoi(DEFQMODE);
 	sampletime=atoi(DEFSAMPTIME);
 
@@ -45,10 +45,10 @@ int main(int argc, char *argv[]) {
 
 	/* init dirname */
 #ifdef SINGLE
-	strcpy(dirname, getenv("HOME"));
+	strncpy(dirname, getenv("HOME"), 500);
 	strcat(dirname,"/.vnstat");
 #else
-	strcpy(dirname, DATABASEDIR);
+	strncpy(dirname, DATABASEDIR, 500);
 #endif
 
 	/* check if the database dir exists and if it contains files */
@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
 		if (files) {
 			query=1;
 			if (files>1)
-				strcpy(definterface, DEFIFACE);
+				strncpy(definterface, DEFIFACE, 32);
 		}
 		closedir(dir);
 	} else {
@@ -81,37 +81,63 @@ int main(int argc, char *argv[]) {
 	for (currentarg=1; currentarg<argc; currentarg++) {
 		if (debug)
 			printf("arg %d: \"%s\"\n",currentarg,argv[currentarg]);
-		if ((strcmp(argv[currentarg],"-h")==0) || (strcmp(argv[currentarg],"--help"))==0) {
+		if ((strcmp(argv[currentarg],"--longhelp"))==0) {
 		
-			printf(" vnStat %s by Teemu Toivola <tst@iki.fi>\n\n", VNSTATVERSION);
+			printf(" vnStat %s by Teemu Toivola <tst at iki dot fi>\n\n", VNSTATVERSION);
 			
 			printf("   Update:\n");
-			printf("\t -u, --update\t update database\n");
-			printf("\t -r, --reset\t reset interface counters\n");
-			printf("\t --enable\t enable interface\n");
-			printf("\t --disable\t disable interface\n");
-			printf("\t --nick  \t set a nickname for interface\n");
-			printf("\t --cleartop\t clear the top10\n");
-			printf("\t --rebuildtotal\t rebuild total transfers from months\n");
+			printf("\t -u, --update\t\t update database\n");
+			printf("\t -r, --reset\t\t reset interface counters\n");
+			printf("\t --enable\t\t enable interface\n");
+			printf("\t --disable\t\t disable interface\n");
+			printf("\t --nick  \t\t set a nickname for interface\n");
+			printf("\t --cleartop\t\t clear the top10\n");
+			printf("\t --rebuildtotal\t\t rebuild total transfers from months\n");
 			
 			printf("   Query:\n");
-			printf("\t -q, --query\t query database\n");	
-			printf("\t -d, --days\t show days\n");
-			printf("\t -m, --months\t show months\n");
-			printf("\t -w, --weeks\t show weeks\n");
-			printf("\t -t, --top10\t show top10\n");
-			printf("\t -s, --short\t use short output\n");
-			printf("\t --dumpdb\t show database in parseable format\n");
+			printf("\t -q, --query\t\t query database\n");
+			printf("\t -h, --hours\t\t show hours\n");
+			printf("\t -d, --days\t\t show days\n");
+			printf("\t -m, --months\t\t show months\n");
+			printf("\t -w, --weeks\t\t show weeks\n");
+			printf("\t -t, --top10\t\t show top10\n");
+			printf("\t -s, --short\t\t use short output\n");
+			printf("\t --dumpdb\t\t show database in parseable format\n");
 			
 			printf("   Misc:\n");
-			printf("\t -i, --iface\t interface (default: %s)\n", definterface);
-			printf("\t -h, --help\t help\n");
-			printf("\t -D, --debug\t show some additional debug information\n");
-			printf("\t -v, --version\t show version\n");
-			printf("\t -tr, --traffic\t calculate traffic\n");
-			printf("\t --testkernel\t check if the kernel is broken\n");
+			printf("\t -i, --iface\t\t change interface (default: %s)\n", definterface);
+			printf("\t -?, --help\t\t short help\n");
+			printf("\t -D, --debug\t\t show some additional debug information\n");
+			printf("\t -v, --version\t\t show version\n");
+			printf("\t -tr, --traffic\t\t calculate traffic\n");
+			printf("\t --testkernel\t\t check if the kernel is broken\n");
+			printf("\t --longhelp\t\t display this help\n\n");
+
+			printf("See also \"man vnstat\".\n");
 
 			exit(0);
+
+		} else if ((strcmp(argv[currentarg],"-?")==0) || (strcmp(argv[currentarg],"--help"))==0) {
+
+			printf(" vnStat %s by Teemu Toivola <tst at iki dot fi>\n\n", VNSTATVERSION);
+
+			printf("\t -q, --query\t\t query database\n");
+			printf("\t -h, --hours\t\t show hours\n");
+			printf("\t -d, --days\t\t show days\n");
+			printf("\t -m, --months\t\t show months\n");
+			printf("\t -w, --weeks\t\t show weeks\n");
+			printf("\t -t, --top10\t\t show top10\n");
+			printf("\t -s, --short\t\t use short output\n");
+			printf("\t -u, --update\t\t update database\n");			
+			printf("\t -i, --iface\t\t change interface (default: %s)\n", definterface);
+			printf("\t -?, --help\t\t short help\n");
+			printf("\t -v, --version\t\t show version\n");
+			printf("\t -tr, --traffic\t\t calculate traffic\n\n");
+
+			printf("See also \"--longhelp\" for complete options list and \"man vnstat\".\n");
+
+			exit(0);
+
 		} else if ((strcmp(argv[currentarg],"-i")==0) || (strcmp(argv[currentarg],"--iface"))==0) {
 			if (currentarg+1<argc) {
 				strncpy(interface,argv[currentarg+1],32);
@@ -154,6 +180,8 @@ int main(int argc, char *argv[]) {
 			qmode=5;
 		} else if ((strcmp(argv[currentarg],"-w")==0) || (strcmp(argv[currentarg],"--weeks"))==0) {
 			qmode=6;			
+		} else if ((strcmp(argv[currentarg],"-h")==0) || (strcmp(argv[currentarg],"--hours"))==0) {
+			qmode=7;
 		} else if (strcmp(argv[currentarg],"--dumpdb")==0) {
 			qmode=4;
 		} else if (strcmp(argv[currentarg],"--enable")==0) {
@@ -184,7 +212,7 @@ int main(int argc, char *argv[]) {
 			kerneltest();
 			exit(0);
 		} else if ((strcmp(argv[currentarg],"-v")==0) || (strcmp(argv[currentarg],"--version"))==0) {
-			printf("vnStat %s by Teemu Toivola <tst@iki.fi>\n", VNSTATVERSION);
+			printf("vnStat %s by Teemu Toivola <tst at iki dot fi>\n", VNSTATVERSION);
 #ifndef SINGLE
 			if (debug)
 				printf("Root ");
@@ -204,7 +232,7 @@ int main(int argc, char *argv[]) {
 			reset=1;
 			query=0;
 		} else {
-			printf("Unknown arg \"%s\".\n",argv[currentarg]);
+			printf("Unknown arg \"%s\". Use --help for help.\n",argv[currentarg]);
 			exit(1);
 		}
 		
@@ -212,12 +240,12 @@ int main(int argc, char *argv[]) {
 
 	/* counter reset */
 	if (reset) {
-		if (!spacecheck(dirname)) {
+		if (!spacecheck(dirname) && !force) {
 			printf("Error:\nNot enough free diskspace available.\n");
 			exit(0);
 		}
 		if (strcmp(interface, "default")==0)
-			strcpy(interface, definterface);
+			strncpy(interface, definterface, 32);
 		sprintf(filename, "%s/%s", dirname, interface);
 		readdb(interface, filename);
 		data.currx=0;
@@ -229,18 +257,19 @@ int main(int argc, char *argv[]) {
 
 	/* clear top10 */
 	if (cleartop) {
-		if (!spacecheck(dirname)) {
+		if (!spacecheck(dirname) && !force) {
 			printf("Error:\nNot enough free diskspace available.\n");
 			exit(0);
 		}
 		if (strcmp(interface, "default")==0)
-			strcpy(interface, definterface);
+			strncpy(interface, definterface, 32);
 		if (force) {
-			sprintf(filename, "%s/%s", dirname, interface);
+			snprintf(filename, 512, "%s/%s", dirname, interface);
 			readdb(interface, filename);
 
 			for (i=0; i<=9; i++) {
 				data.top10[i].rx=data.top10[i].tx=0;
+				data.top10[i].rxk=data.top10[i].txk=0;
 				data.top10[i].used=0;
 			}
 
@@ -261,16 +290,16 @@ int main(int argc, char *argv[]) {
 			exit(0);
 		}
 		if (strcmp(interface, "default")==0)
-			strcpy(interface, definterface);
+			strncpy(interface, definterface, 32);
 		if (force) {
-			sprintf(filename, "%s/%s", dirname, interface);
+			snprintf(filename, 512, "%s/%s", dirname, interface);
 			readdb(interface, filename);
 
 			data.totalrx=data.totaltx=data.totalrxk=data.totaltxk=0;
 			for (i=0; i<=29; i++) {
 				if (data.month[i].used) {
-					data.totalrx+=data.month[i].rx;
-					data.totaltx+=data.month[i].tx;
+					addtraffic(&data.totalrx, &data.totalrxk, data.month[i].rx, data.month[i].rxk);
+					addtraffic(&data.totaltx, &data.totaltxk, data.month[i].tx, data.month[i].txk);
 				}
 			}
 
@@ -286,13 +315,13 @@ int main(int argc, char *argv[]) {
 
 	/* enable & disable */
 	if (active==1) {
-		if (!spacecheck(dirname)) {
+		if (!spacecheck(dirname) && !force) {
 			printf("Error:\nNot enough free diskspace available.\n");
 			exit(0);
 		}
 		if (strcmp(interface, "default")==0)
-			strcpy(interface, definterface);
-		sprintf(filename, "%s/%s", dirname, interface);
+			strncpy(interface, definterface, 32);
+		snprintf(filename, 512, "%s/%s", dirname, interface);
 		newdb=readdb(interface, filename);
 		if (!data.active && !newdb) {
 			data.active=1;
@@ -303,13 +332,13 @@ int main(int argc, char *argv[]) {
 			printf("Interface \"%s\" is already enabled.\n", data.interface);
 		}
 	} else if (active==0) {
-		if (!spacecheck(dirname)) {
+		if (!spacecheck(dirname) && !force) {
 			printf("Error:\nNot enough free diskspace available.\n");
 			exit(0);
 		}
 		if (strcmp(interface, "default")==0)
-			strcpy(interface, definterface);
-		sprintf(filename, "%s/%s", dirname, interface);
+			strncpy(interface, definterface, 32);
+		snprintf(filename, 512, "%s/%s", dirname, interface);
 		newdb=readdb(interface, filename);
 		if (data.active && !newdb) {
 			data.active=0;
@@ -325,7 +354,7 @@ int main(int argc, char *argv[]) {
 	if (update) {
 	
 		/* check that there's some free diskspace left */
-		if (!spacecheck(dirname)) {
+		if (!spacecheck(dirname) && !force) {
 			printf("Error:\nNot enough free diskspace available.\n");
 			exit(0);
 		}
@@ -339,8 +368,8 @@ int main(int argc, char *argv[]) {
 			while ((di=readdir(dir))) {
 				if (di->d_name[0]!='.') {
 					files++;
-					strcpy(interface, di->d_name);
-					sprintf(filename, "%s/%s", dirname, interface);
+					strncpy(interface, di->d_name, 32);
+					snprintf(filename, 512, "%s/%s", dirname, interface);
 					if (debug)
 						printf("\nProcessing file \"%s\"...\n", filename);
 					newdb=readdb(interface, filename);
@@ -370,11 +399,11 @@ int main(int argc, char *argv[]) {
 				printf("No database found.\n");
 			
 			/* reset to default */
-			strcpy(interface, "default");
+			strncpy(interface, "default", 32);
 		
 		/* update only selected file */
 		} else {
-			sprintf(filename, "%s/%s", dirname, interface);
+			snprintf(filename, 512, "%s/%s", dirname, interface);
 			newdb=readdb(interface, filename);
 			if (data.active) {
 				readproc(data.interface);
@@ -411,8 +440,8 @@ int main(int argc, char *argv[]) {
 				printf("\n                     rx      /     tx      /    total    /  estimated\n");
 				while ((di=readdir(dir))) {
 					if (di->d_name[0]!='.') {
-						strcpy(interface, di->d_name);
-						sprintf(filename, "%s/%s", dirname, interface);
+						strncpy(interface, di->d_name, 32);
+						snprintf(filename, 512, "%s/%s", dirname, interface);
 						if (debug)
 							printf("\nProcessing file \"%s\"...\n", filename);
 						readdb(interface, filename);
@@ -425,7 +454,7 @@ int main(int argc, char *argv[]) {
 				
 			/* show in qmode if there's only one file or qmode!=0 */
 			} else {
-				sprintf(filename, "%s/%s", dirname, definterface);
+				snprintf(filename, 512, "%s/%s", dirname, definterface);
 				readdb(definterface, filename);
 				if (!newdb) {
 					if (qmode==5)
@@ -436,7 +465,7 @@ int main(int argc, char *argv[]) {
 		
 		/* show only specified file */
 		} else {
-			sprintf(filename, "%s/%s", dirname, interface);
+			snprintf(filename, 512, "%s/%s", dirname, interface);
 			readdb(interface, filename);
 			if (!newdb) {
 				if (qmode==5)
@@ -449,13 +478,24 @@ int main(int argc, char *argv[]) {
 	/* calculate traffic */
 	if (traffic) {
 		if (strcmp(interface, "default")==0)
-			strcpy(interface, definterface);
+			strncpy(interface, definterface, 32);
 		trafficmeter(interface, sampletime);
 	}
 	
 	/* if nothing was shown previously */
-	if (!query && !update && !reset && active==-1 && !cleartop && !rebuildtotal && !traffic)
-		printf("Nothing to do. Use -h for help\n");
+	if (!query && !update && !reset && active==-1 && !cleartop && !rebuildtotal && !traffic) {
+		
+		/* give more help if there's no database */
+		if (files==0) {
+			printf("No database found, nothing to do. Use --help for help.\n\n");
+			printf("A new database can be created with the following command:\n");
+			printf("    %s -u -i eth0\n\n", argv[0]);
+			printf("Replace 'eth0' with the interface that should be monitored. A list\n");
+			printf("of available interfaces can be seen with the 'ifconfig' command.\n");
+		} else {
+			printf("Nothing to do. Use --help for help.\n");
+		}
+	}
 	
 	return 0;
 }

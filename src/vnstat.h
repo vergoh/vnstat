@@ -37,11 +37,11 @@
 #define BVAR "15"
 
 /* database version */
-/* 1 = 1.0, 2 = 1.1-1.2 */
-#define DBVERSION 2
+/* 1 = 1.0, 2 = 1.1-1.2, 3 = 1.3*/
+#define DBVERSION 3
 
 /* version string */
-#define VNSTATVERSION "1.2"
+#define VNSTATVERSION "1.3"
 
 #ifdef BLIMIT
 /* 64 bit limit */
@@ -55,12 +55,19 @@
 typedef struct {
 	time_t date;
 	uint64_t rx, tx;
+} HOUR;
+
+typedef struct {
+	time_t date;
+	uint64_t rx, tx;
+	int rxk, txk;
 	int used;
 } DAY;
 
 typedef struct {
 	time_t month;
 	uint64_t rx, tx;
+	int rxk, txk;
 	int used;
 } MONTH;
 
@@ -75,6 +82,7 @@ typedef struct {
 	DAY day[30];
 	MONTH month[12];
 	DAY top10[10];
+	HOUR hour[24];
 	uint64_t btime;
 } DATA;
 
