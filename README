@@ -1,11 +1,13 @@
-(Updated 8.3.2003 based on version 1.3)
+(Updated 27.11.2007 based on version 1.5)
 
 What is vnStat
 ::::::::::::::
 
  In short, vnStat is a console-based network traffic monitor that uses the
- /proc -filesystem to get the needed information. This means that vnStat wont 
- actually be sniffing any traffic. See the webpage for few 'screenshots'.
+ /proc filesystem to get the needed information. This means that vnStat
+ won't actually be sniffing any traffic. 
+
+ See the webpage for few 'screenshots'.
 
 
 Getting started
@@ -27,36 +29,32 @@ Available options
 Usage tips
 ::::::::::
 
- vnStat has few settings that can be changed before compiling by editing
- vnstat.h that's included in the src directory. There's comments included
- so see the file with some plain text editor and recompile (and reinstall)
- after any changes.
+ Most vnStat settings can be changed from the config file. The config
+ file is either ~/.vnstatrc or /etc/vnstat.conf depending which one is
+ found first. A new config file can be generated using current settings
+ with the following command:
 
- However, it's likely that someone will ask anyway how to change the date
- format so here's a short howto about that. First go to the src directory
- and open vnstat.h. Search lines 21-23, those should look like these:
+    vnstat --showconfig >newconfig
 
-#define DFORMAT "%d.%m."
-#define MFORMAT "%b '%y"
-#define TFORMAT "%d.%m.%y"
+ The config file contains comments before any settings describing with
+ the purpose and usage of each setting is.
 
- In order to get the date format to look like what's used for example in
- the US change those lines to:
+ By default vnStat will use dd.mm.yy format in timestamps. For example
+ this can be changed from the config file by locating lines
 
-#define DFORMAT "%m/%d"
-#define MFORMAT "%b '%y"
-#define TFORMAT "%m/%d/%y"
+DayFormat    "%d.%m."
+MonthFormat  "%b '%y"
+TopFormat    "%d.%m.%y"
 
- and run 'make' (or 'make single') after that in that same src directory or
- continue with the install procedure if you were wise enough to read this
- file before installing. :)
- 
- Next, copy the binary over the old one
+ and replacing the parameters:
 
-   cp vnstat /usr/bin/vnstat
+DayFormat    "%m/%d"
+MonthFormat  "%b '%y"
+TopFormat    "%%m/%d/%y"
 
- or some other path that you've used. Changing the date format wont affect
- the database in any way.
+ Note that some field have space limits and giving too long parameters
+ might affect the readability of the output. Changing date formats won't
+ affect the database(s) in any way.
 
 
 Contacting the author
@@ -64,7 +62,9 @@ Contacting the author
 
  email:    Teemu Toivola <tst at iki dot fi>
  irc:      Vergo (IRCNet)
- forum:    http://forums.humdi.net/
 
  The current version of vnStat is always available from 
  http://humdi.net/vnstat/
+
+ Email alerts about new versions are available by subscription at
+ http://freshmeat.net/projects/vnstat/

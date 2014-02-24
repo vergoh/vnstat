@@ -1,4 +1,4 @@
-(Updated 26.3.2003 based on version 1.4)
+(Updated 2.12.2007 based on version 1.5)
 
 'I don't read manuals' install
 ::::::::::::::::::::::::::::::
@@ -23,56 +23,56 @@ Installing vnStat
  proceeding.
 
 
-'root' install
-::::::::::::::
+Installing as root
+::::::::::::::::::
 
  First login as root and run the following two commands:
 
      make
      make install
 
- Those having 64bit counters in /proc/net/dev should use 'make 64bit'
- instead of 'make'. If there was no errors, vnStat should now be installed
- (warnings aren't aren't considered as errors). During version 1.0 it
- became clear that some kernels are broken and don't provide to correct
- boot time for the system. vnStat requires this information so there's a
- test to see if the kernel if working right.
+ If there was no errors, vnStat should now be installed  (warnings aren't
+ aren't considered as errors). During version 1.0 it became clear that some
+ kernels are broken and don't provide to correct boot time for the system.
+ vnStat requires this information so there's a test to see if the kernel is
+ working correctly.
 
      vnstat --testkernel
 
  The only way to fix a faulty kernel (afaik) is to compile/install a newer
  one. Next every interface that should be monitored needs to be introduced
- to vnStat. Replace eth0 if needed.
+ to vnStat. Replace 'eth0' in the command with any available interface if
+ needed.
 
      vnstat -u -i eth0
 
  Repeat that for every other interface you wish to use. After that wait
- for about 10 kB of network traffic (and 5 min).
+ for about 10 kB of network traffic (and 5 min for the next cron update).
 
      vnstat
 
- Now you should get some stats about your network usage.
+ Now you should get some stats about your network usage. See the config
+ file /etc/vnstat.conf for interface and other settings.
 
 
-'singleuser' install
-::::::::::::::::::::
+Installing without root access
+::::::::::::::::::::::::::::::
 
  This install method is a little bit more complicated but shouldn't be
  impossible. :) First compile the binary.
 
      make single
 
- Those having 64bit counters in /proc/net/dev should use 'make 64bitsingle'
- instead of 'make single'. If there was no errors, copy src/vnstat to some
- directory included in your $PATH (~/bin/ is an example)  and make the
- database directory.
+ If there was no errors, copy src/vnstat to some directory included in your
+ $PATH (~/bin/ is an example)  and make the database directory.
 
      cp src/vnstat ~/bin/
+	 cp cfg/vnstat.conf ~/.vnstatrc
      mkdir ~/.vnstat
 
  During version 1.0 it became clear that some kernels are broken and don't
  provide to correct boot time for the system. vnStat requires this information
- so there's a test to see if the kernel if working right.
+ so there's a test to see if the kernel is working correctly.
 
      vnstat --testkernel
 
@@ -82,7 +82,8 @@ Installing vnStat
  sysadmin if the kernel is broken.
 
  Next every interface that should be monitored needs to be introduced
- to vnStat. Replace eth0 if needed.
+ to vnStat. Replace 'eth0' in the command with any available interface if
+ needed.
 
      vnstat -u -i eth0
 
@@ -91,11 +92,14 @@ Installing vnStat
  and add the following line (without leading spaces, remember to change the
  path):
 
-     0-55/5 * * * * ~/bin/vnstat -u
+     */5 * * * * ~/bin/vnstat -u
 
  If you found yourself using a strange editor then 'man vi' should help.
- After that wait for about 10 kB of network traffic (and 5 min).
+ After that wait for about 10 kB of network traffic (and 5 min for the
+ next cron update).
 
      vnstat
 
- Now you should get some stats about your network usage.
+ Now you should get some stats about your network usage. See the config
+ file ~/vnstatrc for interface and other settings.
+

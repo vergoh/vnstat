@@ -1,12 +1,15 @@
-int readdb(char iface[32], char file[512]);
-void writedb(char file[512], int newdb);
+int readdb(char iface[32], char dirname[512]);
+void writedb(char iface[32], char dirname[512], int newdb);
 void showdb(int qmode);
 void showhours(void);
 void cleanhours(void);
 void rotatedays(void);
 void rotatemonths(void);
-void convertdb(FILE *db);
-void showint(uint64_t mb, int kb, int len);
+int convertdb(FILE *db);
+void showint(uint64_t mb, uint64_t kb, int len);
+void showbar(uint64_t rx, int rxk, uint64_t tx, int txk, uint64_t max, int len);
+void synccounters(char iface[32], char dirname[512]);
+void lockdb(int fd, int dbwrite);
 
 /* version 1.0 database format aka db v1 */
 typedef struct {

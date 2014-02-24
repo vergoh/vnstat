@@ -1,2 +1,2 @@
 #!/bin/sh
-if [ -x /usr/bin/vnstat ] && [ -w /var/lib/vnstat/ppp0 ]; then /usr/bin/vnstat -r --enable -i ppp0; fi
+if [ -x /usr/bin/vnstat ] && [ -w /var/lib/vnstat/$1 ]; then /usr/bin/vnstat -r --enable -i $1; fi

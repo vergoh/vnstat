@@ -1,3 +1,20 @@
+1.5 / 3-Dec-07
+
+ - Fix: compile time warnings solved
+ - Fix: kernel test is now more verbose
+ - Fix: more informative error messages
+ - Fix: possible division by zero for traffic estimates right after midnight
+ - Fix: interface names longer than 6 chars (patch by Jan Schmidle)
+ - Realtime transfer rate mode
+ - Automatic 32bit/64bit counter detection
+ - Config file support
+ - Internal database backups and locking
+ - More visuals in outputs
+ - Adaptive units (kB, MB, GB, TB)
+ - Possibility to sync counters without counting traffic
+ - Maximum bandwidth of interfaces can be set
+
+
 1.4 / 26-Mar-04
 
  - Fix: major output problems when compiled with some compilers
