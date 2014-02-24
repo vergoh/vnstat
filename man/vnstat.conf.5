@@ -1,4 +1,4 @@
-.TH VNSTAT.CONF 1 "APRIL 2009" "version 1.7" "User Manuals"
+.TH VNSTAT.CONF 5 "JULY 2009" "version 1.8" "User Manuals"
 .SH NAME
 vnstat.conf \- vnStat configuration file
 .SH SYNOPSIS
@@ -24,7 +24,8 @@ A full path must be given and a leading '/' isn't required.
 .TP
 .BI Locale
 Locale setting to be used for prints. This replaces the LC_ALL
-environment variable. (vnstat and vnstati only)
+environment variable. Set to "-" in order to use the system default
+value. (vnstat and vnstati only)
 .TP
 .BI MonthRotate
 Day of month that months are expected to change. Usually set to
@@ -48,6 +49,14 @@ and transmitted traffic in hourly output. (vnstat only)
 .BI UnitMode
 Select how units are prefixed. 0 = IEC standard prefixes
 (KiB/MiB/GiB/TiB), 1 = old style binary prefixes (KB/MB/GB/TB).
+(vnstat and vnstati only)
+.TP
+.BI ShowRate
+Enable or disable the visibility of traffic rate in outputs.
+1 = enabled, 0 = disabled. (vnstat and vnstati only)
+.TP
+.BI RateUnit
+Select which unit is used when traffic rate is visible. 0 = bytes, 1 = bits.
 (vnstat and vnstati only)
 .TP
 .BI Interface
@@ -86,6 +95,10 @@ to write to the file at the same time.
 .BI BootVariation
 Time in seconds how much the boot time reported by system kernel can variate
 between updates.
+.TP
+.BI TrafficlessDays
+Log days without any traffic to daily list. 1 = enabled, 0 = disabled.
+(vnstat and vnstatd only)
 .SH DAEMON RELATED KEYWORDS
 .TP
 .BI UpdateInterval
@@ -110,6 +123,12 @@ Specify pid file path and name to be used.
 .BI HeaderFormat
 Formatting of date in header. Uses the same format as
 .BR date (1).
+.TP
+.BI HourlyRate
+Show hours with rate instead of transfered amount. 1 = enabled, 0 = disabled.
+.TP
+.BI TransparentBg
+Set background color as transparent. 1 = enabled, 0 = disabled.
 .TP
 .BI CBackground
 Background color.

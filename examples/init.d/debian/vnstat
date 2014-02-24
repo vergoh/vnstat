@@ -1,0 +1,129 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          vnstat
+# Required-Start:    $local_fs $remote_fs $network
+# Required-Stop:     $local_fs $remote_fs $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: lightweight network traffic monitor
+### END INIT INFO
+
+PATH=/usr/sbin:/usr/bin:/sbin:/bin
+DESC="vnStat daemon"
+NAME=vnstatd
+DAEMON=/usr/sbin/$NAME
+DAEMON_ARGS="-d"
+PIDFILE=/var/run/vnstat.pid
+SCRIPTNAME=/etc/init.d/vnstat
+
+# Exit if the package is not installed
+[ -x "$DAEMON" ] || exit 0
+
+#
+# Function that starts the daemon/service
+#
+do_start()
+{
+	# Return
+	#   0 if daemon has been started
+	#   1 if daemon was already running
+	#   2 if daemon could not be started
+	start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON --test > /dev/null \
+		|| return 1
+	start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON -- \
+		$DAEMON_ARGS \
+		|| return 2
+}
+
+#
+# Function that stops the daemon/service
+#
+do_stop()
+{
+	# Return
+	#   0 if daemon has been stopped
+	#   1 if daemon was already stopped
+	#   2 if daemon could not be stopped
+	#   other if a failure occurred
+	start-stop-daemon --stop --quiet --retry=TERM/15/KILL/5 --pidfile $PIDFILE --name $NAME
+	RETVAL="$?"
+	[ "$RETVAL" = 2 ] && return 2
+
+	rm -f $PIDFILE
+	return "$RETVAL"
+}
+
+#
+# Function that sends a SIGHUP to the daemon/service
+#
+do_reload() {
+	start-stop-daemon --stop --signal 1 --quiet --pidfile $PIDFILE --name $NAME
+	return 0
+}
+
+do_status()
+{
+	# Return
+	#   0 if daemon is stopped
+	#   1 if daemon is running
+	start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON --test > /dev/null \
+		|| return 1
+}
+
+case "$1" in
+  start)
+	echo -n "Starting $DESC: $NAME"
+	do_start
+	case "$?" in
+		0) echo "." ;;
+		1) echo " already running." ;;
+		2) echo " start failed." ; exit 1 ;;
+	esac
+	;;
+  stop)
+	echo -n "Stopping $DESC: $NAME"
+	do_stop
+	case "$?" in
+		0) echo "." ;;
+		1) echo " already stopped." ;;
+		2) echo " stop failed." ; exit 1 ;;
+	esac
+	;;
+  status)
+	echo -n "Checking $DESC: "
+	do_status
+	case "$?" in
+		0) echo "stopped." ; exit 3 ;;
+		1) echo "running." ;;
+	esac
+	;;
+  reload|force-reload)
+	echo -n "Reloading $DESC configuration..."
+	do_reload
+	echo "done."
+	;;
+  restart)
+	echo -n "Restarting $DESC: $NAME"
+	do_stop
+	case "$?" in
+	  0|1)
+		do_start
+		case "$?" in
+			0) echo "." ;;
+			1) echo " old process is still running." ;;
+			*) echo " start failed." ; exit 1 ;;
+		esac
+		;;
+	  *)
+		echo " stop failed."
+		exit 1
+		;;
+	esac
+	;;
+  *)
+	echo "Usage: $SCRIPTNAME {start|stop|restart|reload|force-reload|status}" >&2
+	exit 1
+	;;
+esac
+
+exit 0

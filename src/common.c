@@ -124,3 +124,43 @@ int logprint(PrintType type)
 	
 	return 0;
 }
+
+int dmonth(int month)
+{
+	static int dmonth[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+	int year;
+	time_t current;
+	
+	/* handle leap years */
+	if (month==1) {
+		current = time(NULL);
+		year = localtime(&current)->tm_year;
+		if ( ((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0) ) {
+			return 29;
+		} else {
+			return 28;
+		}
+	} else {
+		return dmonth[month];
+	}
+}
+
+uint32_t mosecs(void)
+{
+	struct tm *d;
+	
+	d = localtime(&data.month[0].month);
+	
+	if (d->tm_mday < cfg.monthrotate) {
+		return 0;
+	}
+	
+	d->tm_mday = cfg.monthrotate;
+	d->tm_hour = d->tm_min = d->tm_sec = 0;
+	
+	if ((data.lastupdated-data.month[0].month)>0) {
+		return data.lastupdated-mktime(d);
+	} else {
+		return 0;
+	}
+}

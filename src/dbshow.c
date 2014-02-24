@@ -4,7 +4,6 @@
 
 void showdb(int qmode)
 {
-	float rxp, txp;
 	int i, used, week, temp;
 	struct tm *d;
 	char datebuff[16];
@@ -12,14 +11,13 @@ void showdb(int qmode)
 	uint64_t e_rx, e_tx, t_rx, t_tx, max;
 	int t_rxk, t_txk;
 	time_t current, yesterday;
-	int dmonth[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 	
 	current=time(NULL);
 	yesterday=current-86400;
 	
 	e_rx=e_tx=t_rx=t_tx=t_rxk=t_txk=0;
 					
-	if (data.totalrx+data.totaltx==0 && data.totalrxk+data.totaltxk==0) {
+	if (data.totalrx+data.totaltx==0 && data.totalrxk+data.totaltxk==0 && qmode!=4) {
 		
 		printf(" %s: Not enough data available yet.\n", data.interface);
 		
@@ -38,42 +36,75 @@ void showdb(int qmode)
 			
 			/* change daytemp to today if formated days match */
 			if (strcmp(datebuff, daytemp2)==0) {
-				strncpy(daytemp2, "today", 32);
+				strncpy(daytemp2, "    today", 32);
 			}
 			
-			if (data.totalrx>1024 || data.totaltx>1024)	{
-				rxp = (data.totalrx/(float)(data.totalrx+data.totaltx))*100;
-			} else {
-				rxp = ( ((data.totalrx*1024)+data.totalrxk) / (float)(((data.totalrx*1024)+data.totalrxk)+((data.totaltx*1024)+data.totaltxk)) )*100;
-			}	
-			txp = (float)100 - rxp;
-
-			/* use database update time for estimates */
-			d=localtime(&data.lastupdated);
-
-			if ( data.day[0].rx==0 || data.day[0].tx==0 || (d->tm_hour*60+d->tm_min)==0 ) {
-				e_rx=e_tx=0;
-			} else {	
-				e_rx=((data.day[0].rx)/(float)(d->tm_hour*60+d->tm_min))*1440;
-				e_tx=((data.day[0].tx)/(float)(d->tm_hour*60+d->tm_min))*1440;
-			}
-			
-			/* printf("\nDatabase created: %s",(char*)asctime(localtime(&data.created))); */
-		
 			printf("Database updated: %s\n",(char*)asctime(localtime(&data.lastupdated)));
 			
 			if (strcmp(data.interface, data.nick)==0) {
 				if (data.active)
-					printf("        %s\n\n", data.interface);
+					printf("   %s", data.interface);
 				else
-					printf("        %s [disabled]\n\n", data.interface);
+					printf("   %s [disabled]", data.interface);
 			} else {
 				if (data.active)
-					printf("        %s (%s)\n\n", data.nick, data.interface);
+					printf("   %s (%s)", data.nick, data.interface);
 				else
-					printf("        %s (%s) [disabled]\n\n", data.nick, data.interface);
+					printf("   %s (%s) [disabled]", data.nick, data.interface);
 			}
 			
+			/* get formated date for creation date */
+			d=localtime(&data.created);
+			strftime(datebuff, 16, cfg.tformat, d);
+			printf(" since %s\n\n", datebuff);
+
+			printf("          rx:  %s", getvalue(data.totalrx, data.totalrxk, 1, 1));
+			printf("      tx:  %s", getvalue(data.totaltx, data.totaltxk, 1, 1));
+			printf("     total:  %s\n\n", getvalue(data.totalrx+data.totaltx, data.totalrxk+data.totaltxk, 1, 1));
+
+			printf("   monthly\n");
+			printf("                     rx      |     tx      |    total    |   avg. rate\n");
+			printf("     ------------------------+-------------+-------------+---------------\n");
+
+			if (data.month[1].used) {
+				d=localtime(&data.month[1].month);
+				if (strftime(datebuff, 16, cfg.mformat, d)<=8) {
+					printf("      %8s   %s", datebuff, getvalue(data.month[1].rx, data.month[1].rxk, 11, 1));
+				} else {
+					printf("     %-11s %s", datebuff, getvalue(data.month[1].rx, data.month[1].rxk, 11, 1));
+				}
+				printf(" | %s", getvalue(data.month[1].tx, data.month[1].txk, 11, 1));
+				printf(" | %s", getvalue(data.month[1].rx+data.month[1].tx, data.month[1].rxk+data.month[1].txk, 11, 1));
+				printf(" | %s", getrate(data.month[1].rx+data.month[1].tx, data.month[1].rxk+data.month[1].txk, dmonth(d->tm_mon)*86400, 14));
+				printf("\n");
+			}
+			d=localtime(&data.month[0].month);
+			if (strftime(datebuff, 16, cfg.mformat, d)<=8) {
+				printf("      %8s   %s", datebuff, getvalue(data.month[0].rx, data.month[0].rxk, 11, 1));
+			} else {
+				printf("     %-11s %s", datebuff, getvalue(data.month[0].rx, data.month[0].rxk, 11, 1));
+			}
+			printf(" | %s", getvalue(data.month[0].tx, data.month[0].txk, 11, 1));
+			printf(" | %s", getvalue(data.month[0].rx+data.month[0].tx, data.month[0].rxk+data.month[0].txk, 11, 1));
+			printf(" | %s", getrate(data.month[0].rx+data.month[0].tx, data.month[0].rxk+data.month[0].txk, mosecs(), 14));
+			printf("\n");
+
+			printf("     ------------------------+-------------+-------------+---------------\n");
+
+			/* use database update time for estimates */
+			d=localtime(&data.month[0].month);
+			if ( data.month[0].rx==0 || data.month[0].tx==0 || (data.lastupdated-data.month[0].month)==0 ) {
+				e_rx=e_tx=0;
+			} else {
+				e_rx=(data.month[0].rx/(float)(mosecs()))*(dmonth(d->tm_mon)*86400);
+				e_tx=(data.month[0].tx/(float)(mosecs()))*(dmonth(d->tm_mon)*86400);
+			}
+			printf("     estimated   %s", getvalue(e_rx, 0, 11, 2));
+			printf(" | %s", getvalue(e_tx, 0, 11, 2));
+			printf(" | %s", getvalue(e_rx+e_tx, 0, 11, 2));
+			printf(" |\n\n");
+
+
 			/* get formated date for yesterday */
 			d=localtime(&yesterday);
 			strftime(datebuff, 16, cfg.dformat, d);
@@ -86,36 +117,44 @@ void showdb(int qmode)
 			if (strcmp(datebuff, daytemp)==0) {
 				strncpy(daytemp, "yesterday", 32);
 			}
+
+			/* use database update time for estimates */
+			d=localtime(&data.lastupdated);
+			if ( data.day[0].rx==0 || data.day[0].tx==0 || (d->tm_hour*60+d->tm_min)==0 ) {
+				e_rx=e_tx=0;
+			} else {	
+				e_rx=((data.day[0].rx)/(float)(d->tm_hour*60+d->tm_min))*1440;
+				e_tx=((data.day[0].tx)/(float)(d->tm_hour*60+d->tm_min))*1440;
+			}
 			
-			/* get formated date for creation date */
-			d=localtime(&data.created);
-			strftime(datebuff, 16, cfg.tformat, d);
-			
-			printf("           received: %s", getvalue(data.totalrx, data.totalrxk, 10, 1));
-			printf("   (%.1f%%)\n", rxp);
-			printf("        transmitted: %s", getvalue(data.totaltx, data.totaltxk, 10, 1));
-			printf("   (%.1f%%)\n", txp);
-			printf("              total: %s", getvalue(data.totalrx+data.totaltx, data.totalrxk+data.totaltxk, 10, 1));
-			printf("   since %s\n", datebuff);
-			printf("\n");
-			
-			printf("                        rx      |     tx      |   total\n");
-			printf("        ------------------------+-------------+------------\n");
+			printf("   daily\n");
+			printf("                     rx      |     tx      |    total    |   avg. rate\n");
+			printf("     ------------------------+-------------+-------------+---------------\n");
 			if (data.day[1].date!=0) {
-				printf("        %9s   %s", daytemp, getvalue(data.day[1].rx, data.day[1].rxk, 7, 1));
-				printf(" | %s", getvalue(data.day[1].tx, data.day[1].txk, 7, 1));
-				printf(" | %s", getvalue(data.day[1].rx+data.day[1].tx, data.day[1].rxk+data.day[1].txk, 7, -1));
+				if (strlen(daytemp)<=9) {
+					printf("     %9s   %s", daytemp, getvalue(data.day[1].rx, data.day[1].rxk, 11, 1));
+				} else {
+					printf("     %-11s %s", daytemp, getvalue(data.day[1].rx, data.day[1].rxk, 11, 1));
+				}
+				printf(" | %s", getvalue(data.day[1].tx, data.day[1].txk, 11, 1));
+				printf(" | %s", getvalue(data.day[1].rx+data.day[1].tx, data.day[1].rxk+data.day[1].txk, 11, 1));
+				printf(" | %s", getrate(data.day[1].rx+data.day[1].tx, data.day[1].rxk+data.day[1].txk, 86400, 14));
 				printf("\n");
 			}
-			printf("        %9s   %s", daytemp2, getvalue(data.day[0].rx, data.day[0].rxk, 7, 1));
-			printf(" | %s", getvalue(data.day[0].tx, data.day[0].txk, 7, 1));
-			printf(" | %s", getvalue(data.day[0].rx+data.day[0].tx, data.day[0].rxk+data.day[0].txk, 7, -1));
+			if (strlen(daytemp2)<=9) {
+				printf("     %9s   %s", daytemp2, getvalue(data.day[0].rx, data.day[0].rxk, 11, 1));
+			} else {
+				printf("     %-11s %s", daytemp2, getvalue(data.day[0].rx, data.day[0].rxk, 11, 1));
+			}
+			printf(" | %s", getvalue(data.day[0].tx, data.day[0].txk, 11, 1));
+			printf(" | %s", getvalue(data.day[0].rx+data.day[0].tx, data.day[0].rxk+data.day[0].txk, 11, 1));
+			printf(" | %s", getrate(data.day[0].rx+data.day[0].tx, data.day[0].rxk+data.day[0].txk, d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600), 14));
 			printf("\n");
-			printf("        ------------------------+-------------+------------\n");
-			printf("        estimated   %s", getvalue(e_rx, 0, 7, 2));
-			printf(" | %s", getvalue(e_tx, 0, 7, 2));
-			printf(" | %s", getvalue(e_rx+e_tx, 0, 7, -2));
-			printf("\n");
+			printf("     ------------------------+-------------+-------------+---------------\n");
+			printf("     estimated   %s", getvalue(e_rx, 0, 11, 2));
+			printf(" | %s", getvalue(e_tx, 0, 11, 2));
+			printf(" | %s", getvalue(e_rx+e_tx, 0, 11, 2));
+			printf(" |\n");
 
 		/* days */
 		} else if (qmode==1) {
@@ -132,9 +171,14 @@ void showdb(int qmode)
 				else
 					printf(" %s (%s) [disabled]  /  daily\n\n", data.nick, data.interface);
 			}
-		
-			printf("    day         rx      |     tx      |  total\n");
-			printf("------------------------+-------------+----------------------------------------\n");
+
+			if (cfg.showrate) {
+				printf("         day         rx      |     tx      |    total    |   avg. rate\n");
+				printf("     ------------------------+-------------+-------------+---------------\n");
+			} else {
+				printf("     day         rx      |     tx      |  total\n");
+				printf("-------------------------+-------------+---------------------------------------\n");
+			}
 			
 			/* search maximum */
 			max=0;
@@ -162,17 +206,37 @@ void showdb(int qmode)
 				if (data.day[i].used) {
 					d=localtime(&data.day[i].date);
 					strftime(datebuff, 16, cfg.dformat, d);
-					printf(" %8s   %s", datebuff, getvalue(data.day[i].rx, data.day[i].rxk, 7, 1));
-					printf(" | %s", getvalue(data.day[i].tx, data.day[i].txk, 7, 1));
-					printf(" | %s", getvalue(data.day[i].rx+data.day[i].tx, data.day[i].rxk+data.day[i].txk, 7, 1));
-					showbar(data.day[i].rx, data.day[i].rxk, data.day[i].tx, data.day[i].txk, max, 25);
+					if (cfg.showrate) {
+						printf("    ");
+					}
+					if (strlen(datebuff)<=9) {
+						printf(" %9s   %s", datebuff, getvalue(data.day[i].rx, data.day[i].rxk, 11, 1));
+					} else {
+						printf(" %-11s %s", datebuff, getvalue(data.day[i].rx, data.day[i].rxk, 11, 1));
+					}
+					printf(" | %s", getvalue(data.day[i].tx, data.day[i].txk, 11, 1));
+					printf(" | %s", getvalue(data.day[i].rx+data.day[i].tx, data.day[i].rxk+data.day[i].txk, 11, 1));
+					if (cfg.showrate) {
+						if (i==0) {
+							d=localtime(&data.lastupdated);
+							printf(" | %s", getrate(data.day[i].rx+data.day[i].tx, data.day[i].rxk+data.day[i].txk, d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600), 14));
+						} else {
+							printf(" | %s", getrate(data.day[i].rx+data.day[i].tx, data.day[i].rxk+data.day[i].txk, 86400, 14));
+						}
+					} else {
+						showbar(data.day[i].rx, data.day[i].rxk, data.day[i].tx, data.day[i].txk, max, 24);
+					}
 					printf("\n");
 					used++;
 				}
 			}
 			if (used==0)
-				printf("                        no data available\n");
-			printf("------------------------+-------------+----------------------------------------\n");
+				printf("                           no data available\n");
+			if (cfg.showrate) {
+				printf("     ------------------------+-------------+-------------+---------------\n");
+			} else {
+				printf("-------------------------+-------------+---------------------------------------\n");
+			}
 			if (used!=0) {
 				/* use database update time for estimates */
 				d=localtime(&data.lastupdated);
@@ -182,9 +246,15 @@ void showdb(int qmode)
 					e_rx=((data.day[0].rx)/(float)(d->tm_hour*60+d->tm_min))*1440;
 					e_tx=((data.day[0].tx)/(float)(d->tm_hour*60+d->tm_min))*1440;
 				}
-				printf(" estimated  %s", getvalue(e_rx, 0, 7, 2));
-				printf(" | %s", getvalue(e_tx, 0, 7, 2));
-				printf(" | %s", getvalue(e_rx+e_tx, 0, 7, 2));
+				if (cfg.showrate) {
+					printf("    ");
+				}
+				printf(" estimated   %s", getvalue(e_rx, 0, 11, 2));
+				printf(" | %s", getvalue(e_tx, 0, 11, 2));
+				printf(" | %s", getvalue(e_rx+e_tx, 0, 11, 2));
+				if (cfg.showrate) {
+					printf(" |");
+				}
 				printf("\n");
 			}
 			
@@ -204,8 +274,13 @@ void showdb(int qmode)
 					printf(" %s (%s) [disabled]  /  monthly\n\n", data.nick, data.interface);
 			}
 			
-			printf("   month         rx      |      tx      |   total\n");
-			printf("-------------------------+--------------+--------------------------------------\n");
+			if (cfg.showrate) {
+				printf("      month         rx      |      tx      |    total     |   avg. rate\n");
+				printf("    ------------------------+--------------+--------------+---------------\n");
+			} else {
+				printf("   month         rx      |      tx      |    total\n");
+				printf("-------------------------+--------------+--------------------------------------\n");
+			}
 
 			/* search maximum */
 			max=0;
@@ -232,30 +307,54 @@ void showdb(int qmode)
 			for (i=11;i>=0;i--) {
 				if (data.month[i].used) {
 					d=localtime(&data.month[i].month);
-					strftime(datebuff, 16, cfg.mformat, d);
-					printf(" %8s   %s", datebuff, getvalue(data.month[i].rx, data.month[i].rxk, 8, 1));
-					printf(" | %s", getvalue(data.month[i].tx, data.month[i].txk, 8, 1));
-					printf(" | %s", getvalue(data.month[i].rx+data.month[i].tx, data.month[i].rxk+data.month[i].txk, 8, 1));
-					showbar(data.month[i].rx, data.month[i].rxk, data.month[i].tx, data.month[i].txk, max, 22);
+					if (cfg.showrate) {
+						printf("   ");
+					}
+					if (strftime(datebuff, 16, cfg.mformat, d)<=8) {
+						printf(" %8s   %s", datebuff, getvalue(data.month[i].rx, data.month[i].rxk, 12, 1));
+					} else {
+						printf("%11s %s", datebuff, getvalue(data.month[i].rx, data.month[i].rxk, 12, 1));
+					}
+					printf(" | %s", getvalue(data.month[i].tx, data.month[i].txk, 12, 1));
+					printf(" | %s", getvalue(data.month[i].rx+data.month[i].tx, data.month[i].rxk+data.month[i].txk, 12, 1));
+					if (cfg.showrate) {
+						if (i==0) {
+							printf(" | %s", getrate(data.month[0].rx+data.month[0].tx, data.month[0].rxk+data.month[0].txk, mosecs(), 14));
+						} else {
+							printf(" | %s", getrate(data.month[i].rx+data.month[i].tx, data.month[i].rxk+data.month[i].txk, dmonth(d->tm_mon)*86400, 14));
+						}
+					} else {
+						showbar(data.month[i].rx, data.month[i].rxk, data.month[i].tx, data.month[i].txk, max, 22);
+					}
 					printf("\n");
 					used++;
 				}
 			}
 			if (used==0)
-				printf("                        no data available\n");
-			printf("-------------------------+--------------+--------------------------------------\n");			
+				printf("                           no data available\n");
+			if (cfg.showrate) {
+				printf("    ------------------------+--------------+--------------+---------------\n");
+			} else {
+				printf("-------------------------+--------------+--------------------------------------\n");
+			}			
 			if (used!=0) {
 				/* use database update time for estimates */
-				d=localtime(&data.lastupdated);
-				if ( data.month[0].rx==0 || data.month[0].tx==0 || ((d->tm_mday-1)*24+d->tm_hour)==0 ) {
+				d=localtime(&data.month[0].month);
+				if ( data.month[0].rx==0 || data.month[0].tx==0 || (data.lastupdated-data.month[0].month)==0 ) {
 					e_rx=e_tx=0;
 				} else {
-					e_rx=((data.month[0].rx)/(float)((d->tm_mday-1)*24+d->tm_hour))*(dmonth[d->tm_mon]*24);
-					e_tx=((data.month[0].tx)/(float)((d->tm_mday-1)*24+d->tm_hour))*(dmonth[d->tm_mon]*24);
+					e_rx=(data.month[0].rx/(float)(mosecs()))*(dmonth(d->tm_mon)*86400);
+					e_tx=(data.month[0].tx/(float)(mosecs()))*(dmonth(d->tm_mon)*86400);
 				}
-				printf(" estimated  %s", getvalue(e_rx, 0, 8, 2));
-				printf(" | %s", getvalue(e_tx, 0, 8, 2));
-				printf(" | %s", getvalue(e_rx+e_tx, 0, 8, 2));
+				if (cfg.showrate) {
+					printf("   ");
+				}
+				printf(" estimated  %s", getvalue(e_rx, 0, 12, 2));
+				printf(" | %s", getvalue(e_tx, 0, 12, 2));
+				printf(" | %s", getvalue(e_rx+e_tx, 0, 12, 2));
+				if (cfg.showrate) {
+					printf(" |");
+				}
 				printf("\n");
 			}
 		
@@ -274,9 +373,14 @@ void showdb(int qmode)
 				else
 					printf(" %s (%s) [disabled]  /  top 10\n\n", data.nick, data.interface);
 			}
-			
-			printf("   #       day          rx     |      tx     |  total\n");
-			printf("-------------------------------+-------------+---------------------------------\n");
+
+			if (cfg.showrate) {
+				printf("    #      day          rx      |     tx      |    total    |   avg. rate\n");
+				printf("   -----------------------------+-------------+-------------+---------------\n");
+			} else {
+				printf("   #      day          rx      |     tx      |   total\n");
+				printf("-------------------------------+-------------+---------------------------------\n");
+			}
 
 			/* search maximum */
 			max=0;
@@ -304,18 +408,29 @@ void showdb(int qmode)
 				if (data.top10[i].used) {
 					d=localtime(&data.top10[i].date);
 					strftime(datebuff, 16, cfg.tformat, d);
-					printf("  %2d  %10s   %s", i+1, datebuff, getvalue(data.top10[i].rx, data.top10[i].rxk, 7, 1));
-					printf(" | %s", getvalue(data.top10[i].tx, data.top10[i].txk, 7, 1));
-					printf(" | %s", getvalue(data.top10[i].rx+data.top10[i].tx, data.top10[i].rxk+data.top10[i].txk, 7, 1));
-					showbar(data.top10[i].rx, data.top10[i].rxk, data.top10[i].tx, data.top10[i].txk, max, 18);
+					if (cfg.showrate) {
+						printf(" ");
+					}
+					printf("  %2d   %-11s %s", i+1, datebuff, getvalue(data.top10[i].rx, data.top10[i].rxk, 11, 1));
+					printf(" | %s", getvalue(data.top10[i].tx, data.top10[i].txk, 11, 1));
+					printf(" | %s", getvalue(data.top10[i].rx+data.top10[i].tx, data.top10[i].rxk+data.top10[i].txk, 11, 1));
+					if (cfg.showrate) {
+						printf(" | %s", getrate(data.top10[i].rx+data.top10[i].tx, data.top10[i].rxk+data.top10[i].txk, 86400, 14));
+					} else {
+						showbar(data.top10[i].rx, data.top10[i].rxk, data.top10[i].tx, data.top10[i].txk, max, 18);
+					}
 					printf("\n");
 					used++;
 				}
 			}
 			if (used==0)
-				printf("                             no data available\n");
-			printf("-------------------------------+-------------+---------------------------------\n");
-		
+				printf("                              no data available\n");
+			if (cfg.showrate) {
+				printf("   -----------------------------+-------------+-------------+---------------\n");
+			} else {
+				printf("-------------------------------+-------------+---------------------------------\n");
+			}
+			
 		/* dumpdb */
 		} else if (qmode==4) {
 		
@@ -364,6 +479,36 @@ void showdb(int qmode)
 					printf(" %s (%s) [disabled]:\n", data.nick, data.interface);
 			}
 
+
+
+			if (data.month[1].used) {
+				d=localtime(&data.month[1].month);
+				if (strftime(datebuff, 16, cfg.mformat, d)<=8) {
+					printf("      %8s   %s", datebuff, getvalue(data.month[1].rx, data.month[1].rxk, 11, 1));
+				} else {
+					printf("    %-11s  %s", datebuff, getvalue(data.month[1].rx, data.month[1].rxk, 11, 1));
+				}
+				printf("  / %s", getvalue(data.month[1].tx, data.month[1].txk, 11, 1));
+				printf("  / %s", getvalue(data.month[1].rx+data.month[1].tx, data.month[1].rxk+data.month[1].txk, 11, 1));
+				printf("\n");
+			}
+			d=localtime(&data.month[0].month);
+			if ( data.month[0].rx==0 || data.month[0].tx==0 || (data.lastupdated-data.month[0].month)==0 ) {
+				e_rx=e_tx=0;
+			} else {
+				e_rx=(data.month[0].rx/(float)(mosecs()))*(dmonth(d->tm_mon)*86400);
+				e_tx=(data.month[0].tx/(float)(mosecs()))*(dmonth(d->tm_mon)*86400);
+			}
+			if (strftime(datebuff, 16, cfg.mformat, d)<=8) {
+				printf("      %8s   %s", datebuff, getvalue(data.month[0].rx, data.month[0].rxk, 11, 1));
+			} else {
+				printf("    %-11s  %s", datebuff, getvalue(data.month[0].rx, data.month[0].rxk, 11, 1));
+			}
+			printf("  / %s", getvalue(data.month[0].tx, data.month[0].txk, 11, 1));
+			printf("  / %s", getvalue(data.month[0].rx+data.month[0].tx, data.month[0].rxk+data.month[0].txk, 11, 1));
+			printf("  / %s", getvalue(e_rx+e_tx, 0, 11, 1));
+			printf("\n");
+
 			/* get formated date for today */
 			d=localtime(&current);
 			strftime(datebuff, 16, cfg.dformat, d);
@@ -401,15 +546,15 @@ void showdb(int qmode)
 			}
 			
 			if (data.day[1].date!=0) {
-				printf("     %9s   %s",daytemp, getvalue(data.day[1].rx, data.day[1].rxk, 7, 1));
-				printf("  / %s", getvalue(data.day[1].tx, data.day[1].txk, 7, 1));
-				printf("  / %s", getvalue(data.day[1].rx+data.day[1].tx, data.day[1].rxk+data.day[1].txk, 7, 1));
+				printf("     %9s   %s",daytemp, getvalue(data.day[1].rx, data.day[1].rxk, 11, 1));
+				printf("  / %s", getvalue(data.day[1].tx, data.day[1].txk, 11, 1));
+				printf("  / %s", getvalue(data.day[1].rx+data.day[1].tx, data.day[1].rxk+data.day[1].txk, 11, 1));
 				printf("\n");
 			}
-			printf("     %9s   %s", daytemp2, getvalue(data.day[0].rx, data.day[0].rxk, 7, 1));
-			printf("  / %s", getvalue(data.day[0].tx, data.day[0].txk, 7, 1));
-			printf("  / %s", getvalue(data.day[0].rx+data.day[0].tx, data.day[0].rxk+data.day[0].txk, 7, 1));
-			printf("  / %s", getvalue(e_rx+e_tx, 0, 7, 2));
+			printf("     %9s   %s", daytemp2, getvalue(data.day[0].rx, data.day[0].rxk, 11, 1));
+			printf("  / %s", getvalue(data.day[0].tx, data.day[0].txk, 11, 1));
+			printf("  / %s", getvalue(data.day[0].rx+data.day[0].tx, data.day[0].rxk+data.day[0].txk, 11, 1));
+			printf("  / %s", getvalue(e_rx+e_tx, 0, 11, 2));
 			printf("\n\n");
 
 		/* last 7 */
@@ -418,18 +563,18 @@ void showdb(int qmode)
 			printf("\n");
 			if (strcmp(data.interface, data.nick)==0) {
 				if (data.active)
-					printf("        %s  /  weekly\n\n", data.interface);
+					printf(" %s  /  weekly\n\n", data.interface);
 				else
-					printf("        %s [disabled]  /  weekly\n\n", data.interface);
+					printf(" %s [disabled]  /  weekly\n\n", data.interface);
 			} else {
 				if (data.active)
-					printf("        %s (%s)  /  weekly\n\n", data.nick, data.interface);
+					printf(" %s (%s)  /  weekly\n\n", data.nick, data.interface);
 				else
-					printf("        %s (%s) [disabled]  /  weekly\n\n", data.nick, data.interface);
+					printf(" %s (%s) [disabled]  /  weekly\n\n", data.nick, data.interface);
 			}	
 
-			printf("                            rx      |     tx      |  total\n");
-			printf("         ---------------------------+-------------+------------\n");
+			printf("                      rx      |     tx      |    total    |   avg. rate\n");
+			printf("   ---------------------------+-------------+-------------+---------------\n");
 			
 			/* get current week number */
 			d=localtime(&current);
@@ -449,9 +594,11 @@ void showdb(int qmode)
 			}
 
 			if (used!=0) {
-				printf("          last 7 days   %s", getvalue(t_rx, t_rxk, 7, 1));
-				printf(" | %s", getvalue(t_tx, t_txk, 7, 1));
-				printf(" | %s", getvalue(t_rx+t_tx, t_rxk+t_txk, 7, -1));
+				printf("    last 7 days   %s", getvalue(t_rx, t_rxk, 11, 1));
+				printf(" | %s", getvalue(t_tx, t_txk, 11, 1));
+				printf(" | %s", getvalue(t_rx+t_tx, t_rxk+t_txk, 11, 1));
+				d=localtime(&data.lastupdated);
+				printf(" | %s", getrate(t_rx+t_tx, t_rxk+t_txk, 518400+d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600), 14));
 				printf("\n");
 				temp++;
 			}
@@ -472,9 +619,10 @@ void showdb(int qmode)
 			}
 			
 			if (used!=0) {
-				printf("            last week   %s", getvalue(t_rx, t_rxk, 7, 1));
-				printf(" | %s", getvalue(t_tx, t_txk, 7, 1));
-				printf(" | %s", getvalue(t_rx+t_tx, t_rxk+t_txk, 7, -1));
+				printf("      last week   %s", getvalue(t_rx, t_rxk, 11, 1));
+				printf(" | %s", getvalue(t_tx, t_txk, 11, 1));
+				printf(" | %s", getvalue(t_rx+t_tx, t_rxk+t_txk, 11, 1));
+				printf(" | %s", getrate(t_rx+t_tx, t_rxk+t_txk, 604800, 14));
 				printf("\n");
 				temp++;
 			}
@@ -505,22 +653,23 @@ void showdb(int qmode)
 					e_rx=((t_rx)/(float)((atoi(daytemp)-1)*24+d->tm_hour)*168);
 					e_tx=((t_tx)/(float)((atoi(daytemp)-1)*24+d->tm_hour)*168);
 				}
-				printf("         current week   %s", getvalue(t_rx, t_rxk, 7, 1));
-				printf(" | %s", getvalue(t_tx, t_txk, 7, 1));
-				printf(" | %s", getvalue(t_rx+t_tx, t_rxk+t_txk, 7, -1));
+				printf("   current week   %s", getvalue(t_rx, t_rxk, 11, 1));
+				printf(" | %s", getvalue(t_tx, t_txk, 11, 1));
+				printf(" | %s", getvalue(t_rx+t_tx, t_rxk+t_txk, 11, 1));
+				printf(" | %s", getrate(t_rx+t_tx, t_rxk+t_txk, (86400*(atoi(daytemp)-1))+d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600), 14));
 				printf("\n");
 				temp++;
 			}
 			
 			if (temp==0)
-				printf("                                  no data available\n");
+				printf("                           no data available\n");
 			
-			printf("         ---------------------------+-------------+------------\n");
+			printf("   ---------------------------+-------------+-------------+---------------\n");
 			if (used!=0) {
-				printf("            estimated   %s", getvalue(e_rx, 0, 7, 2));
-				printf(" | %s", getvalue(e_tx, 0, 7, 2));
-				printf(" | %s", getvalue(e_rx+e_tx, 0, 7, -2));
-				printf("\n");
+				printf("      estimated   %s", getvalue(e_rx, 0, 11, 2));
+				printf(" | %s", getvalue(e_tx, 0, 11, 2));
+				printf(" | %s", getvalue(e_rx+e_tx, 0, 11, 2));
+				printf(" |\n");
 			}
 
 		/* hours */

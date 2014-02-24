@@ -1,2 +1,2 @@
-# run vnstat update every 5 minutes
+# run vnstat update every 5 minutes if installed
 */5 *	* * *	root	if [ -x /usr/bin/vnstat ] && [ `ls /var/lib/vnstat/ | wc -l` -ge 1 ]; then /usr/bin/vnstat -u; fi

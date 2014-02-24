@@ -47,12 +47,12 @@ and most can be changed later from the config file.
 /* on which day should months change */
 #define MONTHROTATE 1
 
-/* date output formats for -d, -m, -t, -w  and image header*/
-/* see 'man date' for control codes */
-#define DFORMAT "%d.%m."
-#define MFORMAT "%b '%y"
-#define TFORMAT "%d.%m.%y"
-#define HFORMAT "%d.%m.%Y %H:%M"
+/* date output formats for -d, -m, -t and image header*/
+/* see 'man date' for control codes       <1.8 values */
+#define DFORMAT "%x"                    /* "%d.%m." */
+#define MFORMAT "%b '%y"                /* "%b '%y" */
+#define TFORMAT "%x"                    /* "%d.%m.%y" */
+#define HFORMAT "%x %H:%M"              /* "%d.%m.%Y %H:%M" */
 
 /* characters used for visuals */
 #define RXCHAR "%"
@@ -64,11 +64,21 @@ and most can be changed later from the config file.
 /* 0 = KiB/MiB/GiB/TiB, 1 = KB/MB/GB/TB */
 #define UNITMODE 0
 
+/* rate column */
+#define SHOWRATE 1
+
+/* rate in vnstati hourly output */
+#define HOURLYRATE 1
+
+/* rate unit */
+/* 0 = bytes, 1 = bits */
+#define RATEUNIT 1
+
 /* default interface */
 #define DEFIFACE "eth0"
 
 /* default locale */
-#define LOCALE "en_US"
+#define LOCALE "-"
 
 /* default maximum bandwidth (Mbit) for all interfaces */
 /* 0 = feature disabled */
@@ -98,6 +108,9 @@ and most can be changed later from the config file.
 /* use file locking by default */
 #define USEFLOCK 1
 
+/* log trafficless days by default */
+#define TRAFLESSDAY 1
+
 /* how many times try file locking before giving up */
 /* each try takes about a second */
 #define LOCKTRYLIMIT 5
@@ -107,7 +120,7 @@ and most can be changed later from the config file.
 #define DBVERSION 3
 
 /* version string */
-#define VNSTATVERSION "1.7"
+#define VNSTATVERSION "1.8"
 
 /* xml format version */
 /* 1 = 1.7- */
@@ -132,6 +145,9 @@ and most can be changed later from the config file.
 #define LOGFILE "/var/log/vnstat.log"
 #define PIDFILE "/var/run/vnstat.pid"
 
+/* no transparency by default */
+#define TRANSBG 0
+
 /* default colors */
 #define CBACKGROUND "FFFFFF"
 #define CEDGE "AEAEAE"
@@ -155,14 +171,8 @@ typedef struct {
 	char rxchar[2], txchar[2], rxhourchar[2], txhourchar[2];
 	char cbg[8], cedge[8], cheader[8], cheadertitle[8], cheaderdate[8], ctext[8];
 	char cline[8], clinel[8], cvnstat[8], crx[8], crxd[8], ctx[8], ctxd[8];
-	short unit;
-	short bvar;
-	short qmode;
-	short sampletime;
-	short monthrotate;
-	short maxbw;
-	short flock;
-	short spacecheck;
+	short unit, showrate, rateunit, bvar, qmode, sampletime, hourlyrate;
+	short monthrotate, maxbw, flock, spacecheck, traflessday, transbg;
 	char logfile[512], pidfile[512];
 	short updateinterval, pollinterval, saveinterval, uselogging;
 } CFG;
@@ -229,6 +239,8 @@ typedef enum PrintType {
 /* common functions */
 int printe(PrintType type);
 int logprint(PrintType type);
+int dmonth(int month);
+uint32_t mosecs(void);
 
 /* global variables */
 DATA data;

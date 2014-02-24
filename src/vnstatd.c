@@ -26,7 +26,7 @@ vnStat daemon - Copyright (c) 2008-09 Teemu Toivola <tst@iki.fi>
 int main(int argc, char *argv[])
 {
 	int currentarg, running = 1, updateinterval, dbcount, dodbsave, rundaemon;
-	int dbsaved = 1, showhelp = 1;
+	int dbsaved = 1, showhelp = 1, sync = 0;
 	uint32_t dbhash = 0;
 	char cfgfile[512], dirname[512];
 	DIR *dir;
@@ -49,6 +49,7 @@ int main(int argc, char *argv[])
 			} else if (strcmp(argv[currentarg],"--config")==0) {
 				if (currentarg+1<argc) {
 					strncpy(cfgfile, argv[currentarg+1], 512);
+					cfgfile[511] = '\0';
 					if (debug)
 						printf("Used config file: %s\n", cfgfile);
 					currentarg++;
@@ -66,8 +67,6 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	setlocale(LC_ALL, cfg.locale);
-
 	/* init dirname and other config settings */
 	strncpy(dirname, cfg.dbdir, 512);
 	updateinterval = cfg.updateinterval;
@@ -79,7 +78,7 @@ int main(int argc, char *argv[])
 		if ((strcmp(argv[currentarg],"-?")==0) || (strcmp(argv[currentarg],"--help")==0)) {
 			break;
 		} else if (strcmp(argv[currentarg],"--config")==0) {
-			/* config has already been parsed earlier so not but to do here */
+			/* config has already been parsed earlier so nothing to do here */
 			currentarg++;
 			continue;
 		} else if ((strcmp(argv[currentarg],"-D")==0) || (strcmp(argv[currentarg],"--debug")==0)) {
@@ -89,12 +88,15 @@ int main(int argc, char *argv[])
 			showhelp = 0;
 		} else if ((strcmp(argv[currentarg],"-n")==0) || (strcmp(argv[currentarg],"--nodaemon")==0)) {
 			showhelp = 0;
+		} else if ((strcmp(argv[currentarg],"-s")==0) || (strcmp(argv[currentarg],"--sync")==0)) {
+			sync = 1;
 		} else if ((strcmp(argv[currentarg],"-v")==0) || (strcmp(argv[currentarg],"--version")==0)) {
 			printf("vnStat daemon %s by Teemu Toivola <tst at iki dot fi>\n", VNSTATVERSION);
 			return 0;
 		} else if ((strcmp(argv[currentarg],"-p")==0) || (strcmp(argv[currentarg],"--pidfile")==0)) {
 			if (currentarg+1<argc) {
 				strncpy(cfg.pidfile, argv[currentarg+1], 512);
+				cfg.pidfile[511] = '\0';
 				if (debug)
 					printf("Used pid file: %s\n", cfg.pidfile);
 				currentarg++;
@@ -114,6 +116,7 @@ int main(int argc, char *argv[])
 		printf(" vnStat daemon %s by Teemu Toivola <tst at iki dot fi>\n\n", VNSTATVERSION);
 		printf("         -d, --daemon         fork process to background\n");
 		printf("         -n, --nodaemon       stay in foreground attached to the terminal\n");
+		printf("         -s, --sync           sync interface counters on first update\n");
 		printf("         -D, --debug          show additional debug and disable daemon\n");
 		printf("         -?, --help           show this help\n");
 		printf("         -v, --version        show version\n");
@@ -194,7 +197,7 @@ int main(int argc, char *argv[])
 							if (debug)
 								printf("\nProcessing file \"%s/%s\"...\n", dirname, di->d_name);
 							
-							if (!dataadd(di->d_name)) {
+							if (!dataadd(di->d_name, sync)) {
 								snprintf(errorstring, 512, "Cache memory allocation failed, exiting.");
 								printe(PT_Error);
 								return 1;
@@ -203,6 +206,9 @@ int main(int argc, char *argv[])
 							dbcount++;
 						}
 					}
+
+					closedir(dir);
+					sync = 0;
 
 					/* disable update interval check for one loop if database list was refreshed */
 					/* otherwise rise default update interval since there's nothing else to do */
@@ -213,8 +219,6 @@ int main(int argc, char *argv[])
 					} else {
 						updateinterval = 120;
 					}
-
-					closedir(dir);
 				
 				} else {
 					snprintf(errorstring, 512, "Unable to access database directory \"%s\", exiting.", dirname);
@@ -258,7 +262,13 @@ int main(int argc, char *argv[])
 					/* get info if interface has been marked as active */
 					if (data.active) {
 						if (getifinfo(data.interface)) {
-							parseifinfo(0);
+							if (datalist->sync) {
+								data.currx = ifinfo.rx;
+								data.curtx = ifinfo.tx;
+								datalist->sync = 0;
+							} else {
+								parseifinfo(0);
+							}
 						} else {
 							/* disable interface since we can't access its data */
 							data.active = 0;
@@ -328,7 +338,6 @@ int main(int argc, char *argv[])
 					printe(PT_Info);
 					dataflush(dirname);
 					if (loadcfg(cfgfile)) {
-						setlocale(LC_ALL, cfg.locale);
 						strncpy(dirname, cfg.dbdir, 512);
 					}
 					break;
@@ -424,15 +433,42 @@ void daemonize(void)
 
 	/* redirect standard i/o to null */
 	i=open("/dev/null",O_RDWR); /* stdin */
-	dup(i); /* stdout */
-	dup(i); /* stderr */
+
+	/* stdout */
+	if (dup(i) < 0) {
+		perror("dup(stdout)");
+		snprintf(errorstring, 512, "dup(stdout) failed, exiting.");
+		printe(PT_Error);
+		exit(1);
+	}
+	/* stderr */
+	if (dup(i) < 0) {
+		perror("dup(stderr)");
+		snprintf(errorstring, 512, "dup(stderr) failed, exiting.");
+		printe(PT_Error);
+		exit(1);
+	}
 	
 	umask(027); /* set newly created file permissions */
-	chdir("/"); /* change running directory */
+	
+	/* change running directory */
+	if (chdir("/") < 0) {
+		perror("chdir(/)");
+		snprintf(errorstring, 512, "directory change to / failed, exiting.");
+		printe(PT_Error);
+		exit(1);
+	}
 
 	/* first instance continues */
-	sprintf(str,"%d\n",getpid());
-	write(pidfile,str,strlen(str)); /* record pid to lockfile */
+	snprintf(str, 10, "%d\n", getpid());
+
+	/* record pid to lockfile */
+	if (write(pidfile,str,strlen(str)) < 0) {
+		perror("write(pidfile)");
+		snprintf(errorstring, 512, "writing to pidfile %s failed, exiting.", cfg.pidfile);
+		printe(PT_Error);
+		exit(1);
+	}
 
 	signal(SIGCHLD,SIG_IGN); /* ignore child */
 	signal(SIGTSTP,SIG_IGN); /* ignore tty signals */

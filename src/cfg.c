@@ -11,7 +11,7 @@ void printcfgfile(void)
 	printf("# location of the database directory\n");
 	printf("DatabaseDir \"%s\"\n\n", cfg.dbdir);
 
-	printf("# locale (LC_ALL)\n");
+	printf("# locale (LC_ALL) (\"-\" = use system locale)\n");
 	printf("Locale \"%s\"\n\n", cfg.locale);
 
 	printf("# on which day should months change\n");
@@ -33,6 +33,12 @@ void printcfgfile(void)
 	printf("# 0 = IEC standard prefixes (KiB/MiB/GiB/TiB)\n");
 	printf("# 1 = old style binary prefixes (KB/MB/GB/TB)\n");
 	printf("UnitMode %d\n\n", cfg.unit);
+
+	printf("# show average rate column (1 = enabled, 0 = disabled)\n");
+	printf("ShowRate %d\n\n", cfg.showrate);
+
+	printf("# used rate unit (0 = bytes, 1 = bits)\n");
+	printf("RateUnit %d\n\n", cfg.rateunit);
 
 	printf("# default interface\n");
 	printf("Interface \"%s\"\n\n", cfg.iface);
@@ -66,7 +72,10 @@ void printcfgfile(void)
 	printf("UseFileLocking %d\n\n", cfg.flock);
 
 	printf("# how much the boot time can variate between updates (seconds)\n");
-	printf("BootVariation %d\n", cfg.bvar);
+	printf("BootVariation %d\n\n", cfg.bvar);
+
+	printf("# log days without traffic to daily list (1 = enabled, 0 = disabled)\n");
+	printf("TrafficlessDays %d\n", cfg.traflessday);
 
 	printf("\n\n");
 
@@ -93,8 +102,17 @@ void printcfgfile(void)
 	printf("\n\n");
 
 	printf("# vnstati\n##\n\n");
-	printf("HeaderFormat    \"%s\"\n\n", cfg.hformat);
-	printf("# colors\n");
+	
+	printf("# title timestamp format\n");
+	printf("HeaderFormat \"%s\"\n\n", cfg.hformat);
+
+	printf("# show hours with rate (1 = enabled, 0 = disabled)\n");
+	printf("HourlyRate %d\n\n", cfg.hourlyrate);
+
+	printf("# transparent background (1 = enabled, 0 = disabled)\n");
+	printf("TransparentBg %d\n\n", cfg.transbg);
+
+	printf("# image colors\n");
 	printf("CBackground     \"%s\"\n", cfg.cbg);
 	printf("CEdge           \"%s\"\n", cfg.cedge);
 	printf("CHeader         \"%s\"\n", cfg.cheader);
@@ -118,11 +136,11 @@ int loadcfg(char *cfgfile)
 
 	char value[512], cfgline[512];
     
-	char *cfgname[] = { "DatabaseDir", "Locale", "MonthRotate", "DayFormat", "MonthFormat", "TopFormat", "RXCharacter", "TXCharacter", "RXHourCharacter", "TXHourCharacter", "UnitMode", "Interface", "MaxBandwidth", "Sampletime", "QueryMode", "CheckDiskSpace", "UseFileLocking", "BootVariation", "UpdateInterval", "PollInterval", "SaveInterval", "UseLogging", "LogFile", "PidFile", "CBackground", "CEdge", "CHeader", "CHeaderTitle", "CHeaderDate", "CText", "CLine", "CLineL", "CRx", "CRxD", "CTx", "CTxD", "HeaderFormat", 0 };
-	char *cfglocc[] = { cfg.dbdir, cfg.locale, 0, cfg.dformat, cfg.mformat, cfg.tformat, cfg.rxchar, cfg.txchar, cfg.rxhourchar, cfg.txhourchar, 0, cfg.iface, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, cfg.logfile, cfg.pidfile, cfg.cbg, cfg.cedge, cfg.cheader, cfg.cheadertitle, cfg.cheaderdate, cfg.ctext, cfg.cline, cfg.clinel, cfg.crx, cfg.crxd, cfg.ctx, cfg.ctxd, cfg.hformat };
-	short *cfgloci[] = { 0, 0, &cfg.monthrotate, 0, 0, 0, 0, 0, 0, 0, &cfg.unit, 0, &cfg.maxbw, &cfg.sampletime, &cfg.qmode, &cfg.spacecheck, &cfg.flock, &cfg.bvar, &cfg.updateinterval, &cfg.pollinterval, &cfg.saveinterval, &cfg.uselogging, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-	short cfgnamelen[] = { 512, 32, 0, 64, 64, 64, 1, 1, 1, 1, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 512, 512, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 32 };
-	short cfgfound[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	char *cfgname[] = { "DatabaseDir", "Locale", "MonthRotate", "DayFormat", "MonthFormat", "TopFormat", "RXCharacter", "TXCharacter", "RXHourCharacter", "TXHourCharacter", "UnitMode", "ShowRate", "RateUnit", "Interface", "MaxBandwidth", "Sampletime", "QueryMode", "CheckDiskSpace", "UseFileLocking", "BootVariation", "UpdateInterval", "PollInterval", "SaveInterval", "UseLogging", "LogFile", "PidFile", "CBackground", "CEdge", "CHeader", "CHeaderTitle", "CHeaderDate", "CText", "CLine", "CLineL", "CRx", "CRxD", "CTx", "CTxD", "HeaderFormat", "TransparentBg", "HourlyRate", "TrafficlessDays", 0 };
+	char *cfglocc[] = { cfg.dbdir, cfg.locale, 0, cfg.dformat, cfg.mformat, cfg.tformat, cfg.rxchar, cfg.txchar, cfg.rxhourchar, cfg.txhourchar, 0, 0, 0, cfg.iface, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, cfg.logfile, cfg.pidfile, cfg.cbg, cfg.cedge, cfg.cheader, cfg.cheadertitle, cfg.cheaderdate, cfg.ctext, cfg.cline, cfg.clinel, cfg.crx, cfg.crxd, cfg.ctx, cfg.ctxd, cfg.hformat, 0, 0, 0 };
+	short *cfgloci[] = { 0, 0, &cfg.monthrotate, 0, 0, 0, 0, 0, 0, 0, &cfg.unit, &cfg.showrate, &cfg.rateunit, 0, &cfg.maxbw, &cfg.sampletime, &cfg.qmode, &cfg.spacecheck, &cfg.flock, &cfg.bvar, &cfg.updateinterval, &cfg.pollinterval, &cfg.saveinterval, &cfg.uselogging, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, &cfg.transbg, &cfg.hourlyrate, &cfg.traflessday };
+	short cfgnamelen[] = { 512, 32, 0, 64, 64, 64, 2, 2, 2, 2, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 512, 512, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 32, 0, 0, 0 };
+	short cfgfound[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 	ifacebw = NULL;
 
@@ -223,16 +241,18 @@ int loadcfg(char *cfgfile)
 
 						if (cfgnamelen[i]>0) {
 							strncpy(cfglocc[i], value, cfgnamelen[i]);
+							cfglocc[i][cfgnamelen[i]-1]='\0';
+							if (debug)
+								printf("  c: %s   -> \"%s\": \"%s\"\n", cfgline, cfgname[i], cfglocc[i]);
 						} else if (isdigit(value[0])) {
 							*cfgloci[i] = atoi(value);
+							if (debug)
+								printf("  i: %s   -> \"%s\": %d\n", cfgline, cfgname[i], *cfgloci[i]);
 						} else {
 							continue;
 						}
 						
 						cfgfound[i] = 1;
-						
-						if (debug)
-							printf("  %s   -> \"%s\": \"%s\"\n", cfgline, cfgname[i], value);						
 						break;
 					}
 				
@@ -279,7 +299,7 @@ void validatecfg(void)
 		printe(PT_Config);
 	}
 
-	if (cfg.monthrotate<1 || cfg.monthrotate>31) {
+	if (cfg.monthrotate<1 || cfg.monthrotate>28) {
 		cfg.monthrotate = MONTHROTATE;
 		snprintf(errorstring, 512, "Invalid value for MonthRotate, resetting to \"%d\".", cfg.monthrotate);
 		printe(PT_Config);
@@ -352,6 +372,24 @@ void validatecfg(void)
 		snprintf(errorstring, 512, "PidFile doesn't start with \"/\", resetting to default.");
 		printe(PT_Config);
 	}
+
+	if (cfg.transbg<0 || cfg.transbg>1) {
+		cfg.transbg = TRANSBG;
+		snprintf(errorstring, 512, "Invalid value for TransparentBg, resetting to \"%d\".", cfg.transbg);
+		printe(PT_Config);
+	}
+
+	if (cfg.hourlyrate<0 || cfg.hourlyrate>1) {
+		cfg.hourlyrate = HOURLYRATE;
+		snprintf(errorstring, 512, "Invalid value for HourlyRate, resetting to \"%d\".", cfg.hourlyrate);
+		printe(PT_Config);
+	}
+
+	if (cfg.traflessday<0 || cfg.traflessday>1) {
+		cfg.traflessday = TRAFLESSDAY;
+		snprintf(errorstring, 512, "Invalid value for TrafficlessDays, resetting to \"%d\".", cfg.transbg);
+		printe(PT_Config);
+	}
 }
 
 void defaultcfg(void)
@@ -363,9 +401,13 @@ void defaultcfg(void)
 	cfg.sampletime = DEFSAMPTIME;
 	cfg.monthrotate = MONTHROTATE;
 	cfg.unit = UNITMODE;
+	cfg.showrate = SHOWRATE;
+	cfg.rateunit = RATEUNIT;
 	cfg.maxbw = DEFMAXBW;
 	cfg.spacecheck = USESPACECHECK;
 	cfg.flock = USEFLOCK;
+	cfg.hourlyrate = HOURLYRATE;
+	cfg.traflessday = TRAFLESSDAY;
 	strncpy(cfg.dbdir, DATABASEDIR, 512);
 	strncpy(cfg.iface, DEFIFACE, 32);
 	strncpy(cfg.locale, LOCALE, 32);
@@ -385,6 +427,7 @@ void defaultcfg(void)
 	strncpy(cfg.logfile, LOGFILE, 512);
 	strncpy(cfg.pidfile, PIDFILE, 512);
 	
+	cfg.transbg = TRANSBG;
 	strncpy(cfg.cbg, CBACKGROUND, 7);
 	strncpy(cfg.cedge, CEDGE, 7);
 	strncpy(cfg.cheader, CHEADER, 7);

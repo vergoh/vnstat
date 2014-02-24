@@ -201,17 +201,8 @@ void addtraffic(uint64_t *destmb, int *destkb, uint64_t srcmb, int srckb)
 char *getvalue(uint64_t mb, uint64_t kb, int len, int type)
 {
 	static char buffer[64];
-	int declen=2, pad=-3;
+	int declen=2;
 	uint64_t kB;
-
-	/* negative type disables left padding of value */
-	if (type<0) {
-		type=type*-1;
-		pad=0;
-		if (cfg.unit>0) {
-			len++;
-		}
-	}
 
 	/* request types: 1) normal  2) estimate  3) image scale */
 	if (type==3) {
@@ -228,40 +219,120 @@ char *getvalue(uint64_t mb, uint64_t kb, int len, int type)
 		kB=kb;
 	}
 
+	/* tune spacing according to unit */
+	len -= strlen(getunit(1)) + 1;
+	if (len<0) {
+		len = 1;
+	}
+
 	if ( (type==2) && (kB==0) ){
-		sprintf(buffer, "%*s    ", len, "--");
+		sprintf(buffer, "%*s    ", len-cfg.unit, "--");
 	} else {
-#if !defined(__OpenBSD__)
+#if !defined(__OpenBSD__) && !defined(__NetBSD__)
 		/* try to figure out what unit to use */
 		if (kB>=1048576000) { /* 1024*1024*1000 - value >=1000 GiB -> show in TiB */
-			sprintf(buffer, "%'*.*f %*s", len, declen, kB/(float)1073741824, pad, getunit(4)); /* 1024*1024*1024 */
+			sprintf(buffer, "%'*.*f %s", len, declen, kB/(float)1073741824, getunit(4)); /* 1024*1024*1024 */
 		} else if (kB>=1024000) { /* 1024*1000 - value >=1000 MiB -> show in GiB */
-			sprintf(buffer, "%'*.*f %*s", len, declen, kB/(float)1048576, pad, getunit(3)); /* 1024*1024 */
+			sprintf(buffer, "%'*.*f %s", len, declen, kB/(float)1048576, getunit(3)); /* 1024*1024 */
 		} else if (kB>=1000) {
 			if (type==2) {
 				declen=0;
 			}
-			sprintf(buffer, "%'*.*f %*s", len, declen, kB/(float)1024, pad, getunit(2));
+			sprintf(buffer, "%'*.*f %s", len, declen, kB/(float)1024, getunit(2));
 		} else {
-			sprintf(buffer, "%'*"PRIu64" %*s", len, kB, pad, getunit(1));
+			sprintf(buffer, "%'*"PRIu64" %s", len, kB, getunit(1));
 		}
 #else
 		/* try to figure out what unit to use */
 		if (kB>=1048576000) { /* 1024*1024*1000 - value >=1000 GiB -> show in TiB */
-			sprintf(buffer, "%*.*f %*s", len, declen, kB/(float)1073741824, pad, getunit(4)); /* 1024*1024*1024 */
+			sprintf(buffer, "%*.*f %s", len, declen, kB/(float)1073741824, getunit(4)); /* 1024*1024*1024 */
 		} else if (kB>=1024000) { /* 1024*1000 - value >=1000 MiB -> show in GiB */
-			sprintf(buffer, "%*.*f %*s", len, declen, kB/(float)1048576, pad, getunit(3)); /* 1024*1024 */
+			sprintf(buffer, "%*.*f %s", len, declen, kB/(float)1048576, getunit(3)); /* 1024*1024 */
 		} else if (kB>=1000) {
 			if (type==2) {
 				declen=0;
 			}
-			sprintf(buffer, "%*.*f %*s", len, declen, kB/(float)1024, pad, getunit(2));
+			sprintf(buffer, "%*.*f %s", len, declen, kB/(float)1024, getunit(2));
 		} else {
-			sprintf(buffer, "%'*"PRIu64" %*s", len, kB, pad, getunit(1));
+			sprintf(buffer, "%*"PRIu64" %s", len, kB, getunit(1));
 		}
 #endif
 	}
 	
+	return buffer;
+}
+
+char *getrate(uint64_t mb, uint64_t kb, uint32_t interval, int len)
+{
+	static char buffer[64];
+	int unit, declen = 2;
+	uint64_t kB;
+	uint32_t limit[3];
+	float rate;
+
+	if (interval==0) {
+		sprintf(buffer, "%*s", len, "n/a");
+		return buffer;
+	}
+
+	if (mb!=0) {
+		if (kb>=1024) {
+			mb+=kb/1024;
+			kb-=(kb/1024)*1024;
+		}
+		kB=(mb*1024)+kb;
+	} else {
+		kB=kb;
+	}
+	
+	/* convert to proper unit */
+	if (cfg.rateunit) {
+		limit[0] = 1000;
+		limit[1] = 1000000;
+		limit[2] = 1000000000;
+		rate = (kB*8)/(float)interval;
+		unit = 2;
+		if (interval<5) {
+			declen = 0;
+		}
+	} else {
+		limit[0] = 1024;
+		limit[1] = 1024000;
+		limit[2] = 1048576000;
+		rate = kB/(float)interval;
+		unit = cfg.unit;
+	}
+
+	/* tune spacing according to unit */
+	len -= strlen(getrateunit(unit, 1)) + 1;
+	if (len<0) {
+		len = 1;
+	}
+
+#if !defined(__OpenBSD__) && !defined(__NetBSD__)
+	/* try to figure out what unit to use */
+	if (rate>=limit[2]) {
+		sprintf(buffer, "%'*.2f %s", len, rate/(float)limit[2], getrateunit(unit, 4));
+	} else if (rate>=limit[1]) {
+		sprintf(buffer, "%'*.2f %s", len, rate/(float)limit[1], getrateunit(unit, 3));
+	} else if (rate>=limit[0]) {
+		sprintf(buffer, "%'*.2f %s", len, rate/(float)limit[0], getrateunit(unit, 2));
+	} else {
+		sprintf(buffer, "%'*.*f %s", len, declen, rate, getrateunit(unit, 1));
+	}
+#else
+	/* try to figure out what unit to use */
+	if (rate>=limit[2]) {
+		sprintf(buffer, "%*.2f %s", len, rate/(float)limit[2], getrateunit(unit, 4));
+	} else if (rate>=limit[1]) {
+		sprintf(buffer, "%*.2f %s", len, rate/(float)limit[1], getrateunit(unit, 3));
+	} else if (rate>=limit[0]) {
+		sprintf(buffer, "%*.2f %s", len, rate/(float)limit[0], getrateunit(unit, 2));
+	} else {
+		sprintf(buffer, "%*.*f %s", len, declen, rate, getrateunit(unit, 1));
+	}
+#endif
+
 	return buffer;
 }
 
@@ -312,11 +383,11 @@ char *getunit(int index)
 	}
 }
 
-char *getbunit(int unit, int index)
+char *getrateunit(int unit, int index)
 {
-	static char *bunit[] = { "na", "Kibit", "Mibit", "Gibit", "Tibit",
-                                    "Kbit",  "Mbit",  "Gbit",  "Tbit",
-                                    "kbit",  "Mbit",  "Gbit",  "Tbit" };
+	static char *bunit[] = { "na", "KiB/s", "MiB/s", "GiB/s", "TiB/s",
+                                    "KB/s",  "MB/s",  "GB/s",  "TB/s",
+                                    "kbit/s",  "Mbit/s",  "Gbit/s",  "Tbit/s" };
 
 	if (index>UNITCOUNT) {
 		return bunit[0];

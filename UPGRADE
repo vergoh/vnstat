@@ -1,21 +1,48 @@
-(Updated 30.3.2009 for version 1.7)
+(Updated 1.8.2009 for version 1.8)
 
 
-This file will try to explain how vnStat is supposed to be upgraded 
-from version 1.0. The makefile should handle upgrades from any other
-older version to 1.7 without user interaction. But for those still
-using 1.0, please read the instructions once before executing step by
-step.
+New configuration settings
+::::::::::::::::::::::::::
 
-But once again to make this clear:
+1.8: ShowRate, RateUnit, TrafficlessDays, HourlyRate, TransparentBg
 
- The following instructions apply only for those upgrading from
- version 1.0. Any other version can be upgraded using provided install
- scripts.
+1.7: UnitMode + all settings under vnstatd and vnstati
 
 
-What to do before upgrading from version 1.0?
-:::::::::::::::::::::::::::::::::::::::::::::
+Upgrading from versions 1.1 - 1.7 to 1.8
+::::::::::::::::::::::::::::::::::::::::
+
+1) Follow the normal install procedure, 'make install' will not overwrite
+   your configuration file
+
+2) Generate a new configuration file using current settings in order to 
+   get new configuration tags included:
+
+      vnstat --showconfig >/tmp/newconf
+
+   Never overwrite the current configuration file directly! That will 
+   result in all previous settings getting replaced by defaults.
+
+3) Check that the configuration settings in /tmp/newconf are correct. If 
+   date formatting using system locale is used then use the following 
+   settings:
+
+      Locale "-"
+      DayFormat    "%x"
+      MonthFormat  "%b '%y"
+      TopFormat    "%x"
+      HeaderFormat "%x %H:%M"
+
+4) Replace the old configuration file:
+
+      mv /tmp/newconf /etc/vnstat.conf
+
+5) If the daemon (vnstatd) is used then restart the daemon after the
+   configuration file has been updated.
+
+
+Upgrading from version 1.0
+::::::::::::::::::::::::::
 
  Make a backup of your current database. For the old multiuser install that
  would be /var/spool/vnstat/db and for singleuser it's ~/.vnstatdb
@@ -37,4 +64,4 @@ What to do before upgrading from version 1.0?
 
  Now your all set to continue the install process like the INSTALL file
  tells. Remember that there's no need to uninstall version 1.0 before
- installing 1.7.
+ installing 1.8.

@@ -65,7 +65,7 @@ int getiflist(char **ifacelist)
 			if (isdigit(temp[(strlen(temp)-1)]) || temp[(strlen(temp)-1)]==':') {
 				sscanf(temp, "%32[^':']s", interface);
 				*ifacelist = realloc(*ifacelist, ( ((strlen(*ifacelist)+1) + (strlen(interface)+1)) * sizeof(char)) );
-				strcat(*ifacelist, interface);
+				strncat(*ifacelist, interface, 32);
 				strcat(*ifacelist, " ");
 			}
 		}
@@ -358,7 +358,13 @@ void parseifinfo(int newdb)
 	/* rotate days in database if needed */
 	d=localtime(&data.day[0].date);
 	if ((d->tm_mday!=day) || (d->tm_mon!=month) || (d->tm_year!=year)) {
-		rotatedays();
+
+		/* make a new entry only if there's something to remember (configuration dependent) */
+		if ( (data.day[0].rx==0) && (data.day[0].tx==0) && (data.day[0].rxk==0) && (data.day[0].txk==0) && (cfg.traflessday) ) {
+			data.day[0].date=current;
+		} else {
+			rotatedays();
+		}
 	}
 
 	/* rotate months in database if needed */

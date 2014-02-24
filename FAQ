@@ -1,7 +1,6 @@
+That FAQ is located at
 
-That FAQ is located at 
-
-   http://humdi.net/vnstat/FAQ 
+   http://humdi.net/vnstat/FAQ
 
 since that's the easiest way to keep it updated.
 
@@ -9,15 +8,19 @@ since that's the easiest way to keep it updated.
 ----
 
 
-A snapshot of the FAQ (updated 12.4.2009):
+A snapshot of the FAQ (updated 29.7.2009):
 
 
 Is there some kind of support forum available?
 
-  The forum is located at http://forums.humdi.net/ and is back in use again
-  as of 18.12.2007 including old messages. User accounts have however been
-  wiped. The forum was previously closed in summer 2006 after cleaning spam
-  messages started to take much more time than replying to actual user posts.
+  The forum is located at http://forums.humdi.net/
+
+
+I managed to get invalid data into the database after ... playing around with
+the system clock / doing some strange network experiments / having the cron
+entry not properly configured. Is there a database editor available?
+
+  No.
 
 
 How should dialup users use vnStat? There's some errors because the interface
@@ -59,7 +62,8 @@ How do I uninstall vnStat?
 
 What is this KiB/MiB/GiB/TiB thing?
 
-  See http://en.wikipedia.org/wiki/Binary_prefix#Prefixes
+  See http://en.wikipedia.org/wiki/Binary_prefix#Prefixes and UnitMode
+  option in the configuration file.
 
 
 Is the MB value reported by vnStat 10^6 or 2^20 bytes?
@@ -121,3 +125,4 @@ About bug reports
   with the database. Also include information about the used distribution,
   kernel (uname -a), compiler (gcc --version) and network interface card.
   Read the report again before sending it. :)
+

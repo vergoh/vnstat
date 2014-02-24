@@ -1,10 +1,10 @@
-.TH VNSTATI 1 "APRIL 2009" "version 1.7" "User Manuals"
+.TH VNSTATI 1 "JULY 2009" "version 1.8" "User Manuals"
 .SH NAME
 vnStat image output \- png image output support for vnStat
 .SH SYNOPSIS
 .B vnstati
 [
-.B \-cdhimorstv?
+.B \-cdhimostv?
 ] [
 .B \-i
 .I interface
@@ -35,7 +35,9 @@ vnStat image output \- png image output support for vnStat
 ] [
 .B \-\-noheader
 ] [
-.B \-\-rate
+.B \-ru
+] [
+.B \-\-rateunit
 ] [
 .B \-\-output
 .I file
@@ -48,6 +50,12 @@ vnStat image output \- png image output support for vnStat
 ] [
 .B \-\-config
 .I file
+] [
+.B \-\-dbdir
+.I directory
+] [
+.B \-\-locale
+.I locale
 ] [
 .B \-\-help
 ] [
@@ -91,10 +99,11 @@ Remove darker edges from around the image.
 Remove header containing title and update time. Time of the previous update
 will still be visible in the lower right corner using a less visible color.
 .TP
-.BI "-r, --rate"
-Show traffic in hourly output as hourly average rate instead of showing
-how much was transferred. This option has effect only when the selected output
-contains the hourly output.
+.BI "-ru, --rateunit"
+Swap the configured rate unit. If rate has been configured to be shown in
+bytes then rate will be shown in bits if this option is present. In the same
+way, if rate has been configured to be shown in bits then rate will be shown
+in bytes when this option is present.
 .TP
 .BI "-o, --output " file
 Write png image to
@@ -117,6 +126,18 @@ Use
 .I file
 as config file instead of using normal config file search function.
 .TP
+.BI "--dbdir " directory
+Use
+.I directory
+as database directory instead of using the directory specified in the configuration
+file or the hardcoded default if no configuration file is available.
+.TP
+.BI "--locale " locale
+Use
+.I locale
+instead of using the locale setting specified in the configuration file or the system
+default if no configuration file is available.
+.TP
 .BI "-?, --help"
 Show a command summary.
 .TP
@@ -131,12 +152,16 @@ Default database directory. Files are named according to the monitored interface
 Config file that will be used unless
 .I $HOME/.vnstatrc
 exists. See
-.BR vnstat.conf (1)
+.BR vnstat.conf (5)
 for more information.
 .SH EXAMPLES
 .TP
 .BI "vnstati -s -i eth0 -o /tmp/vnstat.png" 
 Output traffic summary for interface eth0 to file /tmp/vnstat.png.
+.TP
+.BI "vnstati -vs -i eth0+eth1+eth2 -o /tmp/vnstat.png" 
+Output traffic summary with hourly data under the normal summary for a merge of
+interfaces eth0, eth1 and eth2 to file /tmp/vnstat.png.
 .TP
 .BI "vnstati -h -c 15 -o /tmp/vnstat_h.png"
 Output hourly traffic statistics for default interface to file /tmp/vnstat_h.png
@@ -154,5 +179,5 @@ Teemu Toivola <tst at iki dot fi>
 .SH "SEE ALSO"
 .BR vnstat (1),
 .BR vnstatd (1),
-.BR vnstat.conf (1),
+.BR vnstat.conf (5),
 .BR units (7)

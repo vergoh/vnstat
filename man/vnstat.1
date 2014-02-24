@@ -1,4 +1,4 @@
-.TH VNSTAT 1 "APRIL 2009" "version 1.7" "User Manuals"
+.TH VNSTAT 1 "JULY 2009" "version 1.8" "User Manuals"
 .SH NAME
 vnStat \- a console-based network traffic monitor
 .SH SYNOPSIS
@@ -9,6 +9,8 @@ vnStat \- a console-based network traffic monitor
 .B \-i
 .I interface
 ] [
+.B \-ru
+] [
 .B \-tr
 .I time
 ] [
@@ -18,6 +20,9 @@ vnStat \- a console-based network traffic monitor
 .I file
 ] [
 .B \-\-days
+] [
+.B \-\-dbdir
+.I directory
 ] [
 .B \-\-debug
 ] [
@@ -38,6 +43,9 @@ vnStat \- a console-based network traffic monitor
 ] [
 .B \-\-live
 ] [
+.B \-\-locale
+.I locale
+] [
 .B \-\-longhelp
 ] [
 .B \-\-months
@@ -46,6 +54,8 @@ vnStat \- a console-based network traffic monitor
 .I nickname
 ] [
 .B \-\-query
+] [
+.B \-\-rateunit
 ] [
 .B \-\-rebuildtotal
 ] [
@@ -116,6 +126,12 @@ Display current transfer rate for the selected interface in real time
 until interrupted. Statistics will be shown after interruption if runtime
 was more than 10 seconds.
 .TP
+.BI "-ru, --rateunit"
+Swap the configured rate unit. If rate has been configured to be shown in
+bytes then rate will be shown in bits if this option is present. In the same
+way, if rate has been configured to be shown in bits then rate will be shown
+in bytes when this option is present.
+.TP
 .BI "-i, --iface " interface
 Select one specific
 .I interface
@@ -177,6 +193,18 @@ is required to save the change.
 Use
 .I file
 as config file instead of using normal config file search function.
+.TP
+.BI "--dbdir " directory
+Use
+.I directory
+as database directory instead of using the directory specified in the configuration
+file or the hardcoded default if no configuration file is available.
+.TP
+.BI "--locale " locale
+Use
+.I locale
+instead of using the locale setting specified in the configuration file or the system
+default if no configuration file is available.
 .TP
 .BI "--rebuildtotal"
 Reset the total traffic counters and recount those using recorded months.
@@ -240,34 +268,27 @@ named according to the monitored interfaces.
 Config file that will be used unless
 .I $HOME/.vnstatrc
 exists. See
-.BR vnstat.conf (1)
+.BR vnstat.conf (5)
 for more information.
 .SH EXAMPLES
-.BI "vnstat -u -i" 
-.I interface
-forces a database update for
-.I interface
-or creates the database if it doesn't exist. This is usually the
-first command used after a fresh install.
-.PP
-.BI "vnstat -u -i"
-.I interface
-.BI "--nick"
-.I nick
-gives
-.I interface
-the nickname
-.I "nick"
-and that information will be later included with queries.
-.PP
-.BI "vnstat -u -r --disable -i
-.I interface
-resets the internal counters of
-.I interface
-and disables it from being updated before enabled again with the
-.BI "--enable"
-parameter. This feature is especially useful for interfaces like ppp0
-that aren't always active.
+.TP
+.BI "vnstat"
+Display traffic summary for the default interface.
+.TP
+.BI "vnstat -i eth0+eth1+eth3"
+Display traffic summary for a merge of interfaces eth0, eth1 and eth3.
+.TP
+.BI "vnstat -i eth2 --xml"
+Output all information about interface eth2 in xml format.
+.TP
+.BI "vnstat -u -i eth0" 
+Force a database update for interface eth0 or create the database if it doesn't
+exist. This is usually the first command used after a fresh install.
+.TP
+.BI "vnstat -u -i eth0 --nick local"
+Give interface eth0 the nickname "local". That information will be later
+later visible as a label when eth0 is queried. The database will also be updated
+when this command is executed or created if the database doesn't exist.
 .SH RESTRICTIONS
 Updates needs to be executed at least as often as it is possible for the interface
 to generate enough traffic to wrap the kernel interface traffic counter. Otherwise
@@ -284,8 +305,8 @@ l l.
 .TE
 .RE
 
-However, for 1000 Mbit interfaces updating once every minute is usually a
-working solution.
+However, for 1000 Mbit interfaces updating once every minute is usually still a
+working option.
 .PP
 Estimated traffic values are likely to be somewhat inaccurate if daily
 traffic is low because only the MiB counter is used to calculate the
@@ -300,7 +321,7 @@ Teemu Toivola <tst at iki dot fi>
 .SH "SEE ALSO"
 .BR vnstatd (1),
 .BR vnstati (1),
-.BR vnstat.conf (1),
+.BR vnstat.conf (5),
 .BR proc (5),
 .BR ifconfig (8),
 .BR units (7)

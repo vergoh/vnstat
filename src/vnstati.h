@@ -12,10 +12,13 @@
 #define YBEGINOFFSET -1
 #define YENDOFFSET 6
 
+#define DOUTRAD 49
+#define DINRAD 15 
+
 /* global variables for vnstati */
 gdImagePtr im;
 int cbackground, cedge, cheader, cheadertitle, cheaderdate, ctext, cline, clinel, cvnstat;
-int crx, crxd, ctx, ctxd;
+int crx, crxd, ctx, ctxd, cbgoffset;
 time_t current;
 
 #endif

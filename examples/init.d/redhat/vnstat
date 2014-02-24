@@ -1,0 +1,94 @@
+#! /bin/sh
+#
+# chkconfig: 2345 20 50
+# description: vnStat - a lightweight network traffic monitor
+# processname: vnstatd
+# config: /etc/vnstat.conf
+
+### BEGIN INIT INFO
+# Provides:          vnstat
+# Required-Start:    $local_fs $remote_fs $network
+# Required-Stop:     $local_fs $remote_fs $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: lightweight network traffic monitor
+### END INIT INFO
+
+VNSTATD_BIN=/usr/sbin/vnstatd
+
+[ -x $VNSTATD_BIN ] || exit 0
+
+# Source function library
+. /etc/rc.d/init.d/functions
+
+RETVAL=0
+prog=vnstatd
+pidfile=/var/run/vnstat.pid
+
+start()
+{
+	echo -n $"Starting $prog: "
+	if [ -e "$pidfile" ] && [ -e /proc/`cat "$pidfile"` ]; then
+		echo -n $"already running.";
+		success "$prog is already running.";
+		echo
+		return 0
+	fi
+	daemon $VNSTATD_BIN -d
+	RETVAL=$?
+	echo
+	return $RETVAL
+}
+
+stop()
+{
+	echo -n $"Shutting down $prog: "
+	killproc $VNSTATD_BIN
+	RETVAL=$?
+	echo
+	rm -f $pidfile
+	return $RETVAL
+}
+
+reload()
+{
+	echo -n $"Reloading $prog configuration: "
+	killproc $VNSTATD_BIN -HUP
+	RETVAL=$?
+	echo
+	return $RETVAL
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	reload)
+		reload
+		;;
+	restart)
+		stop
+		start
+		;;
+	try-restart)
+		if [ -f $pidfile ]; then
+			stop
+			start
+		fi
+		;;
+	force-reload)
+		reload || (stop; start)
+		;;
+	status)
+		status $prog
+		RETVAL=$?
+		;;
+	*)
+		echo $"Usage: $0 {start|stop|reload|force-reload|restart|try-restart|status}"
+		RETVAL=3
+esac
+
+exit $RETVAL

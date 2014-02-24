@@ -1,0 +1,126 @@
+#! /bin/bash
+#
+# chkconfig: 2345 20 50
+# description: vnStat - a lightweight network traffic monitor
+# processname: vnstatd
+# config: /etc/vnstat.conf
+
+### BEGIN INIT INFO
+# Provides:          vnstat
+# Required-Start:    $local_fs $remote_fs $network
+# Required-Stop:     $local_fs $remote_fs $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: lightweight network traffic monitor
+### END INIT INFO
+
+# First reset status of this service
+. /etc/rc.status
+rc_reset
+
+# Shell functions sourced from /etc/rc.status:
+#      rc_check         check and set local and overall rc status
+#      rc_status        check and set local and overall rc status
+#      rc_status -v     ditto but be verbose in local rc status
+#      rc_status -v -r  ditto and clear the local rc status
+#      rc_failed        set local and overall rc status to failed
+#      rc_reset         clear local rc status (overall remains)
+#      rc_exit          exit appropriate to overall rc status
+
+# Source function library for OpenSuse
+if ! . /etc/sysconfig/network/scripts/functions 2>/dev/null; then
+	echo -n "Network: file /etc/sysconfig/network/scripts/functions is missing."
+	rc_failed
+	rc_status -v
+	rc_exit
+fi
+
+# Return values acc. to LSB for all commands but status:
+# 0 - success
+# 1 - generic or unspecified error
+# 2 - invalid or excess argument(s)
+# 3 - unimplemented feature (e.g. "reload")
+# 4 - insufficient privilege
+# 5 - program is not installed
+# 6 - program is not configured
+# 7 - program is not running
+
+VNSTATD_BIN=/usr/sbin/vnstatd
+test -x $VNSTATD_BIN || exit 5
+
+VNSTATD_BIN_CONFIG=/etc/vnstat.conf
+test -f $VNSTATD_BIN_CONFIG || exit 6
+
+prog=vnstatd
+VNSTATD_PIDFILE=/var/run/vnstat.pid
+
+start()
+{
+	echo -n $"Starting $prog: "
+	# NOTE: start_daemon return 0, even if service is 
+	# already running to match LSB spec.
+	start_daemon -p $VNSTATD_PIDFILE $VNSTATD_BIN --daemon
+	# Remember status and be verbose
+	rc_status -v
+}
+
+stop()
+{
+	echo -n $"Shutting down $prog: "
+	## Stop daemon with killproc(8) and if this fails
+	## set echo the echo return value.
+	killproc -p $VNSTATD_PIDFILE -TERM $VNSTATD_BIN
+	# Remember status and be verbose
+	rc_status -v
+}
+
+reload()
+{
+	echo -n $"Reloading $prog configuration: "
+	killproc -p $VNSTATD_PIDFILE -HUP $VNSTATD_BIN
+	rc_status -v
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	reload)
+		reload
+		;;
+	restart)
+		stop
+		start
+		;;
+	try-restart)
+		if [ -f $VNSTATD_PIDFILE ]; then
+			stop
+			start
+		fi
+		;;
+	force-reload)
+		reload || (stop; start)
+		;;
+	status)
+		echo -n "Checking for vnStat daemon (vnstatd): "
+		## Check status with checkproc(8), if process is running
+		## checkproc will return with exit status 0.
+
+		# Status has a slightly different for the status command:
+		# 0 - service running
+		# 1 - service dead, but /var/run/  pid  file exists
+		# 2 - service dead, but /var/lock/ lock file exists
+		# 3 - service not running
+		checkproc -p $VNSTATD_PIDFILE $VNSTATD_BIN
+		rc_status -v
+	;;
+	*)
+		echo $"Usage: $0 {start|stop|reload|force-reload|restart|try-restart|status}"
+		rc_status -v
+esac
+
+rc_exit
+

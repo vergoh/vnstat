@@ -1,4 +1,4 @@
-(Updated 12.4.2009 for version 1.7)
+(Updated 1.8.2009 for version 1.8)
 
 
 Compiling the binaries
@@ -61,6 +61,7 @@ Installing as root
  especially when monitoring interfaces that aren't always available. Select
  ONLY ONE of these two:
 
+
  1) daemon based updating
  ::::::::::::::::::::::::
 
@@ -69,7 +70,10 @@ Installing as root
 
        vnstatd -d
 
-   One suitable place is for example /etc/rc.local.
+   The examples/init.d directory contains suitable init.d scripts for
+   some commonly used distributions. An alternative option is to just add
+   the command to an already existing script that gets executed during 
+   startup. In many distributions /etc/rc.local can be used for that.
 
 
  2) cron based updating
@@ -77,9 +81,9 @@ Installing as root
 
    Copy the example cron file to /etc/cron.d
 
-       cp cron/vnstat /etc/cron.d
+       cp examples/vnstat.cron /etc/cron.d/vnstat
 
-   and edit the cron file is the default 5 minute update interval is too
+   and edit the cron file if the default 5 minute update interval is too
    long. See the vnStat man page 'restrictions' section for limitations
    regarding fast interfaces and 32 bit interface traffic counters. Devices
    like ppp0 also require vnStat enable and disable commands to be added

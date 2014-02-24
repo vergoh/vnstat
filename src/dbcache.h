@@ -1,7 +1,7 @@
 #ifndef DBCACHE_H
 #define DBCACHE_H
 
-int dataadd(char *iface);
+int dataadd(char *iface, int sync);
 int dataupdate(void);
 void datashow(void);
 int dataget(char *iface);
@@ -13,6 +13,7 @@ uint32_t simplehash(const char *data, int len);
 typedef struct datanode {
 	DATA data;
 	short filled;
+	short sync;
 	struct datanode *next;
 } datanode;
 

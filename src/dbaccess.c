@@ -270,7 +270,6 @@ int convertdb(FILE *db)
 	DATA12 data12;
 	time_t current;
 	struct tm *d;
-	int dmonth[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 	int month=0, day;
 	int tm_mday, tm_mon, tm_year;
 	int converted=0;
@@ -336,7 +335,7 @@ int convertdb(FILE *db)
 				mod=(d->tm_mon-i-1)%12;
 				if (mod<0)
 					mod=12+mod;
-				days+=dmonth[mod];
+				days+=dmonth(mod);
 				data12.month[i].used=1;
 			} else {
 				data12.month[i].rx=data12.month[i].tx=0;

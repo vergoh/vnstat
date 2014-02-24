@@ -1,4 +1,7 @@
 
+If the daemon is running then stop it first.
+
+
 Linux:
    Run 'make uninstall' and follow the instructions.
 

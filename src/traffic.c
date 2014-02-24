@@ -59,16 +59,16 @@ void trafficmeter(char iface[32], int sampletime)
 	}
 
 	/* calculate traffic and packets seen between updates */
-	rx = countercalc(firstinfo.rx, ifinfo.rx);
-	tx = countercalc(firstinfo.tx, ifinfo.tx);
+	rx = rintf(countercalc(firstinfo.rx, ifinfo.rx)/(float)1024);
+	tx = rintf(countercalc(firstinfo.tx, ifinfo.tx)/(float)1024);
 	rxp = countercalc(firstinfo.rxp, ifinfo.rxp);
 	txp = countercalc(firstinfo.txp, ifinfo.txp);
 
 	/* show the difference in a readable format */
 	printf("%"PRIu64" packets sampled in %d seconds\n", rxp+txp, sampletime);
 	printf("Traffic average for %s\n", iface);
-	printf("\n      rx     %10.2f %s/s         %5"PRIu64" packets/s\n", rx/(float)sampletime/(float)1024, getunit(1), (uint64_t)(rxp/sampletime));
-	printf("      tx     %10.2f %s/s         %5"PRIu64" packets/s\n\n", tx/(float)sampletime/(float)1024, getunit(1), (uint64_t)(txp/sampletime));
+	printf("\n      rx     %s         %5"PRIu64" packets/s\n", getrate(0, rx, sampletime, 15), (uint64_t)(rxp/sampletime));
+	printf("      tx     %s         %5"PRIu64" packets/s\n\n", getrate(0, tx, sampletime, 15), (uint64_t)(txp/sampletime));
 
 }
 
@@ -81,7 +81,7 @@ void livetrafficmeter(char iface[32])
 	uint64_t rxpmin, txpmin, rxpmax, txpmax;
 	float rxmin, txmin, rxmax, txmax, rxc, txc;
 	int i, len;
-	char buffer[256];
+	char buffer[256], buffer2[256];
 	IFINFO previnfo;
 
 	printf("Monitoring %s...    (press CTRL-C to stop)\n\n", iface);
@@ -145,8 +145,8 @@ void livetrafficmeter(char iface[32])
 		rxptotal += rxp;
 		txptotal += txp;
 
-		rxc = rx/(float)LIVETIME/(float)1024;
-		txc = tx/(float)LIVETIME/(float)1024;
+		rxc = rintf(rx/(float)1024);
+		txc = rintf(tx/(float)1024);
 		rxpc = rxp/LIVETIME;
 		txpc = txp/LIVETIME;		
 
@@ -178,7 +178,9 @@ void livetrafficmeter(char iface[32])
 		}
 
 		/* show the difference in a readable format */
-		snprintf(buffer, 256, "   rx: %10.2f %s/s %5"PRIu64" p/s          tx: %10.2f %s/s %5"PRIu64" p/s", rxc, getunit(1), (uint64_t)rxpc, txc, getunit(1), (uint64_t)txpc);
+		snprintf(buffer, 128, "   rx: %s %5"PRIu64" p/s", getrate(0, rxc, LIVETIME, 15), (uint64_t)rxpc);
+		snprintf(buffer2, 128, "          tx: %s %5"PRIu64" p/s", getrate(0, txc, LIVETIME, 15), (uint64_t)txpc);
+		strncat(buffer, buffer2, 127);
 		
 		if (len>1) {
 			if (debug) {
@@ -205,34 +207,25 @@ void livetrafficmeter(char iface[32])
 
 		printf("\n %s  /  traffic statistics\n\n", iface);
 
-		printf("                             rx       |       tx\n");
-		printf("--------------------------------------+----------------------------------------\n");
-		printf("  bytes                %s", getvalue(0, rxtotal/1024, 9, -1));
-		printf("  | %s", getvalue(0, txtotal/1024, 9, -1));
+		printf("                           rx         |       tx\n");
+		printf("--------------------------------------+------------------------\n");
+		printf("  bytes                %s", getvalue(0, rintf(rxtotal/(float)1024), 13, 1));
+		printf("  |   %s", getvalue(0, rintf(txtotal/(float)1024), 13, 1));
 		printf("\n");
-		printf("--------------------------------------+----------------------------------------\n");
-		printf("          max          ");
-		showspeed(rxmax, 7);
-		printf("  | ");
-		showspeed(txmax, 7);
-		printf("\n");
-		printf("      average          ");
-		showspeed(rxtotal/(float)timespent/(float)1024, 7);
-		printf("  | ");
-		showspeed(txtotal/(float)timespent/(float)1024, 7);
-		printf("\n");
-		printf("          min          ");
-		showspeed(rxmin, 7);
-		printf("  | ");
-		showspeed(txmin, 7);
-		printf("\n");
-		printf("--------------------------------------+----------------------------------------\n");
-		printf("  packets               %12"PRIu64"  |  %12"PRIu64"\n", rxptotal, txptotal);
-		printf("--------------------------------------+----------------------------------------\n");
-		printf("          max          %9"PRIu64" p/s  | %9"PRIu64" p/s\n", rxpmax, txpmax);
-		printf("      average          %9"PRIu64" p/s  | %9"PRIu64" p/s\n", rxptotal/timespent, txptotal/timespent);
-		printf("          min          %9"PRIu64" p/s  | %9"PRIu64" p/s\n", rxpmin, txpmin);
-		printf("--------------------------------------+----------------------------------------\n");
+		printf("--------------------------------------+------------------------\n");
+		printf("          max          %s", getrate(0, rxmax, LIVETIME, 13));
+		printf("  |   %s\n", getrate(0, txmax, LIVETIME, 13));
+		printf("      average          %s", getrate(0, rintf(rxtotal/(float)1024), timespent, 13));
+		printf("  |   %s\n", getrate(0, rintf(txtotal/(float)1024), timespent, 13));
+		printf("          min          %s", getrate(0, rxmin, LIVETIME, 13));
+		printf("  |   %s\n", getrate(0, txmin, LIVETIME, 13));
+		printf("--------------------------------------+------------------------\n");
+		printf("  packets               %12"PRIu64"  |    %12"PRIu64"\n", rxptotal, txptotal);
+		printf("--------------------------------------+------------------------\n");
+		printf("          max          %9"PRIu64" p/s  |   %9"PRIu64" p/s\n", rxpmax, txpmax);
+		printf("      average          %9"PRIu64" p/s  |   %9"PRIu64" p/s\n", rxptotal/timespent, txptotal/timespent);
+		printf("          min          %9"PRIu64" p/s  |   %9"PRIu64" p/s\n", rxpmin, txpmin);
+		printf("--------------------------------------+------------------------\n");
 		
 		if (timespent<=60) {
 			printf("  time             %9"PRIu64" seconds\n", timespent);
@@ -243,25 +236,4 @@ void livetrafficmeter(char iface[32])
 		printf("\n");
 	}
 	
-}
-
-void showspeed(float xfer, int len)
-{
-	if (cfg.unit>0) {
-		len++;
-	}
-
-#if !defined(__OpenBSD__)
-	if (xfer>=1000) {
-		printf("%'*.2f %s/s", len, xfer/(float)1024, getunit(2));
-	} else {
-		printf("%'*.2f %s/s", len, xfer, getunit(1));
-	}
-#else
-	if (xfer>=1000) {
-		printf("%*.2f %s/s", len, xfer/(float)1024, getunit(2));
-	} else {
-		printf("%*.2f KiB/s", len, xfer, getunit(1));
-	}
-#endif
 }

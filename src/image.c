@@ -30,10 +30,13 @@ void colorinit(void)
 	clinel = gdImageColorAllocate(im, rgb[0], rgb[1], rgb[2]);
 
 	/* background */
-	hextorgb(cfg.cbg, rgb);	
+	hextorgb(cfg.cbg, rgb);
 	cbackground = gdImageColorAllocate(im, rgb[0], rgb[1], rgb[2]);
 	modcolor(rgb, -35, 0);
 	cvnstat = gdImageColorAllocate(im, rgb[0], rgb[1], rgb[2]);
+	hextorgb(cfg.cbg, rgb);
+	modcolor(rgb, -15, 0);
+	cbgoffset = gdImageColorAllocate(im, rgb[0], rgb[1], rgb[2]);
 
 	/* rx */
 	hextorgb(cfg.crx, rgb);
@@ -165,9 +168,47 @@ void drawpole(int x, int y, int len, uint64_t rx, uint64_t tx, uint64_t max)
 	gdImageFilledRectangle(im, x+5, y+(len-l), x+12, y+len, ctx);
 }
 
+void drawdonut(int x, int y, float rxp, float txp)
+{
+	int rxarc = 0, txarc = 0;
+
+	if ( (rxp + txp) > 0 ) {
+		rxarc = 360 * (rxp / (float)100);
+		if ( (rxp + txp) == 100 ) {
+			txarc = 360 - rxarc;
+		} else {
+			txarc = 360 * (txp / (float)100);
+		}
+		
+		/* fix possible graphical glitch */
+		if (!rxarc) {
+			rxarc = 1;
+		}
+		
+		if (!txarc) {
+			txarc = 1;
+		}
+	}
+
+	gdImageFilledArc(im, x, y, DOUTRAD, DOUTRAD, 0, 360, cbgoffset, 0);
+
+	if ( (rxp + txp) > 0 ) {
+		gdImageFilledArc(im, x, y, DOUTRAD, DOUTRAD, 270, 270+txarc, ctx, 0);
+		gdImageFilledArc(im, x, y, DOUTRAD, DOUTRAD, 270, 270+txarc, ctxd, gdEdged|gdNoFill);
+		gdImageFilledArc(im, x, y, DOUTRAD, DOUTRAD, 270+txarc, 270+txarc+rxarc, crx, 0);
+		gdImageFilledArc(im, x, y, DOUTRAD, DOUTRAD, 270+txarc, 270+txarc+rxarc, crxd, gdEdged|gdNoFill);
+
+		gdImageFilledArc(im, x, y, DINRAD, DINRAD, 270, 270+txarc, ctxd, gdEdged|gdNoFill);
+		gdImageFilledArc(im, x, y, DINRAD, DINRAD, 270+txarc, 270+txarc+rxarc, crxd, gdEdged|gdNoFill);
+	}
+
+	gdImageFilledArc(im, x, y, DINRAD-2, DINRAD-2, 0, 360, cbackground, 0);
+}
+
 void drawhours(int x, int y, int rate)
 {
 	int i, tmax=0, s=0, step, prev=0, diff=0, chour;
+	float ratediv;
 	uint64_t max=1, scaleunit=0;
 	char buffer[32];
 	time_t current;
@@ -175,6 +216,12 @@ void drawhours(int x, int y, int rate)
 	
 	current = time(NULL);
 	chour = localtime(&current)->tm_hour;
+
+	if (cfg.rateunit) {
+		ratediv = 450;      /* x * 8 / 3600 */
+	} else {
+		ratediv = 3600;
+	}
 
 	/* tmax (time max) = current hour */
 	/* max = transfer max */
@@ -184,21 +231,26 @@ void drawhours(int x, int y, int rate)
 		/* convert hourly transfer to hourly rate if needed */
 		if (rate) {
 			if ((current-data.hour[i].date) > 3600) {
-				data.hour[i].rx = data.hour[i].rx / (float)450; /* rx * 8 / 3600 */
-				data.hour[i].tx = data.hour[i].tx / (float)450; /* tx * 8 / 3600 */			
+				data.hour[i].rx = data.hour[i].rx / ratediv;
+				data.hour[i].tx = data.hour[i].tx / ratediv;	
 			} else {
 				/* scale ongoing hour properly */
 				d = localtime(&data.hour[i].date);
 				if (chour != d->tm_hour) {
-					data.hour[i].rx = data.hour[i].rx / (float)450; /* rx * 8 / 3600 */
-					data.hour[i].tx = data.hour[i].tx / (float)450; /* tx * 8 / 3600 */				
+					data.hour[i].rx = data.hour[i].rx / ratediv;
+					data.hour[i].tx = data.hour[i].tx / ratediv;
 				} else {
 					diff = d->tm_min*60;
 					if (!diff) {
 						diff = 1;
 					}
-					data.hour[i].rx = data.hour[i].rx * 8 / (float)diff;
-					data.hour[i].tx = data.hour[i].tx * 8 / (float)diff;
+					if (cfg.rateunit==1) {
+						data.hour[i].rx = data.hour[i].rx * 8 / (float)diff;
+						data.hour[i].tx = data.hour[i].tx * 8 / (float)diff;
+					} else {
+						data.hour[i].rx = data.hour[i].rx / (float)diff;
+						data.hour[i].tx = data.hour[i].tx / (float)diff;
+					}
 				}
 			}
 		}
@@ -267,6 +319,338 @@ void drawhours(int x, int y, int rate)
 }
 
 void drawsummary(int type, int showheader, int showedge, int rate)
+{
+	int textx, texty, offset = 0;
+	int width, height, headermod;
+	float rxp = 50, txp = 50, mod;
+	char buffer[512], datebuff[16], daytemp[32];
+	time_t yesterday;
+	struct tm *d;
+
+	switch (type) {
+		case 1:
+			width = 980;
+			height = 200;
+			break;
+		case 2:
+			width = 500;
+			height = 370;
+			break;
+		default:
+			width = 500;
+			height = 200;
+			break;
+	}
+
+	if (!showheader) {
+		headermod = 26;
+		height -= 22;
+	} else {
+		headermod = 0;
+	}
+
+	yesterday=current-86400;
+
+	im = gdImageCreate(width, height);
+
+	colorinit();
+	
+	if (strcmp(data.nick, data.interface)==0) {
+		sprintf(buffer, "%s", data.interface);	
+	} else {
+		sprintf(buffer, "%s (%s)", data.nick, data.interface);
+	}
+	
+	layoutinit(buffer, width, height, showheader, showedge);
+
+	/* today */
+	if (data.day[0].rx>1024 || data.day[0].tx>1024)	{
+		rxp = (data.day[0].rx/(float)(data.day[0].rx+data.day[0].tx))*100;
+		txp = (float)100 - rxp;
+	} else {
+		if ( (data.day[0].rx*+data.day[0].rxk)+(data.day[0].tx*+data.day[0].txk) == 0 ) {
+			rxp = txp = 0;
+		} else {
+			rxp = ( ((data.day[0].rx*1024)+data.day[0].rxk) / (float)(((data.day[0].rx*1024)+data.day[0].rxk)+((data.day[0].tx*1024)+data.day[0].txk)) )*100;
+			txp = (float)100 - rxp;
+		}
+	}	
+	
+	/* do scaling if needed */
+	if ( (data.day[0].rx+data.day[0].tx) < (data.day[1].rx+data.day[1].tx) ) {
+		if ( (data.day[0].rx+data.day[0].tx)>1024 || (data.day[1].rx+data.day[1].tx)>1024 ) {
+			mod = (data.day[0].rx+data.day[0].tx) / (float)(data.day[1].rx+data.day[1].tx);
+		} else {
+			mod = (((data.day[0].rx*1024)+data.day[0].rxk)+((data.day[0].tx*1024)+data.day[0].txk)) / (float)(((data.day[1].rx*1024)+data.day[1].rxk)+((data.day[1].tx*1024)+data.day[1].txk));
+		}
+		rxp = rxp * mod;
+		txp = txp * mod;
+	}
+	
+	/* move graph to center if there's only one to draw for this line */
+	if (!data.day[1].date) {
+		offset = 85; 
+	} else {
+		offset = 0;
+	}
+		
+	drawdonut(150+offset, 75, rxp, txp);
+
+	textx = 100+offset;
+	texty = 30-headermod;
+
+	/* get formated date for today */
+	d = localtime(&current);
+	strftime(datebuff, 16, cfg.dformat, d);
+	
+	/* get formated date for current day in database */
+	d = localtime(&data.day[0].date);
+	strftime(daytemp, 16, cfg.dformat, d);
+
+	/* change daytemp to today if formated days match */
+	if (strcmp(datebuff, daytemp)==0) {
+		strncpy(daytemp, "today", 32);
+	}
+
+	snprintf(buffer, 32, "%12s", daytemp);
+	gdImageString(im, gdFontGetLarge(), textx-54, texty-1, (unsigned char*)buffer, ctext);
+
+	if (cfg.showrate) {
+		d = localtime(&data.lastupdated);
+		snprintf(buffer, 16, "%15s", getrate(data.day[0].rx+data.day[0].tx, data.day[0].rxk+data.day[0].txk, d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600), 15));
+		gdImageString(im, gdFontGetSmall(), textx-74, texty+58, (unsigned char*)buffer, ctext);
+	} else {
+		texty += 7;
+	}
+
+	snprintf(buffer, 4, "rx ");
+	strncat(buffer, getvalue(data.day[0].rx, data.day[0].rxk, 12, 1), 32);
+	gdImageString(im, gdFontGetSmall(), textx-74, texty+18, (unsigned char*)buffer, ctext);
+	snprintf(buffer, 4, "tx ");
+	strncat(buffer, getvalue(data.day[0].tx, data.day[0].txk, 12, 1), 32);
+	gdImageString(im, gdFontGetSmall(), textx-74, texty+30, (unsigned char*)buffer, ctext);
+	snprintf(buffer, 4, " = ");
+	strncat(buffer, getvalue(data.day[0].rx+data.day[0].tx, data.day[0].rxk+data.day[0].txk, 12, 1), 32);
+	gdImageString(im, gdFontGetSmall(), textx-74, texty+44, (unsigned char*)buffer, ctext);
+
+
+	/* yesterday */
+	if (data.day[1].date) {
+		if (data.day[1].rx>1024 || data.day[1].tx>1024)	{
+			rxp = (data.day[1].rx/(float)(data.day[1].rx+data.day[1].tx))*100;
+			txp = (float)100 - rxp;
+		} else {
+			if ( (data.day[1].rx*+data.day[1].rxk)+(data.day[1].tx*+data.day[1].txk) == 0 ) {
+				rxp = txp = 0;
+			} else {
+				rxp = ( ((data.day[1].rx*1024)+data.day[1].rxk) / (float)(((data.day[1].rx*1024)+data.day[1].rxk)+((data.day[1].tx*1024)+data.day[1].txk)) )*100;
+				txp = (float)100 - rxp;
+			}
+		}	
+
+		/* do scaling if needed */	
+		if ( (data.day[1].rx+data.day[1].tx) < (data.day[0].rx+data.day[0].tx) ) {
+			if ( (data.day[1].rx+data.day[1].tx)>1024 || (data.day[0].rx+data.day[0].tx)>1024 ) {
+				mod = (data.day[1].rx+data.day[1].tx) / (float)(data.day[0].rx+data.day[0].tx);
+			} else {
+				mod = (((data.day[1].rx*1024)+data.day[1].rxk)+((data.day[1].tx*1024)+data.day[1].txk)) / (float)(((data.day[0].rx*1024)+data.day[0].rxk)+((data.day[0].tx*1024)+data.day[0].txk));
+			}
+			rxp = rxp * mod;
+			txp = txp * mod;
+		}
+
+		drawdonut(330, 75, rxp, txp);
+
+		textx = 280;
+		texty = 30-headermod;
+
+		/* get formated date for yesterday */
+		d = localtime(&yesterday);
+		strftime(datebuff, 16, cfg.dformat, d);
+
+		/* get formated date for previous day in database */
+		d = localtime(&data.day[1].date);
+		strftime(daytemp, 16, cfg.dformat, d);
+
+		/* change daytemp to yesterday if formated days match */
+		if (strcmp(datebuff, daytemp)==0) {
+			strncpy(daytemp, "yesterday", 32);
+		}
+
+		snprintf(buffer, 32, "%12s", daytemp);
+		gdImageString(im, gdFontGetLarge(), textx-54, texty-1, (unsigned char*)buffer, ctext);
+
+		if (cfg.showrate) {
+			snprintf(buffer, 16, "%15s", getrate(data.day[1].rx+data.day[1].tx, data.day[1].rxk+data.day[1].txk, 86400, 15));
+			gdImageString(im, gdFontGetSmall(), textx-74, texty+58, (unsigned char*)buffer, ctext);
+		} else {
+			texty += 7;
+		}
+
+		snprintf(buffer, 4, "rx ");
+		strncat(buffer, getvalue(data.day[1].rx, data.day[1].rxk, 12, 1), 32);
+		gdImageString(im, gdFontGetSmall(), textx-74, texty+18, (unsigned char*)buffer, ctext);
+		snprintf(buffer, 4, "tx ");
+		strncat(buffer, getvalue(data.day[1].tx, data.day[1].txk, 12, 1), 32);
+		gdImageString(im, gdFontGetSmall(), textx-74, texty+30, (unsigned char*)buffer, ctext);
+		snprintf(buffer, 4, " = ");
+		strncat(buffer, getvalue(data.day[1].rx+data.day[1].tx, data.day[1].rxk+data.day[1].txk, 12, 1), 32);
+		gdImageString(im, gdFontGetSmall(), textx-74, texty+44, (unsigned char*)buffer, ctext);
+	}
+
+	/* current month */
+	if (data.month[0].rx>1024 || data.month[0].tx>1024)	{
+		rxp = (data.month[0].rx/(float)(data.month[0].rx+data.month[0].tx))*100;
+		txp = (float)100 - rxp;
+	} else {
+		if ( (data.month[0].rx+data.month[0].rxk)+(data.month[0].tx+data.month[0].txk) == 0 ) {
+			rxp = txp = 0;
+		} else {
+			rxp = ( ((data.month[0].rx*1024)+data.month[0].rxk) / (float)(((data.month[0].rx*1024)+data.month[0].rxk)+((data.month[0].tx*1024)+data.month[0].txk)) )*100;
+			txp = (float)100 - rxp;
+		}
+	}	
+	
+
+	/* do scaling if needed */
+	if ( (data.month[0].rx+data.month[0].tx) < (data.month[1].rx+data.month[1].tx) ) {
+		if ( (data.month[0].rx+data.month[0].tx)>1024 || (data.month[1].rx+data.month[1].tx)>1024 ) {
+			mod = (data.month[0].rx+data.month[0].tx) / (float)(data.month[1].rx+data.month[1].tx);
+		} else {
+			mod = (((data.month[0].rx*1024)+data.month[0].rxk)+((data.month[0].tx*1024)+data.month[0].txk)) / (float)(((data.month[1].rx*1024)+data.month[1].rxk)+((data.month[1].tx*1024)+data.month[1].txk));
+		}
+		rxp = rxp * mod;
+		txp = txp * mod;
+	}
+
+	/* move graph to center if there's only one to draw for this line */
+	if (!data.month[1].month) {
+		offset = 85; 
+	} else {
+		offset = 0;
+	}
+
+	drawdonut(150+offset, 163, rxp, txp);
+
+	textx = 100+offset;
+	texty = 118-headermod;
+
+	d = localtime(&data.month[0].month);
+	strftime(daytemp, 16, cfg.mformat, d);
+	
+	snprintf(buffer, 32, "%12s", daytemp);
+	gdImageString(im, gdFontGetLarge(), textx-54, texty-1, (unsigned char*)buffer, ctext);
+
+	if (cfg.showrate) {
+		snprintf(buffer, 16, "%15s", getrate(data.month[0].rx+data.month[0].tx, data.month[0].rxk+data.month[0].txk, mosecs(), 15));
+		gdImageString(im, gdFontGetSmall(), textx-74, texty+58, (unsigned char*)buffer, ctext);
+	} else {
+		texty += 7;
+	}
+
+	snprintf(buffer, 4, "rx ");
+	strncat(buffer, getvalue(data.month[0].rx, data.month[0].rxk, 12, 1), 32);
+	gdImageString(im, gdFontGetSmall(), textx-74, texty+18, (unsigned char*)buffer, ctext);
+	snprintf(buffer, 4, "tx ");
+	strncat(buffer, getvalue(data.month[0].tx, data.month[0].txk, 12, 1), 32);
+	gdImageString(im, gdFontGetSmall(), textx-74, texty+30, (unsigned char*)buffer, ctext);
+	snprintf(buffer, 4, " = ");
+	strncat(buffer, getvalue(data.month[0].rx+data.month[0].tx, data.month[0].rxk+data.month[0].txk, 12, 1), 32);
+	gdImageString(im, gdFontGetSmall(), textx-74, texty+44, (unsigned char*)buffer, ctext);
+	
+	
+	/* previous month */
+	if (data.month[1].month) {
+		if (data.month[1].rx>1024 || data.month[1].tx>1024)	{
+			rxp = (data.month[1].rx/(float)(data.month[1].rx+data.month[1].tx))*100;
+			txp = (float)100 - rxp;
+		} else {
+			if ( (data.month[1].rx+data.month[1].rxk)+(data.month[1].tx+data.month[1].txk) == 0 ) {
+				rxp = txp = 0;
+			} else {
+				rxp = ( ((data.month[1].rx*1024)+data.month[1].rxk) / (float)(((data.month[1].rx*1024)+data.month[1].rxk)+((data.month[1].tx*1024)+data.month[1].txk)) )*100;
+				txp = (float)100 - rxp;
+			}
+		}	
+
+		/* do scaling if needed */	
+		if ( (data.month[1].rx+data.month[1].tx) < (data.month[0].rx+data.month[0].tx) ) {
+			if ( (data.month[1].rx+data.month[1].tx)>1024 || (data.month[0].rx+data.month[0].tx)>1024 ) {
+				mod = (data.month[1].rx+data.month[1].tx) / (float)(data.month[0].rx+data.month[0].tx);
+			} else {
+				mod = (((data.month[1].rx*1024)+data.month[1].rxk)+((data.month[1].tx*1024)+data.month[1].txk)) / (float)(((data.month[0].rx*1024)+data.month[0].rxk)+((data.month[0].tx*1024)+data.month[0].txk));
+			}
+			rxp = rxp * mod;
+			txp = txp * mod;
+		}
+
+		drawdonut(330, 163, rxp, txp);
+
+		textx = 280;
+		texty = 118-headermod;
+
+		d = localtime(&data.month[1].month);
+		strftime(daytemp, 16, cfg.mformat, d);
+	
+		snprintf(buffer, 32, "%12s", daytemp);
+		gdImageString(im, gdFontGetLarge(), textx-54, texty-1, (unsigned char*)buffer, ctext);
+
+		if (cfg.showrate) {
+			snprintf(buffer, 16, "%15s", getrate(data.month[1].rx+data.month[1].tx, data.month[1].rxk+data.month[1].txk, dmonth(d->tm_mon)*86400, 15));
+			gdImageString(im, gdFontGetSmall(), textx-74, texty+58, (unsigned char*)buffer, ctext);
+		} else {
+			texty += 7;
+		}
+
+		snprintf(buffer, 4, "rx ");
+		strncat(buffer, getvalue(data.month[1].rx, data.month[1].rxk, 12, 1), 32);
+		gdImageString(im, gdFontGetSmall(), textx-74, texty+18, (unsigned char*)buffer, ctext);
+		snprintf(buffer, 4, "tx ");
+		strncat(buffer, getvalue(data.month[1].tx, data.month[1].txk, 12, 1), 32);
+		gdImageString(im, gdFontGetSmall(), textx-74, texty+30, (unsigned char*)buffer, ctext);
+		snprintf(buffer, 4, " = ");
+		strncat(buffer, getvalue(data.month[1].rx+data.month[1].tx, data.month[1].rxk+data.month[1].txk, 12, 1), 32);
+		gdImageString(im, gdFontGetSmall(), textx-74, texty+44, (unsigned char*)buffer, ctext);
+	}
+
+	/* all time */
+	textx = 385;
+	texty = 57-headermod;
+
+	gdImageString(im, gdFontGetLarge(), textx+12, texty, (unsigned char*)"all time", ctext);
+	snprintf(buffer, 4, "rx ");
+	strncat(buffer, getvalue(data.totalrx, data.totalrxk, 12, 1), 32);
+	gdImageString(im, gdFontGetSmall(), textx, texty+24, (unsigned char*)buffer, ctext);
+	snprintf(buffer, 4, "tx ");
+	strncat(buffer, getvalue(data.totaltx, data.totaltxk, 12, 1), 32);
+	gdImageString(im, gdFontGetSmall(), textx, texty+36, (unsigned char*)buffer, ctext);
+	snprintf(buffer, 4, " = ");
+	strncat(buffer, getvalue(data.totalrx+data.totaltx, data.totalrxk+data.totaltxk, 12, 1), 32);
+	gdImageString(im, gdFontGetSmall(), textx, texty+50, (unsigned char*)buffer, ctext);
+	d = localtime(&data.created);
+	strftime(datebuff, 16, cfg.tformat, d);
+	snprintf(daytemp, 7, "since ");
+	strncat(daytemp, datebuff, 16);
+	snprintf(buffer, 20, "%19s", daytemp);
+	gdImageString(im, gdFontGetSmall(), textx-24, texty+70, (unsigned char*)buffer, ctext);
+
+	drawlegend(410, 155-headermod);
+
+	/* hours if requested */
+	switch (type) {
+		case 1:
+			drawhours(500, 46-headermod, rate);
+			break;
+		case 2:
+			drawhours(16, 215-headermod, rate);
+			break;
+		default:
+			break;
+	}
+
+}
+
+void drawoldsummary(int type, int showheader, int showedge, int rate)
 {
 	int piex, piey, piew, pieh, arc, textx, texty;
 	int i, tk, width, height, headermod;
@@ -352,11 +736,11 @@ void drawsummary(int type, int showheader, int showedge, int rate)
 	texty = 48-headermod;
 
 	/* totals */
-	sprintf(buffer, "   received: %s  (%.1f%%)", getvalue(data.totalrx, data.totalrxk, 9, -1), rxp);
+	sprintf(buffer, "   received: %s  (%.1f%%)", getvalue(data.totalrx, data.totalrxk, 14, 1), rxp);
 	gdImageString(im, gdFontGetLarge(), textx, texty, (unsigned char*)buffer, ctext);
-	sprintf(buffer, "transmitted: %s  (%.1f%%)", getvalue(data.totaltx, data.totaltxk, 9, -1), txp);
+	sprintf(buffer, "transmitted: %s  (%.1f%%)", getvalue(data.totaltx, data.totaltxk, 14, 1), txp);
 	gdImageString(im, gdFontGetLarge(), textx, texty+15, (unsigned char*)buffer, ctext);
-	sprintf(buffer, "      total: %s", getvalue(data.totalrx+data.totaltx, data.totalrxk+data.totaltxk, 9, -1));
+	sprintf(buffer, "      total: %s", getvalue(data.totalrx+data.totaltx, data.totalrxk+data.totaltxk, 14, 1));
 	gdImageString(im, gdFontGetLarge(), textx, texty+30, (unsigned char*)buffer, ctext);
 	
 	/* get formated date for yesterday */
@@ -397,28 +781,28 @@ void drawsummary(int type, int showheader, int showedge, int rate)
 
 	if (data.day[1].date!=0) {
 		snprintf(buffer, 32, "%9s   ", daytemp);
-		strncat(buffer, getvalue(data.day[1].rx, data.day[1].rxk, 6, -1), 32);
+		strncat(buffer, getvalue(data.day[1].rx, data.day[1].rxk, 10, 1), 32);
 		strcat(buffer, "   ");
-		strncat(buffer, getvalue(data.day[1].tx, data.day[1].txk, 6, -1), 32);
+		strncat(buffer, getvalue(data.day[1].tx, data.day[1].txk, 10, 1), 32);
 		strcat(buffer, "   ");
-		strncat(buffer, getvalue(data.day[1].rx+data.day[1].tx, data.day[1].rxk+data.day[1].txk, 6, -1), 32);
+		strncat(buffer, getvalue(data.day[1].rx+data.day[1].tx, data.day[1].rxk+data.day[1].txk, 10, 1), 32);
 		gdImageString(im, gdFontGetSmall(), textx, texty+20, (unsigned char*)buffer, ctext);
 	}
 
 	snprintf(buffer, 32, "%9s   ", daytemp2);
-	strncat(buffer, getvalue(data.day[0].rx, data.day[0].rxk, 6, -1), 32);
+	strncat(buffer, getvalue(data.day[0].rx, data.day[0].rxk, 10, 1), 32);
 	strcat(buffer, "   ");
-	strncat(buffer, getvalue(data.day[0].tx, data.day[0].txk, 6, -1), 32);
+	strncat(buffer, getvalue(data.day[0].tx, data.day[0].txk, 10, 1), 32);
 	strcat(buffer, "   ");
-	strncat(buffer, getvalue(data.day[0].rx+data.day[0].tx, data.day[0].rxk+data.day[0].txk, 6, -1), 32);
+	strncat(buffer, getvalue(data.day[0].rx+data.day[0].tx, data.day[0].rxk+data.day[0].txk, 10, 1), 32);
 	gdImageString(im, gdFontGetSmall(), textx, texty+32, (unsigned char*)buffer, ctext);
 
 	sprintf(buffer, "estimated   ");
-	strncat(buffer, getvalue(e_rx, 0, 6, -2), 32);
+	strncat(buffer, getvalue(e_rx, 0, 10, 2), 32);
 	strcat(buffer, "   ");
-	strncat(buffer, getvalue(e_tx, 0, 6, -2), 32);
+	strncat(buffer, getvalue(e_tx, 0, 10, 2), 32);
 	strcat(buffer, "   ");
-	strncat(buffer, getvalue(e_rx+e_tx, 0, 6, -2), 32);
+	strncat(buffer, getvalue(e_rx+e_tx, 0, 10, 2), 32);
 	gdImageString(im, gdFontGetSmall(), textx, texty+52, (unsigned char*)buffer, ctext);
 
 	/* search maximum */
@@ -530,16 +914,28 @@ void drawdaily(int showheader, int showedge)
 	layoutinit(buffer, width, height, showheader, showedge);
 	
 	if (lines) {
-		drawlegend(385, 40-headermod);
+		if (cfg.showrate) {
+			drawlegend(432, 40-headermod);
+		} else {
+			drawlegend(385, 40-headermod);
+		}
 	}
 
 	textx = 10;
 	texty = 40-headermod;
 	
-	gdImageString(im, gdFontGetSmall(), textx, texty, (unsigned char*)"    day         rx            tx         total", ctext);
-	gdImageLine(im, textx+2, texty+16, textx+302, texty+16, cline);
-	gdImageLine(im, textx+144, texty+2, textx+144, texty+40+(12*lines), cline);
-	gdImageLine(im, textx+228, texty+2, textx+228, texty+40+(12*lines), cline);
+	if (cfg.showrate) {
+		gdImageString(im, gdFontGetSmall(), textx, texty, (unsigned char*)"     day        rx           tx          total       avg. rate", ctext);
+		gdImageLine(im, textx+2, texty+16, textx+392, texty+16, cline);
+		gdImageLine(im, textx+144, texty+2, textx+144, texty+40+(12*lines), cline);
+		gdImageLine(im, textx+222, texty+2, textx+222, texty+40+(12*lines), cline);
+		gdImageLine(im, textx+300, texty+2, textx+300, texty+40+(12*lines), cline);
+	} else {
+		gdImageString(im, gdFontGetSmall(), textx, texty, (unsigned char*)"     day        rx           tx          total", ctext);
+		gdImageLine(im, textx+2, texty+16, textx+296, texty+16, cline);
+		gdImageLine(im, textx+144, texty+2, textx+144, texty+40+(12*lines), cline);
+		gdImageLine(im, textx+222, texty+2, textx+222, texty+40+(12*lines), cline);		
+	}
 
 	texty += 20;
 
@@ -568,15 +964,31 @@ void drawdaily(int showheader, int showedge)
 		if (data.day[i].used) {
 
 			d = localtime(&data.day[i].date);
-			strftime(datebuff, 16, cfg.dformat, d);
-			snprintf(buffer, 32, " %8s   ", datebuff);
-			strncat(buffer, getvalue(data.day[i].rx, data.day[i].rxk, 6, -1), 32);
-			strcat(buffer, "    ");
-			strncat(buffer, getvalue(data.day[i].tx, data.day[i].txk, 6, -1), 32);
-			strcat(buffer, "    ");
-			strncat(buffer, getvalue(data.day[i].rx+data.day[i].tx, data.day[i].rxk+data.day[i].txk, 6, -1), 32);
+			if (strftime(datebuff, 16, cfg.dformat, d)<=8) {
+				snprintf(buffer, 32, "  %8s   ", datebuff);
+			} else {
+				snprintf(buffer, 32, " %-11s ", datebuff);
+			}
+			strncat(buffer, getvalue(data.day[i].rx, data.day[i].rxk, 10, 1), 32);
+			strcat(buffer, "   ");
+			strncat(buffer, getvalue(data.day[i].tx, data.day[i].txk, 10, 1), 32);
+			strcat(buffer, "   ");
+			strncat(buffer, getvalue(data.day[i].rx+data.day[i].tx, data.day[i].rxk+data.day[i].txk, 10, 1), 32);
+			if (cfg.showrate) {
+				strcat(buffer, "  ");
+				if (i==0) {
+					d = localtime(&data.lastupdated);
+					strncat(buffer, getrate(data.day[i].rx+data.day[i].tx, data.day[i].rxk+data.day[i].txk, d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600), 14), 32);
+				} else {
+					strncat(buffer, getrate(data.day[i].rx+data.day[i].tx, data.day[i].rxk+data.day[i].txk, 86400, 14), 32);
+				}
+			}
 			gdImageString(im, gdFontGetSmall(), textx, texty, (unsigned char*)buffer, ctext);
-			drawbar(textx+310, texty+4, 165, data.day[i].rx, data.day[i].rxk, data.day[i].tx, data.day[i].txk, max);
+			if (cfg.showrate) {
+				drawbar(textx+400, texty+4, 78, data.day[i].rx, data.day[i].rxk, data.day[i].tx, data.day[i].txk, max);
+			} else {
+				drawbar(textx+304, texty+4, 170, data.day[i].rx, data.day[i].rxk, data.day[i].tx, data.day[i].txk, max);
+			}
 			texty += 12;
 		}
 	}
@@ -586,7 +998,11 @@ void drawdaily(int showheader, int showedge)
 		texty += 12;
 	}
 
-	gdImageLine(im, textx+2, texty+5, textx+302, texty+5, cline);
+	if (cfg.showrate) {
+		gdImageLine(im, textx+2, texty+5, textx+392, texty+5, cline);
+	} else {
+		gdImageLine(im, textx+2, texty+5, textx+296, texty+5, cline);
+	}
 
 	if (lines) {
 
@@ -597,12 +1013,12 @@ void drawdaily(int showheader, int showedge)
 			e_rx=((data.day[0].rx)/(float)(d->tm_hour*60+d->tm_min))*1440;
 			e_tx=((data.day[0].tx)/(float)(d->tm_hour*60+d->tm_min))*1440;
 		}
-		sprintf(buffer, " estimated  ");
-		strncat(buffer, getvalue(e_rx, 0, 6, -2), 32);
-		strcat(buffer, "    ");
-		strncat(buffer, getvalue(e_tx, 0, 6, -2), 32);
-		strcat(buffer, "    ");
-		strncat(buffer, getvalue(e_rx+e_tx, 0, 6, -2), 32);
+		sprintf(buffer, " estimated   ");
+		strncat(buffer, getvalue(e_rx, 0, 10, 2), 32);
+		strcat(buffer, "   ");
+		strncat(buffer, getvalue(e_tx, 0, 10, 2), 32);
+		strcat(buffer, "   ");
+		strncat(buffer, getvalue(e_rx+e_tx, 0, 10, 2), 32);
 	
 		gdImageString(im, gdFontGetSmall(), textx, texty+8, (unsigned char*)buffer, ctext);
 	}
@@ -616,7 +1032,6 @@ void drawmonthly(int showheader, int showedge)
 	uint64_t t, max, e_rx, e_tx;
 	char buffer[512], datebuff[16];
 	struct tm *d;
-	int dmonth[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
 	/* count how many months needs to be shown */
 	lines = 0;
@@ -649,16 +1064,29 @@ void drawmonthly(int showheader, int showedge)
 	layoutinit(buffer, width, height, showheader, showedge);
 	
 	if (lines) {
-		drawlegend(385, 40-headermod);
+		if (cfg.showrate) {
+			drawlegend(432, 40-headermod);
+		} else {
+			drawlegend(385, 40-headermod);
+		}
 	}
 
 	textx = 10;
 	texty = 40-headermod;
 	
-	gdImageString(im, gdFontGetSmall(), textx, texty, (unsigned char*)"   month        rx            tx         total", ctext);
-	gdImageLine(im, textx+2, texty+16, textx+302, texty+16, cline);
-	gdImageLine(im, textx+144, texty+2, textx+144, texty+40+(12*lines), cline);
-	gdImageLine(im, textx+228, texty+2, textx+228, texty+40+(12*lines), cline);
+	if (cfg.showrate) {
+		gdImageString(im, gdFontGetSmall(), textx, texty, (unsigned char*)"   month        rx           tx          total       avg. rate", ctext);
+		gdImageLine(im, textx+2, texty+16, textx+392, texty+16, cline);
+		gdImageLine(im, textx+144, texty+2, textx+144, texty+40+(12*lines), cline);
+		gdImageLine(im, textx+222, texty+2, textx+222, texty+40+(12*lines), cline);
+		gdImageLine(im, textx+300, texty+2, textx+300, texty+40+(12*lines), cline);
+	} else {
+		gdImageString(im, gdFontGetSmall(), textx, texty, (unsigned char*)"   month        rx           tx          total", ctext);
+		gdImageLine(im, textx+2, texty+16, textx+296, texty+16, cline);
+		gdImageLine(im, textx+144, texty+2, textx+144, texty+40+(12*lines), cline);
+		gdImageLine(im, textx+222, texty+2, textx+222, texty+40+(12*lines), cline);
+	}
+
 
 	texty += 20;
 
@@ -687,15 +1115,30 @@ void drawmonthly(int showheader, int showedge)
 		if (data.month[i].used) {
 
 			d = localtime(&data.month[i].month);
-			strftime(datebuff, 16, cfg.mformat, d);
-			snprintf(buffer, 32, " %8s   ", datebuff);
-			strncat(buffer, getvalue(data.month[i].rx, data.month[i].rxk, 6, -1), 32);
-			strcat(buffer, "    ");
-			strncat(buffer, getvalue(data.month[i].tx, data.month[i].txk, 6, -1), 32);
-			strcat(buffer, "    ");
-			strncat(buffer, getvalue(data.month[i].rx+data.month[i].tx, data.month[i].rxk+data.month[i].txk, 6, -1), 32);
+			if (strftime(datebuff, 16, cfg.mformat, d)<=8) {
+				snprintf(buffer, 32, " %8s    ", datebuff);
+			} else {
+				snprintf(buffer, 32, " %-11s ", datebuff);
+			}
+			strncat(buffer, getvalue(data.month[i].rx, data.month[i].rxk, 10, 1), 32);
+			strcat(buffer, "   ");
+			strncat(buffer, getvalue(data.month[i].tx, data.month[i].txk, 10, 1), 32);
+			strcat(buffer, "   ");
+			strncat(buffer, getvalue(data.month[i].rx+data.month[i].tx, data.month[i].rxk+data.month[i].txk, 10, 1), 32);
+			if (cfg.showrate) {
+				strcat(buffer, "  ");
+				if (i==0) {
+					strncat(buffer, getrate(data.month[0].rx+data.month[0].tx, data.month[0].rxk+data.month[0].txk, mosecs(), 14), 32);
+				} else {
+					strncat(buffer, getrate(data.month[i].rx+data.month[i].tx, data.month[i].rxk+data.month[i].txk, dmonth(d->tm_mon)*86400, 14), 32);
+				}
+			}
 			gdImageString(im, gdFontGetSmall(), textx, texty, (unsigned char*)buffer, ctext);
-			drawbar(textx+310, texty+4, 165, data.month[i].rx, data.month[i].rxk, data.month[i].tx, data.month[i].txk, max);
+			if (cfg.showrate) {
+				drawbar(textx+400, texty+4, 78, data.month[i].rx, data.month[i].rxk, data.month[i].tx, data.month[i].txk, max);
+			} else {
+				drawbar(textx+304, texty+4, 170, data.month[i].rx, data.month[i].rxk, data.month[i].tx, data.month[i].txk, max);
+			}
 			texty += 12;
 		}
 	}
@@ -705,23 +1148,27 @@ void drawmonthly(int showheader, int showedge)
 		texty += 12;
 	}
 
-	gdImageLine(im, textx+2, texty+5, textx+302, texty+5, cline);
+	if (cfg.showrate) {
+		gdImageLine(im, textx+2, texty+5, textx+392, texty+5, cline);
+	} else {
+		gdImageLine(im, textx+2, texty+5, textx+296, texty+5, cline);
+	}
 
 	if (lines) {
 
-		d=localtime(&data.lastupdated);
-		if ( data.month[0].rx==0 || data.month[0].tx==0 || ((d->tm_mday-1)*24+d->tm_hour)==0 ) {
+		d=localtime(&data.month[0].month);
+		if ( data.month[0].rx==0 || data.month[0].tx==0 || (data.lastupdated-data.month[0].month)==0 ) {
 			e_rx=e_tx=0;
-		} else {				
-			e_rx=((data.month[0].rx)/(float)((d->tm_mday-1)*24+d->tm_hour))*(dmonth[d->tm_mon]*24);
-			e_tx=((data.month[0].tx)/(float)((d->tm_mday-1)*24+d->tm_hour))*(dmonth[d->tm_mon]*24);
+		} else {
+			e_rx=(data.month[0].rx/(float)(mosecs()))*(dmonth(d->tm_mon)*86400);
+			e_tx=(data.month[0].tx/(float)(mosecs()))*(dmonth(d->tm_mon)*86400);
 		}
-		sprintf(buffer, " estimated  ");
-		strncat(buffer, getvalue(e_rx, 0, 6, -2), 32);
-		strcat(buffer, "    ");
-		strncat(buffer, getvalue(e_tx, 0, 6, -2), 32);
-		strcat(buffer, "    ");
-		strncat(buffer, getvalue(e_rx+e_tx, 0, 6, -2), 32);
+		sprintf(buffer, " estimated   ");
+		strncat(buffer, getvalue(e_rx, 0, 10, 2), 32);
+		strcat(buffer, "   ");
+		strncat(buffer, getvalue(e_tx, 0, 10, 2), 32);
+		strcat(buffer, "   ");
+		strncat(buffer, getvalue(e_rx+e_tx, 0, 10, 2), 32);
 	
 		gdImageString(im, gdFontGetSmall(), textx, texty+8, (unsigned char*)buffer, ctext);
 	}
@@ -775,17 +1222,29 @@ void drawtop(int showheader, int showedge)
 	layoutinit(buffer, width, height, showheader, showedge);
 	
 	if (lines) {
-		drawlegend(405, 40-headermod);
+		if (!cfg.showrate) {
+			drawlegend(398, 40-headermod);
+		}
 	}
 
 	textx = 10;
 	texty = 40-headermod;
 	
-	gdImageString(im, gdFontGetSmall(), textx, texty, (unsigned char*)"   #      day         rx            tx         total", ctext);
-	gdImageLine(im, textx+2, texty+16, textx+338, texty+16, cline);
-	if (lines) {
-		gdImageLine(im, textx+180, texty+2, textx+180, texty+24+(12*lines), cline);
-		gdImageLine(im, textx+264, texty+2, textx+264, texty+24+(12*lines), cline);
+	if (cfg.showrate) {
+		gdImageString(im, gdFontGetSmall(), textx, texty, (unsigned char*)"   #      day        rx           tx          total       avg. rate", ctext);
+		gdImageLine(im, textx+2, texty+16, textx+422, texty+16, cline);
+		if (lines) {
+			gdImageLine(im, textx+174, texty+2, textx+174, texty+24+(12*lines), cline);
+			gdImageLine(im, textx+252, texty+2, textx+252, texty+24+(12*lines), cline);
+			gdImageLine(im, textx+330, texty+2, textx+330, texty+24+(12*lines), cline);
+		}
+	} else {
+		gdImageString(im, gdFontGetSmall(), textx, texty, (unsigned char*)"   #      day        rx           tx          total", ctext);
+		gdImageLine(im, textx+2, texty+16, textx+326, texty+16, cline);
+		if (lines) {
+			gdImageLine(im, textx+174, texty+2, textx+174, texty+24+(12*lines), cline);
+			gdImageLine(im, textx+252, texty+2, textx+252, texty+24+(12*lines), cline);
+		}	
 	}
 
 	texty += 20;
@@ -794,15 +1253,26 @@ void drawtop(int showheader, int showedge)
 		if (data.top10[i].used) {
 
 			d = localtime(&data.top10[i].date);
-			strftime(datebuff, 16, cfg.tformat, d);
-			snprintf(buffer, 32, "  %2d   %8s   ", i+1, datebuff);
-			strncat(buffer, getvalue(data.top10[i].rx, data.top10[i].rxk, 6, -1), 32);
-			strcat(buffer, "    ");
-			strncat(buffer, getvalue(data.top10[i].tx, data.top10[i].txk, 6, -1), 32);
-			strcat(buffer, "    ");
-			strncat(buffer, getvalue(data.top10[i].rx+data.top10[i].tx, data.top10[i].rxk+data.top10[i].txk, 6, -1), 32);
+			if (strftime(datebuff, 16, cfg.tformat, d)<=8) {
+				snprintf(buffer, 32, "  %2d   %8s   ", i+1, datebuff);
+			} else {
+				snprintf(buffer, 32, "  %2d  %-11s ", i+1, datebuff);
+			}
+			strncat(buffer, getvalue(data.top10[i].rx, data.top10[i].rxk, 10, 1), 32);
+			strcat(buffer, "   ");
+			strncat(buffer, getvalue(data.top10[i].tx, data.top10[i].txk, 10, 1), 32);
+			strcat(buffer, "   ");
+			strncat(buffer, getvalue(data.top10[i].rx+data.top10[i].tx, data.top10[i].rxk+data.top10[i].txk, 10, 1), 32);
+			if (cfg.showrate) {
+				strcat(buffer, "  ");
+				strncat(buffer, getrate(data.top10[i].rx+data.top10[i].tx, data.top10[i].rxk+data.top10[i].txk, 86400, 14), 32);
+			}
 			gdImageString(im, gdFontGetSmall(), textx, texty, (unsigned char*)buffer, ctext);
-			drawbar(textx+346, texty+4, 130, data.top10[i].rx, data.top10[i].rxk, data.top10[i].tx, data.top10[i].txk, max);
+			if (cfg.showrate) {
+				drawbar(textx+428, texty+4, 52, data.top10[i].rx, data.top10[i].rxk, data.top10[i].tx, data.top10[i].txk, max);
+			} else {
+				drawbar(textx+336, texty+4, 140, data.top10[i].rx, data.top10[i].rxk, data.top10[i].tx, data.top10[i].txk, max);
+			}
 			texty += 12;
 		}
 	}
@@ -812,8 +1282,11 @@ void drawtop(int showheader, int showedge)
 		texty += 12;
 	}
 
-	gdImageLine(im, textx+2, texty+5, textx+338, texty+5, cline);
-
+	if (cfg.showrate) {
+		gdImageLine(im, textx+2, texty+5, textx+422, texty+5, cline);
+	} else {
+		gdImageLine(im, textx+2, texty+5, textx+326, texty+5, cline);
+	}
 }
 
 void hextorgb(char *input, int *rgb)
@@ -921,20 +1394,36 @@ char *getimagevalue(uint64_t kb, int len, int rate)
 char *getimagescale(uint64_t kb, int rate)
 {
 	static char buffer[6];
+	uint32_t limit[3];
+	int unit;
 	
 	if (kb==0) {
 		sprintf(buffer, "--");
 	} else {
 	
 		if (rate) {
-			if (kb>=1000000000) { /* 1000*1000*1000 - value >=1000 Gbps -> show in Tbps */
-				sprintf(buffer, "%s/s", getbunit(2, 4));
-			} else if (kb>=1000000) { /* 1000*1000 - value >=1000 Mbps -> show in Gbps */
-				sprintf(buffer, "%s/s", getbunit(2, 3));
-			} else if (kb>=1000) {
-				sprintf(buffer, "%s/s", getbunit(2, 2));
+
+			/* convert to proper unit */
+			if (cfg.rateunit) {
+				limit[0] = 1000;
+				limit[1] = 1000000;
+				limit[2] = 1000000000;
+				unit = 2;
 			} else {
-				sprintf(buffer, "%s/s", getbunit(2, 1));
+				limit[0] = 1024;
+				limit[1] = 1024000;
+				limit[2] = 1048576000;
+				unit = cfg.unit;
+			}
+
+			if (kb>=limit[2]) {
+				sprintf(buffer, "%s", getrateunit(unit, 4));
+			} else if (kb>=limit[1]) {
+				sprintf(buffer, "%s", getrateunit(unit, 3));
+			} else if (kb>=limit[0]) {
+				sprintf(buffer, "%s", getrateunit(unit, 2));
+			} else {
+				sprintf(buffer, "%s", getrateunit(unit, 1));
 			}		
 		} else {
 			if (kb>=1048576000) { /* 1024*1024*1000 - value >=1000 GiB -> show in TiB */

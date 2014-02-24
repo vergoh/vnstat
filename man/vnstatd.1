@@ -1,14 +1,16 @@
-.TH VNSTATD 1 "APRIL 2009" "version 1.7" "User Manuals"
+.TH VNSTATD 1 "JULY 2009" "version 1.8" "User Manuals"
 .SH NAME
 vnStat daemon \- the alternative for cron based updating
 .SH SYNOPSIS
 .B vnstatd
 [
-.B \-Ddnpv?
+.B \-Ddnpsv?
 ] [
 .B \-\-daemon
 ] [
 .B \-\-nodaemon
+] [
+.B \-\-sync
 ] [
 .B \-\-debug
 ] [
@@ -25,13 +27,14 @@ vnStat daemon \- the alternative for cron based updating
 .SH DESCRIPTION
 The purpose of
 .B vnstatd
-is to provide an alternative way for updating
+is to provide a more flexible way for updating
 .BR vnstat (1)
-databases. It makes possible updating databases more often but at
-the same time requires less disk access since data can be cached
-and written only later to disk at a user configurable interval. The
-daemon is also able to track how interfaces come and go without the
-need of additional scripts that are required with cron based updates.
+databases than what using cron for updating can provide. The daemon makes
+possible updating databases more often but at the same time requires
+less disk access since data can be cached and written only later to disk
+at a user configurable interval. It is also able to track how interfaces
+come and go without the need of additional scripts that are required with
+cron based updates.
 .PP
 .B vnstatd
 is the command for starting the daemon. The daemon can either fork
@@ -51,6 +54,16 @@ Fork process to background and run as a daemon.
 .BI "-n, --nodaemon"
 Stay in foreground attached to the current terminal and start update
 process.
+.TP
+.BI "-s, --sync"
+Synchronize internal counters in the database with interface
+counters for all available interfaces before starting traffic monitoring.
+Use this option if the traffic between the previous shutdown
+and the current startup of the daemon needs to be ignored. This option
+isn't required in normal use because the daemon will automatically synchronize
+the internal counters after a system reboot, if enought time has passed
+since the daemon was previously running or if the internal counters are
+clearly out of sync.
 .TP
 .BI "-D, --debug"
 Provide additional output for debug purposes. The process will stay
@@ -149,7 +162,7 @@ interfaces.
 Config file that will be used unless
 .I $HOME/.vnstatrc
 exists. See the configuration chapter and
-.BR vnstat.conf (1)
+.BR vnstat.conf (5)
 for more information.
 .TP
 .I /var/log/vnstat.log
@@ -187,5 +200,5 @@ Teemu Toivola <tst at iki dot fi>
 .SH "SEE ALSO"
 .BR vnstat (1),
 .BR vnstati (1),
-.BR vnstat.conf (1),
+.BR vnstat.conf (5),
 .BR signal (7)

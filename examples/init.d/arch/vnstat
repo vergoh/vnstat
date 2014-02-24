@@ -1,0 +1,45 @@
+#!/bin/bash
+
+. /etc/rc.conf
+. /etc/rc.d/functions
+
+PID=`pidof -o %PPID /usr/sbin/vnstatd`
+case "$1" in
+  start)
+    stat_busy "Starting vnStat daemon"
+    [ -z "$PID" ] && /usr/sbin/vnstatd -d
+    if [ $? -gt 0 ]; then
+      stat_fail
+    else
+      add_daemon vnstat
+      stat_done
+    fi
+    ;;
+  stop)
+    stat_busy "Stopping vnStat daemon"
+    [ ! -z "$PID" ] && kill $PID &> /dev/null
+    if [ $? -gt 0 ]; then
+      stat_fail
+    else
+      rm_daemon vnstat
+      stat_done
+    fi
+    ;;
+  reload)
+    stat_busy "Reloading vnStat daemon configuration"
+    [ ! -z "$PID" ] && kill -HUP $PID &> /dev/null
+    if [ $? -gt 0 ]; then
+      stat_fail
+    else
+      stat_done
+    fi
+    ;;
+  restart)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  *)
+    echo "usage: $0 {start|stop|restart|reload}"
+esac
+exit 0

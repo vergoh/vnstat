@@ -1,3 +1,24 @@
+1.8 / 1-Aug-09
+
+ - Fix: OpenBSD print issues (was: ' used for formatting in sprintf)
+ - Fix: Monthly estimate for February during a leap year was wrong
+ - Fix: 'make install' didn't install the config file is $(DESTDIR) was used
+ - Traffic of current and previous months added to summary
+ - Increased accuracy of monthly estimate calculation
+ - Traffic rates can be made visible and the shown unit is configurable 
+   as bits or bytes
+ - New summary layout in image output
+ - Image output can have the background color set as transparent
+ - Possibility to merge data from several interfaces to one output with
+   interface1+interface2 syntax
+ - -s / --sync parameter added to daemon
+ - --dbdir and --locale parameters added
+ - Outputs now use system locale by default and formatting of dates follow
+   the locale setting unless configured otherwise
+ - New configuration file settings:
+   ShowRate, RateUnit, TrafficlessDays, HourlyRate, TransparentBg
+
+
 1.7 / 12-Apr-09
 
  - Fix: Timezone changes shouldn't cause a flood of errors anymore

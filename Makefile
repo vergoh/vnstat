@@ -49,12 +49,11 @@ install:
 # install default config if such doesn't exist
 	@if [ ! -f "$(DESTDIR)/etc/vnstat.conf" ]; \
 	then echo "Installing config to $(DESTDIR)/etc/vnstat.conf"; \
-	install -m 644 cfg/vnstat.conf $(DESTDIR)/etc; \
+	install -D -m 644 cfg/vnstat.conf $(DESTDIR)/etc/vnstat.conf; \
 	fi
 
-
 # install everything else
-	install -d -m 755 $(BIN) $(SBIN) $(MAN)/man1 $(DESTDIR)/var/lib/vnstat
+	install -d -m 755 $(BIN) $(SBIN) $(MAN)/man1 $(MAN)/man5 $(DESTDIR)/var/lib/vnstat
 	install -s -m 755 src/vnstat $(BIN)
 	install -s -m 755 src/vnstatd $(SBIN)
 	@if [ -f "src/vnstati" ]; \
@@ -65,7 +64,7 @@ install:
 # update man pages, gzip it if previous version was done so	
 	install -m 644 man/vnstat.1 $(MAN)/man1
 	install -m 644 man/vnstatd.1 $(MAN)/man1
-	install -m 644 man/vnstat.conf.1 $(MAN)/man1
+	install -m 644 man/vnstat.conf.5 $(MAN)/man5
 	@if [ -f "src/vnstati" ]; \
 	then echo install -m 644 man/vnstati.1 $(MAN)/man1; \
 	install -m 644 man/vnstati.1 $(MAN)/man1; \
@@ -74,10 +73,18 @@ install:
 	@if [ -f $(MAN)/man1/vnstat.1.gz ]; \
 	then gzip -f9 $(MAN)/man1/vnstat.1; \
 	gzip -f9 $(MAN)/man1/vnstatd.1; \
-	gzip -f9 $(MAN)/man1/vnstat.conf.1; \
+	gzip -f9 $(MAN)/man5/vnstat.conf.5; \
 	if [ -f "src/vnstati" ]; \
 	then gzip -f9 $(MAN)/man1/vnstati.1; \
 	fi; \
+	fi
+
+# remove vnstat.conf.1 is such exists in the wrong place
+	@if [ -f $(MAN)/man1/vnstat.conf.1.gz ]; \
+	then rm -f $(MAN)/man1/vnstat.conf.1.gz; \
+	fi
+	@if [ -f $(MAN)/man1/vnstat.conf.1 ]; \
+	then rm -f $(MAN)/man1/vnstat.conf.1; \
 	fi
 
 	@echo " "
@@ -88,7 +95,7 @@ uninstall:
 	@echo "Uninstalling vnStat..."
 	@echo
 	@echo "Note: this will also remove the database directory"
-	@echo "including any database located there"
+	@echo "including any database located there."
 	@echo
 	@echo "Press CTRL-C within 10 seconds to abort."
 	@sleep 10
@@ -97,6 +104,7 @@ uninstall:
 	rm -f $(BIN)/vnstati
 	rm -f $(SBIN)/vnstatd
 	rm -f $(MAN)/man1/vnstat*
+	rm -f $(MAN)/man5/vnstat*
 	rm -f $(DESTDIR)/etc/cron.d/vnstat
 	rm -f $(DESTDIR)/etc/vnstat.conf
 	rm -f $(DESTDIR)/etc/ppp/ip-up.d/vnstat
@@ -130,7 +138,7 @@ bsdinstall:
 # install default config if such doesn't exist
 	@if [ ! -f $(DESTDIR)/etc/vnstat.conf ]; \
 	then echo "Installing config to $(DESTDIR)/etc/vnstat.conf"; \
-	install -m 644 cfg/vnstat.conf $(DESTDIR)/etc; \
+	install -D -m 644 cfg/vnstat.conf $(DESTDIR)/etc/vnstat.conf; \
 	sed -e 's/lib/db/g' $(DESTDIR)/etc/vnstat.conf >$(DESTDIR)/etc/vnstat.conf.bsd; \
 	mv -f $(DESTDIR)/etc/vnstat.conf.bsd $(DESTDIR)/etc/vnstat.conf; \
 	fi
@@ -138,15 +146,23 @@ bsdinstall:
 # update man page	
 	install -m 644 man/vnstat.1 $(MAN_BSD)/man1
 	install -m 644 man/vnstatd.1 $(MAN_BSD)/man1
-	install -m 644 man/vnstat.conf.1 $(MAN_BSD)/man1
+	install -m 644 man/vnstat.conf.5 $(MAN_BSD)/man5
 	gzip -f9 $(MAN_BSD)/man1/vnstat.1
 	gzip -f9 $(MAN_BSD)/man1/vnstatd.1
-	gzip -f9 $(MAN_BSD)/man1/vnstat.conf.1
+	gzip -f9 $(MAN_BSD)/man5/vnstat.conf.5
 	@if [ -f "src/vnstati" ]; \
 	then echo install -m 644 man/vnstati.1 $(MAN_BSD)/man1; \
 	install -m 644 man/vnstati.1 $(MAN_BSD)/man1; \
 	echo gzip -f9 $(MAN_BSD)/man1/vnstati.1; \
 	gzip -f9 $(MAN_BSD)/man1/vnstati.1; \
+	fi
+
+# remove vnstat.conf.1 is such exists in the wrong place
+	@if [ -f $(MAN_BSD)/man1/vnstat.conf.1.gz ]; \
+	then rm -f $(MAN_BSD)/man1/vnstat.conf.1.gz; \
+	fi
+	@if [ -f $(MAN_BSD)/man1/vnstat.conf.1 ]; \
+	then rm -f $(MAN_BSD)/man1/vnstat.conf.1; \
 	fi
 
 	@echo " "
@@ -157,7 +173,7 @@ bsduninstall:
 	@echo "Uninstalling vnStat (BSD)..."
 	@echo
 	@echo "Note: this will also remove the database directory"
-	@echo "including any database located there"
+	@echo "including any database located there."
 	@echo
 	@echo "Press CTRL-C within 10 seconds to abort."
 	@sleep 10
@@ -166,5 +182,6 @@ bsduninstall:
 	rm -f $(BIN_BSD)/vnstati
 	rm -f $(SBIN_BSD)/vnstatd
 	rm -f $(MAN_BSD)/man1/vnstat*
+	rm -f $(MAN_BSD)/man5/vnstat*
 	rm -f $(DESTDIR)/etc/vnstat.conf
 	@echo "A possible cron entry needs to be removed manually if such exists."

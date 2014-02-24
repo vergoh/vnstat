@@ -6,8 +6,10 @@ void layoutinit(char *title, int width, int height, int showheader, int showedge
 void drawlegend(int x, int y);
 void drawbar(int x, int y, int len, uint64_t rx, int rxk, uint64_t tx, int txk, uint64_t max);
 void drawpole(int x, int y, int len, uint64_t rx, uint64_t tx, uint64_t max);
+void drawdonut(int x, int y, float rxp, float txp);
 void drawhours(int x, int y, int rate);
 void drawsummary(int type, int showheader, int showedge, int rate);
+void drawoldsummary(int type, int showheader, int showedge, int rate);
 void drawhourly(int showheader, int showedge, int rate);
 void drawdaily(int showheader, int showedge);
 void drawmonthly(int showheader, int showedge);

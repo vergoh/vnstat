@@ -1,4 +1,4 @@
-(Updated 6.4.2009 for version 1.7)
+(Updated 29.7.2009 for version 1.9)
 
 
 What is vnStat
@@ -18,8 +18,8 @@ Getting started
 
  First you should install vnStat. See the INSTALL or INSTALL_BSD file
  depending on used operating system, it contains all needed information
- for the installing process. Users of version 1.0 should see the UPGRADE
- file first.
+ for the installing process. Instructions for upgrading from a previous
+ version are included in the UPGRADE file.
 
 
 Available options and documentation
@@ -49,23 +49,6 @@ Usage tips
  the purpose and usage of each setting is. More detailed descriptions
  about each setting and suggested usage can be found from the vnstat.conf
  man page.
-
- Note that by default vnStat will use dd.mm.yy format in timestamps.
- For example this can be changed from the config file by locating lines
-
-DayFormat    "%d.%m."
-MonthFormat  "%b '%y"
-TopFormat    "%d.%m.%y"
-
- and replacing the parameters:
-
-DayFormat    "%m/%d"
-MonthFormat  "%b '%y"
-TopFormat    "%%m/%d/%y"
-
- Some of these field have space limitations and giving too long parameters
- might affect the readability of the output. Changing date formats won't
- affect the database(s) in any way.
 
 
 Contacting the author

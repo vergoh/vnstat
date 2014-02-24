@@ -21,6 +21,7 @@ vnStat - Copyright (c) 2002-09 Teemu Toivola <tst@iki.fi>
 #include "dbxml.h"
 #include "dbshow.h"
 #include "dbaccess.h"
+#include "dbmerge.h"
 #include "misc.h"
 #include "cfg.h"
 #include "vnstat.h"
@@ -28,9 +29,9 @@ vnStat - Copyright (c) 2002-09 Teemu Toivola <tst@iki.fi>
 int main(int argc, char *argv[]) {
 
 	int i;
-	int currentarg, update=0, query=1, newdb=0, reset=0, sync=0;
+	int currentarg, update=0, query=1, newdb=0, reset=0, sync=0, merged=0;
 	int active=-1, files=0, force=0, cleartop=0, rebuildtotal=0, traffic=0;
-	int livetraffic=0;
+	int livetraffic=0, defaultiface=1;
 	char interface[32], dirname[512], nick[32];
 	char definterface[32], cfgfile[512], *ifacelist;
 	time_t current;
@@ -66,7 +67,13 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	setlocale(LC_ALL, cfg.locale);
+	if (cfg.locale[0]!='-' && strlen(cfg.locale)>0) {
+		setlocale(LC_ALL, cfg.locale);
+	} else {
+		if (getenv("LC_ALL")) {
+			setlocale(LC_ALL, getenv("LC_ALL"));
+		}
+	}
 	strncpy(interface, "default", 32);
 	strncpy(definterface, cfg.iface, 32);
 	strncpy(nick, "none", 32);
@@ -102,6 +109,7 @@ int main(int argc, char *argv[]) {
 			printf("         -w, --weeks           show weeks\n");
 			printf("         -t, --top10           show top10\n");
 			printf("         -s, --short           use short output\n");
+			printf("         -ru, --rateunit       swap configured rate unit\n");
 			printf("         --dumpdb              show database in parseable format\n");
 			printf("         --xml                 show database in xml format\n");
 			
@@ -113,7 +121,9 @@ int main(int argc, char *argv[]) {
 			printf("         -tr, --traffic        calculate traffic\n");
 			printf("         -l,  --live           show transfer rate in real time\n");
 			printf("         --iflist              show list of available interfaces\n");
-			printf("         --config              select used config file\n");
+			printf("         --dbdir               select database directory\n");
+			printf("         --locale              set locale\n");
+			printf("         --config              select config file\n");
 			printf("         --showconfig          dump config file with current settings\n");
 			printf("         --testkernel          check if the kernel is broken\n");
 			printf("         --longhelp            display this help\n\n");
@@ -138,6 +148,7 @@ int main(int argc, char *argv[]) {
 			printf("         -?,  --help           short help\n");
 			printf("         -v,  --version        show version\n");
 			printf("         -tr, --traffic        calculate traffic\n");
+			printf("         -ru, --rateunit       swap configured rate unit\n");
 			printf("         -l,  --live           show transfer rate in real time\n\n");
 
 			printf("See also \"--longhelp\" for complete options list and \"man vnstat\".\n");
@@ -147,6 +158,7 @@ int main(int argc, char *argv[]) {
 		} else if ((strcmp(argv[currentarg],"-i")==0) || (strcmp(argv[currentarg],"--iface")==0)) {
 			if (currentarg+1<argc) {
 				strncpy(interface, argv[currentarg+1], 32);
+				defaultiface = 0;
 				if (debug)
 					printf("Used interface: %s\n", interface);
 				currentarg++;
@@ -156,7 +168,7 @@ int main(int argc, char *argv[]) {
 				return 1;
 			}
 		} else if (strcmp(argv[currentarg],"--config")==0) {
-			/* config has already been parsed earlier so not but to do here*/
+			/* config has already been parsed earlier so nothing to do here */
 			currentarg++;
 			continue;
 		} else if ((strcmp(argv[currentarg],"--nick"))==0) {
@@ -168,6 +180,28 @@ int main(int argc, char *argv[]) {
 				continue;
 			} else {
 				printf("Error: Nick for --nick missing.\n");
+				return 1;
+			}
+		} else if ((strcmp(argv[currentarg],"--dbdir"))==0) {
+			if (currentarg+1<argc) {
+				strncpy(dirname, argv[currentarg+1], 512);
+				if (debug)
+					printf("DatabaseDir: \"%s\"\n", dirname);
+				currentarg++;
+				continue;
+			} else {
+				printf("Error: Directory for --dbdir missing.\n");
+				return 1;
+			}
+		} else if ((strcmp(argv[currentarg],"--locale"))==0) {
+			if (currentarg+1<argc) {
+				setlocale(LC_ALL, argv[currentarg+1]);
+				if (debug)
+					printf("Locale: \"%s\"\n", argv[currentarg+1]);
+				currentarg++;
+				continue;
+			} else {
+				printf("Error: Locale for --locale missing.\n");
 				return 1;
 			}
 		} else if ((strcmp(argv[currentarg],"-u")==0) || (strcmp(argv[currentarg],"--update")==0)) {
@@ -195,6 +229,8 @@ int main(int argc, char *argv[]) {
 			cfg.qmode=4;
 		} else if (strcmp(argv[currentarg],"--xml")==0) {
 			cfg.qmode=8;
+		} else if ((strcmp(argv[currentarg],"-ru")==0) || (strcmp(argv[currentarg],"--rateunit"))==0) {
+			cfg.rateunit=!cfg.rateunit;
 		} else if (strcmp(argv[currentarg],"--enable")==0) {
 			active=1;
 			query=0;
@@ -274,14 +310,27 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
+	/* set used interface if none specified and make sure it's null terminated */
+	if (defaultiface) {
+		strncpy(interface, definterface, 32);
+	}
+	interface[31]='\0';
+
+	/* db merge */
+	if (query && strstr(interface, "+")) {
+		if (mergedb(interface, dirname)) {
+			files = merged = 1;
+		} else {
+			return 1;
+		}
+	}
+
 	/* counter reset */
 	if (reset) {
 		if (!spacecheck(dirname) && !force) {
 			printf("Error: Not enough free diskspace available.\n");
 			return 1;
 		}
-		if (strcmp(interface, "default")==0)
-			strncpy(interface, definterface, 32);
 		readdb(interface, dirname);
 		data.currx=0;
 		data.curtx=0;
@@ -296,8 +345,6 @@ int main(int argc, char *argv[]) {
 			printf("Error: Not enough free diskspace available.\n");
 			return 1;
 		}
-		if (strcmp(interface, "default")==0)
-			strncpy(interface, definterface, 32);
 		if (!synccounters(interface, dirname)) {
 			return 1;
 		}
@@ -311,8 +358,6 @@ int main(int argc, char *argv[]) {
 			printf("Error: Not enough free diskspace available.\n");
 			return 1;
 		}
-		if (strcmp(interface, "default")==0)
-			strncpy(interface, definterface, 32);
 		if (force) {
 			readdb(interface, dirname);
 
@@ -327,7 +372,7 @@ int main(int argc, char *argv[]) {
 			query=0;
 		} else {
 			printf("Warning:\nThe current option would clear the top10 for \"%s\".\n", interface);
-			printf("Use --force to override this message.\n");
+			printf("Use --force in order to really do that.\n");
 			return 1;
 		}
 	}
@@ -338,8 +383,6 @@ int main(int argc, char *argv[]) {
 			printf("Error: Not enough free diskspace available.\n");
 			return 1;
 		}
-		if (strcmp(interface, "default")==0)
-			strncpy(interface, definterface, 32);
 		if (force) {
 			readdb(interface, dirname);
 
@@ -356,7 +399,7 @@ int main(int argc, char *argv[]) {
 			query=0;
 		} else {
 			printf("Warning:\nThe current option would rebuild total tranfers for \"%s\".\n", interface);
-			printf("Use --force to override this message.\n");
+			printf("Use --force in order to really do that.\n");
 			return 1;
 		}
 	}
@@ -367,8 +410,6 @@ int main(int argc, char *argv[]) {
 			printf("Error: Not enough free diskspace available.\n");
 			return 1;
 		}
-		if (strcmp(interface, "default")==0)
-			strncpy(interface, definterface, 32);
 		newdb=readdb(interface, dirname);
 		if (!data.active && !newdb) {
 			data.active=1;
@@ -383,8 +424,6 @@ int main(int argc, char *argv[]) {
 			printf("Error: Not enough free diskspace available.\n");
 			return 1;
 		}
-		if (strcmp(interface, "default")==0)
-			strncpy(interface, definterface, 32);
 		newdb=readdb(interface, dirname);
 		if (data.active && !newdb) {
 			data.active=0;
@@ -406,7 +445,7 @@ int main(int argc, char *argv[]) {
 		}
 		
 		/* update every file if -i isn't specified */
-		if (strcmp(interface, "default")==0) {
+		if (defaultiface) {
 			
 			dir=opendir(dirname);
 
@@ -457,14 +496,11 @@ int main(int argc, char *argv[]) {
 				update=0;
 			}
 			
-			/* reset to default */
-			strncpy(interface, "default", 32);
-		
 		/* update only selected file */
 		} else {
 			newdb=readdb(interface, dirname);
 			if (data.active) {
-				if (!getifinfo(data.interface)) {
+				if (!getifinfo(data.interface) && !force) {
 					getiflist(&ifacelist);
 					printf("Error: Interface \"%s\" couldn't be found.\n Only available interfaces can be added for monitoring.\n", data.interface);
 					printf("\n The following interfaces are currently available:\n    %s\n", ifacelist);
@@ -501,7 +537,7 @@ int main(int argc, char *argv[]) {
 	if (query) {
 	
 		/* show all interfaces if -i isn't specified */
-		if (strcmp(interface, "default")==0) {
+		if (defaultiface) {
 			
 			if (files==0) {
 				/* printf("No database found.\n"); */
@@ -536,10 +572,12 @@ int main(int argc, char *argv[]) {
 				
 			/* show in qmode if there's only one file or qmode!=0 */
 			} else {
-				newdb=readdb(definterface, dirname);
+				if (!merged) {
+					newdb=readdb(definterface, dirname);
+				}
 				if (!newdb) {
 					if (cfg.qmode==5)
-						printf("\n                     rx      /     tx      /    total    /  estimated\n");
+						printf("\n                      rx      /      tx      /     total    /   estimated\n");
 					if (cfg.qmode!=8) {
 						showdb(cfg.qmode);
 					} else {
@@ -552,7 +590,9 @@ int main(int argc, char *argv[]) {
 		
 		/* show only specified file */
 		} else {
-			newdb=readdb(interface, dirname);
+			if (!merged) {
+				newdb=readdb(interface, dirname);
+			}
 			if (!newdb) {
 				if (cfg.qmode==5)
 					printf("\n                     rx      /     tx      /    total    /  estimated\n");
@@ -569,16 +609,11 @@ int main(int argc, char *argv[]) {
 	
 	/* calculate traffic */
 	if (traffic) {
-		if (strcmp(interface, "default")==0)
-			strncpy(interface, definterface, 32);
 		trafficmeter(interface, cfg.sampletime);
 	}
 
 	/* live traffic */
 	if (livetraffic) {
-		if (strcmp(interface, "default")==0)
-			strncpy(interface, definterface, 32);
-
 		livetrafficmeter(interface);
 	}
 	

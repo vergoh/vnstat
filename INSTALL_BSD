@@ -1,4 +1,4 @@
-(Updated 12.4.2009 for version 1.7)
+(Updated 1.8.2009 for version 1.8)
 
 
 Compiling the binaries
@@ -58,6 +58,7 @@ Installing as root
  based updating because it generated less disk access and is more accurate
  especially when monitoring interfaces that aren't always available. Select
  only one of these two:
+
 
  1) daemon based updating
  ::::::::::::::::::::::::

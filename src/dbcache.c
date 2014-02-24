@@ -3,7 +3,7 @@
 #include "dbaccess.h"
 #include "dbcache.h"
 
-int dataadd(char *iface)
+int dataadd(char *iface, int sync)
 {
 	datanode *p, *n;
 
@@ -30,7 +30,9 @@ int dataadd(char *iface)
 	n->next = dataptr;
 	dataptr = n;
 	strncpy(n->data.interface, iface, 32);
+	n->data.interface[31] = '\0';
 	n->filled = 0;
+	n->sync = sync;
 
 	if (debug) {
 		printf("cache: %s added\n", iface);
