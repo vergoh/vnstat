@@ -1,27 +1,25 @@
-CC = gcc
-CFLAGS = -O2
+vnstat:
+	+make -C src vnstat
 
-default: multiuser
-
-singleuser: vnstat.c
-	@echo "Compiling singleuser version..."
-	$(CC) $(CFLAGS) -DMULTIUSER=0 vnstat.c -o vnstat
-
-multiuser: vnstat.c
-	@echo "Compiling multiuser version..."
-	$(CC) $(CFLAGS) -DMULTIUSER=1 vnstat.c -o vnstat
+single:
+	+make -C src single
+clean:
+	make -C src clean
 
 install:
 	@echo "Installing vnStat..."
-	mkdir /var/spool/vnstat
-	install -m 755 vnstat /usr/local/bin
+	mkdir -p /var/spool/vnstat
+	install -m 755 src/vnstat /usr/local/bin
 	install -m 644 cron/vnstat /etc/cron.d
 
 uninstall:
 	@echo "Uninstalling vnStat..."
+	@echo
+	@echo "Note: this will remove the database directory"
+	@echo "including any database located there"
+	@echo
+	@echo "Press CTRL-C to abort within 10 sec."
+	@sleep 10
 	rm -fr /var/spool/vnstat
 	rm -f /usr/local/bin/vnstat
 	rm -f /etc/cron.d/vnstat
-
-clean:
-	rm -f *.o *~ core *.i vnstat

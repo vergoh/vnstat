@@ -1,0 +1,31 @@
+(Updated 13.7.2003 based on version 1.1)
+
+This file will try to explain how vnStat is supposed to be upgraded 
+from a previous version. In this case the upgrade for everyone should
+be 1.0 -> 1.1. Please read the instructions once before executing step
+by step.
+
+What to do before installing?
+:::::::::::::::::::::::::::::
+
+ Make a backup of your current database. For the old multiuser install that
+ would be /var/spool/vnstat/db and for singleuser it's ~/.vnstatdb
+ Copy that file to some other directory that isn't in any relation with
+ vnStat. All this is only for backup so the file can be removed once
+ 1.1 has been installed and working.
+
+ The next thing is to rename that database according to the interface it's
+ monitoring. Here's an example if the interface would be eth0.
+
+     mv /var/spool/vnstat/db /var/spool/vnstat/eth0
+
+ If there are multiple databases that where used with the -f parameter then
+ repeat that procedure for each of of them. In a similar way those using
+ the singleuser version would first make a directory labelled '~/.vnstat'
+ and move the old database there.
+
+     mv ~/.vnstatdb ~/.vnstat/eth0
+
+ Now your all set to continue the install process like the INSTALL file
+ tells. Remember that there's no need to uninstall version 1.0 before
+ installing 1.1.

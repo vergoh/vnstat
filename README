@@ -1,41 +1,119 @@
-Updated 23.9.2002 based on versio 1.00.
+(Updated 13.7.2003 based on version 1.1)
+
+What is vnStat
+::::::::::::::
+
+ In short, vnStat is a console-based network traffic monitor that uses the
+ /proc -filesystem to get the needed information. This means that vnStat wont 
+ actually be sniffing any traffic. See the webpage for few 'screenshots'.
 
 
-Because vnStat is quite simple to use and the description is already
-on the webpage I wont repeat it here.
+Getting started
+:::::::::::::::
 
-How to install:
-
- vnStat can be installed either to be used only with a single user or by
- every users (or some limited group) of the system. Installing vnStat in
- multiuser mode is probably what most will do:
-
-      (log in as root)
-      make
-      make install
-
- and after that vnStat is installed and ready to be configured. Still logged
- as root run 'vnstat -u -i eth0' (replace eth0 with the interface you'd like
- to use). Now just wait for 10 min. (and enough traffic) and you should get
- some output by running 'vnstat'.
+ First you should install vnStat. See the INSTALL file, it contains all needed
+ information needed in the installing process. Users of version 1.0 should
+ see the UPGRADE file first.
 
 
- If for some reason vnStat needs to be installed in single user mode (you
- don't have root permissions?) then the procedure is the following:
+Available options
+:::::::::::::::::
 
-      make singleuser
+ The idea of this section is to explain to use of options that vnStat provides.
+ Few simple options aren't listed. A complete list is available with 
+ 'vnstat -h'.
 
- and copy the vnstat binary to some directory included in your $PATH,
- something like ~/bin/ might work. After that run 'vnstat -u -i eth0'
- (replace eth0...) and make a crontab entry for 'vnstat -u' that will
- run it every 5 min. It might look something like this:
+-u, --update
 
-      0-55/5 * * * * ~/bin/vnstat -u
+ vnStat will try to update the database whenever this option is specified.
+ Use with -i to update a single interface or create a new database. Otherwise
+ all enabled databases will be updated.
 
- Again wait for some traffic to logged and should output should be shown
- with 'vnstat'.
+-r, --reset
 
-Contacting the author:
+ This will reset the internal counters in the database for the selected
+ interface. Use this if the interface goes down and back up, otherwise
+ that interface will get some extra traffic to its database.
+
+--enable        enable interface
+--disable       disable interface
+
+ These two are probably useful especially for ppp users. If the interface
+ goes down it should be disabled in order to avoid errors. Add something
+ like 'vnstat -r --disable -i ppp0' to the script that's executed when
+ the interface goes down and 'vnstat --enable -i ppp0' to the up script.
+ Locations of those scripts most likely vary between distributions.
+
+--nick
+
+ It's possible to give a nickname for each interface in order to make
+ identifying easier. -u is required with -nick. Displaying of the nick
+ can be disabled by changing the nick to be the same as the name of the
+ interface.
+
+--rebuildtotal
+
+ This will reset the total traffic counters and recount those using recorded
+ months.
+
+--dumpdb
+
+ Instead of showing the database with a formated output, this output will
+ dump the whole database in a format that should be easy to parse with most
+ script languages. Use this for example with php or perl to make a custom
+ webpage.
+
+-D, --debug
+
+ Some debug output is included within vnStat and that output can be activated
+ with this option. The output is somewhat self explaining and should give some
+ clues what vnStat is doing.
+
+--testkernel
+
+ For some reason, there's few kernels that don't keep the boot time correct.
+ This option will test if the btime stays always to same like it should or
+ if it's shifting. Only /proc/stat is accessed so there's no black magic
+ or strange tricks included.
+
+
+Usage tips
+::::::::::
+
+ vnStat has few settings that can be changed before compiling by editing
+ vnstat.h that's included in the src directory. There's comments included
+ so see the file with some plain text editor and recompile (and reinstall)
+ after any changes.
+
+ However, it's likely that someone will ask anyway how to change the date
+ format so here's a short howto about that. First go to the src directory
+ and open vnstat.h. Search lines 20-22, those should look like these:
+
+#define DFORMAT "%d.%m."
+#define MFORMAT "%b '%y"
+#define TFORMAT "%d.%m.%y"
+
+ In order to get the date format to look like what's used for example in
+ the US change those lines to:
+
+#define DFORMAT "%m/%d"
+#define MFORMAT "%b '%y"
+#define TFORMAT "%m/%d/%y"
+
+ and run 'make' (or 'make single') after that in that same src directory or
+ continue with the install procedure if you were wise enough to read this
+ file before installing. :)
+ 
+ Next, copy the binary over the old one
+
+   cp vnstat /usr/local/bin/vnstat
+
+ or some other path that you've used. Changing the date format wont affect
+ the database in any way.
+
+
+Contacting the author
+:::::::::::::::::::::
 
  email:    Teemu Toivola <tst@iki.fi>
  irc:      Vergo (IRCNet)

@@ -1,2 +1,92 @@
+(Updated 13.7.2003 based on version 1.1)
 
-see the README
+Installing vnStat
+:::::::::::::::::
+
+ vnStat supports two different types of installing: 'root' and 'singleuser'.
+ The difference is that in 'root' ('multiuser' in version 1.0) every user
+ having required rights to run the vnStat binary can access stats but don't
+ need to worry about updating related things. On the other hand, 'singleuser'
+ makes it possible to install vnStat even for users who don't have access
+ to the root account.
+
+ So which type should be chosen? If you have access to the root account then
+ 'root' is the right selection. Otherwise 'singleuser' is the only option.
+
+ Those upgrading from version 1.0 should read the UPGRADE file before
+ proceeding.
+
+
+'root' install
+::::::::::::::
+
+ First login as root and run the following two commands.
+
+     make
+     make install
+
+ If there was no errors, vnStat should now be installed (warnings aren't
+ aren't considered as errors). During version 1.0 it became clear that
+ some kernels are broken and don't provide to correct boot time for the
+ system. vnStat requires this information so there's a test to see if
+ the kernel if working right.
+
+     vnstat --testkernel
+
+ The only way to fix a faulty kernel (afaik) is to compile/install a newer
+ one. Next every interface that should be monitored needs to be introduced
+ to vnStat. Replace eth0 if needed.
+
+     vnstat -u -i eth0
+
+ Repeat that for every other interface you wish to use. After that wait
+ for about 1 MB of network traffic (and 5 min).
+
+     vnstat
+
+ Now you should get some stats about your network usage.
+
+
+'singleuser' install
+::::::::::::::::::::
+
+ This install method is a little bit more complicated but shouldn't be
+ impossible. :) First compile the binary.
+
+     make single
+
+ If there was no errors, copy src/vnstat to some directory included
+ in your $PATH (~/bin/ is an example)  and make the database directory.
+
+     cp src/vnstat ~/bin/
+     mkdir ~/.vnstat
+
+ During version 1.0 it became clear that some kernels are broken and don't
+ provide to correct boot time for the system. vnStat requires this information
+ so there's a test to see if the kernel if working right.
+
+     vnstat --testkernel
+
+ If this gives 'command not found' then check your $PATH. The only way to fix
+ a faulty kernel (afaik) is to compile/install a newer one. This can't be done
+ without the root account so you'll have to solve this problem with your
+ sysadmin if the kernel is broken.
+
+ Next every interface that should be monitored needs to be introduced
+ to vnStat. Replace eth0 if needed.
+
+     vnstat -u -i eth0
+
+ Repeat that for every other interface you wish to use. Now it's time to add
+ a crontab entry for vnStat. Do that by executing the command 'crontab -e'
+ and add the following line (without leading spaces, remember to change the
+ path):
+
+     0-55/5 * * * * ~/bin/vnstat -u
+
+ If you found yourself using a strange editor then 'man vi' should help.
+ After that wait for about 1 MB of network traffic (and 5 min).
+
+     vnstat
+
+ Now you should get some stats about your network usage.
