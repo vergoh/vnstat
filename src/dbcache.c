@@ -123,7 +123,7 @@ int cacheupdate(void)
 	}
 
 	if (debug) {
-		printf("cache: %s added and updated (%d)\n", p->data.interface, p->filled);
+		printf("cache: %s added and updated (%d)\n", n->data.interface, n->filled);
 	}
 
 	return n->filled;
@@ -268,6 +268,7 @@ uint32_t dbcheck(uint32_t dbhash, int *forcesave)
 
 	/* get list of currently visible interfaces */
 	if (getiflist(&ifacelist)==0) {
+		free(ifacelist);
 		return 0;
 	}
 
