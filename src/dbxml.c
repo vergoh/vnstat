@@ -27,7 +27,7 @@ void showxml(void)
 			xmldate(&data.day[i].date, 1);
 			printf("<rx>%"PRIu64"</rx><tx>%"PRIu64"</tx></day>\n", (data.day[i].rx*1024)+data.day[i].rxk, (data.day[i].tx*1024)+data.day[i].txk);
 		}
-	}	
+	}
 	printf("   </days>\n");
 
 	printf("   <months>\n");
@@ -37,7 +37,7 @@ void showxml(void)
 			xmldate(&data.month[i].month, 3);
 			printf("<rx>%"PRIu64"</rx><tx>%"PRIu64"</tx></month>\n", (data.month[i].rx*1024)+data.month[i].rxk, (data.month[i].tx*1024)+data.month[i].txk);
 		}
-	}	
+	}
 	printf("   </months>\n");
 
 	printf("   <tops>\n");
@@ -47,7 +47,7 @@ void showxml(void)
 			xmldate(&data.top10[i].date, 2);
 			printf("<rx>%"PRIu64"</rx><tx>%"PRIu64"</tx></top>\n", (data.top10[i].rx*1024)+data.top10[i].rxk, (data.top10[i].tx*1024)+data.top10[i].txk);
 		}
-	}	
+	}
 	printf("   </tops>\n");
 
 	printf("   <hours>\n");
@@ -57,7 +57,7 @@ void showxml(void)
 			xmldate(&data.hour[i].date, 1);
 			printf("<rx>%"PRIu64"</rx><tx>%"PRIu64"</tx></hour>\n", data.hour[i].rx, data.hour[i].tx);
 		}
-	}	
+	}
 	printf("   </hours>\n");
 
 	printf("  </traffic>\n");
@@ -84,7 +84,7 @@ void xmldate(time_t *date, int type)
 		buffer = malloc(strlen(type2)+3);
 		strftime(buffer, strlen(type2)+3, type2, d);
 		printf("%s", buffer);
-		free(buffer);	
+		free(buffer);
 	} else if (type == 3) {
 		buffer = malloc(strlen(type3)+3);
 		strftime(buffer, strlen(type3)+3, type3, d);

@@ -91,7 +91,7 @@ int getiflist(char **ifacelist)
 			closedir(dp);
 			return 1;
 
-		}	
+		}
 	}
 
 #elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__FreeBSD_kernel__)
@@ -330,7 +330,7 @@ void parseifinfo(int newdb)
 	addtraffic(&data.day[0].rx, &data.day[0].rxk, rxchange, rxkchange);
 	addtraffic(&data.day[0].tx, &data.day[0].txk, txchange, txkchange);
 	addtraffic(&data.month[0].rx, &data.month[0].rxk, rxchange, rxkchange);
-	addtraffic(&data.month[0].tx, &data.month[0].txk, txchange, txkchange);	
+	addtraffic(&data.month[0].tx, &data.month[0].txk, txchange, txkchange);
 
 	/* fill some variables from current date & time */
 	d=localtime(&current);

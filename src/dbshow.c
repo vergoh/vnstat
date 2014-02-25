@@ -143,7 +143,7 @@ void showsummary(void)
 	printf(" | %s", getvalue(data.month[0].rx+data.month[0].tx, data.month[0].rxk+data.month[0].txk, 11, 1));
 	if (cfg.ostyle >= 2) {
 		printf(" | %s", getrate(data.month[0].rx+data.month[0].tx, data.month[0].rxk+data.month[0].txk, mosecs(), 14));
-	}	
+	}
 	printf("\n");
 
 	indent(5);
@@ -188,7 +188,7 @@ void showsummary(void)
 	d=localtime(&data.lastupdated);
 	if ( data.day[0].rx==0 || data.day[0].tx==0 || (d->tm_hour*60+d->tm_min)==0 ) {
 		e_rx=e_tx=0;
-	} else {	
+	} else {
 		e_rx=((data.day[0].rx)/(float)(d->tm_hour*60+d->tm_min))*1440;
 		e_tx=((data.day[0].tx)/(float)(d->tm_hour*60+d->tm_min))*1440;
 	}
@@ -466,7 +466,7 @@ void showdays(void)
 		d=localtime(&data.lastupdated);
 		if ( data.day[0].rx==0 || data.day[0].tx==0 || (d->tm_hour*60+d->tm_min)==0 ) {
 			e_rx=e_tx=0;
-		} else {				
+		} else {
 			e_rx=((data.day[0].rx)/(float)(d->tm_hour*60+d->tm_min))*1440;
 			e_tx=((data.day[0].tx)/(float)(d->tm_hour*60+d->tm_min))*1440;
 		}
@@ -514,7 +514,7 @@ void showmonths(void)
 		if (cfg.ostyle != 0) {
 			printf("-------------------------+-------------+---------------------------------------\n");
 		} else {
-			printf("-------------------------+-------------+------------\n");		
+			printf("-------------------------+-------------+------------\n");
 		}
 	}
 
@@ -529,7 +529,7 @@ void showmonths(void)
 			if (t_rxk>=1024) {
 				t_rx+=t_rxk/1024;
 				t_rxk-=(t_rxk/1024)*1024;
-			}					
+			}
 
 			t_rx=(t_rx*1024)+t_rxk;
 
@@ -576,7 +576,7 @@ void showmonths(void)
 		} else {
 			printf("-------------------------+-------------+------------\n");
 		}
-	}			
+	}
 	if (used!=0) {
 		/* use database update time for estimates */
 		d=localtime(&data.month[0].month);
@@ -712,7 +712,7 @@ void showweeks(void)
 			printf(" %s (%s)  /  weekly\n\n", data.nick, data.interface);
 		else
 			printf(" %s (%s) [disabled]  /  weekly\n\n", data.nick, data.interface);
-	}	
+	}
 
 	indent(3);
 	if (cfg.ostyle >= 2) {
@@ -946,7 +946,7 @@ void showhours(void)
 				matrix[i][j]=' ';
 			}
 		}
-	} 	
+	}
 
 	/* show matrix (yes, the last line isn't shown) */
 	for (i=0;i<23;i++) {
@@ -954,7 +954,7 @@ void showhours(void)
 			printf("%c",matrix[i][j]);
 		}
 		printf("\n");
-	} 	
+	}
 
 }
 
@@ -1040,7 +1040,7 @@ void dumpdb(void)
 
 	for (i=0;i<=23;i++) {
 		printf("h;%d;%u;%"PRIu64";%"PRIu64"\n", i, (unsigned int)data.hour[i].date, data.hour[i].rx, data.hour[i].tx);
-	}			
+	}
 }
 
 void showbar(uint64_t rx, int rxk, uint64_t tx, int txk, uint64_t max, int len)
@@ -1085,7 +1085,7 @@ void showbar(uint64_t rx, int rxk, uint64_t tx, int txk, uint64_t max, int len)
 			}
 			for (i=0;i<l;i++) {
 				printf("%c", cfg.txchar[0]);
-			}		
+			}
 		}
 
 	}

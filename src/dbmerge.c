@@ -44,7 +44,7 @@ int mergedb(char iface[], char dirname[])
 
 	/* replace active data with merged */
 	if (memcpy(&data, &mergedata, sizeof(data)) != NULL) {
-		return 1;	
+		return 1;
 	} else {
 		return 0;
 	}

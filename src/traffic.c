@@ -44,7 +44,7 @@ void trafficmeter(char iface[], int sampletime)
 	fflush(stdout);
 	if ((sampletime/3)*3!=sampletime) {
 		sleep(sampletime-((sampletime/3)*3));
-	}	
+	}
 
 	len=strlen(buffer)+3;
 
@@ -150,7 +150,7 @@ void livetrafficmeter(char iface[32], int mode)
 		rxc = rintf(rx/(float)1024);
 		txc = rintf(tx/(float)1024);
 		rxpc = rxp/LIVETIME;
-		txpc = txp/LIVETIME;		
+		txpc = txp/LIVETIME;
 
 		/* update min & max */
 		if ((rxmin==-1.0) || (rxmin>rxc)) {

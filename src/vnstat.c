@@ -1,5 +1,5 @@
 /*
-vnStat - Copyright (c) 2002-11 Teemu Toivola <tst@iki.fi>
+vnStat - Copyright (c) 2002-2014 Teemu Toivola <tst@iki.fi>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -147,7 +147,7 @@ int main(int argc, char *argv[]) {
 			printf("         -w,  --weeks          show weeks\n");
 			printf("         -t,  --top10          show top10\n");
 			printf("         -s,  --short          use short output\n");
-			printf("         -u,  --update         update database\n");			
+			printf("         -u,  --update         update database\n");
 			printf("         -i,  --iface          select interface (default: %s)\n", definterface);
 			printf("         -?,  --help           short help\n");
 			printf("         -v,  --version        show version\n");
@@ -253,7 +253,7 @@ int main(int argc, char *argv[]) {
 		} else if ((strcmp(argv[currentarg],"-s")==0) || (strcmp(argv[currentarg],"--short")==0)) {
 			cfg.qmode=5;
 		} else if ((strcmp(argv[currentarg],"-w")==0) || (strcmp(argv[currentarg],"--weeks")==0)) {
-			cfg.qmode=6;			
+			cfg.qmode=6;
 		} else if ((strcmp(argv[currentarg],"-h")==0) || (strcmp(argv[currentarg],"--hours")==0)) {
 			cfg.qmode=7;
 		} else if (strcmp(argv[currentarg],"--dumpdb")==0) {
@@ -326,7 +326,7 @@ int main(int argc, char *argv[]) {
 			return i;
 		} else if (strcmp(argv[currentarg],"--showconfig")==0) {
 			printcfgfile();
-			return 0;			
+			return 0;
 		} else if (strcmp(argv[currentarg],"--delete")==0) {
 			delete=1;
 			query=0;
@@ -334,7 +334,7 @@ int main(int argc, char *argv[]) {
 			getiflist(&ifacelist);
 			printf("Available interfaces: %s\n", ifacelist);
 			free(ifacelist);
-			return 0;	
+			return 0;
 		} else if ((strcmp(argv[currentarg],"-v")==0) || (strcmp(argv[currentarg],"--version")==0)) {
 			printf("vnStat %s by Teemu Toivola <tst at iki dot fi>\n", VNSTATVERSION);
 			return 0;
@@ -343,7 +343,7 @@ int main(int argc, char *argv[]) {
 			query=0;
 		} else if (strcmp(argv[currentarg],"--sync")==0) {
 			sync=1;
-			query=0;			
+			query=0;
 		} else {
 			printf("Unknown parameter \"%s\". Use --help for help.\n",argv[currentarg]);
 			return 1;
@@ -441,13 +441,13 @@ int main(int argc, char *argv[]) {
 				}
 			} else {
 					printf("Error: No database found for interface \"%s\".\n", interface);
-					return 1;				
+					return 1;
 			}
 		} else {
 			printf("Warning:\nThe current option would delete the database for \"%s\".\n", interface);
 			printf("Use --force in order to really do that.\n");
 			return 1;
-		}		
+		}
 	}
 
 	/* clear top10 */
@@ -530,7 +530,7 @@ int main(int argc, char *argv[]) {
 				printf("Interface \"%s\" disabled.\n", data.interface);
 		} else if (!newdb) {
 			printf("Interface \"%s\" is already disabled.\n", data.interface);
-		}	
+		}
 	}
 
 	/* update */
@@ -584,7 +584,7 @@ int main(int argc, char *argv[]) {
 					} else {
 						if (debug)
 							printf("Disabled interface \"%s\" not updated.\n", data.interface);
-					}				
+					}
 				}
 			}
 

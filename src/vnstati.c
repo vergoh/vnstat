@@ -1,5 +1,5 @@
 /*
-vnStat image output - Copyright (c) 2007-11 Teemu Toivola <tst@iki.fi>
+vnStat image output - Copyright (c) 2007-2014 Teemu Toivola <tst@iki.fi>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
 			} else {
 				printf("Error: Filename for -o missing.\n");
 				return 1;
-			}			
+			}
 		} else if ((strcmp(argv[currentarg],"-c")==0) || (strcmp(argv[currentarg],"--cache"))==0) {
 			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
 				cache = atoi(argv[currentarg+1]);
@@ -170,7 +170,7 @@ int main(int argc, char *argv[])
 		} else if (strcmp(argv[currentarg],"--config")==0) {
 			/* config has already been parsed earlier so nothing to do here */
 			currentarg++;
-			continue;				
+			continue;
 		} else if ((strcmp(argv[currentarg],"-D")==0) || (strcmp(argv[currentarg],"--debug"))==0) {
 			debug = 1;
 		} else if ((strcmp(argv[currentarg],"-d")==0) || (strcmp(argv[currentarg],"--days"))==0) {

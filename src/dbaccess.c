@@ -217,7 +217,7 @@ int writedb(const char *iface, const char *dirname, int newdb)
 	if (!newdb && !backupdb(file, backup)) {
 		snprintf(errorstring, 512, "Unable create database backup \"%s\".", backup);
 		printe(PT_Error);
-		return 0;		
+		return 0;
 	}
 
 	/* make sure version stays correct */
@@ -350,7 +350,7 @@ int convertdb(FILE *db)
 				data12.day[i].rx=0;
 				data12.day[i].tx=0;
 				data12.day[i].used=0;
-			}			
+			}
 		}
 
 		/* months */
@@ -371,14 +371,14 @@ int convertdb(FILE *db)
 				data12.month[i].rx=0;
 				data12.month[i].tx=0;
 				data12.month[i].used=0;
-			}			
-		}		
+			}
+		}
 
 		/* top10 */
 		for (i=0; i<=9; i++) {
 			if (data10.top10[i].rx+data10.top10[i].tx>0) {
 				data12.top10[i].rx=data10.top10[i].rx;
-				data12.top10[i].tx=data10.top10[i].tx;				
+				data12.top10[i].tx=data10.top10[i].tx;
 
 				/* get day */
 				day=atoi(data10.top10[i].date+7);
@@ -460,7 +460,7 @@ int convertdb(FILE *db)
 			if (fread(&data12, sizeof(DATA12), 1, db)==0) {
 				snprintf(errorstring, 512, "Unable to convert corrupted database.");
 				printe(PT_Error);
-				return 0;			
+				return 0;
 			}
 		}
 
@@ -491,7 +491,7 @@ int convertdb(FILE *db)
 				data.day[i].rx=data.day[i].tx=0;
 				data.day[i].rxk=data.day[i].txk=0;
 				data.day[i].used=0;
-			}			
+			}
 		}
 
 		/* months */
@@ -506,7 +506,7 @@ int convertdb(FILE *db)
 				data.month[i].rx=data.month[i].tx=0;
 				data.month[i].rxk=data.month[i].txk=0;
 				data.month[i].used=0;
-			}			
+			}
 		}
 
 		/* top10 */
@@ -542,7 +542,7 @@ int convertdb(FILE *db)
 	} else if (data.version>DBVERSION) {
 		snprintf(errorstring, 512, "Unable to downgrade database from version \"%d\".", data.version);
 		printe(PT_Error);
-		return 0;	
+		return 0;
 	} else if (data.version!=DBVERSION) {
 		snprintf(errorstring, 512, "Unable to convert database version \"%d\".", data.version);
 		printe(PT_Error);
@@ -583,7 +583,7 @@ int lockdb(int fd, int dbwrite)
 					snprintf(errorstring, 512, "Locking database file for read failed for %d tries:\n%s (%d)", locktry, strerror(errno), errno);
 				}
 				printe(PT_Error);
-				return 0;				
+				return 0;
 			}
 
 			/* someone else has the lock */
@@ -615,7 +615,7 @@ int checkdb(const char *iface, const char *dirname)
 	snprintf(file, 512, "%s/%s", dirname, iface);
 
 	if (statvfs(file, &buf)==0) {
-		return 1; /* file exists */	
+		return 1; /* file exists */
 	} else {
 		return 0; /* no file or some other error */
 	}

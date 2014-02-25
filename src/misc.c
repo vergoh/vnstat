@@ -87,7 +87,7 @@ int spacecheck(char *path)
 		printf("bavail %lu\n", (unsigned long int)buf.f_bavail);
 		printf("ffree %lu\n", (unsigned long int)buf.f_ffree);
 		printf("%"PRIu64" free space left\n", free);
-	}	
+	}
 
 	/* the database is less than 3kB but let's require */
 	/* 1MB to be on the safe side, anyway, the filesystem should */
