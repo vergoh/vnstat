@@ -8,16 +8,22 @@ BIN_BSD = $(DESTDIR)/usr/local/bin
 SBIN_BSD = $(DESTDIR)/usr/local/sbin
 MAN_BSD = $(DESTDIR)/usr/local/man
 
+.PHONY: vnstat tests all clean install uninstall bsdinstall bsduninstall
+
 default: vnstat
 
 vnstat:
-	+make -C src
+	make -C src
+
+tests:
+	make -C tests
 
 all:
-	+make -C src all
+	make -C src all
 
 clean:
 	make -C src clean
+	make -C tests clean
 
 install:
 	@echo "Installing vnStat..."
