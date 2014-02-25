@@ -14,6 +14,7 @@ int readdb(const char *iface, const char *dirname)
 
 		/* lock file */
 		if (!lockdb(fileno(db), 0)) {
+			fclose(db);
 			return -1;
 		}
 
@@ -98,7 +99,7 @@ int readdb(const char *iface, const char *dirname)
 				return -1;
 			} else {
 				exit(EXIT_FAILURE);
-			}		
+			}
 		}
 
 		fclose(db);
@@ -226,6 +227,7 @@ int writedb(const char *iface, const char *dirname, int newdb)
 
 		/* lock file */
 		if (!lockdb(fileno(db), 1)) {
+			fclose(db);
 			return 0;
 		}
 
@@ -662,12 +664,12 @@ void cleanhours(void)
 	hour=d->tm_hour;
 	d=localtime(&data.hour[hour].date);
 	if (d->tm_mday!=day) {
-			data.hour[hour].rx=0;
-			data.hour[hour].tx=0;
-			if (debug) {
-				printf("db: Current hour %d (%u) cleaned.\n", hour, (unsigned int)data.hour[hour].date);
-			}
-			data.hour[hour].date=current;
+		data.hour[hour].rx=0;
+		data.hour[hour].tx=0;
+		if (debug) {
+			printf("db: Current hour %d (%u) cleaned.\n", hour, (unsigned int)data.hour[hour].date);
+		}
+		data.hour[hour].date=current;
 	}
 }
 
