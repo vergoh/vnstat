@@ -485,7 +485,7 @@ int main(int argc, char *argv[]) {
 			readdb(interface, dirname);
 
 			data.totalrx=data.totaltx=data.totalrxk=data.totaltxk=0;
-			for (i=0; i<=29; i++) {
+			for (i=0; i<=11; i++) {
 				if (data.month[i].used) {
 					addtraffic(&data.totalrx, &data.totalrxk, data.month[i].rx, data.month[i].rxk);
 					addtraffic(&data.totaltx, &data.totaltxk, data.month[i].tx, data.month[i].txk);
