@@ -40,7 +40,7 @@ int printe(PrintType type)
 			default:
 				printf("%d: %s\n", type, errorstring);
 				break;
-		}	
+		}
 
 	}
 
@@ -53,8 +53,14 @@ int logprint(PrintType type)
 	time_t current;
 	FILE *logfile;
 
+	buffer[0] = '\0';
+
 	/* logfile */
 	if (cfg.uselogging==1) {
+
+		if (type == PT_Multiline) {
+			return 0;
+		}
 
 		if ((logfile = fopen(cfg.logfile, "a")) == NULL) {
 			return 0;
@@ -72,8 +78,6 @@ int logprint(PrintType type)
 				break;
 			case PT_Config:
 				snprintf(buffer, 512, "[%s] Config: %s\n", timestamp, errorstring);
-				break;
-			case PT_Multiline:
 				break;
 			case PT_ShortMultiline:
 				snprintf(buffer, 512, "[%s] %s\n", timestamp, errorstring);
