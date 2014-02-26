@@ -1,0 +1,12 @@
+*.o
+*.gcno
+*.gcda
+*.lcov
+*.gcov
+src/vnstat
+src/vnstatd
+src/vnstati
+tests/*.log
+tests/*.xml
+tests/coverage
+tests/vnstat_tests
