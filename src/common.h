@@ -30,6 +30,13 @@
 #include <ifaddrs.h>
 #endif
 
+/* OpenBSD and NetBSD don't support the ' character (decimal conversion) in printf formatting */
+#if !defined(__OpenBSD__) && !defined(__NetBSD__)
+#define DECCONV "'"
+#else
+#define DECCONV
+#endif
+
 /*
 
 Note! These are only the default values for settings

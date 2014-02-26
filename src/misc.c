@@ -228,35 +228,19 @@ char *getvalue(uint64_t mb, uint64_t kb, int len, int type)
 	if ( (type==2) && (kB==0) ){
 		snprintf(buffer, 64, "%*s    ", len-cfg.unit, "--");
 	} else {
-#if !defined(__OpenBSD__) && !defined(__NetBSD__)
 		/* try to figure out what unit to use */
 		if (kB>=1048576000) { /* 1024*1024*1000 - value >=1000 GiB -> show in TiB */
-			snprintf(buffer, 64, "%'*.*f %s", len, declen, kB/(float)1073741824, getunit(4)); /* 1024*1024*1024 */
+			snprintf(buffer, 64, "%"DECCONV"*.*f %s", len, declen, kB/(float)1073741824, getunit(4)); /* 1024*1024*1024 */
 		} else if (kB>=1024000) { /* 1024*1000 - value >=1000 MiB -> show in GiB */
-			snprintf(buffer, 64, "%'*.*f %s", len, declen, kB/(float)1048576, getunit(3)); /* 1024*1024 */
+			snprintf(buffer, 64, "%"DECCONV"*.*f %s", len, declen, kB/(float)1048576, getunit(3)); /* 1024*1024 */
 		} else if (kB>=1000) {
 			if (type==2) {
 				declen=0;
 			}
-			snprintf(buffer, 64, "%'*.*f %s", len, declen, kB/(float)1024, getunit(2));
+			snprintf(buffer, 64, "%"DECCONV"*.*f %s", len, declen, kB/(float)1024, getunit(2));
 		} else {
-			snprintf(buffer, 64, "%'*"PRIu64" %s", len, kB, getunit(1));
+			snprintf(buffer, 64, "%"DECCONV"*"PRIu64" %s", len, kB, getunit(1));
 		}
-#else
-		/* try to figure out what unit to use */
-		if (kB>=1048576000) { /* 1024*1024*1000 - value >=1000 GiB -> show in TiB */
-			snprintf(buffer, 64, "%*.*f %s", len, declen, kB/(float)1073741824, getunit(4)); /* 1024*1024*1024 */
-		} else if (kB>=1024000) { /* 1024*1000 - value >=1000 MiB -> show in GiB */
-			snprintf(buffer, 64, "%*.*f %s", len, declen, kB/(float)1048576, getunit(3)); /* 1024*1024 */
-		} else if (kB>=1000) {
-			if (type==2) {
-				declen=0;
-			}
-			snprintf(buffer, 64, "%*.*f %s", len, declen, kB/(float)1024, getunit(2));
-		} else {
-			snprintf(buffer, 64, "%*"PRIu64" %s", len, kB, getunit(1));
-		}
-#endif
 	}
 
 	return buffer;
@@ -309,29 +293,16 @@ char *getrate(uint64_t mb, uint64_t kb, uint32_t interval, int len)
 		len = 1;
 	}
 
-#if !defined(__OpenBSD__) && !defined(__NetBSD__)
 	/* try to figure out what unit to use */
 	if (rate>=limit[2]) {
-		snprintf(buffer, 64, "%'*.2f %s", len, rate/(float)limit[2], getrateunit(unit, 4));
+		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)limit[2], getrateunit(unit, 4));
 	} else if (rate>=limit[1]) {
-		snprintf(buffer, 64, "%'*.2f %s", len, rate/(float)limit[1], getrateunit(unit, 3));
+		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)limit[1], getrateunit(unit, 3));
 	} else if (rate>=limit[0]) {
-		snprintf(buffer, 64, "%'*.2f %s", len, rate/(float)limit[0], getrateunit(unit, 2));
+		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)limit[0], getrateunit(unit, 2));
 	} else {
-		snprintf(buffer, 64, "%'*.*f %s", len, declen, rate, getrateunit(unit, 1));
+		snprintf(buffer, 64, "%"DECCONV"*.*f %s", len, declen, rate, getrateunit(unit, 1));
 	}
-#else
-	/* try to figure out what unit to use */
-	if (rate>=limit[2]) {
-		snprintf(buffer, 64, "%*.2f %s", len, rate/(float)limit[2], getrateunit(unit, 4));
-	} else if (rate>=limit[1]) {
-		snprintf(buffer, 64, "%*.2f %s", len, rate/(float)limit[1], getrateunit(unit, 3));
-	} else if (rate>=limit[0]) {
-		snprintf(buffer, 64, "%*.2f %s", len, rate/(float)limit[0], getrateunit(unit, 2));
-	} else {
-		snprintf(buffer, 64, "%*.*f %s", len, declen, rate, getrateunit(unit, 1));
-	}
-#endif
 
 	return buffer;
 }

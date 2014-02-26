@@ -932,11 +932,7 @@ void showhours(void)
 	/* hours and traffic */
 	for (i=0;i<=7;i++) {
 		s=tmax+i+1;
-#if !defined(__OpenBSD__)
-		snprintf(matrix[15+i], 81, "%02d %'10"PRIu64" %'10"PRIu64"    %02d %'10"PRIu64" %'10"PRIu64"    %02d %'10"PRIu64" %'10"PRIu64"",s%24, data.hour[s%24].rx, data.hour[s%24].tx, (s+8)%24, data.hour[(s+8)%24].rx, data.hour[(s+8)%24].tx, (s+16)%24, data.hour[(s+16)%24].rx, data.hour[(s+16)%24].tx);
-#else
-		snprintf(matrix[15+i], 81, "%02d %10"PRIu64" %10"PRIu64"    %02d %10"PRIu64" %10"PRIu64"    %02d %10"PRIu64" %10"PRIu64"",s%24, data.hour[s%24].rx, data.hour[s%24].tx, (s+8)%24, data.hour[(s+8)%24].rx, data.hour[(s+8)%24].tx, (s+16)%24, data.hour[(s+16)%24].rx, data.hour[(s+16)%24].tx);
-#endif
+		snprintf(matrix[15+i], 81, "%02d %"DECCONV"10"PRIu64" %"DECCONV"10"PRIu64"    %02d %"DECCONV"10"PRIu64" %"DECCONV"10"PRIu64"    %02d %"DECCONV"10"PRIu64" %"DECCONV"10"PRIu64"",s%24, data.hour[s%24].rx, data.hour[s%24].tx, (s+8)%24, data.hour[(s+8)%24].rx, data.hour[(s+8)%24].tx, (s+16)%24, data.hour[(s+16)%24].rx, data.hour[(s+16)%24].tx);
 	}
 
 	/* clean \0 */
