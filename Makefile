@@ -8,7 +8,7 @@ BIN_BSD = $(DESTDIR)/usr/local/bin
 SBIN_BSD = $(DESTDIR)/usr/local/sbin
 MAN_BSD = $(DESTDIR)/usr/local/man
 
-.PHONY: vnstat tests all clean install uninstall bsdinstall bsduninstall
+.PHONY: vnstat tests all clean debug install uninstall bsdinstall bsduninstall
 
 default: vnstat
 
@@ -24,6 +24,9 @@ all:
 clean:
 	make -C src clean
 	make -C tests clean
+
+debug:
+	make CFLAGS='-Wall -Wextra -g' -C src all
 
 install:
 	@echo "Installing vnStat..."
