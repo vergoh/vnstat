@@ -28,7 +28,7 @@ int kerneltest(void)
 		}
 
 		printf("=");
-		fflush(stdout);	
+		fflush(stdout);
 	}
 
 	printf("] done.\n\n");
@@ -251,7 +251,6 @@ char *getrate(uint64_t mb, uint64_t kb, uint32_t interval, int len)
 	static char buffer[64];
 	int unit, declen = 2;
 	uint64_t kB;
-	uint32_t limit[3];
 	float rate;
 
 	if (interval==0) {
@@ -271,40 +270,43 @@ char *getrate(uint64_t mb, uint64_t kb, uint32_t interval, int len)
 
 	/* convert to proper unit */
 	if (cfg.rateunit) {
-		limit[0] = 1000;
-		limit[1] = 1000000;
-		limit[2] = 1000000000;
 		rate = (kB*8)/(float)interval;
 		unit = 2;
 		if (interval<5) {
 			declen = 0;
 		}
 	} else {
-		limit[0] = 1024;
-		limit[1] = 1024000;
-		limit[2] = 1048576000;
 		rate = kB/(float)interval;
 		unit = cfg.unit;
 	}
 
-	/* tune spacing according to unit */
-	len -= strlen(getrateunit(unit, 1)) + 1;
-	if (len<0) {
-		len = 1;
+	return getratestring(rate, len, declen, unit);
+}
+
+char *gettrafficrate(uint64_t bytes, uint32_t interval, int len)
+{
+	static char buffer[64];
+	int unit, declen = 2;
+	float rate;
+
+	if (interval==0) {
+		snprintf(buffer, 64, "%*s", len, "n/a");
+		return buffer;
 	}
 
-	/* try to figure out what unit to use */
-	if (rate>=limit[2]) {
-		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)limit[2], getrateunit(unit, 4));
-	} else if (rate>=limit[1]) {
-		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)limit[1], getrateunit(unit, 3));
-	} else if (rate>=limit[0]) {
-		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)limit[0], getrateunit(unit, 2));
+	/* convert to proper unit */
+	if (cfg.rateunit) {
+		rate = (bytes*8)/(float)(interval*1024);
+		unit = 2;
+		if (interval<5) {
+			declen = 0;
+		}
 	} else {
-		snprintf(buffer, 64, "%"DECCONV"*.*f %s", len, declen, rate, getrateunit(unit, 1));
+		rate = bytes/(float)(interval*1024);
+		unit = cfg.unit;
 	}
 
-	return buffer;
+	return getratestring(rate, len, declen, unit);
 }
 
 uint64_t getscale(uint64_t kb)
@@ -365,4 +367,41 @@ char *getrateunit(int unit, int index)
 	} else {
 		return bunit[(unit*UNITCOUNT)+index];
 	}
+}
+
+uint32_t getunitdivider(int unit, int index)
+{
+	uint32_t unitdiv[] = { 0, 0, 1024, 1048576, 1073741824,
+                              0, 1024, 1048576, 1073741824,
+                              0, 1000, 1000000, 1000000000 };
+
+	if (index>UNITCOUNT) {
+		return unitdiv[0];
+	} else {
+		return unitdiv[(unit*UNITCOUNT)+index];
+	}
+}
+
+char *getratestring(float rate, int len, int declen, int unit)
+{
+	static char buffer[64];
+
+	/* tune spacing according to unit */
+	len -= strlen(getrateunit(unit, 1)) + 1;
+	if (len<0) {
+		len = 1;
+	}
+
+	/* try to figure out what unit to use */
+	if (rate>=1000000000) {
+		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)getunitdivider(unit, 4), getrateunit(unit, 4));
+	} else if (rate>=1000000) {
+		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)getunitdivider(unit, 3), getrateunit(unit, 3));
+	} else if (rate>=1000) {
+		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)getunitdivider(unit, 2), getrateunit(unit, 2));
+	} else {
+		snprintf(buffer, 64, "%"DECCONV"*.*f %s", len, declen, rate, getrateunit(unit, 1));
+	}
+
+	return buffer;
 }
