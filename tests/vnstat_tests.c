@@ -3,6 +3,7 @@
 #include "database_tests.h"
 #include "config_tests.h"
 #include "ifinfo_tests.h"
+#include "misc_tests.h"
 
 void suppress_output(void)
 {
@@ -17,6 +18,7 @@ Suite *test_suite(void)
 	add_database_tests(s);
 	add_config_tests(s);
 	add_ifinfo_tests(s);
+	add_misc_tests(s);
 
 	return s;
 }
