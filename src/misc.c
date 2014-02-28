@@ -346,8 +346,7 @@ uint64_t getscale(uint64_t kb)
 char *getunit(int index)
 {
 	static char *unit[] = { "na", "KiB", "MiB", "GiB", "TiB",
-                                   "KB",  "MB",  "GB",  "TB",
-                                   "kB",  "MB",  "GB",  "TB" };
+                                   "KB",  "MB",  "GB",  "TB" };
 
 	if (index>UNITCOUNT) {
 		return unit[0];
