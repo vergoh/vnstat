@@ -384,6 +384,13 @@ uint32_t getunitdivider(int unit, int index)
 char *getratestring(float rate, int len, int declen, int unit)
 {
 	static char buffer[64];
+	uint32_t limit[3] = { 1000, 1024000, 1048576000 };
+
+	if (cfg.rateunit) {
+		limit[0] = 1000;
+		limit[1] = 1000000;
+		limit[2] = 1000000000;
+	}
 
 	/* tune spacing according to unit */
 	len -= strlen(getrateunit(unit, 1)) + 1;
@@ -392,11 +399,11 @@ char *getratestring(float rate, int len, int declen, int unit)
 	}
 
 	/* try to figure out what unit to use */
-	if (rate>=1000000000) {
+	if (rate>=limit[2]) {
 		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)getunitdivider(unit, 4), getrateunit(unit, 4));
-	} else if (rate>=1000000) {
+	} else if (rate>=limit[1]) {
 		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)getunitdivider(unit, 3), getrateunit(unit, 3));
-	} else if (rate>=1000) {
+	} else if (rate>=limit[0]) {
 		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)getunitdivider(unit, 2), getrateunit(unit, 2));
 	} else {
 		snprintf(buffer, 64, "%"DECCONV"*.*f %s", len, declen, rate, getrateunit(unit, 1));
