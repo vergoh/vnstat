@@ -13,20 +13,20 @@ MAN_BSD = $(DESTDIR)/usr/local/man
 default: vnstat
 
 vnstat:
-	make -C src
+	$(MAKE) -C src
 
 tests:
-	make -C tests
+	$(MAKE) -C tests
 
 all:
-	make -C src all
+	$(MAKE) -C src all
 
 clean:
-	make -C src clean
-	make -C tests clean
+	$(MAKE) -C src clean
+	$(MAKE) -C tests clean
 
 debug:
-	make CFLAGS='-Wall -Wextra -g' -C src all
+	$(MAKE) CFLAGS='-Wall -Wextra -g' -C src all
 
 install:
 	@echo "Installing vnStat..."
