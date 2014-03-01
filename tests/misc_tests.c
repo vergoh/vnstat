@@ -403,12 +403,12 @@ START_TEST(gettrafficrate_bytes)
 	ck_assert_str_eq(gettrafficrate(102400, 1, 0), "100.00 KiB/s");
 	ck_assert_str_eq(gettrafficrate(1048576, 1, 0), "1.00 MiB/s");
 	ck_assert_str_eq(gettrafficrate(1073741824, 1, 0), "1.00 GiB/s");
-	ck_assert_str_eq(gettrafficrate(1099511627776, 1, 0), "1.00 TiB/s");
+	ck_assert_str_eq(gettrafficrate(1099511627776ULL, 1, 0), "1.00 TiB/s");
 	cfg.unit = 1;
 	ck_assert_str_eq(gettrafficrate(102400, 1, 0), "100.00 KB/s");
 	ck_assert_str_eq(gettrafficrate(1048576, 1, 0), "1.00 MB/s");
 	ck_assert_str_eq(gettrafficrate(1073741824, 1, 0), "1.00 GB/s");
-	ck_assert_str_eq(gettrafficrate(1099511627776, 1, 0), "1.00 TB/s");
+	ck_assert_str_eq(gettrafficrate(1099511627776ULL, 1, 0), "1.00 TB/s");
 }
 END_TEST
 
@@ -419,12 +419,12 @@ START_TEST(gettrafficrate_bits)
 	ck_assert_str_eq(gettrafficrate(102400, 1, 0), "800 kbit/s");
 	ck_assert_str_eq(gettrafficrate(1048576, 1, 0), "8.19 Mbit/s");
 	ck_assert_str_eq(gettrafficrate(1073741824, 1, 0), "8.39 Gbit/s");
-	ck_assert_str_eq(gettrafficrate(1099511627776, 1, 0), "8.59 Tbit/s");
+	ck_assert_str_eq(gettrafficrate(1099511627776ULL, 1, 0), "8.59 Tbit/s");
 	cfg.unit = 1;
 	ck_assert_str_eq(gettrafficrate(102400, 1, 0), "800 kbit/s");
 	ck_assert_str_eq(gettrafficrate(1048576, 1, 0), "8.19 Mbit/s");
 	ck_assert_str_eq(gettrafficrate(1073741824, 1, 0), "8.39 Gbit/s");
-	ck_assert_str_eq(gettrafficrate(1099511627776, 1, 0), "8.59 Tbit/s");
+	ck_assert_str_eq(gettrafficrate(1099511627776ULL, 1, 0), "8.59 Tbit/s");
 }
 END_TEST
 
