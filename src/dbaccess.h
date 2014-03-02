@@ -12,6 +12,8 @@ int removedb(const char *iface, const char *dirname);
 void cleanhours(void);
 void rotatedays(void);
 void rotatemonths(void);
+void cleartop10(const char *iface, const char *dirname);
+void rebuilddbtotal(const char *iface, const char *dirname);
 
 
 /* version 1.0 database format aka db v1 */

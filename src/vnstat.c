@@ -457,16 +457,7 @@ int main(int argc, char *argv[]) {
 			return 1;
 		}
 		if (force) {
-			readdb(interface, dirname);
-
-			for (i=0; i<=9; i++) {
-				data.top10[i].rx=data.top10[i].tx=0;
-				data.top10[i].rxk=data.top10[i].txk=0;
-				data.top10[i].used=0;
-			}
-
-			writedb(interface, dirname, 0);
-			printf("Top10 cleared for interface \"%s\".\n", data.interface);
+			cleartop10(interface, dirname);
 			query=0;
 		} else {
 			printf("Warning:\nThe current option would clear the top10 for \"%s\".\n", interface);
@@ -482,18 +473,7 @@ int main(int argc, char *argv[]) {
 			return 1;
 		}
 		if (force) {
-			readdb(interface, dirname);
-
-			data.totalrx=data.totaltx=data.totalrxk=data.totaltxk=0;
-			for (i=0; i<=11; i++) {
-				if (data.month[i].used) {
-					addtraffic(&data.totalrx, &data.totalrxk, data.month[i].rx, data.month[i].rxk);
-					addtraffic(&data.totaltx, &data.totaltxk, data.month[i].tx, data.month[i].txk);
-				}
-			}
-
-			writedb(interface, dirname, 0);
-			printf("Total transfer rebuild completed for interface \"%s\".\n", data.interface);
+			rebuilddbtotal(interface, dirname);
 			query=0;
 		} else {
 			printf("Warning:\nThe current option would rebuild total tranfers for \"%s\".\n", interface);

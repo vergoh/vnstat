@@ -1,5 +1,6 @@
 #include "common.h"
 #include "dbaccess.h"
+#include "misc.h"
 
 int readdb(const char *iface, const char *dirname)
 {
@@ -761,4 +762,42 @@ void rotatemonths(void)
 		d=localtime(&data.month[0].month);
 		printf("db: Months rotated. Current month: \"%d\".\n", d->tm_mon+1);
 	}
+}
+
+void cleartop10(const char *iface, const char *dirname)
+{
+	int i;
+
+	if (readdb(iface, dirname)!=0) {
+		exit(EXIT_FAILURE);
+	}
+
+	for (i=0; i<=9; i++) {
+		data.top10[i].rx=data.top10[i].tx=0;
+		data.top10[i].rxk=data.top10[i].txk=0;
+		data.top10[i].used=0;
+	}
+
+	writedb(iface, dirname, 0);
+	printf("Top10 cleared for interface \"%s\".\n", data.interface);
+}
+
+void rebuilddbtotal(const char *iface, const char *dirname)
+{
+	int i;
+
+	if (readdb(iface, dirname)!=0) {
+		exit(EXIT_FAILURE);
+	}
+
+	data.totalrx=data.totaltx=data.totalrxk=data.totaltxk=0;
+	for (i=0; i<=11; i++) {
+		if (data.month[i].used) {
+			addtraffic(&data.totalrx, &data.totalrxk, data.month[i].rx, data.month[i].rxk);
+			addtraffic(&data.totaltx, &data.totaltxk, data.month[i].tx, data.month[i].txk);
+		}
+	}
+
+	writedb(iface, dirname, 0);
+	printf("Total transfer rebuild completed for interface \"%s\".\n", data.interface);
 }

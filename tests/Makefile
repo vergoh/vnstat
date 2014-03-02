@@ -28,7 +28,7 @@ misc_tests.o: misc_tests.c misc_tests.h vnstat_tests.h common.h misc.h
 
 common.o: common.c common.h
 ifinfo.o: ifinfo.c ifinfo.h common.h dbaccess.h misc.h cfg.h
-dbaccess.o: dbaccess.c dbaccess.h common.h
+dbaccess.o: dbaccess.c dbaccess.h misc.h common.h
 dbcache.o: dbcache.c dbcache.h dbaccess.h common.h ifinfo.h
 cfg.o: cfg.c cfg.h common.h
 misc.o: misc.c misc.h common.h

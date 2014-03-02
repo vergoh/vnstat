@@ -24,7 +24,7 @@ ifinfo.o: ifinfo.c ifinfo.h common.h dbaccess.h misc.h cfg.h
 traffic.o: traffic.c traffic.h common.h ifinfo.h misc.h
 dbxml.o: dbxml.c dbxml.h common.h
 dbshow.o: dbshow.c dbshow.h misc.h common.h
-dbaccess.o: dbaccess.c dbaccess.h common.h
+dbaccess.o: dbaccess.c dbaccess.h misc.h common.h
 dbmerge.o: dbmerge.c dbmerge.h dbaccess.h common.h
 dbcache.o: dbcache.c dbcache.h dbaccess.h common.h ifinfo.h
 common.o: common.c common.h
