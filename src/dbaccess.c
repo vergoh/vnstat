@@ -1,6 +1,5 @@
 #include "common.h"
 #include "dbaccess.h"
-#include "misc.h"
 
 int readdb(const char *iface, const char *dirname)
 {

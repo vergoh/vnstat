@@ -187,17 +187,6 @@ int getbtime(void)
 	return result;
 }
 
-void addtraffic(uint64_t *destmb, int *destkb, uint64_t srcmb, int srckb)
-{
-        *destmb=*destmb+srcmb;
-        *destkb=*destkb+srckb;
-
-        if (*destkb>=1024) {
-                *destmb+=*destkb/1024;
-                *destkb-=(*destkb/1024)*1024;
-        }
-}
-
 char *getvalue(uint64_t mb, uint64_t kb, int len, int type)
 {
 	static char buffer[64];
@@ -210,11 +199,7 @@ char *getvalue(uint64_t mb, uint64_t kb, int len, int type)
 	}
 
 	if (mb!=0) {
-		if (kb>=1024) {
-			mb+=kb/1024;
-			kb-=(kb/1024)*1024;
-		}
-		kB=(mb*1024)+kb;
+		kB=mbkbtokb(mb, kb);
 	} else {
 		kB=kb;
 	}
@@ -259,11 +244,7 @@ char *getrate(uint64_t mb, uint64_t kb, uint32_t interval, int len)
 	}
 
 	if (mb!=0) {
-		if (kb>=1024) {
-			mb+=kb/1024;
-			kb-=(kb/1024)*1024;
-		}
-		kB=(mb*1024)+kb;
+		kB=mbkbtokb(mb, kb);
 	} else {
 		kB=kb;
 	}

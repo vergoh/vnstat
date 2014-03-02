@@ -15,7 +15,6 @@ void drawhourly(int showheader, int showedge, int rate);
 void drawdaily(int showheader, int showedge);
 void drawmonthly(int showheader, int showedge);
 void drawtop(int showheader, int showedge);
-void addtraffic(uint64_t *destmb, int *destkb, uint64_t srcmb, int srckb);
 void hextorgb(char *input, int *rgb);
 void modcolor(int *rgb, int offset, int force);
 char *getimagevalue(uint64_t kb, int len, int rate);

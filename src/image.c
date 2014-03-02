@@ -140,18 +140,8 @@ void drawbar(int x, int y, int len, uint64_t rx, int rxk, uint64_t tx, int txk, 
 {
 	int l;
 
-	if (rxk>=1024) {
-		rx+=rxk/1024;
-		rxk-=(rxk/1024)*1024;
-	}
-
-	if (txk>=1024) {
-		tx+=txk/1024;
-		txk-=(txk/1024)*1024;
-	}
-
-	rx=(rx*1024)+rxk;
-	tx=(tx*1024)+txk;
+	rx=mbkbtokb(rx, rxk);
+	tx=mbkbtokb(tx, txk);
 
 	if ((rx+tx)!=max) {
 		len=((rx+tx)/(float)max)*len;
@@ -835,12 +825,7 @@ void drawoldsummary(int type, int showheader, int showedge, int rate)
 			t=data.day[i].rx+data.day[i].tx;
 			tk=data.day[i].rxk+data.day[i].txk;
 
-			if (tk>=1024) {
-				t+=tk/1024;
-				tk-=(tk/1024)*1024;
-			}
-
-			t=(t*1024)+tk;
+			t=mbkbtokb(t, tk);
 
 			if (t>max) {
 				max=t;

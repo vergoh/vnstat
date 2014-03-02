@@ -172,3 +172,48 @@ uint32_t mosecs(void)
 		return 0;
 	}
 }
+
+uint64_t countercalc(uint64_t a, uint64_t b)
+{
+	/* no flip */
+	if (b>=a) {
+		if (debug)
+			printf("cc: %"PRIu64" - %"PRIu64" = %"PRIu64"\n", b, a, b-a);
+		return b-a;
+
+	/* flip exists */
+	} else {
+		/* original counter is 64bit */
+		if (a>FP32) {
+			if (debug)
+				printf("cc64: uint64 - %"PRIu64" + %"PRIu64" = %"PRIu64"\n", a, b, (uint64_t)FP64-a+b);
+			return FP64-a+b;
+
+		/* original counter is 32bit */
+		} else {
+			if (debug)
+				printf("cc32: uint32 - %"PRIu64" + %"PRIu64" = %"PRIu64"\n", a, b, (uint64_t)FP32-a+b);
+			return FP32-a+b;
+		}
+	}
+}
+
+void addtraffic(uint64_t *destmb, int *destkb, uint64_t srcmb, int srckb)
+{
+        *destmb+=srcmb;
+        *destkb+=srckb;
+
+        if (*destkb>=1024) {
+                *destmb+=*destkb/1024;
+                *destkb-=(*destkb/1024)*1024;
+        }
+}
+
+uint64_t mbkbtokb(uint64_t mb, uint64_t kb)
+{
+	if (kb>=1024) {
+		mb+=kb/1024;
+		kb-=(kb/1024)*1024;
+	}
+	return (mb*1024)+kb;
+}
