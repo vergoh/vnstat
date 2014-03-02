@@ -26,6 +26,25 @@ START_TEST(loadcfg_included_default)
 }
 END_TEST
 
+START_TEST(loadcfg_no_file)
+{
+	ck_assert_int_eq(loadcfg(""), 1);
+}
+END_TEST
+
+START_TEST(loadcfg_nonexistent_file)
+{
+	suppress_output();
+	ck_assert_int_eq(loadcfg("_nosuchfile_"), 0);
+}
+END_TEST
+
+START_TEST(loadcfg_not_a_cfgfile)
+{
+	ck_assert_int_eq(loadcfg("Makefile"), 1);
+}
+END_TEST
+
 START_TEST(ibwget_with_empty_list_and_no_maxbw)
 {
 	cfg.maxbw = 0;
@@ -140,6 +159,9 @@ void add_config_tests(Suite *s)
 	tcase_add_test(tc_config, validatecfg_default);
 	tcase_add_test(tc_config, printcfgfile_default);
 	tcase_add_test(tc_config, loadcfg_included_default);
+	tcase_add_test(tc_config, loadcfg_no_file);
+	tcase_add_test(tc_config, loadcfg_nonexistent_file);
+	tcase_add_test(tc_config, loadcfg_not_a_cfgfile);
 	tcase_add_test(tc_config, ibwget_with_empty_list_and_no_maxbw);
 	tcase_add_test(tc_config, ibwget_with_empty_list_and_maxbw);
 	tcase_add_test(tc_config, ibwadd_single_success);
