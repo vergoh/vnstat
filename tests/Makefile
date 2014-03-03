@@ -3,7 +3,9 @@ CFLAGS = -Wall -Wextra -g -I../src
 LDLIBS = -lm -lcheck -lrt -lpthread
 OBJS = vnstat_tests.o common_tests.o database_tests.o config_tests.o ifinfo_tests.o misc_tests.o
 OBJS += common.o ifinfo.o dbaccess.o dbcache.o cfg.o misc.o
-VPATH = ../src
+
+vpath %.c ../src
+vpath %.h ../src
 
 default: runtests
 
