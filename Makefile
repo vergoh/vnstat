@@ -58,7 +58,8 @@ install:
 # install default config if such doesn't exist
 	@if [ ! -f "$(DESTDIR)/etc/vnstat.conf" ]; \
 	then echo "Installing config to $(DESTDIR)/etc/vnstat.conf"; \
-	install -D -m 644 cfg/vnstat.conf $(DESTDIR)/etc/vnstat.conf; \
+	install -d -m 755 $(DESTDIR)/etc; \
+	install -m 644 cfg/vnstat.conf $(DESTDIR)/etc/vnstat.conf; \
 	fi
 
 # install everything else
@@ -79,7 +80,7 @@ install:
 	install -m 644 man/vnstati.1 $(MAN)/man1; \
 	fi
 	
-	@if [ -f $(MAN)/man1/vnstat.1.gz ]; \
+	@if [ -f "$(MAN)/man1/vnstat.1.gz" ]; \
 	then gzip -f9 $(MAN)/man1/vnstat.1; \
 	gzip -f9 $(MAN)/man1/vnstatd.1; \
 	gzip -f9 $(MAN)/man5/vnstat.conf.5; \
@@ -89,10 +90,10 @@ install:
 	fi
 
 # remove vnstat.conf.1 is such exists in the wrong place
-	@if [ -f $(MAN)/man1/vnstat.conf.1.gz ]; \
+	@if [ -f "$(MAN)/man1/vnstat.conf.1.gz" ]; \
 	then rm -f $(MAN)/man1/vnstat.conf.1.gz; \
 	fi
-	@if [ -f $(MAN)/man1/vnstat.conf.1 ]; \
+	@if [ -f "$(MAN)/man1/vnstat.conf.1" ]; \
 	then rm -f $(MAN)/man1/vnstat.conf.1; \
 	fi
 
@@ -145,7 +146,7 @@ bsdinstall:
 	fi
 
 # install default config if such doesn't exist
-	@if [ ! -f $(DESTDIR)/etc/vnstat.conf ]; \
+	@if [ ! -f "$(DESTDIR)/etc/vnstat.conf" ]; \
 	then echo "Installing config to $(DESTDIR)/etc/vnstat.conf"; \
 	install -d -m 755 $(DESTDIR)/etc; \
 	install -m 644 cfg/vnstat.conf $(DESTDIR)/etc/vnstat.conf; \
@@ -168,10 +169,10 @@ bsdinstall:
 	fi
 
 # remove vnstat.conf.1 is such exists in the wrong place
-	@if [ -f $(MAN_BSD)/man1/vnstat.conf.1.gz ]; \
+	@if [ -f "$(MAN_BSD)/man1/vnstat.conf.1.gz" ]; \
 	then rm -f $(MAN_BSD)/man1/vnstat.conf.1.gz; \
 	fi
-	@if [ -f $(MAN_BSD)/man1/vnstat.conf.1 ]; \
+	@if [ -f "$(MAN_BSD)/man1/vnstat.conf.1" ]; \
 	then rm -f $(MAN_BSD)/man1/vnstat.conf.1; \
 	fi
 
