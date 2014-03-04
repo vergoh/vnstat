@@ -3,8 +3,20 @@
 
 #include <stdio.h>
 #include <check.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <dirent.h>
+#include <errno.h>
+#include <unistd.h>
+#include <string.h>
 
+Suite *test_suite(void);
 void suppress_output(void);
+int clean_testdbdir(void);
+int create_zerosize_dbfile(const char *iface);
+int check_dbfile_exists(const char *iface, const int minsize);
+
+#define TESTDBDIR "testdbdir"
 
 /* for compatibility with older check framework versions */
 #ifndef ck_assert_int_ge

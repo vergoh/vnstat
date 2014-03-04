@@ -37,4 +37,4 @@ cfg.o: cfg.c cfg.h common.h
 misc.o: misc.c misc.h common.h
 
 clean:
-	rm -fr *.o *~ core *.i *.gc* test.log test.xml *.lcov coverage vnstat_tests
+	rm -fr *.o *~ core *.i *.gc* test.log test.xml *.lcov coverage vnstat_tests testdbdir

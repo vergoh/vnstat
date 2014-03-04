@@ -378,6 +378,41 @@ START_TEST(cachestatus_filled)
 }
 END_TEST
 
+START_TEST(cacheflush_flushes_cache)
+{
+	initdb();
+	noexit = 2;
+	cfg.uselogging = 0;
+	ck_assert_int_eq(clean_testdbdir(), 1);
+	ck_assert_int_eq(create_zerosize_dbfile("name1"), 1);
+	ck_assert_int_eq(create_zerosize_dbfile("name2"), 1);
+	ck_assert_int_eq(check_dbfile_exists("name1", 0), 1);
+	ck_assert_int_eq(check_dbfile_exists(".name1", 0), 0);
+	ck_assert_int_eq(check_dbfile_exists("name2", 0), 1);
+	ck_assert_int_eq(check_dbfile_exists(".name2", 0), 0);
+
+	ck_assert_int_eq(cachecount(), 0);
+	strcpy(data.interface, "name1");
+	ck_assert_int_eq(cacheupdate(), 1);
+	strcpy(data.interface, "name2");
+	ck_assert_int_eq(cacheupdate(), 1);
+	ck_assert_int_eq(cacheadd("notfilled", 0), 1);
+	ck_assert_int_eq(cachecount(), 3);
+	ck_assert_int_eq(cacheactivecount(), 3);
+
+	cacheflush(TESTDBDIR);
+
+	ck_assert_int_eq(cachecount(), 0);
+	ck_assert_int_eq(cacheactivecount(), 0);
+	ck_assert_int_eq(check_dbfile_exists("name1", sizeof(DATA)), 1);
+	ck_assert_int_eq(check_dbfile_exists(".name1", 0), 1);
+	ck_assert_int_eq(check_dbfile_exists("name2", sizeof(DATA)), 1);
+	ck_assert_int_eq(check_dbfile_exists(".name2", 0), 1);
+	ck_assert_int_eq(check_dbfile_exists("notfilled", 0), 0);
+	ck_assert_int_eq(check_dbfile_exists(".notfilled", 0), 0);
+}
+END_TEST
+
 void add_database_tests(Suite *s)
 {
 	/* Database test cases */
@@ -403,5 +438,6 @@ void add_database_tests(Suite *s)
 	tcase_add_test(tc_db, cacheshow_filled);
 	tcase_add_test(tc_db, cachestatus_empty);
 	tcase_add_test(tc_db, cachestatus_filled);
+	tcase_add_test(tc_db, cacheflush_flushes_cache);
 	suite_add_tcase(s, tc_db);
 }
