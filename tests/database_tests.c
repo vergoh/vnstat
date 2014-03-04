@@ -264,13 +264,11 @@ START_TEST(cacheupdate_when_filled)
 }
 END_TEST
 
-/* segfault
 START_TEST(cacheget_when_empty)
 {
 	ck_assert_int_eq(cacheget(NULL), 0);
 }
 END_TEST
-*/
 
 START_TEST(cacheget_when_filled)
 {
@@ -395,7 +393,7 @@ void add_database_tests(Suite *s)
 	tcase_add_test(tc_db, cachecount_when_filled);
 	tcase_add_test(tc_db, cacheupdate_when_empty);
 	tcase_add_test(tc_db, cacheupdate_when_filled);
-	/* tcase_add_test(tc_db, cacheget_when_empty); */
+	tcase_add_test(tc_db, cacheget_when_empty);
 	tcase_add_test(tc_db, cacheget_when_filled);
 	tcase_add_test(tc_db, cacheremove_when_empty);
 	tcase_add_test(tc_db, cacheremove_when_filled);

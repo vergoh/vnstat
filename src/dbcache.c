@@ -184,6 +184,9 @@ void cachestatus(void)
 
 int cacheget(datanode *dn)
 {
+	if (dn == NULL)
+		return 0;
+
 	if (dn->filled) {
 		memcpy(&data, &dn->data, sizeof(data));
 
