@@ -8,7 +8,7 @@ BIN_BSD = $(DESTDIR)/usr/local/bin
 SBIN_BSD = $(DESTDIR)/usr/local/sbin
 MAN_BSD = $(DESTDIR)/usr/local/man
 
-.PHONY: vnstat tests all clean debug install uninstall bsdinstall bsduninstall
+.PHONY: vnstat tests check all clean debug install uninstall bsdinstall bsduninstall dist
 
 default: vnstat
 
@@ -17,6 +17,8 @@ vnstat:
 
 tests:
 	$(MAKE) -C tests
+
+check: tests
 
 all:
 	$(MAKE) -C src all
@@ -196,3 +198,14 @@ bsduninstall:
 	rm -f $(MAN_BSD)/man5/vnstat*
 	rm -f $(DESTDIR)/etc/vnstat.conf
 	@echo "A possible cron entry needs to be removed manually if such exists."
+
+dist: clean
+	$(eval VER := $(shell grep VNSTATVERSION src/common.h | cut -d\" -f2 | sed 's: :_:g'))
+	@echo
+	@echo "Packaging $(VER)..."
+	@rm -fr "../vnstat-$(VER).tar.gz" "../vnstat-$(VER)"
+	@mkdir "../vnstat-$(VER)"
+	@cp -ax * "../vnstat-$(VER)/"
+	@tar zcf "../vnstat-$(VER).tar.gz" "../vnstat-$(VER)"
+	@rm -fr "../vnstat-$(VER)"
+	@ls -l "../vnstat-$(VER).tar.gz"
