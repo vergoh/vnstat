@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -O2
+CFLAGS ?= -O2
 LDLIBS = -lm
 OBJS = vnstat.o ifinfo.o dbxml.o dbshow.o dbaccess.o dbmerge.o common.o misc.o cfg.o traffic.o
 DOBJS = vnstatd.o ifinfo.o dbaccess.o dbcache.o common.o misc.o cfg.o
