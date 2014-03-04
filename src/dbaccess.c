@@ -215,7 +215,7 @@ int writedb(const char *iface, const char *dirname, int newdb)
 
 	/* try to make backup of old data if this isn't a new database */
 	if (!newdb && !backupdb(file, backup)) {
-		snprintf(errorstring, 512, "Unable create database backup \"%s\".", backup);
+		snprintf(errorstring, 512, "Unable to create database backup \"%s\".", backup);
 		printe(PT_Error);
 		return 0;
 	}
@@ -239,6 +239,7 @@ int writedb(const char *iface, const char *dirname, int newdb)
 		if (fwrite(&data,sizeof(DATA),1,db)==0) {
 			snprintf(errorstring, 512, "Unable to write database \"%s\".", file);
 			printe(PT_Error);
+			fclose(db);
 			return 0;
 		} else {
 			if (debug) {
