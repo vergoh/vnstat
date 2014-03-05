@@ -22,7 +22,7 @@ profile: runtests
 vnstat_tests: $(OBJS)
 	$(CC) $(LDFLAGS) $(OBJS) $(LDLIBS) -o vnstat_tests
 
-vnstat_tests.o: vnstat_tests.c vnstat_tests.h common_tests.h database_tests.h
+vnstat_tests.o: vnstat_tests.c vnstat_tests.h common_tests.h database_tests.h common.h
 common_tests.o: common_tests.c common_tests.h vnstat_tests.h common.h dbaccess.h cfg.h
 database_tests.o: database_tests.c database_tests.h vnstat_tests.h dbaccess.h dbcache.h
 config_tests.o: config_tests.c config_tests.h vnstat_tests.h common.h cfg.h

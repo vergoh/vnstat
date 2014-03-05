@@ -357,8 +357,7 @@ END_TEST
 
 START_TEST(cachestatus_empty)
 {
-	noexit = 2;
-	cfg.uselogging = 0;
+	disable_logprints();
 	cachestatus();
 }
 END_TEST
@@ -366,8 +365,7 @@ END_TEST
 START_TEST(cachestatus_filled)
 {
 	initdb();
-	noexit = 2;
-	cfg.uselogging = 0;
+	disable_logprints();
 	ck_assert_int_eq(cachecount(), 0);
 	ck_assert_int_eq(cacheadd("name4", 0), 1);
 	ck_assert_int_eq(cacheadd("name3", 0), 1);
@@ -381,8 +379,7 @@ END_TEST
 START_TEST(cacheflush_flushes_cache)
 {
 	initdb();
-	noexit = 2;
-	cfg.uselogging = 0;
+	disable_logprints();
 	ck_assert_int_eq(clean_testdbdir(), 1);
 	ck_assert_int_eq(create_zerosize_dbfile("name1"), 1);
 	ck_assert_int_eq(create_zerosize_dbfile("name2"), 1);
@@ -413,6 +410,203 @@ START_TEST(cacheflush_flushes_cache)
 }
 END_TEST
 
+START_TEST(removedb_with_existing_files)
+{
+	int ret;
+
+	ck_assert_int_eq(clean_testdbdir(), 1);
+	ck_assert_int_eq(create_zerosize_dbfile("ethall"), 1);
+	ck_assert_int_eq(create_zerosize_dbfile(".ethall"), 1);
+
+	ck_assert_int_eq(check_dbfile_exists("ethall", 0), 1);
+	ck_assert_int_eq(check_dbfile_exists(".ethall", 0), 1);
+
+	/* variable needed due to bug in old versions of check
+	   framework: http://sourceforge.net/p/check/bugs/71/ */
+	ret = removedb("ethall", TESTDBDIR);
+	ck_assert_int_eq(ret, 1);
+
+	ck_assert_int_eq(check_dbfile_exists("ethall", 0), 0);
+	ck_assert_int_eq(check_dbfile_exists(".ethall", 0), 0);
+}
+END_TEST
+
+START_TEST(removedb_with_nonexisting_file)
+{
+	ck_assert_int_eq(clean_testdbdir(), 1);
+	ck_assert_int_eq(create_zerosize_dbfile("ethall"), 1);
+	ck_assert_int_eq(create_zerosize_dbfile(".ethall"), 1);
+
+	ck_assert_int_eq(check_dbfile_exists("ethall", 0), 1);
+	ck_assert_int_eq(check_dbfile_exists(".ethall", 0), 1);
+
+	ck_assert_int_eq(removedb("ethnone", TESTDBDIR), 0);
+
+	ck_assert_int_eq(check_dbfile_exists("ethall", 0), 1);
+	ck_assert_int_eq(check_dbfile_exists(".ethall", 0), 1);
+}
+END_TEST
+
+START_TEST(checkdb_finds_existing_file)
+{
+	ck_assert_int_eq(clean_testdbdir(), 1);
+	ck_assert_int_eq(create_zerosize_dbfile("existingdb"), 1);
+	ck_assert_int_eq(checkdb("existingdb", TESTDBDIR), 1);
+}
+END_TEST
+
+START_TEST(checkdb_does_not_find_nonexisting_file)
+{
+	ck_assert_int_eq(clean_testdbdir(), 1);
+	ck_assert_int_eq(checkdb("nonexistingdb", TESTDBDIR), 0);
+}
+END_TEST
+
+START_TEST(readdb_with_empty_file)
+{
+	disable_logprints();
+	cfg.flock = 1;
+	ck_assert_int_eq(clean_testdbdir(), 1);
+	ck_assert_int_eq(create_zerosize_dbfile("existingdb"), 1);
+	ck_assert_int_eq(readdb("existingdb", TESTDBDIR), -1);
+}
+END_TEST
+
+START_TEST(readdb_with_empty_file_and_backup)
+{
+	disable_logprints();
+	cfg.flock = 1;
+	ck_assert_int_eq(clean_testdbdir(), 1);
+	ck_assert_int_eq(create_zerosize_dbfile("existingdb"), 1);
+	ck_assert_int_eq(create_zerosize_dbfile(".existingdb"), 1);
+	ck_assert_int_eq(readdb("existingdb", TESTDBDIR), -1);
+}
+END_TEST
+
+START_TEST(readdb_with_nonexisting_file)
+{
+	disable_logprints();
+	cfg.flock = 1;
+	strcpy(data.interface, "none");
+	ck_assert_int_eq(clean_testdbdir(), 1);
+	ck_assert_int_eq(readdb("existingdb", TESTDBDIR), 1);
+	ck_assert_str_eq(data.interface, "existingdb");
+	ck_assert_str_eq(data.nick, "existingdb");
+}
+END_TEST
+
+START_TEST(readdb_with_existing_dbfile)
+{
+	initdb();
+	disable_logprints();
+	cfg.flock = 1;
+	strcpy(data.interface, "ethtest");
+	ck_assert_int_eq(clean_testdbdir(), 1);
+	ck_assert_int_eq(writedb("ethtest", TESTDBDIR, 1), 1);
+	ck_assert_int_eq(check_dbfile_exists("ethtest", sizeof(DATA)), 1);
+
+	strcpy(data.interface, "none");
+	ck_assert_int_eq(readdb("ethtest", TESTDBDIR), 0);
+	ck_assert_str_eq(data.interface, "ethtest");
+}
+END_TEST
+
+START_TEST(readdb_with_existing_dbfile_with_rename)
+{
+	initdb();
+	disable_logprints();
+	cfg.flock = 1;
+	strcpy(data.interface, "ethtest");
+	strcpy(data.nick, "ethtest");
+	ck_assert_int_eq(clean_testdbdir(), 1);
+	ck_assert_int_eq(writedb("ethtest2", TESTDBDIR, 1), 1);
+	ck_assert_int_eq(check_dbfile_exists("ethtest2", sizeof(DATA)), 1);
+
+	strcpy(data.interface, "none");
+	strcpy(data.nick, "none");
+	ck_assert_int_eq(readdb("ethtest2", TESTDBDIR), 0);
+	ck_assert_str_eq(data.interface, "ethtest2");
+	ck_assert_str_eq(data.nick, "ethtest2");
+}
+END_TEST
+
+START_TEST(cleartop10_clears_top10)
+{
+	int i;
+
+	initdb();
+	suppress_output();
+	disable_logprints();
+	cfg.flock = 1;
+	strcpy(data.interface, "ethtest");
+	strcpy(data.nick, "ethtest");
+	for (i=0; i<10; i++) {
+		data.top10[i].rx = 1;
+		data.top10[i].tx = 1;
+		data.top10[i].used = 1;
+	}
+	ck_assert_int_eq(clean_testdbdir(), 1);
+	ck_assert_int_eq(writedb("ethtest", TESTDBDIR, 1), 1);
+
+	cleartop10("ethtest", TESTDBDIR);
+
+	ck_assert_int_eq(check_dbfile_exists("ethtest", sizeof(DATA)), 1);
+	ck_assert_int_eq(check_dbfile_exists(".ethtest", sizeof(DATA)), 1);
+	for (i=0; i<10; i++) {
+		ck_assert_int_eq(data.top10[i].rx, 0);
+		ck_assert_int_eq(data.top10[i].tx, 0);
+		ck_assert_int_eq(data.top10[i].rxk, 0);
+		ck_assert_int_eq(data.top10[i].txk, 0);
+		ck_assert_int_eq(data.top10[i].used, 0);
+	}
+}
+END_TEST
+
+START_TEST(cleartop10_with_nonexisting_file)
+{
+	disable_logprints();
+	ck_assert_int_eq(clean_testdbdir(), 1);
+	cleartop10("ethtest", TESTDBDIR);
+}
+END_TEST
+
+START_TEST(rebuilddbtotal_rebuilds_total)
+{
+	int i;
+
+	initdb();
+	suppress_output();
+	disable_logprints();
+	cfg.flock = 1;
+	strcpy(data.interface, "ethtest");
+	strcpy(data.nick, "ethtest");
+	data.totalrx = 0;
+	data.totaltx = 0;
+	for (i=0; i<12; i++) {
+		data.month[i].rx = 1;
+		data.month[i].tx = 2;
+		data.month[i].used = 1;
+	}
+	ck_assert_int_eq(clean_testdbdir(), 1);
+	ck_assert_int_eq(writedb("ethtest", TESTDBDIR, 1), 1);
+
+	rebuilddbtotal("ethtest", TESTDBDIR);
+
+	ck_assert_int_eq(check_dbfile_exists("ethtest", sizeof(DATA)), 1);
+	ck_assert_int_eq(check_dbfile_exists(".ethtest", sizeof(DATA)), 1);
+	ck_assert_int_eq(data.totalrx, 12);
+	ck_assert_int_eq(data.totaltx, 24);
+}
+END_TEST
+
+START_TEST(rebuilddbtotal_with_nonexisting_file)
+{
+	disable_logprints();
+	ck_assert_int_eq(clean_testdbdir(), 1);
+	rebuilddbtotal("ethtest", TESTDBDIR);
+}
+END_TEST
+
 void add_database_tests(Suite *s)
 {
 	/* Database test cases */
@@ -439,5 +633,18 @@ void add_database_tests(Suite *s)
 	tcase_add_test(tc_db, cachestatus_empty);
 	tcase_add_test(tc_db, cachestatus_filled);
 	tcase_add_test(tc_db, cacheflush_flushes_cache);
+	tcase_add_test(tc_db, removedb_with_existing_files);
+	tcase_add_test(tc_db, removedb_with_nonexisting_file);
+	tcase_add_test(tc_db, checkdb_finds_existing_file);
+	tcase_add_test(tc_db, checkdb_does_not_find_nonexisting_file);
+	tcase_add_test(tc_db, readdb_with_empty_file);
+	tcase_add_test(tc_db, readdb_with_empty_file_and_backup);
+	tcase_add_test(tc_db, readdb_with_nonexisting_file);
+	tcase_add_test(tc_db, readdb_with_existing_dbfile);
+	tcase_add_test(tc_db, readdb_with_existing_dbfile_with_rename);
+	tcase_add_test(tc_db, cleartop10_clears_top10);
+	tcase_add_exit_test(tc_db, cleartop10_with_nonexisting_file, 1);
+	tcase_add_test(tc_db, rebuilddbtotal_rebuilds_total);
+	tcase_add_exit_test(tc_db, rebuilddbtotal_with_nonexisting_file, 1);
 	suite_add_tcase(s, tc_db);
 }

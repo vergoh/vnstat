@@ -314,6 +314,26 @@ START_TEST(getscale_nonzero)
 }
 END_TEST
 
+START_TEST(sighandler_sets_signal)
+{
+	debug = 1;
+	intsignal = 0;
+	disable_logprints();
+	ck_assert_int_ne(signal(SIGINT, sighandler), SIG_ERR);
+	ck_assert_int_ne(signal(SIGHUP, sighandler), SIG_ERR);
+	ck_assert_int_ne(signal(SIGTERM, sighandler), SIG_ERR);
+
+	ck_assert_int_eq(kill(getpid(), SIGINT), 0);
+	ck_assert_int_eq(intsignal, SIGINT);
+
+	ck_assert_int_eq(kill(getpid(), SIGHUP), 0);
+	ck_assert_int_eq(intsignal, SIGHUP);
+
+	ck_assert_int_eq(kill(getpid(), SIGTERM), 0);
+	ck_assert_int_eq(intsignal, SIGTERM);
+}
+END_TEST
+
 void add_misc_tests(Suite *s)
 {
 	/* Misc test cases */
@@ -343,5 +363,6 @@ void add_misc_tests(Suite *s)
 	tcase_add_test(tc_misc, gettrafficrate_padding);
 	tcase_add_test(tc_misc, getscale_zero);
 	tcase_add_test(tc_misc, getscale_nonzero);
+	tcase_add_test(tc_misc, sighandler_sets_signal);
 	suite_add_tcase(s, tc_misc);
 }

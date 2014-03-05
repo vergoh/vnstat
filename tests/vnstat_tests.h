@@ -1,17 +1,11 @@
 #ifndef VNSTAT_TESTS_H
 #define VNSTAT_TESTS_H
 
-#include <stdio.h>
 #include <check.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <dirent.h>
-#include <errno.h>
-#include <unistd.h>
-#include <string.h>
 
 Suite *test_suite(void);
 void suppress_output(void);
+void disable_logprints(void);
 int clean_testdbdir(void);
 int create_zerosize_dbfile(const char *iface);
 int check_dbfile_exists(const char *iface, const int minsize);

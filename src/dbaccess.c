@@ -632,7 +632,6 @@ int removedb(const char *iface, const char *dirname)
 
 	snprintf(file, 512, "%s/%s", dirname, iface);
 	if (unlink(file)!=0) {
-		perror("unlink");
 		return 0;
 	}
 

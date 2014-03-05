@@ -4,6 +4,7 @@
 #include "config_tests.h"
 #include "ifinfo_tests.h"
 #include "misc_tests.h"
+#include "common.h"
 
 int main(void)
 {
@@ -38,6 +39,12 @@ void suppress_output(void)
 	fclose(stdout);
 }
 
+void disable_logprints(void)
+{
+	noexit = 2;
+	cfg.uselogging = 0;
+}
+
 int clean_testdbdir(void)
 {
 	DIR *dir = NULL;
@@ -62,8 +69,8 @@ int clean_testdbdir(void)
 			}
 		}
 	}
-
 	closedir(dir);
+
 	return 1;
 }
 
