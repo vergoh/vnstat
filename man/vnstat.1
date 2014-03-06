@@ -1,4 +1,4 @@
-.TH VNSTAT 1 "JUNE 2011" "version 1.11" "User Manuals"
+.TH VNSTAT 1 "MARCH 2014" "version 1.12" "User Manuals"
 .SH NAME
 
 vnStat \- a console-based network traffic monitor
@@ -63,6 +63,8 @@ vnStat \- a console-based network traffic monitor
 .B \-\-rebuildtotal
 ] [
 .B \-\-reset
+] [
+.B \-\-restoredb
 ] [
 .B \-ru
 ] [
@@ -264,6 +266,17 @@ otherwise that interface will get some extra traffic to its database.
 .TP
 .BI "--rebuildtotal"
 Reset the total traffic counters and recount those using recorded months.
+
+.TP
+.BI "--restoredb"
+Restore a database which was previously dumped using the
+.BI "--dumpdb"
+option. This can be used to transfer a database between different architectures and
+machines, as the database is architecture dependant and not compatible between
+different architectures. First dump the database on one machine, e.g. with
+.B "vnstat -i ppp0 --dumpdb > ppp0-dump"
+and then restore that dump on a different machine using
+.B "vnstat -i ppp0 --restoredb < ppp0-dump"
 
 .TP
 .BI "-ru, --rateunit"

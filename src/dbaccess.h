@@ -14,7 +14,8 @@ void rotatedays(void);
 void rotatemonths(void);
 void cleartop10(const char *iface, const char *dirname);
 void rebuilddbtotal(const char *iface, const char *dirname);
-
+int validatedb(void);
+void restoredb(FILE *input);
 
 /* version 1.0 database format aka db v1 */
 typedef struct {

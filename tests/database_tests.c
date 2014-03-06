@@ -607,6 +607,35 @@ START_TEST(rebuilddbtotal_with_nonexisting_file)
 }
 END_TEST
 
+START_TEST(validatedb_with_initdb)
+{
+	initdb();
+	strcpy(data.interface, "ethtest");
+	ck_assert_int_eq(validatedb(), 1);
+}
+END_TEST
+
+START_TEST(validatedb_with_invalid_totals)
+{
+	initdb();
+	strcpy(data.interface, "ethtest");
+	data.day[0].rx++;
+	ck_assert_int_eq(validatedb(), 0);
+}
+END_TEST
+
+START_TEST(validatedb_with_top10_use)
+{
+	initdb();
+	strcpy(data.interface, "ethtest");
+	data.top10[0].used = 1;
+	data.top10[1].used = 1;
+	data.top10[2].used = 1;
+	data.top10[5].used = 1;
+	ck_assert_int_eq(validatedb(), 0);
+}
+END_TEST
+
 void add_database_tests(Suite *s)
 {
 	/* Database test cases */
@@ -646,5 +675,8 @@ void add_database_tests(Suite *s)
 	tcase_add_exit_test(tc_db, cleartop10_with_nonexisting_file, 1);
 	tcase_add_test(tc_db, rebuilddbtotal_rebuilds_total);
 	tcase_add_exit_test(tc_db, rebuilddbtotal_with_nonexisting_file, 1);
+	tcase_add_test(tc_db, validatedb_with_initdb);
+	tcase_add_test(tc_db, validatedb_with_invalid_totals);
+	tcase_add_test(tc_db, validatedb_with_top10_use);
 	suite_add_tcase(s, tc_db);
 }

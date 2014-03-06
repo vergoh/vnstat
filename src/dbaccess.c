@@ -800,3 +800,159 @@ void rebuilddbtotal(const char *iface, const char *dirname)
 	writedb(iface, dirname, 0);
 	printf("Total transfer rebuild completed for interface \"%s\".\n", data.interface);
 }
+
+int validatedb(void)
+{
+	int i, used;
+	uint64_t rxsum, txsum;
+
+	if (data.version!=DBVERSION) {
+		return 0;
+	}
+
+	if (data.active<0 || data.active>1)
+		return 0;
+
+	if (!strlen(data.interface))
+		return 0;
+
+	if (!data.created || !data.lastupdated || !data.btime)
+		return 0;
+
+	rxsum = txsum = 0;
+	used = 1;
+	for (i=0; i<30; i++) {
+		if (data.day[i].used<0 || data.day[i].used>1)
+			return 0;
+		if (data.day[i].rxk<0 || data.day[i].txk<0)
+			return 0;
+		if (data.day[i].used && !used) {
+			return 0;
+		} else if (!data.day[i].used) {
+			used = 0;
+		}
+		if (data.day[i].used) {
+			rxsum += data.day[i].rx;
+			txsum += data.day[i].tx;
+		}
+	}
+
+	if (data.totalrx < rxsum)
+		return 0;
+
+	if (data.totaltx < txsum)
+		return 0;
+
+	rxsum = txsum = 0;
+	used = 1;
+	for (i=0; i<12; i++) {
+		if (data.month[i].used<0 || data.month[i].used>1)
+			return 0;
+		if (data.month[i].rxk<0 || data.month[i].txk<0)
+			return 0;
+		if (data.month[i].used && !used) {
+			return 0;
+		} else if (!data.month[i].used) {
+			used = 0;
+		}
+		if (data.month[i].used) {
+			rxsum += data.month[i].rx;
+			txsum += data.month[i].tx;
+		}
+	}
+
+	if (data.totalrx < rxsum)
+		return 0;
+
+	if (data.totaltx < txsum)
+		return 0;
+
+	used = 1;
+	for (i=0; i<10; i++) {
+		if (data.top10[i].used<0 || data.top10[i].used>1)
+			return 0;
+		if (data.top10[i].rxk<0 || data.top10[i].txk<0)
+			return 0;
+		if (data.top10[i].used && !used) {
+			return 0;
+		} else if (!data.top10[i].used) {
+			used = 0;
+		}
+	}
+
+	return 1;
+}
+
+void restoredb(FILE *input)
+{
+	char line[512];
+	int i, count;
+	uint64_t tempint;
+	DAY day;
+	MONTH month;
+	HOUR hour;
+
+	while (fgets(line, sizeof(line), input) != NULL) {
+	    if (debug) {
+			printf("parsing %s", line);
+	    }
+
+		if (strlen(line)<9) {
+			continue;
+		}
+
+		sscanf(line, "version;%d", &data.version);
+		sscanf(line, "active;%d", &data.active);
+		sscanf(line, "interface;%511s", data.interface);
+		sscanf(line, "nick;%511s", data.nick);
+		if (sscanf(line, "created;%"PRIu64, &tempint)) {
+			data.created = (time_t)tempint;
+		}
+		if (sscanf(line, "updated;%"PRIu64, &tempint)) {
+			data.lastupdated = (time_t)tempint;
+		}
+		sscanf(line, "totalrx;%"PRIu64, &data.totalrx);
+		sscanf(line, "totaltx;%"PRIu64, &data.totaltx);
+		sscanf(line, "currx;%"PRIu64, &data.currx);
+		sscanf(line, "curtx;%"PRIu64, &data.curtx);
+		sscanf(line, "totalrxk;%d", &data.totalrxk);
+		sscanf(line, "totaltxk;%d", &data.totaltxk);
+		sscanf(line, "btime;%"PRIu64, &data.btime);
+
+		count = sscanf(line, "d;%d;%"PRIu64";%"PRIu64";%"PRIu64";%d;%d;%d",
+				&i, &tempint, &day.rx, &day.tx, &day.rxk, &day.txk, &day.used);
+		if (count == 7) {
+			if (i >= 0 && i < (int)sizeof(data.day) / (int)sizeof(DAY)) {
+				day.date = (time_t)tempint;
+				data.day[i] = day;
+			}
+		}
+
+		count = sscanf(line, "m;%d;%"PRIu64";%"PRIu64";%"PRIu64";%d;%d;%d",
+				&i, &tempint, &month.rx, &month.tx, &month.rxk, &month.txk, &month.used);
+		if (count == 7) {
+			if ( i >= 0 && i < (int)sizeof(data.month) / (int)sizeof(MONTH) ) {
+				month.month = (time_t)tempint;
+				data.month[i] = month;
+			}
+		}
+
+		count = sscanf(line, "t;%d;%"PRIu64";%"PRIu64";%"PRIu64";%d;%d;%d",
+				&i, &tempint, &day.rx, &day.tx, &day.rxk, &day.txk, &day.used);
+	    if (count == 7) {
+			if ( i >= 0 && i < (int)sizeof(data.top10) / (int)sizeof(DAY) ) {
+				day.date = (time_t)tempint;
+				data.top10[i] = day;
+			}
+		}
+
+	    count = sscanf(line, "h;%d;%"PRIu64";%"PRIu64";%"PRIu64,
+			    &i, &tempint, &hour.rx, &hour.tx);
+	    if (count == 4) {
+			if ( i >= 0 && i < (int)sizeof(data.hour) / (int)sizeof(HOUR) ) {
+				hour.date = (time_t)tempint;
+				data.hour[i] = hour;
+			}
+		}
+	}
+}

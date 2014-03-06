@@ -29,7 +29,7 @@ vnStat - Copyright (c) 2002-2014 Teemu Toivola <tst@iki.fi>
 int main(int argc, char *argv[]) {
 
 	int i;
-	int currentarg, update=0, query=1, newdb=0, reset=0, sync=0, merged=0, savemerged=0;
+	int currentarg, update=0, query=1, newdb=0, reset=0, sync=0, merged=0, savemerged=0, restore_db=0;
 	int active=-1, files=0, force=0, cleartop=0, rebuildtotal=0, traffic=0;
 	int livetraffic=0, defaultiface=1, delete=0, livemode=0;
 	char interface[32], dirname[512], nick[32];
@@ -112,6 +112,7 @@ int main(int argc, char *argv[]) {
 			printf("         -ru, --rateunit       swap configured rate unit\n");
 			printf("         --oneline             show simple parseable format\n");
 			printf("         --dumpdb              show database in parseable format\n");
+			printf("         --restoredb           restore database from previous --dumpdb\n");
 			printf("         --xml                 show database in xml format\n");
 
 			printf("   Misc:\n");
@@ -240,6 +241,8 @@ int main(int argc, char *argv[]) {
 			query=0;
 			if (debug)
 				printf("Updating database...\n");
+		} else if (strcmp(argv[currentarg],"--restoredb")==0) {
+			restore_db=1;
 		} else if ((strcmp(argv[currentarg],"-q")==0) || (strcmp(argv[currentarg],"--query")==0)) {
 			query=1;
 		} else if ((strcmp(argv[currentarg],"-D")==0) || (strcmp(argv[currentarg],"--debug")==0)) {
@@ -412,6 +415,34 @@ int main(int argc, char *argv[]) {
 		writedb(interface, dirname, 0);
 		if (debug)
 			printf("Counters reseted for \"%s\"\n", data.interface);
+	}
+
+	/* restore database from previous dumpdb output */
+	if (restore_db) {
+		if (defaultiface) {
+			printf("Error: Specify interface to be restored using the -i parameter.\n");
+			return 1;
+		}
+		if (!spacecheck(dirname) && !force) {
+			printf("Error: Not enough free diskspace available.\n");
+			return 1;
+		}
+		if (checkdb(interface, dirname) && !force) {
+			printf("Error: Database file for interface \"%s\" already exists.\n", interface);
+			printf("Add --force parameter to overwrite it.\n");
+			return 1;
+		}
+		initdb();
+		restoredb(fdopen(STDIN_FILENO,"r"));
+		if (!validatedb()) {
+			printf("Error: validation of restored database fails.\n");
+			return 1;
+		}
+		strncpy(data.interface, interface, 32);
+		if (writedb(interface, dirname, 1)) {
+			printf("Database restore for \"%s\" completed.\n", data.interface);
+		}
+		return 0;
 	}
 
 	/* counter sync */
