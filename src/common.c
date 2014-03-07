@@ -173,32 +173,32 @@ uint32_t mosecs(void)
 	}
 }
 
-uint64_t countercalc(uint64_t a, uint64_t b)
+uint64_t countercalc(const uint64_t *a, const uint64_t *b)
 {
 	/* no flip */
-	if (b>=a) {
+	if (*b>=*a) {
 		if (debug)
-			printf("cc: %"PRIu64" - %"PRIu64" = %"PRIu64"\n", b, a, b-a);
-		return b-a;
+			printf("cc: %"PRIu64" - %"PRIu64" = %"PRIu64"\n", *b, *a, *b-*a);
+		return *b-*a;
 
 	/* flip exists */
 	} else {
 		/* original counter is 64bit */
-		if (a>FP32) {
+		if (*a>FP32) {
 			if (debug)
-				printf("cc64: uint64 - %"PRIu64" + %"PRIu64" = %"PRIu64"\n", a, b, (uint64_t)FP64-a+b);
-			return FP64-a+b;
+				printf("cc64: uint64 - %"PRIu64" + %"PRIu64" = %"PRIu64"\n", *a, *b, (uint64_t)FP64-*a+*b);
+			return FP64-*a+*b;
 
 		/* original counter is 32bit */
 		} else {
 			if (debug)
-				printf("cc32: uint32 - %"PRIu64" + %"PRIu64" = %"PRIu64"\n", a, b, (uint64_t)FP32-a+b);
-			return FP32-a+b;
+				printf("cc32: uint32 - %"PRIu64" + %"PRIu64" = %"PRIu64"\n", *a, *b, (uint64_t)FP32-*a+*b);
+			return FP32-*a+*b;
 		}
 	}
 }
 
-void addtraffic(uint64_t *destmb, int *destkb, uint64_t srcmb, int srckb)
+void addtraffic(uint64_t *destmb, int *destkb, const uint64_t srcmb, const int srckb)
 {
         *destmb+=srcmb;
         *destkb+=srckb;

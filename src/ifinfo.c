@@ -278,13 +278,13 @@ void parseifinfo(int newdb)
 
 		/* process rx & tx */
 		if (newdb!=1) {
-			cc = countercalc(data.currx, ifinfo.rx);
+			cc = countercalc(&data.currx, &ifinfo.rx);
 			rxchange = cc/1048576;      /* 1024/1024 */
 			rxkchange = (cc/1024)%1024;
 			krxchange = cc/1024;
 			ifinfo.rxp = cc%1024;
 
-			cc = countercalc(data.curtx, ifinfo.tx);
+			cc = countercalc(&data.curtx, &ifinfo.tx);
 			txchange = cc/1048576;      /* 1024/1024 */
 			txkchange = (cc/1024)%1024;
 			ktxchange = cc/1024;

@@ -65,28 +65,47 @@ END_TEST
 
 START_TEST(countercalc_no_change)
 {
-	ck_assert_int_eq(countercalc(0, 0), 0);
-	ck_assert_int_eq(countercalc(1, 1), 0);
+	uint64_t a, b;
+
+	a = b = 0;
+	ck_assert_int_eq(countercalc(&a, &b), 0);
+	a = b = 1;
+	ck_assert_int_eq(countercalc(&a, &b), 0);
 }
 END_TEST
 
 START_TEST(countercalc_small_change)
 {
-	ck_assert_int_eq(countercalc(0, 1), 1);
-	ck_assert_int_eq(countercalc(1, 2), 1);
-	ck_assert_int_eq(countercalc(1, 3), 2);
+	uint64_t a, b;
+
+	a = 0;
+	b = 1;
+	ck_assert_int_eq(countercalc(&a, &b), 1);
+	a = 1;
+	b = 2;
+	ck_assert_int_eq(countercalc(&a, &b), 1);
+	b = 3;
+	ck_assert_int_eq(countercalc(&a, &b), 2);
 }
 END_TEST
 
 START_TEST(countercalc_32bit)
 {
-	ck_assert(countercalc(1, 0)==(FP32-1));
+	uint64_t a, b;
+
+	a = 1;
+	b = 0;
+	ck_assert(countercalc(&a, &b)==(FP32-1));
 }
 END_TEST
 
 START_TEST(countercalc_64bit)
 {
-	ck_assert(countercalc(FP32+1, 0)==(FP64-FP32-1));
+	uint64_t a, b;
+
+	a = FP32+1;
+	b = 0;
+	ck_assert(countercalc(&a, &b)==(FP64-FP32-1));
 }
 END_TEST
 

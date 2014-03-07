@@ -59,10 +59,10 @@ void trafficmeter(char iface[], int sampletime)
 	}
 
 	/* calculate traffic and packets seen between updates */
-	rx = countercalc(firstinfo.rx, ifinfo.rx);
-	tx = countercalc(firstinfo.tx, ifinfo.tx);
-	rxp = countercalc(firstinfo.rxp, ifinfo.rxp);
-	txp = countercalc(firstinfo.txp, ifinfo.txp);
+	rx = countercalc(&firstinfo.rx, &ifinfo.rx);
+	tx = countercalc(&firstinfo.tx, &ifinfo.tx);
+	rxp = countercalc(&firstinfo.rxp, &ifinfo.rxp);
+	txp = countercalc(&firstinfo.txp, &ifinfo.txp);
 
 	/* show the difference in a readable format */
 	printf("%"PRIu64" packets sampled in %d seconds\n", rxp+txp, sampletime);
@@ -135,10 +135,10 @@ void livetrafficmeter(char iface[32], int mode)
 		}
 
 		/* calculate traffic and packets seen between updates */
-		rx = countercalc(previnfo.rx, ifinfo.rx);
-		tx = countercalc(previnfo.tx, ifinfo.tx);
-		rxp = countercalc(previnfo.rxp, ifinfo.rxp);
-		txp = countercalc(previnfo.txp, ifinfo.txp);
+		rx = countercalc(&previnfo.rx, &ifinfo.rx);
+		tx = countercalc(&previnfo.tx, &ifinfo.tx);
+		rxp = countercalc(&previnfo.rxp, &ifinfo.rxp);
+		txp = countercalc(&previnfo.txp, &ifinfo.txp);
 
 		/* update totals */
 		rxtotal += rx;
