@@ -25,13 +25,16 @@ vnStat \- a console-based network traffic monitor
 ] [
 .B \-\-disable
 ] [
-.B \-\-dumpdb
-] [
 .B \-\-enable
+] [
+.B \-\-exportdb
 ] [
 .B \-\-help
 ] [
 .B \-\-hours
+] [
+.B \-\-importdb
+.I file
 ] [
 .B \-i
 .I interface
@@ -63,8 +66,6 @@ vnStat \- a console-based network traffic monitor
 .B \-\-rebuildtotal
 ] [
 .B \-\-reset
-] [
-.B \-\-restoredb
 ] [
 .B \-ru
 ] [
@@ -142,7 +143,19 @@ Show additional debug output.
 Delete the database for the selected interface and stop monitoring it.
 
 .TP
-.BI "--dumpdb"
+.BI "--enable, --disable"
+Enable or disable updates for selected interface. Useful for
+interfaces that aren't always available, like ppp0. If the interface
+goes down it should be disabled in order to avoid errors. Add something
+like
+.B "vnstat -r --disable -i ppp0"
+to the script that's executed when
+the interface goes down and
+.B "vnstat --enable -i ppp0"
+to the up script. These two options aren't needed when the daemon is used.
+
+.TP
+.BI "--exportdb"
 Instead of showing the database with a formated output, this output will
 dump the whole database in a format that should be easy to parse with most
 script languages. Use this for example with PHP, Perl or Python to make a
@@ -182,20 +195,21 @@ except hours that doesn't have a separate KiB value. For hours the forth and fif
 have values in KiB.
 
 .TP
-.BI "--enable, --disable"
-Enable or disable updates for selected interface. Useful for
-interfaces that aren't always available, like ppp0. If the interface
-goes down it should be disabled in order to avoid errors. Add something
-like
-.B "vnstat -r --disable -i ppp0"
-to the script that's executed when
-the interface goes down and
-.B "vnstat --enable -i ppp0"
-to the up script. These two options aren't needed when the daemon is used.
-
-.TP
 .BI "-h, --hours"
 Show traffic for the last 24 hours.
+
+.TP
+.BI "--importdb " file
+Import a database from
+.I file
+which was previously exported using the
+.BI "--exportdb"
+option. This can be used to transfer a database between different architectures and
+machines, as the database is architecture dependant and not compatible between
+different architectures. First dump the database on one machine, e.g. with
+.B "vnstat -i ppp0 --exportdb > ppp0db.txt"
+and then import the text file on a different machine using
+.B "vnstat -i ppp0 --importdb ppp0db.txt"
 
 .TP
 .BI "-i, --iface " interface
@@ -266,17 +280,6 @@ otherwise that interface will get some extra traffic to its database.
 .TP
 .BI "--rebuildtotal"
 Reset the total traffic counters and recount those using recorded months.
-
-.TP
-.BI "--restoredb"
-Restore a database which was previously dumped using the
-.BI "--dumpdb"
-option. This can be used to transfer a database between different architectures and
-machines, as the database is architecture dependant and not compatible between
-different architectures. First dump the database on one machine, e.g. with
-.B "vnstat -i ppp0 --dumpdb > ppp0-dump"
-and then restore that dump on a different machine using
-.B "vnstat -i ppp0 --restoredb < ppp0-dump"
 
 .TP
 .BI "-ru, --rateunit"
@@ -364,7 +367,9 @@ Show a command summary.
 .TP
 .I /var/lib/vnstat/
 This directory contains all databases the program uses. Files are
-named according to the monitored interfaces.
+named according to the monitored interfaces. A backup copy of each
+database is kept in a file starting with a . (dot character) and
+otherwise named according to the original file.
 
 .TP
 .I /etc/vnstat.conf

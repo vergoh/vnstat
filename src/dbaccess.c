@@ -883,8 +883,9 @@ int validatedb(void)
 	return 1;
 }
 
-void restoredb(FILE *input)
+int importdb(const char *filename)
 {
+	FILE *input;
 	char line[512];
 	int i, count;
 	uint64_t tempint;
@@ -892,10 +893,15 @@ void restoredb(FILE *input)
 	MONTH month;
 	HOUR hour;
 
+	if ((input=fopen(filename, "r"))==NULL) {
+		printf("Error: opening file \"%s\" failed. %s.\n", filename, strerror(errno));
+		return 0;
+	}
+
 	while (fgets(line, sizeof(line), input) != NULL) {
-	    if (debug) {
+		if (debug) {
 			printf("parsing %s", line);
-	    }
+		}
 
 		if (strlen(line)<9) {
 			continue;
@@ -939,20 +945,22 @@ void restoredb(FILE *input)
 
 		count = sscanf(line, "t;%d;%"PRIu64";%"PRIu64";%"PRIu64";%d;%d;%d",
 				&i, &tempint, &day.rx, &day.tx, &day.rxk, &day.txk, &day.used);
-	    if (count == 7) {
+		if (count == 7) {
 			if ( i >= 0 && i < (int)sizeof(data.top10) / (int)sizeof(DAY) ) {
 				day.date = (time_t)tempint;
 				data.top10[i] = day;
 			}
 		}
 
-	    count = sscanf(line, "h;%d;%"PRIu64";%"PRIu64";%"PRIu64,
-			    &i, &tempint, &hour.rx, &hour.tx);
-	    if (count == 4) {
+		count = sscanf(line, "h;%d;%"PRIu64";%"PRIu64";%"PRIu64,
+				&i, &tempint, &hour.rx, &hour.tx);
+		if (count == 4) {
 			if ( i >= 0 && i < (int)sizeof(data.hour) / (int)sizeof(HOUR) ) {
 				hour.date = (time_t)tempint;
 				data.hour[i] = hour;
 			}
 		}
 	}
+
+	return 1;
 }

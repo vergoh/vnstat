@@ -29,10 +29,10 @@ vnStat - Copyright (c) 2002-2014 Teemu Toivola <tst@iki.fi>
 int main(int argc, char *argv[]) {
 
 	int i;
-	int currentarg, update=0, query=1, newdb=0, reset=0, sync=0, merged=0, savemerged=0, restore_db=0;
+	int currentarg, update=0, query=1, newdb=0, reset=0, sync=0, merged=0, savemerged=0, import=0;
 	int active=-1, files=0, force=0, cleartop=0, rebuildtotal=0, traffic=0;
 	int livetraffic=0, defaultiface=1, delete=0, livemode=0;
-	char interface[32], dirname[512], nick[32];
+	char interface[32], dirname[512], nick[32], filename[512];
 	char definterface[32], cfgfile[512], *ifacelist=NULL;
 	time_t current;
 	DIR *dir=NULL;
@@ -111,8 +111,8 @@ int main(int argc, char *argv[]) {
 			printf("         -s, --short           use short output\n");
 			printf("         -ru, --rateunit       swap configured rate unit\n");
 			printf("         --oneline             show simple parseable format\n");
-			printf("         --dumpdb              show database in parseable format\n");
-			printf("         --restoredb           restore database from previous --dumpdb\n");
+			printf("         --exportdb            dump database in text format\n");
+			printf("         --importdb            import previously exported database\n");
 			printf("         --xml                 show database in xml format\n");
 
 			printf("   Misc:\n");
@@ -241,8 +241,18 @@ int main(int argc, char *argv[]) {
 			query=0;
 			if (debug)
 				printf("Updating database...\n");
-		} else if (strcmp(argv[currentarg],"--restoredb")==0) {
-			restore_db=1;
+		} else if (strcmp(argv[currentarg],"--importdb")==0) {
+			if (currentarg+1<argc) {
+				import=1;
+				strncpy(filename, argv[currentarg+1], 512);
+				if (debug)
+					printf("Used import file: %s\n", filename);
+				currentarg++;
+				continue;
+			} else {
+				printf("Error: File parameter for --importdb missing.\n");
+				return 1;
+			}
 		} else if ((strcmp(argv[currentarg],"-q")==0) || (strcmp(argv[currentarg],"--query")==0)) {
 			query=1;
 		} else if ((strcmp(argv[currentarg],"-D")==0) || (strcmp(argv[currentarg],"--debug")==0)) {
@@ -259,7 +269,7 @@ int main(int argc, char *argv[]) {
 			cfg.qmode=6;
 		} else if ((strcmp(argv[currentarg],"-h")==0) || (strcmp(argv[currentarg],"--hours")==0)) {
 			cfg.qmode=7;
-		} else if (strcmp(argv[currentarg],"--dumpdb")==0) {
+		} else if ((strcmp(argv[currentarg],"--exportdb")==0) || (strcmp(argv[currentarg],"--dumpdb")==0)) {
 			cfg.qmode=4;
 		} else if (strcmp(argv[currentarg],"--oneline")==0) {
 			cfg.qmode=9;
@@ -417,10 +427,10 @@ int main(int argc, char *argv[]) {
 			printf("Counters reseted for \"%s\"\n", data.interface);
 	}
 
-	/* restore database from previous dumpdb output */
-	if (restore_db) {
+	/* import database from previously exported output */
+	if (import) {
 		if (defaultiface) {
-			printf("Error: Specify interface to be restored using the -i parameter.\n");
+			printf("Error: Specify interface to be imported using the -i parameter.\n");
 			return 1;
 		}
 		if (!spacecheck(dirname) && !force) {
@@ -433,14 +443,16 @@ int main(int argc, char *argv[]) {
 			return 1;
 		}
 		initdb();
-		restoredb(fdopen(STDIN_FILENO,"r"));
+		if (!importdb(filename)) {
+			return 1;
+		}
 		if (!validatedb()) {
-			printf("Error: validation of restored database fails.\n");
+			printf("Error: validation of imported database failed.\n");
 			return 1;
 		}
 		strncpy(data.interface, interface, 32);
 		if (writedb(interface, dirname, 1)) {
-			printf("Database restore for \"%s\" completed.\n", data.interface);
+			printf("Database import for \"%s\" completed.\n", data.interface);
 		}
 		return 0;
 	}
