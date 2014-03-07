@@ -806,27 +806,39 @@ int validatedb(void)
 	int i, used;
 	uint64_t rxsum, txsum;
 
-	if (data.version!=DBVERSION) {
+	if (data.version>DBVERSION) {
+		printf("Invalid database version: %d\n", data.version);
 		return 0;
 	}
 
-	if (data.active<0 || data.active>1)
+	if (data.active<0 || data.active>1) {
+		printf("Invalid database activity status: %d\n", data.active);
 		return 0;
+	}
 
-	if (!strlen(data.interface))
+	if (!strlen(data.interface)) {
+		printf("Invalid database interface string: %s\n", data.interface);
 		return 0;
+	}
 
-	if (!data.created || !data.lastupdated || !data.btime)
+	if (!data.created || !data.lastupdated || !data.btime) {
+		printf("Invalid database timestamp.\n");
 		return 0;
+	}
 
 	rxsum = txsum = 0;
 	used = 1;
 	for (i=0; i<30; i++) {
-		if (data.day[i].used<0 || data.day[i].used>1)
+		if (data.day[i].used<0 || data.day[i].used>1) {
+			printf("Invalid database daily use information: %d %d\n", i, data.day[i].used);
 			return 0;
-		if (data.day[i].rxk<0 || data.day[i].txk<0)
+		}
+		if (data.day[i].rxk<0 || data.day[i].txk<0) {
+			printf("Invalid database daily traffic: %d\n", i);
 			return 0;
+		}
 		if (data.day[i].used && !used) {
+			printf("Invalid database daily use order: %d\n", i);
 			return 0;
 		} else if (!data.day[i].used) {
 			used = 0;
@@ -837,20 +849,24 @@ int validatedb(void)
 		}
 	}
 
-	if (data.totalrx < rxsum)
+	if (data.totalrx < rxsum || data.totaltx < txsum) {
+		printf("Invalid database total traffic compared to daily usage.\n");
 		return 0;
-
-	if (data.totaltx < txsum)
-		return 0;
+	}
 
 	rxsum = txsum = 0;
 	used = 1;
 	for (i=0; i<12; i++) {
-		if (data.month[i].used<0 || data.month[i].used>1)
+		if (data.month[i].used<0 || data.month[i].used>1) {
+			printf("Invalid database monthly use information: %d %d\n", i, data.month[i].used);
 			return 0;
-		if (data.month[i].rxk<0 || data.month[i].txk<0)
+		}
+		if (data.month[i].rxk<0 || data.month[i].txk<0) {
+			printf("Invalid database monthly traffic: %d\n", i);
 			return 0;
+		}
 		if (data.month[i].used && !used) {
+			printf("Invalid database monthly use order: %d\n", i);
 			return 0;
 		} else if (!data.month[i].used) {
 			used = 0;
@@ -861,19 +877,23 @@ int validatedb(void)
 		}
 	}
 
-	if (data.totalrx < rxsum)
+	if (data.totalrx < rxsum || data.totaltx < txsum) {
+		printf("Invalid database total traffic compared to monthly usage.\n");
 		return 0;
-
-	if (data.totaltx < txsum)
-		return 0;
+	}
 
 	used = 1;
 	for (i=0; i<10; i++) {
-		if (data.top10[i].used<0 || data.top10[i].used>1)
+		if (data.top10[i].used<0 || data.top10[i].used>1) {
+			printf("Invalid database top10 use information: %d %d\n", i, data.top10[i].used);
 			return 0;
-		if (data.top10[i].rxk<0 || data.top10[i].txk<0)
+		}
+		if (data.top10[i].rxk<0 || data.top10[i].txk<0) {
+			printf("Invalid database top10 traffic: %d\n", i);
 			return 0;
+		}
 		if (data.top10[i].used && !used) {
+			printf("Invalid database top10 use order: %d\n", i);
 			return 0;
 		} else if (!data.top10[i].used) {
 			used = 0;

@@ -618,6 +618,7 @@ END_TEST
 START_TEST(validatedb_with_invalid_totals)
 {
 	initdb();
+	suppress_output();
 	strcpy(data.interface, "ethtest");
 	data.day[0].rx++;
 	ck_assert_int_eq(validatedb(), 0);
@@ -627,6 +628,7 @@ END_TEST
 START_TEST(validatedb_with_top10_use)
 {
 	initdb();
+	suppress_output();
 	strcpy(data.interface, "ethtest");
 	data.top10[0].used = 1;
 	data.top10[1].used = 1;
