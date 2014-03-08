@@ -294,10 +294,11 @@ int main(int argc, char *argv[]) {
 			if (debug)
 				printf("Dir OK\n");
 			while ((di=readdir(dir))) {
-				if (di->d_name[0]!='.') {
-					strncpy(p.definterface, di->d_name, 32);
-					p.files++;
+				if (di->d_name[0]=='.') {
+					continue;
 				}
+				strncpy(p.definterface, di->d_name, 32);
+				p.files++;
 			}
 			if (debug)
 				printf("%d file(s) found\n", p.files);
@@ -492,131 +493,137 @@ void handledbmerge(PARAMS *p)
 
 void handlecounterreset(PARAMS *p)
 {
-	/* counter reset */
-	if (p->reset) {
-		if (!spacecheck(p->dirname) && !p->force) {
-			printf("Error: Not enough free diskspace available.\n");
-			exit(EXIT_FAILURE);
-		}
-		readdb(p->interface, p->dirname);
-		data.currx=0;
-		data.curtx=0;
-		writedb(p->interface, p->dirname, 0);
-		if (debug)
-			printf("Counters reseted for \"%s\"\n", data.interface);
+	if (!p->reset) {
+		return;
 	}
+
+	if (!spacecheck(p->dirname) && !p->force) {
+		printf("Error: Not enough free diskspace available.\n");
+		exit(EXIT_FAILURE);
+	}
+	readdb(p->interface, p->dirname);
+	data.currx=0;
+	data.curtx=0;
+	writedb(p->interface, p->dirname, 0);
+	if (debug)
+		printf("Counters reseted for \"%s\"\n", data.interface);
 }
 
 void handleimport(PARAMS *p)
 {
-	/* import database from previously exported output */
-	if (p->import) {
-		if (p->defaultiface) {
-			printf("Error: Specify interface to be imported using the -i parameter.\n");
-			exit(EXIT_FAILURE);
-		}
-		if (!spacecheck(p->dirname) && !p->force) {
-			printf("Error: Not enough free diskspace available.\n");
-			exit(EXIT_FAILURE);
-		}
-		if (checkdb(p->interface, p->dirname) && !p->force) {
-			printf("Error: Database file for interface \"%s\" already exists.\n", p->interface);
-			printf("Add --force parameter to overwrite it.\n");
-			exit(EXIT_FAILURE);
-		}
-		initdb();
-		if (!importdb(p->filename)) {
-			exit(EXIT_FAILURE);
-		}
-		if (!validatedb()) {
-			printf("Error: validation of imported database failed.\n");
-			exit(EXIT_FAILURE);
-		}
-		strncpy(data.interface, p->interface, 32);
-		if (writedb(p->interface, p->dirname, 1)) {
-			printf("Database import for \"%s\" completed.\n", data.interface);
-		}
-		exit(EXIT_SUCCESS);
+	if (!p->import) {
+		return;
 	}
+
+	if (p->defaultiface) {
+		printf("Error: Specify interface to be imported using the -i parameter.\n");
+		exit(EXIT_FAILURE);
+	}
+	if (!spacecheck(p->dirname) && !p->force) {
+		printf("Error: Not enough free diskspace available.\n");
+		exit(EXIT_FAILURE);
+	}
+	if (checkdb(p->interface, p->dirname) && !p->force) {
+		printf("Error: Database file for interface \"%s\" already exists.\n", p->interface);
+		printf("Add --force parameter to overwrite it.\n");
+		exit(EXIT_FAILURE);
+	}
+	initdb();
+	if (!importdb(p->filename)) {
+		exit(EXIT_FAILURE);
+	}
+	if (!validatedb()) {
+		printf("Error: validation of imported database failed.\n");
+		exit(EXIT_FAILURE);
+	}
+	strncpy(data.interface, p->interface, 32);
+	if (writedb(p->interface, p->dirname, 1)) {
+		printf("Database import for \"%s\" completed.\n", data.interface);
+	}
+	exit(EXIT_SUCCESS);
 }
 
 void handlecountersync(PARAMS *p)
 {
-	/* counter sync */
-	if (p->sync) {
-		if (!spacecheck(p->dirname) && !p->force) {
-			printf("Error: Not enough free diskspace available.\n");
-			exit(EXIT_FAILURE);
-		}
-		if (!synccounters(p->interface, p->dirname)) {
-			exit(EXIT_FAILURE);
-		}
-		if (debug)
-			printf("Counters synced for \"%s\"\n", data.interface);
+	if (!p->sync) {
+		return;
 	}
+
+	if (!spacecheck(p->dirname) && !p->force) {
+		printf("Error: Not enough free diskspace available.\n");
+		exit(EXIT_FAILURE);
+	}
+	if (!synccounters(p->interface, p->dirname)) {
+		exit(EXIT_FAILURE);
+	}
+	if (debug)
+		printf("Counters synced for \"%s\"\n", data.interface);
 }
 
 void handledelete(PARAMS *p)
 {
-	/* delete */
-	if (p->delete) {
-		if (p->force) {
-			if (checkdb(p->interface, p->dirname)) {
-				if (removedb(p->interface, p->dirname)) {
-					printf("Database for interface \"%s\" deleted.\n", p->interface);
-					printf("The interface will no longer be monitored.\n");
-					exit(EXIT_SUCCESS);
-				} else {
-					printf("Error: Deleting database for interface \"%s\" failed.\n", p->interface);
-					exit(EXIT_FAILURE);
-				}
-			} else {
-					printf("Error: No database found for interface \"%s\".\n", p->interface);
-					exit(EXIT_FAILURE);
-			}
+	if (!p->delete) {
+		return;
+	}
+
+	if (!p->force) {
+		printf("Warning:\nThe current option would delete the database for \"%s\".\n", p->interface);
+		printf("Use --force in order to really do that.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (checkdb(p->interface, p->dirname)) {
+		if (removedb(p->interface, p->dirname)) {
+			printf("Database for interface \"%s\" deleted.\n", p->interface);
+			printf("The interface will no longer be monitored.\n");
+			exit(EXIT_SUCCESS);
 		} else {
-			printf("Warning:\nThe current option would delete the database for \"%s\".\n", p->interface);
-			printf("Use --force in order to really do that.\n");
+			printf("Error: Deleting database for interface \"%s\" failed.\n", p->interface);
 			exit(EXIT_FAILURE);
 		}
+	} else {
+			printf("Error: No database found for interface \"%s\".\n", p->interface);
+			exit(EXIT_FAILURE);
 	}
 }
 
 void handlecleartop10(PARAMS *p)
 {
-	/* clear top10 */
-	if (p->cleartop) {
-		if (!spacecheck(p->dirname) && !p->force) {
-			printf("Error: Not enough free diskspace available.\n");
-			exit(EXIT_FAILURE);
-		}
-		if (p->force) {
-			cleartop10(p->interface, p->dirname);
-			p->query=0;
-		} else {
-			printf("Warning:\nThe current option would clear the top10 for \"%s\".\n", p->interface);
-			printf("Use --force in order to really do that.\n");
-			exit(EXIT_FAILURE);
-		}
+	if (!p->cleartop) {
+		return;
+	}
+
+	if (!spacecheck(p->dirname) && !p->force) {
+		printf("Error: Not enough free diskspace available.\n");
+		exit(EXIT_FAILURE);
+	}
+	if (p->force) {
+		cleartop10(p->interface, p->dirname);
+		p->query=0;
+	} else {
+		printf("Warning:\nThe current option would clear the top10 for \"%s\".\n", p->interface);
+		printf("Use --force in order to really do that.\n");
+		exit(EXIT_FAILURE);
 	}
 }
 
 void handlerebuildtotal(PARAMS *p)
 {
-	/* rebuild total */
-	if (p->rebuildtotal) {
-		if (!spacecheck(p->dirname)) {
-			printf("Error: Not enough free diskspace available.\n");
-			exit(EXIT_FAILURE);
-		}
-		if (p->force) {
-			rebuilddbtotal(p->interface, p->dirname);
-			p->query=0;
-		} else {
-			printf("Warning:\nThe current option would rebuild total tranfers for \"%s\".\n", p->interface);
-			printf("Use --force in order to really do that.\n");
-			exit(EXIT_FAILURE);
-		}
+	if (!p->rebuildtotal) {
+		return;
+	}
+
+	if (!spacecheck(p->dirname)) {
+		printf("Error: Not enough free diskspace available.\n");
+		exit(EXIT_FAILURE);
+	}
+	if (p->force) {
+		rebuilddbtotal(p->interface, p->dirname);
+		p->query=0;
+	} else {
+		printf("Warning:\nThe current option would rebuild total tranfers for \"%s\".\n", p->interface);
+		printf("Use --force in order to really do that.\n");
+		exit(EXIT_FAILURE);
 	}
 }
 
@@ -660,102 +667,110 @@ void handleupdate(PARAMS *p)
 	struct dirent *di=NULL;
 	time_t current;
 
+	if (!p->update) {
+		return;
+	}
+
 	current = time(NULL);
 
-	/* update */
-	if (p->update) {
+	/* check that there's some free diskspace left */
+	if (!spacecheck(p->dirname) && !p->force) {
+		printf("Error: Not enough free diskspace available.\n");
+		exit(EXIT_FAILURE);
+	}
 
-		/* check that there's some free diskspace left */
-		if (!spacecheck(p->dirname) && !p->force) {
-			printf("Error: Not enough free diskspace available.\n");
-			exit(EXIT_FAILURE);
-		}
+	/* update every file if -i isn't specified */
+	if (p->defaultiface) {
 
-		/* update every file if -i isn't specified */
-		if (p->defaultiface) {
+		dir=opendir(p->dirname);
 
-			dir=opendir(p->dirname);
+		p->files=0;
+		while ((di=readdir(dir))) {
 
-			p->files=0;
-			while ((di=readdir(dir))) {
-				if (di->d_name[0]!='.') {
-					p->files++;
-					strncpy(p->interface, di->d_name, 32);
-					if (debug)
-						printf("\nProcessing file \"%s/%s\"...\n", p->dirname, p->interface);
-					p->newdb=readdb(p->interface, p->dirname);
-					if (data.active) {
-						/* skip interface if not available */
-						if (!getifinfo(data.interface)) {
-							if (debug)
-								printf("Interface \"%s\" not available, skipping.\n", data.interface);
-							continue;
-						}
-						parseifinfo(p->newdb);
-
-						/* check that the time is correct */
-						if ((current>=data.lastupdated) || p->force) {
-							writedb(p->interface, p->dirname, p->newdb);
-						} else {
-							/* print error if previous update is more than 6 hours in the future */
-							/* otherwise do nothing */
-							if (data.lastupdated>=(current+21600)) {
-								printf("Error: The previous update was after the current date.\n\n");
-								printf("Previous update: %s", (char*)asctime(localtime(&data.lastupdated)));
-								printf("   Current time: %s\n", (char*)asctime(localtime(&current)));
-								printf("Use --force to override this message.\n");
-								exit(EXIT_FAILURE);
-							} else {
-								if (debug)
-									printf("\"%s\" not updated, %s > %s.\n", data.interface, (char*)asctime(localtime(&data.lastupdated)), (char*)asctime(localtime(&current)));
-							}
-						}
-					} else {
-						if (debug)
-							printf("Disabled interface \"%s\" not updated.\n", data.interface);
-					}
-				}
+			/* ignore backup files, '.' and '..' dirs */
+			if (di->d_name[0]=='.') {
+				continue;
 			}
 
-			closedir(dir);
-			if (p->files==0) {
-				// printf("No database found.\n");
-				p->update=0;
-			}
-
-		/* update only selected file */
-		} else {
+			p->files++;
+			strncpy(p->interface, di->d_name, 32);
+			if (debug)
+				printf("\nProcessing file \"%s/%s\"...\n", p->dirname, p->interface);
 			p->newdb=readdb(p->interface, p->dirname);
-			if (data.active) {
-				if (!getifinfo(data.interface) && !p->force) {
-					getiflist(&p->ifacelist);
-					printf("Error: Interface \"%s\" couldn't be found.\n Only available interfaces can be added for monitoring.\n", data.interface);
-					printf("\n The following interfaces are currently available:\n    %s\n", p->ifacelist);
-					free(p->ifacelist);
-					exit(EXIT_FAILURE);
-				}
-				parseifinfo(p->newdb);
-				if ((current>=data.lastupdated) || p->force) {
-					if (strcmp(p->nick, "none")!=0)
-						strncpy(data.nick, p->nick, 32);
-					writedb(p->interface, p->dirname, p->newdb);
-				} else {
-					/* print error if previous update is more than 6 hours in the future */
-					/* otherwise do nothing */
-					if (data.lastupdated>=(current+21600)) {
-						printf("Error: The previous update was after the current date.\n\n");
-						printf("Previous update: %s", (char*)asctime(localtime(&data.lastupdated)));
-						printf("   Current time: %s\n", (char*)asctime(localtime(&current)));
-						printf("Use --force to override this message.\n");
-						exit(EXIT_FAILURE);
-					} else {
-						if (debug)
-							printf("\"%s\" not updated, %s > %s.\n", data.interface, (char*)asctime(localtime(&data.lastupdated)), (char*)asctime(localtime(&current)));
-					}
-				}
-			} else {
+
+			if (!data.active) {
 				if (debug)
 					printf("Disabled interface \"%s\" not updated.\n", data.interface);
+				continue;
+			}
+
+			/* skip interface if not available */
+			if (!getifinfo(data.interface)) {
+				if (debug)
+					printf("Interface \"%s\" not available, skipping.\n", data.interface);
+				continue;
+			}
+			parseifinfo(p->newdb);
+
+			/* check that the time is correct */
+			if ((current>=data.lastupdated) || p->force) {
+				writedb(p->interface, p->dirname, p->newdb);
+			} else {
+				/* print error if previous update is more than 6 hours in the future */
+				/* otherwise do nothing */
+				if (data.lastupdated>=(current+21600)) {
+					printf("Error: The previous update was after the current date.\n\n");
+					printf("Previous update: %s", (char*)asctime(localtime(&data.lastupdated)));
+					printf("   Current time: %s\n", (char*)asctime(localtime(&current)));
+					printf("Use --force to override this message.\n");
+					exit(EXIT_FAILURE);
+				} else {
+					if (debug)
+						printf("\"%s\" not updated, %s > %s.\n", data.interface, (char*)asctime(localtime(&data.lastupdated)), (char*)asctime(localtime(&current)));
+				}
+			}
+		}
+
+		closedir(dir);
+		if (p->files==0) {
+			/* no database found */
+			p->update=0;
+		}
+
+	/* update only selected file */
+	} else {
+		p->newdb=readdb(p->interface, p->dirname);
+
+		if (!data.active) {
+			if (debug)
+				printf("Disabled interface \"%s\" not updated.\n", data.interface);
+			return;
+		}
+
+		if (!getifinfo(data.interface) && !p->force) {
+			getiflist(&p->ifacelist);
+			printf("Error: Interface \"%s\" couldn't be found.\n Only available interfaces can be added for monitoring.\n", data.interface);
+			printf("\n The following interfaces are currently available:\n    %s\n", p->ifacelist);
+			free(p->ifacelist);
+			exit(EXIT_FAILURE);
+		}
+		parseifinfo(p->newdb);
+		if ((current>=data.lastupdated) || p->force) {
+			if (strcmp(p->nick, "none")!=0)
+				strncpy(data.nick, p->nick, 32);
+			writedb(p->interface, p->dirname, p->newdb);
+		} else {
+			/* print error if previous update is more than 6 hours in the future */
+			/* otherwise do nothing */
+			if (data.lastupdated>=(current+21600)) {
+				printf("Error: The previous update was after the current date.\n\n");
+				printf("Previous update: %s", (char*)asctime(localtime(&data.lastupdated)));
+				printf("   Current time: %s\n", (char*)asctime(localtime(&current)));
+				printf("Use --force to override this message.\n");
+				exit(EXIT_FAILURE);
+			} else {
+				if (debug)
+					printf("\"%s\" not updated, %s > %s.\n", data.interface, (char*)asctime(localtime(&data.lastupdated)), (char*)asctime(localtime(&current)));
 			}
 		}
 	}
@@ -766,74 +781,53 @@ void handleshowdatabases(PARAMS *p)
 	DIR *dir=NULL;
 	struct dirent *di=NULL;
 
-	/* show databases */
-	if (p->query) {
+	if (!p->query) {
+		return;
+	}
 
-		/* show all interfaces if -i isn't specified */
-		if (p->defaultiface) {
+	/* show all interfaces if -i isn't specified */
+	if (p->defaultiface) {
 
-			if (p->files==0) {
-				/* printf("No database found.\n"); */
-				p->query=0;
-			} else if ((cfg.qmode==0 || cfg.qmode==8) && (p->files>1)) {
+		if (p->files==0) {
+			/* printf("No database found.\n"); */
+			p->query=0;
+		} else if ((cfg.qmode==0 || cfg.qmode==8) && (p->files>1)) {
 
-				if (cfg.qmode==0) {
-					if (cfg.ostyle!=0) {
-						printf("\n                      rx      /      tx      /     total    /   estimated\n");
-					} else {
-						printf("\n                      rx      /      tx      /     total\n");
-					}
+			if (cfg.qmode==0) {
+				if (cfg.ostyle!=0) {
+					printf("\n                      rx      /      tx      /     total    /   estimated\n");
 				} else {
-					printf("<vnstat version=\"%s\" xmlversion=\"%d\">\n", VNSTATVERSION, XMLVERSION);
+					printf("\n                      rx      /      tx      /     total\n");
 				}
-				dir=opendir(p->dirname);
-				while ((di=readdir(dir))) {
-					if (di->d_name[0]!='.') {
-						strncpy(p->interface, di->d_name, 32);
-						if (debug)
-							printf("\nProcessing file \"%s/%s\"...\n", p->dirname, p->interface);
-						p->newdb=readdb(p->interface, p->dirname);
-						if (!p->newdb) {
-							if (cfg.qmode==0) {
-								showdb(5);
-							} else {
-								showxml();
-							}
-						}
-					}
-				}
-				closedir(dir);
-				if (cfg.qmode==8) {
-					printf("</vnstat>\n");
-				}
-
-			/* show in qmode if there's only one file or qmode!=0 */
 			} else {
-				if (!p->merged) {
-					p->newdb=readdb(p->definterface, p->dirname);
+				printf("<vnstat version=\"%s\" xmlversion=\"%d\">\n", VNSTATVERSION, XMLVERSION);
+			}
+			dir=opendir(p->dirname);
+			while ((di=readdir(dir))) {
+				if (di->d_name[0]=='.') {
+					continue;
 				}
+				strncpy(p->interface, di->d_name, 32);
+				if (debug)
+					printf("\nProcessing file \"%s/%s\"...\n", p->dirname, p->interface);
+				p->newdb=readdb(p->interface, p->dirname);
 				if (!p->newdb) {
-					if (cfg.qmode==5) {
-						if (cfg.ostyle!=0) {
-							printf("\n                      rx      /      tx      /     total    /   estimated\n");
-						} else {
-							printf("\n                      rx      /      tx      /     total\n");
-						}
-					}
-					if (cfg.qmode!=8) {
-						showdb(cfg.qmode);
+					if (cfg.qmode==0) {
+						showdb(5);
 					} else {
-						printf("<vnstat version=\"%s\" xmlversion=\"%d\">\n", VNSTATVERSION, XMLVERSION);
 						showxml();
-						printf("</vnstat>\n");
 					}
 				}
 			}
+			closedir(dir);
+			if (cfg.qmode==8) {
+				printf("</vnstat>\n");
+			}
 
-		/* show only specified file */
+		/* show in qmode if there's only one file or qmode!=0 */
 		} else {
 			if (!p->merged) {
-				p->newdb=readdb(p->interface, p->dirname);
+				p->newdb=readdb(p->definterface, p->dirname);
 			}
 			if (!p->newdb) {
 				if (cfg.qmode==5) {
@@ -850,6 +844,28 @@ void handleshowdatabases(PARAMS *p)
 					showxml();
 					printf("</vnstat>\n");
 				}
+			}
+		}
+
+	/* show only specified file */
+	} else {
+		if (!p->merged) {
+			p->newdb=readdb(p->interface, p->dirname);
+		}
+		if (!p->newdb) {
+			if (cfg.qmode==5) {
+				if (cfg.ostyle!=0) {
+					printf("\n                      rx      /      tx      /     total    /   estimated\n");
+				} else {
+					printf("\n                      rx      /      tx      /     total\n");
+				}
+			}
+			if (cfg.qmode!=8) {
+				showdb(cfg.qmode);
+			} else {
+				printf("<vnstat version=\"%s\" xmlversion=\"%d\">\n", VNSTATVERSION, XMLVERSION);
+				showxml();
+				printf("</vnstat>\n");
 			}
 		}
 	}
