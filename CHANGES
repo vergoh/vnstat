@@ -1,3 +1,23 @@
+1.12 / ??
+
+ - Fix: Memory allocation when zero interfaces are available, also lo needed
+   to be missing in order to trigger this leak
+ - Fix: Rebuild total indexing (thanks to William Epp for reporting this)
+ - Fix: Some error situations could leave database file open until the end
+   of command execution
+ - Fix: Live traffic meter occasionally showing higher minimum than average
+   in end statistics (Debian Bug #687812)
+ - Improve traffic meter output accuracy
+ - Add tests and debug compilation target
+ - Remove use of -D parameter in Makefile install commands in order to
+   improve cross-compilation support
+ - Set CFLAGS in Makefiles only when not already defined
+ - Add support for database import from text file (--importdb)
+   (based on patch by Tilmann Bubeck)
+ - Rename --dumpdb to --exportdb
+ - Code refactoring
+
+
 1.11 / 1-Jun-11
 
  - Fix: Memory allocation was miscalculated when creating interface list from
@@ -10,6 +30,7 @@
  - Remove usage of GNU only '-D' option for install for BSD in Makefile
  - The daemon now automatically creates databases for available interfaces
    if no databases are found during startup
+
 
 1.10 / 2-Jan-10
 
