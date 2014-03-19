@@ -45,10 +45,12 @@ and most can be changed later from the config file.
 */
 
 /* location of the database directory */
+#ifndef DATABASEDIR
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__)
 #define DATABASEDIR "/var/db/vnstat"
 #else
 #define DATABASEDIR "/var/lib/vnstat"
+#endif
 #endif
 
 /* on which day should months change */
@@ -91,7 +93,9 @@ and most can be changed later from the config file.
 #define RATEUNIT 1
 
 /* default interface */
+#ifndef DEFIFACE
 #define DEFIFACE "eth0"
+#endif
 
 /* default locale */
 #define LOCALE "-"
@@ -154,7 +158,14 @@ and most can be changed later from the config file.
 #define LIVETIME 2
 
 /* /proc/net/dev */
+#ifndef PROCNETDEV
 #define PROCNETDEV "/proc/net/dev"
+#endif
+
+/* /sys/class/net */
+#ifndef SYSCLASSNET
+#define SYSCLASSNET "/sys/class/net"
+#endif
 
 /* daemon defaults */
 #define UPDATEINTERVAL 30

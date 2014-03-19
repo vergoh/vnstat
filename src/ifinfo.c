@@ -77,7 +77,7 @@ int getiflist(char **ifacelist)
 
 	} else {
 
-		if ((dp=opendir("/sys/class/net"))!=NULL) {
+		if ((dp=opendir(SYSCLASSNET))!=NULL) {
 
 			/* make list of interfaces */
 			while ((di=readdir(dp))) {
@@ -176,7 +176,7 @@ int readsysclassnet(const char *iface)
 
 	strncpy(ifinfo.name, iface, 32);
 
-	snprintf(path, 64, "/sys/class/net/%s/statistics", iface);
+	snprintf(path, 64, "%s/%s/statistics", SYSCLASSNET, iface);
 
 	if (debug)
 		printf("path: %s\n", path);
