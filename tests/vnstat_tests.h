@@ -7,6 +7,7 @@ Suite *test_suite(void);
 void suppress_output(void);
 void disable_logprints(void);
 int clean_testdbdir(void);
+int remove_directory(const char *directory);
 int create_zerosize_dbfile(const char *iface);
 int check_dbfile_exists(const char *iface, const int minsize);
 

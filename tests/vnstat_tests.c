@@ -18,6 +18,8 @@ int main(void)
 	number_failed = srunner_ntests_failed(sr);
 	srunner_free(sr);
 
+	remove_directory(TESTDBDIR);
+
 	return number_failed;
 }
 
@@ -47,29 +49,66 @@ void disable_logprints(void)
 
 int clean_testdbdir(void)
 {
-	DIR *dir = NULL;
-	struct dirent *di = NULL;
-	char filename[512];
+	struct stat statbuf;
 
-	if ((dir=opendir(TESTDBDIR))==NULL) {
+	if (stat(TESTDBDIR, &statbuf)!=0) {
 		if (errno==ENOENT) {
 			if (mkdir(TESTDBDIR, 0755)==0) {
 				return 1;
 			}
 			ck_abort_msg("error \"%s\" while creating directory \"%s\", please remove it manually", strerror(errno), TESTDBDIR);
 		}
-		ck_abort_msg("error \"%s\" while handling directory \"%s\", please remove it manually", strerror(errno), TESTDBDIR);
+	}
+
+	if (!remove_directory(TESTDBDIR)) {
+		ck_abort_msg("error \"%s\" while removing directory \"%s\", please remove it manually", strerror(errno), TESTDBDIR);
+	}
+
+	if (mkdir(TESTDBDIR, 0755)!=0) {
+		ck_abort_msg("error \"%s\" while creating directory \"%s\", please remove it manually", strerror(errno), TESTDBDIR);
+	}
+
+	return 1;
+}
+
+int remove_directory(const char *directory)
+{
+	DIR *dir = NULL;
+	struct dirent *di = NULL;
+	char entryname[512];
+
+	if ((dir=opendir(directory))==NULL) {
+		if (errno==ENOENT) {
+			return 1;
+		} else {
+			return 0;
+		}
 	}
 
 	while ((di=readdir(dir))) {
-		if (di->d_type==DT_REG) {
-			snprintf(filename, 512, "%s/%s", TESTDBDIR, di->d_name);
-			if (unlink(filename)!=0) {
-				ck_abort_msg("error \"%s: %s\" while cleaning directory \"%s\", please remove it manually", filename, strerror(errno), TESTDBDIR);
-			}
+		switch (di->d_type) {
+			case DT_REG:
+				snprintf(entryname, 512, "%s/%s", directory, di->d_name);
+				if (unlink(entryname)!=0) {
+					return 0;
+				}
+				break;
+			case DT_DIR:
+				if (strlen(di->d_name)>2) {
+					snprintf(entryname, 512, "%s/%s", directory, di->d_name);
+					if (!remove_directory(entryname)) {
+						return 0;
+					}
+				}
+				break;
+			default:
+				return 0;
 		}
 	}
 	closedir(dir);
+	if (rmdir(directory)!=0) {
+		return 0;
+	}
 
 	return 1;
 }
