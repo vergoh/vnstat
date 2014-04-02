@@ -1,4 +1,4 @@
-.TH VNSTAT 1 "MARCH 2014" "version 1.12" "User Manuals"
+.TH VNSTAT 1 "APRIL 2014" "version 1.12" "User Manuals"
 .SH NAME
 
 vnstat \- a console-based network traffic monitor
@@ -121,7 +121,8 @@ Remove all top10 entries.
 .BI "--config " file
 Use
 .I file
-as config file instead of using normal config file search function.
+as configuration file instead of using normal configuration file search
+functionality.
 
 .TP
 .BI "-d, --days"
@@ -360,7 +361,7 @@ traffic values in the output are in KiB.
 
 .TP
 .BI "-?, --help"
-Show a command summary.
+Show a command option summary.
 
 .SH FILES
 
@@ -411,10 +412,10 @@ Delete database of interface eth2 and stop monitoring it.
 .SH RESTRICTIONS
 
 Updates needs to be executed at least as often as it is possible for the interface
-to generate enough traffic to wrap the kernel interface traffic counter. Otherwise
+to generate enough traffic to overflow the kernel interface traffic counter. Otherwise,
 it is possible that some traffic won't be seen. This isn't an issue for 64 bit kernels
 but at least one update every hour is always required in order to provide proper input.
-With 32 bit kernels the maximum time between two updates depends on how fast the
+With 32 bit kernels, the maximum time between two updates depends on how fast the
 interface can transfer 4 GiB. Calculated theoretical times are:
 .RS
 .TS
@@ -425,8 +426,8 @@ l l.
 .TE
 .RE
 
-However, for 1000 Mbit interfaces updating once every minute is usually still a
-working option.
+However, for 1000 Mbit interfaces updating once every minute is usually a
+useable solution if faster updates can't be used.
 .PP
 Estimated traffic values are likely to be somewhat inaccurate if daily
 traffic is low because only the MiB counter is used to calculate the

@@ -1,4 +1,4 @@
-.TH VNSTATD 1 "MARCH 2014" "version 1.12" "User Manuals"
+.TH VNSTATD 1 "APRIL 2014" "version 1.12" "User Manuals"
 .SH NAME
 
 vnstatd \- daemon based database updating for vnStat
@@ -39,9 +39,9 @@ is to provide a more flexible way for updating
 databases than what using cron for updating can provide. The daemon makes
 possible updating databases more often but at the same time requires
 less disk access since data can be cached and written only later to disk
-at a user configurable interval. It is also able to track how interfaces
-come and go without the need of additional scripts that are required with
-cron based updates.
+at a user configurable interval. The availability of each interface is
+automatically tracked which removes the need for additional scripts to be
+implemented and called when an interface comes online or goes offline.
 .PP
 .B vnstatd
 is the command for starting the daemon. The daemon can either fork
@@ -52,6 +52,7 @@ Once started, the daemon will check if there are any databases available
 in the database directory that has been specified in the configuration
 file. New databases will be created for all available interfaces excluding
 pseudo interfaces lo, lo0 and sit0 if no databases are found during startup.
+This behaviour can however be disabled if needed.
 
 .SH OPTIONS
 
@@ -59,7 +60,8 @@ pseudo interfaces lo, lo0 and sit0 if no databases are found during startup.
 .BI "--config " file
 Use
 .I file
-as config file instead of using normal config file search function.
+as configuration file instead of using normal configuration file search
+functionality.
 
 .TP
 .BI "-d, --daemon"
@@ -78,7 +80,7 @@ lo, lo0 and sit0 are excluded from getting added.
 
 .TP
 .BI "-n, --nodaemon"
-Stay in foreground attached to the current terminal and start update
+Stay in foreground attached to the current terminal and start the update
 process.
 
 .TP
@@ -103,11 +105,11 @@ clearly out of sync.
 
 .TP
 .BI "-v, --version"
-Show current version.
+Show current version of the daemon executable.
 
 .TP
 .BI "-?, --help"
-Show a command summary.
+Show a command option summary.
 
 .SH CONFIGURATION
 
@@ -120,7 +122,7 @@ in the configuration file.
 
 .PP
 .BR UpdateInterval
-defines in seconds how often the interface data is updated.
+defines in seconds how often the interface data is fetched and updated.
 This is similar to the run interval for alternative cron based updating.
 However, the difference is that the data doesn't get written to disk
 during updates.
@@ -174,8 +176,8 @@ Sending the
 .BR SIGHUP
 signal to the daemon will cause cached data to be written to disk,
 a rescan of the database directory and a reload of settings from the
-configuration file. However, the pid file will not be updated even if
-it's configuration setting has been changed.
+configuration file. However, the pid file location will not be changed
+even if it's configuration setting has been modified.
 
 .PP
 .BR SIGTERM
@@ -209,10 +211,10 @@ configuration file or using the command line parameter.
 .SH RESTRICTIONS
 
 Updates needs to be executed at least as often as it is possible for the interface
-to generate enough traffic to wrap the kernel interface traffic counter. Otherwise
+to generate enough traffic to overflow the kernel interface traffic counter. Otherwise,
 it is possible that some traffic won't be seen. This isn't an issue for 64 bit kernels
 but at least one update every hour is always required in order to provide proper input.
-With 32 bit kernels the maximum time between two updates depends on how fast the
+With 32 bit kernels, the maximum time between two updates depends on how fast the
 interface can transfer 4 GiB. Calculated theoretical times are:
 .RS
 .TS
@@ -224,7 +226,7 @@ l l.
 .RE
 
 However, for 1000 Mbit interfaces updating once every minute is usually a
-working solution.
+useable solution if faster updates can't be used.
 .PP
 Virtual and aliased interfaces cannot be monitored because the kernel doesn't
 provide traffic information for that type of interfaces. Such interfaces are
