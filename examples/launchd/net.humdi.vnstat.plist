@@ -10,6 +10,15 @@
         <string>-n</string>
     </array>
     <key>KeepAlive</key>
+    <dict>
+        <key>NetworkState</key>
+        <true/>
+    </dict>
+    <key>RunAtLoad</key>
     <true/>
+    <key>WorkingDirectory</key>
+    <string>/</string>
+    <key>ProcessType</key>
+    <string>Background</string>
 </dict>
 </plist>
