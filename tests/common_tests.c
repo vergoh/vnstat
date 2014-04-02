@@ -95,7 +95,7 @@ START_TEST(countercalc_32bit)
 
 	a = 1;
 	b = 0;
-	ck_assert(countercalc(&a, &b)==(FP32-1));
+	ck_assert(countercalc(&a, &b)==(MAX32-1));
 }
 END_TEST
 
@@ -103,9 +103,9 @@ START_TEST(countercalc_64bit)
 {
 	uint64_t a, b;
 
-	a = FP32+1;
+	a = MAX32+1;
 	b = 0;
-	ck_assert(countercalc(&a, &b)==(FP64-FP32-1));
+	ck_assert(countercalc(&a, &b)==(MAX64-MAX32-1));
 }
 END_TEST
 

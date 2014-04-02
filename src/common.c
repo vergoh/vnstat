@@ -184,16 +184,16 @@ uint64_t countercalc(const uint64_t *a, const uint64_t *b)
 	/* flip exists */
 	} else {
 		/* original counter is 64bit */
-		if (*a>FP32) {
+		if (*a>MAX32) {
 			if (debug)
-				printf("cc64: uint64 - %"PRIu64" + %"PRIu64" = %"PRIu64"\n", *a, *b, (uint64_t)FP64-*a+*b);
-			return FP64-*a+*b;
+				printf("cc64: uint64 - %"PRIu64" + %"PRIu64" = %"PRIu64"\n", *a, *b, (uint64_t)MAX64-*a+*b);
+			return MAX64-*a+*b;
 
 		/* original counter is 32bit */
 		} else {
 			if (debug)
-				printf("cc32: uint32 - %"PRIu64" + %"PRIu64" = %"PRIu64"\n", *a, *b, (uint64_t)FP32-*a+*b);
-			return FP32-*a+*b;
+				printf("cc32: uint32 - %"PRIu64" + %"PRIu64" = %"PRIu64"\n", *a, *b, (uint64_t)MAX32-*a+*b);
+			return MAX32-*a+*b;
 		}
 	}
 }

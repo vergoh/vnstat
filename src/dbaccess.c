@@ -202,7 +202,7 @@ void initdb(void)
 		data.month[0].month=current;
 	}
 
-	data.btime=FP32;
+	data.btime=MAX32;
 }
 
 int writedb(const char *iface, const char *dirname, int newdb)

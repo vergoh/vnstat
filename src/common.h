@@ -150,8 +150,8 @@ and most can be changed later from the config file.
 #define ONELINEVERSION 1
 
 /* integer limits */
-#define FP32 4294967295ULL
-#define FP64 18446744073709551615ULL
+#define MAX32 4294967295ULL
+#define MAX64 18446744073709551615ULL
 
 /* sampletime in seconds for live traffic */
 /* don't use values below 2 */
