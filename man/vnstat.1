@@ -115,7 +115,7 @@ without root permissions on most systems.
 
 .TP
 .BI "--cleartop"
-Remove all top10 entries.
+Remove all top 10 entries.
 
 .TP
 .BI "--config " file
@@ -191,7 +191,7 @@ l l.
       h;0;1078699800;118265;516545	(x24)
 .TE
 
-m = months, t = top10 and h = hours, all other fields are in the same order as in days
+m = months, t = top 10 and h = hours, all other fields are in the same order as in days
 except hours that doesn't have a separate KiB value. For hours the forth and fifth fields
 have values in KiB.
 
@@ -208,7 +208,7 @@ which was previously exported using the
 option. This can be used to transfer a database between different architectures and
 machines, as the database is architecture dependant and not compatible between
 different architectures. First dump the database on one machine, e.g. with
-.B "vnstat -i ppp0 --exportdb > ppp0db.txt"
+.B "vnstat -i ppp0 --exportdb >ppp0db.txt"
 and then import the text file on a different machine using
 .B "vnstat -i ppp0 --importdb ppp0db.txt"
 
@@ -216,7 +216,10 @@ and then import the text file on a different machine using
 .BI "-i, --iface " interface
 Select one specific
 .I interface
-and apply actions to only it.
+and apply actions to only it. For queries, it is possible to merge the
+information of two or more interfaces using the
+.I interface1+interface2+...
+syntax.
 
 .TP
 .BI "--iflist"
@@ -295,8 +298,11 @@ parameter for this option in order to select between bytes (0) and bits
 .BI "--savemerged"
 Write the end result of a database merge to the file 
 .I mergeddb
-that can then be used as a new database if renamed. Top10 traffic days
+that can then be used as a new database if renamed. Top 10 traffic days
 isn't included in the merge and will start empty in the new database.
+The merge interface syntax is documented in
+.B "-i, --iface"
+option.
 
 .TP
 .BI "-s, --short"
@@ -329,7 +335,7 @@ if it's shifting.
 
 .TP
 .BI "-t, --top10"
-Show all time top10 traffic days.
+Show all time top 10 traffic days.
 
 .TP
 .BI "-tr " time
