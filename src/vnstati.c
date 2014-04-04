@@ -284,13 +284,13 @@ int main(int argc, char *argv[])
 	/* open file */	
 	if (filename[0]!='-') {
 		if ((pngout = fopen(filename, "w"))==NULL) {
-			printf("Error: Opening file \"%s\" for output failed.\n", filename);
+			printf("Error: Opening file \"%s\" for output failed: %s\n", filename, strerror(errno));
 			return 1;
 		}
 	} else {
 		/* output to stdout */
 		if ((pngout = fdopen(1, "w"))==NULL) {
-			printf("Error: Opening stdout for output failed.\n");
+			printf("Error: Opening stdout for output failed: %s\n", strerror(errno));
 			return 1;
 		}
 	}

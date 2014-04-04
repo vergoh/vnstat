@@ -137,7 +137,7 @@ int getbtime(void)
 	char temp[64], statline[128];
 
 	if ((fp=fopen("/proc/stat","r"))==NULL) {
-		snprintf(errorstring, 512, "Unable to read /proc/stat.");
+		snprintf(errorstring, 512, "Unable to read /proc/stat: %s", strerror(errno));
 		printe(PT_Error);
 		if (noexit) {
 			return 0;

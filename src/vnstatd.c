@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
 
 	/* check that directory is ok */
 	if ((dir=opendir(dirname))==NULL) {
-		printf("Error: Unable to open database directory \"%s\".\n", dirname);
+		printf("Error: Unable to open database directory \"%s\": %s\n", dirname, strerror(errno));
 		printf("Make sure it exists and is at least read enabled for current user.\n");
 		printf("Exiting...\n");
 		return 1;
@@ -188,7 +188,7 @@ int main(int argc, char *argv[])
 	}
 
 	/* main loop */
-	while(running) {
+	while (running) {
 
 		/* keep track of time */
 		current = time(NULL);
@@ -250,7 +250,7 @@ int main(int argc, char *argv[])
 					}
 
 				} else {
-					snprintf(errorstring, 512, "Unable to access database directory \"%s\", exiting.", dirname);
+					snprintf(errorstring, 512, "Unable to access database directory \"%s\" (%s), exiting.", dirname, strerror(errno));
 					printe(PT_Error);
 
 					/* clean daemon stuff before exit */

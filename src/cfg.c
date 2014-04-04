@@ -221,7 +221,7 @@ int loadcfg(const char *cfgfile)
 			if (debug)
 				printf("Config file: --config\n");
 		} else {
-			snprintf(errorstring, 512, "Unable to open given config file \"%s\".\n", cfgfile);
+			snprintf(errorstring, 512, "Unable to open given config file \"%s\": %s\n", cfgfile, strerror(errno));
 			printe(PT_Error);
 			return 0;
 		}

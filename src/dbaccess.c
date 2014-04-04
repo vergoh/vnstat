@@ -49,7 +49,7 @@ int readdb(const char *iface, const char *dirname)
 					}
 
 					if (fread(&data,sizeof(DATA),1,db)==0) {
-						snprintf(errorstring, 512, "Database load failed even when using backup. Aborting.");
+						snprintf(errorstring, 512, "Database load failed even when using backup (%s). Aborting.", strerror(errno));
 						printe(PT_Error);
 						fclose(db);
 
@@ -80,7 +80,7 @@ int readdb(const char *iface, const char *dirname)
 					snprintf(errorstring, 512, "Database possibly corrupted, using backup instead.");
 					printe(PT_Info);
 				} else {
-					snprintf(errorstring, 512, "Unable to open backup database \"%s\".", backup);
+					snprintf(errorstring, 512, "Unable to open backup database \"%s\": %s", backup, strerror(errno));
 					printe(PT_Error);
 					if (noexit) {
 						return -1;
@@ -119,7 +119,7 @@ int readdb(const char *iface, const char *dirname)
 			strncpy(data.interface, iface, 32);
 		}
 	} else {
-		snprintf(errorstring, 512, "Unable to read database \"%s\".",file);
+		snprintf(errorstring, 512, "Unable to read database \"%s\": %s", file, strerror(errno));
 		printe(PT_Error);
 
 		newdb=1;
@@ -237,7 +237,7 @@ int writedb(const char *iface, const char *dirname, int newdb)
 		}
 
 		if (fwrite(&data,sizeof(DATA),1,db)==0) {
-			snprintf(errorstring, 512, "Unable to write database \"%s\".", file);
+			snprintf(errorstring, 512, "Unable to write database \"%s\": %s", file, strerror(errno));
 			printe(PT_Error);
 			fclose(db);
 			return 0;
@@ -252,7 +252,7 @@ int writedb(const char *iface, const char *dirname, int newdb)
 			}
 		}
 	} else {
-		snprintf(errorstring, 512, "Unable to write database \"%s\".", file);
+		snprintf(errorstring, 512, "Unable to open database \"%s\" for writing: %s", file, strerror(errno));
 		printe(PT_Error);
 		return 0;
 	}
@@ -466,7 +466,7 @@ int convertdb(FILE *db)
 		}
 
 		/* set basic values */
-		data.version=3;	
+		data.version=3;
 		strncpy(data.interface, data12.interface, 32);
 		strncpy(data.nick, data12.nick, 32);
 		data.active=data12.active;
@@ -914,7 +914,7 @@ int importdb(const char *filename)
 	HOUR hour;
 
 	if ((input=fopen(filename, "r"))==NULL) {
-		printf("Error: opening file \"%s\" failed. %s.\n", filename, strerror(errno));
+		printf("Error: opening file \"%s\" failed: %s\n", filename, strerror(errno));
 		return 0;
 	}
 

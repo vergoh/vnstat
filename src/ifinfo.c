@@ -123,7 +123,7 @@ int readproc(const char *iface)
 
 	if ((fp=fopen(PROCNETDEV, "r"))==NULL) {
 		if (debug)
-			printf("Error: Unable to read %s.\n", PROCNETDEV);
+			printf("Error: Unable to read %s: %s\n", PROCNETDEV, strerror(errno));
 		return 0;
 	}
 
@@ -185,7 +185,7 @@ int readsysclassnet(const char *iface)
 	snprintf(file, 76, "%s/rx_bytes", path);
 	if ((fp=fopen(file, "r"))==NULL) {
 		if (debug)
-			printf("Unable to read: %s\n", file);
+			printf("Unable to read: %s - %s\n", file, strerror(errno));
 		return 0;
 	} else {
 		if (fgets(buffer, 64, fp)!=NULL) {
@@ -200,7 +200,7 @@ int readsysclassnet(const char *iface)
 	snprintf(file, 76, "%s/tx_bytes", path);
 	if ((fp=fopen(file, "r"))==NULL) {
 		if (debug)
-			printf("Unable to read: %s\n", file);
+			printf("Unable to read: %s - %s\n", file, strerror(errno));
 		return 0;
 	} else {
 		if (fgets(buffer, 64, fp)!=NULL) {
@@ -218,7 +218,7 @@ int readsysclassnet(const char *iface)
 		snprintf(file, 76, "%s/rx_packets", path);
 		if ((fp=fopen(file, "r"))==NULL) {
 			if (debug)
-				printf("Unable to read: %s\n", file);
+				printf("Unable to read: %s - %s\n", file, strerror(errno));
 			return 0;
 		} else {
 			if (fgets(buffer, 64, fp)!=NULL) {
@@ -233,7 +233,7 @@ int readsysclassnet(const char *iface)
 		snprintf(file, 76, "%s/tx_packets", path);
 		if ((fp=fopen(file, "r"))==NULL) {
 			if (debug)
-				printf("Unable to read: %s\n", file);
+				printf("Unable to read: %s - %s\n", file, strerror(errno));
 			return 0;
 		} else {
 			if (fgets(buffer, 64, fp)!=NULL) {

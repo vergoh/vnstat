@@ -307,7 +307,7 @@ int main(int argc, char *argv[]) {
 			}
 			closedir(dir);
 		} else {
-			printf("Error: Unable to open database directory \"%s\".\n", p.dirname);
+			printf("Error: Unable to open database directory \"%s\": %s\n", p.dirname, strerror(errno));
 			printf("Make sure it exists and is at least read enabled for current user.\n");
 			printf("Exiting...\n");
 			return 1;
