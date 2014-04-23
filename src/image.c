@@ -421,7 +421,7 @@ void drawsummary(int type, int showheader, int showedge, int rate)
 
 	/* change daytemp to today if formated days match */
 	if (strcmp(datebuff, daytemp)==0) {
-		strncpy(daytemp, "today", 32);
+		strncpy_nt(daytemp, "today", 32);
 	}
 
 	snprintf(buffer, 32, "%12s", daytemp);
@@ -486,7 +486,7 @@ void drawsummary(int type, int showheader, int showedge, int rate)
 
 		/* change daytemp to yesterday if formated days match */
 		if (strcmp(datebuff, daytemp)==0) {
-			strncpy(daytemp, "yesterday", 32);
+			strncpy_nt(daytemp, "yesterday", 32);
 		}
 
 		snprintf(buffer, 32, "%12s", daytemp);
@@ -765,7 +765,7 @@ void drawoldsummary(int type, int showheader, int showedge, int rate)
 
 	/* change daytemp to yesterday if formated days match */
 	if (strcmp(datebuff, daytemp)==0) {
-		strncpy(daytemp, "yesterday", 32);
+		strncpy_nt(daytemp, "yesterday", 32);
 	}
 
 	/* get formated date for today */
@@ -778,7 +778,7 @@ void drawoldsummary(int type, int showheader, int showedge, int rate)
 
 	/* change daytemp to today if formated days match */
 	if (strcmp(datebuff, daytemp2)==0) {
-		strncpy(daytemp2, "today", 32);
+		strncpy_nt(daytemp2, "today", 32);
 	}
 
 	textx = 20;

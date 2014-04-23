@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 				debug = 1;
 			} else if (strcmp(argv[currentarg],"--config")==0) {
 				if (currentarg+1<argc) {
-					strncpy(cfgfile, argv[currentarg+1], 512);
+					strncpy_nt(cfgfile, argv[currentarg+1], 512);
 					cfgfile[511] = '\0';
 					if (debug)
 						printf("Used config file: %s\n", cfgfile);
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 	}
 
 	/* init dirname and other config settings */
-	strncpy(dirname, cfg.dbdir, 512);
+	strncpy_nt(dirname, cfg.dbdir, 512);
 	updateinterval = cfg.updateinterval;
 	saveinterval = cfg.saveinterval*60;
 
@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 			return 0;
 		} else if ((strcmp(argv[currentarg],"-p")==0) || (strcmp(argv[currentarg],"--pidfile")==0)) {
 			if (currentarg+1<argc) {
-				strncpy(cfg.pidfile, argv[currentarg+1], 512);
+				strncpy_nt(cfg.pidfile, argv[currentarg+1], 512);
 				cfg.pidfile[511] = '\0';
 				if (debug)
 					printf("Used pid file: %s\n", cfg.pidfile);
@@ -407,7 +407,7 @@ int main(int argc, char *argv[])
 					dbcount = 0;
 					ibwflush();
 					if (loadcfg(cfgfile)) {
-						strncpy(dirname, cfg.dbdir, 512);
+						strncpy_nt(dirname, cfg.dbdir, 512);
 					}
 					break;
 
@@ -568,7 +568,7 @@ int addinterfaces(const char *dirname)
 	if (debug)
 		printf("Interface list: \"%s\"\n", ifacelist);
 
-	while (sscanf(ifacelist+index, "%32s", interface)!=EOF) {
+	while (sscanf(ifacelist+index, "%31s", interface)!=EOF) {
 		if (debug)
 			printf("Processing: \"%s\"\n", interface);
 
@@ -583,8 +583,8 @@ int addinterfaces(const char *dirname)
 
 		/* create database for interface */
 		initdb();
-		strncpy(data.interface, interface, 32);
-		strncpy(data.nick, data.interface, 32);
+		strncpy_nt(data.interface, interface, 32);
+		strncpy_nt(data.nick, data.interface, 32);
 		if (!getifinfo(interface)) {
 			if (debug)
 				printf("getifinfo failed, skip\n");

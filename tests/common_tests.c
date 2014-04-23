@@ -274,6 +274,36 @@ START_TEST(addtraffic_with_multiple_kb_to_mb_conversions)
 }
 END_TEST
 
+START_TEST(strncpy_nt_with_below_maximum_length_string)
+{
+	char dst[6];
+
+	strncpy_nt(dst, "123", 6);
+	ck_assert_str_eq(dst, "123");
+}
+END_TEST
+
+START_TEST(strncpy_nt_with_maximum_length_string)
+{
+	char dst[6];
+
+	strncpy_nt(dst, "12345", 6);
+	ck_assert_str_eq(dst, "12345");
+}
+END_TEST
+
+START_TEST(strncpy_nt_with_over_maximum_length_string)
+{
+	char dst[6];
+
+	strncpy_nt(dst, "123456", 6);
+	ck_assert_str_eq(dst, "12345");
+
+	strncpy_nt(dst, "1234567890", 6);
+	ck_assert_str_eq(dst, "12345");
+}
+END_TEST
+
 void add_common_tests(Suite *s)
 {
 	/* Common test cases */
@@ -294,5 +324,8 @@ void add_common_tests(Suite *s)
 	tcase_add_test(tc_common, addtraffic_with_exact_kb_to_mb_conversion);
 	tcase_add_test(tc_common, addtraffic_with_inexact_kb_to_mb_conversion);
 	tcase_add_test(tc_common, addtraffic_with_multiple_kb_to_mb_conversions);
+	tcase_add_test(tc_common, strncpy_nt_with_below_maximum_length_string);
+	tcase_add_test(tc_common, strncpy_nt_with_maximum_length_string);
+	tcase_add_test(tc_common, strncpy_nt_with_over_maximum_length_string);
 	suite_add_tcase(s, tc_common);
 }

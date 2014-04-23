@@ -29,7 +29,7 @@ int cacheadd(const char *iface, int sync)
 
 	n->next = dataptr;
 	dataptr = n;
-	strncpy(n->data.interface, iface, 32);
+	strncpy_nt(n->data.interface, iface, 32);
 	n->data.interface[31] = '\0';
 	n->data.active = 1;
 	n->filled = 0;
@@ -174,7 +174,7 @@ void cachestatus(void)
 	}
 
 	if (count) {
-		strncpy(errorstring, buffer, 512);
+		strncpy_nt(errorstring, buffer, 512);
 		errorstring[511] = '\0';
 	} else {
 		snprintf(errorstring, 512, "Nothing to monitor");
@@ -290,7 +290,7 @@ uint32_t dbcheck(uint32_t dbhash, int *forcesave)
 				found = offset = 0;
 
 				while (offset <= (int)strlen(ifacelist)) {
-					sscanf(ifacelist+offset, "%32s", interface);
+					sscanf(ifacelist+offset, "%31s", interface);
 					if (strcmp(p->data.interface, interface)==0) {
 						found = 1;
 						break;

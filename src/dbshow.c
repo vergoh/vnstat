@@ -50,14 +50,13 @@ void showsummary(void)
 	struct tm *d;
 	char datebuff[16];
 	char daytemp[32], daytemp2[32];
-	uint64_t e_rx, e_tx, t_rx, t_tx;
-	int t_rxk, t_txk;
+	uint64_t e_rx, e_tx;
 	time_t current, yesterday;
 
 	current=time(NULL);
 	yesterday=current-86400;
 
-	e_rx=e_tx=t_rx=t_tx=t_rxk=t_txk=0;
+	e_rx=e_tx=0;
 
 	/* get formated date for today */
 	d=localtime(&current);
@@ -69,7 +68,7 @@ void showsummary(void)
 
 	/* change daytemp to today if formated days match */
 	if (strcmp(datebuff, daytemp2)==0) {
-		strncpy(daytemp2, "    today", 32);
+		strncpy_nt(daytemp2, "    today", 32);
 	}
 
 	if (data.lastupdated) {
@@ -181,7 +180,7 @@ void showsummary(void)
 
 	/* change daytemp to yesterday if formated days match */
 	if (strcmp(datebuff, daytemp)==0) {
-		strncpy(daytemp, "yesterday", 32);
+		strncpy_nt(daytemp, "yesterday", 32);
 	}
 
 	/* use database update time for estimates */
@@ -257,14 +256,13 @@ void showshort(void)
 	struct tm *d;
 	char datebuff[16];
 	char daytemp[32], daytemp2[32];
-	uint64_t e_rx, e_tx, t_rx, t_tx;
-	int t_rxk, t_txk;
+	uint64_t e_rx, e_tx;
 	time_t current, yesterday;
 
 	current=time(NULL);
 	yesterday=current-86400;
 
-	e_rx=e_tx=t_rx=t_tx=t_rxk=t_txk=0;
+	e_rx=e_tx=0;
 
 	if (strcmp(data.interface, data.nick)==0) {
 		if (data.active)
@@ -322,7 +320,7 @@ void showshort(void)
 
 	/* change daytemp to today if formated days match */
 	if (strcmp(datebuff, daytemp2)==0) {
-		strncpy(daytemp2, "today", 32);
+		strncpy_nt(daytemp2, "today", 32);
 	}
 
 	/* use database update time for estimates */
@@ -347,7 +345,7 @@ void showshort(void)
 
 	/* change daytemp to yesterday if formated days match */
 	if (strcmp(datebuff, daytemp)==0) {
-		strncpy(daytemp, "yesterday", 32);
+		strncpy_nt(daytemp, "yesterday", 32);
 	}
 
 	if (data.day[1].date!=0) {
@@ -370,10 +368,10 @@ void showdays(void)
 	int i, used;
 	struct tm *d;
 	char datebuff[16];
-	uint64_t e_rx, e_tx, t_rx, t_tx, max;
-	int t_rxk, t_txk;
+	uint64_t e_rx, e_tx, t_rx, max;
+	int t_rxk;
 
-	e_rx=e_tx=t_rx=t_tx=t_rxk=t_txk=0;
+	e_rx=e_tx=t_rx=t_rxk=0;
 
 	printf("\n");
 	if (strcmp(data.interface, data.nick)==0) {
@@ -488,10 +486,10 @@ void showmonths(void)
 	int i, used;
 	struct tm *d;
 	char datebuff[16];
-	uint64_t e_rx, e_tx, t_rx, t_tx, max;
-	int t_rxk, t_txk;
+	uint64_t e_rx, e_tx, t_rx, max;
+	int t_rxk;
 
-	e_rx=e_tx=t_rx=t_tx=t_rxk=t_txk=0;
+	e_rx=e_tx=t_rx=t_rxk=0;
 
 	printf("\n");
 	if (strcmp(data.interface, data.nick)==0) {
@@ -604,10 +602,10 @@ void showtop(void)
 	int i, used;
 	struct tm *d;
 	char datebuff[16];
-	uint64_t t_rx, t_tx, max;
-	int t_rxk, t_txk;
+	uint64_t t_rx, max;
+	int t_rxk;
 
-	t_rx=t_tx=t_rxk=t_txk=0;
+	t_rx=t_rxk=0;
 
 	printf("\n");
 	if (strcmp(data.interface, data.nick)==0) {

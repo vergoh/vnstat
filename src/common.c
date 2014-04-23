@@ -217,3 +217,11 @@ uint64_t mbkbtokb(uint64_t mb, uint64_t kb)
 	}
 	return (mb*1024)+kb;
 }
+
+/* strncpy with ensured null termination */
+inline char *strncpy_nt(char *dest, const char *src, size_t n)
+{
+	strncpy(dest, src, n);
+	dest[n-1] = '\0';
+	return dest;
+}

@@ -229,7 +229,7 @@ int loadcfg(const char *cfgfile)
 	} else {
 
 		if (getenv("HOME")) {
-			strncpy(buffer, getenv("HOME"), 500);
+			strncpy_nt(buffer, getenv("HOME"), 500);
 			strcat(buffer, "/.vnstatrc");
 			tryhome = 1;
 		} else {
@@ -304,7 +304,7 @@ int loadcfg(const char *cfgfile)
 					if (strlen(value)!=0) {
 
 						if (cset[i].namelen>0) {
-							strncpy(cset[i].locc, value, cset[i].namelen);
+							strncpy_nt(cset[i].locc, value, cset[i].namelen);
 							cset[i].locc[cset[i].namelen-1]='\0';
 							if (debug)
 								printf("  c: %s   -> \"%s\": \"%s\"\n", cfgline, cset[i].name, cset[i].locc);
@@ -397,7 +397,7 @@ void validatecfg(void)
 	}
 
 	if (cfg.dbdir[0] != '/') {
-		strncpy(cfg.dbdir, DATABASEDIR, 512);
+		strncpy_nt(cfg.dbdir, DATABASEDIR, 512);
 		snprintf(errorstring, 512, "DatabaseDir doesn't start with \"/\", resetting to default.");
 		printe(PT_Config);
 	}
@@ -451,13 +451,13 @@ void validatecfg(void)
 	}
 
 	if (cfg.logfile[0] != '/') {
-		strncpy(cfg.logfile, LOGFILE, 512);
+		strncpy_nt(cfg.logfile, LOGFILE, 512);
 		snprintf(errorstring, 512, "LogFile doesn't start with \"/\", resetting to default.");
 		printe(PT_Config);
 	}
 
 	if (cfg.pidfile[0] != '/') {
-		strncpy(cfg.pidfile, PIDFILE, 512);
+		strncpy_nt(cfg.pidfile, PIDFILE, 512);
 		snprintf(errorstring, 512, "PidFile doesn't start with \"/\", resetting to default.");
 		printe(PT_Config);
 	}
@@ -511,17 +511,17 @@ void defaultcfg(void)
 	cfg.summaryrate = SUMMARYRATE;
 	cfg.slayout = SUMMARYLAYOUT;
 	cfg.traflessday = TRAFLESSDAY;
-	strncpy(cfg.dbdir, DATABASEDIR, 512);
-	strncpy(cfg.iface, DEFIFACE, 32);
-	strncpy(cfg.locale, LOCALE, 32);
-	strncpy(cfg.dformat, DFORMAT, 64);
-	strncpy(cfg.mformat, MFORMAT, 64);
-	strncpy(cfg.tformat, TFORMAT, 64);
-	strncpy(cfg.hformat, HFORMAT, 64);
-	strncpy(cfg.rxchar, RXCHAR, 1);
-	strncpy(cfg.txchar, TXCHAR, 1);
-	strncpy(cfg.rxhourchar, RXHOURCHAR, 1);
-	strncpy(cfg.txhourchar, TXHOURCHAR, 1);
+	strncpy_nt(cfg.dbdir, DATABASEDIR, 512);
+	strncpy_nt(cfg.iface, DEFIFACE, 32);
+	strncpy_nt(cfg.locale, LOCALE, 32);
+	strncpy_nt(cfg.dformat, DFORMAT, 64);
+	strncpy_nt(cfg.mformat, MFORMAT, 64);
+	strncpy_nt(cfg.tformat, TFORMAT, 64);
+	strncpy_nt(cfg.hformat, HFORMAT, 64);
+	strncpy_nt(cfg.rxchar, RXCHAR, 2);
+	strncpy_nt(cfg.txchar, TXCHAR, 2);
+	strncpy_nt(cfg.rxhourchar, RXHOURCHAR, 2);
+	strncpy_nt(cfg.txhourchar, TXHOURCHAR, 2);
 
 	cfg.updateinterval = UPDATEINTERVAL;
 	cfg.pollinterval = POLLINTERVAL;
@@ -529,22 +529,22 @@ void defaultcfg(void)
 	cfg.offsaveinterval = OFFSAVEINTERVAL;
 	cfg.savestatus = SAVESTATUS;
 	cfg.uselogging = USELOGGING;
-	strncpy(cfg.logfile, LOGFILE, 512);
-	strncpy(cfg.pidfile, PIDFILE, 512);
+	strncpy_nt(cfg.logfile, LOGFILE, 512);
+	strncpy_nt(cfg.pidfile, PIDFILE, 512);
 
 	cfg.transbg = TRANSBG;
-	strncpy(cfg.cbg, CBACKGROUND, 7);
-	strncpy(cfg.cedge, CEDGE, 7);
-	strncpy(cfg.cheader, CHEADER, 7);
-	strncpy(cfg.cheadertitle, CHEADERTITLE, 7);
-	strncpy(cfg.cheaderdate, CHEADERDATE, 7);
-	strncpy(cfg.ctext, CTEXT, 7);
-	strncpy(cfg.cline, CLINE, 7);
-	strncpy(cfg.clinel, CLINEL, 7);
-	strncpy(cfg.crx, CRX, 7);
-	strncpy(cfg.crxd, CRXD, 7);
-	strncpy(cfg.ctx, CTX, 7);
-	strncpy(cfg.ctxd, CTXD, 7);
+	strncpy_nt(cfg.cbg, CBACKGROUND, 8);
+	strncpy_nt(cfg.cedge, CEDGE, 8);
+	strncpy_nt(cfg.cheader, CHEADER, 8);
+	strncpy_nt(cfg.cheadertitle, CHEADERTITLE, 8);
+	strncpy_nt(cfg.cheaderdate, CHEADERDATE, 8);
+	strncpy_nt(cfg.ctext, CTEXT, 8);
+	strncpy_nt(cfg.cline, CLINE, 8);
+	strncpy_nt(cfg.clinel, CLINEL, 8);
+	strncpy_nt(cfg.crx, CRX, 8);
+	strncpy_nt(cfg.crxd, CRXD, 8);
+	strncpy_nt(cfg.ctx, CTX, 8);
+	strncpy_nt(cfg.ctxd, CTXD, 8);
 }
 
 int ibwadd(const char *iface, int limit)
@@ -562,7 +562,7 @@ int ibwadd(const char *iface, int limit)
 
 		n->next = ifacebw;
 		ifacebw = n;
-		strncpy(n->interface, iface, 32);
+		strncpy_nt(n->interface, iface, 32);
 		n->limit = limit;
 
 	} else {
@@ -585,7 +585,7 @@ int ibwadd(const char *iface, int limit)
 
 		n->next = ifacebw;
 		ifacebw = n;
-		strncpy(n->interface, iface, 32);
+		strncpy_nt(n->interface, iface, 32);
 		n->limit = limit;
 	}
 

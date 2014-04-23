@@ -511,6 +511,22 @@ START_TEST(readdb_with_existing_dbfile)
 }
 END_TEST
 
+START_TEST(readdb_with_existing_dbfile_and_max_name_length)
+{
+	initdb();
+	disable_logprints();
+	cfg.flock = 1;
+	strcpy(data.interface, "1234567890123456789012345678901");
+	ck_assert_int_eq(clean_testdbdir(), 1);
+	ck_assert_int_eq(writedb("1234567890123456789012345678901", TESTDBDIR, 1), 1);
+	ck_assert_int_eq(check_dbfile_exists("1234567890123456789012345678901", sizeof(DATA)), 1);
+
+	strcpy(data.interface, "none");
+	ck_assert_int_eq(readdb("1234567890123456789012345678901", TESTDBDIR), 0);
+	ck_assert_str_eq(data.interface, "1234567890123456789012345678901");
+}
+END_TEST
+
 START_TEST(readdb_with_existing_dbfile_with_rename)
 {
 	initdb();
@@ -527,6 +543,25 @@ START_TEST(readdb_with_existing_dbfile_with_rename)
 	ck_assert_int_eq(readdb("ethtest2", TESTDBDIR), 0);
 	ck_assert_str_eq(data.interface, "ethtest2");
 	ck_assert_str_eq(data.nick, "ethtest2");
+}
+END_TEST
+
+START_TEST(readdb_with_existing_dbfile_and_over_max_name_length)
+{
+	initdb();
+	disable_logprints();
+	cfg.flock = 1;
+	strcpy(data.interface, "dummy");
+	strcpy(data.nick, "dummy");
+	ck_assert_int_eq(clean_testdbdir(), 1);
+	ck_assert_int_eq(writedb("1234567890123456789012345678901XX", TESTDBDIR, 1), 1);
+	ck_assert_int_eq(check_dbfile_exists("1234567890123456789012345678901XX", sizeof(DATA)), 1);
+
+	strcpy(data.interface, "none");
+	strcpy(data.nick, "none");
+	ck_assert_int_eq(readdb("1234567890123456789012345678901XX", TESTDBDIR), 0);
+	ck_assert_str_eq(data.interface, "1234567890123456789012345678901");
+	ck_assert_str_eq(data.nick, "1234567890123456789012345678901");
 }
 END_TEST
 
@@ -672,7 +707,9 @@ void add_database_tests(Suite *s)
 	tcase_add_test(tc_db, readdb_with_empty_file_and_backup);
 	tcase_add_test(tc_db, readdb_with_nonexisting_file);
 	tcase_add_test(tc_db, readdb_with_existing_dbfile);
+	tcase_add_test(tc_db, readdb_with_existing_dbfile_and_max_name_length);
 	tcase_add_test(tc_db, readdb_with_existing_dbfile_with_rename);
+	tcase_add_test(tc_db, readdb_with_existing_dbfile_and_over_max_name_length);
 	tcase_add_test(tc_db, cleartop10_clears_top10);
 	tcase_add_exit_test(tc_db, cleartop10_with_nonexisting_file, 1);
 	tcase_add_test(tc_db, rebuilddbtotal_rebuilds_total);

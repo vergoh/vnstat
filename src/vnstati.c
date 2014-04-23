@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 				debug = 1;
 			} else if (strcmp(argv[currentarg],"--config")==0) {
 				if (currentarg+1<argc) {
-					strncpy(cfgfile, argv[currentarg+1], 512);
+					strncpy_nt(cfgfile, argv[currentarg+1], 512);
 					cfgfile[511] = '\0';
 					if (debug)
 						printf("Used config file: %s\n", cfgfile);
@@ -67,8 +67,8 @@ int main(int argc, char *argv[])
 			setlocale(LC_ALL, getenv("LC_ALL"));
 		}
 	}
-	strncpy(interface, cfg.iface, 32);
-	strncpy(dirname, cfg.dbdir, 512);
+	strncpy_nt(interface, cfg.iface, 32);
+	strncpy_nt(dirname, cfg.dbdir, 512);
 	filename[0] = '\0';
 	current = time(NULL);
 
@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 			help = 1;
 		} else if ((strcmp(argv[currentarg],"-i")==0) || (strcmp(argv[currentarg],"--iface"))==0) {
 			if (currentarg+1<argc) {
-				strncpy(interface, argv[currentarg+1], 32);
+				strncpy_nt(interface, argv[currentarg+1], 32);
 				interface[31] = '\0';
 				if (debug)
 					printf("Used interface: \"%s\"\n", interface);
@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
 			}
 		} else if ((strcmp(argv[currentarg],"-o")==0) || (strcmp(argv[currentarg],"--output"))==0) {
 			if (currentarg+1<argc) {
-				strncpy(filename, argv[currentarg+1], 512);
+				strncpy_nt(filename, argv[currentarg+1], 512);
 				filename[511] = '\0';
 				if (debug)
 					printf("Output file: \"%s\"\n", filename);
@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
 			}
 		} else if ((strcmp(argv[currentarg],"--dbdir"))==0) {
 			if (currentarg+1<argc) {
-				strncpy(dirname, argv[currentarg+1], 512);
+				strncpy_nt(dirname, argv[currentarg+1], 512);
 				dirname[511] = '\0';
 				if (debug)
 					printf("DatabaseDir: \"%s\"\n", dirname);

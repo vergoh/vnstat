@@ -114,9 +114,9 @@ int readdb(const char *iface, const char *dirname)
 			snprintf(errorstring, 512, "Interface name mismatch, renamed \"%s\" -> \"%s\"", data.interface, iface);
 			printe(PT_ShortMultiline);
 			if (strcmp(data.interface, data.nick)==0) {
-				strncpy(data.nick, iface, 32);
+				strncpy_nt(data.nick, iface, 32);
 			}
-			strncpy(data.interface, iface, 32);
+			strncpy_nt(data.interface, iface, 32);
 		}
 	} else {
 		snprintf(errorstring, 512, "Unable to read database \"%s\": %s", file, strerror(errno));
@@ -124,8 +124,8 @@ int readdb(const char *iface, const char *dirname)
 
 		newdb=1;
 		initdb();
-		strncpy(data.interface, iface, 32);
-		strncpy(data.nick, data.interface, 32);
+		strncpy_nt(data.interface, iface, 32);
+		strncpy_nt(data.nick, data.interface, 32);
 	}
 	return newdb;
 }
@@ -327,8 +327,8 @@ int convertdb(FILE *db)
 
 		/* set basic values */
 		data12.version=2;
-		strncpy(data12.interface, data10.interface, 32);
-		strncpy(data12.nick, data10.interface, 32);
+		strncpy_nt(data12.interface, data10.interface, 32);
+		strncpy_nt(data12.nick, data10.interface, 32);
 		data12.active=1;
 		data12.totalrx=data10.totalrx;
 		data12.totaltx=data10.totaltx;
@@ -467,8 +467,8 @@ int convertdb(FILE *db)
 
 		/* set basic values */
 		data.version=3;
-		strncpy(data.interface, data12.interface, 32);
-		strncpy(data.nick, data12.nick, 32);
+		strncpy_nt(data.interface, data12.interface, 32);
+		strncpy_nt(data.nick, data12.nick, 32);
 		data.active=data12.active;
 		data.totalrx=data12.totalrx;
 		data.totaltx=data12.totaltx;
@@ -927,25 +927,25 @@ int importdb(const char *filename)
 			continue;
 		}
 
-		sscanf(line, "version;%d", &data.version);
-		sscanf(line, "active;%d", &data.active);
-		sscanf(line, "interface;%511s", data.interface);
-		sscanf(line, "nick;%511s", data.nick);
-		if (sscanf(line, "created;%"PRIu64, &tempint)) {
+		sscanf(line, "version;%2d", &data.version);
+		sscanf(line, "active;%2d", &data.active);
+		sscanf(line, "interface;%31s", data.interface);
+		sscanf(line, "nick;%31s", data.nick);
+		if (sscanf(line, "created;%20"PRIu64, &tempint)) {
 			data.created = (time_t)tempint;
 		}
-		if (sscanf(line, "updated;%"PRIu64, &tempint)) {
+		if (sscanf(line, "updated;%20"PRIu64, &tempint)) {
 			data.lastupdated = (time_t)tempint;
 		}
-		sscanf(line, "totalrx;%"PRIu64, &data.totalrx);
-		sscanf(line, "totaltx;%"PRIu64, &data.totaltx);
-		sscanf(line, "currx;%"PRIu64, &data.currx);
-		sscanf(line, "curtx;%"PRIu64, &data.curtx);
-		sscanf(line, "totalrxk;%d", &data.totalrxk);
-		sscanf(line, "totaltxk;%d", &data.totaltxk);
-		sscanf(line, "btime;%"PRIu64, &data.btime);
+		sscanf(line, "totalrx;%20"PRIu64, &data.totalrx);
+		sscanf(line, "totaltx;%20"PRIu64, &data.totaltx);
+		sscanf(line, "currx;%20"PRIu64, &data.currx);
+		sscanf(line, "curtx;%20"PRIu64, &data.curtx);
+		sscanf(line, "totalrxk;%10d", &data.totalrxk);
+		sscanf(line, "totaltxk;%10d", &data.totaltxk);
+		sscanf(line, "btime;%20"PRIu64, &data.btime);
 
-		count = sscanf(line, "d;%d;%"PRIu64";%"PRIu64";%"PRIu64";%d;%d;%d",
+		count = sscanf(line, "d;%2d;%20"PRIu64";%20"PRIu64";%20"PRIu64";%10d;%10d;%2d",
 				&i, &tempint, &day.rx, &day.tx, &day.rxk, &day.txk, &day.used);
 		if (count == 7) {
 			if (i >= 0 && i < (int)sizeof(data.day) / (int)sizeof(DAY)) {
@@ -954,7 +954,7 @@ int importdb(const char *filename)
 			}
 		}
 
-		count = sscanf(line, "m;%d;%"PRIu64";%"PRIu64";%"PRIu64";%d;%d;%d",
+		count = sscanf(line, "m;%2d;%20"PRIu64";%20"PRIu64";%20"PRIu64";%10d;%10d;%2d",
 				&i, &tempint, &month.rx, &month.tx, &month.rxk, &month.txk, &month.used);
 		if (count == 7) {
 			if ( i >= 0 && i < (int)sizeof(data.month) / (int)sizeof(MONTH) ) {
@@ -963,7 +963,7 @@ int importdb(const char *filename)
 			}
 		}
 
-		count = sscanf(line, "t;%d;%"PRIu64";%"PRIu64";%"PRIu64";%d;%d;%d",
+		count = sscanf(line, "t;%2d;%20"PRIu64";%20"PRIu64";%20"PRIu64";%10d;%10d;%2d",
 				&i, &tempint, &day.rx, &day.tx, &day.rxk, &day.txk, &day.used);
 		if (count == 7) {
 			if ( i >= 0 && i < (int)sizeof(data.top10) / (int)sizeof(DAY) ) {
@@ -972,7 +972,7 @@ int importdb(const char *filename)
 			}
 		}
 
-		count = sscanf(line, "h;%d;%"PRIu64";%"PRIu64";%"PRIu64,
+		count = sscanf(line, "h;%2d;%20"PRIu64";%20"PRIu64";%20"PRIu64,
 				&i, &tempint, &hour.rx, &hour.tx);
 		if (count == 4) {
 			if ( i >= 0 && i < (int)sizeof(data.hour) / (int)sizeof(HOUR) ) {
@@ -981,6 +981,8 @@ int importdb(const char *filename)
 			}
 		}
 	}
+
+	fclose(input);
 
 	return 1;
 }

@@ -148,7 +148,7 @@ int getbtime(void)
 
 	check=0;
 	while (fgets(statline,128,fp)!=NULL) {
-		sscanf(statline,"%64s",temp);
+		sscanf(statline,"%63s",temp);
 		if (strcmp(temp,"btime")==0) {
 			/* if (debug)
 				printf("\n%s\n",statline); */

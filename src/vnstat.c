@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
 				debug = 1;
 			} else if (strcmp(argv[currentarg],"--config")==0) {
 				if (currentarg+1<argc) {
-					strncpy(p.cfgfile, argv[currentarg+1], 512);
+					strncpy_nt(p.cfgfile, argv[currentarg+1], 512);
 					if (debug)
 						printf("Used config file: %s\n", p.cfgfile);
 					currentarg++;
@@ -67,12 +67,12 @@ int main(int argc, char *argv[]) {
 			setlocale(LC_ALL, getenv("LC_ALL"));
 		}
 	}
-	strncpy(p.interface, "default", 32);
-	strncpy(p.definterface, cfg.iface, 32);
-	strncpy(p.nick, "none", 32);
+	strncpy_nt(p.interface, "default", 32);
+	strncpy_nt(p.definterface, cfg.iface, 32);
+	strncpy_nt(p.nick, "none", 32);
 
 	/* init dirname */
-	strncpy(p.dirname, cfg.dbdir, 512);
+	strncpy_nt(p.dirname, cfg.dbdir, 512);
 
 	/* parse parameters, maybe not the best way but... */
 	for (currentarg=1; currentarg<argc; currentarg++) {
@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
 			return 0;
 		} else if ((strcmp(argv[currentarg],"-i")==0) || (strcmp(argv[currentarg],"--iface")==0)) {
 			if (currentarg+1<argc) {
-				strncpy(p.interface, argv[currentarg+1], 32);
+				strncpy_nt(p.interface, argv[currentarg+1], 32);
 				p.defaultiface = 0;
 				if (debug)
 					printf("Used interface: %s\n", p.interface);
@@ -102,7 +102,7 @@ int main(int argc, char *argv[]) {
 			continue;
 		} else if ((strcmp(argv[currentarg],"--nick"))==0) {
 			if (currentarg+1<argc) {
-				strncpy(p.nick, argv[currentarg+1], 32);
+				strncpy_nt(p.nick, argv[currentarg+1], 32);
 				if (debug)
 					printf("Used nick: %s\n", p.nick);
 				currentarg++;
@@ -140,7 +140,7 @@ int main(int argc, char *argv[]) {
 			}
 		} else if ((strcmp(argv[currentarg],"--dbdir"))==0) {
 			if (currentarg+1<argc) {
-				strncpy(p.dirname, argv[currentarg+1], 512);
+				strncpy_nt(p.dirname, argv[currentarg+1], 512);
 				if (debug)
 					printf("DatabaseDir: \"%s\"\n", p.dirname);
 				currentarg++;
@@ -168,7 +168,7 @@ int main(int argc, char *argv[]) {
 		} else if (strcmp(argv[currentarg],"--importdb")==0) {
 			if (currentarg+1<argc) {
 				p.import=1;
-				strncpy(p.filename, argv[currentarg+1], 512);
+				strncpy_nt(p.filename, argv[currentarg+1], 512);
 				if (debug)
 					printf("Used import file: %s\n", p.filename);
 				currentarg++;
@@ -297,13 +297,13 @@ int main(int argc, char *argv[]) {
 				if (di->d_name[0]=='.') {
 					continue;
 				}
-				strncpy(p.definterface, di->d_name, 32);
+				strncpy_nt(p.definterface, di->d_name, 32);
 				p.files++;
 			}
 			if (debug)
 				printf("%d file(s) found\n", p.files);
 			if (p.files>1) {
-				strncpy(p.definterface, cfg.iface, 32);
+				strncpy_nt(p.definterface, cfg.iface, 32);
 			}
 			closedir(dir);
 		} else {
@@ -316,7 +316,7 @@ int main(int argc, char *argv[]) {
 
 	/* set used interface if none specified and make sure it's null terminated */
 	if (p.defaultiface) {
-		strncpy(p.interface, p.definterface, 32);
+		strncpy_nt(p.interface, p.definterface, 32);
 	}
 	p.interface[31]='\0';
 
@@ -536,7 +536,7 @@ void handleimport(PARAMS *p)
 		printf("Error: validation of imported database failed.\n");
 		exit(EXIT_FAILURE);
 	}
-	strncpy(data.interface, p->interface, 32);
+	strncpy_nt(data.interface, p->interface, 32);
 	if (writedb(p->interface, p->dirname, 1)) {
 		printf("Database import for \"%s\" completed.\n", data.interface);
 	}
@@ -693,7 +693,7 @@ void handleupdate(PARAMS *p)
 			}
 
 			p->files++;
-			strncpy(p->interface, di->d_name, 32);
+			strncpy_nt(p->interface, di->d_name, 32);
 			if (debug)
 				printf("\nProcessing file \"%s/%s\"...\n", p->dirname, p->interface);
 			p->newdb=readdb(p->interface, p->dirname);
@@ -757,7 +757,7 @@ void handleupdate(PARAMS *p)
 		parseifinfo(p->newdb);
 		if ((current>=data.lastupdated) || p->force) {
 			if (strcmp(p->nick, "none")!=0)
-				strncpy(data.nick, p->nick, 32);
+				strncpy_nt(data.nick, p->nick, 32);
 			writedb(p->interface, p->dirname, p->newdb);
 		} else {
 			/* print error if previous update is more than 6 hours in the future */
@@ -807,7 +807,7 @@ void handleshowdatabases(PARAMS *p)
 				if (di->d_name[0]=='.') {
 					continue;
 				}
-				strncpy(p->interface, di->d_name, 32);
+				strncpy_nt(p->interface, di->d_name, 32);
 				if (debug)
 					printf("\nProcessing file \"%s/%s\"...\n", p->dirname, p->interface);
 				p->newdb=readdb(p->interface, p->dirname);

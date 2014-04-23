@@ -11,9 +11,9 @@ int getifinfo(const char *iface)
 	ifinfo.filled = 0;
 
 	if (strcmp(iface, "default")==0) {
-		strncpy(inface, cfg.iface, 32);
+		strncpy_nt(inface, cfg.iface, 32);
 	} else {
-		strncpy(inface, iface, 32);
+		strncpy_nt(inface, iface, 32);
 	}
 
 #if defined(__linux__)
@@ -63,9 +63,9 @@ int getiflist(char **ifacelist)
 
 		/* make list of interfaces */
 		while (fgets(procline, 512, fp)!=NULL) {
-			sscanf(procline, "%64s", temp);
+			sscanf(procline, "%63s", temp);
 			if (isdigit(temp[(strlen(temp)-1)]) || temp[(strlen(temp)-1)]==':') {
-				sscanf(temp, "%32[^':']s", interface);
+				sscanf(temp, "%31[^':']s", interface);
 				*ifacelist = realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(interface) + 2 ) * sizeof(char)) );
 				strncat(*ifacelist, interface, strlen(interface));
 				strcat(*ifacelist, " ");
@@ -127,12 +127,12 @@ int readproc(const char *iface)
 		return 0;
 	}
 
-	strncpy(ifaceid, iface, 32);
+	strncpy_nt(ifaceid, iface, 32);
 	strcat(ifaceid, ":");
 
 	check = 0;
 	while (fgets(procline, 512, fp)!=NULL) {
-		sscanf(procline, "%512s", temp[0]);
+		sscanf(procline, "%511s", temp[0]);
 		if (strncmp(ifaceid, temp[0], strlen(ifaceid))==0) {
 			/* if (debug)
 				printf("\n%s\n", procline); */
@@ -148,11 +148,11 @@ int readproc(const char *iface)
 		return 0;
 	} else {
 
-		strncpy(ifinfo.name, iface, 32);
+		strncpy_nt(ifinfo.name, iface, 32);
 
 		/* get rx and tx from procline */
 		proclineptr = strchr(procline, ':');
-		sscanf(proclineptr+1, "%64s %64s %*s %*s %*s %*s %*s %*s %64s %64s", temp[0], temp[1], temp[2], temp[3]);
+		sscanf(proclineptr+1, "%63s %63s %*s %*s %*s %*s %*s %*s %63s %63s", temp[0], temp[1], temp[2], temp[3]);
 
 		ifinfo.rx = strtoull(temp[0], (char **)NULL, 0);
 		ifinfo.tx = strtoull(temp[2], (char **)NULL, 0);
@@ -174,7 +174,7 @@ int readsysclassnet(const char *iface)
 	FILE *fp;
 	char path[64], file[76], buffer[64];
 
-	strncpy(ifinfo.name, iface, 32);
+	strncpy_nt(ifinfo.name, iface, 32);
 
 	snprintf(path, 64, "%s/%s/statistics", SYSCLASSNET, iface);
 
@@ -402,7 +402,7 @@ int readifaddrs(const char *iface)
 			printf("Requested interface \"%s\" not found.\n", iface);
 		return 0;
 	} else {
-		strncpy(ifinfo.name, iface, 32);
+		strncpy_nt(ifinfo.name, iface, 32);
 		ifinfo.rx = ifd->ifi_ibytes;
 		ifinfo.tx = ifd->ifi_obytes;
 		ifinfo.rxp = ifd->ifi_ipackets;
