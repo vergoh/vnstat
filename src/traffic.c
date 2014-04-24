@@ -76,7 +76,7 @@ void livetrafficmeter(char iface[32], int mode)
 {
 	/* received bytes packets errs drop fifo frame compressed multicast */
 	/* transmitted bytes packets errs drop fifo colls carrier compressed */
-	uint64_t rx, tx, rxp, txp, timespent;
+	uint64_t rx, tx, rxp, txp, timespent, timeslept;
 	uint64_t rxtotal, txtotal, rxptotal, txptotal;
 	uint64_t rxpmin, txpmin, rxpmax, txpmax;
 	uint64_t rxmin, txmin, rxmax, txmax;
@@ -114,8 +114,12 @@ void livetrafficmeter(char iface[32], int mode)
 	/* loop until user gets bored */
 	while (intsignal==0) {
 
+		timeslept = (uint64_t)time(NULL);
+
 		/* wait 2 seconds for more traffic */
 		sleep(LIVETIME);
+
+		timeslept = (uint64_t)time(NULL) - timeslept;
 
 		/* break loop without calculations because sleep was probably interrupted */
 		if (intsignal) {
@@ -147,31 +151,14 @@ void livetrafficmeter(char iface[32], int mode)
 		txptotal += txp;
 
 		/* update min & max */
-		if (rxmin>rx) {
-			rxmin = rx;
-		}
-		if (txmin>tx) {
-			txmin = tx;
-		}
-		if (rxmax<rx) {
-			rxmax = rx;
-		}
-		if (txmax<tx) {
-			txmax = tx;
-		}
-
-		if (rxpmin>rxp) {
-			rxpmin = rxp;
-		}
-		if (txpmin>txp) {
-			txpmin = txp;
-		}
-		if (rxpmax<rxp) {
-			rxpmax = rxp;
-		}
-		if (txpmax<txp) {
-			txpmax = txp;
-		}
+		if (rxmin>rx) {	rxmin = rx;	}
+		if (txmin>tx) {	txmin = tx;	}
+		if (rxmax<rx) {	rxmax = rx;	}
+		if (txmax<tx) {	txmax = tx;	}
+		if (rxpmin>rxp) { rxpmin = rxp;	}
+		if (txpmin>txp) { txpmin = txp;	}
+		if (rxpmax<rxp) { rxpmax = rxp;	}
+		if (txpmax<txp) { txpmax = txp;	}
 
 		/* show the difference in a readable format */
 		if (cfg.ostyle != 0) {
@@ -213,12 +200,12 @@ void livetrafficmeter(char iface[32], int mode)
 
 	}
 
-	timespent = (uint64_t)time(NULL) - timespent;
+	timespent = (uint64_t)time(NULL) - timespent - timeslept;
 
 	printf("\n\n");
 
 	/* print some statistics if enough time did pass */
-	if (timespent>10) {
+	if (timespent>=10) {
 
 		printf("\n %s  /  traffic statistics\n\n", iface);
 
