@@ -67,7 +67,7 @@ int logprint(PrintType type)
 		}
 
 		current = time(NULL);
-		strftime(timestamp, 22, "%Y.%m.%d %H:%M:%S", localtime(&current));
+		strftime(timestamp, 22, "%Y-%m-%d %H:%M:%S", localtime(&current));
 
 		switch (type) {
 			case PT_Info:

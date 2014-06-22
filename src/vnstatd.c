@@ -117,14 +117,14 @@ int main(int argc, char *argv[])
 	if (showhelp) {
 		printf(" vnStat daemon %s by Teemu Toivola <tst at iki dot fi>\n\n", VNSTATVERSION);
 		printf("         -d, --daemon         fork process to background\n");
-		printf("         -n, --nodaemon       stay in foreground attached to the terminal\n");
+		printf("         -n, --nodaemon       stay in foreground attached to the terminal\n\n");
 		printf("         -s, --sync           sync interface counters on first update\n");
 		printf("         -D, --debug          show additional debug and disable daemon\n");
 		printf("         -?, --help           show this help\n");
 		printf("         -v, --version        show version\n");
 		printf("         -p, --pidfile        select used pid file\n");
-		printf("         --config             select used config file\n\n");
-		printf("         --noadd              don't add found interfaces if no dbs are found\n");
+		printf("         --config             select used config file\n");
+		printf("         --noadd              don't add found interfaces if no dbs are found\n\n");
 		printf("See also \"man vnstatd\".\n");
 		return 0;
 	}
@@ -203,6 +203,7 @@ int main(int argc, char *argv[])
 			updateinterval = cfg.updateinterval;
 
 			if (debug) {
+				debugtimestamp();
 				cacheshow();
 			}
 
@@ -554,7 +555,7 @@ void daemonize(void)
 int addinterfaces(const char *dirname)
 {
 	char *ifacelist, interface[32];
-	int index = 0, count = 0;
+	int index = 0, count = 0, bwlimit = 0;
 
 	/* get list of currently visible interfaces */
 	if (getiflist(&ifacelist)==0) {
@@ -595,7 +596,12 @@ int addinterfaces(const char *dirname)
 			continue;
 		}
 		count++;
-		printf("\"%s\" added, %d Mbit bandwidth limit.\n", interface, ibwget(interface));
+		bwlimit = ibwget(interface);
+		if (bwlimit > 0) {
+			printf("\"%s\" added with %d Mbit bandwidth limit.\n", interface, bwlimit);
+		} else {
+			printf("\"%s\" added. Warning: no bandwidth limit has been set.\n", interface);
+		}
 	}
 
 	if (count==1) {
@@ -605,11 +611,21 @@ int addinterfaces(const char *dirname)
 	}
 
 	if (count) {
-		printf(" Limits can be modified using the configuration file.");
+		printf(" Limits can be modified using the configuration file. See \"man vnstat.conf\".");
 	}
 
 	printf("\n");
 
 	free(ifacelist);
 	return count;
+}
+
+void debugtimestamp()
+{
+	time_t now;
+	char timestamp[22];
+
+	now = time(NULL);
+	strftime(timestamp, 22, "%Y-%m-%d %H:%M:%S", localtime(&now));
+	printf("%s\n", timestamp);
 }

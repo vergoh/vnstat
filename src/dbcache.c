@@ -2,6 +2,7 @@
 #include "ifinfo.h"
 #include "dbaccess.h"
 #include "dbcache.h"
+#include "cfg.h"
 
 int cacheadd(const char *iface, int sync)
 {
@@ -151,8 +152,8 @@ void cacheshow(void)
 
 void cachestatus(void)
 {
-	char buffer[512];
-	int b = 13, count = 0;
+	char buffer[512], bwtemp[8];
+	int b = 13, count = 0, bwlimit = 0;
 	datanode *p = dataptr;
 
 	snprintf(buffer, b, "Monitoring: ");
@@ -160,10 +161,15 @@ void cachestatus(void)
 	if (p != NULL) {
 
 		while (p != NULL) {
-			if ((b+strlen(p->data.interface)+1) < 508) {
+			if ((b+strlen(p->data.interface)+8) < 508) {
+				bwlimit = ibwget(p->data.interface);
+				if (bwlimit < 0) {
+					bwlimit = 0;
+				}
+				snprintf(bwtemp, 8, " (%d) ", bwlimit);
 				strncat(buffer, p->data.interface, strlen(p->data.interface));
-				strcat(buffer, " ");
-				b = b+strlen(p->data.interface)+1;
+				strncat(buffer, bwtemp, strlen(bwtemp));
+				b += strlen(p->data.interface) + strlen(bwtemp);
 			} else {
 				strcat(buffer, "...");
 				break;

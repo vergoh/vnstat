@@ -3,5 +3,6 @@
 
 void daemonize(void);
 int addinterfaces(const char *dirname);
+void debugtimestamp();
 
 #endif

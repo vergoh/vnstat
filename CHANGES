@@ -7,7 +7,7 @@
    of command execution
  - Fix: Live traffic meter occasionally showing higher minimum than average
    in end statistics (Debian Bug #687812)
- - Fix: Cppcheck findings
+ - Fix: Cppcheck findings (may fix Debian Bug #692330)
  - Improve traffic meter output accuracy
  - Add tests and debug compilation target
  - Remove use of -D parameter in Makefile install commands in order to
@@ -16,7 +16,10 @@
  - Add support for database import from text file (--importdb)
    (based on patch by Tilmann Bubeck)
  - Rename --dumpdb to --exportdb
- - Code refactoring
+ - Add example systemd service file
+ - Add example launchd plist file for OS X
+ - Use ISO YYYY-MM-DD date format timestamps if logfile is used
+ - Improve daemon startup prints
 
 
 1.11 / 1-Jun-11
