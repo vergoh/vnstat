@@ -29,6 +29,7 @@ int main(int argc, char *argv[])
 	int dbsaved = 1, showhelp = 1, sync = 0, saveinterval, forcesave = 0, noadd = 0;
 	uint32_t dbhash = 0;
 	char cfgfile[512], dirname[512];
+	char user[33], group[33];
 	DIR *dir;
 	struct dirent *di;
 	datanode *datalist;
@@ -38,6 +39,8 @@ int main(int argc, char *argv[])
 	debug = 0;         /* debug disabled by default */
 	rundaemon = 0;     /* daemon disabled by default */
 	cfgfile[0] = '\0';
+	user[0] = '\0';
+	group[0] = '\0';
 	prevdbupdate = prevdbsave = dbcount = 0;
 
 	/* early check for debug and config parameter */
@@ -90,6 +93,28 @@ int main(int argc, char *argv[])
 			showhelp = 0;
 		} else if ((strcmp(argv[currentarg],"-s")==0) || (strcmp(argv[currentarg],"--sync")==0)) {
 			sync = 1;
+		} else if ((strcmp(argv[currentarg],"-u")==0) || (strcmp(argv[currentarg],"--user")==0)) {
+			if (currentarg+1<argc) {
+				strncpy_nt(user, argv[currentarg+1], 33);
+				if (debug)
+					printf("Requested user: \"%s\"\n", user);
+				currentarg++;
+				continue;
+			} else {
+				printf("Error: User for --user missing.\n");
+				return 1;
+			}
+		} else if ((strcmp(argv[currentarg],"-g")==0) || (strcmp(argv[currentarg],"--group")==0)) {
+			if (currentarg+1<argc) {
+				strncpy_nt(group, argv[currentarg+1], 33);
+				if (debug)
+					printf("Requested group: \"%s\"\n", group);
+				currentarg++;
+				continue;
+			} else {
+				printf("Error: Group for --group missing.\n");
+				return 1;
+			}
 		} else if (strcmp(argv[currentarg],"--noadd")==0) {
 			noadd = 1;
 		} else if ((strcmp(argv[currentarg],"-v")==0) || (strcmp(argv[currentarg],"--version")==0)) {
@@ -123,11 +148,17 @@ int main(int argc, char *argv[])
 		printf("         -?, --help           show this help\n");
 		printf("         -v, --version        show version\n");
 		printf("         -p, --pidfile        select used pid file\n");
+		printf("         -u, --user           set daemon process user\n");
+		printf("         -g, --group          set daemon process group\n");
 		printf("         --config             select used config file\n");
 		printf("         --noadd              don't add found interfaces if no dbs are found\n\n");
 		printf("See also \"man vnstatd\".\n");
 		return 0;
 	}
+
+	/* set user and/or group if requested */
+	setgroup(group);
+	setuser(user);
 
 	/* check that directory is ok */
 	if ((dir=opendir(dirname))==NULL) {
@@ -169,15 +200,15 @@ int main(int argc, char *argv[])
 	/* init signal traps */
 	intsignal = 0;
 	if (signal(SIGINT, sighandler) == SIG_ERR) {
-		perror("signal");
+		perror("Error: signal");
 		return 1;
 	}
 	if (signal(SIGHUP, sighandler) == SIG_ERR) {
-		perror("signal");
+		perror("Error: signal");
 		return 1;
 	}
 	if (signal(SIGTERM, sighandler) == SIG_ERR) {
-		perror("signal");
+		perror("Error: signal");
 		return 1;
 	}
 
@@ -462,8 +493,8 @@ void daemonize(void)
 	i = (int)fork();
 
 	if (i<0) { /* fork error */
-		perror("fork");
-		exit(EXIT_FAILURE); 
+		perror("Error: fork");
+		exit(EXIT_FAILURE);
 	}
 	if (i>0) { /* parent exits */
 		exit(EXIT_SUCCESS);
@@ -473,7 +504,7 @@ void daemonize(void)
 	setsid(); /* obtain a new process group */
 
 	if (cfg.uselogging) {
-		snprintf(errorstring, 512, "vnStat daemon %s started.", VNSTATVERSION);
+		snprintf(errorstring, 512, "vnStat daemon %s started. (uid:%d gid:%d)", VNSTATVERSION, (int)getuid(), (int)getgid());
 		if (!printe(PT_Info)) {
 			printf("Error: Unable to use logfile. Exiting.\n");
 			exit(EXIT_FAILURE);
@@ -483,14 +514,14 @@ void daemonize(void)
 	/* lock / pid file */
 	pidfile = open(cfg.pidfile, O_RDWR|O_CREAT, 0644);
 	if (pidfile<0) {
-		perror("pidfile");
-		snprintf(errorstring, 512, "pidfile failed, exiting.");
+		perror("Error: pidfile");
+		snprintf(errorstring, 512, "opening pidfile \"%s\" failed (%s), exiting.", cfg.pidfile, strerror(errno));
 		printe(PT_Error);
 		exit(EXIT_FAILURE); /* can't open */
 	}
 	if (lockf(pidfile,F_TLOCK,0)<0) {
-		perror("pidfile lock");
-		snprintf(errorstring, 512, "pidfile lock failed, exiting.");
+		perror("Error: pidfile lock");
+		snprintf(errorstring, 512, "pidfile \"%s\" lock failed (%s), exiting.", cfg.pidfile, strerror(errno));
 		printe(PT_Error);
 		exit(EXIT_FAILURE); /* can't lock */
 	}
@@ -507,14 +538,14 @@ void daemonize(void)
 
 	/* stdout */
 	if (dup(i) < 0) {
-		perror("dup(stdout)");
+		perror("Error: dup(stdout)");
 		snprintf(errorstring, 512, "dup(stdout) failed, exiting.");
 		printe(PT_Error);
 		exit(EXIT_FAILURE);
 	}
 	/* stderr */
 	if (dup(i) < 0) {
-		perror("dup(stderr)");
+		perror("Error: dup(stderr)");
 		snprintf(errorstring, 512, "dup(stderr) failed, exiting.");
 		printe(PT_Error);
 		exit(EXIT_FAILURE);
@@ -524,7 +555,7 @@ void daemonize(void)
 
 	/* change running directory */
 	if (chdir("/") < 0) {
-		perror("chdir(/)");
+		perror("Error: chdir(/)");
 		snprintf(errorstring, 512, "directory change to / failed, exiting.");
 		printe(PT_Error);
 		exit(EXIT_FAILURE);
@@ -533,9 +564,9 @@ void daemonize(void)
 	/* first instance continues */
 	snprintf(str, 10, "%d\n", (int)getpid());
 
-	/* record pid to lockfile */
+	/* record pid to pidfile */
 	if (write(pidfile,str,strlen(str)) < 0) {
-		perror("write(pidfile)");
+		perror("Error: write(pidfile)");
 		snprintf(errorstring, 512, "writing to pidfile %s failed, exiting.", cfg.pidfile);
 		printe(PT_Error);
 		exit(EXIT_FAILURE);
@@ -620,7 +651,7 @@ int addinterfaces(const char *dirname)
 	return count;
 }
 
-void debugtimestamp()
+void debugtimestamp(void)
 {
 	time_t now;
 	char timestamp[22];
@@ -628,4 +659,118 @@ void debugtimestamp()
 	now = time(NULL);
 	strftime(timestamp, 22, "%Y-%m-%d %H:%M:%S", localtime(&now));
 	printf("%s\n", timestamp);
+}
+
+uid_t getuser(const char *user)
+{
+	struct passwd *pw;
+	uid_t uid;
+
+	if (!strlen(user)) {
+		return getuid();
+	}
+
+	if (isnumeric(user)) {
+		uid = atoi(user);
+		pw = getpwuid(uid);
+	} else {
+		pw = getpwnam(user);
+	}
+
+	if (pw == NULL) {
+		printf("Error: No such user: \"%s\".\n", user);
+		exit(EXIT_FAILURE);
+	}
+
+	uid = pw->pw_uid;
+
+	if (debug)
+		printf("getuser(%s / %d): %s (%d)\n", user, atoi(user), pw->pw_name, (int)uid);
+
+	return uid;
+}
+
+gid_t getgroup(const char *group)
+{
+	struct group *gr;
+	gid_t gid;
+
+	if (!strlen(group)) {
+		return getgid();
+	}
+
+	if (isnumeric(group)) {
+		gid = atoi(group);
+		gr = getgrgid(gid);
+	} else {
+		gr = getgrnam(group);
+	}
+
+	if (gr == NULL) {
+		printf("Error: No such group: \"%s\".\n", group);
+		exit(EXIT_FAILURE);
+	}
+
+	gid = gr->gr_gid;
+
+	if (debug)
+		printf("getgroup(%s / %d): %s (%d)\n", group, atoi(group), gr->gr_name, (int)gid);
+
+	return gid;
+}
+
+void setuser(const char *user)
+{
+	uid_t uid;
+
+	if (!strlen(user)) {
+		return;
+	}
+
+	if (getuid() != 0 && geteuid() != 0) {
+		printf("Error: User can only be set as root.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (isnumeric(user) && atoi(user) == 0) {
+		return;
+	}
+
+	uid = getuser(user);
+
+	if (debug)
+		printf("switching to user id %d.\n", uid);
+
+	if (setuid(uid) != 0) {
+		perror("Error: setuid");
+		exit(EXIT_FAILURE);
+	}
+}
+
+void setgroup(const char *group)
+{
+	gid_t gid;
+
+	if (!strlen(group)) {
+		return;
+	}
+
+	if (getuid() != 0 && geteuid() != 0) {
+		printf("Error: Group can only be set as root.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (isnumeric(group) && atoi(group) == 0) {
+		return;
+	}
+
+	gid = getgroup(group);
+
+	if (debug)
+		printf("switching to group id %d.\n", gid);
+
+	if (setgid(gid) != 0) {
+		perror("Error: setgid");
+		exit(EXIT_FAILURE);
+	}
 }

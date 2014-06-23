@@ -304,6 +304,33 @@ START_TEST(strncpy_nt_with_over_maximum_length_string)
 }
 END_TEST
 
+START_TEST(isnumeric_empty)
+{
+	ck_assert_int_eq(isnumeric(""), 0);
+}
+END_TEST
+
+START_TEST(isnumeric_it_is)
+{
+	ck_assert_int_eq(isnumeric("0"), 1);
+	ck_assert_int_eq(isnumeric("1"), 1);
+	ck_assert_int_eq(isnumeric("12"), 1);
+	ck_assert_int_eq(isnumeric("123"), 1);
+}
+END_TEST
+
+START_TEST(isnumeric_it_is_not)
+{
+	ck_assert_int_eq(isnumeric("a"), 0);
+	ck_assert_int_eq(isnumeric("abc"), 0);
+	ck_assert_int_eq(isnumeric("a1"), 0);
+	ck_assert_int_eq(isnumeric("1a"), 0);
+	ck_assert_int_eq(isnumeric("123abc"), 0);
+	ck_assert_int_eq(isnumeric("/"), 0);
+	ck_assert_int_eq(isnumeric("-"), 0);
+}
+END_TEST
+
 void add_common_tests(Suite *s)
 {
 	/* Common test cases */
@@ -327,5 +354,8 @@ void add_common_tests(Suite *s)
 	tcase_add_test(tc_common, strncpy_nt_with_below_maximum_length_string);
 	tcase_add_test(tc_common, strncpy_nt_with_maximum_length_string);
 	tcase_add_test(tc_common, strncpy_nt_with_over_maximum_length_string);
+	tcase_add_test(tc_common, isnumeric_empty);
+	tcase_add_test(tc_common, isnumeric_it_is);
+	tcase_add_test(tc_common, isnumeric_it_is_not);
 	suite_add_tcase(s, tc_common);
 }

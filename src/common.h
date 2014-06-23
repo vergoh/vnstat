@@ -19,6 +19,8 @@
 #include <inttypes.h>
 #include <syslog.h>
 #include <sys/statvfs.h>
+#include <pwd.h>
+#include <grp.h>
 
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__FreeBSD_kernel__)
 #include <sys/param.h>
@@ -277,6 +279,7 @@ uint64_t countercalc(const uint64_t *a, const uint64_t *b);
 void addtraffic(uint64_t *destmb, int *destkb, const uint64_t srcmb, const int srckb);
 uint64_t mbkbtokb(uint64_t mb, uint64_t kb);
 inline char *strncpy_nt(char *dest, const char *src, size_t n);
+int isnumeric(const char *s);
 
 /* global variables */
 DATA data;

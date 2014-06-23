@@ -225,3 +225,21 @@ inline char *strncpy_nt(char *dest, const char *src, size_t n)
 	dest[n-1] = '\0';
 	return dest;
 }
+
+int isnumeric(const char *s)
+{
+	int i, len;
+	len = strlen(s);
+
+	if (!len) {
+		return 0;
+	}
+
+	for (i=0; i<len; i++) {
+		if (!isdigit(s[i])) {
+			return 0;
+		}
+	}
+
+	return 1;
+}
