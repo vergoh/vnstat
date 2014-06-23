@@ -24,7 +24,7 @@ vnstat_tests: $(OBJS)
 
 vnstat_tests.o: vnstat_tests.c vnstat_tests.h common_tests.h database_tests.h common.h
 common_tests.o: common_tests.c common_tests.h vnstat_tests.h common.h dbaccess.h cfg.h
-database_tests.o: database_tests.c database_tests.h vnstat_tests.h dbaccess.h dbcache.h
+database_tests.o: database_tests.c database_tests.h vnstat_tests.h dbaccess.h dbcache.h cfg.h
 config_tests.o: config_tests.c config_tests.h vnstat_tests.h common.h cfg.h
 ifinfo_tests.o: ifinfo_tests.c ifinfo_tests.h vnstat_tests.h common.h ifinfo.h dbaccess.h misc.h cfg.h
 misc_tests.o: misc_tests.c misc_tests.h vnstat_tests.h common.h misc.h

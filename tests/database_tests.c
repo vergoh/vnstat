@@ -3,6 +3,7 @@
 #include "common.h"
 #include "dbaccess.h"
 #include "dbcache.h"
+#include "cfg.h"
 
 START_TEST(initdb_activates_database)
 {
@@ -376,6 +377,24 @@ START_TEST(cachestatus_filled)
 }
 END_TEST
 
+START_TEST(cachestatus_full)
+{
+	int i;
+	char buffer[8];
+	initdb();
+	defaultcfg();
+	disable_logprints();
+	ck_assert_int_eq(cachecount(), 0);
+	for (i=1; i<=50; i++) {
+		snprintf(buffer, 8, "name%d", i);
+		ck_assert_int_eq(cacheadd(buffer, 0), 1);
+		ck_assert_int_eq(ibwadd(buffer, 50-i), 1);
+	}
+	ck_assert_int_eq(cachecount(), 50);
+	cachestatus();
+}
+END_TEST
+
 START_TEST(cacheflush_flushes_cache)
 {
 	initdb();
@@ -698,6 +717,7 @@ void add_database_tests(Suite *s)
 	tcase_add_test(tc_db, cacheshow_filled);
 	tcase_add_test(tc_db, cachestatus_empty);
 	tcase_add_test(tc_db, cachestatus_filled);
+	tcase_add_test(tc_db, cachestatus_full);
 	tcase_add_test(tc_db, cacheflush_flushes_cache);
 	tcase_add_test(tc_db, removedb_with_existing_files);
 	tcase_add_test(tc_db, removedb_with_nonexisting_file);

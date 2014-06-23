@@ -152,7 +152,7 @@ void cacheshow(void)
 
 void cachestatus(void)
 {
-	char buffer[512], bwtemp[8];
+	char buffer[512], bwtemp[16];
 	int b = 13, count = 0, bwlimit = 0;
 	datanode *p = dataptr;
 
@@ -161,12 +161,13 @@ void cachestatus(void)
 	if (p != NULL) {
 
 		while (p != NULL) {
-			if ((b+strlen(p->data.interface)+8) < 508) {
+			if ((b+strlen(p->data.interface)+16) < 508) {
 				bwlimit = ibwget(p->data.interface);
 				if (bwlimit < 0) {
-					bwlimit = 0;
+					snprintf(bwtemp, 16, " (no limit) ");
+				} else {
+					snprintf(bwtemp, 16, " (%d Mbit) ", bwlimit);
 				}
-				snprintf(bwtemp, 8, " (%d) ", bwlimit);
 				strncat(buffer, p->data.interface, strlen(p->data.interface));
 				strncat(buffer, bwtemp, strlen(bwtemp));
 				b += strlen(p->data.interface) + strlen(bwtemp);
