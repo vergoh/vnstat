@@ -682,7 +682,9 @@ void handleupdate(PARAMS *p)
 	/* update every file if -i isn't specified */
 	if (p->defaultiface) {
 
-		dir=opendir(p->dirname);
+		if ((dir=opendir(p->dirname))==NULL) {
+			return;
+		}
 
 		p->files=0;
 		while ((di=readdir(dir))) {
@@ -802,7 +804,9 @@ void handleshowdatabases(PARAMS *p)
 			} else {
 				printf("<vnstat version=\"%s\" xmlversion=\"%d\">\n", VNSTATVERSION, XMLVERSION);
 			}
-			dir=opendir(p->dirname);
+			if ((dir=opendir(p->dirname))==NULL) {
+				return;
+			}
 			while ((di=readdir(dir))) {
 				if (di->d_name[0]=='.') {
 					continue;

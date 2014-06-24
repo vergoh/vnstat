@@ -156,6 +156,7 @@ int getbtime(void)
 			break;
 		}
 	}
+	fclose(fp);
 
 	if (check==0) {
 		snprintf(errorstring, 512, "btime missing from /proc/stat.");
@@ -168,7 +169,6 @@ int getbtime(void)
 	}
 
 	result = strtoul(statline+6, (char **)NULL, 0);
-	fclose(fp);
 
 #elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__FreeBSD_kernel__)
 	struct timeval btm;

@@ -243,3 +243,11 @@ int isnumeric(const char *s)
 
 	return 1;
 }
+
+void panicexit(const char *sourcefile, const int sourceline)
+{
+	snprintf(errorstring, 512, "Unexpected error (%s), exiting. (%s:%d)\n", strerror(errno), sourcefile, sourceline);
+	fprintf(stderr, "%s\n", errorstring);
+	printe(PT_Error);
+	exit(EXIT_FAILURE);
+}

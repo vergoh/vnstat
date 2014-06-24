@@ -280,6 +280,7 @@ void addtraffic(uint64_t *destmb, int *destkb, const uint64_t srcmb, const int s
 uint64_t mbkbtokb(uint64_t mb, uint64_t kb);
 inline char *strncpy_nt(char *dest, const char *src, size_t n);
 int isnumeric(const char *s);
+void panicexit(const char *sourcefile, const int sourceline);
 
 /* global variables */
 DATA data;

@@ -56,6 +56,9 @@ int getiflist(char **ifacelist)
 
 	/* initialize list */
 	*ifacelist = malloc(sizeof(char));
+	if (*ifacelist == NULL) {
+		panicexit(__FILE__, __LINE__);
+	}
 	*ifacelist[0] = '\0';
 
 #if defined(__linux__)
@@ -64,9 +67,12 @@ int getiflist(char **ifacelist)
 		/* make list of interfaces */
 		while (fgets(procline, 512, fp)!=NULL) {
 			sscanf(procline, "%63s", temp);
-			if (isdigit(temp[(strlen(temp)-1)]) || temp[(strlen(temp)-1)]==':') {
+			if (strlen(temp)>0 && (isdigit(temp[(strlen(temp)-1)]) || temp[(strlen(temp)-1)]==':')) {
 				sscanf(temp, "%31[^':']s", interface);
 				*ifacelist = realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(interface) + 2 ) * sizeof(char)) );
+				if (*ifacelist == NULL) {
+					panicexit(__FILE__, __LINE__);
+				}
 				strncat(*ifacelist, interface, strlen(interface));
 				strcat(*ifacelist, " ");
 			}
@@ -83,6 +89,9 @@ int getiflist(char **ifacelist)
 			while ((di=readdir(dp))) {
 				if (di->d_name[0]!='.') {
 					*ifacelist = realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(di->d_name) + 2 ) * sizeof(char)) );
+					if (*ifacelist == NULL) {
+						panicexit(__FILE__, __LINE__);
+					}
 					strncat(*ifacelist, di->d_name, strlen(di->d_name));
 					strcat(*ifacelist, " ");
 				}
@@ -101,6 +110,9 @@ int getiflist(char **ifacelist)
 		for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
 			if (ifa->ifa_addr->sa_family == AF_LINK) {
 				*ifacelist = realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(ifa->ifa_name) + 2 ) * sizeof(char)) );
+				if (*ifacelist == NULL) {
+					panicexit(__FILE__, __LINE__);
+				}
 				strncat(*ifacelist, ifa->ifa_name, strlen(ifa->ifa_name));
 				strcat(*ifacelist, " ");
 			}
@@ -191,6 +203,7 @@ int readsysclassnet(const char *iface)
 		if (fgets(buffer, 64, fp)!=NULL) {
 			ifinfo.rx = strtoull(buffer, (char **)NULL, 0);
 		} else {
+			fclose(fp);
 			return 0;
 		}
 	}
@@ -206,6 +219,7 @@ int readsysclassnet(const char *iface)
 		if (fgets(buffer, 64, fp)!=NULL) {
 			ifinfo.tx = strtoull(buffer, (char **)NULL, 0);
 		} else {
+			fclose(fp);
 			return 0;
 		}
 	}
@@ -224,6 +238,7 @@ int readsysclassnet(const char *iface)
 			if (fgets(buffer, 64, fp)!=NULL) {
 				ifinfo.rxp = strtoull(buffer, (char **)NULL, 0);
 			} else {
+				fclose(fp);
 				return 0;
 			}
 		}
@@ -239,6 +254,7 @@ int readsysclassnet(const char *iface)
 			if (fgets(buffer, 64, fp)!=NULL) {
 				ifinfo.txp = strtoull(buffer, (char **)NULL, 0);
 			} else {
+				fclose(fp);
 				return 0;
 			}
 		}
@@ -334,6 +350,9 @@ void parseifinfo(int newdb)
 
 	/* fill some variables from current date & time */
 	d=localtime(&current);
+	if (d==NULL) {
+		panicexit(__FILE__, __LINE__);
+	}
 	day=d->tm_mday;
 	month=d->tm_mon;
 	year=d->tm_year;
@@ -344,6 +363,9 @@ void parseifinfo(int newdb)
 	/* add traffic to previous hour when update happens at X:00 */
 	/* and previous update was during previous hour */
 	d=localtime(&data.lastupdated);
+	if (d==NULL) {
+		panicexit(__FILE__, __LINE__);
+	}
 	if ((min==0) && (d->tm_hour!=hour) && ((current-data.lastupdated)<=3600)) {
 		hour--;
 		if (hour<0) {
@@ -359,6 +381,9 @@ void parseifinfo(int newdb)
 
 	/* rotate days in database if needed */
 	d=localtime(&data.day[0].date);
+	if (d==NULL) {
+		panicexit(__FILE__, __LINE__);
+	}
 	if ((d->tm_mday!=day) || (d->tm_mon!=month) || (d->tm_year!=year)) {
 
 		/* make a new entry only if there's something to remember (configuration dependent) */
@@ -371,6 +396,9 @@ void parseifinfo(int newdb)
 
 	/* rotate months in database if needed */
 	d=localtime(&data.month[0].month);
+	if (d==NULL) {
+		panicexit(__FILE__, __LINE__);
+	}
 	if ((d->tm_mon!=month) && (day>=cfg.monthrotate)) {
 		rotatemonths();
 	}
