@@ -1,4 +1,4 @@
-1.12 / ??
+1.12 / <not released yet>
 
  - Fix: Memory allocation when zero interfaces are available, also lo needed
    to be missing in order to trigger this leak
@@ -20,6 +20,7 @@
  - Add example launchd plist file for OS X
  - Use ISO YYYY-MM-DD date format timestamps if logfile is used
  - Improve daemon startup prints
+ - Add parameters for changing daemon process user and group
 
 
 1.11 / 1-Jun-11
