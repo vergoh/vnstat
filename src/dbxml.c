@@ -77,16 +77,25 @@ void xmldate(time_t *date, int type)
 
 	if (type == 1) {
 		buffer = malloc(strlen(type1)+3);
+		if (buffer == NULL) {
+			panicexit(__FILE__, __LINE__);
+		}
 		strftime(buffer, strlen(type1)+3, type1, d);
 		printf("%s", buffer);
 		free(buffer);
 	} else if (type == 2) {
 		buffer = malloc(strlen(type2)+3);
+		if (buffer == NULL) {
+			panicexit(__FILE__, __LINE__);
+		}
 		strftime(buffer, strlen(type2)+3, type2, d);
 		printf("%s", buffer);
 		free(buffer);
 	} else if (type == 3) {
 		buffer = malloc(strlen(type3)+3);
+		if (buffer == NULL) {
+			panicexit(__FILE__, __LINE__);
+		}
 		strftime(buffer, strlen(type3)+3, type3, d);
 		printf("%s", buffer);
 		free(buffer);
