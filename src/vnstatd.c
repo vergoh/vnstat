@@ -26,23 +26,12 @@ vnStat daemon - Copyright (c) 2008-2014 Teemu Toivola <tst@iki.fi>
 
 int main(int argc, char *argv[])
 {
-	int currentarg, running = 1, updateinterval, dbcount, dodbsave, rundaemon;
-	int dbsaved = 1, showhelp = 1, sync = 0, saveinterval, forcesave = 0, noadd = 0;
-	uint32_t dbhash = 0;
-	char cfgfile[512], dirname[512];
-	char user[33], group[33];
+	int currentarg;
 	DIR *dir;
 	struct dirent *di;
-	datanode *datalist;
-	time_t current, prevdbupdate, prevdbsave;
+	DSTATE s;
 
-	noexit = 1;        /* disable exits in functions */
-	debug = 0;         /* debug disabled by default */
-	rundaemon = 0;     /* daemon disabled by default */
-	cfgfile[0] = '\0';
-	user[0] = '\0';
-	group[0] = '\0';
-	prevdbupdate = prevdbsave = dbcount = 0;
+	initdstate(&s);
 
 	/* early check for debug and config parameter */
 	if (argc > 1) {
@@ -51,10 +40,9 @@ int main(int argc, char *argv[])
 				debug = 1;
 			} else if (strcmp(argv[currentarg],"--config")==0) {
 				if (currentarg+1<argc) {
-					strncpy_nt(cfgfile, argv[currentarg+1], 512);
-					cfgfile[511] = '\0';
+					strncpy_nt(s.cfgfile, argv[currentarg+1], 512);
 					if (debug)
-						printf("Used config file: %s\n", cfgfile);
+						printf("Used config file: %s\n", s.cfgfile);
 					currentarg++;
 					continue;
 				} else {
@@ -66,14 +54,14 @@ int main(int argc, char *argv[])
 	}
 
 	/* load config if available */
-	if (!loadcfg(cfgfile)) {
+	if (!loadcfg(s.cfgfile)) {
 		return 1;
 	}
 
 	/* init dirname and other config settings */
-	strncpy_nt(dirname, cfg.dbdir, 512);
-	updateinterval = cfg.updateinterval;
-	saveinterval = cfg.saveinterval*60;
+	strncpy_nt(s.dirname, cfg.dbdir, 512);
+	s.updateinterval = cfg.updateinterval;
+	s.saveinterval = cfg.saveinterval*60;
 
 	/* parse parameters, maybe not the best way but... */
 	for (currentarg=1; currentarg<argc; currentarg++) {
@@ -88,17 +76,17 @@ int main(int argc, char *argv[])
 		} else if ((strcmp(argv[currentarg],"-D")==0) || (strcmp(argv[currentarg],"--debug")==0)) {
 			debug=1;
 		} else if ((strcmp(argv[currentarg],"-d")==0) || (strcmp(argv[currentarg],"--daemon")==0)) {
-			rundaemon = 1;
-			showhelp = 0;
+			s.rundaemon = 1;
+			s.showhelp = 0;
 		} else if ((strcmp(argv[currentarg],"-n")==0) || (strcmp(argv[currentarg],"--nodaemon")==0)) {
-			showhelp = 0;
+			s.showhelp = 0;
 		} else if ((strcmp(argv[currentarg],"-s")==0) || (strcmp(argv[currentarg],"--sync")==0)) {
-			sync = 1;
+			s.sync = 1;
 		} else if ((strcmp(argv[currentarg],"-u")==0) || (strcmp(argv[currentarg],"--user")==0)) {
 			if (currentarg+1<argc) {
-				strncpy_nt(user, argv[currentarg+1], 33);
+				strncpy_nt(s.user, argv[currentarg+1], 33);
 				if (debug)
-					printf("Requested user: \"%s\"\n", user);
+					printf("Requested user: \"%s\"\n", s.user);
 				currentarg++;
 				continue;
 			} else {
@@ -107,9 +95,9 @@ int main(int argc, char *argv[])
 			}
 		} else if ((strcmp(argv[currentarg],"-g")==0) || (strcmp(argv[currentarg],"--group")==0)) {
 			if (currentarg+1<argc) {
-				strncpy_nt(group, argv[currentarg+1], 33);
+				strncpy_nt(s.group, argv[currentarg+1], 33);
 				if (debug)
-					printf("Requested group: \"%s\"\n", group);
+					printf("Requested group: \"%s\"\n", s.group);
 				currentarg++;
 				continue;
 			} else {
@@ -117,7 +105,7 @@ int main(int argc, char *argv[])
 				return 1;
 			}
 		} else if (strcmp(argv[currentarg],"--noadd")==0) {
-			noadd = 1;
+			s.noadd = 1;
 		} else if ((strcmp(argv[currentarg],"-v")==0) || (strcmp(argv[currentarg],"--version")==0)) {
 			printf("vnStat daemon %s by Teemu Toivola <tst at iki dot fi>\n", VNSTATVERSION);
 			return 0;
@@ -140,99 +128,38 @@ int main(int argc, char *argv[])
 	}
 
 	/* show help if nothing else was asked to be done */
-	if (showhelp) {
-		printf(" vnStat daemon %s by Teemu Toivola <tst at iki dot fi>\n\n", VNSTATVERSION);
-		printf("         -d, --daemon         fork process to background\n");
-		printf("         -n, --nodaemon       stay in foreground attached to the terminal\n\n");
-		printf("         -s, --sync           sync interface counters on first update\n");
-		printf("         -D, --debug          show additional debug and disable daemon\n");
-		printf("         -?, --help           show this help\n");
-		printf("         -v, --version        show version\n");
-		printf("         -p, --pidfile        select used pid file\n");
-		printf("         -u, --user           set daemon process user\n");
-		printf("         -g, --group          set daemon process group\n");
-		printf("         --config             select used config file\n");
-		printf("         --noadd              don't add found interfaces if no dbs are found\n\n");
-		printf("See also \"man vnstatd\".\n");
+	if (s.showhelp) {
+		showhelp();
 		return 0;
 	}
 
 	/* set user and/or group if requested */
-	setgroup(group);
-	setuser(user);
+	setgroup(s.group);
+	setuser(s.user);
 
-	/* check that directory is ok */
-	if ((dir=opendir(dirname))==NULL) {
-		printf("Error: Unable to open database directory \"%s\": %s\n", dirname, strerror(errno));
-		printf("Make sure it exists and is at least read enabled for current user.\n");
-		printf("Exiting...\n");
-		return 1;
-	} else {
-		/* check if there's something to work with */
-		dbcount = 0;
-		while ((di=readdir(dir))) {
-			if (di->d_name[0]!='.') {
-				dbcount++;
-			}
-		}
-		closedir(dir);
-		if (dbcount==0) {
-			if (noadd) {
-				printf("Zero database found, exiting.\n");
-				return 1;
-			} else {
-				if (!spacecheck(dirname)) {
-					printf("Error: Not enough free diskspace available, exiting.\n");
-					return 1;
-				}
-				printf("Zero database found, adding available interfaces...\n");
-				if (!addinterfaces(dirname)) {
-					printf("Nothing to do, exiting.\n");
-					return 1;
-				}
-				dbcount = 0;
-			}
-		} else {
-			/* set counter back to zero so that dbs will be cached later */
-			dbcount = 0;
-		}
-	}
-
-	/* init signal traps */
-	intsignal = 0;
-	if (signal(SIGINT, sighandler) == SIG_ERR) {
-		perror("Error: signal");
-		return 1;
-	}
-	if (signal(SIGHUP, sighandler) == SIG_ERR) {
-		perror("Error: signal");
-		return 1;
-	}
-	if (signal(SIGTERM, sighandler) == SIG_ERR) {
-		perror("Error: signal");
-		return 1;
-	}
+	preparedatabases(&s);
+	setsignaltraps();
 
 	/* start as daemon if needed and debug isn't enabled */
-	if (rundaemon && !debug) {
+	if (s.rundaemon && !debug) {
 		noexit++;
 		daemonize();
 	}
 
 	/* main loop */
-	while (running) {
+	while (s.running) {
 
 		/* keep track of time */
-		current = time(NULL);
+		s.current = time(NULL);
 
 		/* track interface status only if at least one database exists */
-		if (dbcount!=0) {
-			dbhash = dbcheck(dbhash, &forcesave);
+		if (s.dbcount!=0) {
+			s.dbhash = dbcheck(s.dbhash, &s.forcesave);
 		}
 
-		if ((current-prevdbupdate)>=updateinterval) {
+		if ((s.current - s.prevdbupdate) >= s.updateinterval) {
 
-			updateinterval = cfg.updateinterval;
+			s.updateinterval = cfg.updateinterval;
 
 			if (debug) {
 				debugtimestamp();
@@ -240,22 +167,22 @@ int main(int argc, char *argv[])
 			}
 
 			/* read database list if cache is empty */
-			if (dbcount==0) {
+			if (s.dbcount==0) {
 
-				if ((dir=opendir(dirname))!=NULL) {
+				if ((dir=opendir(s.dirname))!=NULL) {
 
 					while ((di=readdir(dir))) {
 						if (di->d_name[0]!='.') {
 							if (debug) {
-								printf("\nProcessing file \"%s/%s\"...\n", dirname, di->d_name);
+								printf("\nProcessing file \"%s/%s\"...\n", s.dirname, di->d_name);
 							}
 
-							if (!cacheadd(di->d_name, sync)) {
+							if (!cacheadd(di->d_name, s.sync)) {
 								snprintf(errorstring, 512, "Cache memory allocation failed, exiting.");
 								printe(PT_Error);
 
 								/* clean daemon stuff before exit */
-								if (rundaemon && !debug) {
+								if (s.rundaemon && !debug) {
 									close(pidfile);
 									unlink(cfg.pidfile);
 								}
@@ -263,31 +190,31 @@ int main(int argc, char *argv[])
 								return 1;
 							}
 
-							dbcount++;
+							s.dbcount++;
 						}
 					}
 
 					closedir(dir);
-					sync = 0;
+					s.sync = 0;
 
 					/* disable update interval check for one loop if database list was refreshed */
 					/* otherwise increase default update interval since there's nothing else to do */
-					if (dbcount) {
-						updateinterval = 0;
+					if (s.dbcount) {
+						s.updateinterval = 0;
 						intsignal = 42;
-						prevdbsave = current;
+						s.prevdbsave = s.current;
 						/* list monitored interfaces to log */
 						cachestatus();
 					} else {
-						updateinterval = 120;
+						s.updateinterval = 120;
 					}
 
 				} else {
-					snprintf(errorstring, 512, "Unable to access database directory \"%s\" (%s), exiting.", dirname, strerror(errno));
+					snprintf(errorstring, 512, "Unable to access database directory \"%s\" (%s), exiting.", s.dirname, strerror(errno));
 					printe(PT_Error);
 
 					/* clean daemon stuff before exit */
-					if (rundaemon && !debug) {
+					if (s.rundaemon && !debug) {
 						close(pidfile);
 						unlink(cfg.pidfile);
 					}
@@ -297,41 +224,41 @@ int main(int argc, char *argv[])
 
 			/* update data cache */
 			} else {
-				prevdbupdate = current;
-				datalist = dataptr;
+				s.prevdbupdate = s.current;
+				s.datalist = dataptr;
 
 				/* alter save interval if all interfaces are unavailable */
 				if (cacheactivecount()) {
-					saveinterval = cfg.saveinterval*60;
+					s.saveinterval = cfg.saveinterval*60;
 				} else {
-					saveinterval = cfg.offsaveinterval*60;
+					s.saveinterval = cfg.offsaveinterval*60;
 				}
 
-				if ((current-prevdbsave)>=(saveinterval) || forcesave) {
-					dodbsave = 1;
-					forcesave = 0;
-					prevdbsave = current;
+				if ((s.current - s.prevdbsave) >= (s.saveinterval) || s.forcesave) {
+					s.dodbsave = 1;
+					s.forcesave = 0;
+					s.prevdbsave = s.current;
 				} else {
-					dodbsave = 0;
+					s.dodbsave = 0;
 				}
 
 				/* check all list entries*/
-				while (datalist!=NULL) {
+				while (s.datalist!=NULL) {
 
 					if (debug) {
-						printf("d: processing %s (%d)...\n", datalist->data.interface, dodbsave);
+						printf("d: processing %s (%d)...\n", s.datalist->data.interface, s.dodbsave);
 					}
 
 					/* get data from cache if available */
-					if (cacheget(datalist)==0) {
+					if (cacheget(s.datalist)==0) {
 
 						/* try to read data from file if not cached */
-						if (readdb(datalist->data.interface, dirname)!=-1) {
+						if (readdb(s.datalist->data.interface, s.dirname)!=-1) {
 							/* mark cache as filled on read success and force interface status update */
-							datalist->filled = 1;
-							dbhash = 0;
+							s.datalist->filled = 1;
+							s.dbhash = 0;
 						} else {
-							datalist = datalist->next;
+							s.datalist = s.datalist->next;
 							continue;
 						}
 					}
@@ -339,10 +266,10 @@ int main(int argc, char *argv[])
 					/* get info if interface has been marked as active */
 					if (data.active) {
 						if (getifinfo(data.interface)) {
-							if (datalist->sync) { /* if --sync was used during startup */
+							if (s.datalist->sync) { /* if --sync was used during startup */
 								data.currx = ifinfo.rx;
 								data.curtx = ifinfo.tx;
-								datalist->sync = 0;
+								s.datalist->sync = 0;
 							} else {
 								parseifinfo(0);
 							}
@@ -357,66 +284,66 @@ int main(int argc, char *argv[])
 					}
 
 					/* check that the time is correct */
-					if (current>=data.lastupdated) {
-						data.lastupdated = current;
+					if (s.current >= data.lastupdated) {
+						data.lastupdated = s.current;
 						cacheupdate();
 					} else {
 						/* skip update if previous update is less than a day in the future */
 						/* otherwise exit with error message since the clock is problably messed */
-						if (data.lastupdated>(current+86400)) {
+						if (data.lastupdated > (s.current+86400)) {
 							snprintf(errorstring, 512, "Interface \"%s\" has previous update date too much in the future, exiting.", data.interface);
 							printe(PT_Error);
 
 							/* clean daemon stuff before exit */
-							if (rundaemon && !debug) {
+							if (s.rundaemon && !debug) {
 								close(pidfile);
 								unlink(cfg.pidfile);
 							}
 							ibwflush();
 							return 1;
 						} else {
-							datalist = datalist->next;
+							s.datalist = s.datalist->next;
 							continue;
 						}
 					}
 
 					/* write data to file if now is the time for it */
-					if (dodbsave) {
-						if (checkdb(datalist->data.interface, dirname)) {
-							if (spacecheck(dirname)) {
-								if (writedb(datalist->data.interface, dirname, 0)) {
-									if (!dbsaved) {
+					if (s.dodbsave) {
+						if (checkdb(s.datalist->data.interface, s.dirname)) {
+							if (spacecheck(s.dirname)) {
+								if (writedb(s.datalist->data.interface, s.dirname, 0)) {
+									if (!s.dbsaved) {
 										snprintf(errorstring, 512, "Database write possible again.");
 										printe(PT_Info);
-										dbsaved = 1;
+										s.dbsaved = 1;
 									}
 								} else {
-									if (dbsaved) {
+									if (s.dbsaved) {
 										snprintf(errorstring, 512, "Unable to write database, continuing with cached data.");
 										printe(PT_Error);
-										dbsaved = 0;
+										s.dbsaved = 0;
 									}
 								}
 							} else {
 								/* show freespace error only once */
-								if (dbsaved) {
+								if (s.dbsaved) {
 									snprintf(errorstring, 512, "Free diskspace check failed, unable to write database, continuing with cached data.");
 									printe(PT_Error);
-									dbsaved = 0;
+									s.dbsaved = 0;
 								}
 							}
 						} else {
 							/* remove interface from update list since the database file doesn't exist anymore */
-							snprintf(errorstring, 512, "Database for interface \"%s\" no longer exists, removing from update list.", datalist->data.interface);
+							snprintf(errorstring, 512, "Database for interface \"%s\" no longer exists, removing from update list.", s.datalist->data.interface);
 							printe(PT_Info);
-							datalist = cacheremove(datalist->data.interface);
-							dbcount--;
+							s.datalist = cacheremove(s.datalist->data.interface);
+							s.dbcount--;
 							cachestatus();
 							continue;
 						}
 					}
 
-					datalist = datalist->next;
+					s.datalist = s.datalist->next;
 				}
 
 				if (debug) {
@@ -425,7 +352,7 @@ int main(int argc, char *argv[])
 			}
 		} /* dbupdate */
 
-		if (running && intsignal==0) {
+		if (s.running && intsignal==0) {
 			sleep(cfg.pollinterval);
 		}
 
@@ -436,24 +363,24 @@ int main(int argc, char *argv[])
 				case SIGHUP:
 					snprintf(errorstring, 512, "SIGHUP received, flushing data to disk and reloading config.");
 					printe(PT_Info);
-					cacheflush(dirname);
-					dbcount = 0;
+					cacheflush(s.dirname);
+					s.dbcount = 0;
 					ibwflush();
-					if (loadcfg(cfgfile)) {
-						strncpy_nt(dirname, cfg.dbdir, 512);
+					if (loadcfg(s.cfgfile)) {
+						strncpy_nt(s.dirname, cfg.dbdir, 512);
 					}
 					break;
 
 				case SIGINT:
 					snprintf(errorstring, 512, "SIGINT received, exiting.");
 					printe(PT_Info);
-					running = 0;
+					s.running = 0;
 					break;
 
 				case SIGTERM:
 					snprintf(errorstring, 512, "SIGTERM received, exiting.");
 					printe(PT_Info);
-					running = 0;
+					s.running = 0;
 					break;
 
 				case 42:
@@ -470,14 +397,113 @@ int main(int argc, char *argv[])
 
 	} /* while */
 
-	cacheflush(dirname);
+	cacheflush(s.dirname);
 	ibwflush();
 
 	/* clean daemon stuff */
-	if (rundaemon && !debug) {
+	if (s.rundaemon && !debug) {
 		close(pidfile);
 		unlink(cfg.pidfile);
 	}
 
 	return 0;
+}
+
+void initdstate(DSTATE *s)
+{
+	noexit = 1;        /* disable exits in functions */
+	debug = 0;         /* debug disabled by default */
+	s->rundaemon = 0;     /* daemon disabled by default */
+
+	s->running = 1;
+	s->dbsaved = 1;
+	s->showhelp = 1;
+	s->sync = 0;
+	s->forcesave = 0;
+	s->noadd = 0;
+	s->dbhash = 0;
+	s->cfgfile[0] = '\0';
+	s->dirname[0] = '\0';
+	s->user[0] = '\0';
+	s->group[0] = '\0';
+	s->prevdbupdate = 0;
+	s->prevdbsave = 0;
+	s->dbcount = 0;
+}
+
+void showhelp(void)
+{
+	printf(" vnStat daemon %s by Teemu Toivola <tst at iki dot fi>\n\n", VNSTATVERSION);
+	printf("         -d, --daemon         fork process to background\n");
+	printf("         -n, --nodaemon       stay in foreground attached to the terminal\n\n");
+	printf("         -s, --sync           sync interface counters on first update\n");
+	printf("         -D, --debug          show additional debug and disable daemon\n");
+	printf("         -?, --help           show this help\n");
+	printf("         -v, --version        show version\n");
+	printf("         -p, --pidfile        select used pid file\n");
+	printf("         -u, --user           set daemon process user\n");
+	printf("         -g, --group          set daemon process group\n");
+	printf("         --config             select used config file\n");
+	printf("         --noadd              don't add found interfaces if no dbs are found\n\n");
+	printf("See also \"man vnstatd\".\n");
+}
+
+void preparedatabases(DSTATE *s)
+{
+	DIR *dir;
+	struct dirent *di;
+
+	/* check that directory is ok */
+	if ((dir=opendir(s->dirname))==NULL) {
+		printf("Error: Unable to open database directory \"%s\": %s\n", s->dirname, strerror(errno));
+		printf("Make sure it exists and is at least read enabled for current user.\n");
+		printf("Exiting...\n");
+		exit(EXIT_FAILURE);
+	} else {
+		/* check if there's something to work with */
+		s->dbcount = 0;
+		while ((di=readdir(dir))) {
+			if (di->d_name[0]!='.') {
+				s->dbcount++;
+			}
+		}
+		closedir(dir);
+		if (s->dbcount==0) {
+			if (s->noadd) {
+				printf("Zero database found, exiting.\n");
+				exit(EXIT_FAILURE);
+			} else {
+				if (!spacecheck(s->dirname)) {
+					printf("Error: Not enough free diskspace available, exiting.\n");
+					exit(EXIT_FAILURE);
+				}
+				printf("Zero database found, adding available interfaces...\n");
+				if (!addinterfaces(s->dirname)) {
+					printf("Nothing to do, exiting.\n");
+					exit(EXIT_FAILURE);
+				}
+				s->dbcount = 0;
+			}
+		} else {
+			/* set counter back to zero so that dbs will be cached later */
+			s->dbcount = 0;
+		}
+	}
+}
+
+void setsignaltraps(void)
+{
+	intsignal = 0;
+	if (signal(SIGINT, sighandler) == SIG_ERR) {
+		perror("Error: signal SIGINT");
+		exit(EXIT_FAILURE);
+	}
+	if (signal(SIGHUP, sighandler) == SIG_ERR) {
+		perror("Error: signal SIGHUP");
+		exit(EXIT_FAILURE);
+	}
+	if (signal(SIGTERM, sighandler) == SIG_ERR) {
+		perror("Error: signal SIGTERM");
+		exit(EXIT_FAILURE);
+	}
 }
