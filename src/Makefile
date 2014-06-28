@@ -1,4 +1,6 @@
+ifeq "$(origin CC)" "default"
 CC = gcc
+endif
 CFLAGS ?= -O2
 LDLIBS = -lm
 OBJS = vnstat.o ifinfo.o dbxml.o dbshow.o dbaccess.o dbmerge.o common.o misc.o cfg.o traffic.o

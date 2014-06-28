@@ -1,4 +1,6 @@
+ifeq "$(origin CC)" "default"
 CC = gcc
+endif
 CFLAGS ?= -Wall -Wextra -g
 LDLIBS = -lm -lcheck -lrt -lpthread
 OBJS = vnstat_tests.o common_tests.o database_tests.o config_tests.o ifinfo_tests.o misc_tests.o daemon_tests.o
