@@ -27,8 +27,6 @@ vnStat daemon - Copyright (c) 2008-2014 Teemu Toivola <tst@iki.fi>
 int main(int argc, char *argv[])
 {
 	int currentarg;
-	DIR *dir;
-	struct dirent *di;
 	DSTATE s;
 
 	initdstate(&s);
@@ -157,6 +155,7 @@ int main(int argc, char *argv[])
 			s.dbhash = dbcheck(s.dbhash, &s.forcesave);
 		}
 
+		/* do update only if enough time has passed since the previous update */
 		if ((s.current - s.prevdbupdate) >= s.updateinterval) {
 
 			s.updateinterval = cfg.updateinterval;
@@ -166,68 +165,16 @@ int main(int argc, char *argv[])
 				cacheshow();
 			}
 
-			/* read database list if cache is empty */
-			if (s.dbcount==0) {
-
-				if ((dir=opendir(s.dirname))!=NULL) {
-
-					while ((di=readdir(dir))) {
-						if (di->d_name[0]!='.') {
-							if (debug) {
-								printf("\nProcessing file \"%s/%s\"...\n", s.dirname, di->d_name);
-							}
-
-							if (!cacheadd(di->d_name, s.sync)) {
-								snprintf(errorstring, 512, "Cache memory allocation failed, exiting.");
-								printe(PT_Error);
-
-								/* clean daemon stuff before exit */
-								if (s.rundaemon && !debug) {
-									close(pidfile);
-									unlink(cfg.pidfile);
-								}
-								ibwflush();
-								return 1;
-							}
-
-							s.dbcount++;
-						}
-					}
-
-					closedir(dir);
-					s.sync = 0;
-
-					/* disable update interval check for one loop if database list was refreshed */
-					/* otherwise increase default update interval since there's nothing else to do */
-					if (s.dbcount) {
-						s.updateinterval = 0;
-						intsignal = 42;
-						s.prevdbsave = s.current;
-						/* list monitored interfaces to log */
-						cachestatus();
-					} else {
-						s.updateinterval = 120;
-					}
-
-				} else {
-					snprintf(errorstring, 512, "Unable to access database directory \"%s\" (%s), exiting.", s.dirname, strerror(errno));
-					printe(PT_Error);
-
-					/* clean daemon stuff before exit */
-					if (s.rundaemon && !debug) {
-						close(pidfile);
-						unlink(cfg.pidfile);
-					}
-					ibwflush();
-					return 1;
-				}
+			/* fill database list if cache is empty */
+			if (s.dbcount == 0) {
+				filldatabaselist(&s);
 
 			/* update data cache */
 			} else {
 				s.prevdbupdate = s.current;
 				s.datalist = dataptr;
 
-				/* alter save interval if all interfaces are unavailable */
+				/* modify active save interval if all interfaces are unavailable */
 				if (cacheactivecount()) {
 					s.saveinterval = cfg.saveinterval*60;
 				} else {
@@ -242,115 +189,14 @@ int main(int argc, char *argv[])
 					s.dodbsave = 0;
 				}
 
-				/* check all list entries*/
-				while (s.datalist!=NULL) {
-
-					if (debug) {
-						printf("d: processing %s (%d)...\n", s.datalist->data.interface, s.dodbsave);
-					}
-
-					/* get data from cache if available */
-					if (cacheget(s.datalist)==0) {
-
-						/* try to read data from file if not cached */
-						if (readdb(s.datalist->data.interface, s.dirname)!=-1) {
-							/* mark cache as filled on read success and force interface status update */
-							s.datalist->filled = 1;
-							s.dbhash = 0;
-						} else {
-							s.datalist = s.datalist->next;
-							continue;
-						}
-					}
-
-					/* get info if interface has been marked as active */
-					if (data.active) {
-						if (getifinfo(data.interface)) {
-							if (s.datalist->sync) { /* if --sync was used during startup */
-								data.currx = ifinfo.rx;
-								data.curtx = ifinfo.tx;
-								s.datalist->sync = 0;
-							} else {
-								parseifinfo(0);
-							}
-						} else {
-							/* disable interface since we can't access its data */
-							data.active = 0;
-							snprintf(errorstring, 512, "Interface \"%s\" not available, disabling.", data.interface);
-							printe(PT_Info);
-						}
-					} else if (debug) {
-						printf("d: interface is disabled\n");
-					}
-
-					/* check that the time is correct */
-					if (s.current >= data.lastupdated) {
-						data.lastupdated = s.current;
-						cacheupdate();
-					} else {
-						/* skip update if previous update is less than a day in the future */
-						/* otherwise exit with error message since the clock is problably messed */
-						if (data.lastupdated > (s.current+86400)) {
-							snprintf(errorstring, 512, "Interface \"%s\" has previous update date too much in the future, exiting.", data.interface);
-							printe(PT_Error);
-
-							/* clean daemon stuff before exit */
-							if (s.rundaemon && !debug) {
-								close(pidfile);
-								unlink(cfg.pidfile);
-							}
-							ibwflush();
-							return 1;
-						} else {
-							s.datalist = s.datalist->next;
-							continue;
-						}
-					}
-
-					/* write data to file if now is the time for it */
-					if (s.dodbsave) {
-						if (checkdb(s.datalist->data.interface, s.dirname)) {
-							if (spacecheck(s.dirname)) {
-								if (writedb(s.datalist->data.interface, s.dirname, 0)) {
-									if (!s.dbsaved) {
-										snprintf(errorstring, 512, "Database write possible again.");
-										printe(PT_Info);
-										s.dbsaved = 1;
-									}
-								} else {
-									if (s.dbsaved) {
-										snprintf(errorstring, 512, "Unable to write database, continuing with cached data.");
-										printe(PT_Error);
-										s.dbsaved = 0;
-									}
-								}
-							} else {
-								/* show freespace error only once */
-								if (s.dbsaved) {
-									snprintf(errorstring, 512, "Free diskspace check failed, unable to write database, continuing with cached data.");
-									printe(PT_Error);
-									s.dbsaved = 0;
-								}
-							}
-						} else {
-							/* remove interface from update list since the database file doesn't exist anymore */
-							snprintf(errorstring, 512, "Database for interface \"%s\" no longer exists, removing from update list.", s.datalist->data.interface);
-							printe(PT_Info);
-							s.datalist = cacheremove(s.datalist->data.interface);
-							s.dbcount--;
-							cachestatus();
-							continue;
-						}
-					}
-
-					s.datalist = s.datalist->next;
-				}
+				/* check all datalist entries*/
+				processdatalist(&s);
 
 				if (debug) {
 					printf("\n");
 				}
 			}
-		} /* dbupdate */
+		}
 
 		if (s.running && intsignal==0) {
 			sleep(cfg.pollinterval);
@@ -358,44 +204,9 @@ int main(int argc, char *argv[])
 
 		/* take actions from signals */
 		if (intsignal) {
-			switch (intsignal) {
-
-				case SIGHUP:
-					snprintf(errorstring, 512, "SIGHUP received, flushing data to disk and reloading config.");
-					printe(PT_Info);
-					cacheflush(s.dirname);
-					s.dbcount = 0;
-					ibwflush();
-					if (loadcfg(s.cfgfile)) {
-						strncpy_nt(s.dirname, cfg.dbdir, 512);
-					}
-					break;
-
-				case SIGINT:
-					snprintf(errorstring, 512, "SIGINT received, exiting.");
-					printe(PT_Info);
-					s.running = 0;
-					break;
-
-				case SIGTERM:
-					snprintf(errorstring, 512, "SIGTERM received, exiting.");
-					printe(PT_Info);
-					s.running = 0;
-					break;
-
-				case 42:
-					break;
-
-				default:
-					snprintf(errorstring, 512, "Unkown signal %d received, ignoring.", intsignal);
-					printe(PT_Info);
-					break;
-			}
-
-			intsignal = 0;
+			handleintsignals(&s);
 		}
-
-	} /* while */
+	}
 
 	cacheflush(s.dirname);
 	ibwflush();
@@ -506,4 +317,209 @@ void setsignaltraps(void)
 		perror("Error: signal SIGTERM");
 		exit(EXIT_FAILURE);
 	}
+}
+
+void filldatabaselist(DSTATE *s)
+{
+	DIR *dir;
+	struct dirent *di;
+
+	if ((dir=opendir(s->dirname))==NULL) {
+		snprintf(errorstring, 512, "Unable to access database directory \"%s\" (%s), exiting.", s->dirname, strerror(errno));
+		printe(PT_Error);
+
+		/* clean daemon stuff before exit */
+		if (s->rundaemon && !debug) {
+			close(pidfile);
+			unlink(cfg.pidfile);
+		}
+		ibwflush();
+		exit(EXIT_FAILURE);
+	}
+
+	while ((di=readdir(dir))) {
+		if (di->d_name[0]!='.') {
+			if (debug) {
+				printf("\nProcessing file \"%s/%s\"...\n", s->dirname, di->d_name);
+			}
+
+			if (!cacheadd(di->d_name, s->sync)) {
+				snprintf(errorstring, 512, "Cache memory allocation failed, exiting.");
+				printe(PT_Error);
+
+				/* clean daemon stuff before exit */
+				if (s->rundaemon && !debug) {
+					close(pidfile);
+					unlink(cfg.pidfile);
+				}
+				ibwflush();
+				exit(EXIT_FAILURE);
+			}
+
+			s->dbcount++;
+		}
+	}
+
+	closedir(dir);
+	s->sync = 0;
+
+	/* disable update interval check for one loop if database list was refreshed */
+	/* otherwise increase default update interval since there's nothing else to do */
+	if (s->dbcount) {
+		s->updateinterval = 0;
+		intsignal = 42;
+		s->prevdbsave = s->current;
+		/* list monitored interfaces to log */
+		cachestatus();
+	} else {
+		s->updateinterval = 120;
+	}
+}
+
+void processdatalist(DSTATE *s)
+{
+	while (s->datalist!=NULL) {
+
+		if (debug) {
+			printf("d: processing %s (%d)...\n", s->datalist->data.interface, s->dodbsave);
+		}
+
+		/* get data from cache if available */
+		if (cacheget(s->datalist)==0) {
+
+			/* try to read data from file if not cached */
+			if (readdb(s->datalist->data.interface, s->dirname)!=-1) {
+				/* mark cache as filled on read success and force interface status update */
+				s->datalist->filled = 1;
+				s->dbhash = 0;
+			} else {
+				s->datalist = s->datalist->next;
+				continue;
+			}
+		}
+
+		/* get info if interface has been marked as active */
+		if (data.active) {
+			if (getifinfo(data.interface)) {
+				if (s->datalist->sync) { /* if --sync was used during startup */
+					data.currx = ifinfo.rx;
+					data.curtx = ifinfo.tx;
+					s->datalist->sync = 0;
+				} else {
+					parseifinfo(0);
+				}
+			} else {
+				/* disable interface since we can't access its data */
+				data.active = 0;
+				snprintf(errorstring, 512, "Interface \"%s\" not available, disabling.", data.interface);
+				printe(PT_Info);
+			}
+		} else if (debug) {
+			printf("d: interface is disabled\n");
+		}
+
+		/* check that the time is correct */
+		if (s->current >= data.lastupdated) {
+			data.lastupdated = s->current;
+			cacheupdate();
+		} else {
+			/* skip update if previous update is less than a day in the future */
+			/* otherwise exit with error message since the clock is problably messed */
+			if (data.lastupdated > (s->current+86400)) {
+				snprintf(errorstring, 512, "Interface \"%s\" has previous update date too much in the future, exiting.", data.interface);
+				printe(PT_Error);
+
+				/* clean daemon stuff before exit */
+				if (s->rundaemon && !debug) {
+					close(pidfile);
+					unlink(cfg.pidfile);
+				}
+				ibwflush();
+				exit(EXIT_FAILURE);
+			} else {
+				s->datalist = s->datalist->next;
+				continue;
+			}
+		}
+
+		/* write data to file if now is the time for it */
+		if (s->dodbsave) {
+			if (checkdb(s->datalist->data.interface, s->dirname)) {
+				if (spacecheck(s->dirname)) {
+					if (writedb(s->datalist->data.interface, s->dirname, 0)) {
+						if (!s->dbsaved) {
+							snprintf(errorstring, 512, "Database write possible again.");
+							printe(PT_Info);
+							s->dbsaved = 1;
+						}
+					} else {
+						if (s->dbsaved) {
+							snprintf(errorstring, 512, "Unable to write database, continuing with cached data.");
+							printe(PT_Error);
+							s->dbsaved = 0;
+						}
+					}
+				} else {
+					/* show freespace error only once */
+					if (s->dbsaved) {
+						snprintf(errorstring, 512, "Free diskspace check failed, unable to write database, continuing with cached data.");
+						printe(PT_Error);
+						s->dbsaved = 0;
+					}
+				}
+			} else {
+				/* remove interface from update list since the database file doesn't exist anymore */
+				snprintf(errorstring, 512, "Database for interface \"%s\" no longer exists, removing from update list.", s->datalist->data.interface);
+				printe(PT_Info);
+				s->datalist = cacheremove(s->datalist->data.interface);
+				s->dbcount--;
+				cachestatus();
+				continue;
+			}
+		}
+
+		s->datalist = s->datalist->next;
+	}
+}
+
+void handleintsignals(DSTATE *s)
+{
+	switch (intsignal) {
+
+		case SIGHUP:
+			snprintf(errorstring, 512, "SIGHUP received, flushing data to disk and reloading config.");
+			printe(PT_Info);
+			cacheflush(s->dirname);
+			s->dbcount = 0;
+			ibwflush();
+			if (loadcfg(s->cfgfile)) {
+				strncpy_nt(s->dirname, cfg.dbdir, 512);
+			}
+			break;
+
+		case SIGINT:
+			snprintf(errorstring, 512, "SIGINT received, exiting.");
+			printe(PT_Info);
+			s->running = 0;
+			break;
+
+		case SIGTERM:
+			snprintf(errorstring, 512, "SIGTERM received, exiting.");
+			printe(PT_Info);
+			s->running = 0;
+			break;
+
+		case 42:
+			break;
+
+		case 0:
+			break;
+
+		default:
+			snprintf(errorstring, 512, "Unkown signal %d received, ignoring.", intsignal);
+			printe(PT_Info);
+			break;
+	}
+
+	intsignal = 0;
 }

@@ -15,5 +15,8 @@ void initdstate(DSTATE *s);
 void showhelp(void);
 void preparedatabases(DSTATE *s);
 void setsignaltraps(void);
+void filldatabaselist(DSTATE *s);
+void processdatalist(DSTATE *s);
+void handleintsignals(DSTATE *s);
 
 #endif
