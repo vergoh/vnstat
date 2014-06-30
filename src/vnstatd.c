@@ -147,7 +147,6 @@ int main(int argc, char *argv[])
 	/* main loop */
 	while (s.running) {
 
-		/* keep track of time */
 		s.current = time(NULL);
 
 		/* track interface status only if at least one database exists */
@@ -174,22 +173,9 @@ int main(int argc, char *argv[])
 				s.prevdbupdate = s.current;
 				s.datalist = dataptr;
 
-				/* modify active save interval if all interfaces are unavailable */
-				if (cacheactivecount()) {
-					s.saveinterval = cfg.saveinterval*60;
-				} else {
-					s.saveinterval = cfg.offsaveinterval*60;
-				}
+				adjustsaveinterval(&s);
+				checkdbsaveneed(&s);
 
-				if ((s.current - s.prevdbsave) >= (s.saveinterval) || s.forcesave) {
-					s.dodbsave = 1;
-					s.forcesave = 0;
-					s.prevdbsave = s.current;
-				} else {
-					s.dodbsave = 0;
-				}
-
-				/* check all datalist entries*/
 				processdatalist(&s);
 
 				if (debug) {
@@ -202,7 +188,6 @@ int main(int argc, char *argv[])
 			sleep(cfg.pollinterval);
 		}
 
-		/* take actions from signals */
 		if (intsignal) {
 			handleintsignals(&s);
 		}
@@ -211,7 +196,6 @@ int main(int argc, char *argv[])
 	cacheflush(s.dirname);
 	ibwflush();
 
-	/* clean daemon stuff */
 	if (s.rundaemon && !debug) {
 		close(pidfile);
 		unlink(cfg.pidfile);
@@ -224,7 +208,7 @@ void initdstate(DSTATE *s)
 {
 	noexit = 1;        /* disable exits in functions */
 	debug = 0;         /* debug disabled by default */
-	s->rundaemon = 0;     /* daemon disabled by default */
+	s->rundaemon = 0;  /* daemon disabled by default */
 
 	s->running = 1;
 	s->dbsaved = 1;
@@ -270,35 +254,32 @@ void preparedatabases(DSTATE *s)
 		printf("Make sure it exists and is at least read enabled for current user.\n");
 		printf("Exiting...\n");
 		exit(EXIT_FAILURE);
-	} else {
-		/* check if there's something to work with */
+	}
+
+	/* check if there's something to work with */
+	s->dbcount = 0;
+	while ((di=readdir(dir))) {
+		if (di->d_name[0]!='.') {
+			s->dbcount++;
+		}
+	}
+	closedir(dir);
+	if (s->dbcount==0) {
+		if (s->noadd) {
+			printf("Zero database found, exiting.\n");
+			exit(EXIT_FAILURE);
+		}
+		if (!spacecheck(s->dirname)) {
+			printf("Error: Not enough free diskspace available, exiting.\n");
+			exit(EXIT_FAILURE);
+		}
+		printf("Zero database found, adding available interfaces...\n");
+		if (!addinterfaces(s->dirname)) {
+			printf("Nothing to do, exiting.\n");
+			exit(EXIT_FAILURE);
+		}
+		/* set counter back to zero so that dbs will be cached later */
 		s->dbcount = 0;
-		while ((di=readdir(dir))) {
-			if (di->d_name[0]!='.') {
-				s->dbcount++;
-			}
-		}
-		closedir(dir);
-		if (s->dbcount==0) {
-			if (s->noadd) {
-				printf("Zero database found, exiting.\n");
-				exit(EXIT_FAILURE);
-			} else {
-				if (!spacecheck(s->dirname)) {
-					printf("Error: Not enough free diskspace available, exiting.\n");
-					exit(EXIT_FAILURE);
-				}
-				printf("Zero database found, adding available interfaces...\n");
-				if (!addinterfaces(s->dirname)) {
-					printf("Nothing to do, exiting.\n");
-					exit(EXIT_FAILURE);
-				}
-				s->dbcount = 0;
-			}
-		} else {
-			/* set counter back to zero so that dbs will be cached later */
-			s->dbcount = 0;
-		}
 	}
 }
 
@@ -338,26 +319,27 @@ void filldatabaselist(DSTATE *s)
 	}
 
 	while ((di=readdir(dir))) {
-		if (di->d_name[0]!='.') {
-			if (debug) {
-				printf("\nProcessing file \"%s/%s\"...\n", s->dirname, di->d_name);
-			}
-
-			if (!cacheadd(di->d_name, s->sync)) {
-				snprintf(errorstring, 512, "Cache memory allocation failed, exiting.");
-				printe(PT_Error);
-
-				/* clean daemon stuff before exit */
-				if (s->rundaemon && !debug) {
-					close(pidfile);
-					unlink(cfg.pidfile);
-				}
-				ibwflush();
-				exit(EXIT_FAILURE);
-			}
-
-			s->dbcount++;
+		if (di->d_name[0]=='.') {
+			continue;
 		}
+
+		if (debug) {
+			printf("\nProcessing file \"%s/%s\"...\n", s->dirname, di->d_name);
+		}
+
+		if (!cacheadd(di->d_name, s->sync)) {
+			snprintf(errorstring, 512, "Cache memory allocation failed, exiting.");
+			printe(PT_Error);
+
+			/* clean daemon stuff before exit */
+			if (s->rundaemon && !debug) {
+				close(pidfile);
+				unlink(cfg.pidfile);
+			}
+			ibwflush();
+			exit(EXIT_FAILURE);
+		}
+		s->dbcount++;
 	}
 
 	closedir(dir);
@@ -373,6 +355,27 @@ void filldatabaselist(DSTATE *s)
 		cachestatus();
 	} else {
 		s->updateinterval = 120;
+	}
+}
+
+void adjustsaveinterval(DSTATE *s)
+{
+	/* modify active save interval if all interfaces are unavailable */
+	if (cacheactivecount() > 0) {
+		s->saveinterval = cfg.saveinterval * 60;
+	} else {
+		s->saveinterval = cfg.offsaveinterval * 60;
+	}
+}
+
+void checkdbsaveneed(DSTATE *s)
+{
+	if ((s->current - s->prevdbsave) >= (s->saveinterval) || s->forcesave) {
+		s->dodbsave = 1;
+		s->forcesave = 0;
+		s->prevdbsave = s->current;
+	} else {
+		s->dodbsave = 0;
 	}
 }
 

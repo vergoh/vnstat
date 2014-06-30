@@ -16,6 +16,8 @@ void showhelp(void);
 void preparedatabases(DSTATE *s);
 void setsignaltraps(void);
 void filldatabaselist(DSTATE *s);
+void adjustsaveinterval(DSTATE *s);
+void checkdbsaveneed(DSTATE *s);
 void processdatalist(DSTATE *s);
 void handleintsignals(DSTATE *s);
 
