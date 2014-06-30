@@ -9,3 +9,8 @@ before_install:
  - sudo apt-get install -qq libgd2-xpm libgd2-xpm-dev check
 
 script: make debug && make tests
+
+notifications:
+  email:
+    on_success: always
+    on_failure: always
