@@ -19,6 +19,10 @@ void filldatabaselist(DSTATE *s);
 void adjustsaveinterval(DSTATE *s);
 void checkdbsaveneed(DSTATE *s);
 void processdatalist(DSTATE *s);
+int datalist_cacheget(DSTATE *s);
+void datalist_getifinfo(DSTATE *s);
+int datalist_timevalidation(DSTATE *s);
+int datalist_writedb(DSTATE *s);
 void handleintsignals(DSTATE *s);
 
 #endif

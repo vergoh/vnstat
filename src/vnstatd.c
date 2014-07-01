@@ -393,101 +393,133 @@ void processdatalist(DSTATE *s)
 		}
 
 		/* get data from cache if available */
-		if (cacheget(s->datalist)==0) {
-
-			/* try to read data from file if not cached */
-			if (readdb(s->datalist->data.interface, s->dirname)!=-1) {
-				/* mark cache as filled on read success and force interface status update */
-				s->datalist->filled = 1;
-				s->dbhash = 0;
-			} else {
-				s->datalist = s->datalist->next;
-				continue;
-			}
+		if (!datalist_cacheget(s)) {
+			s->datalist = s->datalist->next;
+			continue;
 		}
 
 		/* get info if interface has been marked as active */
-		if (data.active) {
-			if (getifinfo(data.interface)) {
-				if (s->datalist->sync) { /* if --sync was used during startup */
-					data.currx = ifinfo.rx;
-					data.curtx = ifinfo.tx;
-					s->datalist->sync = 0;
-				} else {
-					parseifinfo(0);
-				}
-			} else {
-				/* disable interface since we can't access its data */
-				data.active = 0;
-				snprintf(errorstring, 512, "Interface \"%s\" not available, disabling.", data.interface);
-				printe(PT_Info);
-			}
-		} else if (debug) {
-			printf("d: interface is disabled\n");
-		}
+		datalist_getifinfo(s);
 
 		/* check that the time is correct */
-		if (s->current >= data.lastupdated) {
-			data.lastupdated = s->current;
-			cacheupdate();
-		} else {
-			/* skip update if previous update is less than a day in the future */
-			/* otherwise exit with error message since the clock is problably messed */
-			if (data.lastupdated > (s->current+86400)) {
-				snprintf(errorstring, 512, "Interface \"%s\" has previous update date too much in the future, exiting.", data.interface);
-				printe(PT_Error);
-
-				/* clean daemon stuff before exit */
-				if (s->rundaemon && !debug) {
-					close(pidfile);
-					unlink(cfg.pidfile);
-				}
-				ibwflush();
-				exit(EXIT_FAILURE);
-			} else {
-				s->datalist = s->datalist->next;
-				continue;
-			}
+		if (!datalist_timevalidation(s)) {
+			s->datalist = s->datalist->next;
+			continue;
 		}
 
 		/* write data to file if now is the time for it */
-		if (s->dodbsave) {
-			if (checkdb(s->datalist->data.interface, s->dirname)) {
-				if (spacecheck(s->dirname)) {
-					if (writedb(s->datalist->data.interface, s->dirname, 0)) {
-						if (!s->dbsaved) {
-							snprintf(errorstring, 512, "Database write possible again.");
-							printe(PT_Info);
-							s->dbsaved = 1;
-						}
-					} else {
-						if (s->dbsaved) {
-							snprintf(errorstring, 512, "Unable to write database, continuing with cached data.");
-							printe(PT_Error);
-							s->dbsaved = 0;
-						}
-					}
-				} else {
-					/* show freespace error only once */
-					if (s->dbsaved) {
-						snprintf(errorstring, 512, "Free diskspace check failed, unable to write database, continuing with cached data.");
-						printe(PT_Error);
-						s->dbsaved = 0;
-					}
-				}
-			} else {
-				/* remove interface from update list since the database file doesn't exist anymore */
-				snprintf(errorstring, 512, "Database for interface \"%s\" no longer exists, removing from update list.", s->datalist->data.interface);
-				printe(PT_Info);
-				s->datalist = cacheremove(s->datalist->data.interface);
-				s->dbcount--;
-				cachestatus();
-				continue;
-			}
+		if (!datalist_writedb(s)) {
+			/* remove interface from update list since the database file doesn't exist anymore */
+			snprintf(errorstring, 512, "Database for interface \"%s\" no longer exists, removing from update list.", s->datalist->data.interface);
+			printe(PT_Info);
+			s->datalist = cacheremove(s->datalist->data.interface);
+			s->dbcount--;
+			cachestatus();
+			continue;
 		}
 
 		s->datalist = s->datalist->next;
 	}
+}
+
+int datalist_cacheget(DSTATE *s)
+{
+	if (cacheget(s->datalist)==0) {
+
+		/* try to read data from file if not cached */
+		if (readdb(s->datalist->data.interface, s->dirname)!=-1) {
+			/* mark cache as filled on read success and force interface status update */
+			s->datalist->filled = 1;
+			s->dbhash = 0;
+		} else {
+			return 0;
+		}
+	}
+	return 1;
+}
+
+void datalist_getifinfo(DSTATE *s)
+{
+	if (data.active) {
+		if (getifinfo(data.interface)) {
+			if (s->datalist->sync) { /* if --sync was used during startup */
+				data.currx = ifinfo.rx;
+				data.curtx = ifinfo.tx;
+				s->datalist->sync = 0;
+			} else {
+				parseifinfo(0);
+			}
+		} else {
+			/* disable interface since we can't access its data */
+			data.active = 0;
+			snprintf(errorstring, 512, "Interface \"%s\" not available, disabling.", data.interface);
+			printe(PT_Info);
+		}
+	} else if (debug) {
+		printf("d: interface is disabled\n");
+	}
+}
+
+int datalist_timevalidation(DSTATE *s)
+{
+	if (s->current >= data.lastupdated) {
+		data.lastupdated = s->current;
+		cacheupdate();
+	} else {
+		/* skip update if previous update is less than a day in the future */
+		/* otherwise exit with error message since the clock is problably messed */
+		if (data.lastupdated > (s->current+86400)) {
+			snprintf(errorstring, 512, "Interface \"%s\" has previous update date too much in the future, exiting.", data.interface);
+			printe(PT_Error);
+
+			/* clean daemon stuff before exit */
+			if (s->rundaemon && !debug) {
+				close(pidfile);
+				unlink(cfg.pidfile);
+			}
+			ibwflush();
+			exit(EXIT_FAILURE);
+		} else {
+			return 0;
+		}
+	}
+	return 1;
+}
+
+int datalist_writedb(DSTATE *s)
+{
+	if (!s->dodbsave) {
+		return 1;
+	}
+
+	if (!checkdb(s->datalist->data.interface, s->dirname)) {
+		return 0;
+	}
+
+	if (spacecheck(s->dirname)) {
+		if (writedb(s->datalist->data.interface, s->dirname, 0)) {
+			if (!s->dbsaved) {
+				snprintf(errorstring, 512, "Database write possible again.");
+				printe(PT_Info);
+				s->dbsaved = 1;
+			}
+		} else {
+			if (s->dbsaved) {
+				snprintf(errorstring, 512, "Unable to write database, continuing with cached data.");
+				printe(PT_Error);
+				s->dbsaved = 0;
+			}
+		}
+	} else {
+		/* show freespace error only once */
+		if (s->dbsaved) {
+			snprintf(errorstring, 512, "Free diskspace check failed, unable to write database, continuing with cached data.");
+			printe(PT_Error);
+			s->dbsaved = 0;
+		}
+	}
+
+	return 1;
 }
 
 void handleintsignals(DSTATE *s)
