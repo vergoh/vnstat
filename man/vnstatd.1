@@ -1,4 +1,4 @@
-.TH VNSTATD 1 "APRIL 2014" "version 1.12" "User Manuals"
+.TH VNSTATD 1 "JULY 2014" "version 1.12" "User Manuals"
 .SH NAME
 
 vnstatd \- daemon based database updating for vnStat
@@ -16,6 +16,12 @@ vnstatd \- daemon based database updating for vnStat
 ] [
 .B \-\-debug
 ] [
+.B \-g
+.I group
+] [
+.B \-\-group
+.I group
+] [
 .B \-\-help
 ] [
 .B \-\-noadd
@@ -26,6 +32,12 @@ vnstatd \- daemon based database updating for vnStat
 .I file
 ] [
 .B \-\-sync
+] [
+.B \-\-u
+.I user
+] [
+.B \-\-user
+.I user
 ] [
 .B \-\-version
 ]
@@ -73,6 +85,15 @@ Provide additional output for debug purposes. The process will stay
 attached to the terminal for output.
 
 .TP
+.BI "-g, --group " group
+Set daemon process group to
+.I group
+during startup.
+.I group
+can be either the name of the group or a numerical group id. This option
+can only be used when the process is started as root.
+
+.TP
 .BI "--noadd"
 Disable automatic creation of new databases for all available interfaces
 if the daemon is started with zero database found. Pseudo interfaces
@@ -102,6 +123,15 @@ isn't required in normal use because the daemon will automatically synchronize
 the internal counters after a system reboot, if enought time has passed
 since the daemon was previously running or if the internal counters are
 clearly out of sync.
+
+.TP
+.BI "-u, --user " user
+Set daemon process user to
+.I user
+during startup.
+.I user
+can be either the login of the user or a numerical user id. This option
+can only be used when the process is started as root.
 
 .TP
 .BI "-v, --version"
