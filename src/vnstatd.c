@@ -264,23 +264,28 @@ void preparedatabases(DSTATE *s)
 		}
 	}
 	closedir(dir);
-	if (s->dbcount==0) {
-		if (s->noadd) {
-			printf("Zero database found, exiting.\n");
-			exit(EXIT_FAILURE);
-		}
-		if (!spacecheck(s->dirname)) {
-			printf("Error: Not enough free diskspace available, exiting.\n");
-			exit(EXIT_FAILURE);
-		}
-		printf("Zero database found, adding available interfaces...\n");
-		if (!addinterfaces(s->dirname)) {
-			printf("Nothing to do, exiting.\n");
-			exit(EXIT_FAILURE);
-		}
-		/* set counter back to zero so that dbs will be cached later */
+
+	if (s->dbcount > 0) {
 		s->dbcount = 0;
+		return;
 	}
+
+	if (s->noadd) {
+		printf("Zero database found, exiting.\n");
+		exit(EXIT_FAILURE);
+	}
+	if (!spacecheck(s->dirname)) {
+		printf("Error: Not enough free diskspace available, exiting.\n");
+		exit(EXIT_FAILURE);
+	}
+	printf("Zero database found, adding available interfaces...\n");
+	if (!addinterfaces(s->dirname)) {
+		printf("Nothing to do, exiting.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	/* set counter back to zero so that dbs will be cached later */
+	s->dbcount = 0;
 }
 
 void setsignaltraps(void)

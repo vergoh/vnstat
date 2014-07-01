@@ -167,7 +167,7 @@ int addinterfaces(const char *dirname)
 	}
 
 	if (count) {
-		printf(" Limits can be modified using the configuration file. See \"man vnstat.conf\".");
+		printf("\nLimits can be modified using the configuration file. See \"man vnstat.conf\".");
 	}
 
 	printf("\n");
