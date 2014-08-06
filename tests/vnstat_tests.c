@@ -10,6 +10,7 @@
 int main(void)
 {
 	int number_failed = 0;
+	debug = 0;
 
 	Suite *s = test_suite();
 	SRunner *sr = srunner_create(s);
@@ -19,7 +20,9 @@ int main(void)
 	number_failed = srunner_ntests_failed(sr);
 	srunner_free(sr);
 
-	remove_directory(TESTDBDIR);
+	if (number_failed == 0) {
+		remove_directory(TESTDIR);
+	}
 
 	return number_failed;
 }
@@ -53,13 +56,15 @@ int clean_testdbdir(void)
 {
 	struct stat statbuf;
 
+	create_testdir();
+
 	if (stat(TESTDBDIR, &statbuf)!=0) {
 		if (errno==ENOENT) {
 			if (mkdir(TESTDBDIR, 0755)==0) {
 				return 1;
 			}
-			ck_abort_msg("error \"%s\" while creating directory \"%s\", please remove it manually", strerror(errno), TESTDBDIR);
 		}
+		ck_abort_msg("error \"%s\" while creating directory \"%s\"", strerror(errno), TESTDBDIR);
 	}
 
 	if (!remove_directory(TESTDBDIR)) {
@@ -67,7 +72,23 @@ int clean_testdbdir(void)
 	}
 
 	if (mkdir(TESTDBDIR, 0755)!=0) {
-		ck_abort_msg("error \"%s\" while creating directory \"%s\", please remove it manually", strerror(errno), TESTDBDIR);
+		ck_abort_msg("error \"%s\" while creating directory \"%s\"", strerror(errno), TESTDBDIR);
+	}
+
+	return 1;
+}
+
+int create_testdir(void)
+{
+	struct stat statbuf;
+
+	if (stat(TESTDIR, &statbuf)!=0) {
+		if (errno==ENOENT) {
+			if (mkdir(TESTDIR, 0755)==0) {
+				return 1;
+			}
+		}
+		ck_abort_msg("error \"%s\" while creating directory \"%s\"", strerror(errno), TESTDIR);
 	}
 
 	return 1;
@@ -145,6 +166,45 @@ int check_dbfile_exists(const char *iface, const int minsize)
 	if (statbuf.st_size < minsize) {
 		ck_abort_msg("file \"%s\" is smaller (%d) then given minimum %d", filename, (int)statbuf.st_size, minsize);
 	}
+
+	return 1;
+}
+
+int fake_proc_net_dev(const char *mode, const char *iface, const int rx, const int tx, const int rxp, const int txp)
+{
+	FILE *devfp;
+	char filename[512];
+	struct stat statbuf;
+
+	if (strcmp(mode, "w") != 0  && strcmp(mode, "a") != 0) {
+		ck_abort_msg("error: only w and a modes are supported");
+	}
+
+	create_testdir();
+
+	if (stat(TESTPROCDIR, &statbuf)!=0) {
+		if (errno==ENOENT) {
+			if (mkdir(TESTPROCDIR, 0755) != 0) {
+				ck_abort_msg("error \"%s\" while creating directory \"%s\"", strerror(errno), TESTPROCDIR);
+			}
+		} else {
+			ck_abort_msg("error \"%s\" while creating directory \"%s\"", strerror(errno), TESTPROCDIR);
+		}
+	}
+
+	snprintf(filename, 512, "%s/dev", TESTPROCDIR);
+	if ((devfp=fopen(filename, mode))==NULL) {
+		ck_abort_msg("error \"%s\" while opening file \"%s\" for writing", strerror(errno), filename);
+	}
+
+	if (strcmp(mode, "w") == 0) {
+		fprintf(devfp, "Inter-|   Receive                                                |  Transmit\n");
+		fprintf(devfp, " face |bytes    packets errs drop fifo frame compressed multicast|bytes    packets errs drop fifo colls carrier compressed\n");
+		fprintf(devfp, "    lo:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0\n");
+	}
+	fprintf(devfp, "%6s: %7d %7d    0    0    0     0          0         0  %7d %7d    0    0    0     0       0          0\n", iface, rx, rxp, tx, txp);
+
+	fclose(devfp);
 
 	return 1;
 }

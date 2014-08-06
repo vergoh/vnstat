@@ -354,6 +354,110 @@ START_TEST(parseifinfo_multiple_parses)
 }
 END_TEST
 
+START_TEST(getiflist_no_source)
+{
+	char *ifacelist;
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	ck_assert_int_eq(getiflist(&ifacelist), 0);
+	ck_assert_str_eq(ifacelist, "");
+
+	free(ifacelist);
+}
+END_TEST
+
+START_TEST(getiflist_one_interface)
+{
+	char *ifacelist;
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_proc_net_dev("w", "ethunusual", 0, 0, 0, 0);
+
+	ck_assert_int_eq(getiflist(&ifacelist), 1);
+	ck_assert_str_eq(ifacelist, "lo ethunusual ");
+
+	free(ifacelist);
+}
+END_TEST
+
+START_TEST(getiflist_multiple_interfaces)
+{
+	char *ifacelist;
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_proc_net_dev("w", "random", 0, 0, 0, 0);
+	fake_proc_net_dev("a", "interfaces", 0, 0, 0, 0);
+	fake_proc_net_dev("a", "having", 0, 0, 0, 0);
+	fake_proc_net_dev("a", "fun", 0, 0, 0, 0);
+	fake_proc_net_dev("a", "i", 0, 0, 0, 0);
+
+	ck_assert_int_eq(getiflist(&ifacelist), 1);
+	ck_assert_str_eq(ifacelist, "lo random interfaces having fun i ");
+
+	free(ifacelist);
+}
+END_TEST
+
+START_TEST(readproc_no_file)
+{
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	ck_assert_int_eq(readproc("ethunusual"), 0);
+}
+END_TEST
+
+START_TEST(readproc_not_found)
+{
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_proc_net_dev("w", "ethwrong", 10, 20, 30, 40);
+
+	ck_assert_int_eq(readproc("ethunusual"), 0);
+}
+END_TEST
+
+START_TEST(readproc_success)
+{
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_proc_net_dev("w", "ethwrong", 10, 20, 30, 40);
+	fake_proc_net_dev("a", "ethunusual", 1, 2, 3, 4);
+
+	ck_assert_int_eq(readproc("ethunusual"), 1);
+	ck_assert_str_eq(ifinfo.name, "ethunusual");
+	ck_assert_int_eq(ifinfo.filled, 1);
+	ck_assert_int_eq(ifinfo.rx, 1);
+	ck_assert_int_eq(ifinfo.tx, 2);
+	ck_assert_int_eq(ifinfo.rxp, 3);
+	ck_assert_int_eq(ifinfo.txp, 4);
+}
+END_TEST
+
+START_TEST(getifinfo_not_found)
+{
+	suppress_output();
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_proc_net_dev("w", "ethwrong", 10, 20, 30, 40);
+
+	ck_assert_int_eq(getifinfo("ethunusual"), 0);
+}
+END_TEST
+
+START_TEST(getifinfo_success)
+{
+	suppress_output();
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_proc_net_dev("w", "ethwrong", 10, 20, 30, 40);
+	fake_proc_net_dev("a", "ethunusual", 1, 2, 3, 4);
+
+	ck_assert_int_eq(getifinfo("ethunusual"), 1);
+	ck_assert_str_eq(ifinfo.name, "ethunusual");
+	ck_assert_int_eq(ifinfo.filled, 1);
+	ck_assert_int_eq(ifinfo.rx, 1);
+	ck_assert_int_eq(ifinfo.tx, 2);
+	ck_assert_int_eq(ifinfo.rxp, 3);
+	ck_assert_int_eq(ifinfo.txp, 4);
+}
+END_TEST
+
 void add_ifinfo_tests(Suite *s)
 {
 	/* Ifinfo test cases */
@@ -365,5 +469,13 @@ void add_ifinfo_tests(Suite *s)
 	tcase_add_test(tc_ifinfo, parseifinfo_long_update_interval_causes_sync);
 	tcase_add_test(tc_ifinfo, parseifinfo_hitting_maxbw_limit_causes_sync);
 	tcase_add_test(tc_ifinfo, parseifinfo_multiple_parses);
+	tcase_add_test(tc_ifinfo, getiflist_no_source);
+	tcase_add_test(tc_ifinfo, getiflist_one_interface);
+	tcase_add_test(tc_ifinfo, getiflist_multiple_interfaces);
+	tcase_add_test(tc_ifinfo, readproc_no_file);
+	tcase_add_test(tc_ifinfo, readproc_not_found);
+	tcase_add_test(tc_ifinfo, readproc_success);
+	tcase_add_test(tc_ifinfo, getifinfo_not_found);
+	tcase_add_test(tc_ifinfo, getifinfo_success);
 	suite_add_tcase(s, tc_ifinfo);
 }

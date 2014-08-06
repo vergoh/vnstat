@@ -10,4 +10,4 @@ tests/*.log
 tests/*.xml
 tests/coverage
 tests/vnstat_tests
-tests/testdbdir
+tests/testdir

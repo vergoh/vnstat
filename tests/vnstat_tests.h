@@ -7,11 +7,15 @@ Suite *test_suite(void);
 void suppress_output(void);
 void disable_logprints(void);
 int clean_testdbdir(void);
+int create_testdir(void);
 int remove_directory(const char *directory);
 int create_zerosize_dbfile(const char *iface);
 int check_dbfile_exists(const char *iface, const int minsize);
+int fake_proc_net_dev(const char *mode, const char *iface, const int rx, const int tx, const int rxp, const int txp);
 
-#define TESTDBDIR "testdbdir"
+#define TESTDIR     "testdir"
+#define TESTDBDIR   "testdir/database"
+#define TESTPROCDIR "testdir/proc"
 
 /* for compatibility with older check framework versions */
 #ifndef ck_assert_int_ge
