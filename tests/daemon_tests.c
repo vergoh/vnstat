@@ -1,6 +1,7 @@
 #include "vnstat_tests.h"
 #include "daemon_tests.h"
 #include "common.h"
+#include "dbcache.h"
 #include "daemon.h"
 
 START_TEST(getuser_root_string)
