@@ -31,7 +31,7 @@ database_tests.o: database_tests.c database_tests.h vnstat_tests.h dbaccess.h db
 config_tests.o: config_tests.c config_tests.h vnstat_tests.h common.h cfg.h
 ifinfo_tests.o: ifinfo_tests.c ifinfo_tests.h vnstat_tests.h common.h ifinfo.h dbaccess.h misc.h cfg.h
 misc_tests.o: misc_tests.c misc_tests.h vnstat_tests.h common.h misc.h
-daemon_tests.o: daemon_tests.c daemon_tests.h common.h dbcache.h daemon.h
+daemon_tests.o: daemon_tests.c daemon_tests.h common.h dbaccess.h dbcache.h cfg.h daemon.h
 
 common.o: common.c common.h
 ifinfo.o: ifinfo.c ifinfo.h common.h dbaccess.h misc.h cfg.h

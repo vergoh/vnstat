@@ -692,6 +692,57 @@ START_TEST(validatedb_with_top10_use)
 }
 END_TEST
 
+START_TEST(dbcheck_with_no_interfaces)
+{
+	int forcesave = 0;
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	ck_assert_int_eq(dbcheck(0, &forcesave), 0);
+	ck_assert_int_eq(forcesave, 0);
+}
+END_TEST
+
+START_TEST(dbcheck_with_empty_cache)
+{
+	int forcesave = 0;
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_proc_net_dev("w", "ethsomething", 1, 2, 3, 4);
+	fake_proc_net_dev("a", "ethelse", 5, 6, 7, 8);
+
+	ck_assert_int_ne(dbcheck(0, &forcesave), 0);
+	ck_assert_int_eq(forcesave, 0);
+}
+END_TEST
+
+START_TEST(dbcheck_with_filled_cache)
+{
+	int forcesave = 0;
+
+	initdb();
+	defaultcfg();
+	disable_logprints();
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+
+	ck_assert_int_eq(cachecount(), 0);
+	strcpy(data.interface, "ethbasic");
+	ck_assert_int_eq(cacheupdate(), 1);
+	strcpy(data.interface, "ethactive");
+	ck_assert_int_eq(cacheupdate(), 1);
+	strcpy(data.interface, "ethnotactive");
+	data.active = 0;
+	ck_assert_int_eq(cacheupdate(), 1);
+	ck_assert_int_eq(cachecount(), 3);
+	ck_assert_int_eq(cacheactivecount(), 2);
+
+	fake_proc_net_dev("w", "ethbasic", 1, 2, 3, 4);
+	fake_proc_net_dev("a", "ethnotactive", 5, 6, 7, 8);
+
+	ck_assert_int_ne(dbcheck(0, &forcesave), 0);
+	ck_assert_int_eq(forcesave, 1);
+}
+END_TEST
+
 void add_database_tests(Suite *s)
 {
 	/* Database test cases */
@@ -737,5 +788,8 @@ void add_database_tests(Suite *s)
 	tcase_add_test(tc_db, validatedb_with_initdb);
 	tcase_add_test(tc_db, validatedb_with_invalid_totals);
 	tcase_add_test(tc_db, validatedb_with_top10_use);
+	tcase_add_test(tc_db, dbcheck_with_no_interfaces);
+	tcase_add_test(tc_db, dbcheck_with_empty_cache);
+	tcase_add_test(tc_db, dbcheck_with_filled_cache);
 	suite_add_tcase(s, tc_db);
 }
