@@ -508,7 +508,7 @@ int datalist_cacheget(DSTATE *s)
 	if (cacheget(s->datalist)==0) {
 
 		/* try to read data from file if not cached */
-		if (readdb(s->datalist->data.interface, s->dirname)!=-1) {
+		if (readdb(s->datalist->data.interface, s->dirname)==0) {
 			/* mark cache as filled on read success and force interface status update */
 			s->datalist->filled = 1;
 			s->dbhash = 0;
@@ -550,7 +550,7 @@ int datalist_timevalidation(DSTATE *s)
 		/* skip update if previous update is less than a day in the future */
 		/* otherwise exit with error message since the clock is problably messed */
 		if (data.lastupdated > (s->current+86400)) {
-			snprintf(errorstring, 512, "Interface \"%s\" has previous update date too much in the future, exiting.", data.interface);
+			snprintf(errorstring, 512, "Interface \"%s\" has previous update date too much in the future, exiting. (%d / %d)", data.interface, (unsigned int)data.lastupdated, (unsigned int)s->current);
 			printe(PT_Error);
 
 			/* clean daemon stuff before exit */
