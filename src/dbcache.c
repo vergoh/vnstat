@@ -51,36 +51,35 @@ datanode *cacheremove(const char *iface)
 
 	if (p == NULL) {
 		return NULL;
-	} else {
+	}
 
-		/* handle list head remove */
+	/* handle list head remove */
+	if (strcmp(p->data.interface, iface)==0) {
+		dataptr = p->next;
+		if (debug) {
+			printf("cache: h %s removed\n", iface);
+		}
+		free(p);
+		return dataptr;
+	}
+
+	o = p;
+	p = p->next;
+
+	/* handle other locations */
+	while (p != NULL) {
+
 		if (strcmp(p->data.interface, iface)==0) {
-			dataptr = p->next;
+			o->next = p->next;
 			if (debug) {
-				printf("cache: h %s removed\n", iface);
+				printf("cache: %s removed\n", iface);
 			}
 			free(p);
-			return dataptr;
+			return o->next;
 		}
 
 		o = p;
 		p = p->next;
-
-		/* handle other locations */
-		while (p != NULL) {
-
-			if (strcmp(p->data.interface, iface)==0) {
-				o->next = p->next;
-				if (debug) {
-					printf("cache: %s removed\n", iface);
-				}
-				free(p);
-				return o->next;
-			}
-
-			o = p;
-			p = p->next;
-		}
 	}
 
 	return NULL;
@@ -137,17 +136,16 @@ void cacheshow(void)
 
 	if (p == NULL) {
 		printf("cache: empty.\n");
-
-	} else {
-
-		printf("cache:");
-		while (p != NULL) {
-			printf(" %d. \"%s\"  ", i, p->data.interface);
-			p = p->next;
-			i++;
-		}
-		printf("\n");
+		return;
 	}
+
+	printf("cache:");
+	while (p != NULL) {
+		printf(" %d. \"%s\"  ", i, p->data.interface);
+		p = p->next;
+		i++;
+	}
+	printf("\n");
 }
 
 void cachestatus(void)
@@ -158,26 +156,23 @@ void cachestatus(void)
 
 	snprintf(buffer, b, "Monitoring: ");
 
-	if (p != NULL) {
-
-		while (p != NULL) {
-			if ((b+strlen(p->data.interface)+16) < 508) {
-				bwlimit = ibwget(p->data.interface);
-				if (bwlimit < 0) {
-					snprintf(bwtemp, 16, " (no limit) ");
-				} else {
-					snprintf(bwtemp, 16, " (%d Mbit) ", bwlimit);
-				}
-				strncat(buffer, p->data.interface, strlen(p->data.interface));
-				strncat(buffer, bwtemp, strlen(bwtemp));
-				b += strlen(p->data.interface) + strlen(bwtemp);
+	while (p != NULL) {
+		if ((b+strlen(p->data.interface)+16) < 508) {
+			bwlimit = ibwget(p->data.interface);
+			if (bwlimit < 0) {
+				snprintf(bwtemp, 16, " (no limit) ");
 			} else {
-				strcat(buffer, "...");
-				break;
+				snprintf(bwtemp, 16, " (%d Mbit) ", bwlimit);
 			}
-			count++;
-			p = p->next;
+			strncat(buffer, p->data.interface, strlen(p->data.interface));
+			strncat(buffer, bwtemp, strlen(bwtemp));
+			b += strlen(p->data.interface) + strlen(bwtemp);
+		} else {
+			strcat(buffer, "...");
+			break;
 		}
+		count++;
+		p = p->next;
 	}
 
 	if (count) {
@@ -284,47 +279,49 @@ uint32_t dbcheck(uint32_t dbhash, int *forcesave)
 
 	newhash = simplehash(ifacelist, (int)strlen(ifacelist));
 
+	if (newhash == dbhash) {
+		free(ifacelist);
+		return newhash;
+	}
+
 	/* search for changes if hash doesn't match */
-	if (newhash!=dbhash) {
+	if (debug) {
+		printf("ifacelist changed: '%s'    %u <> %u\n", ifacelist, dbhash, newhash);
+	}
 
-		if (debug) {
-			printf("ifacelist changed: '%s'    %u <> %u\n", ifacelist, dbhash, newhash);
-		}
+	while (p != NULL) {
 
-		while (p != NULL) {
+		if (p->filled) {
+			found = offset = 0;
 
-			if (p->filled) {
-				found = offset = 0;
-
-				while (offset <= (int)strlen(ifacelist)) {
-					sscanf(ifacelist+offset, "%31s", interface);
-					if (strcmp(p->data.interface, interface)==0) {
-						found = 1;
-						break;
-					}
-					offset += (int)strlen(interface)+1;
+			while (offset <= (int)strlen(ifacelist)) {
+				sscanf(ifacelist+offset, "%31s", interface);
+				if (strcmp(p->data.interface, interface)==0) {
+					found = 1;
+					break;
 				}
-
-				if (p->data.active==1 && found==0) {
-					p->data.active = 0;
-					p->data.currx = p->data.curtx = 0;
-					if (cfg.savestatus) {
-						*forcesave = 1;
-					}
-					snprintf(errorstring, 512, "Interface \"%s\" disabled.", p->data.interface);
-					printe(PT_Info);
-				} else if (p->data.active==0 && found==1) {
-					p->data.active = 1;
-					p->data.currx = p->data.curtx = 0;
-					if (cfg.savestatus) {
-						*forcesave = 1;
-					}
-					snprintf(errorstring, 512, "Interface \"%s\" enabled.", p->data.interface);
-					printe(PT_Info);
-				}
+				offset += (int)strlen(interface)+1;
 			}
-			p = p->next;
+
+			if (p->data.active==1 && found==0) {
+				p->data.active = 0;
+				p->data.currx = p->data.curtx = 0;
+				if (cfg.savestatus) {
+					*forcesave = 1;
+				}
+				snprintf(errorstring, 512, "Interface \"%s\" disabled.", p->data.interface);
+				printe(PT_Info);
+			} else if (p->data.active==0 && found==1) {
+				p->data.active = 1;
+				p->data.currx = p->data.curtx = 0;
+				if (cfg.savestatus) {
+					*forcesave = 1;
+				}
+				snprintf(errorstring, 512, "Interface \"%s\" enabled.", p->data.interface);
+				printe(PT_Info);
+			}
 		}
+		p = p->next;
 	}
 
 	free(ifacelist);

@@ -521,23 +521,26 @@ int datalist_cacheget(DSTATE *s)
 
 void datalist_getifinfo(DSTATE *s)
 {
-	if (data.active) {
-		if (getifinfo(data.interface)) {
-			if (s->datalist->sync) { /* if --sync was used during startup */
-				data.currx = ifinfo.rx;
-				data.curtx = ifinfo.tx;
-				s->datalist->sync = 0;
-			} else {
-				parseifinfo(0);
-			}
-		} else {
-			/* disable interface since we can't access its data */
-			data.active = 0;
-			snprintf(errorstring, 512, "Interface \"%s\" not available, disabling.", data.interface);
-			printe(PT_Info);
-		}
-	} else if (debug) {
-		printf("d: interface is disabled\n");
+	if (!data.active) {
+		if (debug)
+			printf("d: interface is disabled\n");
+		return;
+	}
+
+	if (!getifinfo(data.interface)) {
+		/* disable interface since we can't access its data */
+		data.active = 0;
+		snprintf(errorstring, 512, "Interface \"%s\" not available, disabling.", data.interface);
+		printe(PT_Info);
+		return;
+	}
+
+	if (s->datalist->sync) { /* if --sync was used during startup */
+		data.currx = ifinfo.rx;
+		data.curtx = ifinfo.tx;
+		s->datalist->sync = 0;
+	} else {
+		parseifinfo(0);
 	}
 }
 
@@ -546,25 +549,25 @@ int datalist_timevalidation(DSTATE *s)
 	if (s->current >= data.lastupdated) {
 		data.lastupdated = s->current;
 		cacheupdate();
-	} else {
-		/* skip update if previous update is less than a day in the future */
-		/* otherwise exit with error message since the clock is problably messed */
-		if (data.lastupdated > (s->current+86400)) {
-			snprintf(errorstring, 512, "Interface \"%s\" has previous update date too much in the future, exiting. (%d / %d)", data.interface, (unsigned int)data.lastupdated, (unsigned int)s->current);
-			printe(PT_Error);
-
-			/* clean daemon stuff before exit */
-			if (s->rundaemon && !debug) {
-				close(pidfile);
-				unlink(cfg.pidfile);
-			}
-			ibwflush();
-			exit(EXIT_FAILURE);
-		} else {
-			return 0;
-		}
+		return 1;
 	}
-	return 1;
+
+	/* skip update if previous update is less than a day in the future */
+	/* otherwise exit with error message since the clock is problably messed */
+	if (data.lastupdated > (s->current+86400)) {
+		snprintf(errorstring, 512, "Interface \"%s\" has previous update date too much in the future, exiting. (%d / %d)", data.interface, (unsigned int)data.lastupdated, (unsigned int)s->current);
+		printe(PT_Error);
+
+		/* clean daemon stuff before exit */
+		if (s->rundaemon && !debug) {
+			close(pidfile);
+			unlink(cfg.pidfile);
+		}
+		ibwflush();
+		exit(EXIT_FAILURE);
+	}
+
+	return 0;
 }
 
 int datalist_writedb(DSTATE *s)

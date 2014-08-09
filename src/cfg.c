@@ -599,15 +599,14 @@ void ibwlist(void)
 
 	if (p == NULL) {
 		printf("ibw list is empty.\n");
+		return;
+	}
 
-	} else {
-
-		printf("ibw:\n");
-		while (p != NULL) {
-			printf(" %2d: \"%s\" \"%d\"\n", i, p->interface, p->limit);
-			p = p->next;
-			i++;
-		}
+	printf("ibw:\n");
+	while (p != NULL) {
+		printf(" %2d: \"%s\" \"%d\"\n", i, p->interface, p->limit);
+		p = p->next;
+		i++;
 	}
 }
 

@@ -5,83 +5,87 @@ int readdb(const char *iface, const char *dirname)
 {
 	FILE *db;
 	char file[512], backup[512];
-	int newdb=0;
 
 	snprintf(file, 512, "%s/%s", dirname, iface);
 	snprintf(backup, 512, "%s/.%s", dirname, iface);
 
-	if ((db=fopen(file,"r"))!=NULL) {
+	if ((db=fopen(file,"r"))==NULL) {
+		snprintf(errorstring, 512, "Unable to read database \"%s\": %s", file, strerror(errno));
+		printe(PT_Error);
 
-		/* lock file */
-		if (!lockdb(fileno(db), 0)) {
+		/* create new database template */
+		initdb();
+		strncpy_nt(data.interface, iface, 32);
+		strncpy_nt(data.nick, data.interface, 32);
+		return 1;
+	}
+
+	/* lock file */
+	if (!lockdb(fileno(db), 0)) {
+		fclose(db);
+		return -1;
+	}
+
+	if (fread(&data,sizeof(DATA),1,db)==0) {
+		data.version=-1;
+		if (debug) {
+			printf("db: Database read failed for file \"%s\".\n", file);
+		}
+	} else {
+		if (debug) {
+			printf("db: Database loaded for interface \"%s\"...\n", data.interface);
+		}
+	}
+
+	/* convert old database to new format if necessary */
+	if (data.version<DBVERSION) {
+		if (data.version!=-1) {
+			snprintf(errorstring, 512, "Trying to convert database \"%s\" (v%d) to current db format", file, data.version);
+			printe(PT_Info);
+		}
+
+		if ((data.version==-1) || (!convertdb(db))) {
+
+			/* close current db and try using backup if database conversion failed */
 			fclose(db);
-			return -1;
-		}
-
-		if (fread(&data,sizeof(DATA),1,db)==0) {
-			data.version=-1;
-			if (debug) {
-				printf("db: Database read failed for file \"%s\".\n", file);
-			}
-		} else {
-			if (debug) {
-				printf("db: Database loaded for interface \"%s\"...\n", data.interface);
-			}
-		}
-
-		/* convert old database to new format if necessary */
-		if (data.version<DBVERSION) {
-			if (data.version!=-1) {
-				snprintf(errorstring, 512, "Trying to convert database \"%s\" (v%d) to current db format", file, data.version);
-				printe(PT_Info);
-			}
-
-			if ((data.version==-1) || (!convertdb(db))) {
-
-				/* close current db and try using backup if database conversion failed */
-				fclose(db);
-				if ((db=fopen(backup,"r"))!=NULL) {
-
-					/* lock file */
-					if (!lockdb(fileno(db), 0)) {
-						fclose(db);
-						return -1;
-					}
-
-					if (fread(&data,sizeof(DATA),1,db)==0) {
-						snprintf(errorstring, 512, "Database load failed even when using backup (%s). Aborting.", strerror(errno));
-						printe(PT_Error);
-						fclose(db);
-
-						if (noexit) {
-							return -1;
-						} else {
-							exit(EXIT_FAILURE);
-						}
-					} else {
-						if (debug) {
-							printf("db: Database loaded for interface \"%s\"...\n", data.interface);
-						}
-					}
-
-					if (data.version!=DBVERSION) {
-						if (!convertdb(db)) {
-							snprintf(errorstring, 512, "Unable to use backup database.");
-							printe(PT_Error);
-							fclose(db);
-
-							if (noexit) {
-								return -1;
-							} else {
-								exit(EXIT_FAILURE);
-							}
-						}
-					}
-					snprintf(errorstring, 512, "Database possibly corrupted, using backup instead.");
-					printe(PT_Info);
+			if ((db=fopen(backup,"r"))==NULL) {
+				snprintf(errorstring, 512, "Unable to open backup database \"%s\": %s", backup, strerror(errno));
+				printe(PT_Error);
+				if (noexit) {
+					return -1;
 				} else {
-					snprintf(errorstring, 512, "Unable to open backup database \"%s\": %s", backup, strerror(errno));
+					exit(EXIT_FAILURE);
+				}
+			}
+
+			/* lock file */
+			if (!lockdb(fileno(db), 0)) {
+				fclose(db);
+				return -1;
+			}
+
+			if (fread(&data,sizeof(DATA),1,db)==0) {
+				snprintf(errorstring, 512, "Database load failed even when using backup (%s). Aborting.", strerror(errno));
+				printe(PT_Error);
+				fclose(db);
+
+				if (noexit) {
+					return -1;
+				} else {
+					exit(EXIT_FAILURE);
+				}
+			} else {
+				if (debug) {
+					printf("db: Database loaded for interface \"%s\"...\n", data.interface);
+				}
+			}
+
+			if (data.version!=DBVERSION) {
+				if (!convertdb(db)) {
+					snprintf(errorstring, 512, "Unable to use backup database.");
 					printe(PT_Error);
+					fclose(db);
+
 					if (noexit) {
 						return -1;
 					} else {
@@ -89,45 +93,40 @@ int readdb(const char *iface, const char *dirname)
 					}
 				}
 			}
-
-		} else if (data.version>DBVERSION) {
-			snprintf(errorstring, 512, "Downgrading database \"%s\" (v%d) is not supported.", file, data.version);
-			printe(PT_Error);
-			fclose(db);
-
-			if (noexit) {
-				return -1;
-			} else {
-				exit(EXIT_FAILURE);
-			}
+			snprintf(errorstring, 512, "Database possibly corrupted, using backup instead.");
+			printe(PT_Info);
 		}
 
+	} else if (data.version>DBVERSION) {
+		snprintf(errorstring, 512, "Downgrading database \"%s\" (v%d) is not supported.", file, data.version);
+		printe(PT_Error);
 		fclose(db);
 
-		if (strcmp(data.interface,iface)) {
-			snprintf(errorstring, 512, "Warning:\nThe previous interface for this file was \"%s\".",data.interface);
-			printe(PT_Multiline);
-			snprintf(errorstring, 512, "It has now been replaced with \"%s\".",iface);
-			printe(PT_Multiline);
-			snprintf(errorstring, 512, "You can ignore this message if you renamed the filename.");
-			printe(PT_Multiline);
-			snprintf(errorstring, 512, "Interface name mismatch, renamed \"%s\" -> \"%s\"", data.interface, iface);
-			printe(PT_ShortMultiline);
-			if (strcmp(data.interface, data.nick)==0) {
-				strncpy_nt(data.nick, iface, 32);
-			}
-			strncpy_nt(data.interface, iface, 32);
+		if (noexit) {
+			return -1;
+		} else {
+			exit(EXIT_FAILURE);
 		}
-	} else {
-		snprintf(errorstring, 512, "Unable to read database \"%s\": %s", file, strerror(errno));
-		printe(PT_Error);
-
-		newdb=1;
-		initdb();
-		strncpy_nt(data.interface, iface, 32);
-		strncpy_nt(data.nick, data.interface, 32);
 	}
-	return newdb;
+
+	fclose(db);
+
+	if (strcmp(data.interface,iface)) {
+		snprintf(errorstring, 512, "Warning:\nThe previous interface for this file was \"%s\".",data.interface);
+		printe(PT_Multiline);
+		snprintf(errorstring, 512, "It has now been replaced with \"%s\".",iface);
+		printe(PT_Multiline);
+		snprintf(errorstring, 512, "You can ignore this message if you renamed the filename.");
+		printe(PT_Multiline);
+		snprintf(errorstring, 512, "Interface name mismatch, renamed \"%s\" -> \"%s\"", data.interface, iface);
+		printe(PT_ShortMultiline);
+		if (strcmp(data.interface, data.nick)==0) {
+			strncpy_nt(data.nick, iface, 32);
+		}
+		strncpy_nt(data.interface, iface, 32);
+	}
+
+	return 0;
 }
 
 void initdb(void)
@@ -223,38 +222,37 @@ int writedb(const char *iface, const char *dirname, int newdb)
 	/* make sure version stays correct */
 	data.version=DBVERSION;
 
-	if ((db=fopen(file,"w"))!=NULL) {
-
-		/* lock file */
-		if (!lockdb(fileno(db), 1)) {
-			fclose(db);
-			return 0;
-		}
-
-		/* update timestamp when not merging */
-		if (newdb!=2) {
-			data.lastupdated=time(NULL);
-		}
-
-		if (fwrite(&data,sizeof(DATA),1,db)==0) {
-			snprintf(errorstring, 512, "Unable to write database \"%s\": %s", file, strerror(errno));
-			printe(PT_Error);
-			fclose(db);
-			return 0;
-		} else {
-			if (debug) {
-				printf("db: Database \"%s\" saved.\n", file);
-			}
-			fclose(db);
-			if ((newdb) && (noexit==0)) {
-				snprintf(errorstring, 512, "-> A new database has been created.");
-				printe(PT_Info);
-			}
-		}
-	} else {
+	if ((db=fopen(file,"w"))==NULL) {
 		snprintf(errorstring, 512, "Unable to open database \"%s\" for writing: %s", file, strerror(errno));
 		printe(PT_Error);
 		return 0;
+	}
+
+	/* lock file */
+	if (!lockdb(fileno(db), 1)) {
+		fclose(db);
+		return 0;
+	}
+
+	/* update timestamp when not merging */
+	if (newdb!=2) {
+		data.lastupdated=time(NULL);
+	}
+
+	if (fwrite(&data,sizeof(DATA),1,db)==0) {
+		snprintf(errorstring, 512, "Unable to write database \"%s\": %s", file, strerror(errno));
+		printe(PT_Error);
+		fclose(db);
+		return 0;
+	} else {
+		if (debug) {
+			printf("db: Database \"%s\" saved.\n", file);
+		}
+		fclose(db);
+		if ((newdb) && (noexit==0)) {
+			snprintf(errorstring, 512, "-> A new database has been created.");
+			printe(PT_Info);
+		}
 	}
 
 	return 1;
@@ -561,50 +559,52 @@ int lockdb(int fd, int dbwrite)
 	int operation, locktry=1;
 
 	/* lock only if configured to do so */
-	if (cfg.flock) {
-
-		if (dbwrite) {
-			operation = LOCK_EX|LOCK_NB;
-		} else {
-			operation = LOCK_SH|LOCK_NB;
-		}
-
-		/* try locking file */
-		while (flock(fd, operation)!=0) {
-
-			if (debug) {
-				printf("db: Database access locked (%d, %d)\n", dbwrite, locktry);
-			}
-
-			/* give up if lock can't be obtained */
-			if (locktry>=LOCKTRYLIMIT) {
-				if (dbwrite) {
-					snprintf(errorstring, 512, "Locking database file for write failed for %d tries:\n%s (%d)", locktry, strerror(errno), errno);
-				} else {
-					snprintf(errorstring, 512, "Locking database file for read failed for %d tries:\n%s (%d)", locktry, strerror(errno), errno);
-				}
-				printe(PT_Error);
-				return 0;
-			}
-
-			/* someone else has the lock */
-			if (errno==EWOULDBLOCK) {
-				sleep(1);
-
-			/* real error */
-			} else {
-				if (dbwrite) {
-					snprintf(errorstring, 512, "Locking database file for write failed:\n%s (%d)", strerror(errno), errno);
-				} else {
-					snprintf(errorstring, 512, "Locking database file for read failed:\n%s (%d)", strerror(errno), errno);
-				}
-				printe(PT_Error);
-				return 0;
-			}
-
-			locktry++;
-		}
+	if (!cfg.flock) {
+		return 1;
 	}
+
+	if (dbwrite) {
+		operation = LOCK_EX|LOCK_NB;
+	} else {
+		operation = LOCK_SH|LOCK_NB;
+	}
+
+	/* try locking file */
+	while (flock(fd, operation)!=0) {
+
+		if (debug) {
+			printf("db: Database access locked (%d, %d)\n", dbwrite, locktry);
+		}
+
+		/* give up if lock can't be obtained */
+		if (locktry>=LOCKTRYLIMIT) {
+			if (dbwrite) {
+				snprintf(errorstring, 512, "Locking database file for write failed for %d tries:\n%s (%d)", locktry, strerror(errno), errno);
+			} else {
+				snprintf(errorstring, 512, "Locking database file for read failed for %d tries:\n%s (%d)", locktry, strerror(errno), errno);
+			}
+			printe(PT_Error);
+			return 0;
+		}
+
+		/* someone else has the lock */
+		if (errno==EWOULDBLOCK) {
+			sleep(1);
+
+		/* real error */
+		} else {
+			if (dbwrite) {
+				snprintf(errorstring, 512, "Locking database file for write failed:\n%s (%d)", strerror(errno), errno);
+			} else {
+				snprintf(errorstring, 512, "Locking database file for read failed:\n%s (%d)", strerror(errno), errno);
+			}
+			printe(PT_Error);
+			return 0;
+		}
+
+		locktry++;
+	}
+
 	return 1;
 }
 

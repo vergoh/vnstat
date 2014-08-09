@@ -1,6 +1,7 @@
 #include "vnstat_tests.h"
 #include "database_tests.h"
 #include "common.h"
+#include "ifinfo.h"
 #include "dbaccess.h"
 #include "dbcache.h"
 #include "cfg.h"
@@ -715,6 +716,23 @@ START_TEST(dbcheck_with_empty_cache)
 }
 END_TEST
 
+START_TEST(dbcheck_with_no_changes_in_iflist)
+{
+	int forcesave = 0;
+	uint32_t ifhash;
+	char *ifacelist;
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_proc_net_dev("w", "ethsomething", 1, 2, 3, 4);
+	fake_proc_net_dev("a", "ethelse", 5, 6, 7, 8);
+	ck_assert_int_ne(getiflist(&ifacelist), 0);
+	ifhash = simplehash(ifacelist, (int)strlen(ifacelist));
+
+	ck_assert_int_eq(dbcheck(ifhash, &forcesave), ifhash);
+	ck_assert_int_eq(forcesave, 0);
+}
+END_TEST
+
 START_TEST(dbcheck_with_filled_cache)
 {
 	int forcesave = 0;
@@ -790,6 +808,7 @@ void add_database_tests(Suite *s)
 	tcase_add_test(tc_db, validatedb_with_top10_use);
 	tcase_add_test(tc_db, dbcheck_with_no_interfaces);
 	tcase_add_test(tc_db, dbcheck_with_empty_cache);
+	tcase_add_test(tc_db, dbcheck_with_no_changes_in_iflist);
 	tcase_add_test(tc_db, dbcheck_with_filled_cache);
 	suite_add_tcase(s, tc_db);
 }

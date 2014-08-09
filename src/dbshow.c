@@ -5,43 +5,41 @@
 void showdb(int qmode)
 {
 	if (data.totalrx+data.totaltx==0 && data.totalrxk+data.totaltxk==0 && qmode!=4) {
-
 		printf(" %s: Not enough data available yet.\n", data.interface);
+		return;
+	}
 
-	} else {
-
-		switch(qmode) {
-			case 0:
-				showsummary();
-				break;
-			case 1:
-				showdays();
-				break;
-			case 2:
-				showmonths();
-				break;
-			case 3:
-				showtop();
-				break;
-			case 4:
-				dumpdb();
-				break;
-			case 5:
-				showshort();
-				break;
-			case 6:
-				showweeks();
-				break;
-			case 7:
-				showhours();
-				break;
-			case 9:
-				showoneline();
-				break;
-			default:
-				printf("Error: Not such query mode: %d\n", qmode);
-				break;
-		}
+	switch(qmode) {
+		case 0:
+			showsummary();
+			break;
+		case 1:
+			showdays();
+			break;
+		case 2:
+			showmonths();
+			break;
+		case 3:
+			showtop();
+			break;
+		case 4:
+			dumpdb();
+			break;
+		case 5:
+			showshort();
+			break;
+		case 6:
+			showweeks();
+			break;
+		case 7:
+			showhours();
+			break;
+		case 9:
+			showoneline();
+			break;
+		default:
+			printf("Error: Not such query mode: %d\n", qmode);
+			break;
 	}
 }
 
