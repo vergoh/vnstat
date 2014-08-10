@@ -923,7 +923,7 @@ int importdb(const char *filename)
 			printf("parsing %s", line);
 		}
 
-		if (strlen(line)<9) {
+		if (strlen(line)<6) {
 			continue;
 		}
 
