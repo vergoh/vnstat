@@ -907,7 +907,7 @@ int importdb(const char *filename)
 {
 	FILE *input;
 	char line[512];
-	int i, count;
+	int i, count, linecount, scancount;
 	uint64_t tempint;
 	DAY day;
 	MONTH month;
@@ -918,6 +918,7 @@ int importdb(const char *filename)
 		return 0;
 	}
 
+	linecount = 0;
 	while (fgets(line, sizeof(line), input) != NULL) {
 		if (debug) {
 			printf("parsing %s", line);
@@ -927,23 +928,26 @@ int importdb(const char *filename)
 			continue;
 		}
 
-		sscanf(line, "version;%2d", &data.version);
-		sscanf(line, "active;%2d", &data.active);
-		sscanf(line, "interface;%31s", data.interface);
-		sscanf(line, "nick;%31s", data.nick);
+		scancount = 0;
+		scancount += sscanf(line, "version;%2d", &data.version);
+		scancount += sscanf(line, "active;%2d", &data.active);
+		scancount += sscanf(line, "interface;%31s", data.interface);
+		scancount += sscanf(line, "nick;%31s", data.nick);
 		if (sscanf(line, "created;%20"PRIu64, &tempint)) {
 			data.created = (time_t)tempint;
+			scancount++;
 		}
 		if (sscanf(line, "updated;%20"PRIu64, &tempint)) {
 			data.lastupdated = (time_t)tempint;
+			scancount++;
 		}
-		sscanf(line, "totalrx;%20"PRIu64, &data.totalrx);
-		sscanf(line, "totaltx;%20"PRIu64, &data.totaltx);
-		sscanf(line, "currx;%20"PRIu64, &data.currx);
-		sscanf(line, "curtx;%20"PRIu64, &data.curtx);
-		sscanf(line, "totalrxk;%10d", &data.totalrxk);
-		sscanf(line, "totaltxk;%10d", &data.totaltxk);
-		sscanf(line, "btime;%20"PRIu64, &data.btime);
+		scancount += sscanf(line, "totalrx;%20"PRIu64, &data.totalrx);
+		scancount += sscanf(line, "totaltx;%20"PRIu64, &data.totaltx);
+		scancount += sscanf(line, "currx;%20"PRIu64, &data.currx);
+		scancount += sscanf(line, "curtx;%20"PRIu64, &data.curtx);
+		scancount += sscanf(line, "totalrxk;%10d", &data.totalrxk);
+		scancount += sscanf(line, "totaltxk;%10d", &data.totaltxk);
+		scancount += sscanf(line, "btime;%20"PRIu64, &data.btime);
 
 		count = sscanf(line, "d;%2d;%20"PRIu64";%20"PRIu64";%20"PRIu64";%10d;%10d;%2d",
 				&i, &tempint, &day.rx, &day.tx, &day.rxk, &day.txk, &day.used);
@@ -951,6 +955,7 @@ int importdb(const char *filename)
 			if (i >= 0 && i < (int)sizeof(data.day) / (int)sizeof(DAY)) {
 				day.date = (time_t)tempint;
 				data.day[i] = day;
+				scancount++;
 			}
 		}
 
@@ -960,6 +965,7 @@ int importdb(const char *filename)
 			if ( i >= 0 && i < (int)sizeof(data.month) / (int)sizeof(MONTH) ) {
 				month.month = (time_t)tempint;
 				data.month[i] = month;
+				scancount++;
 			}
 		}
 
@@ -969,6 +975,7 @@ int importdb(const char *filename)
 			if ( i >= 0 && i < (int)sizeof(data.top10) / (int)sizeof(DAY) ) {
 				day.date = (time_t)tempint;
 				data.top10[i] = day;
+				scancount++;
 			}
 		}
 
@@ -978,11 +985,16 @@ int importdb(const char *filename)
 			if ( i >= 0 && i < (int)sizeof(data.hour) / (int)sizeof(HOUR) ) {
 				hour.date = (time_t)tempint;
 				data.hour[i] = hour;
+				scancount++;
 			}
+		}
+
+		if (scancount) {
+			linecount++;
 		}
 	}
 
 	fclose(input);
 
-	return 1;
+	return linecount;
 }

@@ -818,7 +818,7 @@ START_TEST(importdb_can_parse_exported_database)
 	dumpdb();
 	memset(&data, '\0', sizeof(DATA));
 
-	ck_assert_int_eq(importdb(buffer), 1);
+	ck_assert_int_gt(importdb(buffer), 0);
 
 	ck_assert_str_eq(data.interface, filleddb.interface);
 	ck_assert_str_eq(data.nick, filleddb.nick);
