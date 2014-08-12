@@ -21,6 +21,7 @@
  - Use ISO YYYY-MM-DD date format timestamps if logfile is used
  - Improve daemon startup prints
  - Add parameters for changing daemon process user and group
+ - Add example upstart job configuration file (thanks to Cameron Norman)
 
 
 1.11 / 1-Jun-11
