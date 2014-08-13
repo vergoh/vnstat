@@ -580,6 +580,7 @@ START_TEST(processdatalist_filled_does_things)
 	ck_assert_int_eq(cacheupdate(), 1);
 	strcpy(data.interface, "foo");
 	s.dbcount = 5;
+	s.dodbsave = 1;
 	s.datalist = dataptr;
 
 	processdatalist(&s);

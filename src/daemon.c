@@ -322,6 +322,8 @@ void initdstate(DSTATE *s)
 	s->prevdbupdate = 0;
 	s->prevdbsave = 0;
 	s->dbcount = 0;
+	s->dodbsave = 0;
+	s->datalist = NULL;
 }
 
 void preparedatabases(DSTATE *s)
