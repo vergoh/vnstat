@@ -816,6 +816,7 @@ START_TEST(importdb_can_parse_exported_database)
 	dup2(fileno(exportfile), STDOUT_FILENO);
 	fclose(exportfile);
 	dumpdb();
+	fflush(stdout);
 	memset(&data, '\0', sizeof(DATA));
 
 	ck_assert_int_gt(importdb(buffer), 0);
