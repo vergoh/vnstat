@@ -302,6 +302,80 @@ void setgroup(const char *group)
 	}
 }
 
+int direxists(const char *dir)
+{
+	struct stat statbuf;
+
+	if (stat(dir, &statbuf)!=0) {
+		if (errno==ENOENT) {
+			return 0;
+		}
+		if (debug)
+			printf("Error: stat() \"%s\": %s\n", dir, strerror(errno));
+	}
+
+	return 1;
+}
+
+int mkpath(const char *dir, const mode_t mode)
+{
+	int i = 0, len = 0, ret = 1;
+	char *tmp = NULL;
+
+	if (!strlen(dir)) {
+		if (debug)
+			printf("Error: mkpath(), no directory given\n");
+		return 0;
+	}
+
+	if (direxists(dir)) {
+		return 1;
+	}
+
+	tmp = strdup(dir);
+	if (tmp == NULL) {
+		return 0;
+	}
+
+	len = strlen(tmp);
+	if (tmp[len-1] == '/') {
+		tmp[len-1] = '\0';
+	}
+
+	if (tmp[0] == '/') {
+		i++;
+	}
+
+	for (; i<len; i++) {
+		if (tmp[i] == '/') {
+			tmp[i] = '\0';
+			if (debug)
+				printf("for: %s\n", tmp);
+			if (!direxists(tmp)) {
+				if (mkdir(tmp, mode)!=0) {
+					if (debug)
+						printf("Error: mkdir() \"%s\": %s\n", tmp, strerror(errno));
+					ret = 0;
+					break;
+				}
+			} else if (debug) {
+				printf("skip\n");
+			}
+			tmp[i] = '/';
+		}
+	}
+	if (ret) {
+		if (mkdir(tmp, mode)!=0) {
+			if (debug)
+				printf("Error: mkdir() \"%s\": %s\n", tmp, strerror(errno));
+			ret = 0;
+		}
+	}
+
+	free(tmp);
+	return ret;
+}
+
 void initdstate(DSTATE *s)
 {
 	noexit = 1;        /* disable exits in functions */
@@ -648,4 +722,72 @@ void handleintsignals(DSTATE *s)
 	}
 
 	intsignal = 0;
+}
+
+void preparedbdir(DSTATE *s)
+{
+	if (mkpath(s->dirname, 0775)) {
+		updatedbowner(s->dirname, s->user, s->group);
+	}
+}
+
+void updatedbowner(const char *dir, const char *user, const char *group)
+{
+	DIR *d;
+	struct dirent *di;
+	struct stat statbuf;
+	char entryname[512];
+	uid_t uid;
+	gid_t gid;
+
+	if (getuid() != 0 && geteuid() != 0) {
+		if (debug)
+			printf("user not root, skipping chmod\n");
+		return;
+	}
+
+	uid = getuser(user);
+	gid = getgroup(group);
+
+	if (stat(dir, &statbuf)!=0) {
+		return;
+	}
+
+	if (statbuf.st_uid != uid || statbuf.st_gid != gid) {
+		if (chown(dir, uid, gid) != 0) {
+			if (debug)
+				printf("Error: updatedbowner() chown() \"%s\": %s\n", dir, strerror(errno));
+			return;
+		} else {
+			if (debug)
+				printf("\"%s\" chown completed\n", dir);
+		}
+	}
+
+	if ((d=opendir(dir))==NULL) {
+		if (debug)
+			printf("Error: updatedbowner() diropen() \"%s\": %s\n", dir, strerror(errno));
+		return;
+	}
+
+	while ((di=readdir(d))) {
+		if (di->d_type != DT_REG) {
+			continue;
+		}
+		snprintf(entryname, 512, "%s/%s", dir, di->d_name);
+		if (stat(entryname, &statbuf)!=0) {
+			continue;
+		}
+		if (statbuf.st_uid != uid || statbuf.st_gid != gid) {
+			if (chown(entryname, uid, gid) != 0) {
+				if (debug)
+					printf("Error: chown() \"%s\": %s\n", entryname, strerror(errno));
+			} else {
+				if (debug)
+					printf("\"%s\" chown completed\n", entryname);
+			}
+		}
+	}
+
+	closedir(d);
 }

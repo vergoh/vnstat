@@ -18,6 +18,8 @@ uid_t getuser(const char *user);
 gid_t getgroup(const char *group);
 void setuser(const char *user);
 void setgroup(const char *group);
+int direxists(const char *dir);
+int mkpath(const char *dir, const mode_t mode);
 
 void initdstate(DSTATE *s);
 void preparedatabases(DSTATE *s);
@@ -31,5 +33,7 @@ void datalist_getifinfo(DSTATE *s);
 int datalist_timevalidation(DSTATE *s);
 int datalist_writedb(DSTATE *s);
 void handleintsignals(DSTATE *s);
+void preparedbdir(DSTATE *s);
+void updatedbowner(const char *dir, const char *user, const char *group);
 
 #endif

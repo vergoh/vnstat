@@ -654,6 +654,75 @@ START_TEST(handleintsignals_handles_signals)
 }
 END_TEST
 
+START_TEST(direxists_with_no_dir)
+{
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	ck_assert_int_eq(direxists(""), 0);
+	ck_assert_int_eq(direxists(TESTDIR), 0);
+}
+END_TEST
+
+START_TEST(direxists_with_dir)
+{
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	ck_assert_int_eq(clean_testdbdir(), 1);
+	ck_assert_int_eq(direxists(TESTDIR), 1);
+	ck_assert_int_eq(direxists(TESTDBDIR), 1);
+}
+END_TEST
+
+START_TEST(mkpath_with_no_dir)
+{
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	ck_assert_int_eq(mkpath("", 0775), 0);
+}
+END_TEST
+
+START_TEST(mkpath_with_dir)
+{
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	ck_assert_int_eq(direxists(TESTDIR), 0);
+	ck_assert_int_eq(direxists(TESTDBDIR), 0);
+	ck_assert_int_eq(mkpath(TESTDIR, 0775), 1);
+	ck_assert_int_eq(direxists(TESTDIR), 1);
+	ck_assert_int_eq(direxists(TESTDBDIR), 0);
+	ck_assert_int_eq(mkpath(TESTDBDIR, 0775), 1);
+	ck_assert_int_eq(direxists(TESTDBDIR), 1);
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	ck_assert_int_eq(direxists(TESTDBDIR), 0);
+	ck_assert_int_eq(mkpath(TESTDBDIR, 0775), 1);
+	ck_assert_int_eq(direxists(TESTDBDIR), 1);
+}
+END_TEST
+
+START_TEST(preparedbdir_with_no_dir)
+{
+	DSTATE s;
+	initdstate(&s);
+	strncpy_nt(s.dirname, TESTDBDIR, 512);
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	ck_assert_int_eq(direxists(TESTDBDIR), 0);
+	preparedbdir(&s);
+	ck_assert_int_eq(direxists(TESTDBDIR), 1);
+}
+END_TEST
+
+START_TEST(preparedbdir_with_dir)
+{
+	DSTATE s;
+	initdstate(&s);
+	strncpy_nt(s.dirname, TESTDBDIR, 512);
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	ck_assert_int_eq(direxists(TESTDBDIR), 0);
+	ck_assert_int_eq(mkpath(TESTDBDIR, 0775), 1);
+	ck_assert_int_eq(direxists(TESTDBDIR), 1);
+	preparedbdir(&s);
+	ck_assert_int_eq(direxists(TESTDBDIR), 1);
+}
+END_TEST
+
 void add_daemon_tests(Suite *s)
 {
 	/* Config test cases */
@@ -697,6 +766,12 @@ void add_daemon_tests(Suite *s)
 	tcase_add_test(tc_daemon, processdatalist_empty_does_nothing);
 	tcase_add_test(tc_daemon, processdatalist_filled_does_things);
 	tcase_add_test(tc_daemon, handleintsignals_handles_signals);
+	tcase_add_test(tc_daemon, direxists_with_no_dir);
+	tcase_add_test(tc_daemon, direxists_with_dir);
+	tcase_add_test(tc_daemon, mkpath_with_no_dir);
+	tcase_add_test(tc_daemon, mkpath_with_dir);
+	tcase_add_test(tc_daemon, preparedbdir_with_no_dir);
+	tcase_add_test(tc_daemon, preparedbdir_with_dir);
 	suite_add_tcase(s, tc_daemon);
 }
 
