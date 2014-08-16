@@ -176,6 +176,8 @@ and most can be changed later from the config file.
 #define OFFSAVEINTERVAL 30
 #define SAVESTATUS 1
 #define USELOGGING 2
+#define CREATEDBDIR 1
+#define UPDATEFILEOWNER 1
 #define LOGFILE "/var/log/vnstat.log"
 #define PIDFILE "/var/run/vnstat.pid"
 
@@ -208,7 +210,9 @@ typedef struct {
 	short unit, ostyle, rateunit, bvar, qmode, sampletime, hourlyrate, summaryrate;
 	short monthrotate, maxbw, flock, spacecheck, traflessday, transbg, slayout;
 	char logfile[512], pidfile[512];
+	char daemonuser[33], daemongroup[33];
 	short updateinterval, pollinterval, saveinterval, offsaveinterval, savestatus, uselogging;
+	short createdbdir, updatefileowner;
 } CFG;
 
 /* internal interface information structure */

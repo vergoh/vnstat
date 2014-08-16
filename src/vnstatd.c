@@ -55,6 +55,8 @@ int main(int argc, char *argv[])
 
 	/* init dirname and other config settings */
 	strncpy_nt(s.dirname, cfg.dbdir, 512);
+	strncpy_nt(s.user, cfg.daemonuser, 33);
+	strncpy_nt(s.group, cfg.daemongroup, 33);
 	s.updateinterval = cfg.updateinterval;
 	s.saveinterval = cfg.saveinterval*60;
 

@@ -1,4 +1,4 @@
-.TH VNSTAT.CONF 5 "JUNE 2011" "version 1.11" "User Manuals"
+.TH VNSTAT.CONF 5 "AUGUST 2014" "version 1.12" "User Manuals"
 .SH NAME
 
 vnstat.conf \- vnStat configuration file
@@ -130,6 +130,26 @@ to write to the file at the same time.
 .SH DAEMON RELATED KEYWORDS
 
 .TP
+.BI CreateDBDir
+Enable or disable the creation of the database directory when the directory
+doesn't exist. The daemon process will try to create the directory using
+permissions of the user used to start the process.
+
+.TP
+.BI DaemonGroup
+Specify the user to which the daemon process will switch during startup.
+The user can either be the name of the group or a numerical group id.
+Leave empty to disable the group switch. This option can only be used when
+the process is started as root.
+
+.TP
+.BI DaemonUser
+Specify the user to which the daemon process will switch during startup.
+The user can either be the login of the user or a numerical user id.
+Leave empty to disable the user switch. This option can only be used when
+the process is started as root.
+
+.TP
 .BI LogFile
 Specify log file path and name to be used if UseLogging is set to 1.
 
@@ -155,6 +175,13 @@ How often in minutes cached interface data is saved to file.
 Enable or disable the additional saving to file of cached interface data
 when the availability of an interface changes, i.e., when an interface goes
 offline or comes online. 1 = enabled, 0 = disabled.
+
+.TP
+.BI UpdateFileOwner
+Enable or disable the update of file ownership during daemon process startup.
+Only database files will be modified if the user or group change feature
+is enabled and the files don't match the requested user or group.
+This option can only be used when the process is started as root.
 
 .TP
 .BI UpdateInterval

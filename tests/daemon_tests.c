@@ -656,6 +656,7 @@ END_TEST
 
 START_TEST(direxists_with_no_dir)
 {
+	defaultcfg();
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	ck_assert_int_eq(direxists(""), 0);
 	ck_assert_int_eq(direxists(TESTDIR), 0);
@@ -664,6 +665,7 @@ END_TEST
 
 START_TEST(direxists_with_dir)
 {
+	defaultcfg();
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	ck_assert_int_eq(clean_testdbdir(), 1);
 	ck_assert_int_eq(direxists(TESTDIR), 1);
@@ -673,6 +675,7 @@ END_TEST
 
 START_TEST(mkpath_with_no_dir)
 {
+	defaultcfg();
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	ck_assert_int_eq(mkpath("", 0775), 0);
 }
@@ -680,6 +683,7 @@ END_TEST
 
 START_TEST(mkpath_with_dir)
 {
+	defaultcfg();
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	ck_assert_int_eq(direxists(TESTDIR), 0);
 	ck_assert_int_eq(direxists(TESTDBDIR), 0);
@@ -699,6 +703,7 @@ START_TEST(preparedbdir_with_no_dir)
 {
 	DSTATE s;
 	initdstate(&s);
+	defaultcfg();
 	strncpy_nt(s.dirname, TESTDBDIR, 512);
 
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
@@ -712,6 +717,7 @@ START_TEST(preparedbdir_with_dir)
 {
 	DSTATE s;
 	initdstate(&s);
+	defaultcfg();
 	strncpy_nt(s.dirname, TESTDBDIR, 512);
 
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);

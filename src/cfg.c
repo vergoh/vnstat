@@ -84,6 +84,12 @@ void printcfgfile(void)
 
 	printf("# vnstatd\n##\n\n");
 
+	printf("# switch to given user when started as root (leave empty to disable)\n");
+	printf("DaemonUser \"%s\"\n\n", cfg.daemonuser);
+
+	printf("# switch to given user when started as root (leave empty to disable)\n");
+	printf("DaemonGroup \"%s\"\n\n", cfg.daemongroup);
+
 	printf("# how often (in seconds) interface data is updated\n");
 	printf("UpdateInterval %d\n\n", cfg.updateinterval);
 
@@ -101,6 +107,12 @@ void printcfgfile(void)
 
 	printf("# enable / disable logging (0 = disabled, 1 = logfile, 2 = syslog)\n");
 	printf("UseLogging %d\n\n", cfg.uselogging);
+
+	printf("# create db directory if missing (1 = enabled, 0 = disabled)\n");
+	printf("CreateDBDir %d\n\n", cfg.createdbdir);
+
+	printf("# update ownership of files when needed (1 = enabled, 0 = disabled)\n");
+	printf("UpdateFileOwner %d\n\n", cfg.updatefileowner);
 
 	printf("# file used for logging if UseLogging is set to 1\n");
 	printf("LogFile \"%s\"\n\n", cfg.logfile);
@@ -152,7 +164,7 @@ int loadcfg(const char *cfgfile)
 	char value[512], cfgline[512];
 
 	struct cfgsetting cset[] =
-	{
+	{	/* cfg string, char var name, int var name, char len, fill status */
 		{ "Interface", cfg.iface, 0, 32, 0 },
 		{ "DatabaseDir", cfg.dbdir, 0, 512, 0 },
 		{ "Locale", cfg.locale, 0, 32, 0 },
@@ -174,12 +186,16 @@ int loadcfg(const char *cfgfile)
 		{ "UseFileLocking", 0, &cfg.flock, 0, 0 },
 		{ "BootVariation", 0, &cfg.bvar, 0, 0 },
 		{ "TrafficlessDays", 0, &cfg.traflessday, 0, 0 },
+		{ "DaemonUser", cfg.daemonuser, 0, 33, 0 },
+		{ "DaemonGroup", cfg.daemongroup, 0, 33, 0 },
 		{ "UpdateInterval", 0, &cfg.updateinterval, 0, 0 },
 		{ "PollInterval", 0, &cfg.pollinterval, 0, 0 },
 		{ "SaveInterval", 0, &cfg.saveinterval, 0, 0 },
 		{ "OfflineSaveInterval", 0, &cfg.offsaveinterval, 0, 0 },
 		{ "SaveOnStatusChange", 0, &cfg.savestatus, 0, 0 },
 		{ "UseLogging", 0, &cfg.uselogging, 0, 0 },
+		{ "CreateDBDir", 0, &cfg.createdbdir, 0, 0 },
+		{ "UpdateFileOwner", 0, &cfg.updatefileowner, 0, 0 },
 		{ "LogFile", cfg.logfile, 0, 512, 0 },
 		{ "PidFile", cfg.pidfile, 0, 512, 0 },
 		{ "HeaderFormat", cfg.hformat, 0, 64, 0 },
@@ -318,6 +334,11 @@ int loadcfg(const char *cfgfile)
 
 						cset[i].found = 1;
 						break;
+					} else if (strlen(value)==0) {
+						if (debug)
+							printf("  c: %s   -> \"%s\" with no value, keeping default.\n", cfgline, cset[i].name);
+						cset[i].found = 1;
+						break;
 					}
 
 				} /* if */
@@ -450,6 +471,18 @@ void validatecfg(void)
 		printe(PT_Config);
 	}
 
+	if (cfg.createdbdir<0 || cfg.createdbdir>2) {
+		cfg.createdbdir = CREATEDBDIR;
+		snprintf(errorstring, 512, "Invalid value for CreateDBDir, resetting to \"%d\".", cfg.createdbdir);
+		printe(PT_Config);
+	}
+
+	if (cfg.updatefileowner<0 || cfg.updatefileowner>2) {
+		cfg.updatefileowner = UPDATEFILEOWNER;
+		snprintf(errorstring, 512, "Invalid value for UpdateFileOwner, resetting to \"%d\".", cfg.updatefileowner);
+		printe(PT_Config);
+	}
+
 	if (cfg.logfile[0] != '/') {
 		strncpy_nt(cfg.logfile, LOGFILE, 512);
 		snprintf(errorstring, 512, "LogFile doesn't start with \"/\", resetting to default.");
@@ -523,12 +556,16 @@ void defaultcfg(void)
 	strncpy_nt(cfg.rxhourchar, RXHOURCHAR, 2);
 	strncpy_nt(cfg.txhourchar, TXHOURCHAR, 2);
 
+	cfg.daemonuser[0] = '\0';
+	cfg.daemongroup[0] = '\0';
 	cfg.updateinterval = UPDATEINTERVAL;
 	cfg.pollinterval = POLLINTERVAL;
 	cfg.saveinterval = SAVEINTERVAL;
 	cfg.offsaveinterval = OFFSAVEINTERVAL;
 	cfg.savestatus = SAVESTATUS;
 	cfg.uselogging = USELOGGING;
+	cfg.createdbdir = CREATEDBDIR;
+	cfg.updatefileowner = UPDATEFILEOWNER;
 	strncpy_nt(cfg.logfile, LOGFILE, 512);
 	strncpy_nt(cfg.pidfile, PIDFILE, 512);
 

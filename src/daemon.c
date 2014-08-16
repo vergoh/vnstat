@@ -332,6 +332,10 @@ int mkpath(const char *dir, const mode_t mode)
 		return 1;
 	}
 
+	if (!cfg.createdbdir) {
+		return 0;
+	}
+
 	tmp = strdup(dir);
 	if (tmp == NULL) {
 		return 0;
@@ -739,6 +743,10 @@ void updatedbowner(const char *dir, const char *user, const char *group)
 	char entryname[512];
 	uid_t uid;
 	gid_t gid;
+
+	if (!cfg.updatefileowner) {
+		return;
+	}
 
 	if (getuid() != 0 && geteuid() != 0) {
 		if (debug)
