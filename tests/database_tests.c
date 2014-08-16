@@ -972,10 +972,12 @@ void add_database_tests(Suite *s)
 	tcase_add_test(tc_db, validatedb_with_initdb);
 	tcase_add_test(tc_db, validatedb_with_invalid_totals);
 	tcase_add_test(tc_db, validatedb_with_top10_use);
+#if defined(__linux__)
 	tcase_add_test(tc_db, dbcheck_with_no_interfaces);
 	tcase_add_test(tc_db, dbcheck_with_empty_cache);
 	tcase_add_test(tc_db, dbcheck_with_no_changes_in_iflist);
 	tcase_add_test(tc_db, dbcheck_with_filled_cache);
+#endif
 	tcase_add_test(tc_db, importdb_can_parse_exported_database);
 	tcase_add_test(tc_db, database_outputs_do_not_crash);
 	suite_add_tcase(s, tc_db);

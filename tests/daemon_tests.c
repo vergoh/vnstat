@@ -34,7 +34,11 @@ END_TEST
 
 START_TEST(getgroup_root_string)
 {
+#if defined(__linux__)
 	ck_assert_int_eq((int)getgroup("root"), 0);
+#else
+	ck_assert_int_eq((int)getgroup("wheel"), 0);
+#endif
 }
 END_TEST
 
@@ -742,12 +746,14 @@ void add_daemon_tests(Suite *s)
 	tcase_add_exit_test(tc_daemon, getgroup_no_such_user_string, 1);
 	tcase_add_exit_test(tc_daemon, getgroup_no_such_user_numeric, 1);
 	tcase_add_test(tc_daemon, debugtimestamp_does_not_exit);
+	tcase_add_test(tc_daemon, initdstate_does_not_crash);
+#if defined(__linux__)
 	tcase_add_test(tc_daemon, addinterfaces_does_nothing_with_no_files);
 	tcase_add_test(tc_daemon, addinterfaces_adds_interfaces);
-	tcase_add_test(tc_daemon, initdstate_does_not_crash);
 	tcase_add_exit_test(tc_daemon, preparedatabases_exits_with_no_database_dir, 1);
 	tcase_add_exit_test(tc_daemon, preparedatabases_exits_with_no_databases, 1);
 	tcase_add_test(tc_daemon, preparedatabases_with_no_databases_creates_databases);
+#endif
 	tcase_add_test(tc_daemon, setsignaltraps_does_not_exit);
 	tcase_add_exit_test(tc_daemon, filldatabaselist_exits_with_no_database_dir, 1);
 	tcase_add_test(tc_daemon, filldatabaselist_does_not_exit_with_empty_database_dir);
@@ -759,10 +765,12 @@ void add_daemon_tests(Suite *s)
 	tcase_add_test(tc_daemon, checkdbsaveneed_needs);
 	tcase_add_test(tc_daemon, datalist_cacheget_with_no_database);
 	tcase_add_test(tc_daemon, datalist_cacheget_with_database);
+#if defined(__linux__)
 	tcase_add_test(tc_daemon, datalist_getifinfo_with_disabled_interface);
 	tcase_add_test(tc_daemon, datalist_getifinfo_with_enabled_unavailable_interface);
 	tcase_add_test(tc_daemon, datalist_getifinfo_with_interface_sync);
 	tcase_add_test(tc_daemon, datalist_getifinfo_with_interface_and_no_sync);
+#endif
 	tcase_add_test(tc_daemon, datalist_timevalidation_in_normal_time);
 	tcase_add_test(tc_daemon, datalist_timevalidation_in_future_time);
 	tcase_add_exit_test(tc_daemon, datalist_timevalidation_in_too_future_time, 1);
@@ -770,7 +778,9 @@ void add_daemon_tests(Suite *s)
 	tcase_add_test(tc_daemon, datalist_writedb_detects_missing_database_file);
 	tcase_add_test(tc_daemon, datalist_writedb_writes_database_file);
 	tcase_add_test(tc_daemon, processdatalist_empty_does_nothing);
+#if defined(__linux__)
 	tcase_add_test(tc_daemon, processdatalist_filled_does_things);
+#endif
 	tcase_add_test(tc_daemon, handleintsignals_handles_signals);
 	tcase_add_test(tc_daemon, direxists_with_no_dir);
 	tcase_add_test(tc_daemon, direxists_with_dir);
