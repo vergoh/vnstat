@@ -1,8 +1,8 @@
-(Updated 29.5.2011 for version 1.11)
-
 
 New configuration settings
 ::::::::::::::::::::::::::
+
+1.12: DaemonUser, DaemonGroup, CreateDBDir, UpdateFileOwner
 
 1.10 - 1.11: (none)
 
@@ -14,7 +14,7 @@ New configuration settings
 1.7: UnitMode + all settings under vnstatd and vnstati
 
 
-Upgrading from versions 1.1 - 1.9 to 1.11
+Upgrading from versions 1.1 - 1.9 to 1.12
 :::::::::::::::::::::::::::::::::::::::::
 
 1) Follow the normal install procedure, 'make install' will not overwrite

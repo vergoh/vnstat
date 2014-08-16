@@ -100,7 +100,7 @@ install:
 	fi
 
 	@echo " "
-	@echo "No startup script or cron entry has been installed. See the"
+	@echo "No service file or startup script has been installed. See the"
 	@echo "INSTALL document for instructions on how to enable vnStat."
 
 uninstall:
@@ -179,7 +179,7 @@ bsdinstall:
 	fi
 
 	@echo " "
-	@echo "No startup script or cron entry has been installed. See the"
+	@echo "No service file or startup script has been installed. See the"
 	@echo "INSTALL_BSD document for instructions on how to enable vnStat."
 
 bsduninstall:

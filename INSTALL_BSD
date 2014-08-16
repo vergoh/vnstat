@@ -1,5 +1,3 @@
-(Updated 29.5.2011 for version 1.11)
-
 
 Compiling the binaries
 ::::::::::::::::::::::
@@ -35,56 +33,26 @@ Installing as root
      make bsdinstall
 
  If there were no errors, vnStat binaries, man pages and a config file
- should now be installed. Next every interface that should be monitored 
- needs to be introduced to vnStat. Replace 'eth0' in the command with any
- available interface if needed.
-
-     vnstat -u -i eth0
-
- Repeat that for every other interface you wish to use. If you are unsure
- of available interface names then run
-
-     vnstat --iflist
-
- and select a suitable looking interface from the provided list. Usually
- 'lo' isn't the one you are looking for.
+ should now be installed.
 
  The configuration file /etc/vnstat.conf should also be checked at this
  point. See the vnstat.conf man page for documentation about available
  options.
 
- Finally make vnStat monitor the selected interface(s). There are two way
- for updating interface data, daemon and cron. It is suggested to use daemon
- based updating because it generated less disk access and is more accurate
- especially when monitoring interfaces that aren't always available. Select
- only one of these two:
+ Finally make vnStat monitor the selected interface(s). Configure init
+ scripts so that the following command is executed once during system
+ start:
 
+     vnstatd -d
 
- 1) daemon based updating
- ::::::::::::::::::::::::
+ One suitable place is for example /etc/rc.local.
 
-   Configure init scripts so that the following command is executed once
-   during system start:
+ During first startup, the daemon (vnstatd) should list and add all
+ available interfaces for monitoring. Depending on configuration, it may
+ take some minutes for the 'vnstat' command to begin showing results.
+ Monitoring of unwanted interfaces can be stopped with:
 
-       vnstatd -d
-
-   One suitable place is for example /etc/rc.local.
-
-
- 2) cron based updating
- ::::::::::::::::::::::
-
-   Add the following line to /etc/crontab (or with minor modifications
-   to the personal crontab of the user responsible for updates):
-
-       */5 * * * *  root  /usr/local/bin/vnstat -u
-
-   That will update interface every 5 minutes. Modify the update interval
-   if needed. See the vnStat man page 'restrictions' section for limitations
-   regarding fast interfaces and 32 bit interface traffic counters. Devices
-   like ppp0 also require vnStat enable and disable commands to be added
-   to suitable script file when cron based updating is used. Example scripts
-   can be found in the 'examples' directory.
+     vnstat --delete -i ethunwanted
 
 
 Installing without root access
@@ -112,35 +80,24 @@ Installing without root access
 
  The ouput should tell your homedir. 
 
- Next every interface that should be monitored needs to be introduced
- to vnStat. Replace 'eth0' in the command with any available interface if
- needed.
-
-     vnstat -u -i eth0
-
- Repeat that for every other interface you wish to use. Now it's time to add
- a crontab entry for vnStat. Do that by executing the command 'crontab -e'
- and add the following line (without leading spaces, remember to change the
- path):
-
-     */5 * * * * ~/bin/vnstat -u
-
- OR if the daemon can be used
+ Now it's time to add a crontab entry for vnStat. Do that by executing the
+ command 'crontab -e' and add the following line (without leading spaces,
+ remember to change the path):
 
      @reboot ~/bin/vnstatd -d
 
  If you found yourself using a strange editor then 'man vi' should help.
 
- If you choose to use the daemon then make sure the configuration file
- (~/.vnstatrc) has the log option either disabled or set to a file that
- is located in a place where you have write permissions, such as your
- home dir. Then (if using the daemon) try starting it with 'vnstat -d'.
+ Make sure the configuration file (~/.vnstatrc) has the log option either
+ disabled or set to a file that is located in a place where you have write
+ permissions, such as your home dir. Then try starting the daemon with
+
+     vnstat -d
 
  After that wait for (or generate) at least 1024 bytes of network traffic
- (and 5 min for the next cron/daemon update).
+ (and 5 min for the next database file save).
 
      vnstat
 
  Now you should get some stats about your network usage. See the config
  file ~/.vnstatrc for interface and other settings.
-
