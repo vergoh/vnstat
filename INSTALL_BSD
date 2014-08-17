@@ -5,22 +5,22 @@ Compiling the binaries
  This source package contains the required sources for vnStat including
  the daemon (vnstatd) and image output (vnstati). Executing
 
-     make
+     gmake
 
  will compile 'vnstat' and 'vnstatd' without requiring additional libraries.
  The optional image output however requires libgd2 to be available. In 
  BSD ports libgd2 is usually named simply 'gd'. Executing
 
-     make all
+     gmake all
 
  will compile everything including the image output support.  An example
  cgi ('vnstat.cgi') to be used with http server with the image output
  support has been provided in the 'examples' directory. Configuration
  options for the cgi are in the beginning of the file.
  
- Some BSD users might need to use
+ Some BSD users may need to use
 
-     LIBRARY_PATH="/usr/local/lib" CPATH="/usr/local/include" make all
+     LIBRARY_PATH="/usr/local/lib" CPATH="/usr/local/include" gmake all
 
  instead if libgd2 is installed but still not found.
 
@@ -30,7 +30,7 @@ Installing as root
 
  Login as root and run the following command:
 
-     make bsdinstall
+     gmake bsdinstall
 
  If there were no errors, vnStat binaries, man pages and a config file
  should now be installed.

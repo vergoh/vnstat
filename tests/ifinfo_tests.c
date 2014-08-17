@@ -358,6 +358,8 @@ START_TEST(getiflist_no_source)
 {
 	char *ifacelist;
 
+	linuxonly;
+
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	ck_assert_int_eq(getiflist(&ifacelist), 0);
 	ck_assert_str_eq(ifacelist, "");
@@ -369,6 +371,8 @@ END_TEST
 START_TEST(getiflist_one_interface)
 {
 	char *ifacelist;
+
+	linuxonly;
 
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	fake_proc_net_dev("w", "ethunusual", 0, 0, 0, 0);
@@ -383,6 +387,8 @@ END_TEST
 START_TEST(getiflist_multiple_interfaces)
 {
 	char *ifacelist;
+
+	linuxonly;
 
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	fake_proc_net_dev("w", "random", 0, 0, 0, 0);
@@ -400,6 +406,8 @@ END_TEST
 
 START_TEST(readproc_no_file)
 {
+	linuxonly;
+
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	ck_assert_int_eq(readproc("ethunusual"), 0);
 }
@@ -407,6 +415,8 @@ END_TEST
 
 START_TEST(readproc_not_found)
 {
+	linuxonly;
+
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	fake_proc_net_dev("w", "ethwrong", 10, 20, 30, 40);
 
@@ -416,6 +426,8 @@ END_TEST
 
 START_TEST(readproc_success)
 {
+	linuxonly;
+
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	fake_proc_net_dev("w", "ethwrong", 10, 20, 30, 40);
 	fake_proc_net_dev("a", "ethunusual", 1, 2, 3, 4);
@@ -432,6 +444,8 @@ END_TEST
 
 START_TEST(getifinfo_not_found)
 {
+	linuxonly;
+
 	suppress_output();
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	fake_proc_net_dev("w", "ethwrong", 10, 20, 30, 40);
@@ -442,6 +456,8 @@ END_TEST
 
 START_TEST(getifinfo_success)
 {
+	linuxonly;
+
 	suppress_output();
 
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
@@ -469,7 +485,6 @@ void add_ifinfo_tests(Suite *s)
 	tcase_add_test(tc_ifinfo, parseifinfo_long_update_interval_causes_sync);
 	tcase_add_test(tc_ifinfo, parseifinfo_hitting_maxbw_limit_causes_sync);
 	tcase_add_test(tc_ifinfo, parseifinfo_multiple_parses);
-#if defined(__linux__)
 	tcase_add_test(tc_ifinfo, getiflist_no_source);
 	tcase_add_test(tc_ifinfo, getiflist_one_interface);
 	tcase_add_test(tc_ifinfo, getiflist_multiple_interfaces);
@@ -478,6 +493,5 @@ void add_ifinfo_tests(Suite *s)
 	tcase_add_test(tc_ifinfo, readproc_success);
 	tcase_add_test(tc_ifinfo, getifinfo_not_found);
 	tcase_add_test(tc_ifinfo, getifinfo_success);
-#endif
 	suite_add_tcase(s, tc_ifinfo);
 }
