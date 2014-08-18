@@ -130,9 +130,19 @@ to write to the file at the same time.
 .SH DAEMON RELATED KEYWORDS
 
 .TP
-.BI CreateDBDir
-Enable or disable the creation of the database directory when the directory
-doesn't exist. The daemon process will try to create the directory using
+.BI CreateDirs
+Enable or disable the creation of directories when a configured path doesn't
+exist. This includes
+.BI DatabaseDir
+,
+.BI LogFile
+and
+.BI PidFile
+directories. The
+.BI LogFile
+directory will be created only when
+.BI UseLogging
+has been set to 1. The daemon process will try to create the directory using
 permissions of the user used to start the process.
 
 .TP
@@ -179,8 +189,8 @@ offline or comes online. 1 = enabled, 0 = disabled.
 .TP
 .BI UpdateFileOwner
 Enable or disable the update of file ownership during daemon process startup.
-Only database files will be modified if the user or group change feature
-is enabled and the files don't match the requested user or group.
+Only database, log and pid files will be modified if the user or group change
+feature is enabled and the files don't match the requested user or group.
 This option can only be used when the process is started as root.
 
 .TP

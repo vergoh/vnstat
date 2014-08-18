@@ -33,7 +33,8 @@ void datalist_getifinfo(DSTATE *s);
 int datalist_timevalidation(DSTATE *s);
 int datalist_writedb(DSTATE *s);
 void handleintsignals(DSTATE *s);
-void preparedbdir(DSTATE *s);
-void updatedbowner(const char *dir, const char *user, const char *group);
+void preparedirs(DSTATE *s);
+void preparevnstatdir(const char *dir, const char *user, const char *group);
+void updatedirowner(const char *dir, const char *user, const char *group);
 
 #endif

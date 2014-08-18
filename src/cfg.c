@@ -108,10 +108,10 @@ void printcfgfile(void)
 	printf("# enable / disable logging (0 = disabled, 1 = logfile, 2 = syslog)\n");
 	printf("UseLogging %d\n\n", cfg.uselogging);
 
-	printf("# create db directory if missing (1 = enabled, 0 = disabled)\n");
-	printf("CreateDBDir %d\n\n", cfg.createdbdir);
+	printf("# create dirs if needed (1 = enabled, 0 = disabled)\n");
+	printf("CreateDirs %d\n\n", cfg.createdirs);
 
-	printf("# update ownership of files when needed (1 = enabled, 0 = disabled)\n");
+	printf("# update ownership of files if needed (1 = enabled, 0 = disabled)\n");
 	printf("UpdateFileOwner %d\n\n", cfg.updatefileowner);
 
 	printf("# file used for logging if UseLogging is set to 1\n");
@@ -194,7 +194,7 @@ int loadcfg(const char *cfgfile)
 		{ "OfflineSaveInterval", 0, &cfg.offsaveinterval, 0, 0 },
 		{ "SaveOnStatusChange", 0, &cfg.savestatus, 0, 0 },
 		{ "UseLogging", 0, &cfg.uselogging, 0, 0 },
-		{ "CreateDBDir", 0, &cfg.createdbdir, 0, 0 },
+		{ "CreateDirs", 0, &cfg.createdirs, 0, 0 },
 		{ "UpdateFileOwner", 0, &cfg.updatefileowner, 0, 0 },
 		{ "LogFile", cfg.logfile, 0, 512, 0 },
 		{ "PidFile", cfg.pidfile, 0, 512, 0 },
@@ -471,9 +471,9 @@ void validatecfg(void)
 		printe(PT_Config);
 	}
 
-	if (cfg.createdbdir<0 || cfg.createdbdir>2) {
-		cfg.createdbdir = CREATEDBDIR;
-		snprintf(errorstring, 512, "Invalid value for CreateDBDir, resetting to \"%d\".", cfg.createdbdir);
+	if (cfg.createdirs<0 || cfg.createdirs>2) {
+		cfg.createdirs = CREATEDIRS;
+		snprintf(errorstring, 512, "Invalid value for CreateDirs, resetting to \"%d\".", cfg.createdirs);
 		printe(PT_Config);
 	}
 
@@ -564,7 +564,7 @@ void defaultcfg(void)
 	cfg.offsaveinterval = OFFSAVEINTERVAL;
 	cfg.savestatus = SAVESTATUS;
 	cfg.uselogging = USELOGGING;
-	cfg.createdbdir = CREATEDBDIR;
+	cfg.createdirs = CREATEDIRS;
 	cfg.updatefileowner = UPDATEFILEOWNER;
 	strncpy_nt(cfg.logfile, LOGFILE, 512);
 	strncpy_nt(cfg.pidfile, PIDFILE, 512);

@@ -329,10 +329,12 @@ int mkpath(const char *dir, const mode_t mode)
 	}
 
 	if (direxists(dir)) {
+		if (debug)
+			printf("already exists: %s\n", dir);
 		return 1;
 	}
 
-	if (!cfg.createdbdir) {
+	if (!cfg.createdirs) {
 		return 0;
 	}
 
@@ -353,8 +355,6 @@ int mkpath(const char *dir, const mode_t mode)
 	for (; i<len; i++) {
 		if (tmp[i] == '/') {
 			tmp[i] = '\0';
-			if (debug)
-				printf("for: %s\n", tmp);
 			if (!direxists(tmp)) {
 				if (mkdir(tmp, mode)!=0) {
 					if (debug)
@@ -362,8 +362,6 @@ int mkpath(const char *dir, const mode_t mode)
 					ret = 0;
 					break;
 				}
-			} else if (debug) {
-				printf("skip\n");
 			}
 			tmp[i] = '/';
 		}
@@ -373,6 +371,8 @@ int mkpath(const char *dir, const mode_t mode)
 			if (debug)
 				printf("Error: mkdir() \"%s\": %s\n", tmp, strerror(errno));
 			ret = 0;
+		} else if (debug) {
+			printf("created: %s\n", tmp);
 		}
 	}
 
@@ -728,14 +728,80 @@ void handleintsignals(DSTATE *s)
 	intsignal = 0;
 }
 
-void preparedbdir(DSTATE *s)
+void preparedirs(DSTATE *s)
 {
+	/* database directory */
 	if (mkpath(s->dirname, 0775)) {
-		updatedbowner(s->dirname, s->user, s->group);
+		updatedirowner(s->dirname, s->user, s->group);
+	}
+
+	if (!cfg.createdirs) {
+		return;
+	}
+
+	/* possible pid/lock and log directory */
+	preparevnstatdir(cfg.pidfile, s->user, s->group);
+	if (cfg.uselogging == 1) {
+		preparevnstatdir(cfg.logfile, s->user, s->group);
 	}
 }
 
-void updatedbowner(const char *dir, const char *user, const char *group)
+void preparevnstatdir(const char *file, const char *user, const char *group)
+{
+	int len, i, lastslash=0;
+	char *path, *base;
+
+	if (file == NULL) {
+		return;
+	}
+
+	len = strlen(file);
+	if (len<2) {
+		return;
+	}
+
+	if (file[len-1] == '/') {
+		return;
+	}
+
+	path = strdup(file);
+	if (path == NULL) {
+		return;
+	}
+
+	/* verify that path ends with vnstat or vnstatd */
+	base = basename(dirname(path));
+	if (strcmp(base, "vnstat")!=0 && strcmp(base, "vnstatd")!=0) {
+		free(path);
+		return;
+	}
+	free(path);
+
+	path = strdup(file);
+	if (path == NULL) {
+		return;
+	}
+
+	/* extract path */
+	for (i=0; i<len; i++) {
+		if (path[i] == '/') {
+			lastslash = i;
+		}
+	}
+	if (lastslash == 0) {
+		free(path);
+		return;
+	}
+	path[lastslash] = '\0';
+
+	/* create & chmod if needed */
+	if (mkpath(path, 0775)) {
+		updatedirowner(path, user, group);
+	}
+	free(path);
+}
+
+void updatedirowner(const char *dir, const char *user, const char *group)
 {
 	DIR *d;
 	struct dirent *di;
@@ -764,7 +830,7 @@ void updatedbowner(const char *dir, const char *user, const char *group)
 	if (statbuf.st_uid != uid || statbuf.st_gid != gid) {
 		if (chown(dir, uid, gid) != 0) {
 			if (debug)
-				printf("Error: updatedbowner() chown() \"%s\": %s\n", dir, strerror(errno));
+				printf("Error: updatedirowner() chown() \"%s\": %s\n", dir, strerror(errno));
 			return;
 		} else {
 			if (debug)
@@ -774,7 +840,7 @@ void updatedbowner(const char *dir, const char *user, const char *group)
 
 	if ((d=opendir(dir))==NULL) {
 		if (debug)
-			printf("Error: updatedbowner() diropen() \"%s\": %s\n", dir, strerror(errno));
+			printf("Error: updatedirowner() diropen() \"%s\": %s\n", dir, strerror(errno));
 		return;
 	}
 

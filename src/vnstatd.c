@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	preparedbdir(&s);
+	preparedirs(&s);
 
 	/* set user and/or group if requested */
 	setgroup(s.group);

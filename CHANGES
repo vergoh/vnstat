@@ -22,8 +22,9 @@
  - Improve daemon startup prints
  - Add parameters for changing daemon process user and group
  - Add example upstart job configuration file (thanks to Cameron Norman)
- - Create database directory during daemon startup if necessary
- - Update ownership of database files if needed during daemon startup
+ - Create database, pid and log dirs during daemon startup if necessary
+ - Update ownership of database, log and pid files if needed during daemon
+   startup if started as root and configured to change process user and group
  - Remove cron update related example files and documentation, the cron
    update method should be considered as deprecated
 

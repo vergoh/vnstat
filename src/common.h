@@ -21,6 +21,7 @@
 #include <sys/statvfs.h>
 #include <pwd.h>
 #include <grp.h>
+#include <libgen.h>
 
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__FreeBSD_kernel__)
 #include <sys/param.h>
@@ -176,10 +177,10 @@ and most can be changed later from the config file.
 #define OFFSAVEINTERVAL 30
 #define SAVESTATUS 1
 #define USELOGGING 2
-#define CREATEDBDIR 1
+#define CREATEDIRS 1
 #define UPDATEFILEOWNER 1
-#define LOGFILE "/var/log/vnstat.log"
-#define PIDFILE "/var/run/vnstat.pid"
+#define LOGFILE "/var/log/vnstat/vnstat.log"
+#define PIDFILE "/var/run/vnstat/vnstat.pid"
 
 /* no transparency by default */
 #define TRANSBG 0
@@ -212,7 +213,7 @@ typedef struct {
 	char logfile[512], pidfile[512];
 	char daemonuser[33], daemongroup[33];
 	short updateinterval, pollinterval, saveinterval, offsaveinterval, savestatus, uselogging;
-	short createdbdir, updatefileowner;
+	short createdirs, updatefileowner;
 } CFG;
 
 /* internal interface information structure */

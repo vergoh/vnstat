@@ -731,33 +731,55 @@ START_TEST(mkpath_with_dir)
 }
 END_TEST
 
-START_TEST(preparedbdir_with_no_dir)
+START_TEST(preparedirs_with_no_dir)
 {
+	char logdir[512], piddir[512];
+
 	DSTATE s;
 	initdstate(&s);
 	defaultcfg();
+	cfg.uselogging = 1;
 	strncpy_nt(s.dirname, TESTDBDIR, 512);
+	snprintf(logdir, 512, "%s/log/vnstat", TESTDIR);
+	snprintf(piddir, 512, "%s/pid/vnstat", TESTDIR);
+	snprintf(cfg.logfile, 512, "%s/vnstat.log", logdir);
+	snprintf(cfg.pidfile, 512, "%s/vnstat.pid", piddir);
 
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	ck_assert_int_eq(direxists(TESTDBDIR), 0);
-	preparedbdir(&s);
+	ck_assert_int_eq(direxists(logdir), 0);
+	ck_assert_int_eq(direxists(piddir), 0);
+	preparedirs(&s);
 	ck_assert_int_eq(direxists(TESTDBDIR), 1);
+	ck_assert_int_eq(direxists(logdir), 1);
+	ck_assert_int_eq(direxists(piddir), 1);
 }
 END_TEST
 
-START_TEST(preparedbdir_with_dir)
+START_TEST(preparedirs_with_dir)
 {
+	char logdir[512], piddir[512];
+
 	DSTATE s;
 	initdstate(&s);
 	defaultcfg();
+	cfg.uselogging = 1;
 	strncpy_nt(s.dirname, TESTDBDIR, 512);
+	snprintf(logdir, 512, "%s/log/vnstat", TESTDIR);
+	snprintf(piddir, 512, "%s/pid/vnstat", TESTDIR);
+	snprintf(cfg.logfile, 512, "%s/vnstat.log", logdir);
+	snprintf(cfg.pidfile, 512, "%s/vnstat.pid", piddir);
 
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	ck_assert_int_eq(direxists(TESTDBDIR), 0);
 	ck_assert_int_eq(mkpath(TESTDBDIR, 0775), 1);
 	ck_assert_int_eq(direxists(TESTDBDIR), 1);
-	preparedbdir(&s);
+	ck_assert_int_eq(direxists(logdir), 0);
+	ck_assert_int_eq(direxists(piddir), 0);
+	preparedirs(&s);
 	ck_assert_int_eq(direxists(TESTDBDIR), 1);
+	ck_assert_int_eq(direxists(logdir), 1);
+	ck_assert_int_eq(direxists(piddir), 1);
 }
 END_TEST
 
@@ -808,8 +830,8 @@ void add_daemon_tests(Suite *s)
 	tcase_add_test(tc_daemon, direxists_with_dir);
 	tcase_add_test(tc_daemon, mkpath_with_no_dir);
 	tcase_add_test(tc_daemon, mkpath_with_dir);
-	tcase_add_test(tc_daemon, preparedbdir_with_no_dir);
-	tcase_add_test(tc_daemon, preparedbdir_with_dir);
+	tcase_add_test(tc_daemon, preparedirs_with_no_dir);
+	tcase_add_test(tc_daemon, preparedirs_with_dir);
 	suite_add_tcase(s, tc_daemon);
 }
 
