@@ -785,6 +785,58 @@ START_TEST(preparedirs_with_dir)
 }
 END_TEST
 
+START_TEST(preparevnstatdir_with_no_vnstat)
+{
+	char testdir[512], testpath[512];
+	defaultcfg();
+	cfg.updatefileowner = 0;
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	ck_assert_int_eq(direxists(TESTDIR), 0);
+	snprintf(testdir, 512, "%s/here/be/dragons", TESTDIR);
+	snprintf(testpath, 512, "%s/or_something.txt", testdir);
+	preparevnstatdir(testpath, "user", "group");
+	ck_assert_int_eq(direxists(TESTDIR), 0);
+	ck_assert_int_eq(direxists(testdir), 0);
+
+	snprintf(testdir, 512, "%s/here/be/vnstat/dragons", TESTDIR);
+	snprintf(testpath, 512, "%s/or_something.txt", testdir);
+	preparevnstatdir(testpath, "user", "group");
+	ck_assert_int_eq(direxists(TESTDIR), 0);
+	ck_assert_int_eq(direxists(testdir), 0);
+
+	snprintf(testdir, 512, "%s/here/be/vnstati", TESTDIR);
+	snprintf(testpath, 512, "%s/or_something.txt", testdir);
+	preparevnstatdir(testpath, "user", "group");
+	ck_assert_int_eq(direxists(TESTDIR), 0);
+	ck_assert_int_eq(direxists(testdir), 0);
+}
+END_TEST
+
+START_TEST(preparevnstatdir_with_vnstat)
+{
+	char testdir[512], testpath[512];
+	defaultcfg();
+	cfg.updatefileowner = 0;
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	ck_assert_int_eq(direxists(TESTDIR), 0);
+	snprintf(testdir, 512, "%s/here/be/vnstat", TESTDIR);
+	snprintf(testpath, 512, "%s/or_something.txt", testdir);
+	preparevnstatdir(testpath, "user", "group");
+	ck_assert_int_eq(direxists(TESTDIR), 1);
+	ck_assert_int_eq(direxists(testdir), 1);
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	ck_assert_int_eq(direxists(TESTDIR), 0);
+	snprintf(testdir, 512, "%s/here/be/vnstatd", TESTDIR);
+	snprintf(testpath, 512, "%s/or_something.txt", testdir);
+	preparevnstatdir(testpath, "user", "group");
+	ck_assert_int_eq(direxists(TESTDIR), 1);
+	ck_assert_int_eq(direxists(testdir), 1);
+}
+END_TEST
+
 void add_daemon_tests(Suite *s)
 {
 	/* Config test cases */
@@ -834,6 +886,8 @@ void add_daemon_tests(Suite *s)
 	tcase_add_test(tc_daemon, mkpath_with_dir);
 	tcase_add_test(tc_daemon, preparedirs_with_no_dir);
 	tcase_add_test(tc_daemon, preparedirs_with_dir);
+	tcase_add_test(tc_daemon, preparevnstatdir_with_no_vnstat);
+	tcase_add_test(tc_daemon, preparevnstatdir_with_vnstat);
 	suite_add_tcase(s, tc_daemon);
 }
 

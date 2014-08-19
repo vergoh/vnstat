@@ -110,22 +110,26 @@ int remove_directory(const char *directory)
 
 	while ((di=readdir(dir))) {
 		switch (di->d_type) {
+			case DT_LNK:
 			case DT_REG:
 				snprintf(entryname, 512, "%s/%s", directory, di->d_name);
 				if (unlink(entryname)!=0) {
+					closedir(dir);
 					return 0;
 				}
 				break;
 			case DT_DIR:
-				if (strlen(di->d_name)>2) {
-					snprintf(entryname, 512, "%s/%s", directory, di->d_name);
-					if (!remove_directory(entryname)) {
-						return 0;
-					}
+				if (strcmp(di->d_name, ".")==0 || strcmp(di->d_name, "..")==0) {
+					continue;
+				}
+				snprintf(entryname, 512, "%s/%s", directory, di->d_name);
+				if (!remove_directory(entryname)) {
+					closedir(dir);
+					return 0;
 				}
 				break;
 			default:
-				return 0;
+				continue;
 		}
 	}
 	closedir(dir);
