@@ -739,6 +739,7 @@ START_TEST(preparedirs_with_no_dir)
 	initdstate(&s);
 	defaultcfg();
 	cfg.uselogging = 1;
+	s.rundaemon = 1;
 	strncpy_nt(s.dirname, TESTDBDIR, 512);
 	snprintf(logdir, 512, "%s/log/vnstat", TESTDIR);
 	snprintf(piddir, 512, "%s/pid/vnstat", TESTDIR);
@@ -764,6 +765,7 @@ START_TEST(preparedirs_with_dir)
 	initdstate(&s);
 	defaultcfg();
 	cfg.uselogging = 1;
+	s.rundaemon = 1;
 	strncpy_nt(s.dirname, TESTDBDIR, 512);
 	snprintf(logdir, 512, "%s/log/vnstat", TESTDIR);
 	snprintf(piddir, 512, "%s/pid/vnstat", TESTDIR);

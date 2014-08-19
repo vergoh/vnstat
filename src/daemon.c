@@ -735,7 +735,7 @@ void preparedirs(DSTATE *s)
 		updatedirowner(s->dirname, s->user, s->group);
 	}
 
-	if (!cfg.createdirs) {
+	if (!cfg.createdirs || !s->rundaemon) {
 		return;
 	}
 
