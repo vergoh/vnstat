@@ -160,6 +160,11 @@ int main(int argc, char *argv[]) {
 				printf("Error: Locale for --locale missing.\n");
 				return 1;
 			}
+		} else if (strcmp(argv[currentarg],"--create")==0) {
+			p.create=1;
+			p.query=0;
+			if (debug)
+				printf("Creating database...\n");
 		} else if ((strcmp(argv[currentarg],"-u")==0) || (strcmp(argv[currentarg],"--update")==0)) {
 			p.update=1;
 			p.query=0;
@@ -308,8 +313,13 @@ int main(int argc, char *argv[]) {
 			closedir(dir);
 		} else {
 			printf("Error: Unable to open database directory \"%s\": %s\n", p.dirname, strerror(errno));
-			printf("Make sure it exists and is at least read enabled for current user.\n");
-			printf("Exiting...\n");
+			if (errno==ENOENT) {
+				printf("The vnStat daemon should have created this directory when started.\n");
+				printf("Check that it is is configured and running. See also \"man vnstatd\".\n");
+			} else {
+				printf("Make sure it is at least read enabled for current user.\n");
+				printf("Use --help for help.\n");
+			}
 			return 1;
 		}
 	}
@@ -329,19 +339,20 @@ int main(int argc, char *argv[]) {
 	handlecleartop10(&p);
 	handlerebuildtotal(&p);
 	handleenabledisable(&p);
+	handlecreate(&p);
 	handleupdate(&p);
 	handleshowdatabases(&p);
 	handletrafficmeters(&p);
 
 	/* show something if nothing was shown previously */
-	if (!p.query && !p.update && !p.reset && !p.sync && p.active==-1 && !p.cleartop && !p.rebuildtotal && !p.traffic && !p.livetraffic) {
+	if (!p.query && !p.update && !p.create && !p.reset && !p.sync && p.active==-1 && !p.cleartop && !p.rebuildtotal && !p.traffic && !p.livetraffic) {
 
 		/* give more help if there's no database */
 		if (p.files==0) {
 			getiflist(&p.ifacelist);
 			printf("No database found, nothing to do. Use --help for help.\n\n");
 			printf("A new database can be created with the following command:\n");
-			printf("    %s -u -i eth0\n\n", argv[0]);
+			printf("    %s --create -i eth0\n\n", argv[0]);
 			printf("Replace 'eth0' with the interface that should be monitored.\n\n");
 			printf("The following interfaces are currently available:\n    %s\n", p.ifacelist);
 			free(p.ifacelist);
@@ -361,6 +372,7 @@ void initparams(PARAMS *p)
 	noexit = 0; /* allow functions to exit in case of error */
 	debug = 0; /* debug disabled by default */
 
+	p->create = 0;
 	p->update = 0;
 	p->query = 1;
 	p->newdb = 0;
@@ -425,16 +437,6 @@ void showlonghelp(PARAMS *p)
 {
 			printf(" vnStat %s by Teemu Toivola <tst at iki dot fi>\n\n", VNSTATVERSION);
 
-			printf("   Update:\n");
-			printf("         -u, --update          update database\n");
-			printf("         -r, --reset           reset interface counters\n");
-			printf("         --sync                sync interface counters\n");
-			printf("         --enable              enable interface\n");
-			printf("         --disable             disable interface\n");
-			printf("         --nick                set a nickname for interface\n");
-			printf("         --cleartop            clear the top10\n");
-			printf("         --rebuildtotal        rebuild total transfers from months\n");
-
 			printf("   Query:\n");
 			printf("         -q, --query           query database\n");
 			printf("         -h, --hours           show hours\n");
@@ -449,6 +451,18 @@ void showlonghelp(PARAMS *p)
 			printf("         --importdb            import previously exported database\n");
 			printf("         --xml                 show database in xml format\n");
 
+			printf("   Modify:\n");
+			printf("         --create              create database\n");
+			printf("         --delete              delete database\n");
+			printf("         -u, --update          update database\n");
+			printf("         -r, --reset           reset interface counters\n");
+			printf("         --sync                sync interface counters\n");
+			printf("         --enable              enable interface\n");
+			printf("         --disable             disable interface\n");
+			printf("         --nick                set a nickname for interface\n");
+			printf("         --cleartop            clear the top10\n");
+			printf("         --rebuildtotal        rebuild total transfers from months\n");
+
 			printf("   Misc:\n");
 			printf("         -i,  --iface          select interface (default: %s)\n", p->definterface);
 			printf("         -?,  --help           short help\n");
@@ -457,7 +471,6 @@ void showlonghelp(PARAMS *p)
 			printf("         -tr, --traffic        calculate traffic\n");
 			printf("         -l,  --live           show transfer rate in real time\n");
 			printf("         --style               select output style (0-4)\n");
-			printf("         --delete              delete database and stop monitoring\n");
 			printf("         --iflist              show list of available interfaces\n");
 			printf("         --dbdir               select database directory\n");
 			printf("         --locale              set locale\n");
@@ -575,7 +588,8 @@ void handledelete(PARAMS *p)
 	if (checkdb(p->interface, p->dirname)) {
 		if (removedb(p->interface, p->dirname)) {
 			printf("Database for interface \"%s\" deleted.\n", p->interface);
-			printf("The interface will no longer be monitored.\n");
+			printf("The interface will no longer be monitored. Use --create\n");
+			printf("if monitoring the interface is again needed.\n");
 			exit(EXIT_SUCCESS);
 		} else {
 			printf("Error: Deleting database for interface \"%s\" failed.\n", p->interface);
@@ -658,6 +672,44 @@ void handleenabledisable(PARAMS *p)
 		} else if (!p->newdb) {
 			printf("Interface \"%s\" is already disabled.\n", data.interface);
 		}
+	}
+}
+
+void handlecreate(PARAMS *p)
+{
+	if (!p->create) {
+		return;
+	}
+
+	if (p->defaultiface) {
+		printf("Error: Use -i parameter to specify an interface.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (!getifinfo(p->interface) && !p->force) {
+		getiflist(&p->ifacelist);
+		printf("Only available interfaces can be added for monitoring.\n\n");
+		printf("The following interfaces are currently available:\n    %s\n", p->ifacelist);
+		free(p->ifacelist);
+		exit(EXIT_FAILURE);
+	}
+
+	if (checkdb(p->interface, p->dirname)) {
+		printf("Error: Database for interface \"%s\" already exists.\n", data.interface);
+		exit(EXIT_FAILURE);
+	}
+
+	if (!spacecheck(p->dirname) && !p->force) {
+		printf("Error: Not enough free diskspace available.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	printf("Creating database for interface \"%s\"...\n", p->interface);
+	initdb();
+	strncpy_nt(data.interface, p->interface, 32);
+	strncpy_nt(data.nick, p->interface, 32);
+	if (writedb(p->interface, p->dirname, 1)) {
+		printf("\nRestart the vnStat daemon if it is currently running in order to start monitoring \"%s\".\n", p->interface);
 	}
 }
 
@@ -751,8 +803,8 @@ void handleupdate(PARAMS *p)
 
 		if (!getifinfo(data.interface) && !p->force) {
 			getiflist(&p->ifacelist);
-			printf("Error: Interface \"%s\" couldn't be found.\n Only available interfaces can be added for monitoring.\n", data.interface);
-			printf("\n The following interfaces are currently available:\n    %s\n", p->ifacelist);
+			printf("Only available interfaces can be added for monitoring.\n\n", data.interface);
+			printf("The following interfaces are currently available:\n    %s\n", p->ifacelist);
 			free(p->ifacelist);
 			exit(EXIT_FAILURE);
 		}

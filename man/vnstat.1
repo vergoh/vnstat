@@ -1,4 +1,4 @@
-.TH VNSTAT 1 "APRIL 2014" "version 1.12" "User Manuals"
+.TH VNSTAT 1 "AUGUST 2014" "version 1.12" "User Manuals"
 .SH NAME
 
 vnstat \- a console-based network traffic monitor
@@ -13,6 +13,8 @@ vnstat \- a console-based network traffic monitor
 ] [
 .B \-\-config
 .I file
+] [
+.B \-\-create
 ] [
 .B \-\-days
 ] [
@@ -123,6 +125,10 @@ Use
 .I file
 as configuration file instead of using normal configuration file search
 functionality.
+
+.TP
+.BI "--create"
+Create database for selected interface.
 
 .TP
 .BI "-d, --days"
@@ -403,7 +409,8 @@ Output all information about interface eth2 in xml format.
 .TP
 .BI "vnstat -u -i eth0" 
 Force a database update for interface eth0 or create the database if it doesn't
-exist. This is usually the first command used after a fresh install.
+exist. This is usually the first command used after a fresh install if the
+daemon isn't used.
 
 .TP
 .BI "vnstat -u -i eth0 --nick local"

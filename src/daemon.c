@@ -169,7 +169,8 @@ int addinterfaces(const char *dirname)
 	}
 
 	if (count) {
-		printf("\nLimits can be modified using the configuration file. See \"man vnstat.conf\".");
+		printf("\nLimits can be modified using the configuration file. See \"man vnstat.conf\".\n");
+		printf("Unwanted interfaces can be removed from monitoring with \"vnstat --delete\".");
 	}
 
 	printf("\n");

@@ -14,8 +14,8 @@ New configuration settings
 1.7: UnitMode + all settings under vnstatd and vnstati
 
 
-Upgrading from versions 1.1 - 1.9 to 1.12
-:::::::::::::::::::::::::::::::::::::::::
+Upgrading from versions 1.1 and later
+:::::::::::::::::::::::::::::::::::::
 
 1) Follow the normal install procedure, 'make install' will not overwrite
    your configuration file

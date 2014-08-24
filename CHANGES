@@ -27,6 +27,7 @@
    startup if started as root and configured to change process user and group
  - Remove cron update related example files and documentation, the cron
    update method should be considered as deprecated
+ - --create parameter for database creation
 
 
 1.11 / 1-Jun-11

@@ -72,7 +72,7 @@ int spacecheck(char *path)
 		if (noexit) {
 			return 0;
 		} else {
-			snprintf(errorstring, 512, "Free diskspace check failed.");
+			snprintf(errorstring, 512, "Free diskspace check failed: %s", strerror(errno));
 			printe(PT_Error);
 			exit(EXIT_FAILURE);
 		}
