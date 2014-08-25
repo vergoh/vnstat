@@ -65,7 +65,7 @@ install:
 	fi
 
 # install everything else
-	install -d -m 755 $(BIN) $(SBIN) $(MAN)/man1 $(MAN)/man5 $(DESTDIR)/var/lib/vnstat
+	install -d -m 755 $(BIN) $(SBIN) $(MAN)/man1 $(MAN)/man5
 	install -s -m 755 src/vnstat $(BIN)
 	install -s -m 755 src/vnstatd $(SBIN)
 	@if [ -f "src/vnstati" ]; \
