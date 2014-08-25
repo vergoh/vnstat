@@ -803,7 +803,7 @@ void handleupdate(PARAMS *p)
 
 		if (!getifinfo(data.interface) && !p->force) {
 			getiflist(&p->ifacelist);
-			printf("Only available interfaces can be added for monitoring.\n\n", data.interface);
+			printf("Only available interfaces can be added for monitoring.\n\n");
 			printf("The following interfaces are currently available:\n    %s\n", p->ifacelist);
 			free(p->ifacelist);
 			exit(EXIT_FAILURE);
