@@ -1,4 +1,4 @@
-.TH VNSTATD 1 "JULY 2014" "version 1.12" "User Manuals"
+.TH VNSTATD 1 "AUGUST 2014" "version 1.12" "User Manuals"
 .SH NAME
 
 vnstatd \- daemon based database updating for vnStat
@@ -49,7 +49,7 @@ The purpose of
 is to provide a more flexible way for updating
 .BR vnstat (1)
 databases than what using cron for updating can provide. The daemon makes
-possible updating databases more often but at the same time requires
+possible updating databases more often but at the same time causes
 less disk access since data can be cached and written only later to disk
 at a user configurable interval. The availability of each interface is
 automatically tracked which removes the need for additional scripts to be
@@ -60,11 +60,17 @@ is the command for starting the daemon. The daemon can either fork
 itself to run as a background process or stay attached to the terminal.
 It supports logging to a user selectable file or using syslog.
 .PP
-Once started, the daemon will check if there are any databases available
+Once started, the daemon will read
+.BR vnstat.conf (5)
+if available and then check if there are any databases available
 in the database directory that has been specified in the configuration
 file. New databases will be created for all available interfaces excluding
 pseudo interfaces lo, lo0 and sit0 if no databases are found during startup.
-This behaviour can however be disabled if needed.
+This behaviour can be disabled if needed. The daemon will then
+proceed to track the availability of monitored interfaces, process the
+interface traffic statistics and write new values to databases
+at a configured interval. As a result, the daemon ends up spending most
+of the time sleeping between updates.
 
 .SH OPTIONS
 
@@ -154,7 +160,7 @@ in the configuration file.
 .BR UpdateInterval
 defines in seconds how often the interface data is fetched and updated.
 This is similar to the run interval for alternative cron based updating.
-However, the difference is that the data doesn't get written to disk
+However, the difference is that the data doesn't directly get written to disk
 during updates.
 
 .PP
@@ -188,12 +194,12 @@ changes and fast interfaces.
 For embedded and/or low power systems more tuned configurations are possible.
 In such cases if the interfaces are mostly static the
 .BR PollInterval
-can be rised to around 10-30 seconds and
+can be increased to around 10-30 seconds and
 .BR UpdateInterval
 set to 60 seconds. Higher values up to 300 seconds are possible if the
 interface speed is 10 Mbit or less.
 .BR SaveInterval
-can be rised for example to 15, 30 or even 60 minutes depending on how
+can be increased for example to 15, 30 or even 60 minutes depending on how
 often the data needs to be viewed.
 
 .SH SIGNALS

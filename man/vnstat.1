@@ -106,12 +106,21 @@ vnstat \- a console-based network traffic monitor
 .B vnStat
 is a console-based network traffic monitor. It keeps a log of hourly,
 daily and monthly network traffic for the selected interface(s). However,
-it isn't a packet sniffer. The traffic information is analyzed from the
+it isn't a packet sniffer. The traffic information is read from the
 .BR proc (5)
-and
+or
 .BR sys
 filesystems depending on availability. That way vnStat can be used even
 without root permissions on most systems.
+.PP
+The implementation is divided into two commands. The purpose of
+.B vnstat
+is to provide an interface for querying the traffic information stored
+in network interface specific databases where as the daemon
+.BR vnstatd (1)
+is responsible for data retrieval and storage. Although the daemon process
+is constantly running as a service, it is actually spending most of the
+time sleeping between data updates.
 
 .SH OPTIONS
 
@@ -445,7 +454,6 @@ useable solution if faster updates can't be used.
 Estimated traffic values are likely to be somewhat inaccurate if daily
 traffic is low because only the MiB counter is used to calculate the
 estimate.
-
 .PP
 Virtual and aliased interfaces cannot be monitored because the kernel doesn't
 provide traffic information for that type of interfaces. Such interfaces are
