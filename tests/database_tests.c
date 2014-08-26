@@ -823,7 +823,7 @@ START_TEST(importdb_can_parse_exported_database)
 	exportfile = fopen(buffer, "w");
 	dup2(fileno(exportfile), STDOUT_FILENO);
 	fclose(exportfile);
-	dumpdb();
+	exportdb();
 	fflush(stdout);
 	memset(&data, '\0', sizeof(DATA));
 

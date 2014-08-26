@@ -118,7 +118,7 @@ and most can be changed later from the config file.
 
 /* default query mode */
 /* 0 = normal, 1 = days, 2 = months, 3 = top10 */
-/* 4 = dumpdb, 5 = short, 6 = weeks, 7 = hours */
+/* 4 = exportdb, 5 = short, 6 = weeks, 7 = hours */
 /* 8 = xml */
 #define DEFQMODE 0
 

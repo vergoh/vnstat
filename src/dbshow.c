@@ -23,7 +23,7 @@ void showdb(int qmode)
 			showtop();
 			break;
 		case 4:
-			dumpdb();
+			exportdb();
 			break;
 		case 5:
 			showshort();
@@ -999,7 +999,7 @@ void showoneline(void)
 	printf("%s\n", getvalue(data.totalrx+data.totaltx, data.totalrxk+data.totaltxk, 1, 1));
 }
 
-void dumpdb(void)
+void exportdb(void)
 {
 	int i;
 

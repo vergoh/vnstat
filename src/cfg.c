@@ -65,7 +65,7 @@ void printcfgfile(void)
 
 	printf("# default query mode\n");
 	printf("# 0 = normal, 1 = days, 2 = months, 3 = top10\n");
-	printf("# 4 = dumpdb, 5 = short, 6 = weeks, 7 = hours\n");
+	printf("# 4 = exportdb, 5 = short, 6 = weeks, 7 = hours\n");
 	printf("QueryMode %d\n\n", cfg.qmode);
 
 	printf("# filesystem disk space check (1 = enabled, 0 = disabled)\n");
