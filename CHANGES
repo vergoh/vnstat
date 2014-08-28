@@ -7,6 +7,7 @@
    of command execution
  - Fix: Live traffic meter occasionally showing higher minimum than average
    in end statistics (Debian Bug #687812)
+ - Fix: Setting locale when none is specified in config (Debian Bug #606397)
  - Fix: Cppcheck findings (may fix Debian Bug #692330)
  - Improve traffic meter output accuracy
  - Add tests and debug compilation target

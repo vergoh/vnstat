@@ -65,6 +65,8 @@ int main(int argc, char *argv[])
 	} else {
 		if (getenv("LC_ALL")) {
 			setlocale(LC_ALL, getenv("LC_ALL"));
+		} else {
+			setlocale(LC_ALL, "");
 		}
 	}
 	strncpy_nt(interface, cfg.iface, 32);
