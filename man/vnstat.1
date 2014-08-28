@@ -137,11 +137,15 @@ functionality.
 
 .TP
 .BI "--create"
-Create database for selected interface.
+Create database for interface specified with
+.B -i
+or
+.B --iface
+option.
 
 .TP
 .BI "-d, --days"
-Show traffic for days.
+Show traffic statistics on a daily basis for the last 30 days.
 
 .TP
 .BI "--dbdir " directory
@@ -156,7 +160,11 @@ Show additional debug output.
 
 .TP
 .BI "--delete"
-Delete the database for the selected interface and stop monitoring it.
+Delete the database for the interface specified with
+.B -i
+or
+.B --iface
+and stop monitoring it.
 
 .TP
 .BI "--enable, --disable"
@@ -174,7 +182,9 @@ to the up script. These two options aren't needed when the daemon is used.
 .BI "--exportdb"
 Instead of showing the database with a formated output, this output will
 dump the whole database in a format that should be easy to parse with most
-script languages. Use this for example with PHP, Perl or Python to make a
+script languages or imported back using the
+.B --importdb
+option. Use this for example with PHP, Perl or Python to make a
 custom  webpage. The dump uses ; as field delimeter.
 .TS
 l l.
@@ -212,7 +222,7 @@ have values in KiB.
 
 .TP
 .BI "-h, --hours"
-Show traffic for the last 24 hours.
+Show traffic statistics on a hourly basis for the last 24 hours.
 
 .TP
 .BI "--importdb " file
@@ -264,7 +274,7 @@ Show complete options list.
 
 .TP
 .BI "-m, --months"
-Show traffic for months.
+Show traffic statistics on a monthly basis for the last 12 months.
 
 .TP
 .BI "--nick " nickname
@@ -272,7 +282,8 @@ Set the selected interfaces
 .I nickname
 as an alias the will be displayed in queries. Usage of
 .B -u
-is required to save the change.
+is required to save the change and the daemon may not be running during
+the set operation.
 
 .TP
 .BI "--oneline"
@@ -295,6 +306,7 @@ Force database query mode.
 Reset the internal counters in the database for the selected
 interface. Use this if the interface goes down and back up,
 otherwise that interface will get some extra traffic to its database.
+Not needed when the daemon is used.
 
 .TP
 .BI "--rebuildtotal"
@@ -341,7 +353,7 @@ mode.
 Synchronize internal counters in the database with interface
 counters for the selected interface. Use this if the system is
 rebooted but interface counters aren't reseted. Such can occur
-when suspend to ram/disk is used.
+when suspend to ram/disk is used. Not needed when the daemon is used.
 
 .TP
 .BI "--testkernel"
@@ -359,13 +371,13 @@ the given
 .I time 
 seconds. The 
 .I time
-will be 5 seconds if a number parameter isn't included.
+will be 5 seconds if a number parameter isn't specified.
 
 .TP
 .BI "-u, --update"
 Update all enabled databases or only the one specified with
 .B -i
-parameter.
+parameter. Not supported when the daemon is running.
 
 .TP
 .BI "-v, --version"
@@ -405,7 +417,8 @@ for more information.
 
 .TP
 .BI "vnstat"
-Display traffic summary for the default interface.
+Display traffic summary for the default interface or multiple interfaces
+when more than one is monitored.
 
 .TP
 .BI "vnstat -i eth0+eth1+eth3"

@@ -16,7 +16,7 @@ and
 all use the same configuration file for storing configuration data.
 Some of the settings are common for all three programs. The file
 contains keyword-argument pairs, one per line. Lines starting with
-'#' and empty lines are interpreted as comments and not processed.
+\'#\' and empty lines are interpreted as comments and not processed.
 Arguments may optionally be enclosed in double quotes (") in order
 to represent arguments containing spaces. Arguments can be padded
 with spaces or tabulator characters. A hardcoded default value
@@ -147,8 +147,11 @@ directories. The
 .BI LogFile
 directory will be created only when
 .BI UseLogging
-has been set to 1. The daemon process will try to create the directory using
-permissions of the user used to start the process.
+has been set to 1. The
+.BI PidFile
+directory will be created only if the daemon is started as a background process.
+The daemon process will try to create the directory using permissions of the
+user used to start the process.
 
 .TP
 .BI DaemonGroup

@@ -11,7 +11,7 @@ Compiling the binaries
  The optional image output however requires libgd2 to be available. The
  required extra packages are usually named libgd2 and libgd2-dev (or
  libgd2-noxpm and libgd2-noxpm-dev in Debian/Ubuntu, xpm version can also
- be used). Executing
+ be used, libgd-dev in more recent releases). Executing
 
      make all
 

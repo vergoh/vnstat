@@ -46,7 +46,7 @@ vnstatd \- daemon based database updating for vnStat
 
 The purpose of
 .B vnstatd
-is to provide a more flexible way for updating
+is to provide a more flexible and robust way for updating
 .BR vnstat (1)
 databases than what using cron for updating can provide. The daemon makes
 possible updating databases more often but at the same time causes
@@ -182,11 +182,11 @@ with a maximum value of 60 minutes.
 .PP
 The default values of
 .BR UpdateInterval
-20,
+30,
 .BR SaveInterval
 5 and
 .BR PollInterval
-2 are usually suitable for most systems and provide a similar behaviour
+5 are usually suitable for most systems and provide a similar behaviour
 as cron based updating does but with a better resolution for interface
 changes and fast interfaces.
 
