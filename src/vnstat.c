@@ -301,7 +301,7 @@ int main(int argc, char *argv[]) {
 			if (debug)
 				printf("Dir OK\n");
 			while ((di=readdir(dir))) {
-				if (di->d_name[0]=='.') {
+				if ((di->d_name[0]=='.') || (strcmp(di->d_name, DATABASEFILE)==0)) {
 					continue;
 				}
 				strncpy_nt(p.definterface, di->d_name, 32);
@@ -744,7 +744,7 @@ void handleupdate(PARAMS *p)
 		while ((di=readdir(dir))) {
 
 			/* ignore backup files, '.' and '..' dirs */
-			if (di->d_name[0]=='.') {
+			if ((di->d_name[0]=='.') || (strcmp(di->d_name, DATABASEFILE)==0)) {
 				continue;
 			}
 
@@ -862,7 +862,7 @@ void handleshowdatabases(PARAMS *p)
 				return;
 			}
 			while ((di=readdir(dir))) {
-				if (di->d_name[0]=='.') {
+				if ((di->d_name[0]=='.') || (strcmp(di->d_name, DATABASEFILE)==0)) {
 					continue;
 				}
 				strncpy_nt(p->interface, di->d_name, 32);

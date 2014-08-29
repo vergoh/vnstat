@@ -421,7 +421,7 @@ void preparedatabases(DSTATE *s)
 	/* check if there's something to work with */
 	s->dbcount = 0;
 	while ((di=readdir(dir))) {
-		if (di->d_name[0]!='.') {
+		if ((di->d_name[0]!='.') && (strcmp(di->d_name, DATABASEFILE)!=0)) {
 			s->dbcount++;
 		}
 	}
@@ -486,7 +486,7 @@ void filldatabaselist(DSTATE *s)
 	}
 
 	while ((di=readdir(dir))) {
-		if (di->d_name[0]=='.') {
+		if ((di->d_name[0]=='.') || (strcmp(di->d_name, DATABASEFILE)==0)) {
 			continue;
 		}
 

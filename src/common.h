@@ -55,6 +55,7 @@ and most can be changed later from the config file.
 #define DATABASEDIR "/var/lib/vnstat"
 #endif
 #endif
+#define DATABASEFILE "vnstat.db"
 
 /* on which day should months change */
 #define MONTHROTATE 1
