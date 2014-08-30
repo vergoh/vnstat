@@ -1,5 +1,6 @@
 
-If the daemon is running then stop it first.
+If the daemon is running then stop it first and remove
+any manually installed service files.
 
 
 Linux:

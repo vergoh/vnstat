@@ -1,4 +1,4 @@
-1.12 / <not released yet>
+1.12 / 30-Aug-14
 
  - Fix: Memory allocation when zero interfaces are available, also lo needed
    to be missing in order to trigger this leak

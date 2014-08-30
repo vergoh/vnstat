@@ -2,7 +2,7 @@
 New configuration settings
 ::::::::::::::::::::::::::
 
-1.12: DaemonUser, DaemonGroup, CreateDBDir, UpdateFileOwner
+1.12: DaemonUser, DaemonGroup, CreateDirs, UpdateFileOwner
 
 1.10 - 1.11: (none)
 
