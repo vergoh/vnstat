@@ -206,6 +206,6 @@ dist: clean
 	@rm -fr "../vnstat-$(VER).tar.gz" "../vnstat-$(VER)"
 	@mkdir "../vnstat-$(VER)"
 	@cp -ax * "../vnstat-$(VER)/"
-	@tar zcf "../vnstat-$(VER).tar.gz" "../vnstat-$(VER)"
+	@fakeroot tar zcf "../vnstat-$(VER).tar.gz" "../vnstat-$(VER)"
 	@rm -fr "../vnstat-$(VER)"
 	@ls -l "../vnstat-$(VER).tar.gz"
