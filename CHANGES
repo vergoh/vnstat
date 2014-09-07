@@ -1,6 +1,7 @@
 1.13 / <not released yet>
 
  - Fix: getgroup() test in Debian GNU/kFreeBSD (patch by Felix Geyer)
+ - Dynamic unit selection in hourly output instead of being fixed to KiB
 
 
 1.12 / 30-Aug-14
