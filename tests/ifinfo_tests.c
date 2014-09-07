@@ -476,7 +476,6 @@ END_TEST
 
 void add_ifinfo_tests(Suite *s)
 {
-	/* Ifinfo test cases */
 	TCase *tc_ifinfo = tcase_create("Ifinfo");
 	tcase_add_test(tc_ifinfo, parseifinfo_zero_change);
 	tcase_add_test(tc_ifinfo, parseifinfo_1kb_change);

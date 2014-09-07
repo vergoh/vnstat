@@ -154,7 +154,6 @@ END_TEST
 
 void add_config_tests(Suite *s)
 {
-	/* Config test cases */
 	TCase *tc_config = tcase_create("Config");
 	tcase_add_test(tc_config, validatecfg_default);
 	tcase_add_test(tc_config, printcfgfile_default);

@@ -336,7 +336,6 @@ END_TEST
 
 void add_misc_tests(Suite *s)
 {
-	/* Misc test cases */
 	TCase *tc_misc = tcase_create("Misc");
 	tcase_add_test(tc_misc, getbtime_does_not_return_zero);
 	tcase_add_loop_test(tc_misc, getunit_returns_something_with_all_cfg_combinations, 0, 2);

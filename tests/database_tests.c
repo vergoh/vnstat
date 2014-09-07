@@ -937,7 +937,6 @@ END_TEST
 
 void add_database_tests(Suite *s)
 {
-	/* Database test cases */
 	TCase *tc_db = tcase_create("Database");
 	tcase_add_test(tc_db, initdb_activates_database);
 	tcase_add_test(tc_db, cleanhours_really_cleans_hours);

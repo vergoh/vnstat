@@ -839,7 +839,6 @@ END_TEST
 
 void add_daemon_tests(Suite *s)
 {
-	/* Config test cases */
 	TCase *tc_daemon = tcase_create("Daemon");
 	tcase_add_test(tc_daemon, getuser_root_string);
 	tcase_add_test(tc_daemon, getuser_root_numeric);

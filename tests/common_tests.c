@@ -333,7 +333,6 @@ END_TEST
 
 void add_common_tests(Suite *s)
 {
-	/* Common test cases */
 	TCase *tc_common = tcase_create("Common");
 	tcase_add_test(tc_common, printe_options);
 	tcase_add_test(tc_common, logprint_options);
