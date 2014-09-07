@@ -842,11 +842,12 @@ void showweeks(void)
 
 void showhours(void)
 {
-	int i, k, s=0, hour, minute;
+	int i, k, s=0, hour, minute, div=1;
 	unsigned int j, tmax=0, dots=0;
 	uint64_t max=0;
 	char matrix[24][81]; /* width is one over 80 so that snprintf can write the end char */
 	struct tm *d;
+	char up[3];
 
 	/* tmax = time max = current hour */
 	/* max = transfer max */
@@ -874,14 +875,18 @@ void showhours(void)
 		}
 	}
 
+	/* determine unit to use for output */
+	i=1;
+	while (max / div > 9999)
+	{
+		i++;
+		div=div*1024;
+	}
+	snprintf(up, 4, "%s", getunit(i));
 
 	/* structure */
 	snprintf(matrix[11], 81, " -+--------------------------------------------------------------------------->");
-	if (cfg.unit==0) {
-		snprintf(matrix[14], 81, " h  rx (KiB)   tx (KiB)      h  rx (KiB)   tx (KiB)      h  rx (KiB)   tx (KiB)");
-	} else {
-		snprintf(matrix[14], 81, " h   rx (KB)    tx (KB)      h   rx (KB)    tx (KB)      h   rx (KB)    tx (KB)");
-	}
+	snprintf(matrix[14], 81, " h  rx (%1$3s)   tx (%1$3s)      h  rx (%1$3s)   tx (%1$3s)      h  rx (%1$3s)   tx (%1$3s)", up);
 
 	for (i=10;i>1;i--)
 		matrix[i][2]='|';
@@ -928,7 +933,7 @@ void showhours(void)
 	/* hours and traffic */
 	for (i=0;i<=7;i++) {
 		s=tmax+i+1;
-		snprintf(matrix[15+i], 81, "%02d %"DECCONV"10"PRIu64" %"DECCONV"10"PRIu64"    %02d %"DECCONV"10"PRIu64" %"DECCONV"10"PRIu64"    %02d %"DECCONV"10"PRIu64" %"DECCONV"10"PRIu64"",s%24, data.hour[s%24].rx, data.hour[s%24].tx, (s+8)%24, data.hour[(s+8)%24].rx, data.hour[(s+8)%24].tx, (s+16)%24, data.hour[(s+16)%24].rx, data.hour[(s+16)%24].tx);
+		snprintf(matrix[15+i], 81, "%02d %"DECCONV"10"PRIu64" %"DECCONV"10"PRIu64"    %02d %"DECCONV"10"PRIu64" %"DECCONV"10"PRIu64"    %02d %"DECCONV"10"PRIu64" %"DECCONV"10"PRIu64"",s%24, data.hour[s%24].rx/div, data.hour[s%24].tx/div, (s+8)%24, data.hour[(s+8)%24].rx/div, data.hour[(s+8)%24].tx/div, (s+16)%24, data.hour[(s+16)%24].rx/div, data.hour[(s+16)%24].tx/div);
 	}
 
 	/* clean \0 */
