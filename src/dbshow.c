@@ -877,7 +877,7 @@ void showhours(void)
 
 	/* determine unit to use for output */
 	i=1;
-	while (max / div > 9999)
+	while (max / div > 99999)
 	{
 		i++;
 		div=div*1024;
