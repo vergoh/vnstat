@@ -875,7 +875,8 @@ void showhours(void)
 		}
 	}
 
-	while (max/(pow(1024, div))>=100 && div<4) {
+	/* unit selection */
+	while (max/(pow(1024, div))>=100 && div<UNITCOUNT) {
 		div++;
 	}
 	strncpy_nt(unit, getunit(div), 4);
@@ -886,10 +887,8 @@ void showhours(void)
 
 	/* structure */
 	snprintf(matrix[11], 81, " -+--------------------------------------------------------------------------->");
-	if (cfg.unit==0) {
-		snprintf(matrix[14], 81, " h  rx (%1$s)   tx (%1$s)      h  rx (%1$s)   tx (%1$s)      h  rx (%1$s)   tx (%1$s)", unit);
-	} else {
-		snprintf(matrix[14], 81, " h   rx (%1$s)    tx (%1$s)      h   rx (%1$s)    tx (%1$s)      h   rx (%1$s)    tx (%1$s)", unit);
+	for (i=0;i<3;i++) {
+		snprintf(matrix[14]+(i*28), 25, " h %2$*1$srx (%3$s)  %2$*1$stx (%3$s)", 1+cfg.unit, " ", unit);
 	}
 
 	for (i=10;i>1;i--)
