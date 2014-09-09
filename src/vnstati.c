@@ -25,13 +25,14 @@ vnStat image output - Copyright (c) 2007-2014 Teemu Toivola <tst@iki.fi>
 int main(int argc, char *argv[])
 {
 	FILE *pngout;
-	int currentarg, cache=0, help=0, showheader=1, showedge=1;
-	char interface[32], dirname[512], filename[512], cfgfile[512];
+	int currentarg;
 	struct stat filestat;
+	IPARAMS p;
+	IMAGECONTENT ic;
 
-	noexit = 0; /* allow functions to exit in case of error */
-	debug = 0; /* debug disabled by default */
-	cfgfile[0] = '\0';
+	initiparams(&p);
+	ic.showheader = 1;
+	ic.showedge = 1;
 
 	/* early check for debug and config parameter */
 	if (argc > 1) {
@@ -40,10 +41,9 @@ int main(int argc, char *argv[])
 				debug = 1;
 			} else if (strcmp(argv[currentarg],"--config")==0) {
 				if (currentarg+1<argc) {
-					strncpy_nt(cfgfile, argv[currentarg+1], 512);
-					cfgfile[511] = '\0';
+					strncpy_nt(p.cfgfile, argv[currentarg+1], 512);
 					if (debug)
-						printf("Used config file: %s\n", cfgfile);
+						printf("Used config file: %s\n", p.cfgfile);
 					currentarg++;
 					continue;
 				} else {
@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 	}
 
 	/* load config if available */
-	if (!loadcfg(cfgfile)) {
+	if (!loadcfg(p.cfgfile)) {
 		return 1;
 	}
 	cfg.qmode = 0;
@@ -69,23 +69,21 @@ int main(int argc, char *argv[])
 			setlocale(LC_ALL, "");
 		}
 	}
-	strncpy_nt(interface, cfg.iface, 32);
-	strncpy_nt(dirname, cfg.dbdir, 512);
-	filename[0] = '\0';
-	current = time(NULL);
+	strncpy_nt(p.interface, cfg.iface, 32);
+	strncpy_nt(p.dirname, cfg.dbdir, 512);
+	ic.current = time(NULL);
 
 	/* parse parameters */
 	for (currentarg=1; currentarg<argc; currentarg++) {
 		if (debug)
 			printf("arg %d: \"%s\"\n",currentarg,argv[currentarg]);
 		if ((strcmp(argv[currentarg],"-?")==0) || (strcmp(argv[currentarg],"--help"))==0) {
-			help = 1;
+			p.help = 1;
 		} else if ((strcmp(argv[currentarg],"-i")==0) || (strcmp(argv[currentarg],"--iface"))==0) {
 			if (currentarg+1<argc) {
-				strncpy_nt(interface, argv[currentarg+1], 32);
-				interface[31] = '\0';
+				strncpy_nt(p.interface, argv[currentarg+1], 32);
 				if (debug)
-					printf("Used interface: \"%s\"\n", interface);
+					printf("Used interface: \"%s\"\n", p.interface);
 				currentarg++;
 				continue;
 			} else {
@@ -94,10 +92,9 @@ int main(int argc, char *argv[])
 			}
 		} else if ((strcmp(argv[currentarg],"-o")==0) || (strcmp(argv[currentarg],"--output"))==0) {
 			if (currentarg+1<argc) {
-				strncpy_nt(filename, argv[currentarg+1], 512);
-				filename[511] = '\0';
+				strncpy_nt(p.filename, argv[currentarg+1], 512);
 				if (debug)
-					printf("Output file: \"%s\"\n", filename);
+					printf("Output file: \"%s\"\n", p.filename);
 				currentarg++;
 				continue;
 			} else {
@@ -106,9 +103,9 @@ int main(int argc, char *argv[])
 			}
 		} else if ((strcmp(argv[currentarg],"-c")==0) || (strcmp(argv[currentarg],"--cache"))==0) {
 			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
-				cache = atoi(argv[currentarg+1]);
+				p.cache = atoi(argv[currentarg+1]);
 				if (debug)
-					printf("Cache time: %d minutes\n", cache);
+					printf("Cache time: %d minutes\n", p.cache);
 				currentarg++;
 				continue;
 			} else {
@@ -148,10 +145,9 @@ int main(int argc, char *argv[])
 			}
 		} else if ((strcmp(argv[currentarg],"--dbdir"))==0) {
 			if (currentarg+1<argc) {
-				strncpy_nt(dirname, argv[currentarg+1], 512);
-				dirname[511] = '\0';
+				strncpy_nt(p.dirname, argv[currentarg+1], 512);
 				if (debug)
-					printf("DatabaseDir: \"%s\"\n", dirname);
+					printf("DatabaseDir: \"%s\"\n", p.dirname);
 				currentarg++;
 				continue;
 			} else {
@@ -190,9 +186,9 @@ int main(int argc, char *argv[])
 		} else if ((strcmp(argv[currentarg],"-vs")==0) || (strcmp(argv[currentarg],"--vsummary"))==0) {
 			cfg.qmode = 52;
 		} else if ((strcmp(argv[currentarg],"-nh")==0) || (strcmp(argv[currentarg],"--noheader"))==0) {
-			showheader = 0;
+			ic.showheader = 0;
 		} else if ((strcmp(argv[currentarg],"-ne")==0) || (strcmp(argv[currentarg],"--noedge"))==0) {
-			showedge = 0;
+			ic.showedge = 0;
 		} else if ((strcmp(argv[currentarg],"-ru")==0) || (strcmp(argv[currentarg],"--rateunit"))==0) {
 			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
 				cfg.rateunit = atoi(argv[currentarg+1]);
@@ -221,72 +217,50 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (help || argc == 1) {
-		printf(" vnStat image output %s by Teemu Toivola <tst at iki dot fi>\n\n", VNSTATVERSION);
-		printf("         -h,  --hours          output hours\n");
-		printf("         -d,  --days           output days\n");
-		printf("         -m,  --months         output months\n");
-		printf("         -t,  --top10          output top10\n");
-		printf("         -s,  --summary        output summary\n");
-		printf("         -hs, --hsummary       output horizontal summary with hours\n");
-		printf("         -vs, --vsummary       output vertical summary with hours\n");
-		printf("         -nh, --noheader       remove header from output\n");
-		printf("         -ne, --noedge         remove edge from output\n");
-		printf("         -ru, --rateunit       swap configured rate unit\n");
-		printf("         -o,  --output         select output filename\n");
-		printf("         -c,  --cache          update output only when too old\n");
-		printf("         -i,  --iface          used interface (default: %s)\n", interface);
-		printf("         -?,  --help           this help\n");
-		printf("         -D,  --debug          show some additional debug information\n");
-		printf("         -v,  --version        show version\n");
-		printf("         --dbdir               select database directory\n");
-		printf("         --style               select output style (0-3)\n");
-		printf("         --locale              set locale\n");
-		printf("         --config              select config file\n");
-		printf("         --transparent         toggle background transparency\n\n");
-		printf("See also \"man vnstati\".\n");
+	if (p.help || argc == 1) {
+		showihelp(&p);
 		return 0;
 	}
 
 	/* validate input */
-	if (!cfg.qmode || filename[0]=='\0') {
+	if (!cfg.qmode || !strlen(p.filename)) {
 		printf("At least output mode and file parameter needs to be given.\n");
 		printf("Use -? or --help for getting short help.\n");
 		return 1;
 	}
 
 	/* check caching */
-	if (cache>0 && filename[0]!='-') {
-		if (stat(filename, &filestat)==0) {
-			if ((current-filestat.st_mtime)<(cache*60)) {
+	if (p.cache>0 && p.filename[0]!='-') {
+		if (stat(p.filename, &filestat)==0) {
+			if ((ic.current-filestat.st_mtime)<(p.cache*60)) {
 				if (debug)
-					printf("Using cached file (%d<%d).\n", (int)(current-filestat.st_mtime), cache*60);
+					printf("Using cached file (%d<%d).\n", (int)(ic.current-filestat.st_mtime), p.cache*60);
 				return 0;
 			}
 		} else {
 			/* abort if error is something else than file not found */
 			if (errno!=ENOENT) {
-				printf("Error: Getting status for file \"%s\" failed: %s (%d)\n", filename, strerror(errno), errno);
+				printf("Error: Getting status for file \"%s\" failed: %s (%d)\n", p.filename, strerror(errno), errno);
 				return 1;
 			}
 		}
 	}
 
 	/* load database and do merge if needed */
-	if (strstr(interface, "+")) {
-		if (!mergedb(interface, dirname)) {
+	if (strstr(p.interface, "+")) {
+		if (!mergedb(p.interface, p.dirname)) {
 			return 1;
 		}
 	} else {
-		if (readdb(interface, dirname)==1) {
+		if (readdb(p.interface, p.dirname)==1) {
 			return 1;
 		}
 	}
 
-	/* open file */	
-	if (filename[0]!='-') {
-		if ((pngout = fopen(filename, "w"))==NULL) {
-			printf("Error: Opening file \"%s\" for output failed: %s\n", filename, strerror(errno));
+	/* open file */
+	if (p.filename[0]!='-') {
+		if ((pngout = fopen(p.filename, "w"))==NULL) {
+			printf("Error: Opening file \"%s\" for output failed: %s\n", p.filename, strerror(errno));
 			return 1;
 		}
 	} else {
@@ -303,37 +277,37 @@ int main(int argc, char *argv[])
 	/* draw image */
 	switch (cfg.qmode) {
 		case 1:
-			drawdaily(showheader, showedge);
+			drawdaily(&ic);
 			break;
 		case 2:
-			drawmonthly(showheader, showedge);
+			drawmonthly(&ic);
 			break;
 		case 3:
-			drawtop(showheader, showedge);
+			drawtop(&ic);
 			break;
 		case 5:
 			if (cfg.slayout) {
-				drawsummary(0, showheader, showedge, 0);
+				drawsummary(&ic, 0, 0);
 			} else {
-				drawoldsummary(0, showheader, showedge, 0);
+				drawoldsummary(&ic, 0, 0);
 			}
 			break;
 		case 51:
 			if (cfg.slayout) {
-				drawsummary(1, showheader, showedge, cfg.hourlyrate);
+				drawsummary(&ic, 1, cfg.hourlyrate);
 			} else {
-				drawoldsummary(1, showheader, showedge, cfg.hourlyrate);
+				drawoldsummary(&ic, 1, cfg.hourlyrate);
 			}
 			break;
 		case 52:
 			if (cfg.slayout) {
-				drawsummary(2, showheader, showedge, cfg.hourlyrate);
+				drawsummary(&ic, 2, cfg.hourlyrate);
 			} else {
-				drawoldsummary(2, showheader, showedge, cfg.hourlyrate);
+				drawoldsummary(&ic, 2, cfg.hourlyrate);
 			}
 			break;
 		case 7:
-			drawhourly(showheader, showedge, cfg.hourlyrate);
+			drawhourly(&ic, cfg.hourlyrate);
 			break;
 		default:
 			break;
@@ -341,13 +315,13 @@ int main(int argc, char *argv[])
 
 	/* enable background transparency if needed */
 	if (cfg.transbg) {
-		gdImageColorTransparent(im, cbackground);
+		gdImageColorTransparent(ic.im, ic.cbackground);
 	}
 
 	/* write image */
-	gdImagePng(im, pngout);
+	gdImagePng(ic.im, pngout);
 	fclose(pngout);
-	gdImageDestroy(im);
+	gdImageDestroy(ic.im);
 
 	/* cleanup */
 	ibwflush();
@@ -356,4 +330,43 @@ int main(int argc, char *argv[])
 		printf("all done\n");
 
 	return 0;
+}
+
+void initiparams(IPARAMS *p)
+{
+	noexit = 0;		/* allow functions to exit in case of error */
+	debug = 0;		/* debug disabled by default */
+	p->interface[0] = '\0';
+	p->dirname[0] = '\0';
+	p->filename[0] = '\0';
+	p->cfgfile[0] = '\0';
+	p->cache = 0;
+	p->help = 0;
+}
+
+void showihelp(IPARAMS *p)
+{
+	printf(" vnStat image output %s by Teemu Toivola <tst at iki dot fi>\n\n", VNSTATVERSION);
+	printf("         -h,  --hours          output hours\n");
+	printf("         -d,  --days           output days\n");
+	printf("         -m,  --months         output months\n");
+	printf("         -t,  --top10          output top10\n");
+	printf("         -s,  --summary        output summary\n");
+	printf("         -hs, --hsummary       output horizontal summary with hours\n");
+	printf("         -vs, --vsummary       output vertical summary with hours\n");
+	printf("         -nh, --noheader       remove header from output\n");
+	printf("         -ne, --noedge         remove edge from output\n");
+	printf("         -ru, --rateunit       swap configured rate unit\n");
+	printf("         -o,  --output         select output filename\n");
+	printf("         -c,  --cache          update output only when too old\n");
+	printf("         -i,  --iface          used interface (default: %s)\n", p->interface);
+	printf("         -?,  --help           this help\n");
+	printf("         -D,  --debug          show some additional debug information\n");
+	printf("         -v,  --version        show version\n");
+	printf("         --dbdir               select database directory\n");
+	printf("         --style               select output style (0-3)\n");
+	printf("         --locale              set locale\n");
+	printf("         --config              select config file\n");
+	printf("         --transparent         toggle background transparency\n\n");
+	printf("See also \"man vnstati\".\n");
 }

@@ -1,20 +1,34 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
-void colorinit(void);
+#include <gd.h>        /* libgd2-dev libgd2 */
+#include <gdfontt.h>   /* gdFontGetTiny() */
+#include <gdfonts.h>   /* gdFontGetSmall() */
+#include <gdfontmb.h>  /* gdFontGetMediumBold() */
+#include <gdfontl.h>   /* gdFontGetLarge() */
+#include <gdfontg.h>   /* gdFontGetGiant() */
+
+typedef struct {
+	gdImagePtr im;
+	int cbackground, cedge, cheader, cheadertitle, cheaderdate, ctext, cline, clinel, cvnstat;
+	int crx, crxd, ctx, ctxd, cbgoffset, showheader, showedge;
+	time_t current;
+} IMAGECONTENT;
+
+void colorinit(IMAGECONTENT *ic);
 void colorinitcheck(char *color, int value, char *cfgtext, int *rgb);
-void layoutinit(char *title, int width, int height, int showheader, int showedge);
-void drawlegend(int x, int y);
-void drawbar(int x, int y, int len, uint64_t rx, int rxk, uint64_t tx, int txk, uint64_t max);
-void drawpole(int x, int y, int len, uint64_t rx, uint64_t tx, uint64_t max);
-void drawdonut(int x, int y, float rxp, float txp);
-void drawhours(int x, int y, int rate);
-void drawsummary(int type, int showheader, int showedge, int rate);
-void drawoldsummary(int type, int showheader, int showedge, int rate);
-void drawhourly(int showheader, int showedge, int rate);
-void drawdaily(int showheader, int showedge);
-void drawmonthly(int showheader, int showedge);
-void drawtop(int showheader, int showedge);
+void layoutinit(IMAGECONTENT *ic, char *title, int width, int height);
+void drawlegend(IMAGECONTENT *ic, int x, int y);
+void drawbar(IMAGECONTENT *ic, int x, int y, int len, uint64_t rx, int rxk, uint64_t tx, int txk, uint64_t max);
+void drawpole(IMAGECONTENT *ic, int x, int y, int len, uint64_t rx, uint64_t tx, uint64_t max);
+void drawdonut(IMAGECONTENT *ic, int x, int y, float rxp, float txp);
+void drawhours(IMAGECONTENT *ic, int x, int y, int rate);
+void drawsummary(IMAGECONTENT *ic, int type, int rate);
+void drawoldsummary(IMAGECONTENT *ic, int type, int rate);
+void drawhourly(IMAGECONTENT *ic, int rate);
+void drawdaily(IMAGECONTENT *ic);
+void drawmonthly(IMAGECONTENT *ic);
+void drawtop(IMAGECONTENT *ic);
 void hextorgb(char *input, int *rgb);
 void modcolor(int *rgb, int offset, int force);
 char *getimagevalue(uint64_t kb, int len, int rate);
