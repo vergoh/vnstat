@@ -31,8 +31,7 @@ int main(int argc, char *argv[])
 	IMAGECONTENT ic;
 
 	initiparams(&p);
-	ic.showheader = 1;
-	ic.showedge = 1;
+	initimagecontent(&ic);
 
 	/* early check for debug and config parameter */
 	if (argc > 1) {
@@ -189,6 +188,8 @@ int main(int argc, char *argv[])
 			ic.showheader = 0;
 		} else if ((strcmp(argv[currentarg],"-ne")==0) || (strcmp(argv[currentarg],"--noedge"))==0) {
 			ic.showedge = 0;
+		} else if ((strcmp(argv[currentarg],"-nl")==0) || (strcmp(argv[currentarg],"--nolegend"))==0) {
+			ic.showlegend = 0;
 		} else if ((strcmp(argv[currentarg],"-ru")==0) || (strcmp(argv[currentarg],"--rateunit"))==0) {
 			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
 				cfg.rateunit = atoi(argv[currentarg+1]);
@@ -356,6 +357,7 @@ void showihelp(IPARAMS *p)
 	printf("         -vs, --vsummary       output vertical summary with hours\n");
 	printf("         -nh, --noheader       remove header from output\n");
 	printf("         -ne, --noedge         remove edge from output\n");
+	printf("         -nl, --nolegend       remove legend from output\n");
 	printf("         -ru, --rateunit       swap configured rate unit\n");
 	printf("         -o,  --output         select output filename\n");
 	printf("         -c,  --cache          update output only when too old\n");

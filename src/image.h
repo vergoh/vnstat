@@ -11,10 +11,11 @@
 typedef struct {
 	gdImagePtr im;
 	int cbackground, cedge, cheader, cheadertitle, cheaderdate, ctext, cline, clinel, cvnstat;
-	int crx, crxd, ctx, ctxd, cbgoffset, showheader, showedge;
+	int crx, crxd, ctx, ctxd, cbgoffset, showheader, showedge, showlegend;
 	time_t current;
 } IMAGECONTENT;
 
+void initimagecontent(IMAGECONTENT *ic);
 void colorinit(IMAGECONTENT *ic);
 void colorinitcheck(char *color, int value, char *cfgtext, int *rgb);
 void layoutinit(IMAGECONTENT *ic, char *title, int width, int height);

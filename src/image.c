@@ -3,6 +3,13 @@
 #include "misc.h"
 #include "image.h"
 
+void initimagecontent(IMAGECONTENT *ic)
+{
+	ic->showheader = 1;
+	ic->showedge = 1;
+	ic->showlegend = 1;
+}
+
 void colorinit(IMAGECONTENT *ic)
 {
 	int rgb[3];
@@ -126,6 +133,9 @@ void layoutinit(IMAGECONTENT *ic, char *title, int width, int height)
 
 void drawlegend(IMAGECONTENT *ic, int x, int y)
 {
+	if (!ic->showlegend) {
+		return;
+	}
 
 	/* color legend */
 	gdImageString(ic->im, gdFontGetSmall(), x, y, (unsigned char*)"rx     tx", ic->ctext);
@@ -133,7 +143,6 @@ void drawlegend(IMAGECONTENT *ic, int x, int y)
 	gdImageRectangle(ic->im, x-12, y+4, x-6, y+10, ic->ctext);
 	gdImageFilledRectangle(ic->im, x+30, y+4, x+36, y+10, ic->ctx);
 	gdImageRectangle(ic->im, x+30, y+4, x+36, y+10, ic->ctext);
-
 }
 
 void drawbar(IMAGECONTENT *ic, int x, int y, int len, uint64_t rx, int rxk, uint64_t tx, int txk, uint64_t max)

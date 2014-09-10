@@ -43,9 +43,13 @@ vnstati \- png image output support for vnStat
 ] [
 .B \-nh
 ] [
+.B \-nl
+] [
 .B \-\-noedge
 ] [
 .B \-\-noheader
+] [
+.B \-\-nolegend
 ] [
 .B \-\-output
 .I file
@@ -140,6 +144,10 @@ Remove darker edges from around the image.
 .BI "-nh, --noheader"
 Remove header containing title and update time. Time of the previous update
 will still be visible in the lower right corner using a less visible color.
+
+.TP
+.BI "-nl, --nolegend"
+Remove legend containing rx and tx color mapping information from the image.
 
 .TP
 .BI "-o, --output " file
