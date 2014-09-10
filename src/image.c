@@ -10,6 +10,52 @@ void initimagecontent(IMAGECONTENT *ic)
 	ic->showlegend = 1;
 }
 
+void drawimage(IMAGECONTENT *ic)
+{
+	switch (cfg.qmode) {
+		case 1:
+			drawdaily(ic);
+			break;
+		case 2:
+			drawmonthly(ic);
+			break;
+		case 3:
+			drawtop(ic);
+			break;
+		case 5:
+			if (cfg.slayout) {
+				drawsummary(ic, 0, 0);
+			} else {
+				drawoldsummary(ic, 0, 0);
+			}
+			break;
+		case 51:
+			if (cfg.slayout) {
+				drawsummary(ic, 1, cfg.hourlyrate);
+			} else {
+				drawoldsummary(ic, 1, cfg.hourlyrate);
+			}
+			break;
+		case 52:
+			if (cfg.slayout) {
+				drawsummary(ic, 2, cfg.hourlyrate);
+			} else {
+				drawoldsummary(ic, 2, cfg.hourlyrate);
+			}
+			break;
+		case 7:
+			drawhourly(ic, cfg.hourlyrate);
+			break;
+		default:
+			break;
+	}
+
+	/* enable background transparency if needed */
+	if (cfg.transbg) {
+		gdImageColorTransparent(ic->im, ic->cbackground);
+	}
+}
+
 void colorinit(IMAGECONTENT *ic)
 {
 	int rgb[3];

@@ -8,6 +8,14 @@
 #include <gdfontl.h>   /* gdFontGetLarge() */
 #include <gdfontg.h>   /* gdFontGetGiant() */
 
+/* rectangle size */
+#define YBEGINOFFSET -1
+#define YENDOFFSET 6
+
+/* donut size */
+#define DOUTRAD 49
+#define DINRAD 15
+
 typedef struct {
 	gdImagePtr im;
 	int cbackground, cedge, cheader, cheadertitle, cheaderdate, ctext, cline, clinel, cvnstat;
@@ -16,6 +24,7 @@ typedef struct {
 } IMAGECONTENT;
 
 void initimagecontent(IMAGECONTENT *ic);
+void drawimage(IMAGECONTENT *ic);
 void colorinit(IMAGECONTENT *ic);
 void colorinitcheck(char *color, int value, char *cfgtext, int *rgb);
 void layoutinit(IMAGECONTENT *ic, char *title, int width, int height);

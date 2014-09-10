@@ -24,9 +24,7 @@ vnStat image output - Copyright (c) 2007-2014 Teemu Toivola <tst@iki.fi>
 
 int main(int argc, char *argv[])
 {
-	FILE *pngout;
 	int currentarg;
-	struct stat filestat;
 	IPARAMS p;
 	IMAGECONTENT ic;
 
@@ -223,110 +221,19 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	/* validate input */
-	if (!cfg.qmode || !strlen(p.filename)) {
-		printf("At least output mode and file parameter needs to be given.\n");
-		printf("Use -? or --help for getting short help.\n");
-		return 1;
-	}
-
-	/* check caching */
-	if (p.cache>0 && p.filename[0]!='-') {
-		if (stat(p.filename, &filestat)==0) {
-			if ((ic.current-filestat.st_mtime)<(p.cache*60)) {
-				if (debug)
-					printf("Using cached file (%d<%d).\n", (int)(ic.current-filestat.st_mtime), p.cache*60);
-				return 0;
-			}
-		} else {
-			/* abort if error is something else than file not found */
-			if (errno!=ENOENT) {
-				printf("Error: Getting status for file \"%s\" failed: %s (%d)\n", p.filename, strerror(errno), errno);
-				return 1;
-			}
-		}
-	}
-
-	/* load database and do merge if needed */
-	if (strstr(p.interface, "+")) {
-		if (!mergedb(p.interface, p.dirname)) {
-			return 1;
-		}
-	} else {
-		if (readdb(p.interface, p.dirname)==1) {
-			return 1;
-		}
-	}
-
-	/* open file */
-	if (p.filename[0]!='-') {
-		if ((pngout = fopen(p.filename, "w"))==NULL) {
-			printf("Error: Opening file \"%s\" for output failed: %s\n", p.filename, strerror(errno));
-			return 1;
-		}
-	} else {
-		/* output to stdout */
-		if ((pngout = fdopen(1, "w"))==NULL) {
-			printf("Error: Opening stdout for output failed: %s\n", strerror(errno));
-			return 1;
-		}
-	}
+	validateinput(&p);
+	handlecaching(&p, &ic);
+	handledatabase(&p);
+	openoutput(&p);
 
 	if (debug)
 		printf("Qmode: %d\n", cfg.qmode);
 
-	/* draw image */
-	switch (cfg.qmode) {
-		case 1:
-			drawdaily(&ic);
-			break;
-		case 2:
-			drawmonthly(&ic);
-			break;
-		case 3:
-			drawtop(&ic);
-			break;
-		case 5:
-			if (cfg.slayout) {
-				drawsummary(&ic, 0, 0);
-			} else {
-				drawoldsummary(&ic, 0, 0);
-			}
-			break;
-		case 51:
-			if (cfg.slayout) {
-				drawsummary(&ic, 1, cfg.hourlyrate);
-			} else {
-				drawoldsummary(&ic, 1, cfg.hourlyrate);
-			}
-			break;
-		case 52:
-			if (cfg.slayout) {
-				drawsummary(&ic, 2, cfg.hourlyrate);
-			} else {
-				drawoldsummary(&ic, 2, cfg.hourlyrate);
-			}
-			break;
-		case 7:
-			drawhourly(&ic, cfg.hourlyrate);
-			break;
-		default:
-			break;
-	}
-
-	/* enable background transparency if needed */
-	if (cfg.transbg) {
-		gdImageColorTransparent(ic.im, ic.cbackground);
-	}
-
-	/* write image */
-	gdImagePng(ic.im, pngout);
-	fclose(pngout);
-	gdImageDestroy(ic.im);
+	drawimage(&ic);
+	writeoutput(&p, &ic);
 
 	/* cleanup */
 	ibwflush();
-
 	if (debug)
 		printf("all done\n");
 
@@ -371,4 +278,72 @@ void showihelp(IPARAMS *p)
 	printf("         --config              select config file\n");
 	printf("         --transparent         toggle background transparency\n\n");
 	printf("See also \"man vnstati\".\n");
+}
+
+void validateinput(IPARAMS *p)
+{
+	if (!cfg.qmode || !strlen(p->filename)) {
+		printf("At least output mode and file parameter needs to be given.\n");
+		printf("Use -? or --help for getting short help.\n");
+		exit(EXIT_FAILURE);
+	}
+}
+
+void handlecaching(IPARAMS *p, IMAGECONTENT *ic)
+{
+	struct stat filestat;
+
+	if (p->cache==0 || p->filename[0]=='-') {
+		return;
+	}
+
+	if (stat(p->filename, &filestat)==0) {
+		if ((ic->current-filestat.st_mtime)<(p->cache*60)) {
+			if (debug)
+				printf("Using cached file (%d<%d).\n", (int)(ic->current-filestat.st_mtime), p->cache*60);
+			exit(EXIT_SUCCESS);
+		}
+	} else {
+		/* abort if error is something else than file not found */
+		if (errno!=ENOENT) {
+			printf("Error: Getting status for file \"%s\" failed: %s (%d)\n", p->filename, strerror(errno), errno);
+			exit(EXIT_FAILURE);
+		}
+	}
+}
+
+void handledatabase(IPARAMS *p)
+{
+	if (strstr(p->interface, "+")) {
+		if (!mergedb(p->interface, p->dirname)) {
+			exit(EXIT_FAILURE);
+		}
+	} else {
+		if (readdb(p->interface, p->dirname)==1) {
+			exit(EXIT_FAILURE);
+		}
+	}
+}
+
+void openoutput(IPARAMS *p)
+{
+	if (p->filename[0]!='-') {
+		if ((p->pngout = fopen(p->filename, "w"))==NULL) {
+			printf("Error: Opening file \"%s\" for output failed: %s\n", p->filename, strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+	} else {
+		/* output to stdout */
+		if ((p->pngout = fdopen(1, "w"))==NULL) {
+			printf("Error: Opening stdout for output failed: %s\n", strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+	}
+}
+
+void writeoutput(IPARAMS *p, IMAGECONTENT *ic)
+{
+	gdImagePng(ic->im, p->pngout);
+	fclose(p->pngout);
+	gdImageDestroy(ic->im);
 }
