@@ -3,6 +3,7 @@
  - Fix: getgroup() test in Debian GNU/kFreeBSD (patch by Felix Geyer)
  - Dynamic unit selection in hourly output instead of being fixed to KiB
  - Add -nl / --nolegend option to image output for hiding the rx/tx legend
+ - Add legend to hourly output image
 
 
 1.12 / 30-Aug-14

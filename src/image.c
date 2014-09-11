@@ -908,14 +908,17 @@ void drawoldsummary(IMAGECONTENT *ic, int type, int rate)
 
 void drawhourly(IMAGECONTENT *ic, int rate)
 {
-	int width, height;
+	int width, height, headermod;
 	char buffer[512];
 
 	width = 500;
 	height = 200;
 
 	if (!ic->showheader) {
+		headermod = 26;
 		height -= 22;
+	} else {
+		headermod = 0;
 	}
 
 	ic->im = gdImageCreate(width, height);
@@ -929,12 +932,8 @@ void drawhourly(IMAGECONTENT *ic, int rate)
 	}
 
 	layoutinit(ic, buffer, width, height);
-
-	if (ic->showheader) {
-		drawhours(ic, 12, 46, rate);
-	} else {
-		drawhours(ic, 12, 22, rate);
-	}
+	drawlegend(ic, 242, 183-headermod);
+	drawhours(ic, 12, 46-headermod, rate);
 }
 
 void drawdaily(IMAGECONTENT *ic)
