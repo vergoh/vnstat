@@ -82,11 +82,11 @@ as configuration file instead of using normal configuration file search
 functionality.
 
 .TP
-.BI "-d, --daemon"
+.B "-d, --daemon"
 Fork process to background and run as a daemon.
 
 .TP
-.BI "-D, --debug"
+.B "-D, --debug"
 Provide additional output for debug purposes. The process will stay
 attached to the terminal for output.
 
@@ -100,13 +100,13 @@ can be either the name of the group or a numerical group id. This option
 can only be used when the process is started as root.
 
 .TP
-.BI "--noadd"
+.B "--noadd"
 Disable automatic creation of new databases for all available interfaces
 if the daemon is started with zero database found. Pseudo interfaces
 lo, lo0 and sit0 are excluded from getting added.
 
 .TP
-.BI "-n, --nodaemon"
+.B "-n, --nodaemon"
 Stay in foreground attached to the current terminal and start the update
 process.
 
@@ -120,7 +120,7 @@ be started if the same
 is specified.
 
 .TP
-.BI "-s, --sync"
+.B "-s, --sync"
 Synchronize internal counters in the database with interface
 counters for all available interfaces before starting traffic monitoring.
 Use this option if the traffic between the previous shutdown
@@ -140,52 +140,52 @@ can be either the login of the user or a numerical user id. This option
 can only be used when the process is started as root.
 
 .TP
-.BI "-v, --version"
+.B "-v, --version"
 Show current version of the daemon executable.
 
 .TP
-.BI "-?, --help"
+.B "-?, --help"
 Show a command option summary.
 
 .SH CONFIGURATION
 
 The behaviour of the daemon is configured mainly using the configuration
 keywords
-.BR "UpdateInterval, PollInterval"
+.B "UpdateInterval, PollInterval"
 and
-.BR SaveInterval
+.B SaveInterval
 in the configuration file.
 
 .PP
-.BR UpdateInterval
+.B UpdateInterval
 defines in seconds how often the interface data is fetched and updated.
 This is similar to the run interval for alternative cron based updating.
 However, the difference is that the data doesn't directly get written to disk
 during updates.
 
 .PP
-.BR PollInterval
+.B PollInterval
 defines in seconds how often the list of available interfaces is checked
 for possible changes. The minimum value is 2 seconds and the maximum 60
 seconds.
-.BR PollInterval
+.B PollInterval
 also defines the resolution for other intervals.
 
 .PP
-.BR SaveInterval
+.B SaveInterval
 defines in minutes how often cached interface data is written to disk.
 A write can only occur during the updating of interface data. Therefore,
 the value should be a multiple of
-.BR UpdateInterval
+.B UpdateInterval
 with a maximum value of 60 minutes.
 
 .PP
 The default values of
-.BR UpdateInterval
+.B UpdateInterval
 30,
-.BR SaveInterval
+.B SaveInterval
 5 and
-.BR PollInterval
+.B PollInterval
 5 are usually suitable for most systems and provide a similar behaviour
 as cron based updating does but with a better resolution for interface
 changes and fast interfaces.
@@ -193,32 +193,32 @@ changes and fast interfaces.
 .PP
 For embedded and/or low power systems more tuned configurations are possible.
 In such cases if the interfaces are mostly static the
-.BR PollInterval
+.B PollInterval
 can be increased to around 10-30 seconds and
-.BR UpdateInterval
+.B UpdateInterval
 set to 60 seconds. Higher values up to 300 seconds are possible if the
 interface speed is 10 Mbit or less.
-.BR SaveInterval
+.B SaveInterval
 can be increased for example to 15, 30 or even 60 minutes depending on how
 often the data needs to be viewed.
 
 .SH SIGNALS
 
 The daemon is listening to signals
-.BR "SIGHUP, SIGINT"
+.B "SIGHUP, SIGINT"
 and
-.BR SIGTERM.
+.B SIGTERM.
 Sending the
-.BR SIGHUP
+.B SIGHUP
 signal to the daemon will cause cached data to be written to disk,
 a rescan of the database directory and a reload of settings from the
 configuration file. However, the pid file location will not be changed
 even if it's configuration setting has been modified.
 
 .PP
-.BR SIGTERM
+.B SIGTERM
 and
-.BR SIGINT
+.B SIGINT
 signals will cause the daemon to write all cached data to disk and
 then exit.
 

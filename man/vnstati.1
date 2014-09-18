@@ -101,7 +101,7 @@ as configuration file instead of using normal configuration file search
 functionality.
 
 .TP
-.BI "-d, --days"
+.B "-d, --days"
 Output traffic statistics on a daily basis for the last 30 days.
 
 .TP
@@ -112,11 +112,11 @@ as database directory instead of using the directory specified in the configurat
 file or the hardcoded default if no configuration file is available.
 
 .TP
-.BI "-h, --hours"
+.B "-h, --hours"
 Output traffic statistics on a hourly basis for the last 24 hours.
 
 .TP
-.BI "-hs, --hsummary"
+.B "-hs, --hsummary"
 Output traffic summary including hourly data using a horizontal layout.
 
 .TP
@@ -133,20 +133,20 @@ instead of using the locale setting specified in the configuration file or the s
 default if no configuration file is available.
 
 .TP
-.BI "-m, --months"
+.B "-m, --months"
 Output traffic statistics on a monthly basis for the last 12 months.
 
 .TP
-.BI "-ne, --noedge"
+.B "-ne, --noedge"
 Remove darker edges from around the image.
 
 .TP
-.BI "-nh, --noheader"
+.B "-nh, --noheader"
 Remove header containing title and update time. Time of the previous update
 will still be visible in the lower right corner using a less visible color.
 
 .TP
-.BI "-nl, --nolegend"
+.B "-nl, --nolegend"
 Remove legend containing rx and tx color mapping information from the image.
 
 .TP
@@ -156,7 +156,7 @@ Write png image to
 and exit. Output can be directed to stdout by giving "-" as filename.
 
 .TP
-.BI "-ru, --rateunit"
+.B "-ru, --rateunit"
 Change the configured rate unit. If rate has been configured to be shown in
 bytes then rate will be shown in bits if this option is present. In the same
 way, if rate has been configured to be shown in bits then rate will be shown
@@ -172,30 +172,30 @@ to 3 will show average traffic rate in all outputs where it is supported.
 Other values will show bar graphics instead.
 
 .TP
-.BI "-s, --summary"
+.B "-s, --summary"
 Output traffic statistics summary.
 
 .TP
-.BI "-t, --top10"
+.B "-t, --top10"
 Output all time top 10 traffic days.
 
 .TP
-.BI "--transparent"
+.B "--transparent"
 Toggle background color transparency depending of the TransparentBg setting
 in the configuration file. Alternatively 0 or 1 can be given as parameter
 for this option in order to either disable (0) or enable (1) transparency
 regardless of the configuration file setting.
 
 .TP
-.BI "-v, --version"
+.B "-v, --version"
 Show current version.
 
 .TP
-.BI "-vs, --vsummary"
+.B "-vs, --vsummary"
 Output traffic summary including hourly data using a vertical layout.
 
 .TP
-.BI "-?, --help"
+.B "-?, --help"
 Show a command option summary.
 
 .SH FILES
@@ -213,26 +213,26 @@ for more information.
 .SH EXAMPLES
 
 .TP
-.BI "vnstati -s -i eth0 -o /tmp/vnstat.png" 
+.B "vnstati -s -i eth0 -o /tmp/vnstat.png"
 Output traffic summary for interface eth0 to file /tmp/vnstat.png.
 
 .TP
-.BI "vnstati -vs -i eth0+eth1+eth2 -o /tmp/vnstat.png" 
+.B "vnstati -vs -i eth0+eth1+eth2 -o /tmp/vnstat.png"
 Output traffic summary with hourly data under the normal summary for a merge of
 interfaces eth0, eth1 and eth2 to file /tmp/vnstat.png.
 
 .TP
-.BI "vnstati -h -c 15 -o /tmp/vnstat_h.png"
+.B "vnstati -h -c 15 -o /tmp/vnstat_h.png"
 Output hourly traffic statistics for default interface to file /tmp/vnstat_h.png
 if the file has not been updated within the last 15 minutes.
 
 .TP
-.BI "vnstati -d -ne -nh -o -"
+.B "vnstati -d -ne -nh -o -"
 Output daily traffic statistics without displaying the header section and edges
 for default interface to standard output (stdout).
 
 .TP
-.BI "vnstati -m --config /home/me/vnstat.cfg -i -o -"
+.B "vnstati -m --config /home/me/vnstat.cfg -i -o -"
 Output monthly traffic statistics for default interface specified in configuration
 file /home/me/vnstat.cfg to standard output (stdout).
 
