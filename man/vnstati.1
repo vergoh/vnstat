@@ -9,6 +9,8 @@ vnstati \- png image output support for vnStat
 [
 .B \-cdhimostv?
 ] [
+.B \-\-altdate
+] [
 .B \-\-cache
 .I time
 ] [
@@ -19,6 +21,9 @@ vnstati \- png image output support for vnStat
 ] [
 .B \-\-dbdir
 .I directory
+] [
+.B \-\-headertext
+.I text
 ] [
 .B \-\-help
 ] [
@@ -87,6 +92,14 @@ can be outputted either to a file or to standard output.
 .SH OPTIONS
 
 .TP
+.B "--altdate"
+Use alternative date and time text location. The date and time text will be moved
+from the upper right header section to the lower left corner. This option
+will have no effect if
+.B "-nh, --noheader"
+has been selected.
+
+.TP
 .BI "-c, --cache " time
 Update output file only if at least
 .I time
@@ -110,6 +123,19 @@ Use
 .I directory
 as database directory instead of using the directory specified in the configuration
 file or the hardcoded default if no configuration file is available.
+
+.TP
+.BI "--headertext " text
+Show
+.I text
+in image header section instead of automatically generated interface identification.
+.I text
+is limited to 64 characters and may not get completely shown if longer than the width of
+the image. Use with
+.B "--altdate"
+if maximal space is needed. This option will have no effect if
+.B "-nh, --noheader"
+has been selected.
 
 .TP
 .B "-h, --hours"

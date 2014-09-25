@@ -19,7 +19,8 @@
 typedef struct {
 	gdImagePtr im;
 	int cbackground, cedge, cheader, cheadertitle, cheaderdate, ctext, cline, clinel, cvnstat;
-	int crx, crxd, ctx, ctxd, cbgoffset, showheader, showedge, showlegend;
+	int crx, crxd, ctx, ctxd, cbgoffset, showheader, showedge, showlegend, altdate;
+	char headertext[65];
 	time_t current;
 } IMAGECONTENT;
 

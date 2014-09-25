@@ -166,6 +166,19 @@ int main(int argc, char *argv[])
 			/* config has already been parsed earlier so nothing to do here */
 			currentarg++;
 			continue;
+		} else if ((strcmp(argv[currentarg],"--headertext"))==0) {
+			if (currentarg+1<argc) {
+				strncpy_nt(ic.headertext, argv[currentarg+1], 65);
+				if (debug)
+					printf("Header text: \"%s\"\n", ic.headertext);
+				currentarg++;
+				continue;
+			} else {
+				printf("Error: Text string parameter for --headertext missing.\n");
+				return 1;
+			}
+		} else if (strcmp(argv[currentarg],"--altdate")==0) {
+			ic.altdate = 1;
 		} else if ((strcmp(argv[currentarg],"-D")==0) || (strcmp(argv[currentarg],"--debug"))==0) {
 			debug = 1;
 		} else if ((strcmp(argv[currentarg],"-d")==0) || (strcmp(argv[currentarg],"--days"))==0) {
@@ -276,6 +289,8 @@ void showihelp(IPARAMS *p)
 	printf("         --style               select output style (0-3)\n");
 	printf("         --locale              set locale\n");
 	printf("         --config              select config file\n");
+	printf("         --altdate             use alternative date location\n");
+	printf("         --headertext          specify header text string\n");
 	printf("         --transparent         toggle background transparency\n\n");
 	printf("See also \"man vnstati\".\n");
 }

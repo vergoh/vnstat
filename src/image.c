@@ -8,6 +8,8 @@ void initimagecontent(IMAGECONTENT *ic)
 	ic->showheader = 1;
 	ic->showedge = 1;
 	ic->showlegend = 1;
+	ic->altdate = 0;
+	ic->headertext[0] = '\0';
 }
 
 void drawimage(IMAGECONTENT *ic)
@@ -150,31 +152,21 @@ void layoutinit(IMAGECONTENT *ic, char *title, int width, int height)
 		gdImageRectangle(ic->im, 0, 0, width-1, height-1, ic->cedge);
 	}
 
-	/* titlebox, title, date */
+	/* titlebox with title */
 	if (ic->showheader) {
-		if (ic->showedge) {
-			gdImageFilledRectangle(ic->im, 3, 3, width-4, 24, ic->cheader);
-			gdImageString(ic->im, gdFontGetGiant(), 12, 6, (unsigned char*)title, ic->cheadertitle);
-			gdImageString(ic->im, gdFontGetTiny(), width-(strlen(datestring)*gdFontGetTiny()->w+12), 10, (unsigned char*)datestring, ic->cheaderdate);
-		} else {
-			gdImageFilledRectangle(ic->im, 2, 2, width-3, 24, ic->cheader);
-			gdImageString(ic->im, gdFontGetGiant(), 12, 5, (unsigned char*)title, ic->cheadertitle);
-			gdImageString(ic->im, gdFontGetTiny(), width-(strlen(datestring)*gdFontGetTiny()->w+12), 9, (unsigned char*)datestring, ic->cheaderdate);
-		}
+		gdImageFilledRectangle(ic->im, 2+ic->showedge, 2+ic->showedge, width-3-ic->showedge, 24, ic->cheader);
+		gdImageString(ic->im, gdFontGetGiant(), 12, 5+ic->showedge, (unsigned char*)title, ic->cheadertitle);
+	}
+
+	/* date */
+	if (!ic->showheader || ic->altdate) {
+		gdImageString(ic->im, gdFontGetTiny(), 5+ic->showedge, height-12-ic->showedge, (unsigned char*)datestring, ic->cvnstat);
 	} else {
-		if (ic->showedge) {
-			gdImageString(ic->im, gdFontGetTiny(), 6, height-13, (unsigned char*)datestring, ic->cvnstat);
-		} else {
-			gdImageString(ic->im, gdFontGetTiny(), 5, height-12, (unsigned char*)datestring, ic->cvnstat);
-		}
+		gdImageString(ic->im, gdFontGetTiny(), width-(strlen(datestring)*gdFontGetTiny()->w+12), 9+ic->showedge, (unsigned char*)datestring, ic->cheaderdate);
 	}
 
 	/* generator */
-	if (ic->showedge) {
-		gdImageString(ic->im, gdFontGetTiny(), width-115, height-13, (unsigned char*)"vnStat / Teemu Toivola", ic->cvnstat);
-	} else {
-		gdImageString(ic->im, gdFontGetTiny(), width-114, height-12, (unsigned char*)"vnStat / Teemu Toivola", ic->cvnstat);
-	}
+	gdImageString(ic->im, gdFontGetTiny(), width-114-ic->showedge, height-12-ic->showedge, (unsigned char*)"vnStat / Teemu Toivola", ic->cvnstat);
 }
 
 void drawlegend(IMAGECONTENT *ic, int x, int y)
@@ -422,10 +414,14 @@ void drawsummary(IMAGECONTENT *ic, int type, int rate)
 
 	colorinit(ic);
 
-	if (strcmp(data.nick, data.interface)==0) {
-		snprintf(buffer, 512, "%s", data.interface);
+	if (strlen(ic->headertext)) {
+		strncpy_nt(buffer, ic->headertext, 65);
 	} else {
-		snprintf(buffer, 512, "%s (%s)", data.nick, data.interface);
+		if (strcmp(data.nick, data.interface)==0) {
+			snprintf(buffer, 512, "%s", data.interface);
+		} else {
+			snprintf(buffer, 512, "%s (%s)", data.nick, data.interface);
+		}
 	}
 
 	layoutinit(ic, buffer, width, height);
