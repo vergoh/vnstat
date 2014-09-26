@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # vnstat.cgi -- example cgi for vnStat image output
-# copyright (c) 2008-2011 Teemu Toivola <tst at iki dot fi>
+# copyright (c) 2008-2014 Teemu Toivola <tst at iki dot fi>
 #
 # based on mailgraph.cgi
 # copyright (c) 2000-2007 ETH Zurich
@@ -9,7 +9,7 @@
 # released under the GNU General Public License
 
 
-my $host = 'Some Server';
+my $servername = 'Some Server';
 my $scriptname = 'vnstat.cgi';
 
 # temporary directory where to store the images
@@ -18,7 +18,7 @@ my $tmp_dir = '/tmp/vnstatcgi';
 # location of vnstati
 my $vnstati_cmd = '/usr/bin/vnstati';
 
-# cache time in minutes, set 0 to disable
+# image cache time in minutes, set 0 to disable
 my $cachetime = '15';
 
 # shown interfaces, remove unnecessary lines
@@ -27,11 +27,18 @@ my @graphs = (
         { interface => 'eth1' },
 );
 
+# center images on page instead of left alignment, set 0 to disable
+my $aligncenter = '1';
+
+# page background color
+my $bgcolor = "white";
+
 
 ################
 
 
-my $VERSION = "1.3";
+my $VERSION = "1.4";
+my $cssbody = "body { background-color: $bgcolor; }";
 
 sub graph($$$)
 {
@@ -45,12 +52,12 @@ sub print_html()
 	print "Content-Type: text/html\n\n";
 
 	print <<HEADER;
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta name="Generator" content="vnstat.cgi $VERSION">
-<title>Traffic Statistics for $host</title>
+<title>Traffic Statistics for $servername</title>
 <style type="text/css">
 <!--
 a { text-decoration: underline; }
@@ -58,10 +65,10 @@ a:link { color: #b0b0b0; }
 a:visited { color: #b0b0b0; }
 a:hover { color: #000000; }
 small { font-size: 8px; color: #cbcbcb; }
+$cssbody
 -->
 </style>
 </head>
-<body bgcolor="#ffffff">
 HEADER
 
 	for my $n (0..$#graphs) {
@@ -82,12 +89,12 @@ sub print_fullhtml($)
 	print "Content-Type: text/html\n\n";
 
 	print <<HEADER;
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta name="Generator" content="vnstat.cgi $VERSION">
-<title>Traffic Statistics for $host</title>
+<title>Traffic Statistics for $servername</title>
 <style type="text/css">
 <!--
 a { text-decoration: underline; }
@@ -95,10 +102,10 @@ a:link { color: #b0b0b0; }
 a:visited { color: #b0b0b0; }
 a:hover { color: #000000; }
 small { font-size: 8px; color: #cbcbcb; }
+$cssbody
 -->
 </style>
 </head>
-<body bgcolor="#ffffff">
 HEADER
 
 	print "<table border=\"0\"><tr><td>\n";
@@ -138,6 +145,10 @@ sub send_image($)
 
 sub main()
 {
+	if($aligncenter != '0') {
+		$cssbody = "html { display: table; width: 100%; }\nbody { background-color: $bgcolor; display: table-cell; text-align: center; vertical-align: middle; }\ntable {  margin-left: auto; margin-right: auto; margin-top: 10px; }";
+	}
+
 	mkdir $tmp_dir, 0755 unless -d $tmp_dir;
 
 	my $img = $ENV{QUERY_STRING};
