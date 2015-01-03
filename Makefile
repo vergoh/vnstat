@@ -1,12 +1,12 @@
 # bin and man dirs for Linux
-BIN = $(DESTDIR)/usr/bin
-SBIN = $(DESTDIR)/usr/sbin
-MAN = $(DESTDIR)/usr/share/man
+BIN ?= $(DESTDIR)/usr/bin
+SBIN ?= $(DESTDIR)/usr/sbin
+MAN ?= $(DESTDIR)/usr/share/man
 
 # bin and man dirs for *BSD
-BIN_BSD = $(DESTDIR)/usr/local/bin
-SBIN_BSD = $(DESTDIR)/usr/local/sbin
-MAN_BSD = $(DESTDIR)/usr/local/man
+BIN_BSD ?= $(DESTDIR)/usr/local/bin
+SBIN_BSD ?= $(DESTDIR)/usr/local/sbin
+MAN_BSD ?= $(DESTDIR)/usr/local/man
 
 .PHONY: vnstat tests check all clean debug install uninstall bsdinstall bsduninstall dist
 
