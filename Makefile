@@ -83,7 +83,7 @@ install:
 	then echo install -m 644 man/vnstati.1 $(MAN)/man1; \
 	install -m 644 man/vnstati.1 $(MAN)/man1; \
 	fi
-	
+
 	@if [ -f "$(MAN)/man1/vnstat.1.gz" ]; \
 	then gzip -f9 $(MAN)/man1/vnstat.1; \
 	gzip -f9 $(MAN)/man1/vnstatd.1; \
@@ -158,7 +158,11 @@ bsdinstall:
 	mv -f $(ETC_BSD)/vnstat.conf.bsd $(ETC_BSD)/vnstat.conf; \
 	fi
 
-# update man page	
+# update man page
+        for m in vnstat.1 vnstati.1 vnstatd.1 vnstat.conf.5; do \
+        sed -e 's/lib/db/g' man/$$m > man/$$m.tmp; \
+        mv -f man/$$m.tmp man/$$m; \
+        done
 	install -m 644 man/vnstat.1 $(MAN_BSD)/man1
 	install -m 644 man/vnstatd.1 $(MAN_BSD)/man1
 	install -m 644 man/vnstat.conf.5 $(MAN_BSD)/man5
