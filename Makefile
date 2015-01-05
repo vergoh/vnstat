@@ -154,15 +154,15 @@ bsdinstall:
 	then echo "Installing config to $(ETC_BSD)/vnstat.conf"; \
 	install -d -m 755 $(ETC_BSD); \
 	install -m 644 cfg/vnstat.conf $(ETC_BSD)/vnstat.conf; \
-	sed -e 's/lib/db/g' $(ETC_BSD)/vnstat.conf >$(ETC_BSD)/vnstat.conf.bsd; \
+	sed -e 's:/lib/:/db/:g' $(ETC_BSD)/vnstat.conf >$(ETC_BSD)/vnstat.conf.bsd; \
 	mv -f $(ETC_BSD)/vnstat.conf.bsd $(ETC_BSD)/vnstat.conf; \
 	fi
 
 # update man page
-        for m in vnstat.1 vnstati.1 vnstatd.1 vnstat.conf.5; do \
-        sed -e 's/lib/db/g' man/$$m > man/$$m.tmp; \
-        mv -f man/$$m.tmp man/$$m; \
-        done
+	for m in vnstat.1 vnstati.1 vnstatd.1 vnstat.conf.5; do \
+	sed -e 's:/lib/:/db/:g' man/$$m > man/$$m.tmp; \
+	mv -f man/$$m.tmp man/$$m; \
+	done
 	install -m 644 man/vnstat.1 $(MAN_BSD)/man1
 	install -m 644 man/vnstatd.1 $(MAN_BSD)/man1
 	install -m 644 man/vnstat.conf.5 $(MAN_BSD)/man5
