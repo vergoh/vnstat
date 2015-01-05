@@ -248,9 +248,9 @@ configuration file or using the command line parameter.
 
 Updates needs to be executed at least as often as it is possible for the interface
 to generate enough traffic to overflow the kernel interface traffic counter. Otherwise,
-it is possible that some traffic won't be seen. This isn't an issue for 64 bit kernels
+it is possible that some traffic won't be seen. This isn't an issue for 64-bit kernels
 but at least one update every hour is always required in order to provide proper input.
-With 32 bit kernels, the maximum time between two updates depends on how fast the
+With 32-bit kernels, the maximum time between two updates depends on how fast the
 interface can transfer 4 GiB. Calculated theoretical times are:
 .RS
 .TS
@@ -262,7 +262,7 @@ l l.
 .RE
 
 However, for 1000 Mbit interfaces updating once every minute is usually a
-useable solution if faster updates can't be used.
+usable solution if faster updates can't be used.
 .PP
 Virtual and aliased interfaces cannot be monitored because the kernel doesn't
 provide traffic information for that type of interfaces. Such interfaces are

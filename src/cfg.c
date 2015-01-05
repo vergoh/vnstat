@@ -387,7 +387,7 @@ void validatecfg(void)
 		printe(PT_Config);
 	}
 
-	if (cfg.sampletime<0 || cfg.sampletime>600) {
+	if (cfg.sampletime<2 || cfg.sampletime>600) {
 		cfg.sampletime = DEFSAMPTIME;
 		snprintf(errorstring, 512, "Invalid value for Sampletime, resetting to \"%d\".", cfg.sampletime);
 		printe(PT_Config);

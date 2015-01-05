@@ -32,7 +32,7 @@ the daemon related keywords and the last section for the image output.
 .TP
 .B BootVariation
 Time in seconds how much the boot time reported by system kernel can variate
-between updates.
+between updates. Value range: 0..300
 
 .TP
 .B CheckDiskSpace
@@ -65,21 +65,22 @@ system default value. (vnstat and vnstati only)
 .B MaxBandwidth
 Maximum bandwidth for all interfaces. If the counted traffic exceeds
 the given value then the data is assumed to be invalid and rejected.
-Set to 0 in order to disable the feature. (vnstat and vnstatd only)
+Set to 0 in order to disable the feature. Value range: 0..10000
+(vnstat and vnstatd only)
 
 .TP
 .B MaxBW
 Same as MaxBandwidth but can be used for setting individual limits
 for selected interfaces. The name of the interface is specified directly
 after the MaxBW keyword without spaces. For example MaxBWeth0 for eth0
-and MaxBWppp0 for ppp0. (vnstat and vnstatd only)
+and MaxBWppp0 for ppp0. Value range: 0..10000 (vnstat and vnstatd only)
 
 .TP
 .B MonthRotate
 Day of month that months are expected to change. Usually set to
 1 but can be set to alternative values for example for tracking
 monthly billed traffic where the billing period doesn't start on
-the first day. (vnstat and vnstatd only)
+the first day. Value range: 1..28 (vnstat and vnstatd only)
 
 .TP
 .B OutputStyle
@@ -93,8 +94,7 @@ is supported. (vnstat and vnstati only)
 .B QueryMode
 Default query mode when no parameters are given. 0 = normal, 1 = days,
 2 = months, 3 = top10, 4 = exportdb, 5 = short, 6 = weeks, 7 = hours and
-8 = xml.
-(vnstat only)
+8 = xml. (vnstat only)
 
 .TP
 .B RateUnit
@@ -113,7 +113,8 @@ and transmitted traffic in hourly output. (vnstat only)
 
 .TP
 .B Sampletime
-Defines how many seconds the \-tr option will sample traffic. (vnstat only)
+Defines how many seconds the \-tr option will sample traffic.
+Value range: 2..600 (vnstat only)
 
 .TP
 .B TrafficlessDays
@@ -174,7 +175,8 @@ Specify log file path and name to be used if UseLogging is set to 1.
 .TP
 .B OfflineSaveInterval
 How often in minutes cached interface data is saved to file when all monitored
-interfaces are offline.
+interfaces are offline. Value range:
+.BR SaveInterval "..60"
 
 .TP
 .B PidFile
@@ -183,10 +185,13 @@ Specify pid file path and name to be used.
 .TP
 .B PollInterval
 How often in seconds interfaces are checked for status changes.
+Value range: 2..300
 
 .TP
 .B SaveInterval
 How often in minutes cached interface data is saved to file.
+Value range: (
+.BR UpdateInterval " / 60 )..60"
 
 .TP
 .B SaveOnStatusChange
@@ -203,7 +208,8 @@ This option can only be used when the process is started as root.
 
 .TP
 .B UpdateInterval
-How often in seconds the interface data is updated.
+How often in seconds the interface data is updated. Value range:
+.BR PollInterval "..300"
 
 .TP
 .B UseLogging
