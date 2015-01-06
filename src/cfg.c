@@ -262,6 +262,9 @@ int loadcfg(const char *cfgfile)
 		} else if ((fd=fopen("/etc/vnstat.conf", "r"))!=NULL) {
 			if (debug)
 				printf("Config file: /etc/vnstat.conf\n");
+		} else if ((fd=fopen("/usr/local/etc/vnstat.conf", "r"))!=NULL) {
+			if (debug)
+				printf("Config file: /usr/local/etc/vnstat.conf\n");
 		} else {
 			if (debug)
 				printf("Config file: none\n");
@@ -394,7 +397,7 @@ void validatecfg(void)
 		printe(PT_Config);
 	}
 
-	if (cfg.maxbw<0 || cfg.maxbw>10000) {
+	if (cfg.maxbw<0 || cfg.maxbw>BWMAX) {
 		cfg.maxbw = DEFMAXBW;
 		snprintf(errorstring, 512, "Invalid value for MaxBandwidth, resetting to \"%d\".", cfg.maxbw);
 		printe(PT_Config);

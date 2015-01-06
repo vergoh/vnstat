@@ -111,6 +111,9 @@ and most can be changed later from the config file.
 /* 0 = feature disabled */
 #define DEFMAXBW 100
 
+/* maximum allowed config value for bandwidth */
+#define BWMAX 10000
+
 /* how many seconds should sampling take by default */
 #define DEFSAMPTIME 5
 

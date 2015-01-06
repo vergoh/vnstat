@@ -45,6 +45,9 @@ int ibwloadcfg(const char *cfgfile)
 		} else if ((fd=fopen("/etc/vnstat.conf", "r"))!=NULL) {
 			if (debug)
 				printf("IBW Config file: /etc/vnstat.conf\n");
+		} else if ((fd=fopen("/usr/local/etc/vnstat.conf", "r"))!=NULL) {
+			if (debug)
+				printf("IBW Config file: /usr/local/etc/vnstat.conf\n");
 		} else {
 			if (debug)
 				printf("IBW Config file: none\n");
@@ -244,7 +247,7 @@ int ibwcfgread(FILE *fd)
 
 		/* add interface and limit to list if value is within limits */
 		ivalue = atoi(value);
-		if (ivalue<0 || ivalue>10000) {
+		if (ivalue<0 || ivalue>BWMAX) {
 			snprintf(errorstring, 512, "Invalid value \"%d\" for MaxBW%s, ignoring parameter.", ivalue, name);
 			printe(PT_Config);
 		} else {
