@@ -104,6 +104,9 @@ and most can be changed later from the config file.
 /* default locale */
 #define LOCALE "-"
 
+/* bandwidth detection, 0 = feature disabled */
+#define BWDETECT 1
+
 /* default maximum bandwidth (Mbit) for all interfaces */
 /* 0 = feature disabled */
 #define DEFMAXBW 100
@@ -214,7 +217,7 @@ typedef struct {
 	char logfile[512], pidfile[512];
 	char daemonuser[33], daemongroup[33];
 	short updateinterval, pollinterval, saveinterval, offsaveinterval, savestatus, uselogging;
-	short createdirs, updatefileowner;
+	short createdirs, updatefileowner, bwdetection;
 } CFG;
 
 /* internal interface information structure */
@@ -265,6 +268,8 @@ typedef struct {
 typedef struct ibwnode {
 	char interface[32];
 	int limit;
+	int fallback;
+	int retries;
 	struct ibwnode *next;
 } ibwnode;
 

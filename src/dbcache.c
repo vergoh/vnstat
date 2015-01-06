@@ -3,6 +3,7 @@
 #include "dbaccess.h"
 #include "dbcache.h"
 #include "cfg.h"
+#include "ibw.h"
 
 int cacheadd(const char *iface, int sync)
 {

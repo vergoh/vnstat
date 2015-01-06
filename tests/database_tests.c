@@ -6,6 +6,7 @@
 #include "dbcache.h"
 #include "dbshow.h"
 #include "cfg.h"
+#include "ibw.h"
 
 START_TEST(initdb_activates_database)
 {

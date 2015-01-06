@@ -5,6 +5,7 @@
 #include "dbaccess.h"
 #include "misc.h"
 #include "cfg.h"
+#include "ibw.h"
 
 START_TEST(parseifinfo_zero_change)
 {

@@ -1,5 +1,5 @@
 /*
-vnStat - Copyright (c) 2002-2014 Teemu Toivola <tst@iki.fi>
+vnStat - Copyright (c) 2002-2015 Teemu Toivola <tst@iki.fi>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ vnStat - Copyright (c) 2002-2014 Teemu Toivola <tst@iki.fi>
 #include "dbmerge.h"
 #include "misc.h"
 #include "cfg.h"
+#include "ibw.h"
 #include "vnstat.h"
 
 int main(int argc, char *argv[]) {
@@ -57,6 +58,9 @@ int main(int argc, char *argv[]) {
 
 	/* load config if available */
 	if (!loadcfg(p.cfgfile)) {
+		return 1;
+	}
+	if (!ibwloadcfg(p.cfgfile)) {
 		return 1;
 	}
 

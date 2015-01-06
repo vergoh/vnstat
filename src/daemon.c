@@ -4,6 +4,7 @@
 #include "dbcache.h"
 #include "misc.h"
 #include "cfg.h"
+#include "ibw.h"
 #include "daemon.h"
 
 void daemonize(void)
@@ -700,6 +701,7 @@ void handleintsignals(DSTATE *s)
 			if (loadcfg(s->cfgfile)) {
 				strncpy_nt(s->dirname, cfg.dbdir, 512);
 			}
+			ibwloadcfg(s->cfgfile);
 			break;
 
 		case SIGINT:

@@ -1,5 +1,5 @@
 /*
-vnStat image output - Copyright (c) 2007-2014 Teemu Toivola <tst@iki.fi>
+vnStat image output - Copyright (c) 2007-2015 Teemu Toivola <tst@iki.fi>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -246,7 +246,6 @@ int main(int argc, char *argv[])
 	writeoutput(&p, &ic);
 
 	/* cleanup */
-	ibwflush();
 	if (debug)
 		printf("all done\n");
 

@@ -2,6 +2,7 @@
 #include "config_tests.h"
 #include "common.h"
 #include "cfg.h"
+#include "ibw.h"
 
 START_TEST(validatecfg_default)
 {
@@ -45,6 +46,31 @@ START_TEST(loadcfg_not_a_cfgfile)
 }
 END_TEST
 
+START_TEST(ibwloadcfg_included_default)
+{
+	ck_assert_int_eq(ibwloadcfg("../cfg/vnstat.conf"), 1);
+}
+END_TEST
+
+START_TEST(ibwloadcfg_no_file)
+{
+	ck_assert_int_eq(ibwloadcfg(""), 1);
+}
+END_TEST
+
+START_TEST(ibwloadcfg_nonexistent_file)
+{
+	suppress_output();
+	ck_assert_int_eq(ibwloadcfg("_nosuchfile_"), 0);
+}
+END_TEST
+
+START_TEST(ibwloadcfg_not_a_cfgfile)
+{
+	ck_assert_int_eq(ibwloadcfg("Makefile"), 1);
+}
+END_TEST
+
 START_TEST(ibwget_with_empty_list_and_no_maxbw)
 {
 	cfg.maxbw = 0;
@@ -56,6 +82,15 @@ START_TEST(ibwget_with_empty_list_and_maxbw)
 {
 	cfg.maxbw = 10;
 	ck_assert_int_eq(ibwget("does_not_exist"), 10);
+}
+END_TEST
+
+START_TEST(ibwget_from_config)
+{
+	ck_assert_int_eq(loadcfg("../cfg/vnstat.conf"), 1);
+	ck_assert_int_eq(ibwloadcfg("../cfg/vnstat.conf"), 1);
+	cfg.maxbw = 10;
+	ck_assert_int_eq(ibwget("ethnone"), 8);
 }
 END_TEST
 
@@ -161,8 +196,13 @@ void add_config_tests(Suite *s)
 	tcase_add_test(tc_config, loadcfg_no_file);
 	tcase_add_test(tc_config, loadcfg_nonexistent_file);
 	tcase_add_test(tc_config, loadcfg_not_a_cfgfile);
+	tcase_add_test(tc_config, ibwloadcfg_included_default);
+	tcase_add_test(tc_config, ibwloadcfg_no_file);
+	tcase_add_test(tc_config, ibwloadcfg_nonexistent_file);
+	tcase_add_test(tc_config, ibwloadcfg_not_a_cfgfile);
 	tcase_add_test(tc_config, ibwget_with_empty_list_and_no_maxbw);
 	tcase_add_test(tc_config, ibwget_with_empty_list_and_maxbw);
+	tcase_add_test(tc_config, ibwget_from_config);
 	tcase_add_test(tc_config, ibwadd_single_success);
 	tcase_add_test(tc_config, ibwadd_multi_success);
 	tcase_add_test(tc_config, ibwadd_update_success);
