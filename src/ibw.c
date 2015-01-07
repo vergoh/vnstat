@@ -43,6 +43,7 @@ int ibwadd(const char *iface, int limit)
 		n->limit = limit;
 		n->fallback = limit;
 		n->retries = 0;
+		n->detected = 0;
 
 	} else {
 
@@ -50,7 +51,6 @@ int ibwadd(const char *iface, int limit)
 		while (p != NULL) {
 			if (strcmp(p->interface, iface)==0) {
 				p->limit = limit;
-				p->retries = 0;
 				return 1;
 			}
 			p = p->next;
@@ -69,6 +69,7 @@ int ibwadd(const char *iface, int limit)
 		n->limit = limit;
 		n->fallback = limit;
 		n->retries = 0;
+		n->detected = 0;
 	}
 
 	return 1;
@@ -84,21 +85,37 @@ void ibwlist(void)
 		return;
 	}
 
-	printf("ibw:\n");
+	printf("ibw: ");
 	while (p != NULL) {
-		printf(" %2d: \"%s\" \"%d\"\n", i, p->interface, p->limit);
+		printf("%2d: i\"%s\" l%d f%d r%d d%ld  ", i, p->interface, p->limit, p->fallback, p->retries, (long)p->detected);
 		p = p->next;
 		i++;
 	}
+	printf("\n");
 }
 
 int ibwget(const char *iface)
 {
 	ibwnode *p = ifacebw;
+	int speed;
 
 	/* search for interface specific limit */
 	while (p != NULL) {
 		if (strcasecmp(p->interface, iface)==0) {
+
+			if (cfg.bwdetection && p->retries<5) {
+				if (!p->detected) {
+					speed = getifspeed(iface);
+					if (speed > 0) {
+						p->limit = speed;
+						p->retries = 0;
+						p->detected = 1;
+						return speed;
+					}
+					p->retries++;
+				}
+			}
+
 			if (p->limit>0) {
 				return p->limit;
 			} else {
@@ -108,12 +125,38 @@ int ibwget(const char *iface)
 		p = p->next;
 	}
 
+	if (cfg.bwdetection) {
+		ibwadd(iface, cfg.maxbw);
+		p = ibwgetnode(iface);
+		speed = getifspeed(iface);
+		if (speed > 0) {
+			p->limit = speed;
+			p->retries = 0;
+			p->detected = 1;
+			return speed;
+		}
+		p->retries++;
+	}
+
 	/* return default limit if specified */
 	if (cfg.maxbw>0) {
 		return cfg.maxbw;
 	} else {
 		return -1;
 	}
+}
+
+ibwnode *ibwgetnode(const char *iface)
+{
+	ibwnode *p = ifacebw;
+
+	while (p != NULL) {
+		if (strcasecmp(p->interface, iface)==0) {
+			return p;
+		}
+		p = p->next;
+	}
+	return NULL;
 }
 
 void ibwflush(void)

@@ -167,6 +167,7 @@ int main(int argc, char *argv[])
 			if (debug) {
 				debugtimestamp();
 				cacheshow();
+				ibwlist();
 			}
 
 			/* fill database list if cache is empty */

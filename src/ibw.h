@@ -5,6 +5,7 @@ int ibwloadcfg(const char *cfgfile);
 int ibwadd(const char *iface, int limit);
 void ibwlist(void);
 int ibwget(const char *iface);
+ibwnode *ibwgetnode(const char *iface);
 void ibwflush(void);
 int ibwcfgread(FILE *fd);
 

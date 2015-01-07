@@ -273,6 +273,7 @@ typedef struct ibwnode {
 	int limit;
 	int fallback;
 	int retries;
+	time_t detected;
 	struct ibwnode *next;
 } ibwnode;
 

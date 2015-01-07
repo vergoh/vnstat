@@ -490,10 +490,10 @@ int getifspeed(const char *iface)
 	}
 
 #endif
+	if (debug)
+		printf("getifspeed: \"%s\": %d\n", iface, speed);
 
 	if (speed < 0 || speed > 1000000) {
-		if (debug)
-			printf("Interface \"%s\" reports %d, returning 0.\n", iface, speed);
 		speed = 0;
 	}
 	return speed;
