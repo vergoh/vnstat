@@ -39,7 +39,7 @@ dbaccess.o: dbaccess.c dbaccess.h common.h
 dbcache.o: dbcache.c dbcache.h dbaccess.h common.h ifinfo.h cfg.h ibw.h
 dbshow.o: dbshow.c dbshow.h misc.h common.h
 cfg.o: cfg.c cfg.h common.h
-ibw.o: ibw.c ibw.h common.h
+ibw.o: ibw.c ibw.h cfg.h ifinfo.h common.h
 misc.o: misc.c misc.h common.h
 daemon.o: daemon.c daemon.h common.h ifinfo.h dbaccess.h dbcache.h misc.h cfg.h ibw.h
 

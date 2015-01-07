@@ -32,7 +32,7 @@ dbcache.o: dbcache.c dbcache.h dbaccess.h common.h ifinfo.h cfg.h ibw.h
 common.o: common.c common.h
 misc.o: misc.c misc.h common.h
 cfg.o: cfg.c cfg.h common.h
-ibw.o: ibw.c ibw.h common.h
+ibw.o: ibw.c ibw.h cfg.h ifinfo.h common.h
 daemon.o: daemon.c daemon.h common.h ifinfo.h dbaccess.h dbcache.h misc.h cfg.h ibw.h
 image.o: image.c image.h vnstati.h common.h misc.h
 

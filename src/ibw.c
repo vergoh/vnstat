@@ -1,59 +1,18 @@
 #include "common.h"
+#include "cfg.h"
+#include "ifinfo.h"
 #include "ibw.h"
 
 int ibwloadcfg(const char *cfgfile)
 {
 	FILE *fd;
-	char buffer[512];
-	int i, tryhome;
+	int ret;
 
 	ifacebw = NULL;
 
-	/* clear buffer */
-	for (i=0; i<512; i++) {
-		buffer[i] = '\0';
-	}
-
-	/* possible config files: 1) --config   2) $HOME/.vnstatrc   3) /etc/vnstat.conf   4) none */
-
-	if (cfgfile[0]!='\0') {
-
-		/* try to open given file */
-		if ((fd=fopen(cfgfile, "r"))!=NULL) {
-			if (debug)
-				printf("IBW Config file: --config\n");
-		} else {
-			snprintf(errorstring, 512, "Unable to open given ibw config file \"%s\": %s\n", cfgfile, strerror(errno));
-			printe(PT_Error);
-			return 0;
-		}
-
-	} else {
-
-		if (getenv("HOME")) {
-			strncpy_nt(buffer, getenv("HOME"), 500);
-			strcat(buffer, "/.vnstatrc");
-			tryhome = 1;
-		} else {
-			tryhome = 0;
-		}
-
-		/* try to open first available config file */
-		if (tryhome && (fd=fopen(buffer, "r"))!=NULL) {
-			if (debug)
-				printf("IBW Config file: $HOME/.vnstatrc\n");
-		} else if ((fd=fopen("/etc/vnstat.conf", "r"))!=NULL) {
-			if (debug)
-				printf("IBW Config file: /etc/vnstat.conf\n");
-		} else if ((fd=fopen("/usr/local/etc/vnstat.conf", "r"))!=NULL) {
-			if (debug)
-				printf("IBW Config file: /usr/local/etc/vnstat.conf\n");
-		} else {
-			if (debug)
-				printf("IBW Config file: none\n");
-			return 1;
-		}
-	}
+	ret = opencfgfile(cfgfile, &fd);
+	if (ret != 2)
+		return ret;
 
 	rewind(fd);
 	ibwcfgread(fd);

@@ -162,8 +162,7 @@ void printcfgfile(void)
 int loadcfg(const char *cfgfile)
 {
 	FILE *fd;
-	char buffer[512];
-	int i, j, k, linelen, cfglen, tryhome;
+	int i, j, k, linelen, cfglen;
 
 	char value[512], cfgline[512];
 
@@ -223,54 +222,12 @@ int loadcfg(const char *cfgfile)
 		{ 0, 0, 0, 0, 0 }
 	};
 
-	/* clear buffer */
-	for (i=0; i<512; i++) {
-		buffer[i] = '\0';
-	}
-
 	/* load default config */
 	defaultcfg();
 
-	/* possible config files: 1) --config   2) $HOME/.vnstatrc   3) /etc/vnstat.conf   4) none */
-
-	if (cfgfile[0]!='\0') {
-
-		/* try to open given file */
-		if ((fd=fopen(cfgfile, "r"))!=NULL) {
-			if (debug)
-				printf("Config file: --config\n");
-		} else {
-			snprintf(errorstring, 512, "Unable to open given config file \"%s\": %s\n", cfgfile, strerror(errno));
-			printe(PT_Error);
-			return 0;
-		}
-
-	} else {
-
-		if (getenv("HOME")) {
-			strncpy_nt(buffer, getenv("HOME"), 500);
-			strcat(buffer, "/.vnstatrc");
-			tryhome = 1;
-		} else {
-			tryhome = 0;
-		}
-
-		/* try to open first available config file */
-		if (tryhome && (fd=fopen(buffer, "r"))!=NULL) {
-			if (debug)
-				printf("Config file: $HOME/.vnstatrc\n");
-		} else if ((fd=fopen("/etc/vnstat.conf", "r"))!=NULL) {
-			if (debug)
-				printf("Config file: /etc/vnstat.conf\n");
-		} else if ((fd=fopen("/usr/local/etc/vnstat.conf", "r"))!=NULL) {
-			if (debug)
-				printf("Config file: /usr/local/etc/vnstat.conf\n");
-		} else {
-			if (debug)
-				printf("Config file: none\n");
-			return 1;
-		}
-	}
+	i = opencfgfile(cfgfile, &fd);
+	if (i != 2)
+		return i;
 
 	rewind(fd);
 
@@ -587,4 +544,58 @@ void defaultcfg(void)
 	strncpy_nt(cfg.crxd, CRXD, 8);
 	strncpy_nt(cfg.ctx, CTX, 8);
 	strncpy_nt(cfg.ctxd, CTXD, 8);
+}
+
+int opencfgfile(const char *cfgfile, FILE **fd)
+{
+	char buffer[512];
+	int i, tryhome;
+
+	/* clear buffer */
+	for (i=0; i<512; i++) {
+		buffer[i] = '\0';
+	}
+
+	/* possible config files: 1) --config   2) $HOME/.vnstatrc   3) /etc/vnstat.conf   4) none */
+
+	if (cfgfile[0]!='\0') {
+
+		/* try to open given file */
+		if ((*fd=fopen(cfgfile, "r"))!=NULL) {
+			if (debug)
+				printf("Config file: --config\n");
+		} else {
+			snprintf(errorstring, 512, "Unable to open given config file \"%s\": %s\n", cfgfile, strerror(errno));
+			printe(PT_Error);
+			return 0;
+		}
+
+	} else {
+
+		if (getenv("HOME")) {
+			strncpy_nt(buffer, getenv("HOME"), 500);
+			strcat(buffer, "/.vnstatrc");
+			tryhome = 1;
+		} else {
+			tryhome = 0;
+		}
+
+		/* try to open first available config file */
+		if (tryhome && (*fd=fopen(buffer, "r"))!=NULL) {
+			if (debug)
+				printf("Config file: $HOME/.vnstatrc\n");
+		} else if ((*fd=fopen("/etc/vnstat.conf", "r"))!=NULL) {
+			if (debug)
+				printf("Config file: /etc/vnstat.conf\n");
+		} else if ((*fd=fopen("/usr/local/etc/vnstat.conf", "r"))!=NULL) {
+			if (debug)
+				printf("Config file: /usr/local/etc/vnstat.conf\n");
+		} else {
+			if (debug)
+				printf("Config file: none\n");
+			return 1;
+		}
+	}
+
+	return 2;
 }
