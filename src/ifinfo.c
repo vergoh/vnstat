@@ -418,8 +418,10 @@ int getifdata(const char *iface, struct if_data *ifd)
 	}
 	for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
 		if ((strcmp(ifa->ifa_name, iface) == 0) && (ifa->ifa_addr->sa_family == AF_LINK)) {
-			ifd = ifa->ifa_data;
-			check = 1;
+			if (ifa->ifa_data != NULL) {
+				memcpy(ifd, ifa->ifa_data, sizeof(struct if_data));
+				check = 1;
+			}
 			break;
 		}
 	}
@@ -430,18 +432,18 @@ int getifdata(const char *iface, struct if_data *ifd)
 
 int readifaddrs(const char *iface)
 {
-	struct if_data *ifd = NULL;
+	struct if_data ifd;
 
-	if (!getifdata(iface, ifd)) {
+	if (!getifdata(iface, &ifd)) {
 		if (debug)
 			printf("Requested interface \"%s\" not found.\n", iface);
 		return 0;
 	} else {
 		strncpy_nt(ifinfo.name, iface, 32);
-		ifinfo.rx = ifd->ifi_ibytes;
-		ifinfo.tx = ifd->ifi_obytes;
-		ifinfo.rxp = ifd->ifi_ipackets;
-		ifinfo.txp = ifd->ifi_opackets;
+		ifinfo.rx = ifd.ifi_ibytes;
+		ifinfo.tx = ifd.ifi_obytes;
+		ifinfo.rxp = ifd.ifi_ipackets;
+		ifinfo.txp = ifd.ifi_opackets;
 		ifinfo.filled = 1;
 	}
 
@@ -477,19 +479,21 @@ int getifspeed(const char *iface)
 
 #elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__)  || defined(__FreeBSD_kernel__)
 
-	struct if_data *ifd = NULL;
+	struct if_data ifd;
 
-	if (!getifdata(iface, ifd)) {
+	if (!getifdata(iface, &ifd)) {
 		if (debug)
 			printf("Requested interface \"%s\" not found.\n", iface);
 		return 0;
 	} else {
-		speed = ifd->ifi_baudrate;
+		speed = ifd.ifi_baudrate;
 	}
 
 #endif
 
 	if (speed < 0 || speed > 1000000) {
+		if (debug)
+			printf("Interface \"%s\" reports %d, returning 0.\n", iface, speed);
 		speed = 0;
 	}
 	return speed;
