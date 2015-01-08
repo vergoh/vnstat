@@ -106,6 +106,7 @@ and most can be changed later from the config file.
 
 /* bandwidth detection, 0 = feature disabled */
 #define BWDETECT 1
+#define BWDETECTINTERVAL 5
 
 /* default maximum bandwidth (Mbit) for all interfaces */
 /* 0 = feature disabled */
@@ -220,7 +221,7 @@ typedef struct {
 	char logfile[512], pidfile[512];
 	char daemonuser[33], daemongroup[33];
 	short updateinterval, pollinterval, saveinterval, offsaveinterval, savestatus, uselogging;
-	short createdirs, updatefileowner, bwdetection;
+	short createdirs, updatefileowner, bwdetection, bwdetectioninterval;
 } CFG;
 
 /* internal interface information structure */

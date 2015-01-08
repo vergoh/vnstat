@@ -106,6 +106,10 @@ void printcfgfile(void)
 	printf("# how often (in minutes) data is saved when all interface are offline\n");
 	printf("OfflineSaveInterval %d\n\n", cfg.offsaveinterval);
 
+	printf("# how often (in minutes) bandwidth detection is redone when\n");
+	printf("# BandwidthDetection is enabled (0 = disabled)\n");
+	printf("BandwidthDetectionInterval %d\n\n", cfg.bwdetectioninterval);
+
 	printf("# force data save when interface status changes (1 = enabled, 0 = disabled)\n");
 	printf("SaveOnStatusChange %d\n\n", cfg.savestatus);
 
@@ -196,6 +200,7 @@ int loadcfg(const char *cfgfile)
 		{ "PollInterval", 0, &cfg.pollinterval, 0, 0 },
 		{ "SaveInterval", 0, &cfg.saveinterval, 0, 0 },
 		{ "OfflineSaveInterval", 0, &cfg.offsaveinterval, 0, 0 },
+		{ "BandwidthDetectionInterval", 0, &cfg.bwdetectioninterval, 0, 0 },
 		{ "SaveOnStatusChange", 0, &cfg.savestatus, 0, 0 },
 		{ "UseLogging", 0, &cfg.uselogging, 0, 0 },
 		{ "CreateDirs", 0, &cfg.createdirs, 0, 0 },
@@ -314,6 +319,8 @@ int loadcfg(const char *cfgfile)
 		} /* if */
 
 	} /* while */
+
+	fclose(fd);
 
 	/* validate config */
 	validatecfg();
@@ -485,6 +492,12 @@ void validatecfg(void)
 		snprintf(errorstring, 512, "Invalid value for BandwidthDetection, resetting to \"%d\".", cfg.bwdetection);
 		printe(PT_Config);
 	}
+
+	if (cfg.bwdetectioninterval<0 || cfg.bwdetectioninterval>30) {
+		cfg.bwdetectioninterval = BWDETECTINTERVAL;
+		snprintf(errorstring, 512, "Invalid value for BandwidthDetectionInterval, resetting to \"%d\".", cfg.bwdetectioninterval);
+		printe(PT_Config);
+	}
 }
 
 void defaultcfg(void)
@@ -499,6 +512,7 @@ void defaultcfg(void)
 	cfg.ostyle = OSTYLE;
 	cfg.rateunit = RATEUNIT;
 	cfg.bwdetection = BWDETECT;
+	cfg.bwdetectioninterval = BWDETECTINTERVAL;
 	cfg.maxbw = DEFMAXBW;
 	cfg.spacecheck = USESPACECHECK;
 	cfg.flock = USEFLOCK;
