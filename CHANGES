@@ -1,12 +1,17 @@
 1.13 / <not released yet>
 
  - Fix: getgroup() test in Debian GNU/kFreeBSD (patch by Felix Geyer)
+ - Fix: struct if_data usage after freeifaddrs() call in BSD
  - Dynamic unit selection in hourly output instead of being fixed to KiB
  - New options in image output (vnstati)
      * -nl / --nolegend for hiding the rx/tx legend
      * --altdate for using alternative date and time text location
      * --headertext for using custom text string in image header section
  - Add legend to hourly output image
+ - Document keyword value ranges in configuration file man page
+ - Import Makefile improvements from OpenBSD
+   (pull requests by Jasper Lievisse Adriaanse)
+ - Automatic interface bandwidth detection, BandwidthDetection in config
 
 
 1.12 / 30-Aug-14
