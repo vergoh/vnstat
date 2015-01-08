@@ -30,6 +30,18 @@ the daemon related keywords and the last section for the image output.
 .SH COMMON KEYWORDS
 
 .TP
+.B BandwidthDetection
+Try to automatically detect
+.B MaxBandwidth
+value for each monitored interface. Mostly only ethernet interfaces support
+this feature.
+.B MaxBandwidth
+or interface specfic
+.B MaxBW
+will be used as fallback value if detection fails.
+1 = enabled, 0 = disabled. (vnstat and vnstatd only)
+
+.TP
 .B BootVariation
 Time in seconds how much the boot time reported by system kernel can variate
 between updates. Value range: 0..300
@@ -134,6 +146,14 @@ file locking may cause database corruption if several processes are trying
 to write to the file at the same time.
 
 .SH DAEMON RELATED KEYWORDS
+
+.TP
+.B BandwidthDetectionInterval
+How often in minutes interface specific detection of
+.B MaxBandwidth
+is done for detecting possible changes when
+.B BandwidthDetection
+is enabled. Can be disabled by setting to 0. Value range: 0..30
 
 .TP
 .B CreateDirs
