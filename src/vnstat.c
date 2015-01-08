@@ -279,7 +279,7 @@ int main(int argc, char *argv[]) {
 			p.delete=1;
 			p.query=0;
 		} else if (strcmp(argv[currentarg],"--iflist")==0) {
-			getiflist(&p.ifacelist);
+			getiflist(&p.ifacelist, 1);
 			printf("Available interfaces: %s\n", p.ifacelist);
 			free(p.ifacelist);
 			return 0;
@@ -355,7 +355,7 @@ int main(int argc, char *argv[]) {
 
 		/* give more help if there's no database */
 		if (p.files==0) {
-			getiflist(&p.ifacelist);
+			getiflist(&p.ifacelist, 1);
 			printf("No database found, nothing to do. Use --help for help.\n\n");
 			printf("A new database can be created with the following command:\n");
 			printf("    %s --create -i eth0\n\n", argv[0]);
@@ -693,7 +693,7 @@ void handlecreate(PARAMS *p)
 	}
 
 	if (!getifinfo(p->interface) && !p->force) {
-		getiflist(&p->ifacelist);
+		getiflist(&p->ifacelist, 1);
 		printf("Only available interfaces can be added for monitoring.\n\n");
 		printf("The following interfaces are currently available:\n    %s\n", p->ifacelist);
 		free(p->ifacelist);
@@ -808,7 +808,7 @@ void handleupdate(PARAMS *p)
 		}
 
 		if (!getifinfo(data.interface) && !p->force) {
-			getiflist(&p->ifacelist);
+			getiflist(&p->ifacelist, 1);
 			printf("Only available interfaces can be added for monitoring.\n\n");
 			printf("The following interfaces are currently available:\n    %s\n", p->ifacelist);
 			free(p->ifacelist);

@@ -273,7 +273,7 @@ uint32_t dbcheck(uint32_t dbhash, int *forcesave)
 	int offset, found;
 
 	/* get list of currently visible interfaces */
-	if (getiflist(&ifacelist)==0) {
+	if (getiflist(&ifacelist, 0)==0) {
 		free(ifacelist);
 		return 0;
 	}

@@ -97,19 +97,22 @@ void ibwlist(void)
 int ibwget(const char *iface)
 {
 	ibwnode *p = ifacebw;
+	time_t current;
 	int speed;
+
+	current = time(NULL);
 
 	/* search for interface specific limit */
 	while (p != NULL) {
 		if (strcasecmp(p->interface, iface)==0) {
 
-			if (cfg.bwdetection && p->retries<5) {
-				if (!p->detected) {
+			if (cfg.bwdetection && p->retries < 5) {
+				if (cfg.bwdetectioninterval > 0 && (current - p->detected) > (cfg.bwdetectioninterval * 60)) {
 					speed = getifspeed(iface);
 					if (speed > 0) {
 						p->limit = speed;
 						p->retries = 0;
-						p->detected = 1;
+						p->detected = current;
 						return speed;
 					}
 					p->retries++;
@@ -132,7 +135,7 @@ int ibwget(const char *iface)
 		if (speed > 0) {
 			p->limit = speed;
 			p->retries = 0;
-			p->detected = 1;
+			p->detected = current;
 			return speed;
 		}
 		p->retries++;

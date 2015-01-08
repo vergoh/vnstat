@@ -6,7 +6,7 @@
 #endif
 
 int getifinfo(const char *iface);
-int getiflist(char **ifacelist);
+int getiflist(char **ifacelist, int showspeed);
 int readproc(const char *iface);
 int readsysclassnet(const char *iface);
 void parseifinfo(int newdb);

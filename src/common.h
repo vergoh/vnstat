@@ -110,10 +110,10 @@ and most can be changed later from the config file.
 
 /* default maximum bandwidth (Mbit) for all interfaces */
 /* 0 = feature disabled */
-#define DEFMAXBW 100
+#define DEFMAXBW 1000
 
 /* maximum allowed config value for bandwidth */
-#define BWMAX 10000
+#define BWMAX 50000
 
 /* how many seconds should sampling take by default */
 #define DEFSAMPTIME 5

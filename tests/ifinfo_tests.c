@@ -362,7 +362,7 @@ START_TEST(getiflist_no_source)
 	linuxonly;
 
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
-	ck_assert_int_eq(getiflist(&ifacelist), 0);
+	ck_assert_int_eq(getiflist(&ifacelist, 0), 0);
 	ck_assert_str_eq(ifacelist, "");
 
 	free(ifacelist);
@@ -378,7 +378,7 @@ START_TEST(getiflist_one_interface)
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	fake_proc_net_dev("w", "ethunusual", 0, 0, 0, 0);
 
-	ck_assert_int_eq(getiflist(&ifacelist), 1);
+	ck_assert_int_eq(getiflist(&ifacelist, 1), 1);
 	ck_assert_str_eq(ifacelist, "lo ethunusual ");
 
 	free(ifacelist);
@@ -398,7 +398,7 @@ START_TEST(getiflist_multiple_interfaces)
 	fake_proc_net_dev("a", "fun", 0, 0, 0, 0);
 	fake_proc_net_dev("a", "i", 0, 0, 0, 0);
 
-	ck_assert_int_eq(getiflist(&ifacelist), 1);
+	ck_assert_int_eq(getiflist(&ifacelist, 0), 1);
 	ck_assert_str_eq(ifacelist, "lo random interfaces having fun i ");
 
 	free(ifacelist);

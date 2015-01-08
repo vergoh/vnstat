@@ -43,7 +43,7 @@ int getifinfo(const char *iface)
 	return 1;
 }
 
-int getiflist(char **ifacelist)
+int getiflist(char **ifacelist, int showspeed)
 {
 	int speed;
 #if defined(__linux__)
@@ -77,6 +77,9 @@ int getiflist(char **ifacelist)
 				}
 				strncat(*ifacelist, interface, strlen(interface));
 				strcat(*ifacelist, " ");
+				if (!showspeed) {
+					continue;
+				}
 				speed = getifspeed(interface);
 				if (speed > 0) {
 					snprintf(temp, 64, "(%d Mbit) ", speed);
@@ -105,6 +108,9 @@ int getiflist(char **ifacelist)
 					}
 					strncat(*ifacelist, di->d_name, strlen(di->d_name));
 					strcat(*ifacelist, " ");
+					if (!showspeed) {
+						continue;
+					}
 					speed = getifspeed(di->d_name);
 					if (speed > 0) {
 						snprintf(temp, 64, "(%d Mbit) ", speed);
@@ -135,6 +141,9 @@ int getiflist(char **ifacelist)
 				}
 				strncat(*ifacelist, ifa->ifa_name, strlen(ifa->ifa_name));
 				strcat(*ifacelist, " ");
+				if (!showspeed) {
+					continue;
+				}
 				speed = getifspeed(ifa->ifa_name);
 				if (speed > 0) {
 					snprintf(temp, 64, "(%d Mbit) ", speed);

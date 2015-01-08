@@ -115,7 +115,7 @@ int addinterfaces(const char *dirname)
 	int index = 0, count = 0, bwlimit = 0;
 
 	/* get list of currently visible interfaces */
-	if (getiflist(&ifacelist)==0) {
+	if (getiflist(&ifacelist, 0)==0) {
 		free(ifacelist);
 		return 0;
 	}
