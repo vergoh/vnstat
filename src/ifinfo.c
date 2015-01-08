@@ -45,6 +45,7 @@ int getifinfo(const char *iface)
 
 int getiflist(char **ifacelist)
 {
+	int speed;
 #if defined(__linux__)
 	char interface[32];
 	FILE *fp;
@@ -76,6 +77,15 @@ int getiflist(char **ifacelist)
 				}
 				strncat(*ifacelist, interface, strlen(interface));
 				strcat(*ifacelist, " ");
+				speed = getifspeed(interface);
+				if (speed > 0) {
+					snprintf(temp, 64, "(%d Mbit) ", speed);
+					*ifacelist = realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(temp) + 1 ) * sizeof(char)) );
+					if (*ifacelist == NULL) {
+						panicexit(__FILE__, __LINE__);
+					}
+					strncat(*ifacelist, temp, strlen(temp));
+				}
 			}
 		}
 
@@ -95,6 +105,15 @@ int getiflist(char **ifacelist)
 					}
 					strncat(*ifacelist, di->d_name, strlen(di->d_name));
 					strcat(*ifacelist, " ");
+					speed = getifspeed(di->d_name);
+					if (speed > 0) {
+						snprintf(temp, 64, "(%d Mbit) ", speed);
+						*ifacelist = realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(temp) + 1 ) * sizeof(char)) );
+						if (*ifacelist == NULL) {
+							panicexit(__FILE__, __LINE__);
+						}
+						strncat(*ifacelist, temp, strlen(temp));
+					}
 				}
 			}
 
@@ -116,6 +135,15 @@ int getiflist(char **ifacelist)
 				}
 				strncat(*ifacelist, ifa->ifa_name, strlen(ifa->ifa_name));
 				strcat(*ifacelist, " ");
+				speed = getifspeed(ifa->ifa_name);
+				if (speed > 0) {
+					snprintf(temp, 64, "(%d Mbit) ", speed);
+					*ifacelist = realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(temp) + 1 ) * sizeof(char)) );
+					if (*ifacelist == NULL) {
+						panicexit(__FILE__, __LINE__);
+					}
+					strncat(*ifacelist, temp, strlen(temp));
+				}
 			}
 		}
 
