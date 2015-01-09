@@ -1,12 +1,6 @@
 #ifndef CFG_H
 #define CFG_H
 
-void printcfgfile(void);
-int loadcfg(const char *cfgfile);
-void validatecfg(void);
-void defaultcfg(void);
-int opencfgfile(const char *cfgfile, FILE **fd);
-
 struct cfgsetting {
 	const char *name;
 	char *locc;
@@ -14,5 +8,13 @@ struct cfgsetting {
 	short namelen;
 	short found;
 };
+
+void printcfgfile(void);
+int loadcfg(const char *cfgfile);
+void validatecfg(void);
+void defaultcfg(void);
+int opencfgfile(const char *cfgfile, FILE **fd);
+int extractcfgvalue(char *value, const char *cfgline, int cfglen);
+int setcfgvalue(struct cfgsetting *cset, const char *value, const char *cfgline);
 
 #endif

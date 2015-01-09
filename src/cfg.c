@@ -166,7 +166,7 @@ void printcfgfile(void)
 int loadcfg(const char *cfgfile)
 {
 	FILE *fd;
-	int i, j, k, linelen, cfglen;
+	int i, linelen, cfglen;
 
 	char value[512], cfgline[512];
 
@@ -240,85 +240,45 @@ int loadcfg(const char *cfgfile)
 	while (!feof(fd)) {
 
 		cfgline[0] = '\0';
-
-		/* get current line */
 		if (fgets(cfgline, 512, fd)==NULL) {
 			break;
 		}
 
 		linelen = (int)strlen(cfgline);
-		if (linelen>2 && cfgline[0]!='#') {
+		if (linelen<=2 || cfgline[0]=='#') {
+			continue;
+		}
 
-			for (i=0; cset[i].name!=0; i++) {
+		for (i=0; cset[i].name!=0; i++) {
 
-				if (cset[i].found) {
-					continue;
-				}
+			if (cset[i].found) {
+				continue;
+			}
 
-				cfglen = (int)strlen(cset[i].name);
-				if ( (linelen>=(cfglen+2)) && (strncasecmp(cfgline, cset[i].name, cfglen)==0) ) {
+			cfglen = (int)strlen(cset[i].name);
+			if ( (linelen<(cfglen+2)) || (strncasecmp(cfgline, cset[i].name, cfglen)!=0) ) {
+				continue;
+			}
 
-					/* clear value buffer */
-					for (j=0; j<512; j++) {
-						value[j]='\0';
-					}
+			if (!extractcfgvalue(value, cfgline, cfglen)) {
+				if (debug)
+					printf("  c: %s   -> \"%s\" with no value, keeping default.\n", cfgline, cset[i].name);
+				cset[i].found = 1;
+				break;
+			}
 
-					/* search value */
-					j = 0;
-					for (k=cfglen; k<linelen; k++) {
-						if (cfgline[k]=='\n' || cfgline[k]=='\r') {
-							break;
-						} else if (cfgline[k]=='\"') {
-							if (j==0) {
-								continue;
-							} else {
-								break;
-							}
-						} else {
-							if (j==0 && (cfgline[k]==' ' || cfgline[k]=='=' || cfgline[k]=='\t')) {
-								continue;
-							} else {
-								value[j] = cfgline[k];
-								j++;
-							}
-						}
-					}
+			if (!setcfgvalue(&cset[i], value, cfgline)) {
+				continue;
+			}
 
-					/* set value and get new line if valid value was found */
-					if (strlen(value)!=0) {
+			cset[i].found = 1;
+			break;
+		}
 
-						if (cset[i].namelen>0) {
-							strncpy_nt(cset[i].locc, value, cset[i].namelen);
-							cset[i].locc[cset[i].namelen-1]='\0';
-							if (debug)
-								printf("  c: %s   -> \"%s\": \"%s\"\n", cfgline, cset[i].name, cset[i].locc);
-						} else if (isdigit(value[0])) {
-							*cset[i].loci = strtol(value, (char **)NULL, 0);
-							if (debug)
-								printf("  i: %s   -> \"%s\": %d\n", cfgline, cset[i].name, *cset[i].loci);
-						} else {
-							continue;
-						}
+		if ((debug) && (!cset[i].found) && (strncasecmp(cfgline, "MaxBW", 5)!=0))
+			printf("Unknown configuration line: %s", cfgline);
 
-						cset[i].found = 1;
-						break;
-					} else if (strlen(value)==0) {
-						if (debug)
-							printf("  c: %s   -> \"%s\" with no value, keeping default.\n", cfgline, cset[i].name);
-						cset[i].found = 1;
-						break;
-					}
-
-				} /* if */
-
-			} /* for */
-
-			if ((debug) && (!cset[i].found) && (strncasecmp(cfgline, "MaxBW", 5)!=0))
-				printf("Unknown configuration line: %s", cfgline);
-
-		} /* if */
-
-	} /* while */
+	}
 
 	fclose(fd);
 
@@ -612,4 +572,55 @@ int opencfgfile(const char *cfgfile, FILE **fd)
 	}
 
 	return 2;
+}
+
+int extractcfgvalue(char *value, const char *cfgline, int cfglen) {
+
+	int i, j, linelen;
+
+	linelen = (int)strlen(cfgline);
+
+	for (i=0; i<512; i++) {
+		value[i]='\0';
+	}
+
+	i = 0;
+	for (j=cfglen; j<linelen; j++) {
+		if (cfgline[j]=='\n' || cfgline[j]=='\r') {
+			break;
+		} else if (cfgline[j]=='\"') {
+			if (i==0) {
+				continue;
+			} else {
+				break;
+			}
+		} else {
+			if (i==0 && (cfgline[j]==' ' || cfgline[j]=='=' || cfgline[j]=='\t')) {
+				continue;
+			} else {
+				value[i] = cfgline[j];
+				i++;
+			}
+		}
+	}
+
+	return (int)strlen(value);
+}
+
+int setcfgvalue(struct cfgsetting *cset, const char *value, const char *cfgline)
+{
+	if (cset->namelen>0) {
+		strncpy_nt(cset->locc, value, cset->namelen);
+		cset->locc[cset->namelen-1]='\0';
+		if (debug)
+			printf("  c: %s   -> \"%s\": \"%s\"\n", cfgline, cset->name, cset->locc);
+	} else if (isdigit(value[0])) {
+		*cset->loci = strtol(value, (char **)NULL, 0);
+		if (debug)
+			printf("  i: %s   -> \"%s\": %d\n", cfgline, cset->name, *cset->loci);
+	} else {
+		return 0;
+	}
+
+	return 1;
 }
