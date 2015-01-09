@@ -46,12 +46,13 @@ int getifinfo(const char *iface)
 int getiflist(char **ifacelist, int showspeed)
 {
 	uint32_t speed;
+	char temp[64];
 #if defined(__linux__)
 	char interface[32];
 	FILE *fp;
 	DIR *dp;
 	struct dirent *di;
-	char procline[512], temp[64];
+	char procline[512];
 #elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__FreeBSD_kernel__)
 	struct ifaddrs *ifap, *ifa;
 #endif
