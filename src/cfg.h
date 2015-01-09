@@ -10,7 +10,7 @@ int opencfgfile(const char *cfgfile, FILE **fd);
 struct cfgsetting {
 	const char *name;
 	char *locc;
-	short *loci;
+	int32_t *loci;
 	short namelen;
 	short found;
 };

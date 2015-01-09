@@ -14,6 +14,6 @@ void parseifinfo(int newdb);
 int getifdata(const char *iface, struct if_data *ifd);
 int readifaddrs(const char *iface);
 #endif
-int getifspeed(const char *iface);
+uint32_t getifspeed(const char *iface);
 
 #endif

@@ -637,7 +637,7 @@ int datalist_timevalidation(DSTATE *s)
 	/* skip update if previous update is less than a day in the future */
 	/* otherwise exit with error message since the clock is problably messed */
 	if (data.lastupdated > (s->current+86400)) {
-		snprintf(errorstring, 512, "Interface \"%s\" has previous update date too much in the future, exiting. (%d / %d)", data.interface, (unsigned int)data.lastupdated, (unsigned int)s->current);
+		snprintf(errorstring, 512, "Interface \"%s\" has previous update date too much in the future, exiting. (%u / %u)", data.interface, (unsigned int)data.lastupdated, (unsigned int)s->current);
 		printe(PT_Error);
 
 		/* clean daemon stuff before exit */

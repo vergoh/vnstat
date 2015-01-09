@@ -24,7 +24,7 @@ int ibwloadcfg(const char *cfgfile)
 	return 1;
 }
 
-int ibwadd(const char *iface, int limit)
+int ibwadd(const char *iface, uint32_t limit)
 {
 	ibwnode *n, *p = ifacebw;
 
@@ -87,7 +87,7 @@ void ibwlist(void)
 
 	printf("ibw: ");
 	while (p != NULL) {
-		printf("%2d: i\"%s\" l%d f%d r%d d%ld  ", i, p->interface, p->limit, p->fallback, p->retries, (long)p->detected);
+		printf("%2d: i\"%s\" l%u f%u r%d d%u  ", i, p->interface, p->limit, p->fallback, p->retries, (unsigned int)p->detected);
 		p = p->next;
 		i++;
 	}
@@ -98,7 +98,7 @@ int ibwget(const char *iface)
 {
 	ibwnode *p = ifacebw;
 	time_t current;
-	int speed;
+	uint32_t speed;
 
 	current = time(NULL);
 
@@ -178,7 +178,8 @@ void ibwflush(void)
 int ibwcfgread(FILE *fd)
 {
 	char cfgline[512], name[512], value[512];
-	int i, j, linelen, count = 0, ivalue;
+	int i, j, linelen, count = 0;
+	int32_t ivalue;
 
 	/* start from value search from first line */
 	rewind(fd);
@@ -251,7 +252,7 @@ int ibwcfgread(FILE *fd)
 		}
 
 		/* add interface and limit to list if value is within limits */
-		ivalue = atoi(value);
+		ivalue = strtol(value, (char **)NULL, 0);
 		if (ivalue<0 || ivalue>BWMAX) {
 			snprintf(errorstring, 512, "Invalid value \"%d\" for MaxBW%s, ignoring parameter.", ivalue, name);
 			printe(PT_Config);

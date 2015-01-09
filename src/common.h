@@ -216,12 +216,12 @@ typedef struct {
 	char rxchar[2], txchar[2], rxhourchar[2], txhourchar[2];
 	char cbg[8], cedge[8], cheader[8], cheadertitle[8], cheaderdate[8], ctext[8];
 	char cline[8], clinel[8], cvnstat[8], crx[8], crxd[8], ctx[8], ctxd[8];
-	short unit, ostyle, rateunit, bvar, qmode, sampletime, hourlyrate, summaryrate;
-	short monthrotate, maxbw, flock, spacecheck, traflessday, transbg, slayout;
+	int32_t unit, ostyle, rateunit, bvar, qmode, sampletime, hourlyrate, summaryrate;
+	int32_t monthrotate, maxbw, flock, spacecheck, traflessday, transbg, slayout;
 	char logfile[512], pidfile[512];
 	char daemonuser[33], daemongroup[33];
-	short updateinterval, pollinterval, saveinterval, offsaveinterval, savestatus, uselogging;
-	short createdirs, updatefileowner, bwdetection, bwdetectioninterval;
+	int32_t updateinterval, pollinterval, saveinterval, offsaveinterval, savestatus, uselogging;
+	int32_t createdirs, updatefileowner, bwdetection, bwdetectioninterval;
 } CFG;
 
 /* internal interface information structure */
@@ -271,9 +271,9 @@ typedef struct {
 
 typedef struct ibwnode {
 	char interface[32];
-	int limit;
-	int fallback;
-	int retries;
+	uint32_t limit;
+	uint32_t fallback;
+	short retries;
 	time_t detected;
 	struct ibwnode *next;
 } ibwnode;

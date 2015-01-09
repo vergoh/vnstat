@@ -2,7 +2,7 @@
 #define IBW_H
 
 int ibwloadcfg(const char *cfgfile);
-int ibwadd(const char *iface, int limit);
+int ibwadd(const char *iface, uint32_t limit);
 void ibwlist(void);
 int ibwget(const char *iface);
 ibwnode *ibwgetnode(const char *iface);

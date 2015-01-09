@@ -45,7 +45,7 @@ int getifinfo(const char *iface)
 
 int getiflist(char **ifacelist, int showspeed)
 {
-	int speed;
+	uint32_t speed;
 #if defined(__linux__)
 	char interface[32];
 	FILE *fp;
@@ -82,7 +82,7 @@ int getiflist(char **ifacelist, int showspeed)
 				}
 				speed = getifspeed(interface);
 				if (speed > 0) {
-					snprintf(temp, 64, "(%d Mbit) ", speed);
+					snprintf(temp, 64, "(%u Mbit) ", speed);
 					*ifacelist = realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(temp) + 1 ) * sizeof(char)) );
 					if (*ifacelist == NULL) {
 						panicexit(__FILE__, __LINE__);
@@ -113,7 +113,7 @@ int getiflist(char **ifacelist, int showspeed)
 					}
 					speed = getifspeed(di->d_name);
 					if (speed > 0) {
-						snprintf(temp, 64, "(%d Mbit) ", speed);
+						snprintf(temp, 64, "(%u Mbit) ", speed);
 						*ifacelist = realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(temp) + 1 ) * sizeof(char)) );
 						if (*ifacelist == NULL) {
 							panicexit(__FILE__, __LINE__);
@@ -146,7 +146,7 @@ int getiflist(char **ifacelist, int showspeed)
 				}
 				speed = getifspeed(ifa->ifa_name);
 				if (speed > 0) {
-					snprintf(temp, 64, "(%d Mbit) ", speed);
+					snprintf(temp, 64, "(%u Mbit) ", speed);
 					*ifacelist = realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(temp) + 1 ) * sizeof(char)) );
 					if (*ifacelist == NULL) {
 						panicexit(__FILE__, __LINE__);
@@ -488,9 +488,9 @@ int readifaddrs(const char *iface)
 }
 #endif
 
-int getifspeed(const char *iface)
+uint32_t getifspeed(const char *iface)
 {
-	int speed = 0;
+	uint32_t speed = 0;
 #if defined(__linux__)
 
 	FILE *fp;
@@ -504,7 +504,7 @@ int getifspeed(const char *iface)
 		return 0;
 	} else {
 		if (fgets(buffer, 64, fp)!=NULL) {
-			speed = strtoull(buffer, (char **)NULL, 0);
+			speed = strtoul(buffer, (char **)NULL, 0);
 		} else {
 			if (debug)
 				printf("Unable to read: %s - %s\n", file, strerror(errno));
@@ -530,7 +530,7 @@ int getifspeed(const char *iface)
 	if (debug)
 		printf("getifspeed: \"%s\": %d\n", iface, speed);
 
-	if (speed < 0 || speed > 1000000) {
+	if (speed > 1000000) {
 		speed = 0;
 	}
 	return speed;

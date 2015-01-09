@@ -293,7 +293,7 @@ int loadcfg(const char *cfgfile)
 							if (debug)
 								printf("  c: %s   -> \"%s\": \"%s\"\n", cfgline, cset[i].name, cset[i].locc);
 						} else if (isdigit(value[0])) {
-							*cset[i].loci = atoi(value);
+							*cset[i].loci = strtol(value, (char **)NULL, 0);
 							if (debug)
 								printf("  i: %s   -> \"%s\": %d\n", cfgline, cset[i].name, *cset[i].loci);
 						} else {
