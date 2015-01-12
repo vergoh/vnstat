@@ -157,6 +157,10 @@ and most can be changed later from the config file.
 /* 1 = 1.7- */
 #define XMLVERSION 1
 
+/* json format version */
+/* 1 = 1.13- */
+#define JSONVERSION 1
+
 /* --oneline format version */
 #define ONELINEVERSION 1
 

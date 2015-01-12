@@ -19,6 +19,7 @@ vnStat - Copyright (c) 2002-2015 Teemu Toivola <tst@iki.fi>
 #include "ifinfo.h"
 #include "traffic.h"
 #include "dbxml.h"
+#include "dbjson.h"
 #include "dbshow.h"
 #include "dbaccess.h"
 #include "dbmerge.h"
@@ -210,6 +211,8 @@ int main(int argc, char *argv[]) {
 			cfg.qmode=9;
 		} else if (strcmp(argv[currentarg],"--xml")==0) {
 			cfg.qmode=8;
+		} else if (strcmp(argv[currentarg],"--json")==0) {
+			cfg.qmode=10;
 		} else if (strcmp(argv[currentarg],"--savemerged")==0) {
 			p.savemerged=1;
 		} else if ((strcmp(argv[currentarg],"-ru")==0) || (strcmp(argv[currentarg],"--rateunit"))==0) {
@@ -455,6 +458,7 @@ void showlonghelp(PARAMS *p)
 			printf("         --oneline             show simple parseable format\n");
 			printf("         --exportdb            dump database in text format\n");
 			printf("         --importdb            import previously exported database\n");
+			printf("         --json                show database in json format\n");
 			printf("         --xml                 show database in xml format\n");
 
 			printf("   Modify:\n");
@@ -840,6 +844,7 @@ void handleshowdatabases(PARAMS *p)
 {
 	DIR *dir=NULL;
 	struct dirent *di=NULL;
+	int dbcount = 0;
 
 	if (!p->query) {
 		return;
@@ -851,7 +856,7 @@ void handleshowdatabases(PARAMS *p)
 		if (p->files==0) {
 			/* printf("No database found.\n"); */
 			p->query=0;
-		} else if ((cfg.qmode==0 || cfg.qmode==8) && (p->files>1)) {
+		} else if ((cfg.qmode==0 || cfg.qmode==8 || cfg.qmode==10) && (p->files>1)) {
 
 			if (cfg.qmode==0) {
 				if (cfg.ostyle!=0) {
@@ -859,8 +864,10 @@ void handleshowdatabases(PARAMS *p)
 				} else {
 					printf("\n                      rx      /      tx      /     total\n");
 				}
-			} else {
+			} else if (cfg.qmode==8) {
 				printf("<vnstat version=\"%s\" xmlversion=\"%d\">\n", VNSTATVERSION, XMLVERSION);
+			} else if (cfg.qmode==10) {
+				jsonheader();
 			}
 			if ((dir=opendir(p->dirname))==NULL) {
 				return;
@@ -876,14 +883,19 @@ void handleshowdatabases(PARAMS *p)
 				if (!p->newdb) {
 					if (cfg.qmode==0) {
 						showdb(5);
-					} else {
+					} else if (cfg.qmode==8) {
 						showxml();
+					} else if (cfg.qmode==10) {
+						showjson(dbcount);
 					}
+					dbcount++;
 				}
 			}
 			closedir(dir);
 			if (cfg.qmode==8) {
 				printf("</vnstat>\n");
+			} else if (cfg.qmode==10) {
+				jsonfooter();
 			}
 
 		/* show in qmode if there's only one file or qmode!=0 */
@@ -899,12 +911,16 @@ void handleshowdatabases(PARAMS *p)
 						printf("\n                      rx      /      tx      /     total\n");
 					}
 				}
-				if (cfg.qmode!=8) {
+				if (cfg.qmode!=8 && cfg.qmode!=10) {
 					showdb(cfg.qmode);
-				} else {
+				} else if (cfg.qmode==8) {
 					printf("<vnstat version=\"%s\" xmlversion=\"%d\">\n", VNSTATVERSION, XMLVERSION);
 					showxml();
 					printf("</vnstat>\n");
+				} else if (cfg.qmode==10) {
+					jsonheader();
+					showjson(dbcount);
+					jsonfooter();
 				}
 			}
 		}
@@ -922,12 +938,16 @@ void handleshowdatabases(PARAMS *p)
 					printf("\n                      rx      /      tx      /     total\n");
 				}
 			}
-			if (cfg.qmode!=8) {
+			if (cfg.qmode!=8 && cfg.qmode!=10) {
 				showdb(cfg.qmode);
-			} else {
+			} else if (cfg.qmode==8) {
 				printf("<vnstat version=\"%s\" xmlversion=\"%d\">\n", VNSTATVERSION, XMLVERSION);
 				showxml();
 				printf("</vnstat>\n");
+			} else if (cfg.qmode==10) {
+				jsonheader();
+				showjson(dbcount);
+				jsonfooter();
 			}
 		}
 	}
