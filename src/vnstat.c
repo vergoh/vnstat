@@ -31,8 +31,8 @@ vnStat - Copyright (c) 2002-2015 Teemu Toivola <tst@iki.fi>
 int main(int argc, char *argv[]) {
 
 	int i, currentarg;
-	DIR *dir=NULL;
-	struct dirent *di=NULL;
+	DIR *dir = NULL;
+	struct dirent *di = NULL;
 	PARAMS p;
 
 	initparams(&p);
@@ -725,8 +725,8 @@ void handlecreate(PARAMS *p)
 
 void handleupdate(PARAMS *p)
 {
-	DIR *dir=NULL;
-	struct dirent *di=NULL;
+	DIR *dir = NULL;
+	struct dirent *di = NULL;
 	time_t current;
 
 	if (!p->update) {
@@ -842,8 +842,8 @@ void handleupdate(PARAMS *p)
 
 void handleshowdatabases(PARAMS *p)
 {
-	DIR *dir=NULL;
-	struct dirent *di=NULL;
+	DIR *dir = NULL;
+	struct dirent *di = NULL;
 	int dbcount = 0;
 
 	if (!p->query) {
@@ -865,7 +865,7 @@ void handleshowdatabases(PARAMS *p)
 					printf("\n                      rx      /      tx      /     total\n");
 				}
 			} else if (cfg.qmode==8) {
-				printf("<vnstat version=\"%s\" xmlversion=\"%d\">\n", VNSTATVERSION, XMLVERSION);
+				xmlheader();
 			} else if (cfg.qmode==10) {
 				jsonheader();
 			}
@@ -893,7 +893,7 @@ void handleshowdatabases(PARAMS *p)
 			}
 			closedir(dir);
 			if (cfg.qmode==8) {
-				printf("</vnstat>\n");
+				xmlfooter();
 			} else if (cfg.qmode==10) {
 				jsonfooter();
 			}
@@ -914,9 +914,9 @@ void handleshowdatabases(PARAMS *p)
 				if (cfg.qmode!=8 && cfg.qmode!=10) {
 					showdb(cfg.qmode);
 				} else if (cfg.qmode==8) {
-					printf("<vnstat version=\"%s\" xmlversion=\"%d\">\n", VNSTATVERSION, XMLVERSION);
+					xmlheader();
 					showxml();
-					printf("</vnstat>\n");
+					xmlfooter();
 				} else if (cfg.qmode==10) {
 					jsonheader();
 					showjson(dbcount);
@@ -941,9 +941,9 @@ void handleshowdatabases(PARAMS *p)
 			if (cfg.qmode!=8 && cfg.qmode!=10) {
 				showdb(cfg.qmode);
 			} else if (cfg.qmode==8) {
-				printf("<vnstat version=\"%s\" xmlversion=\"%d\">\n", VNSTATVERSION, XMLVERSION);
+				xmlheader();
 				showxml();
-				printf("</vnstat>\n");
+				xmlfooter();
 			} else if (cfg.qmode==10) {
 				jsonheader();
 				showjson(dbcount);

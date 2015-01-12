@@ -101,3 +101,13 @@ void xmldate(time_t *date, int type)
 		free(buffer);
 	}
 }
+
+void xmlheader(void)
+{
+	printf("<vnstat version=\"%s\" xmlversion=\"%d\">\n", VNSTATVERSION, XMLVERSION);
+}
+
+void xmlfooter(void)
+{
+	printf("</vnstat>\n");
+}
