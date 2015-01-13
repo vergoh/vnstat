@@ -12,6 +12,7 @@
  - Import Makefile improvements from OpenBSD
    (pull requests by Jasper Lievisse Adriaanse)
  - Automatic interface bandwidth detection, BandwidthDetection in config
+ - JSON output (--json)
 
 
 1.12 / 30-Aug-14

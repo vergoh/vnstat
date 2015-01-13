@@ -1,4 +1,4 @@
-.TH VNSTAT 1 "AUGUST 2014" "version 1.12" "User Manuals"
+.TH VNSTAT 1 "JANUARY 2015" "version 1.13" "User Manuals"
 .SH NAME
 
 vnstat \- a console-based network traffic monitor
@@ -45,6 +45,8 @@ vnstat \- a console-based network traffic monitor
 .I interface
 ] [
 .B \-\-iflist
+] [
+.B \-\-json
 ] [
 .B \-\-live
 .I mode
@@ -251,6 +253,11 @@ syntax.
 Show list of currently available interfaces.
 
 .TP
+.B "--json"
+Show database content for selected interface or all interfaces in json format. All
+traffic values in the output are in KiB.
+
+.TP
 .BI "-l, --live " mode
 Display current transfer rate for the selected interface in real time
 until interrupted. Statistics will be shown after interruption if the runtime
@@ -427,6 +434,10 @@ Display traffic summary for a merge of interfaces eth0, eth1 and eth3.
 .TP
 .B "vnstat -i eth2 --xml"
 Output all information about interface eth2 in xml format.
+
+.TP
+.B "vnstat --json"
+Output all information of all monitored interfaces in json format.
 
 .TP
 .B "vnstat -u -i eth0"
