@@ -13,6 +13,7 @@
    (pull requests by Jasper Lievisse Adriaanse)
  - Automatic interface bandwidth detection, BandwidthDetection in config
  - JSON output (--json)
+ - Drop support for over 10 year old database formats (versions 1.0 - 1.2)
 
 
 1.12 / 30-Aug-14
