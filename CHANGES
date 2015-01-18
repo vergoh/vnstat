@@ -1,4 +1,4 @@
-1.13 / <not released yet>
+1.13 / 18-Jan-2015
 
  - Fix: getgroup() test in Debian GNU/kFreeBSD (patch by Felix Geyer)
  - Fix: struct if_data usage after freeifaddrs() call in BSD
@@ -8,15 +8,18 @@
      * --altdate for using alternative date and time text location
      * --headertext for using custom text string in image header section
  - Add legend to hourly output image
+ - Add option for content alignment and page background color to vnstat.cgi
  - Document keyword value ranges in configuration file man page
  - Import Makefile improvements from OpenBSD
    (pull requests by Jasper Lievisse Adriaanse)
- - Automatic interface bandwidth detection, BandwidthDetection in config
- - JSON output (--json)
+ - Automatic interface bandwidth detection, BandwidthDetection in config,
+   default fallback value MaxBandwidth changed from 100 to 1000
+ - JSON output (--json), vnstat-json.cgi and vnstat-json.php examples
+   provided in the 'examples' directory
  - Drop support for over 10 year old database formats (versions 1.0 - 1.2)
 
 
-1.12 / 30-Aug-14
+1.12 / 30-Aug-2014
 
  - Fix: Memory allocation when zero interfaces are available, also lo needed
    to be missing in order to trigger this leak
@@ -49,7 +52,7 @@
  - --create parameter for database creation
 
 
-1.11 / 1-Jun-11
+1.11 / 1-Jun-2011
 
  - Fix: Memory allocation was miscalculated when creating interface list from
    /sys/class/net when /proc/net/dev wasn't available which in turn could
@@ -63,7 +66,7 @@
    if no databases are found during startup
 
 
-1.10 / 2-Jan-10
+1.10 / 2-Jan-2010
 
  - Fix: Buffer overflow was possible in hourly image output when RateUnit=1
    and HourlyRate=1
@@ -81,7 +84,7 @@
  - Code cleanup
 
 
-1.9 / 12-Sep-09
+1.9 / 12-Sep-2009
 
  - Fix: TrafficlessDays configuration option was enabled when set to zero
    when it should have been disabled
@@ -104,7 +107,7 @@
    OfflineSaveInterval
 
 
-1.8 / 1-Aug-09
+1.8 / 1-Aug-2009
 
  - Fix: OpenBSD print issues (was: ' used for formatting in sprintf)
  - Fix: Monthly estimate for February during a leap year was wrong
@@ -125,7 +128,7 @@
    ShowRate, RateUnit, TrafficlessDays, HourlyRate, TransparentBg
 
 
-1.7 / 12-Apr-09
+1.7 / 12-Apr-2009
 
  - Fix: Timezone changes shouldn't cause a flood of errors anymore
  - Fix: Statvfs used instead of statfs for BSD compatibility
@@ -149,7 +152,7 @@
  - List of available interfaces if wrong of unavailable interface is selected
 
 
-1.6 / 1-Jan-08
+1.6 / 1-Jan-2008
 
  - Fix: Segmentation fault when environment variable "HOME" wasn't defined,
    this broke most CGI and PHP scripts that used vnStat
@@ -162,7 +165,7 @@
  - Minor non-visible fixes and code cleanup
 
 
-1.5 / 3-Dec-07
+1.5 / 3-Dec-2007
 
  - Fix: compile time warnings solved
  - Fix: kernel test is now more verbose
@@ -179,7 +182,7 @@
  - Maximum bandwidth of interfaces can be set
 
 
-1.4 / 26-Mar-04
+1.4 / 26-Mar-2004
 
  - Fix: major output problems when compiled with some compilers
         (thanks to DukePyrolator for reporting this bug and 
@@ -188,7 +191,7 @@
  - Minor non-visible fixes and code cleanup
 
 
-1.3 / 8-Mar-04
+1.3 / 8-Mar-2004
 
  - Fix: support for 64bit counters
  - Fix: 'yesterday' was showing 01.01. with new databases
@@ -201,7 +204,7 @@
  - Minor visual updates
 
 
-1.2 / 7-Oct-03
+1.2 / 7-Oct-2003
 
  - Changed file paths to conform with FHS (http://www.pathname.com/fhs/)
       /usr/local/bin/vnstat -> /usr/bin/vnstat
@@ -219,7 +222,7 @@
  - Documentation for --dumpdb included in the README
 
 
-1.1 / 13-Jul-03
+1.1 / 13-Jul-2003
 
  - Support for multiple interfaces
  - Date checking (update shouldn't be before previous update)
@@ -233,13 +236,13 @@
  - Daily/monthly traffic estimation
 
 
-22-Nov-02
+22-Nov-2002
 
  - Renamed the cron script file that would be installed to /etc/cron.d
    from vnstat.cron to vnstat because debian systems didn't execute scripts
    containing dots (Thanks to frangen / Simo Salminen for this note)
 
 
-1.0 / 23-Sep-02
+1.0 / 23-Sep-2002
 
  - Initial public release

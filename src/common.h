@@ -151,7 +151,7 @@ and most can be changed later from the config file.
 #define DBVERSION 3
 
 /* version string */
-#define VNSTATVERSION "1.13 beta"
+#define VNSTATVERSION "1.13"
 
 /* xml format version */
 /* 1 = 1.7- */
