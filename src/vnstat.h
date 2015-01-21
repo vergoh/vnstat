@@ -24,6 +24,7 @@ void handleenabledisable(PARAMS *p);
 void handlecreate(PARAMS *p);
 void handleupdate(PARAMS *p);
 void handleshowdatabases(PARAMS *p);
+void showoneinterface(PARAMS *p, const char *interface);
 void handletrafficmeters(PARAMS *p);
 
 #endif

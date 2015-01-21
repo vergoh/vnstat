@@ -850,106 +850,90 @@ void handleshowdatabases(PARAMS *p)
 		return;
 	}
 
-	/* show all interfaces if -i isn't specified */
-	if (p->defaultiface) {
-
-		if (p->files==0) {
-			/* printf("No database found.\n"); */
-			p->query=0;
-		} else if ((cfg.qmode==0 || cfg.qmode==8 || cfg.qmode==10) && (p->files>1)) {
-
-			if (cfg.qmode==0) {
-				if (cfg.ostyle!=0) {
-					printf("\n                      rx      /      tx      /     total    /   estimated\n");
-				} else {
-					printf("\n                      rx      /      tx      /     total\n");
-				}
-			} else if (cfg.qmode==8) {
-				xmlheader();
-			} else if (cfg.qmode==10) {
-				jsonheader();
-			}
-			if ((dir=opendir(p->dirname))==NULL) {
-				return;
-			}
-			while ((di=readdir(dir))) {
-				if ((di->d_name[0]=='.') || (strcmp(di->d_name, DATABASEFILE)==0)) {
-					continue;
-				}
-				strncpy_nt(p->interface, di->d_name, 32);
-				if (debug)
-					printf("\nProcessing file \"%s/%s\"...\n", p->dirname, p->interface);
-				p->newdb=readdb(p->interface, p->dirname);
-				if (!p->newdb) {
-					if (cfg.qmode==0) {
-						showdb(5);
-					} else if (cfg.qmode==8) {
-						showxml();
-					} else if (cfg.qmode==10) {
-						showjson(dbcount);
-					}
-					dbcount++;
-				}
-			}
-			closedir(dir);
-			if (cfg.qmode==8) {
-				xmlfooter();
-			} else if (cfg.qmode==10) {
-				jsonfooter();
-			}
-
-		/* show in qmode if there's only one file or qmode!=0 */
-		} else {
-			if (!p->merged) {
-				p->newdb=readdb(p->definterface, p->dirname);
-			}
-			if (!p->newdb) {
-				if (cfg.qmode==5) {
-					if (cfg.ostyle!=0) {
-						printf("\n                      rx      /      tx      /     total    /   estimated\n");
-					} else {
-						printf("\n                      rx      /      tx      /     total\n");
-					}
-				}
-				if (cfg.qmode!=8 && cfg.qmode!=10) {
-					showdb(cfg.qmode);
-				} else if (cfg.qmode==8) {
-					xmlheader();
-					showxml();
-					xmlfooter();
-				} else if (cfg.qmode==10) {
-					jsonheader();
-					showjson(dbcount);
-					jsonfooter();
-				}
-			}
-		}
-
 	/* show only specified file */
-	} else {
-		if (!p->merged) {
+	if (!p->defaultiface) {
+		showoneinterface(p, p->interface);
+		return;
+	}
+
+	/* show all interfaces if -i isn't specified */
+	if (p->files==0) {
+		/* printf("No database found.\n"); */
+		p->query=0;
+	} else if ((cfg.qmode==0 || cfg.qmode==8 || cfg.qmode==10) && (p->files>1)) {
+
+		if (cfg.qmode==0) {
+			if (cfg.ostyle!=0) {
+				printf("\n                      rx      /      tx      /     total    /   estimated\n");
+			} else {
+				printf("\n                      rx      /      tx      /     total\n");
+			}
+		} else if (cfg.qmode==8) {
+			xmlheader();
+		} else if (cfg.qmode==10) {
+			jsonheader();
+		}
+		if ((dir=opendir(p->dirname))==NULL) {
+			return;
+		}
+		while ((di=readdir(dir))) {
+			if ((di->d_name[0]=='.') || (strcmp(di->d_name, DATABASEFILE)==0)) {
+				continue;
+			}
+			strncpy_nt(p->interface, di->d_name, 32);
+			if (debug)
+				printf("\nProcessing file \"%s/%s\"...\n", p->dirname, p->interface);
 			p->newdb=readdb(p->interface, p->dirname);
-		}
-		if (!p->newdb) {
-			if (cfg.qmode==5) {
-				if (cfg.ostyle!=0) {
-					printf("\n                      rx      /      tx      /     total    /   estimated\n");
-				} else {
-					printf("\n                      rx      /      tx      /     total\n");
-				}
+			if (p->newdb) {
+				continue;
 			}
-			if (cfg.qmode!=8 && cfg.qmode!=10) {
-				showdb(cfg.qmode);
+			if (cfg.qmode==0) {
+				showdb(5);
 			} else if (cfg.qmode==8) {
-				xmlheader();
 				showxml();
-				xmlfooter();
 			} else if (cfg.qmode==10) {
-				jsonheader();
 				showjson(dbcount);
-				jsonfooter();
 			}
+			dbcount++;
 		}
+		closedir(dir);
+		if (cfg.qmode==8) {
+			xmlfooter();
+		} else if (cfg.qmode==10) {
+			jsonfooter();
+		}
+
+	/* show in qmode if there's only one file or qmode!=0 */
+	} else {
+		showoneinterface(p, p->definterface);
+	}
+}
+
+void showoneinterface(PARAMS *p, const char *interface)
+{
+	if (!p->merged) {
+		p->newdb=readdb(interface, p->dirname);
+	}
+	if (p->newdb) {
+		return;
+	}
+	if (cfg.qmode==5) {
+		if (cfg.ostyle!=0) {
+			printf("\n                      rx      /      tx      /     total    /   estimated\n");
+		} else {
+			printf("\n                      rx      /      tx      /     total\n");
+		}
+	}
+	if (cfg.qmode!=8 && cfg.qmode!=10) {
+		showdb(cfg.qmode);
+	} else if (cfg.qmode==8) {
+		xmlheader();
+		showxml();
+		xmlfooter();
+	} else if (cfg.qmode==10) {
+		jsonheader();
+		showjson(0);
+		jsonfooter();
 	}
 }
 

@@ -68,7 +68,6 @@ void showxml(void)
 void xmldate(time_t *date, int type)
 {
 	struct tm *d;
-	char *buffer;
 	char *type1 = "<date><year>%d</year><month>%02d</month><day>%02d</day></date>";
 	char *type2 = "<date><year>%d</year><month>%02d</month><day>%02d</day></date><time><hour>%02d</hour><minute>%02d</minute></time>";
 	char *type3 = "<date><year>%d</year><month>%02d</month></date>";
