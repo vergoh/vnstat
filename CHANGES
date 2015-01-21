@@ -1,3 +1,8 @@
+1.14 / <not released yet>
+
+ - ...
+
+
 1.13 / 18-Jan-2015
 
  - Fix: getgroup() test in Debian GNU/kFreeBSD (patch by Felix Geyer)
