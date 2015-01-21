@@ -2,7 +2,7 @@ ifeq "$(origin CC)" "default"
 CC = gcc
 endif
 CFLAGS ?= -Wall -Wextra -g
-CFLAGS += -DPROCNETDEV=\"testdir/proc/dev\" -DSYSCLASSNET=\"testdir/proc\"
+CFLAGS += -DPROCNETDEV=\"testdir/proc/dev\" -DSYSCLASSNET=\"testdir/sysclassnet\"
 LDLIBS = -lm -lcheck -lrt -lpthread
 OBJS = vnstat_tests.o common_tests.o database_tests.o config_tests.o ifinfo_tests.o misc_tests.o daemon_tests.o
 OBJS += common.o ifinfo.o dbshow.o dbaccess.o dbcache.o cfg.o ibw.o misc.o daemon.o

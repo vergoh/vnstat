@@ -369,7 +369,7 @@ START_TEST(getiflist_no_source)
 }
 END_TEST
 
-START_TEST(getiflist_one_interface)
+START_TEST(getiflist_proc_one_interface)
 {
 	char *ifacelist;
 
@@ -385,7 +385,24 @@ START_TEST(getiflist_one_interface)
 }
 END_TEST
 
-START_TEST(getiflist_multiple_interfaces)
+START_TEST(getiflist_proc_one_interface_with_speed)
+{
+	char *ifacelist;
+
+	linuxonly;
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_proc_net_dev("w", "ethunusual", 0, 0, 0, 0);
+	fake_sys_class_net("ethunusual", 0, 0, 0, 0, 10);
+
+	ck_assert_int_eq(getiflist(&ifacelist, 1), 1);
+	ck_assert_str_eq(ifacelist, "lo ethunusual (10 Mbit) ");
+
+	free(ifacelist);
+}
+END_TEST
+
+START_TEST(getiflist_proc_multiple_interfaces)
 {
 	char *ifacelist;
 
@@ -400,6 +417,58 @@ START_TEST(getiflist_multiple_interfaces)
 
 	ck_assert_int_eq(getiflist(&ifacelist, 0), 1);
 	ck_assert_str_eq(ifacelist, "lo random interfaces having fun i ");
+
+	free(ifacelist);
+}
+END_TEST
+
+START_TEST(getiflist_sysclassnet_one_interface)
+{
+	char *ifacelist;
+
+	linuxonly;
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_sys_class_net("ethunusual", 0, 0, 0, 0, 0);
+
+	ck_assert_int_eq(getiflist(&ifacelist, 1), 1);
+	ck_assert_str_eq(ifacelist, "ethunusual ");
+
+	free(ifacelist);
+}
+END_TEST
+
+START_TEST(getiflist_sysclassnet_one_interface_with_speed)
+{
+	char *ifacelist;
+
+	linuxonly;
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_sys_class_net("ethunusual", 0, 0, 0, 0, 10);
+
+	ck_assert_int_eq(getiflist(&ifacelist, 1), 1);
+	ck_assert_str_eq(ifacelist, "ethunusual (10 Mbit) ");
+
+	free(ifacelist);
+}
+END_TEST
+
+START_TEST(getiflist_sysclassnet_multiple_interfaces)
+{
+	char *ifacelist;
+
+	linuxonly;
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_sys_class_net("random", 0, 0, 0, 0, 0);
+	fake_sys_class_net("interfaces", 0, 0, 0, 0, 0);
+	fake_sys_class_net("having", 0, 0, 0, 0, 0);
+	fake_sys_class_net("fun", 0, 0, 0, 0, 0);
+	fake_sys_class_net("i", 0, 0, 0, 0, 0);
+
+	ck_assert_int_eq(getiflist(&ifacelist, 0), 1);
+	ck_assert_int_eq(strlen(ifacelist), 31);
 
 	free(ifacelist);
 }
@@ -434,6 +503,35 @@ START_TEST(readproc_success)
 	fake_proc_net_dev("a", "ethunusual", 1, 2, 3, 4);
 
 	ck_assert_int_eq(readproc("ethunusual"), 1);
+	ck_assert_str_eq(ifinfo.name, "ethunusual");
+	ck_assert_int_eq(ifinfo.filled, 1);
+	ck_assert_int_eq(ifinfo.rx, 1);
+	ck_assert_int_eq(ifinfo.tx, 2);
+	ck_assert_int_eq(ifinfo.rxp, 3);
+	ck_assert_int_eq(ifinfo.txp, 4);
+}
+END_TEST
+
+START_TEST(readsysclassnet_not_found)
+{
+	linuxonly;
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_sys_class_net("ethwrong", 10, 20, 30, 40, 50);
+
+	ck_assert_int_eq(readsysclassnet("ethunusual"), 0);
+}
+END_TEST
+
+START_TEST(readsysclassnet_success)
+{
+	linuxonly;
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_sys_class_net("ethwrong", 10, 20, 30, 40, 50);
+	fake_sys_class_net("ethunusual", 1, 2, 3, 4, 5);
+
+	ck_assert_int_eq(readsysclassnet("ethunusual"), 1);
 	ck_assert_str_eq(ifinfo.name, "ethunusual");
 	ck_assert_int_eq(ifinfo.filled, 1);
 	ck_assert_int_eq(ifinfo.rx, 1);
@@ -486,11 +584,17 @@ void add_ifinfo_tests(Suite *s)
 	tcase_add_test(tc_ifinfo, parseifinfo_hitting_maxbw_limit_causes_sync);
 	tcase_add_test(tc_ifinfo, parseifinfo_multiple_parses);
 	tcase_add_test(tc_ifinfo, getiflist_no_source);
-	tcase_add_test(tc_ifinfo, getiflist_one_interface);
-	tcase_add_test(tc_ifinfo, getiflist_multiple_interfaces);
+	tcase_add_test(tc_ifinfo, getiflist_proc_one_interface);
+	tcase_add_test(tc_ifinfo, getiflist_proc_one_interface_with_speed);
+	tcase_add_test(tc_ifinfo, getiflist_proc_multiple_interfaces);
+	tcase_add_test(tc_ifinfo, getiflist_sysclassnet_one_interface);
+	tcase_add_test(tc_ifinfo, getiflist_sysclassnet_one_interface_with_speed);
+	tcase_add_test(tc_ifinfo, getiflist_sysclassnet_multiple_interfaces);
 	tcase_add_test(tc_ifinfo, readproc_no_file);
 	tcase_add_test(tc_ifinfo, readproc_not_found);
 	tcase_add_test(tc_ifinfo, readproc_success);
+	tcase_add_test(tc_ifinfo, readsysclassnet_not_found);
+	tcase_add_test(tc_ifinfo, readsysclassnet_success);
 	tcase_add_test(tc_ifinfo, getifinfo_not_found);
 	tcase_add_test(tc_ifinfo, getifinfo_success);
 	suite_add_tcase(s, tc_ifinfo);
