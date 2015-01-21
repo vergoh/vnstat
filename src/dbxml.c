@@ -69,36 +69,18 @@ void xmldate(time_t *date, int type)
 {
 	struct tm *d;
 	char *buffer;
-	char *type1 = "<date><year>%Y</year><month>%m</month><day>%d</day></date>";
-	char *type2 = "<date><year>%Y</year><month>%m</month><day>%d</day></date><time><hour>%H</hour><minute>%M</minute></time>";
-	char *type3 = "<date><year>%Y</year><month>%m</month></date>";
+	char *type1 = "<date><year>%d</year><month>%02d</month><day>%02d</day></date>";
+	char *type2 = "<date><year>%d</year><month>%02d</month><day>%02d</day></date><time><hour>%02d</hour><minute>%02d</minute></time>";
+	char *type3 = "<date><year>%d</year><month>%02d</month></date>";
 
 	d = localtime(date);
 
 	if (type == 1) {
-		buffer = malloc(strlen(type1)+3);
-		if (buffer == NULL) {
-			panicexit(__FILE__, __LINE__);
-		}
-		strftime(buffer, strlen(type1)+3, type1, d);
-		printf("%s", buffer);
-		free(buffer);
+		printf(type1, 1900+d->tm_year, 1+d->tm_mon, d->tm_mday);
 	} else if (type == 2) {
-		buffer = malloc(strlen(type2)+3);
-		if (buffer == NULL) {
-			panicexit(__FILE__, __LINE__);
-		}
-		strftime(buffer, strlen(type2)+3, type2, d);
-		printf("%s", buffer);
-		free(buffer);
+		printf(type2, 1900+d->tm_year, 1+d->tm_mon, d->tm_mday, d->tm_hour, d->tm_min);
 	} else if (type == 3) {
-		buffer = malloc(strlen(type3)+3);
-		if (buffer == NULL) {
-			panicexit(__FILE__, __LINE__);
-		}
-		strftime(buffer, strlen(type3)+3, type3, d);
-		printf("%s", buffer);
-		free(buffer);
+		printf(type3, 1900+d->tm_year, 1+d->tm_mon);
 	}
 }
 
