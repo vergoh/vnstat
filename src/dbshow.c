@@ -1045,7 +1045,7 @@ void exportdb(void)
 	}
 }
 
-void showbar(uint64_t rx, int rxk, uint64_t tx, int txk, uint64_t max, int len)
+int showbar(uint64_t rx, int rxk, uint64_t tx, int txk, uint64_t max, int len)
 {
 	int i, l;
 
@@ -1062,12 +1062,13 @@ void showbar(uint64_t rx, int rxk, uint64_t tx, int txk, uint64_t max, int len)
 	rx=(rx*1024)+rxk;
 	tx=(tx*1024)+txk;
 
-	if ((rx+tx)!=max) {
+	if ((rx+tx)<max) {
 		len=((rx+tx)/(float)max)*len;
+	} else if ((rx+tx)>max) {
+		return 0;
 	}
 
-
-	if (len!=0) {
+	if (len>0) {
 		printf("  ");
 
 		if (tx>rx) {
@@ -1091,7 +1092,7 @@ void showbar(uint64_t rx, int rxk, uint64_t tx, int txk, uint64_t max, int len)
 		}
 
 	}
-
+	return len;
 }
 
 void indent(int i)

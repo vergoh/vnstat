@@ -5,6 +5,7 @@
 
 Suite *test_suite(void);
 void suppress_output(void);
+int pipe_output(void);
 void disable_logprints(void);
 int clean_testdbdir(void);
 int create_testdir(void);

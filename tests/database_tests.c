@@ -936,6 +936,147 @@ START_TEST(database_outputs_do_not_crash)
 }
 END_TEST
 
+START_TEST(showbar_with_zero_len_is_nothing)
+{
+	int len;
+	suppress_output();
+	len = showbar(1, 0, 2, 0, 3, 0);
+	ck_assert_int_eq(len, 0);
+}
+END_TEST
+
+START_TEST(showbar_with_big_max_and_small_numbers)
+{
+	int len;
+	suppress_output();
+	len = showbar(0, 1, 0, 2, 1000, 10);
+	ck_assert_int_eq(len, 0);
+}
+END_TEST
+
+START_TEST(showbar_with_all_rx)
+{
+	int pipe, len;
+	char buffer[512];
+	memset(&buffer, '\0', sizeof(buffer));
+
+	defaultcfg();
+	cfg.rxchar[0] = 'r';
+	cfg.txchar[0] = 't';
+	pipe = pipe_output();
+	len = showbar(0, 1, 0, 0, 1, 10);
+	ck_assert_int_eq(len, 10);
+	fflush(stdout);
+
+	read(pipe, buffer, 512);
+	ck_assert_str_eq(buffer, "  rrrrrrrrrr");
+}
+END_TEST
+
+START_TEST(showbar_with_all_tx)
+{
+	int pipe, len;
+	char buffer[512];
+	memset(&buffer, '\0', sizeof(buffer));
+
+	defaultcfg();
+	cfg.rxchar[0] = 'r';
+	cfg.txchar[0] = 't';
+	pipe = pipe_output();
+	len = showbar(0, 0, 0, 1, 1, 10);
+	ck_assert_int_eq(len, 10);
+	fflush(stdout);
+
+	read(pipe, buffer, 512);
+	ck_assert_str_eq(buffer, "  tttttttttt");
+}
+END_TEST
+
+START_TEST(showbar_with_half_and_half)
+{
+	int pipe, len;
+	char buffer[512];
+	memset(&buffer, '\0', sizeof(buffer));
+
+	defaultcfg();
+	cfg.rxchar[0] = 'r';
+	cfg.txchar[0] = 't';
+	pipe = pipe_output();
+	len = showbar(0, 1, 0, 1, 2, 10);
+	ck_assert_int_eq(len, 10);
+	fflush(stdout);
+
+	read(pipe, buffer, 512);
+	ck_assert_str_eq(buffer, "  rrrrrttttt");
+}
+END_TEST
+
+START_TEST(showbar_with_one_tenth)
+{
+	int pipe, len;
+	char buffer[512];
+	memset(&buffer, '\0', sizeof(buffer));
+
+	defaultcfg();
+	cfg.rxchar[0] = 'r';
+	cfg.txchar[0] = 't';
+	pipe = pipe_output();
+	len = showbar(0, 1, 0, 9, 10, 10);
+	ck_assert_int_eq(len, 10);
+	fflush(stdout);
+
+	read(pipe, buffer, 512);
+	ck_assert_str_eq(buffer, "  rttttttttt");
+}
+END_TEST
+
+START_TEST(showbar_with_small_rx_shows_all_tx)
+{
+	int pipe, len;
+	char buffer[512];
+	memset(&buffer, '\0', sizeof(buffer));
+
+	defaultcfg();
+	cfg.rxchar[0] = 'r';
+	cfg.txchar[0] = 't';
+	pipe = pipe_output();
+	len = showbar(0, 1, 0, 1000, 1001, 10);
+	ck_assert_int_eq(len, 10);
+	fflush(stdout);
+
+	read(pipe, buffer, 512);
+	ck_assert_str_eq(buffer, "  tttttttttt");
+}
+END_TEST
+
+START_TEST(showbar_with_max_smaller_than_real_max)
+{
+	int len;
+	suppress_output();
+	len = showbar(0, 1, 0, 2, 1, 10);
+	ck_assert_int_eq(len, 0);
+}
+END_TEST
+
+START_TEST(showbar_can_also_do_mb_calculations)
+{
+	int pipe, len;
+	char buffer[512];
+	memset(&buffer, '\0', sizeof(buffer));
+
+	defaultcfg();
+	cfg.rxchar[0] = 'r';
+	cfg.txchar[0] = 't';
+	pipe = pipe_output();
+	len = showbar(0, 1024, 0, 1024, 2048, 2);
+	ck_assert_int_eq(len, 2);
+	fflush(stdout);
+
+	read(pipe, buffer, 512);
+	ck_assert_str_eq(buffer, "  rt");
+}
+END_TEST
+
 void add_database_tests(Suite *s)
 {
 	TCase *tc_db = tcase_create("Database");
@@ -986,5 +1127,14 @@ void add_database_tests(Suite *s)
 	tcase_add_test(tc_db, dbcheck_with_filled_cache);
 	tcase_add_test(tc_db, importdb_can_parse_exported_database);
 	tcase_add_test(tc_db, database_outputs_do_not_crash);
+	tcase_add_test(tc_db, showbar_with_zero_len_is_nothing);
+	tcase_add_test(tc_db, showbar_with_big_max_and_small_numbers);
+	tcase_add_test(tc_db, showbar_with_all_rx);
+	tcase_add_test(tc_db, showbar_with_all_tx);
+	tcase_add_test(tc_db, showbar_with_half_and_half);
+	tcase_add_test(tc_db, showbar_with_one_tenth);
+	tcase_add_test(tc_db, showbar_with_small_rx_shows_all_tx);
+	tcase_add_test(tc_db, showbar_with_max_smaller_than_real_max);
+	tcase_add_test(tc_db, showbar_can_also_do_mb_calculations);
 	suite_add_tcase(s, tc_db);
 }

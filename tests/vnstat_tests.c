@@ -46,6 +46,20 @@ void suppress_output(void)
 	fclose(stdout);
 }
 
+int pipe_output(void)
+{
+	int out_pipe[2];
+
+	if (pipe(out_pipe) != 0) {
+		ck_abort_msg("error \"%s\" while creating pipe", strerror(errno));
+	}
+
+	dup2(out_pipe[1], STDOUT_FILENO);
+	close(out_pipe[1]);
+
+	return out_pipe[0];
+}
+
 void disable_logprints(void)
 {
 	noexit = 2;
