@@ -3,8 +3,6 @@
 
 void showxml(void)
 {
-	int i;
-
 	printf(" <interface id=\"%s\">\n", data.interface);
 
 	printf("  <id>%s</id>\n", data.interface);
@@ -20,6 +18,19 @@ void showxml(void)
 	printf("  <traffic>\n");
 	printf("   <total><rx>%"PRIu64"</rx><tx>%"PRIu64"</tx></total>\n", (data.totalrx*1024)+data.totalrxk, (data.totaltx*1024)+data.totaltxk);
 
+	xmldays();
+	xmlmonths();
+	xmltops();
+	xmlhours();
+
+	printf("  </traffic>\n");
+	printf(" </interface>\n");
+}
+
+void xmldays(void)
+{
+	int i;
+
 	printf("   <days>\n");
 	for (i=0;i<=29;i++) {
 		if (data.day[i].used) {
@@ -29,6 +40,11 @@ void showxml(void)
 		}
 	}
 	printf("   </days>\n");
+}
+
+void xmlmonths(void)
+{
+	int i;
 
 	printf("   <months>\n");
 	for (i=0;i<=11;i++) {
@@ -39,6 +55,11 @@ void showxml(void)
 		}
 	}
 	printf("   </months>\n");
+}
+
+void xmltops(void)
+{
+	int i;
 
 	printf("   <tops>\n");
 	for (i=0;i<=9;i++) {
@@ -49,6 +70,11 @@ void showxml(void)
 		}
 	}
 	printf("   </tops>\n");
+}
+
+void xmlhours(void)
+{
+	int i;
 
 	printf("   <hours>\n");
 	for (i=0;i<=23;i++) {
@@ -59,10 +85,6 @@ void showxml(void)
 		}
 	}
 	printf("   </hours>\n");
-
-	printf("  </traffic>\n");
-	printf(" </interface>\n");
-
 }
 
 void xmldate(time_t *date, int type)
