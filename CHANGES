@@ -1,6 +1,7 @@
 1.14 / <not released yet>
 
- - ...
+ - Fix: JSON output syntax during first day of newly created databases
+   (pull request by Stefan Merettig)
 
 
 1.13 / 18-Jan-2015
