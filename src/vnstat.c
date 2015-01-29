@@ -120,7 +120,6 @@ int main(int argc, char *argv[]) {
 			}
 		} else if ((strcmp(argv[currentarg],"--style"))==0) {
 			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
-				cfg.ostyle = atoi(argv[currentarg+1]);
 				if (cfg.ostyle > 4 || cfg.ostyle < 0) {
 					printf("Error: Invalid style parameter \"%d\" for --style.\n", cfg.ostyle);
 					printf(" Valid parameters:\n");
@@ -131,6 +130,7 @@ int main(int argc, char *argv[]) {
 					printf("    4 - disable terminal control characters in -l / --live\n");
 					return 1;
 				}
+				cfg.ostyle = atoi(argv[currentarg+1]);
 				if (debug)
 					printf("Style changed: %d\n", cfg.ostyle);
 				currentarg++;
@@ -212,12 +212,25 @@ int main(int argc, char *argv[]) {
 		} else if (strcmp(argv[currentarg],"--xml")==0) {
 			cfg.qmode=8;
 		} else if (strcmp(argv[currentarg],"--json")==0) {
+			if (currentarg+1<argc && argv[currentarg+1][0]!='-') {
+				if (strlen(argv[currentarg+1])!=1 || strchr("ahdmt", p.jsonmode)==NULL) {
+					printf("Error: Invalid mode parameter \"%s\" for --json.\n", argv[currentarg+1]);
+					printf(" Valid parameters:\n");
+					printf("    a - all (default)\n");
+					printf("    h - only hours\n");
+					printf("    d - only days\n");
+					printf("    m - only months\n");
+					printf("    t - only top 10\n");
+					return 1;
+				}
+				p.jsonmode = argv[currentarg+1][0];
+				currentarg++;
+			}
 			cfg.qmode=10;
 		} else if (strcmp(argv[currentarg],"--savemerged")==0) {
 			p.savemerged=1;
 		} else if ((strcmp(argv[currentarg],"-ru")==0) || (strcmp(argv[currentarg],"--rateunit"))==0) {
 			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
-				cfg.rateunit = atoi(argv[currentarg+1]);
 				if (cfg.rateunit > 1 || cfg.rateunit < 0) {
 					printf("Error: Invalid parameter \"%d\" for --rateunit.\n", cfg.rateunit);
 					printf(" Valid parameters:\n");
@@ -225,6 +238,7 @@ int main(int argc, char *argv[]) {
 					printf("    1 - bits\n");
 					return 1;
 				}
+				cfg.rateunit = atoi(argv[currentarg+1]);
 				if (debug)
 					printf("Rateunit changed: %d\n", cfg.rateunit);
 				currentarg++;
@@ -238,20 +252,17 @@ int main(int argc, char *argv[]) {
 			p.active=1;
 			p.query=0;
 		} else if ((strcmp(argv[currentarg],"-tr")==0) || (strcmp(argv[currentarg],"--traffic")==0)) {
-			if (currentarg+1<argc) {
-				if (isdigit(argv[currentarg+1][0])) {
-					cfg.sampletime=atoi(argv[currentarg+1]);
-					currentarg++;
-					p.traffic=1;
-					p.query=0;
-					continue;
-				}
+			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
+				cfg.sampletime=atoi(argv[currentarg+1]);
+				currentarg++;
+				p.traffic=1;
+				p.query=0;
+				continue;
 			}
 			p.traffic=1;
 			p.query=0;
 		} else if ((strcmp(argv[currentarg],"-l")==0) || (strcmp(argv[currentarg],"--live")==0)) {
 			if (currentarg+1<argc && argv[currentarg+1][0]!='-') {
-				p.livemode = atoi(argv[currentarg+1]);
 				if (!isdigit(argv[currentarg+1][0]) || p.livemode > 1 || p.livemode < 0) {
 					printf("Error: Invalid mode parameter \"%s\" for -l / --live.\n", argv[currentarg+1]);
 					printf(" Valid parameters:\n");
@@ -259,6 +270,7 @@ int main(int argc, char *argv[]) {
 					printf("    1 - show transfer counters\n");
 					return 1;
 				}
+				p.livemode = atoi(argv[currentarg+1]);
 				currentarg++;
 			}
 			p.livetraffic=1;
@@ -400,8 +412,9 @@ void initparams(PARAMS *p)
 	p->defaultiface = 1;
 	p->delete=0;
 	p->livemode = 0;
-    p->ifacelist = NULL;
+	p->ifacelist = NULL;
 	p->cfgfile[0] = '\0';
+	p->jsonmode = 'a';
 }
 
 int synccounters(const char *iface, const char *dirname)
@@ -429,7 +442,7 @@ void showhelp(PARAMS *p)
 			printf("         -d,  --days           show days\n");
 			printf("         -m,  --months         show months\n");
 			printf("         -w,  --weeks          show weeks\n");
-			printf("         -t,  --top10          show top10\n");
+			printf("         -t,  --top10          show top 10 days\n");
 			printf("         -s,  --short          use short output\n");
 			printf("         -u,  --update         update database\n");
 			printf("         -i,  --iface          select interface (default: %s)\n", p->definterface);
@@ -452,7 +465,7 @@ void showlonghelp(PARAMS *p)
 			printf("         -d, --days            show days\n");
 			printf("         -m, --months          show months\n");
 			printf("         -w, --weeks           show weeks\n");
-			printf("         -t, --top10           show top10\n");
+			printf("         -t, --top10           show top 10 days\n");
 			printf("         -s, --short           use short output\n");
 			printf("         -ru, --rateunit       swap configured rate unit\n");
 			printf("         --oneline             show simple parseable format\n");
@@ -470,7 +483,7 @@ void showlonghelp(PARAMS *p)
 			printf("         --enable              enable interface\n");
 			printf("         --disable             disable interface\n");
 			printf("         --nick                set a nickname for interface\n");
-			printf("         --cleartop            clear the top10\n");
+			printf("         --cleartop            clear the top 10\n");
 			printf("         --rebuildtotal        rebuild total transfers from months\n");
 
 			printf("   Misc:\n");
@@ -625,7 +638,7 @@ void handlecleartop10(PARAMS *p)
 		cleartop10(p->interface, p->dirname);
 		p->query=0;
 	} else {
-		printf("Warning:\nThe current option would clear the top10 for \"%s\".\n", p->interface);
+		printf("Warning:\nThe current option would clear the top 10 for \"%s\".\n", p->interface);
 		printf("Use --force in order to really do that.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -892,7 +905,7 @@ void handleshowdatabases(PARAMS *p)
 			} else if (cfg.qmode==8) {
 				showxml();
 			} else if (cfg.qmode==10) {
-				showjson(dbcount);
+				showjson(dbcount, p->jsonmode);
 			}
 			dbcount++;
 		}
@@ -932,7 +945,7 @@ void showoneinterface(PARAMS *p, const char *interface)
 		xmlfooter();
 	} else if (cfg.qmode==10) {
 		jsonheader();
-		showjson(0);
+		showjson(0, p->jsonmode);
 		jsonfooter();
 	}
 }

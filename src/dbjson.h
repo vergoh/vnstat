@@ -1,7 +1,7 @@
 #ifndef DBJSON_H
 #define DBJSON_H
 
-void showjson(int dbcount);
+void showjson(int dbcount, char mode);
 void jsondays(void);
 void jsonmonths(void);
 void jsontops(void);

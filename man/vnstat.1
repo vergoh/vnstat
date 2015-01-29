@@ -47,6 +47,7 @@ vnstat \- a console-based network traffic monitor
 .B \-\-iflist
 ] [
 .B \-\-json
+.I mode
 ] [
 .B \-\-live
 .I mode
@@ -253,9 +254,14 @@ syntax.
 Show list of currently available interfaces.
 
 .TP
-.B "--json"
+.BI "--json " mode
 Show database content for selected interface or all interfaces in json format. All
-traffic values in the output are in KiB.
+traffic values in the output are in KiB. An optional
+.I mode
+parameter can be used for limiting the output to only selected information.
+Everything is shown by default. Setting
+.I mode
+to 'h' will output only hours, 'd' days, 'm' months and 't' the top 10.
 
 .TP
 .BI "-l, --live " mode

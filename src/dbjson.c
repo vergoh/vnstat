@@ -1,7 +1,7 @@
 #include "common.h"
 #include "dbjson.h"
 
-void showjson(int dbcount)
+void showjson(int dbcount, char mode)
 {
 	if (dbcount) {
 		printf(",");
@@ -20,13 +20,31 @@ void showjson(int dbcount)
 	printf("\"traffic\":");
 	printf("{\"total\":{\"rx\":%"PRIu64",\"tx\":%"PRIu64"},", (data.totalrx*1024)+data.totalrxk, (data.totaltx*1024)+data.totaltxk);
 
-	jsondays();
-	printf(",");
-	jsonmonths();
-	printf(",");
-	jsontops();
-	printf(",");
-	jsonhours();
+	switch (mode) {
+		case 'd':
+			jsondays();
+			break;
+		case 'm':
+			jsonmonths();
+			break;
+		case 't':
+			jsontops();
+			break;
+		case 'h':
+			jsonhours();
+			break;
+		case 'a':
+		default:
+			jsondays();
+			printf(",");
+			jsonmonths();
+			printf(",");
+			jsontops();
+			printf(",");
+			jsonhours();
+			break;
+	}
+
 	printf("}}");
 }
 
