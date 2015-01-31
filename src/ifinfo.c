@@ -1,6 +1,7 @@
 #include "common.h"
 #include "misc.h"
 #include "dbaccess.h"
+#include "dbsql.h"
 #include "cfg.h"
 #include "ibw.h"
 #include "ifinfo.h"
@@ -307,7 +308,7 @@ int readsysclassnet(const char *iface)
 
 void parseifinfo(int newdb)
 {
-	uint64_t rxchange=0, txchange=0, btime, cc;   /* rxchange = rx change in MB */
+	uint64_t rxchange=0, txchange=0, btime, cc, tcc, rcc;   /* rxchange = rx change in MB */
 	uint64_t krxchange=0, ktxchange=0, maxtransfer;   /* krxchange = rx change in kB */
 	time_t current, interval;
 	struct tm *d;
@@ -334,12 +335,14 @@ void parseifinfo(int newdb)
 		/* process rx & tx */
 		if (newdb!=1) {
 			cc = countercalc(&data.currx, &ifinfo.rx);
+			rcc = cc;
 			rxchange = cc/1048576;      /* 1024/1024 */
 			rxkchange = (cc/1024)%1024;
 			krxchange = cc/1024;
 			ifinfo.rxp = cc%1024;
 
 			cc = countercalc(&data.curtx, &ifinfo.tx);
+			tcc = cc;
 			txchange = cc/1048576;      /* 1024/1024 */
 			txkchange = (cc/1024)%1024;
 			ktxchange = cc/1024;
@@ -364,6 +367,9 @@ void parseifinfo(int newdb)
 				printe(PT_Info);
 				rxchange = krxchange = rxkchange = txchange = ktxchange = txkchange = 0;
 				ifinfo.rxp = ifinfo.txp = 0;
+			} else {
+				if (rcc || tcc)
+					db_addtraffic(data.interface, rcc, tcc);
 			}
 		}
 

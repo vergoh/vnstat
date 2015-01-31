@@ -2,9 +2,9 @@ ifeq "$(origin CC)" "default"
 CC = gcc
 endif
 CFLAGS ?= -O2
-LDLIBS = -lm
-OBJS = vnstat.o ifinfo.o dbxml.o dbjson.o dbshow.o dbaccess.o dbmerge.o common.o misc.o cfg.o ibw.o traffic.o
-DOBJS = vnstatd.o ifinfo.o dbaccess.o dbcache.o common.o misc.o cfg.o ibw.o daemon.o
+LDLIBS = -lm -lsqlite3
+OBJS = vnstat.o ifinfo.o dbsql.o dbxml.o dbjson.o dbshow.o dbaccess.o dbmerge.o common.o misc.o cfg.o ibw.o traffic.o
+DOBJS = vnstatd.o ifinfo.o dbsql.o dbaccess.o dbcache.o common.o misc.o cfg.o ibw.o daemon.o
 IOBJS = vnstati.o image.o dbaccess.o dbmerge.o common.o misc.o cfg.o
 
 default: vnstat vnstatd
@@ -22,8 +22,9 @@ vnstat.o: vnstat.c vnstat.h common.h ifinfo.h traffic.h dbxml.h dbjson.h dbshow.
 vnstatd.o: vnstatd.c vnstatd.h common.h dbcache.h cfg.h daemon.h
 vnstati.o: vnstati.c vnstati.h common.h image.h cfg.h dbaccess.h dbmerge.h
 
-ifinfo.o: ifinfo.c ifinfo.h common.h dbaccess.h misc.h cfg.h ibw.h
+ifinfo.o: ifinfo.c ifinfo.h common.h dbaccess.h dbsql.h misc.h cfg.h ibw.h
 traffic.o: traffic.c traffic.h common.h ifinfo.h misc.h
+dbsql.o: dbsql.c dbsql.h common.h
 dbxml.o: dbxml.c dbxml.h common.h
 dbjson.o: dbjson.c dbjson.h common.h
 dbshow.o: dbshow.c dbshow.h misc.h common.h

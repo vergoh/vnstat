@@ -17,6 +17,7 @@ vnStat daemon - Copyright (c) 2008-2015 Teemu Toivola <tst@iki.fi>
 
 #include "common.h"
 #include "dbcache.h"
+#include "dbsql.h"
 #include "cfg.h"
 #include "ibw.h"
 #include "daemon.h"
@@ -139,6 +140,8 @@ int main(int argc, char *argv[])
 	/* set user and/or group if requested */
 	setgroup(s.group);
 	setuser(s.user);
+
+	db_open();
 
 	preparedatabases(&s);
 	setsignaltraps();
