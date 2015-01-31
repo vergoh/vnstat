@@ -17,10 +17,10 @@ also planned.
 ##### Done
 
   * database creation with basic insert functionality
+  * support for multiple interfaces
 
 ##### TODO
 
-  * support for multiple interfaces instead of hardcoded eth0
   * data buffering in daemon instead of writing to disk once every update cycle
   * data import from vnStat 1.x database format
   * all outputs (text and image)

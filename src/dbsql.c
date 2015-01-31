@@ -1,25 +1,48 @@
-
 #include "common.h"
 #include "dbsql.h"
 
 int db_open()
 {
-	int rc;
+	int rc, createdb = 0;
 	char dbfilename[512];
+	struct stat filestat;
 
-	snprintf(dbfilename, 512, "%s/%s", DATABASEDIR, DATABASEFILE);
+	snprintf(dbfilename, 512, "%s/%s", cfg.dbdir, DATABASEFILE);
+
+	/* create database if file doesn't exist */
+	if (stat(dbfilename, &filestat) != 0) {
+		if (errno == ENOENT) {
+			createdb = 1;
+		} else {
+			if (debug)
+				printf("Error: Handling database \"%s\" failed: %s\n", dbfilename, strerror(errno));
+			return 0;
+		}
+	}
 
 	rc = sqlite3_open(dbfilename, &db);
 
 	if (rc) {
 		if (debug)
-			printf("Can't open database \"%s\": %s\n", dbfilename, sqlite3_errmsg(db));
-		return 1;
+			printf("Error: Can't open database \"%s\": %s\n", dbfilename, sqlite3_errmsg(db));
+		return 0;
 	} else {
 		if (debug)
-			printf("Opened or created database \"%s\" successfully (%d)\n", dbfilename, rc);
+			printf("Database \"%s\" open\n", dbfilename);
 	}
-	return 0;
+
+	if (createdb) {
+		if (!db_create()) {
+			if (debug)
+				printf("Error: Creating database \"%s\" failed\n", dbfilename);
+			return 0;
+		} else {
+			if (debug)
+				printf("Database \"%s\" created\n", dbfilename);
+		}
+	}
+
+	return 1;
 }
 
 int db_exec(char *sql)
@@ -30,25 +53,25 @@ int db_exec(char *sql)
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
 	if (rc) {
 		if (debug)
-			printf("  Insert prepare failed (%d): %s\n", rc, sqlite3_errmsg(db));
-		return 1;
+			printf("Error: Insert prepare failed (%d): %s\n", rc, sqlite3_errmsg(db));
+		return 0;
 	}
 
 	rc = sqlite3_step(sqlstmt);
-	if (rc!=SQLITE_DONE) {
+	if (rc != SQLITE_DONE) {
 		if (debug)
-			printf("  Insert step failed (%d): %s\n", rc, sqlite3_errmsg(db));
-		return 1;
+			printf("Error: Insert step failed (%d): %s\n", rc, sqlite3_errmsg(db));
+		return 0;
 	}
 
 	rc = sqlite3_finalize(sqlstmt);
 	if (rc) {
 		if (debug)
-			printf("  Finalize failed (%d): %s\n", rc, sqlite3_errmsg(db));
-		return 1;
+			printf("Error: Finalize failed (%d): %s\n", rc, sqlite3_errmsg(db));
+		return 0;
 	}
 
-	return 0;
+	return 1;
 }
 
 int db_create()
@@ -60,8 +83,8 @@ int db_create()
 	/* TODO: check: COMMIT or END may be missing in error cases and return gets called before COMMIT */
 
 	rc = sqlite3_exec(db, "BEGIN", 0, 0, 0);
-	if (rc) {
-		return rc;
+	if (rc != 0) {
+		return 0;
 	}
 
 	sql = "CREATE TABLE info(\n" \
@@ -69,9 +92,8 @@ int db_create()
 		"  name     TEXT UNIQUE NOT NULL,\n" \
 		"  value    TEXT NOT NULL);";
 
-	rc = db_exec(sql);
-	if (rc) {
-		return rc;
+	if (!db_exec(sql)) {
+		return 0;
 	}
 
 	sql = "CREATE TABLE interface(\n" \
@@ -86,9 +108,8 @@ int db_create()
 		"  rxtotal      INTEGER NOT NULL,\n" \
 		"  txtotal      INTEGER NOT NULL);";
 
-	rc = db_exec(sql);
-	if (rc) {
-		return rc;
+	if (!db_exec(sql)) {
+		return 0;
 	}
 
 	for (i=0; i<5; i++) {
@@ -104,52 +125,86 @@ int db_create()
 			"  tx           INTEGER NOT NULL,\n" \
 			"  CONSTRAINT u UNIQUE (interface, date));", datatables[i]);
 
-		rc = db_exec(sql);
-		free(sql);
-		if (rc) {
-			return rc;
+		if (!db_exec(sql)) {
+			free(sql);
+			return 0;
 		}
 	}
 
 	rc = sqlite3_exec(db, "COMMIT", 0, 0, 0);
-	if (rc) {
-		return rc;
+	if (rc != 0) {
+		return 0;
 	}
 
-	return 0;
+	return 1;
 }
 
-void db_addinterface(char *iface)
+int db_addinterface(char *iface)
 {
-	char *sql;
+	char sql[1024];
 
-	sql = "insert into interface (name, active, created, updated, rxcounter, txcounter, rxtotal, txtotal) values ('eth0', 1, datetime('now'), datetime('now'), 0, 0, 0, 0);";
-	db_exec(sql);
+	snprintf(sql, 1024, "insert into interface (name, active, created, updated, rxcounter, txcounter, rxtotal, txtotal) values ('%s', 1, datetime('now'), datetime('now'), 0, 0, 0, 0);", iface);
+	return db_exec(sql);
 }
 
-void db_addtraffic(char *iface, int rx, int tx)
+sqlite3_int64 db_getinterfaceid(char *iface)
+{
+	int rc;
+	char sql[1024];
+	sqlite3_int64 ifaceid = 0;
+	sqlite3_stmt *sqlstmt;
+
+	snprintf(sql, 1024, "select id from interface where name='%s'", iface);
+	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
+	if (!rc) {
+		if (sqlite3_step(sqlstmt) == SQLITE_ROW) {
+			ifaceid = sqlite3_column_int64(sqlstmt, 0);
+		}
+		sqlite3_finalize(sqlstmt);
+	}
+
+	if (ifaceid == 0) {
+		if (!db_addinterface(iface)) {
+			return 0;
+		}
+		ifaceid = sqlite3_last_insert_rowid(db);
+	}
+
+	return ifaceid;
+}
+
+int db_addtraffic(char *iface, int rx, int tx)
 {
 	int i;
 	char sql[1024];
+	sqlite3_int64 ifaceid = 0;
+
 	char *datatables[] = {"fiveminute", "hour", "day", "month", "year"};
 	char *datadates[] = {"datetime('now', ('-' || (strftime('%M', 'now')) || ' minutes'), ('-' || (strftime('%S', 'now')) || ' seconds'), ('+' || (round(strftime('%M', 'now')/5,0)*5) || ' minutes'))", \
 			"strftime('%Y-%m-%d %H:00:00', 'now')", \
 			"date('now')", "strftime('%Y-%m-01', 'now')", \
 			"strftime('%Y-01-01', 'now')"};
 
+	ifaceid = db_getinterfaceid(iface);
+	if (ifaceid == 0) {
+		return 0;
+	}
+
 	sqlite3_exec(db, "BEGIN", 0, 0, 0);
 
 	/* total */
-	snprintf(sql, 1024, "update interface set rxtotal=rxtotal+%d, txtotal=txtotal+%d, updated=datetime('now') where name='eth0';", rx, tx);
+	snprintf(sql, 1024, "update interface set rxtotal=rxtotal+%d, txtotal=txtotal+%d, updated=datetime('now') where id=%d;", rx, tx, (int)ifaceid);
 	db_exec(sql);
 
 	/* time specific */
 	for (i=0; i<5; i++) {
-		snprintf(sql, 1024, "insert or ignore into %s (interface, date, rx, tx) values (1, %s, 0, 0);", datatables[i], datadates[i]);
+		snprintf(sql, 1024, "insert or ignore into %s (interface, date, rx, tx) values (%d, %s, 0, 0);", datatables[i], (int)ifaceid, datadates[i]);
 		db_exec(sql);
-		snprintf(sql, 1024, "update %s set rx=rx+%d, tx=tx+%d where interface=1 and date=%s;", datatables[i], rx, tx, datadates[i]);
+		snprintf(sql, 1024, "update %s set rx=rx+%d, tx=tx+%d where interface=%d and date=%s;", datatables[i], rx, tx, (int)ifaceid, datadates[i]);
 		db_exec(sql);
 	}
 
 	sqlite3_exec(db, "COMMIT", 0, 0, 0);
+
+	return 1;
 }
