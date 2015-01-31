@@ -5,15 +5,19 @@
 int db_open()
 {
 	int rc;
+	char dbfilename[512];
 
-	/* open db */
-	rc = sqlite3_open("/tmp/vnstat.db", &db);
+	snprintf(dbfilename, 512, "%s/%s", DATABASEDIR, DATABASEFILE);
+
+	rc = sqlite3_open(dbfilename, &db);
 
 	if (rc) {
-		printf("Can't open database: %s\n", sqlite3_errmsg(db));
+		if (debug)
+			printf("Can't open database \"%s\": %s\n", dbfilename, sqlite3_errmsg(db));
 		return 1;
 	} else {
-		printf("Opened or created database successfully (%d)\n", rc);
+		if (debug)
+			printf("Opened or created database \"%s\" successfully (%d)\n", dbfilename, rc);
 	}
 	return 0;
 }
@@ -25,19 +29,22 @@ int db_exec(char *sql)
 
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
 	if (rc) {
-		printf("  Insert prepare failed (%d): %s\n", rc, sqlite3_errmsg(db));
+		if (debug)
+			printf("  Insert prepare failed (%d): %s\n", rc, sqlite3_errmsg(db));
 		return 1;
 	}
 
 	rc = sqlite3_step(sqlstmt);
 	if (rc!=SQLITE_DONE) {
-		printf("  Insert step failed (%d): %s\n", rc, sqlite3_errmsg(db));
+		if (debug)
+			printf("  Insert step failed (%d): %s\n", rc, sqlite3_errmsg(db));
 		return 1;
 	}
 
 	rc = sqlite3_finalize(sqlstmt);
 	if (rc) {
-		printf("  Finalize failed (%d): %s\n", rc, sqlite3_errmsg(db));
+		if (debug)
+			printf("  Finalize failed (%d): %s\n", rc, sqlite3_errmsg(db));
 		return 1;
 	}
 
@@ -85,7 +92,8 @@ int db_create()
 	}
 
 	for (i=0; i<5; i++) {
-		printf("%d: %s\n", i, datatables[i]);
+		if (debug)
+			printf("%d: %s\n", i, datatables[i]);
 		sql = malloc(sizeof(char)*512);
 
 		snprintf(sql, 512, "CREATE TABLE %s(\n" \
@@ -137,8 +145,6 @@ void db_addtraffic(char *iface, int rx, int tx)
 
 	/* time specific */
 	for (i=0; i<5; i++) {
-		//printf("%d: %s\n", i, datatables[i]);
-
 		snprintf(sql, 1024, "insert or ignore into %s (interface, date, rx, tx) values (1, %s, 0, 0);", datatables[i], datadates[i]);
 		db_exec(sql);
 		snprintf(sql, 1024, "update %s set rx=rx+%d, tx=tx+%d where interface=1 and date=%s;", datatables[i], rx, tx, datadates[i]);
