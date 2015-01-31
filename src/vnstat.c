@@ -210,9 +210,24 @@ int main(int argc, char *argv[]) {
 		} else if (strcmp(argv[currentarg],"--oneline")==0) {
 			cfg.qmode=9;
 		} else if (strcmp(argv[currentarg],"--xml")==0) {
+			if (currentarg+1<argc && argv[currentarg+1][0]!='-') {
+				p.xmlmode = argv[currentarg+1][0];
+				if (strlen(argv[currentarg+1])!=1 || strchr("ahdmt", p.xmlmode)==NULL) {
+					printf("Error: Invalid mode parameter \"%s\" for --xml.\n", argv[currentarg+1]);
+					printf(" Valid parameters:\n");
+					printf("    a - all (default)\n");
+					printf("    h - only hours\n");
+					printf("    d - only days\n");
+					printf("    m - only months\n");
+					printf("    t - only top 10\n");
+					return 1;
+				}
+				currentarg++;
+			}
 			cfg.qmode=8;
 		} else if (strcmp(argv[currentarg],"--json")==0) {
 			if (currentarg+1<argc && argv[currentarg+1][0]!='-') {
+				p.jsonmode = argv[currentarg+1][0];
 				if (strlen(argv[currentarg+1])!=1 || strchr("ahdmt", p.jsonmode)==NULL) {
 					printf("Error: Invalid mode parameter \"%s\" for --json.\n", argv[currentarg+1]);
 					printf(" Valid parameters:\n");
@@ -223,7 +238,6 @@ int main(int argc, char *argv[]) {
 					printf("    t - only top 10\n");
 					return 1;
 				}
-				p.jsonmode = argv[currentarg+1][0];
 				currentarg++;
 			}
 			cfg.qmode=10;
@@ -415,6 +429,7 @@ void initparams(PARAMS *p)
 	p->ifacelist = NULL;
 	p->cfgfile[0] = '\0';
 	p->jsonmode = 'a';
+	p->xmlmode = 'a';
 }
 
 int synccounters(const char *iface, const char *dirname)
@@ -903,7 +918,7 @@ void handleshowdatabases(PARAMS *p)
 			if (cfg.qmode==0) {
 				showdb(5);
 			} else if (cfg.qmode==8) {
-				showxml();
+				showxml(p->xmlmode);
 			} else if (cfg.qmode==10) {
 				showjson(dbcount, p->jsonmode);
 			}
@@ -941,7 +956,7 @@ void showoneinterface(PARAMS *p, const char *interface)
 		showdb(cfg.qmode);
 	} else if (cfg.qmode==8) {
 		xmlheader();
-		showxml();
+		showxml(p->xmlmode);
 		xmlfooter();
 	} else if (cfg.qmode==10) {
 		jsonheader();

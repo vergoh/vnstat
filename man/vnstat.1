@@ -102,6 +102,7 @@ vnstat \- a console-based network traffic monitor
 .B \-\-weeks
 ] [
 .B \-\-xml
+.I mode
 ]
 
 .SH DESCRIPTION
@@ -401,9 +402,14 @@ Show current version.
 Show traffic for 7 days, current and previous week.
 
 .TP
-.B "--xml"
+.BI "--xml " mode
 Show database content for selected interface or all interfaces in xml format. All
-traffic values in the output are in KiB.
+traffic values in the output are in KiB. An optional
+.I mode
+parameter can be used for limiting the output to only selected information.
+Everything is shown by default. Setting
+.I mode
+to 'h' will output only hours, 'd' days, 'm' months and 't' the top 10.
 
 .TP
 .B "-?, --help"

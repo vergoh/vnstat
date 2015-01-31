@@ -6,7 +6,7 @@ typedef struct {
 	int create, active, files, force, cleartop, rebuildtotal, traffic;
 	int livetraffic, defaultiface, delete, livemode;
 	char interface[32], dirname[512], nick[32], filename[512];
-	char definterface[32], cfgfile[512], *ifacelist, jsonmode;
+	char definterface[32], cfgfile[512], *ifacelist, jsonmode, xmlmode;
 } PARAMS;
 
 void initparams(PARAMS *p);

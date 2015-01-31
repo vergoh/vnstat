@@ -2,8 +2,8 @@
 
  - Fix: JSON output syntax during first day of newly created databases
    (pull request by Stefan Merettig)
- - Add optional mode parameter to --json for limiting the output to only
-   selected information
+ - Add optional mode parameter to --json and --xml for limiting the output
+   to only selected information
 
 
 1.13 / 18-Jan-2015

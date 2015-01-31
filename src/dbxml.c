@@ -1,7 +1,7 @@
 #include "common.h"
 #include "dbxml.h"
 
-void showxml(void)
+void showxml(char mode)
 {
 	printf(" <interface id=\"%s\">\n", data.interface);
 
@@ -18,10 +18,30 @@ void showxml(void)
 	printf("  <traffic>\n");
 	printf("   <total><rx>%"PRIu64"</rx><tx>%"PRIu64"</tx></total>\n", (data.totalrx*1024)+data.totalrxk, (data.totaltx*1024)+data.totaltxk);
 
-	xmldays();
-	xmlmonths();
-	xmltops();
-	xmlhours();
+	switch (mode) {
+		case 'd':
+			xmldays();
+			break;
+		case 'm':
+			xmlmonths();
+			break;
+		case 't':
+			xmltops();
+			break;
+		case 'h':
+			xmlhours();
+			break;
+		case 'a':
+		default:
+			xmldays();
+			printf(",");
+			xmlmonths();
+			printf(",");
+			xmltops();
+			printf(",");
+			xmlhours();
+			break;
+	}
 
 	printf("  </traffic>\n");
 	printf(" </interface>\n");

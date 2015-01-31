@@ -1,7 +1,7 @@
 #ifndef DBXML_H
 #define DBXML_H
 
-void showxml(void);
+void showxml(char mode);
 void xmldays(void);
 void xmlmonths(void);
 void xmltops(void);
