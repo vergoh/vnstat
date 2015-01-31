@@ -366,11 +366,13 @@ void parseifinfo(int newdb)
 				snprintf(errorstring, 512, "Traffic rate for \"%s\" higher than set maximum %d Mbit (%"PRIu64"->%"PRIu64", r%"PRIu64" t%"PRIu64"), syncing.", data.interface, maxbw, (uint64_t)interval, maxtransfer, rxchange, txchange);
 				printe(PT_Info);
 				rxchange = krxchange = rxkchange = txchange = ktxchange = txkchange = 0;
+				rcc = tcc = 0;
 				ifinfo.rxp = ifinfo.txp = 0;
-			} else {
-				if (rcc || tcc)
-					db_addtraffic(data.interface, rcc, tcc);
 			}
+		}
+
+		if (!newdb && (rcc || tcc)) {
+			db_addtraffic(data.interface, rcc, tcc);
 		}
 
 	} else {

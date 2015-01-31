@@ -1,7 +1,7 @@
 #include "common.h"
 #include "dbsql.h"
 
-int db_open()
+int db_open(void)
 {
 	int rc, createdb = 0;
 	char dbfilename[512];
@@ -74,7 +74,7 @@ int db_exec(char *sql)
 	return 1;
 }
 
-int db_create()
+int db_create(void)
 {
 	int rc, i;
 	char *sql;
@@ -114,7 +114,7 @@ int db_create()
 
 	for (i=0; i<5; i++) {
 		if (debug)
-			printf("%d: %s\n", i, datatables[i]);
+			printf("  %d: %s\n", i, datatables[i]);
 		sql = malloc(sizeof(char)*512);
 
 		snprintf(sql, 512, "CREATE TABLE %s(\n" \
@@ -173,7 +173,7 @@ sqlite3_int64 db_getinterfaceid(char *iface)
 	return ifaceid;
 }
 
-int db_addtraffic(char *iface, int rx, int tx)
+int db_addtraffic(char *iface, uint64_t rx, uint64_t tx)
 {
 	int i;
 	char sql[1024];
@@ -190,17 +190,20 @@ int db_addtraffic(char *iface, int rx, int tx)
 		return 0;
 	}
 
+	if (debug)
+		printf("add %s (%"PRId64"): rx %"PRIu64" - tx %"PRIu64"\n", iface, (int64_t)ifaceid, rx, tx);
+
 	sqlite3_exec(db, "BEGIN", 0, 0, 0);
 
 	/* total */
-	snprintf(sql, 1024, "update interface set rxtotal=rxtotal+%d, txtotal=txtotal+%d, updated=datetime('now') where id=%d;", rx, tx, (int)ifaceid);
+	snprintf(sql, 1024, "update interface set rxtotal=rxtotal+%"PRIu64", txtotal=txtotal+%"PRIu64", updated=datetime('now') where id=%"PRId64";", rx, tx, (int64_t)ifaceid);
 	db_exec(sql);
 
 	/* time specific */
 	for (i=0; i<5; i++) {
-		snprintf(sql, 1024, "insert or ignore into %s (interface, date, rx, tx) values (%d, %s, 0, 0);", datatables[i], (int)ifaceid, datadates[i]);
+		snprintf(sql, 1024, "insert or ignore into %s (interface, date, rx, tx) values (%"PRId64", %s, 0, 0);", datatables[i], (int64_t)ifaceid, datadates[i]);
 		db_exec(sql);
-		snprintf(sql, 1024, "update %s set rx=rx+%d, tx=tx+%d where interface=%d and date=%s;", datatables[i], rx, tx, (int)ifaceid, datadates[i]);
+		snprintf(sql, 1024, "update %s set rx=rx+%"PRIu64", tx=tx+%"PRIu64" where interface=%"PRId64" and date=%s;", datatables[i], rx, tx, (int64_t)ifaceid, datadates[i]);
 		db_exec(sql);
 	}
 
