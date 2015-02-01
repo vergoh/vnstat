@@ -208,6 +208,7 @@ int main(int argc, char *argv[])
 
 	cacheflush(s.dirname);
 	ibwflush();
+	db_close();
 
 	if (s.rundaemon && !debug) {
 		close(pidfile);

@@ -70,6 +70,15 @@ int db_open(int createifnotfound)
 	return 1;
 }
 
+int db_close(void)
+{
+	if (sqlite3_close(db) == SQLITE_OK) {
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
 int db_exec(char *sql)
 {
 	int rc;
@@ -239,6 +248,28 @@ int db_setinfo(char *name, char *value, int createifnotfound)
 		rc = db_exec(sql);
 	}
 	return rc;
+}
+
+char *db_getinfo(char *name)
+{
+	int rc;
+	char sql[512];
+	static char buffer[64];
+	sqlite3_stmt *sqlstmt;
+
+	buffer[0] = '\0';
+
+	snprintf(sql, 512, "select value from info where name='%s';", name);
+	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
+	if (rc) {
+		return buffer;
+	}
+	if (sqlite3_step(sqlstmt) == SQLITE_ROW) {
+		strncpy_nt(buffer, (const char *)sqlite3_column_text(sqlstmt, 0), 64);
+	}
+	sqlite3_finalize(sqlstmt);
+
+	return buffer;
 }
 
 int db_addtraffic(char *iface, uint64_t rx, uint64_t tx)
