@@ -150,6 +150,9 @@ and most can be changed later from the config file.
 /* 1 = 1.0, 2 = 1.1-1.2, 3 = 1.3- */
 #define DBVERSION 3
 
+/* 1 = 2.0 */
+#define SQLDBVERSION "1"
+
 /* version string */
 #define VNSTATVERSION "2.0 prototype"
 

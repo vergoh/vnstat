@@ -35,7 +35,7 @@ daemon_tests.o: daemon_tests.c daemon_tests.h common.h dbaccess.h dbcache.h cfg.
 
 common.o: common.c common.h
 ifinfo.o: ifinfo.c ifinfo.h common.h dbaccess.h misc.h cfg.h ibw.h
-dbsql.o: dbsql.c dbsql.h common.h
+dbsql.o: dbsql.c dbsql.h common.h misc.h
 dbaccess.o: dbaccess.c dbaccess.h common.h
 dbcache.o: dbcache.c dbcache.h dbaccess.h common.h ifinfo.h cfg.h ibw.h
 dbshow.o: dbshow.c dbshow.h misc.h common.h

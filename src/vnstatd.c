@@ -141,7 +141,11 @@ int main(int argc, char *argv[])
 	setgroup(s.group);
 	setuser(s.user);
 
-	db_open();
+	if (!db_open(1)) {
+		printf("Error: Unable to open database \"%s/%s\": %s\n", s.dirname, DATABASEFILE, strerror(errno));
+		printf("Exiting...\n");
+		exit(EXIT_FAILURE);
+	}
 
 	preparedatabases(&s);
 	setsignaltraps();

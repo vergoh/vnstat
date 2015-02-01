@@ -24,7 +24,7 @@ vnstati.o: vnstati.c vnstati.h common.h image.h cfg.h dbaccess.h dbmerge.h
 
 ifinfo.o: ifinfo.c ifinfo.h common.h dbaccess.h dbsql.h misc.h cfg.h ibw.h
 traffic.o: traffic.c traffic.h common.h ifinfo.h misc.h
-dbsql.o: dbsql.c dbsql.h common.h
+dbsql.o: dbsql.c dbsql.h common.h misc.h
 dbxml.o: dbxml.c dbxml.h common.h
 dbjson.o: dbjson.c dbjson.h common.h
 dbshow.o: dbshow.c dbshow.h misc.h common.h
