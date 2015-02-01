@@ -229,7 +229,7 @@ int db_setalias(char *iface, char *alias)
 		return 0;
 	}
 
-	snprintf(sql, 512, "update interface set nick='%s' where id=%"PRId64";", alias, (int64_t)ifaceid);
+	snprintf(sql, 512, "update interface set alias='%s' where id=%"PRId64";", alias, (int64_t)ifaceid);
 	return db_exec(sql);
 }
 
@@ -240,8 +240,8 @@ int db_setinfo(char *name, char *value, int createifnotfound)
 
 	snprintf(sql, 512, "update info set value='%s' where name='%s';", value, name);
 	rc = db_exec(sql);
-	if (!rc) {
-		return rc;
+	if (!rc || (!sqlite3_changes(db) && !createifnotfound)) {
+		return 0;
 	}
 	if (!sqlite3_changes(db) && createifnotfound) {
 		snprintf(sql, 512, "insert into info (name, value) values ('%s', '%s');", name, value);

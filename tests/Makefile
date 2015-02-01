@@ -4,7 +4,7 @@ endif
 CFLAGS ?= -Wall -Wextra -g
 CFLAGS += -DPROCNETDEV=\"testdir/proc/dev\" -DSYSCLASSNET=\"testdir/sysclassnet\"
 LDLIBS = -lm -lsqlite3 -lcheck -lrt -lpthread
-OBJS = vnstat_tests.o common_tests.o database_tests.o config_tests.o ifinfo_tests.o misc_tests.o daemon_tests.o
+OBJS = vnstat_tests.o common_tests.o dbsql_tests.o database_tests.o config_tests.o ifinfo_tests.o misc_tests.o daemon_tests.o
 OBJS += common.o ifinfo.o dbshow.o dbaccess.o dbcache.o dbsql.o cfg.o ibw.o misc.o daemon.o
 
 vpath %.c ../src
@@ -27,6 +27,7 @@ vnstat_tests: $(OBJS)
 
 vnstat_tests.o: vnstat_tests.c vnstat_tests.h common_tests.h database_tests.h common.h
 common_tests.o: common_tests.c common_tests.h vnstat_tests.h common.h dbaccess.h cfg.h
+dbsql_tests.o: dbsql_tests.c dbsql_tests.h vnstat_tests.h common.h dbsql.h cfg.h
 database_tests.o: database_tests.c database_tests.h vnstat_tests.h common.h ifinfo.h dbaccess.h dbcache.h dbshow.h cfg.h ibw.h
 config_tests.o: config_tests.c config_tests.h vnstat_tests.h common.h cfg.h ibw.h
 ifinfo_tests.o: ifinfo_tests.c ifinfo_tests.h vnstat_tests.h common.h ifinfo.h dbaccess.h dbsql.h misc.h cfg.h ibw.h
