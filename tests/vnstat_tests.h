@@ -16,10 +16,13 @@ int check_dbfile_exists(const char *iface, const int minsize);
 int fake_proc_net_dev(const char *mode, const char *iface, const int rx, const int tx, const int rxp, const int txp);
 int fake_sys_class_net(const char *iface, const int rx, const int tx, const int rxp, const int txp, const int speed);
 
-#define TESTDIR            "testdir"
-#define TESTDBDIR          "testdir/database"
-#define TESTPROCDIR        "testdir/proc"
-#define TESTSYSCLASSNETDIR "testdir/sysclassnet"
+#ifndef TESTDIR
+#define TESTDIR "testdir"
+#endif
+
+#define TESTDBDIR          TESTDIR"/database"
+#define TESTPROCDIR        TESTDIR"/proc"
+#define TESTSYSCLASSNETDIR TESTDIR"/sysclassnet"
 
 #if !defined(__linux__)
 #define linuxonly return

@@ -1,8 +1,14 @@
 ifeq "$(origin CC)" "default"
 CC = gcc
 endif
+ifneq ($(wildcard /dev/shm/.),)
+TESTDIRPREFIX ?= /dev/shm/
+endif
+TESTDIR ?= $(TESTDIRPREFIX)testdir
+
 CFLAGS ?= -Wall -Wextra -g
-CFLAGS += -DPROCNETDEV=\"testdir/proc/dev\" -DSYSCLASSNET=\"testdir/sysclassnet\"
+CFLAGS += -DTESTDIR=\"$(TESTDIR)\"
+CFLAGS += -DPROCNETDEV=\"$(TESTDIR)/proc/dev\" -DSYSCLASSNET=\"$(TESTDIR)/sysclassnet\"
 LDLIBS = -lm -lsqlite3 -lcheck -lrt -lpthread
 OBJS = vnstat_tests.o common_tests.o dbsql_tests.o database_tests.o config_tests.o ifinfo_tests.o misc_tests.o daemon_tests.o
 OBJS += common.o ifinfo.o dbshow.o dbaccess.o dbcache.o dbsql.o cfg.o ibw.o misc.o daemon.o
@@ -46,4 +52,4 @@ misc.o: misc.c misc.h common.h
 daemon.o: daemon.c daemon.h common.h ifinfo.h dbaccess.h dbcache.h misc.h cfg.h ibw.h
 
 clean:
-	rm -fr *.o *~ core *.i *.gc* test.log test.xml *.lcov coverage vnstat_tests testdir
+	rm -fr *.o *~ core *.i *.gc* test.log test.xml *.lcov coverage vnstat_tests testdir $(TESTDIR)
