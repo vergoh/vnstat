@@ -30,7 +30,12 @@ int db_open(int createifnotfound)
 		}
 	}
 
+#ifdef TESTDIR
+	/* use ram based database when testing for shorter test execution times */
+	rc = sqlite3_open(NULL, &db);
+#else
 	rc = sqlite3_open(dbfilename, &db);
+#endif
 
 	if (rc) {
 		if (debug)
@@ -72,9 +77,13 @@ int db_open(int createifnotfound)
 
 int db_close(void)
 {
-	if (sqlite3_close(db) == SQLITE_OK) {
+	int rc;
+	rc = sqlite3_close(db);
+	if (rc == SQLITE_OK) {
 		return 1;
 	} else {
+		if (debug)
+			printf("Error: Closing database failed (%d): %s\n", rc, sqlite3_errmsg(db));
 		return 0;
 	}
 }
@@ -95,6 +104,7 @@ int db_exec(char *sql)
 	if (rc != SQLITE_DONE) {
 		if (debug)
 			printf("Error: Insert \"%s\" step failed (%d): %s\n", sql, rc, sqlite3_errmsg(db));
+		sqlite3_finalize(sqlstmt);
 		return 0;
 	}
 

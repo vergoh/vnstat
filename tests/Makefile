@@ -1,11 +1,7 @@
 ifeq "$(origin CC)" "default"
 CC = gcc
 endif
-ifneq ($(wildcard /dev/shm/.),)
-TESTDIRPREFIX ?= /dev/shm/
-endif
-TESTDIR ?= $(TESTDIRPREFIX)testdir
-
+TESTDIR ?= testdir
 CFLAGS ?= -Wall -Wextra -g
 CFLAGS += -DTESTDIR=\"$(TESTDIR)\"
 CFLAGS += -DPROCNETDEV=\"$(TESTDIR)/proc/dev\" -DSYSCLASSNET=\"$(TESTDIR)/sysclassnet\"

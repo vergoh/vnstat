@@ -301,6 +301,65 @@ START_TEST(db_setalias_can_change_interface_alias)
 }
 END_TEST
 
+START_TEST(db_addinterface_fails_with_no_open_db)
+{
+	int ret;
+
+	defaultcfg();
+	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
+	ck_assert_int_eq(clean_testdbdir(), 1);
+
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 0);
+}
+END_TEST
+
+START_TEST(db_addinterface_can_add_interfaces)
+{
+	int ret;
+
+	defaultcfg();
+	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
+	ck_assert_int_eq(clean_testdbdir(), 1);
+
+	ret = db_open(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_addinterface_can_not_add_same_interface_twice)
+{
+	int ret;
+
+	defaultcfg();
+	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
+	ck_assert_int_eq(clean_testdbdir(), 1);
+
+	ret = db_open(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 0);
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 0);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 void add_dbsql_tests(Suite *s)
 {
 	TCase *tc_dbsql = tcase_create("DB SQL");
@@ -322,5 +381,8 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_setalias_fails_with_no_open_db);
 	tcase_add_test(tc_dbsql, db_setalias_fails_if_interface_does_not_exist_in_database);
 	tcase_add_test(tc_dbsql, db_setalias_can_change_interface_alias);
+	tcase_add_test(tc_dbsql, db_addinterface_fails_with_no_open_db);
+	tcase_add_test(tc_dbsql, db_addinterface_can_add_interfaces);
+	tcase_add_test(tc_dbsql, db_addinterface_can_not_add_same_interface_twice);
 	suite_add_tcase(s, tc_dbsql);
 }
