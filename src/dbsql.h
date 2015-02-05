@@ -14,6 +14,11 @@ int db_setalias(char *iface, char *alias);
 int db_setinfo(char *name, char *value, int createifnotfound);
 char *db_getinfo(char *name);
 int db_addtraffic(char *iface, uint64_t rx, uint64_t tx);
+int db_removeoldentries(void);
+int db_vacuum(void);
+int db_begintransaction(void);
+int db_committransaction(void);
+int db_rollbacktransaction(void);
 
 /* global db */
 sqlite3 *db;

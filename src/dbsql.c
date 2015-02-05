@@ -120,14 +120,13 @@ int db_exec(char *sql)
 
 int db_create(void)
 {
-	int rc, i;
+	int i;
 	char *sql;
 	char *datatables[] = {"fiveminute", "hour", "day", "month", "year"};
 
-	/* TODO: check: COMMIT or END may be missing in error cases and return gets called before COMMIT */
+	/* TODO: check: COMMIT, END or ROLLBACK may be missing in error cases and return gets called before COMMIT */
 
-	rc = sqlite3_exec(db, "BEGIN", 0, 0, 0);
-	if (rc != 0) {
+	if (!db_begintransaction()) {
 		return 0;
 	}
 
@@ -159,7 +158,7 @@ int db_create(void)
 	for (i=0; i<5; i++) {
 		sql = malloc(sizeof(char)*512);
 
-		snprintf(sql, 512, "CREATE TABLE %s(\n" \
+		sqlite3_snprintf(512, sql, "CREATE TABLE %s(\n" \
 			"  id           INTEGER PRIMARY KEY,\n" \
 			"  interface    INTEGER REFERENCES interface ON DELETE CASCADE,\n" \
 			"  date         DATE NOT NULL,\n" \
@@ -173,19 +172,14 @@ int db_create(void)
 		}
 	}
 
-	rc = sqlite3_exec(db, "COMMIT", 0, 0, 0);
-	if (rc != 0) {
-		return 0;
-	}
-
-	return 1;
+	return db_committransaction();
 }
 
 int db_addinterface(char *iface)
 {
 	char sql[1024];
 
-	snprintf(sql, 1024, "insert into interface (name, active, created, updated, rxcounter, txcounter, rxtotal, txtotal) values ('%s', 1, datetime('now'), datetime('now'), 0, 0, 0, 0);", iface);
+	sqlite3_snprintf(1024, sql, "insert into interface (name, active, created, updated, rxcounter, txcounter, rxtotal, txtotal) values ('%q', 1, datetime('now'), datetime('now'), 0, 0, 0, 0);", iface);
 	return db_exec(sql);
 }
 
@@ -196,7 +190,7 @@ sqlite3_int64 db_getinterfaceid(char *iface, int createifnotfound)
 	sqlite3_int64 ifaceid = 0;
 	sqlite3_stmt *sqlstmt;
 
-	snprintf(sql, 512, "select id from interface where name='%s'", iface);
+	sqlite3_snprintf(512, sql, "select id from interface where name='%q'", iface);
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
 	if (!rc) {
 		if (sqlite3_step(sqlstmt) == SQLITE_ROW) {
@@ -225,7 +219,7 @@ int db_setactive(char *iface, int active)
 		return 0;
 	}
 
-	snprintf(sql, 512, "update interface set active=%d where id=%"PRId64";", active, (int64_t)ifaceid);
+	sqlite3_snprintf(512, sql, "update interface set active=%d where id=%"PRId64";", active, (int64_t)ifaceid);
 	return db_exec(sql);
 }
 
@@ -239,7 +233,7 @@ int db_setalias(char *iface, char *alias)
 		return 0;
 	}
 
-	snprintf(sql, 512, "update interface set alias='%s' where id=%"PRId64";", alias, (int64_t)ifaceid);
+	sqlite3_snprintf(512, sql, "update interface set alias='%q' where id=%"PRId64";", alias, (int64_t)ifaceid);
 	return db_exec(sql);
 }
 
@@ -248,13 +242,13 @@ int db_setinfo(char *name, char *value, int createifnotfound)
 	int rc;
 	char sql[512];
 
-	snprintf(sql, 512, "update info set value='%s' where name='%s';", value, name);
+	sqlite3_snprintf(512, sql, "update info set value='%q' where name='%q';", value, name);
 	rc = db_exec(sql);
 	if (!rc || (!sqlite3_changes(db) && !createifnotfound)) {
 		return 0;
 	}
 	if (!sqlite3_changes(db) && createifnotfound) {
-		snprintf(sql, 512, "insert into info (name, value) values ('%s', '%s');", name, value);
+		sqlite3_snprintf(512, sql, "insert into info (name, value) values ('%q', '%q');", name, value);
 		rc = db_exec(sql);
 	}
 	return rc;
@@ -269,7 +263,7 @@ char *db_getinfo(char *name)
 
 	buffer[0] = '\0';
 
-	snprintf(sql, 512, "select value from info where name='%s';", name);
+	sqlite3_snprintf(512, sql, "select value from info where name='%q';", name);
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
 	if (rc) {
 		return buffer;
@@ -306,21 +300,89 @@ int db_addtraffic(char *iface, uint64_t rx, uint64_t tx)
 	if (debug)
 		printf("add %s (%"PRId64"): rx %"PRIu64" - tx %"PRIu64"\n", iface, (int64_t)ifaceid, rx, tx);
 
-	sqlite3_exec(db, "BEGIN", 0, 0, 0);
+	if (db_begintransaction()) {
+		return 0;
+	}
 
 	/* total */
-	snprintf(sql, 1024, "update interface set rxtotal=rxtotal+%"PRIu64", txtotal=txtotal+%"PRIu64", updated=datetime('now'), active=1 where id=%"PRId64";", rx, tx, (int64_t)ifaceid);
+	sqlite3_snprintf(1024, sql, "update interface set rxtotal=rxtotal+%"PRIu64", txtotal=txtotal+%"PRIu64", updated=datetime('now'), active=1 where id=%"PRId64";", rx, tx, (int64_t)ifaceid);
 	db_exec(sql);
 
 	/* time specific */
 	for (i=0; i<5; i++) {
-		snprintf(sql, 1024, "insert or ignore into %s (interface, date, rx, tx) values (%"PRId64", %s, 0, 0);", datatables[i], (int64_t)ifaceid, datadates[i]);
+		sqlite3_snprintf(1024, sql, "insert or ignore into %s (interface, date, rx, tx) values (%"PRId64", %s, 0, 0);", datatables[i], (int64_t)ifaceid, datadates[i]);
 		db_exec(sql);
-		snprintf(sql, 1024, "update %s set rx=rx+%"PRIu64", tx=tx+%"PRIu64" where interface=%"PRId64" and date=%s;", datatables[i], rx, tx, (int64_t)ifaceid, datadates[i]);
+		sqlite3_snprintf(1024, sql, "update %s set rx=rx+%"PRIu64", tx=tx+%"PRIu64" where interface=%"PRId64" and date=%s;", datatables[i], rx, tx, (int64_t)ifaceid, datadates[i]);
 		db_exec(sql);
 	}
 
-	sqlite3_exec(db, "COMMIT", 0, 0, 0);
+	return db_committransaction();
+}
 
+int db_removeoldentries(void)
+{
+	char sql[512];
+
+	db_begintransaction();
+
+	sqlite3_snprintf(512, sql, "delete from fiveminute where date < datetime('now', '-48 hours');");
+	db_exec(sql);
+
+	sqlite3_snprintf(512, sql, "delete from hour where date < datetime('now', '-7 days');");
+	db_exec(sql);
+
+	sqlite3_snprintf(512, sql, "delete from day where date < date('now', '-30 days');");
+	db_exec(sql);
+
+	sqlite3_snprintf(512, sql, "delete from month where date < date('now', '-12 months');");
+	db_exec(sql);
+
+	sqlite3_snprintf(512, sql, "delete from year where date < date('now', '-10 years');");
+	db_exec(sql);
+
+	return db_committransaction();
+}
+
+int db_vacuum(void)
+{
+	return db_exec("VACUUM;");
+}
+
+int db_begintransaction(void)
+{
+	int rc;
+
+	rc = sqlite3_exec(db, "BEGIN", 0, 0, 0);
+	if (rc) {
+		if (debug)
+			printf("Error: BEGIN failed (%d): %s\n", rc, sqlite3_errmsg(db));
+		return 0;
+	}
+	return 1;
+}
+
+int db_committransaction(void)
+{
+	int rc;
+
+	rc = sqlite3_exec(db, "COMMIT", 0, 0, 0);
+	if (rc) {
+		if (debug)
+			printf("Error: COMMIT failed (%d): %s\n", rc, sqlite3_errmsg(db));
+		return 0;
+	}
+	return 1;
+}
+
+int db_rollbacktransaction(void)
+{
+	int rc;
+
+	rc = sqlite3_exec(db, "ROLLBACK", 0, 0, 0);
+	if (rc) {
+		if (debug)
+			printf("Error: ROLLBACK failed (%d): %s\n", rc, sqlite3_errmsg(db));
+		return 0;
+	}
 	return 1;
 }
