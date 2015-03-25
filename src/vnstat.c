@@ -733,7 +733,7 @@ void handlecreate(PARAMS *p)
 	}
 
 	if (checkdb(p->interface, p->dirname)) {
-		printf("Error: Database for interface \"%s\" already exists.\n", data.interface);
+		printf("Error: Database for interface \"%s\" already exists.\n", p->interface);
 		exit(EXIT_FAILURE);
 	}
 
