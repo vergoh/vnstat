@@ -323,7 +323,9 @@ int db_removeoldentries(void)
 {
 	char sql[512];
 
-	db_begintransaction();
+	if (!db_begintransaction()) {
+		return 0;
+	}
 
 	sqlite3_snprintf(512, sql, "delete from fiveminute where date < datetime('now', '-48 hours');");
 	db_exec(sql);
