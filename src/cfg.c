@@ -643,6 +643,5 @@ void configlocale(void)
 		} else {
 			cfg.utflocale = 0;
 		}
-		printf("DEBUG: utflocale: %d\n", cfg.utflocale);
 	}
 }
