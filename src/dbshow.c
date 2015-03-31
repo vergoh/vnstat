@@ -118,9 +118,9 @@ void showsummary(void)
 		indent(5);
 		d=localtime(&data.month[1].month);
 		if (strftime(datebuff, 16, cfg.mformat, d)<=8) {
-			printf(" %8s   %s", datebuff, getvalue(data.month[1].rx, data.month[1].rxk, 11, 1));
+			printf(" %*s   %s", getpadding(8, datebuff), datebuff, getvalue(data.month[1].rx, data.month[1].rxk, 11, 1));
 		} else {
-			printf("%-11s %s", datebuff, getvalue(data.month[1].rx, data.month[1].rxk, 11, 1));
+			printf("%-*s %s", getpadding(11, datebuff), datebuff, getvalue(data.month[1].rx, data.month[1].rxk, 11, 1));
 		}
 		printf(" | %s", getvalue(data.month[1].tx, data.month[1].txk, 11, 1));
 		printf(" | %s", getvalue(data.month[1].rx+data.month[1].tx, data.month[1].rxk+data.month[1].txk, 11, 1));
@@ -132,9 +132,9 @@ void showsummary(void)
 	indent(5);
 	d=localtime(&data.month[0].month);
 	if (strftime(datebuff, 16, cfg.mformat, d)<=8) {
-		printf(" %8s   %s", datebuff, getvalue(data.month[0].rx, data.month[0].rxk, 11, 1));
+		printf(" %*s   %s", getpadding(8, datebuff), datebuff, getvalue(data.month[0].rx, data.month[0].rxk, 11, 1));
 	} else {
-		printf("%-11s %s", datebuff, getvalue(data.month[0].rx, data.month[0].rxk, 11, 1));
+		printf("%-*s %s", getpadding(11, datebuff), datebuff, getvalue(data.month[0].rx, data.month[0].rxk, 11, 1));
 	}
 	printf(" | %s", getvalue(data.month[0].tx, data.month[0].txk, 11, 1));
 	printf(" | %s", getvalue(data.month[0].rx+data.month[0].tx, data.month[0].rxk+data.month[0].txk, 11, 1));
@@ -207,9 +207,9 @@ void showsummary(void)
 	if (data.day[1].date!=0) {
 		indent(5);
 		if (strlen(daytemp)<=9) {
-			printf("%9s   %s", daytemp, getvalue(data.day[1].rx, data.day[1].rxk, 11, 1));
+			printf("%*s   %s", getpadding(9, daytemp), daytemp, getvalue(data.day[1].rx, data.day[1].rxk, 11, 1));
 		} else {
-			printf("%-11s %s", daytemp, getvalue(data.day[1].rx, data.day[1].rxk, 11, 1));
+			printf("%-*s %s", getpadding(11, daytemp), daytemp, getvalue(data.day[1].rx, data.day[1].rxk, 11, 1));
 		}
 		printf(" | %s", getvalue(data.day[1].tx, data.day[1].txk, 11, 1));
 		printf(" | %s", getvalue(data.day[1].rx+data.day[1].tx, data.day[1].rxk+data.day[1].txk, 11, 1));
@@ -220,9 +220,9 @@ void showsummary(void)
 	}
 	indent(5);
 	if (strlen(daytemp2)<=9) {
-		printf("%9s   %s", daytemp2, getvalue(data.day[0].rx, data.day[0].rxk, 11, 1));
+		printf("%*s   %s", getpadding(9, daytemp2), daytemp2, getvalue(data.day[0].rx, data.day[0].rxk, 11, 1));
 	} else {
-		printf("%-11s %s", daytemp2, getvalue(data.day[0].rx, data.day[0].rxk, 11, 1));
+		printf("%-*s %s", getpadding(11, daytemp2), daytemp2, getvalue(data.day[0].rx, data.day[0].rxk, 11, 1));
 	}
 	printf(" | %s", getvalue(data.day[0].tx, data.day[0].txk, 11, 1));
 	printf(" | %s", getvalue(data.day[0].rx+data.day[0].tx, data.day[0].rxk+data.day[0].txk, 11, 1));
@@ -277,9 +277,9 @@ void showshort(void)
 	if (data.month[1].used) {
 		d=localtime(&data.month[1].month);
 		if (strftime(datebuff, 16, cfg.mformat, d)<=8) {
-			printf("      %8s   %s", datebuff, getvalue(data.month[1].rx, data.month[1].rxk, 11, 1));
+			printf("      %*s   %s", getpadding(8, datebuff), datebuff, getvalue(data.month[1].rx, data.month[1].rxk, 11, 1));
 		} else {
-			printf("    %-11s  %s", datebuff, getvalue(data.month[1].rx, data.month[1].rxk, 11, 1));
+			printf("    %-*s  %s", getpadding(11, datebuff), datebuff, getvalue(data.month[1].rx, data.month[1].rxk, 11, 1));
 		}
 		printf("  / %s", getvalue(data.month[1].tx, data.month[1].txk, 11, 1));
 		printf("  / %s", getvalue(data.month[1].rx+data.month[1].tx, data.month[1].rxk+data.month[1].txk, 11, 1));
@@ -297,9 +297,9 @@ void showshort(void)
 	}
 
 	if (strftime(datebuff, 16, cfg.mformat, d)<=8) {
-		printf("      %8s   %s", datebuff, getvalue(data.month[0].rx, data.month[0].rxk, 11, 1));
+		printf("      %*s   %s", getpadding(8, datebuff), datebuff, getvalue(data.month[0].rx, data.month[0].rxk, 11, 1));
 	} else {
-		printf("    %-11s  %s", datebuff, getvalue(data.month[0].rx, data.month[0].rxk, 11, 1));
+		printf("    %-*s  %s", getpadding(11, datebuff), datebuff, getvalue(data.month[0].rx, data.month[0].rxk, 11, 1));
 	}
 	printf("  / %s", getvalue(data.month[0].tx, data.month[0].txk, 11, 1));
 	printf("  / %s", getvalue(data.month[0].rx+data.month[0].tx, data.month[0].rxk+data.month[0].txk, 11, 1));
@@ -347,12 +347,12 @@ void showshort(void)
 	}
 
 	if (data.day[1].date!=0) {
-		printf("     %9s   %s",daytemp, getvalue(data.day[1].rx, data.day[1].rxk, 11, 1));
+		printf("     %*s   %s", getpadding(9, daytemp), daytemp, getvalue(data.day[1].rx, data.day[1].rxk, 11, 1));
 		printf("  / %s", getvalue(data.day[1].tx, data.day[1].txk, 11, 1));
 		printf("  / %s", getvalue(data.day[1].rx+data.day[1].tx, data.day[1].rxk+data.day[1].txk, 11, 1));
 		printf("\n");
 	}
-	printf("     %9s   %s", daytemp2, getvalue(data.day[0].rx, data.day[0].rxk, 11, 1));
+	printf("     %*s   %s", getpadding(9, daytemp2), daytemp2, getvalue(data.day[0].rx, data.day[0].rxk, 11, 1));
 	printf("  / %s", getvalue(data.day[0].tx, data.day[0].txk, 11, 1));
 	printf("  / %s", getvalue(data.day[0].rx+data.day[0].tx, data.day[0].rxk+data.day[0].txk, 11, 1));
 	if (cfg.ostyle != 0) {
@@ -426,9 +426,9 @@ void showdays(void)
 				printf("    ");
 			}
 			if (strlen(datebuff)<=9) {
-				printf(" %9s   %s", datebuff, getvalue(data.day[i].rx, data.day[i].rxk, 11, 1));
+				printf(" %*s   %s", getpadding(9, datebuff), datebuff, getvalue(data.day[i].rx, data.day[i].rxk, 11, 1));
 			} else {
-				printf(" %-11s %s", datebuff, getvalue(data.day[i].rx, data.day[i].rxk, 11, 1));
+				printf(" %-*s %s", getpadding(11, datebuff), datebuff, getvalue(data.day[i].rx, data.day[i].rxk, 11, 1));
 			}
 			printf(" | %s", getvalue(data.day[i].tx, data.day[i].txk, 11, 1));
 			printf(" | %s", getvalue(data.day[i].rx+data.day[i].tx, data.day[i].rxk+data.day[i].txk, 11, 1));
@@ -543,9 +543,9 @@ void showmonths(void)
 				printf("   ");
 			}
 			if (strftime(datebuff, 16, cfg.mformat, d)<=9) {
-				printf(" %9s   %s", datebuff, getvalue(data.month[i].rx, data.month[i].rxk, 11, 1));
+				printf(" %*s   %s", getpadding(9, datebuff), datebuff, getvalue(data.month[i].rx, data.month[i].rxk, 11, 1));
 			} else {
-				printf(" %-11s %s", datebuff, getvalue(data.month[i].rx, data.month[i].rxk, 11, 1));
+				printf(" %-*s %s", getpadding(11, datebuff), datebuff, getvalue(data.month[i].rx, data.month[i].rxk, 11, 1));
 			}
 			printf(" | %s", getvalue(data.month[i].tx, data.month[i].txk, 11, 1));
 			printf(" | %s", getvalue(data.month[i].rx+data.month[i].tx, data.month[i].rxk+data.month[i].txk, 11, 1));
@@ -659,7 +659,7 @@ void showtop(void)
 			if (cfg.ostyle == 3) {
 				printf(" ");
 			}
-			printf("  %2d   %-11s %s", i+1, datebuff, getvalue(data.top10[i].rx, data.top10[i].rxk, 11, 1));
+			printf("  %2d   %-*s %s", i+1, getpadding(11, datebuff), datebuff, getvalue(data.top10[i].rx, data.top10[i].rxk, 11, 1));
 			printf(" | %s", getvalue(data.top10[i].tx, data.top10[i].txk, 11, 1));
 			printf(" | %s", getvalue(data.top10[i].rx+data.top10[i].tx, data.top10[i].rxk+data.top10[i].txk, 11, 1));
 			if (cfg.ostyle == 3) {

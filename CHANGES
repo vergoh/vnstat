@@ -2,6 +2,7 @@
 
  - Fix: JSON output syntax during first day of newly created databases
    (pull request by Stefan Merettig)
+ - Fix: field padding when using UTF-8 locale
  - Add optional mode parameter to --json and --xml for limiting the output
    to only selected information
 

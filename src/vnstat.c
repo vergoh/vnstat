@@ -65,15 +65,7 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	if (cfg.locale[0]!='-' && strlen(cfg.locale)>0) {
-		setlocale(LC_ALL, cfg.locale);
-	} else {
-		if (getenv("LC_ALL")) {
-			setlocale(LC_ALL, getenv("LC_ALL"));
-		} else {
-			setlocale(LC_ALL, "");
-		}
-	}
+	configlocale();
 	strncpy_nt(p.interface, "default", 32);
 	strncpy_nt(p.definterface, cfg.iface, 32);
 	strncpy_nt(p.nick, "none", 32);

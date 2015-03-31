@@ -392,3 +392,11 @@ char *getratestring(float rate, int len, int declen, int unit)
 
 	return buffer;
 }
+
+int getpadding(int len, char *str)
+{
+	if (!cfg.utflocale) {
+		return len;
+	}
+	return len + ((int)strlen(str) - (int)mbstowcs(NULL, str, 0));
+}

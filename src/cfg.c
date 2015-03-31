@@ -480,6 +480,7 @@ void defaultcfg(void)
 	cfg.summaryrate = SUMMARYRATE;
 	cfg.slayout = SUMMARYLAYOUT;
 	cfg.traflessday = TRAFLESSDAY;
+	cfg.utflocale = UTFLOCALE;
 	strncpy_nt(cfg.dbdir, DATABASEDIR, 512);
 	strncpy_nt(cfg.iface, DEFIFACE, 32);
 	strncpy_nt(cfg.locale, LOCALE, 32);
@@ -623,4 +624,25 @@ int setcfgvalue(struct cfgsetting *cset, const char *value, const char *cfgline)
 	}
 
 	return 1;
+}
+
+void configlocale(void)
+{
+	if (cfg.locale[0]!='-' && strlen(cfg.locale)>0) {
+		setlocale(LC_ALL, cfg.locale);
+	} else {
+		if (getenv("LC_ALL")) {
+			setlocale(LC_ALL, getenv("LC_ALL"));
+		} else {
+			setlocale(LC_ALL, "");
+		}
+	}
+	if (getenv("LC_ALL")) {
+		if (strstr(getenv("LC_ALL"), "UTF") != NULL) {
+			cfg.utflocale = 1;
+		} else {
+			cfg.utflocale = 0;
+		}
+		printf("DEBUG: utflocale: %d\n", cfg.utflocale);
+	}
 }

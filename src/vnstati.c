@@ -57,15 +57,7 @@ int main(int argc, char *argv[])
 	}
 	cfg.qmode = 0;
 
-	if (cfg.locale[0]!='-' && strlen(cfg.locale)>0) {
-		setlocale(LC_ALL, cfg.locale);
-	} else {
-		if (getenv("LC_ALL")) {
-			setlocale(LC_ALL, getenv("LC_ALL"));
-		} else {
-			setlocale(LC_ALL, "");
-		}
-	}
+	configlocale();
 	strncpy_nt(p.interface, cfg.iface, 32);
 	strncpy_nt(p.dirname, cfg.dbdir, 512);
 	ic.current = time(NULL);

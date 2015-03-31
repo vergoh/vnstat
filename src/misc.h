@@ -15,5 +15,6 @@ char *getunit(int index);
 char *getrateunit(int unit, int index);
 uint32_t getunitdivider(int unit, int index);
 char *getratestring(float rate, int len, int declen, int unit);
+int getpadding(int len, char *str);
 
 #endif
