@@ -475,7 +475,7 @@ void drawsummary(IMAGECONTENT *ic, int type, int rate)
 		strncpy_nt(daytemp, "today", 32);
 	}
 
-	snprintf(buffer, 32, "%12s", daytemp);
+	snprintf(buffer, 32, "%*s", getpadding(12, daytemp), daytemp);
 	gdImageString(ic->im, gdFontGetLarge(), textx-54, texty-1, (unsigned char*)buffer, ic->ctext);
 
 	if (cfg.summaryrate) {
@@ -540,7 +540,7 @@ void drawsummary(IMAGECONTENT *ic, int type, int rate)
 			strncpy_nt(daytemp, "yesterday", 32);
 		}
 
-		snprintf(buffer, 32, "%12s", daytemp);
+		snprintf(buffer, 32, "%*s", getpadding(12, daytemp), daytemp);
 		gdImageString(ic->im, gdFontGetLarge(), textx-54, texty-1, (unsigned char*)buffer, ic->ctext);
 
 		if (cfg.summaryrate) {
@@ -601,7 +601,7 @@ void drawsummary(IMAGECONTENT *ic, int type, int rate)
 	d = localtime(&data.month[0].month);
 	strftime(daytemp, 16, cfg.mformat, d);
 
-	snprintf(buffer, 32, "%12s", daytemp);
+	snprintf(buffer, 32, "%*s", getpadding(12, daytemp), daytemp);
 	gdImageString(ic->im, gdFontGetLarge(), textx-54, texty-1, (unsigned char*)buffer, ic->ctext);
 
 	if (cfg.summaryrate) {
@@ -655,7 +655,7 @@ void drawsummary(IMAGECONTENT *ic, int type, int rate)
 		d = localtime(&data.month[1].month);
 		strftime(daytemp, 16, cfg.mformat, d);
 
-		snprintf(buffer, 32, "%12s", daytemp);
+		snprintf(buffer, 32, "%*s", getpadding(12, daytemp), daytemp);
 		gdImageString(ic->im, gdFontGetLarge(), textx-54, texty-1, (unsigned char*)buffer, ic->ctext);
 
 		if (cfg.summaryrate) {
@@ -843,7 +843,7 @@ void drawoldsummary(IMAGECONTENT *ic, int type, int rate)
 	gdImageLine(ic->im, textx+218, texty+4, textx+218, texty+64, ic->cline);
 
 	if (data.day[1].date!=0) {
-		snprintf(buffer, 32, "%9s   ", daytemp);
+		snprintf(buffer, 32, "%*s   ", getpadding(9, daytemp), daytemp);
 		strncat(buffer, getvalue(data.day[1].rx, data.day[1].rxk, 10, 1), 32);
 		strcat(buffer, "   ");
 		strncat(buffer, getvalue(data.day[1].tx, data.day[1].txk, 10, 1), 32);
@@ -852,7 +852,7 @@ void drawoldsummary(IMAGECONTENT *ic, int type, int rate)
 		gdImageString(ic->im, gdFontGetSmall(), textx, texty+20, (unsigned char*)buffer, ic->ctext);
 	}
 
-	snprintf(buffer, 32, "%9s   ", daytemp2);
+	snprintf(buffer, 32, "%*s   ", getpadding(9, daytemp2), daytemp2);
 	strncat(buffer, getvalue(data.day[0].rx, data.day[0].rxk, 10, 1), 32);
 	strcat(buffer, "   ");
 	strncat(buffer, getvalue(data.day[0].tx, data.day[0].txk, 10, 1), 32);
@@ -1022,9 +1022,9 @@ void drawdaily(IMAGECONTENT *ic)
 
 			d = localtime(&data.day[i].date);
 			if (strftime(datebuff, 16, cfg.dformat, d)<=8) {
-				snprintf(buffer, 32, "  %8s   ", datebuff);
+				snprintf(buffer, 32, "  %*s   ", getpadding(8, datebuff), datebuff);
 			} else {
-				snprintf(buffer, 32, " %-11s ", datebuff);
+				snprintf(buffer, 32, " %-*s ", getpadding(11, datebuff), datebuff);
 			}
 			strncat(buffer, getvalue(data.day[i].rx, data.day[i].rxk, 10, 1), 32);
 			strcat(buffer, "   ");
@@ -1173,9 +1173,9 @@ void drawmonthly(IMAGECONTENT *ic)
 
 			d = localtime(&data.month[i].month);
 			if (strftime(datebuff, 16, cfg.mformat, d)<=9) {
-				snprintf(buffer, 32, " %9s   ", datebuff);
+				snprintf(buffer, 32, " %*s   ", getpadding(9, datebuff), datebuff);
 			} else {
-				snprintf(buffer, 32, " %-11s ", datebuff);
+				snprintf(buffer, 32, " %-*s ", getpadding(11, datebuff), datebuff);
 			}
 			strncat(buffer, getvalue(data.month[i].rx, data.month[i].rxk, 10, 1), 32);
 			strcat(buffer, "   ");
@@ -1316,9 +1316,9 @@ void drawtop(IMAGECONTENT *ic)
 
 			d = localtime(&data.top10[i].date);
 			if (strftime(datebuff, 16, cfg.tformat, d)<=8) {
-				snprintf(buffer, 32, "  %2d   %8s   ", i+1, datebuff);
+				snprintf(buffer, 32, "  %2d   %*s   ", i+1, getpadding(8, datebuff), datebuff);
 			} else {
-				snprintf(buffer, 32, "  %2d  %-11s ", i+1, datebuff);
+				snprintf(buffer, 32, "  %2d  %-*s ", i+1, getpadding(11, datebuff), datebuff);
 			}
 			strncat(buffer, getvalue(data.top10[i].rx, data.top10[i].rxk, 10, 1), 32);
 			strcat(buffer, "   ");
