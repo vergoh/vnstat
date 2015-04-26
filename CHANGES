@@ -97,7 +97,7 @@
 
  - Fix: TrafficlessDays configuration option was enabled when set to zero
    when it should have been disabled
- - Fix: MonthRotate setting was getting ignored for the first month if 
+ - Fix: MonthRotate setting was getting ignored for the first month if
    the database is created when day of month < MonthRotate value
  - Configurable summary layout in image output (1.7 <> 1.8 layouts)
  - --oneline, a simple parseable one line output
@@ -106,7 +106,7 @@
  - --delete for deleting databases and stopping monitoring, doesn't require
    restarting the daemon
  - A database write can be configure to occur after interface status changes
- - Different database write interval can be configure to be used when 
+ - Different database write interval can be configure to be used when
    all monitored interfaces are offline
  - Better configurability for the content of outputs, including a narrow
    output for space limited terminals (OutputStyle and --style)
@@ -123,7 +123,7 @@
  - Fix: 'make install' didn't install the config file is $(DESTDIR) was used
  - Traffic of current and previous months added to summary
  - Increased accuracy of monthly estimate calculation
- - Traffic rates can be made visible and the shown unit is configurable 
+ - Traffic rates can be made visible and the shown unit is configurable
    as bits or bytes
  - New summary layout in image output
  - Image output can have the background color set as transparent
@@ -194,7 +194,7 @@
 1.4 / 26-Mar-2004
 
  - Fix: major output problems when compiled with some compilers
-        (thanks to DukePyrolator for reporting this bug and 
+        (thanks to DukePyrolator for reporting this bug and
          Juha / vlu for testing the patch)
  - Fix: month rotation if database isn't updated every day
  - Minor non-visible fixes and code cleanup

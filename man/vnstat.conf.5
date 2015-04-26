@@ -13,10 +13,10 @@ vnstat.conf \- vnStat configuration file
 .BR vnstati (1)
 and
 .BR vnstatd (1)
-all use the same configuration file for storing configuration data.
+all use the same configuration file for configuration related settings.
 Some of the settings are common for all three programs. The file
-contains keyword-argument pairs, one per line. Lines starting with
-\'#\' and empty lines are interpreted as comments and not processed.
+consists of keyword-argument pairs, one per line. Empty lines and
+lines starting with\ '#\' are interpreted as comments and not processed.
 Arguments may optionally be enclosed in double quotes (") in order
 to represent arguments containing spaces. Arguments can be padded
 with spaces or tabulator characters. A hardcoded default value
@@ -25,7 +25,7 @@ will be used if a keyword can't be found from the configuration file.
 The configuration file is divided into three sections based on the
 usage of each keyword. The first section contains keywords that are
 considered generic for all commands, the second section is for
-the daemon related keywords and the last section for the image output.
+daemon related keywords and the last section for image output.
 
 .SH COMMON KEYWORDS
 
@@ -48,7 +48,7 @@ between updates. Value range: 0..300
 
 .TP
 .B CheckDiskSpace
-Enable or disable the checking of at least some free disk space before
+Enable or disable the availability check of at least some free disk space before
 a database write. 1 = enabled, 0 = disabled.
 
 .TP
@@ -75,8 +75,8 @@ system default value. (vnstat and vnstati only)
 
 .TP
 .B MaxBandwidth
-Maximum bandwidth for all interfaces. If the counted traffic exceeds
-the given value then the data is assumed to be invalid and rejected.
+Maximum bandwidth for all interfaces. If the interface specific traffic
+exceeds the given value then the data is assumed to be invalid and rejected.
 Set to 0 in order to disable the feature. Value range: 0..50000
 (vnstat and vnstatd only)
 
@@ -135,7 +135,8 @@ Log days without any traffic to daily list. 1 = enabled, 0 = disabled.
 
 .TP
 .B UnitMode
-Select how units are prefixed. 0 = IEC standard prefixes
+Select how units are prefixed. This will option changes only the prefix,
+not how traffic is calculated. 0 = IEC standard prefixes
 (KiB/MiB/GiB/TiB), 1 = old style binary prefixes (KB/MB/GB/TB).
 (vnstat and vnstati only)
 

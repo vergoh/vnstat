@@ -117,9 +117,9 @@ or
 filesystems depending on availability. That way vnStat can be used even
 without root permissions on most systems.
 .PP
-The implementation is divided into two commands. The purpose of
+The implementation is divided into two commands. The purpose of the
 .B vnstat
-is to provide an interface for querying the traffic information stored
+command is to provide an interface for querying the traffic information stored
 in network interface specific databases where as the daemon
 .BR vnstatd (1)
 is responsible for data retrieval and storage. Although the daemon process
@@ -277,7 +277,7 @@ until interrupted. Statistics will be shown after interruption if the runtime
 was more than 10 seconds. An optional
 .I mode
 parameter can be used to select between the displaying of packets per
-second (mode 0) and transfer counters (mode 1) during execution. 
+second (mode 0) and transfer counters (mode 1) during execution.
 .B "--style"
 can also be used to affect the layout of the output.
 
@@ -343,7 +343,7 @@ parameter for this option in order to select between bytes (0) and bits
 
 .TP
 .B "--savemerged"
-Write the end result of a database merge to the file 
+Write the end result of a database merge to the file
 .I mergeddb
 that can then be used as a new database if renamed. Top 10 traffic days
 isn't included in the merge and will start empty in the new database.
@@ -388,8 +388,8 @@ Show all time top 10 traffic days.
 .BI "-tr " time
 Calculate how much traffic goes through the selected interface during
 the given
-.I time 
-seconds. The 
+.I time
+seconds. The
 .I time
 will be 5 seconds if a number parameter isn't specified.
 

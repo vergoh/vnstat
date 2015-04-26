@@ -10,7 +10,7 @@ Experimental instructions for OS X
  Compiling the binaries requires Xcode to be installed. However, Xcode is
  only used for installing the command line tools. The image output support
  hasn't been verified and isn't therefore installed with these instructions.
- 
+
  In Xcode, open "Preferences...", then click "Downloads" and install
  "Command Line Tools".
 
@@ -19,7 +19,7 @@ Experimental instructions for OS X
      sudo -s -H
 
  followed with a password that may be required. Verify that the user is now
- 'root' with 
+ 'root' with
 
      whoami
 
@@ -50,7 +50,7 @@ Experimental instructions for OS X
 
  During first startup, the daemon (vnstatd) should list and add all
  available interfaces for monitoring. Depending on configuration, it may
- take some minutes for the 'vnstat' command to begin showing results.   
+ take some minutes for the 'vnstat' command to begin showing results.
  Monitoring of unwanted interfaces can be stopped with:
 
      vnstat --delete -i ethunwanted
