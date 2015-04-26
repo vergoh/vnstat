@@ -1,4 +1,4 @@
-1.14 / <not released yet>
+1.14 / 26-Apr-2015
 
  - Fix: JSON output syntax during first day of newly created databases
    (pull request by Stefan Merettig)
