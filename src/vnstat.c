@@ -579,6 +579,8 @@ void handleimport(PARAMS *p)
 		printf("Error: validation of imported database failed.\n");
 		exit(EXIT_FAILURE);
 	}
+	/* set boot time to zero in order to force counter sync */
+	data.btime = 0;
 	strncpy_nt(data.interface, p->interface, 32);
 	if (writedb(p->interface, p->dirname, 1)) {
 		printf("Database import for \"%s\" completed.\n", data.interface);
