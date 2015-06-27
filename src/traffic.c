@@ -46,11 +46,8 @@ void trafficmeter(char iface[], int sampletime)
 		sleep(sampletime-((sampletime/3)*3));
 	}
 
-	len=strlen(buffer)+3;
-
-	for (i=0;i<len;i++) {
-		printf("\b \b");
-	}
+	cursortocolumn(1);
+	eraseline();
 
 	/* read those values again... */
 	if (!getifinfo(iface)) {
@@ -111,6 +108,8 @@ void livetrafficmeter(char iface[32], int mode)
 		exit(EXIT_FAILURE);
 	}
 
+	cursorhide();
+
 	/* loop until user gets bored */
 	while (intsignal==0) {
 
@@ -134,6 +133,7 @@ void livetrafficmeter(char iface[32], int mode)
 
 		/* read those values again... */
 		if (!getifinfo(iface)) {
+			cursorshow();
 			printf("Error: Interface \"%s\" not available, exiting.\n", iface);
 			exit(EXIT_FAILURE);
 		}
@@ -184,10 +184,8 @@ void livetrafficmeter(char iface[32], int mode)
 			if (debug) {
 				printf("\nlinelen: %d\n", len);
 			} else {
-				for (i=0;i<len;i++) {
-					printf("\b \b");
-				}
-				fflush(stdout);
+				cursortocolumn(1);
+				eraseline();
 			}
 		}
 		if (cfg.ostyle!=4) {
@@ -201,6 +199,7 @@ void livetrafficmeter(char iface[32], int mode)
 	}
 
 	timespent = (uint64_t)time(NULL) - timespent - timeslept;
+	cursorshow();
 
 	printf("\n\n");
 

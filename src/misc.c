@@ -400,3 +400,23 @@ int getpadding(int len, char *str)
 	}
 	return len + ((int)strlen(str) - (int)mbstowcs(NULL, str, 0));
 }
+
+void cursortocolumn(int column)
+{
+	printf("\033[%dG", column);
+}
+
+void cursorhide(void)
+{
+	printf("\033[?25l");
+}
+
+void cursorshow(void)
+{
+	printf("\033[?25h");
+}
+
+void eraseline(void)
+{
+	printf("\033[2K");
+}
