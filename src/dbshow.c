@@ -1,7 +1,6 @@
 #include "common.h"
 #include "misc.h"
 #include "dbshow.h"
-#define DATEBUFFLEN 64
 
 void showdb(int qmode)
 {
@@ -48,7 +47,7 @@ void showsummary(void)
 {
 	struct tm *d;
 	char datebuff[DATEBUFFLEN];
-	char daytemp[DATEBUFFLEN*2], daytemp2[DATEBUFFLEN*2];
+	char daytemp[DATEBUFFLEN], daytemp2[DATEBUFFLEN];
 	uint64_t e_rx, e_tx;
 	time_t current, yesterday;
 
@@ -67,7 +66,7 @@ void showsummary(void)
 
 	/* change daytemp to today if formated days match */
 	if (strcmp(datebuff, daytemp2)==0) {
-		strncpy_nt(daytemp2, "    today", DATEBUFFLEN*2);
+		strncpy_nt(daytemp2, "    today", DATEBUFFLEN);
 	}
 
 	if (data.lastupdated) {
@@ -254,7 +253,7 @@ void showshort(void)
 {
 	struct tm *d;
 	char datebuff[DATEBUFFLEN];
-	char daytemp[DATEBUFFLEN*2], daytemp2[DATEBUFFLEN*2];
+	char daytemp[DATEBUFFLEN], daytemp2[DATEBUFFLEN];
 	uint64_t e_rx, e_tx;
 	time_t current, yesterday;
 
@@ -319,7 +318,7 @@ void showshort(void)
 
 	/* change daytemp to today if formated days match */
 	if (strcmp(datebuff, daytemp2)==0) {
-		strncpy_nt(daytemp2, "today", DATEBUFFLEN*2);
+		strncpy_nt(daytemp2, "today", DATEBUFFLEN);
 	}
 
 	/* use database update time for estimates */
@@ -344,7 +343,7 @@ void showshort(void)
 
 	/* change daytemp to yesterday if formated days match */
 	if (strcmp(datebuff, daytemp)==0) {
-		strncpy_nt(daytemp, "yesterday", DATEBUFFLEN*2);
+		strncpy_nt(daytemp, "yesterday", DATEBUFFLEN);
 	}
 
 	if (data.day[1].date!=0) {
@@ -689,7 +688,7 @@ void showweeks(void)
 {
 	int i, used, week, temp;
 	struct tm *d;
-	char daytemp[DATEBUFFLEN*2];
+	char datetemp[DATEBUFFLEN];
 	uint64_t e_rx, e_tx, t_rx, t_tx;
 	int t_rxk, t_txk;
 	time_t current;
@@ -724,8 +723,8 @@ void showweeks(void)
 
 	/* get current week number */
 	d=localtime(&current);
-	strftime(daytemp, DATEBUFFLEN, "%V", d);
-	week=atoi(daytemp);
+	strftime(datetemp, DATEBUFFLEN, "%V", d);
+	week=atoi(datetemp);
 
 	/* last 7 days */
 	used=0;
@@ -758,8 +757,8 @@ void showweeks(void)
 	for (i=0;i<30;i++) {
 		if (data.day[i].used) {
 			d=localtime(&data.day[i].date);
-			strftime(daytemp, DATEBUFFLEN, "%V", d);
-			if (atoi(daytemp)==week-1) {
+			strftime(datetemp, DATEBUFFLEN, "%V", d);
+			if (atoi(datetemp)==week-1) {
 				addtraffic(&t_rx, &t_rxk, data.day[i].rx, data.day[i].rxk);
 				addtraffic(&t_tx, &t_txk, data.day[i].tx, data.day[i].txk);
 				used++;
@@ -785,8 +784,8 @@ void showweeks(void)
 	for (i=0;i<30;i++) {
 		if (data.day[i].used) {
 			d=localtime(&data.day[i].date);
-			strftime(daytemp, DATEBUFFLEN, "%V", d);
-			if (atoi(daytemp)==week) {
+			strftime(datetemp, DATEBUFFLEN, "%V", d);
+			if (atoi(datetemp)==week) {
 				addtraffic(&t_rx, &t_rxk, data.day[i].rx, data.day[i].rxk);
 				addtraffic(&t_tx, &t_txk, data.day[i].tx, data.day[i].txk);
 				used++;
@@ -798,19 +797,19 @@ void showweeks(void)
 	if (used!=0) {
 		/* use database update time for estimates */
 		d=localtime(&data.lastupdated);
-		strftime(daytemp, DATEBUFFLEN, "%u", d);
-		if ( t_rx==0 || t_tx==0 || ((atoi(daytemp)-1)*24+d->tm_hour)==0 ) {
+		strftime(datetemp, DATEBUFFLEN, "%u", d);
+		if ( t_rx==0 || t_tx==0 || ((atoi(datetemp)-1)*24+d->tm_hour)==0 ) {
 			e_rx=e_tx=0;
 		} else {
-			e_rx=((t_rx)/(float)((atoi(daytemp)-1)*24+d->tm_hour)*168);
-			e_tx=((t_tx)/(float)((atoi(daytemp)-1)*24+d->tm_hour)*168);
+			e_rx=((t_rx)/(float)((atoi(datetemp)-1)*24+d->tm_hour)*168);
+			e_tx=((t_tx)/(float)((atoi(datetemp)-1)*24+d->tm_hour)*168);
 		}
 		indent(3);
 		printf("current week   %s", getvalue(t_rx, t_rxk, 11, 1));
 		printf(" | %s", getvalue(t_tx, t_txk, 11, 1));
 		printf(" | %s", getvalue(t_rx+t_tx, t_rxk+t_txk, 11, 1));
 		if (cfg.ostyle >= 2) {
-			printf(" | %s", getrate(t_rx+t_tx, t_rxk+t_txk, (86400*(atoi(daytemp)-1))+d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600), 14));
+			printf(" | %s", getrate(t_rx+t_tx, t_rxk+t_txk, (86400*(atoi(datetemp)-1))+d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600), 14));
 		}
 		printf("\n");
 		temp++;
