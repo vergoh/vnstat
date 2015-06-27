@@ -34,11 +34,8 @@ void showxml(char mode)
 		case 'a':
 		default:
 			xmldays();
-			printf(",");
 			xmlmonths();
-			printf(",");
 			xmltops();
-			printf(",");
 			xmlhours();
 			break;
 	}
