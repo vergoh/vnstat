@@ -1,3 +1,12 @@
+1.15 / <not released yet>
+
+ - Fix: XML output had extra commas, broken since previous version
+ - Use ANSI escape codes in -l and -tr modes for cursor location manipulation
+   instead of printing backspaces and hide cursor while running
+ - Improve database import robustness
+ - Improve support for Asian UTF-8 date strings
+
+
 1.14 / 26-Apr-2015
 
  - Fix: JSON output syntax during first day of newly created databases
