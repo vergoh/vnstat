@@ -163,9 +163,6 @@ uint32_t mosecs(void)
 		return 0;
 	}
 
-	d->tm_mday = cfg.monthrotate;
-	d->tm_hour = d->tm_min = d->tm_sec = 0;
-
 	if ((data.lastupdated-data.month[0].month)>0) {
 		return data.lastupdated-mktime(d);
 	} else {
