@@ -289,7 +289,7 @@ END_TEST
 
 START_TEST(cacheremove_when_empty)
 {
-	ck_assert_int_eq(cacheremove("does_not_exist"), NULL);
+	ck_assert(cacheremove("does_not_exist")==NULL);
 }
 END_TEST
 
