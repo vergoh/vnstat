@@ -968,7 +968,7 @@ START_TEST(showbar_with_all_rx)
 	ck_assert_int_eq(len, 10);
 	fflush(stdout);
 
-	read(pipe, buffer, 512);
+	len = read(pipe, buffer, 512);
 	ck_assert_str_eq(buffer, "  rrrrrrrrrr");
 }
 END_TEST
@@ -987,7 +987,7 @@ START_TEST(showbar_with_all_tx)
 	ck_assert_int_eq(len, 10);
 	fflush(stdout);
 
-	read(pipe, buffer, 512);
+	len = read(pipe, buffer, 512);
 	ck_assert_str_eq(buffer, "  tttttttttt");
 }
 END_TEST
@@ -1006,7 +1006,7 @@ START_TEST(showbar_with_half_and_half)
 	ck_assert_int_eq(len, 10);
 	fflush(stdout);
 
-	read(pipe, buffer, 512);
+	len = read(pipe, buffer, 512);
 	ck_assert_str_eq(buffer, "  rrrrrttttt");
 }
 END_TEST
@@ -1025,7 +1025,7 @@ START_TEST(showbar_with_one_tenth)
 	ck_assert_int_eq(len, 10);
 	fflush(stdout);
 
-	read(pipe, buffer, 512);
+	len = read(pipe, buffer, 512);
 	ck_assert_str_eq(buffer, "  rttttttttt");
 }
 END_TEST
@@ -1044,7 +1044,7 @@ START_TEST(showbar_with_small_rx_shows_all_tx)
 	ck_assert_int_eq(len, 10);
 	fflush(stdout);
 
-	read(pipe, buffer, 512);
+	len = read(pipe, buffer, 512);
 	ck_assert_str_eq(buffer, "  tttttttttt");
 }
 END_TEST
@@ -1072,7 +1072,7 @@ START_TEST(showbar_can_also_do_mb_calculations)
 	ck_assert_int_eq(len, 2);
 	fflush(stdout);
 
-	read(pipe, buffer, 512);
+	len = read(pipe, buffer, 512);
 	ck_assert_str_eq(buffer, "  rt");
 }
 END_TEST
