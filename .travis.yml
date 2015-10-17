@@ -19,8 +19,8 @@ before_install:
  - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then brew install gd ; fi
 
 script:
- - if [ "${TRAVIS_OS_NAME}" == "linux" ]; then make debug && make tests && sudo make install && vnstat --version ; fi
- - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then make debug && src/vnstat --version ; fi
+ - if [ "${TRAVIS_OS_NAME}" == "linux" ]; then ./configure && make debug && make check && src/vnstat --version ; fi
+ - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then ./configure && make debug && src/vnstat --version ; fi
 
 notifications:
   email:
