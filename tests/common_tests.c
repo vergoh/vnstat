@@ -56,10 +56,10 @@ START_TEST(mosecs_return_values)
 	initdb();
 	defaultcfg();
 	ck_assert_int_eq(cfg.monthrotate, 1);
-	ck_assert_int_eq((int)mosecs(), 0);
-	sleep(1);
-	data.lastupdated = time(NULL);
-	ck_assert_int_ne((int)mosecs(), 0);
+	ck_assert_int_eq(mosecs(), 0);
+	data.month[0].month = 172800;
+	data.lastupdated = 173000;
+	ck_assert_int_eq(mosecs(), 173000);
 }
 END_TEST
 
@@ -73,10 +73,10 @@ START_TEST(mosecs_does_not_change_tz)
 
 	initdb();
 	defaultcfg();
-	data.month[0].month = 0;
-	data.lastupdated = 1;
+	data.month[0].month = 1;
+	data.lastupdated = 2;
 	ck_assert_int_eq(cfg.monthrotate, 1);
-	mosecs();
+	ck_assert_int_ne(mosecs(), 0);
 	ck_assert_int_eq(timezone_before_call, timezone);
 }
 END_TEST
@@ -91,11 +91,11 @@ START_TEST(mosecs_does_not_change_struct_tm_pointer_content)
 
 	initdb();
 	defaultcfg();
-	data.month[0].month = 0;
-	data.lastupdated = 1;
+	data.month[0].month = 1;
+	data.lastupdated = 2;
 	ck_assert_int_eq(cfg.monthrotate, 1);
 	ck_assert_int_eq(current, timelocal(stm));
-	ck_assert_int_eq((int)mosecs(), 1);
+	ck_assert_int_ne(mosecs(), 0);
 	ck_assert_int_eq(current, timelocal(stm));
 }
 END_TEST
