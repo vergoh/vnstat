@@ -1,6 +1,6 @@
 bin_PROGRAMS = vnstat vnstatd
 if HAVE_LIBGD
-  bin_PROGRAMS += vnstati
+bin_PROGRAMS += vnstati
 endif
 vnstati_LDADD = $(IMAGELIBS)
 vnstat_SOURCES = vnstat.c vnstat.h ifinfo.c ifinfo.h dbxml.c dbxml.h dbjson.c dbjson.h dbshow.c dbshow.h dbaccess.c dbaccess.h dbmerge.c dbmerge.h common.c common.h misc.c misc.h cfg.c cfg.h ibw.c ibw.h traffic.c traffic.h

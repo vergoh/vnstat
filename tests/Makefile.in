@@ -31,8 +31,8 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-TESTS = check_vnstat$(EXEEXT)
-check_PROGRAMS = check_vnstat$(EXEEXT)
+@HAVE_CHECK_TRUE@TESTS = check_vnstat$(EXEEXT)
+@HAVE_CHECK_TRUE@check_PROGRAMS = check_vnstat$(EXEEXT)
 subdir = tests
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -43,20 +43,47 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/src/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am_check_vnstat_OBJECTS = check_vnstat-vnstat_tests.$(OBJEXT) \
-	check_vnstat-common_tests.$(OBJEXT) \
-	check_vnstat-database_tests.$(OBJEXT) \
-	check_vnstat-config_tests.$(OBJEXT) \
-	check_vnstat-ifinfo_tests.$(OBJEXT) \
-	check_vnstat-misc_tests.$(OBJEXT) \
-	check_vnstat-daemon_tests.$(OBJEXT) check_vnstat-cfg.$(OBJEXT) \
-	check_vnstat-common.$(OBJEXT) check_vnstat-daemon.$(OBJEXT) \
-	check_vnstat-dbaccess.$(OBJEXT) check_vnstat-dbcache.$(OBJEXT) \
-	check_vnstat-dbjson.$(OBJEXT) check_vnstat-dbmerge.$(OBJEXT) \
-	check_vnstat-dbshow.$(OBJEXT) check_vnstat-dbxml.$(OBJEXT) \
-	check_vnstat-ibw.$(OBJEXT) check_vnstat-ifinfo.$(OBJEXT) \
-	check_vnstat-image.$(OBJEXT) check_vnstat-misc.$(OBJEXT) \
-	check_vnstat-traffic.$(OBJEXT)
+am__check_vnstat_SOURCES_DIST = vnstat_tests.c vnstat_tests.h \
+	common_tests.c common_tests.h database_tests.c \
+	database_tests.h config_tests.c config_tests.h ifinfo_tests.c \
+	ifinfo_tests.h misc_tests.c misc_tests.h daemon_tests.c \
+	daemon_tests.h $(top_builddir)/src/cfg.c \
+	$(top_builddir)/src/cfg.h $(top_builddir)/src/common.c \
+	$(top_builddir)/src/common.h $(top_builddir)/src/daemon.c \
+	$(top_builddir)/src/daemon.h $(top_builddir)/src/dbaccess.c \
+	$(top_builddir)/src/dbaccess.h $(top_builddir)/src/dbcache.c \
+	$(top_builddir)/src/dbcache.h $(top_builddir)/src/dbjson.c \
+	$(top_builddir)/src/dbjson.h $(top_builddir)/src/dbmerge.c \
+	$(top_builddir)/src/dbmerge.h $(top_builddir)/src/dbshow.c \
+	$(top_builddir)/src/dbshow.h $(top_builddir)/src/dbxml.c \
+	$(top_builddir)/src/dbxml.h $(top_builddir)/src/ibw.c \
+	$(top_builddir)/src/ibw.h $(top_builddir)/src/ifinfo.c \
+	$(top_builddir)/src/ifinfo.h $(top_builddir)/src/image.c \
+	$(top_builddir)/src/image.h $(top_builddir)/src/misc.c \
+	$(top_builddir)/src/misc.h $(top_builddir)/src/traffic.c \
+	$(top_builddir)/src/traffic.h
+@HAVE_CHECK_TRUE@am_check_vnstat_OBJECTS =  \
+@HAVE_CHECK_TRUE@	check_vnstat-vnstat_tests.$(OBJEXT) \
+@HAVE_CHECK_TRUE@	check_vnstat-common_tests.$(OBJEXT) \
+@HAVE_CHECK_TRUE@	check_vnstat-database_tests.$(OBJEXT) \
+@HAVE_CHECK_TRUE@	check_vnstat-config_tests.$(OBJEXT) \
+@HAVE_CHECK_TRUE@	check_vnstat-ifinfo_tests.$(OBJEXT) \
+@HAVE_CHECK_TRUE@	check_vnstat-misc_tests.$(OBJEXT) \
+@HAVE_CHECK_TRUE@	check_vnstat-daemon_tests.$(OBJEXT) \
+@HAVE_CHECK_TRUE@	check_vnstat-cfg.$(OBJEXT) \
+@HAVE_CHECK_TRUE@	check_vnstat-common.$(OBJEXT) \
+@HAVE_CHECK_TRUE@	check_vnstat-daemon.$(OBJEXT) \
+@HAVE_CHECK_TRUE@	check_vnstat-dbaccess.$(OBJEXT) \
+@HAVE_CHECK_TRUE@	check_vnstat-dbcache.$(OBJEXT) \
+@HAVE_CHECK_TRUE@	check_vnstat-dbjson.$(OBJEXT) \
+@HAVE_CHECK_TRUE@	check_vnstat-dbmerge.$(OBJEXT) \
+@HAVE_CHECK_TRUE@	check_vnstat-dbshow.$(OBJEXT) \
+@HAVE_CHECK_TRUE@	check_vnstat-dbxml.$(OBJEXT) \
+@HAVE_CHECK_TRUE@	check_vnstat-ibw.$(OBJEXT) \
+@HAVE_CHECK_TRUE@	check_vnstat-ifinfo.$(OBJEXT) \
+@HAVE_CHECK_TRUE@	check_vnstat-image.$(OBJEXT) \
+@HAVE_CHECK_TRUE@	check_vnstat-misc.$(OBJEXT) \
+@HAVE_CHECK_TRUE@	check_vnstat-traffic.$(OBJEXT)
 check_vnstat_OBJECTS = $(am_check_vnstat_OBJECTS)
 check_vnstat_DEPENDENCIES =
 check_vnstat_LINK = $(CCLD) $(check_vnstat_CFLAGS) $(CFLAGS) \
@@ -70,7 +97,7 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(check_vnstat_SOURCES)
-DIST_SOURCES = $(check_vnstat_SOURCES)
+DIST_SOURCES = $(am__check_vnstat_SOURCES_DIST)
 ETAGS = etags
 CTAGS = ctags
 am__tty_colors = \
@@ -168,26 +195,42 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-check_vnstat_CFLAGS = @CHECK_CFLAGS@ -DPROCNETDEV=\"testdir/proc/dev\" -DSYSCLASSNET=\"testdir/sysclassnet\"
-check_vnstat_LDADD = @CHECK_LIBS@ -lgd
-check_vnstat_SOURCES = vnstat_tests.c vnstat_tests.h common_tests.c \
-	common_tests.h database_tests.c database_tests.h \
-	config_tests.c config_tests.h ifinfo_tests.c ifinfo_tests.h \
-	misc_tests.c misc_tests.h daemon_tests.c daemon_tests.h \
-	$(top_builddir)/src/cfg.c $(top_builddir)/src/cfg.h \
-	$(top_builddir)/src/common.c $(top_builddir)/src/common.h \
-	$(top_builddir)/src/daemon.c $(top_builddir)/src/daemon.h \
-	$(top_builddir)/src/dbaccess.c $(top_builddir)/src/dbaccess.h \
-	$(top_builddir)/src/dbcache.c $(top_builddir)/src/dbcache.h \
-	$(top_builddir)/src/dbjson.c $(top_builddir)/src/dbjson.h \
-	$(top_builddir)/src/dbmerge.c $(top_builddir)/src/dbmerge.h \
-	$(top_builddir)/src/dbshow.c $(top_builddir)/src/dbshow.h \
-	$(top_builddir)/src/dbxml.c $(top_builddir)/src/dbxml.h \
-	$(top_builddir)/src/ibw.c $(top_builddir)/src/ibw.h \
-	$(top_builddir)/src/ifinfo.c $(top_builddir)/src/ifinfo.h \
-	$(top_builddir)/src/image.c $(top_builddir)/src/image.h \
-	$(top_builddir)/src/misc.c $(top_builddir)/src/misc.h \
-	$(top_builddir)/src/traffic.c $(top_builddir)/src/traffic.h
+@HAVE_CHECK_TRUE@check_vnstat_CFLAGS = @CHECK_CFLAGS@ -DPROCNETDEV=\"testdir/proc/dev\" -DSYSCLASSNET=\"testdir/sysclassnet\"
+@HAVE_CHECK_TRUE@check_vnstat_LDADD = @CHECK_LIBS@ -lgd
+@HAVE_CHECK_TRUE@check_vnstat_SOURCES = vnstat_tests.c vnstat_tests.h \
+@HAVE_CHECK_TRUE@	common_tests.c common_tests.h \
+@HAVE_CHECK_TRUE@	database_tests.c database_tests.h \
+@HAVE_CHECK_TRUE@	config_tests.c config_tests.h ifinfo_tests.c \
+@HAVE_CHECK_TRUE@	ifinfo_tests.h misc_tests.c misc_tests.h \
+@HAVE_CHECK_TRUE@	daemon_tests.c daemon_tests.h \
+@HAVE_CHECK_TRUE@	$(top_builddir)/src/cfg.c \
+@HAVE_CHECK_TRUE@	$(top_builddir)/src/cfg.h \
+@HAVE_CHECK_TRUE@	$(top_builddir)/src/common.c \
+@HAVE_CHECK_TRUE@	$(top_builddir)/src/common.h \
+@HAVE_CHECK_TRUE@	$(top_builddir)/src/daemon.c \
+@HAVE_CHECK_TRUE@	$(top_builddir)/src/daemon.h \
+@HAVE_CHECK_TRUE@	$(top_builddir)/src/dbaccess.c \
+@HAVE_CHECK_TRUE@	$(top_builddir)/src/dbaccess.h \
+@HAVE_CHECK_TRUE@	$(top_builddir)/src/dbcache.c \
+@HAVE_CHECK_TRUE@	$(top_builddir)/src/dbcache.h \
+@HAVE_CHECK_TRUE@	$(top_builddir)/src/dbjson.c \
+@HAVE_CHECK_TRUE@	$(top_builddir)/src/dbjson.h \
+@HAVE_CHECK_TRUE@	$(top_builddir)/src/dbmerge.c \
+@HAVE_CHECK_TRUE@	$(top_builddir)/src/dbmerge.h \
+@HAVE_CHECK_TRUE@	$(top_builddir)/src/dbshow.c \
+@HAVE_CHECK_TRUE@	$(top_builddir)/src/dbshow.h \
+@HAVE_CHECK_TRUE@	$(top_builddir)/src/dbxml.c \
+@HAVE_CHECK_TRUE@	$(top_builddir)/src/dbxml.h \
+@HAVE_CHECK_TRUE@	$(top_builddir)/src/ibw.c \
+@HAVE_CHECK_TRUE@	$(top_builddir)/src/ibw.h \
+@HAVE_CHECK_TRUE@	$(top_builddir)/src/ifinfo.c \
+@HAVE_CHECK_TRUE@	$(top_builddir)/src/ifinfo.h \
+@HAVE_CHECK_TRUE@	$(top_builddir)/src/image.c \
+@HAVE_CHECK_TRUE@	$(top_builddir)/src/image.h \
+@HAVE_CHECK_TRUE@	$(top_builddir)/src/misc.c \
+@HAVE_CHECK_TRUE@	$(top_builddir)/src/misc.h \
+@HAVE_CHECK_TRUE@	$(top_builddir)/src/traffic.c \
+@HAVE_CHECK_TRUE@	$(top_builddir)/src/traffic.h
 all: all-am
 
 .SUFFIXES:

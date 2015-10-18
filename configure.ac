@@ -15,6 +15,8 @@ AC_CHECK_LIB([m], [pow])
 AC_CHECK_LIB([gd], [gdImageLine], [IMAGELIBS=-lgd])
 AC_SUBST([IMAGELIBS])
 AM_CONDITIONAL([HAVE_LIBGD], [test "$IMAGELIBS" = "-lgd"])
+AC_CHECK_LIB([check], [suite_create], [PKG_CHECK_MODULES([CHECK], [check >= 0.9.6])])
+AM_CONDITIONAL([HAVE_CHECK], [test "$CHECK_LIBS"])
 
 # Checks for header files.
 AC_CHECK_HEADERS([fcntl.h inttypes.h locale.h stdint.h stdlib.h string.h sys/file.h sys/mount.h sys/param.h sys/socket.h sys/statvfs.h sys/time.h syslog.h unistd.h wchar.h])
@@ -34,8 +36,6 @@ AC_FUNC_MALLOC
 AC_FUNC_MKTIME
 AC_FUNC_REALLOC
 AC_CHECK_FUNCS([dup2 localtime_r memset mkdir pow rmdir setlocale strcasecmp strchr strdup strerror strncasecmp strstr strtol strtoul strtoull tzset])
-
-PKG_CHECK_MODULES([CHECK], [check >= 0.9.6])
 
 AC_CONFIG_FILES([Makefile src/Makefile tests/Makefile])
 AC_OUTPUT
