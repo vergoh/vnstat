@@ -7,13 +7,14 @@ dist_man_MANS = man/vnstat.1 man/vnstat.conf.5 man/vnstatd.1 man/vnstati.1
 EXTRA_DIST = examples UPGRADE CHANGES FAQ INSTALL_BSD INSTALL_OSX
 
 debug:
-	CFLAGS='-Wall -Wextra -g' ./configure && make
+	CFLAGS='-Wall -Wextra -g' ./configure
+	make
 
-profile: check_vnstat_CFLAGS += -fprofile-arcs -ftest-coverage
-profile: check_vnstat_LDLIBS += -fprofile-arcs -ftest-coverage
-profile: check
+profile:
+	CFLAGS='-Wall -Wextra -g -fprofile-arcs -ftest-coverage' LDLIBS='-fprofile-arcs -ftest-coverage' ./configure
+	make check
 	lcov -c -d $(PWD) -o coverage.lcov
-	genhtml coverage.lcov --num-spaces 4 -p . -o coverage
+	genhtml coverage.lcov --num-spaces 4 -p $(PWD) -o coverage
 
 myclean: maintainer-clean
 
