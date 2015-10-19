@@ -21,6 +21,10 @@ int fake_sys_class_net(const char *iface, const int rx, const int tx, const int 
 #define TESTPROCDIR        "testdir/proc"
 #define TESTSYSCLASSNETDIR "testdir/sysclassnet"
 
+#if !defined(CFGFILE)
+#define CFGFILE            "../cfg/vnstat.conf"
+#endif
+
 #if !defined(__linux__)
 #define linuxonly return
 #else
