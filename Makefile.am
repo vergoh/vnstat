@@ -1,4 +1,4 @@
-SUBDIRS = src tests
+SUBDIRS = .
 
 vnstatconfdir = $(sysconfdir)
 dist_vnstatconf_DATA = cfg/vnstat.conf
@@ -6,9 +6,78 @@ dist_man_MANS = man/vnstat.1 man/vnstat.conf.5 man/vnstatd.1 man/vnstati.1
 
 EXTRA_DIST = examples UPGRADE CHANGES FAQ INSTALL_BSD INSTALL_OSX
 
-debug:
+bin_PROGRAMS = vnstat vnstatd
+if HAVE_LIBGD
+bin_PROGRAMS += vnstati
+endif
+vnstati_LDADD = $(IMAGELIBS)
+
+vnstat_SOURCES = src/vnstat.c src/vnstat.h \
+  src/ifinfo.c src/ifinfo.h \
+  src/dbxml.c src/dbxml.h \
+  src/dbjson.c src/dbjson.h \
+  src/dbshow.c src/dbshow.h \
+  src/dbaccess.c src/dbaccess.h \
+  src/dbmerge.c src/dbmerge.h \
+  src/common.c src/common.h \
+  src/misc.c src/misc.h \
+  src/cfg.c src/cfg.h \
+  src/ibw.c src/ibw.h \
+  src/traffic.c src/traffic.h
+
+vnstatd_SOURCES = src/vnstatd.c src/vnstatd.h \
+  src/ifinfo.c src/ifinfo.h \
+  src/dbaccess.c src/dbaccess.h \
+  src/dbcache.c src/dbcache.h \
+  src/common.c src/common.h \
+  src/misc.c src/misc.h \
+  src/cfg.c src/cfg.h \
+  src/ibw.c src/ibw.h \
+  src/daemon.c src/daemon.h
+
+vnstati_SOURCES = src/vnstati.c src/vnstati.h \
+  src/image.c src/image.h \
+  src/dbaccess.c src/dbaccess.h \
+  src/dbmerge.c src/dbmerge.h \
+  src/common.c src/common.h \
+  src/misc.c src/misc.h \
+  src/cfg.c src/cfg.h
+
+if HAVE_CHECK
+TESTS = check_vnstat
+check_PROGRAMS = check_vnstat
+check_vnstat_CFLAGS = @CHECK_CFLAGS@ \
+  -DPROCNETDEV=\"testdir/proc/dev\" \
+  -DSYSCLASSNET=\"testdir/sysclassnet\" \
+  -DCFGFILE=\"$(top_srcdir)/cfg/vnstat.conf\" \
+  -I$(top_srcdir)/src
+check_vnstat_LDADD = @CHECK_LIBS@
+
+check_vnstat_SOURCES = tests/vnstat_tests.c tests/vnstat_tests.h \
+  tests/common_tests.c tests/common_tests.h \
+  tests/database_tests.c tests/database_tests.h \
+  tests/config_tests.c tests/config_tests.h \
+  tests/ifinfo_tests.c tests/ifinfo_tests.h \
+  tests/misc_tests.c tests/misc_tests.h \
+  tests/daemon_tests.c tests/daemon_tests.h
+
+check_vnstat_SOURCES += src/cfg.c src/cfg.h \
+  src/common.c src/common.h \
+  src/daemon.c src/daemon.h \
+  src/dbaccess.c src/dbaccess.h \
+  src/dbcache.c src/dbcache.h \
+  src/dbjson.c src/dbjson.h \
+  src/dbmerge.c src/dbmerge.h \
+  src/dbshow.c src/dbshow.h \
+  src/dbxml.c src/dbxml.h \
+  src/ibw.c src/ibw.h \
+  src/ifinfo.c src/ifinfo.h \
+  src/misc.c src/misc.h \
+  src/traffic.c src/traffic.h
+endif
+
+setdebug:
 	CFLAGS='-Wall -Wextra -g' ./configure
-	make
 
 profile:
 	CFLAGS='-Wall -Wextra -g -fprofile-arcs -ftest-coverage' LDLIBS='-fprofile-arcs -ftest-coverage' ./configure
@@ -19,4 +88,4 @@ profile:
 myclean: maintainer-clean
 
 clean-local:
-	-rm -fr coverage *.lcov *.gz
+	-rm -fr coverage *.lcov *.gz test*.log test*.xml

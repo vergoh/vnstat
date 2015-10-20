@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 AC_INIT([vnstat], [1.5_beta], [tst at iki dot fi])
-AM_INIT_AUTOMAKE([foreign -Wall -Werror])
+AM_INIT_AUTOMAKE([foreign subdir-objects std-options -Wall -Werror])
 AC_CONFIG_SRCDIR([src/vnstat.c])
 AC_CONFIG_HEADERS([src/config.h])
 
@@ -15,7 +15,7 @@ AC_CHECK_LIB([m], [pow])
 AC_CHECK_LIB([gd], [gdImageLine], [IMAGELIBS=-lgd])
 AC_SUBST([IMAGELIBS])
 AM_CONDITIONAL([HAVE_LIBGD], [test "$IMAGELIBS" = "-lgd"])
-AC_CHECK_LIB([check], [suite_create], [PKG_CHECK_MODULES([CHECK], [check >= 0.9.6])])
+PKG_CHECK_MODULES([CHECK], [check >= 0.9.6], [], [AC_MSG_NOTICE([testcases can not be execute without check installed])])
 AM_CONDITIONAL([HAVE_CHECK], [test "$CHECK_LIBS"])
 
 # Checks for header files.
@@ -37,5 +37,5 @@ AC_FUNC_MKTIME
 AC_FUNC_REALLOC
 AC_CHECK_FUNCS([dup2 localtime_r memset mkdir pow rmdir setlocale strcasecmp strchr strdup strerror strncasecmp strstr strtol strtoul strtoull tzset])
 
-AC_CONFIG_FILES([Makefile src/Makefile tests/Makefile])
+AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
