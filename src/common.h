@@ -155,9 +155,6 @@ and most can be changed later from the config file.
 /* 1 = 1.0, 2 = 1.1-1.2, 3 = 1.3- */
 #define DBVERSION 3
 
-/* version string */
-#define VNSTATVERSION "1.15 beta"
-
 /* xml format version */
 /* 1 = 1.7- */
 #define XMLVERSION 1
@@ -306,6 +303,7 @@ uint64_t mbkbtokb(uint64_t mb, uint64_t kb);
 char *strncpy_nt(char *dest, const char *src, size_t n);
 int isnumeric(const char *s);
 void panicexit(const char *sourcefile, const int sourceline);
+char *getversion(void);
 
 /* global variables */
 DATA data;

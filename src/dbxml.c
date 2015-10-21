@@ -124,7 +124,7 @@ void xmldate(time_t *date, int type)
 
 void xmlheader(void)
 {
-	printf("<vnstat version=\"%s\" xmlversion=\"%d\">\n", VNSTATVERSION, XMLVERSION);
+	printf("<vnstat version=\"%s\" xmlversion=\"%d\">\n", getversion(), XMLVERSION);
 }
 
 void xmlfooter(void)

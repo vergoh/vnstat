@@ -88,4 +88,4 @@ profile:
 myclean: maintainer-clean
 
 clean-local:
-	-rm -fr coverage *.lcov *.gz test*.log test*.xml
+	-rm -fr coverage *.lcov *.gz test*.log test*.xml src/*.gc* tests/*.gc*

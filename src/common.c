@@ -250,3 +250,16 @@ void panicexit(const char *sourcefile, const int sourceline)
 	printe(PT_Error);
 	exit(EXIT_FAILURE);
 }
+
+char *getversion(void)
+{
+	int i;
+	static char versionbuffer[16];
+	strncpy_nt(versionbuffer, VERSION, 16);
+	for (i=0; i<strlen(versionbuffer); i++) {
+		if (versionbuffer[i] == '_') {
+			versionbuffer[i] = ' ';
+		}
+	}
+	return versionbuffer;
+}

@@ -148,7 +148,7 @@ void jsondate(time_t *date, int type)
 
 void jsonheader(void)
 {
-	printf("{\"vnstatversion\":\"%s\",\"jsonversion\":\"%d\",\"interfaces\":[", VNSTATVERSION, JSONVERSION);
+	printf("{\"vnstatversion\":\"%s\",\"jsonversion\":\"%d\",\"interfaces\":[", getversion(), JSONVERSION);
 }
 
 void jsonfooter(void)

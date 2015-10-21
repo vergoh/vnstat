@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
 		} else if (strcmp(argv[currentarg],"--noadd")==0) {
 			s.noadd = 1;
 		} else if ((strcmp(argv[currentarg],"-v")==0) || (strcmp(argv[currentarg],"--version")==0)) {
-			printf("vnStat daemon %s by Teemu Toivola <tst at iki dot fi>\n", VNSTATVERSION);
+			printf("vnStat daemon %s by Teemu Toivola <tst at iki dot fi>\n", getversion());
 			return 0;
 		} else if ((strcmp(argv[currentarg],"-p")==0) || (strcmp(argv[currentarg],"--pidfile")==0)) {
 			if (currentarg+1<argc) {
@@ -212,7 +212,7 @@ int main(int argc, char *argv[])
 
 void showhelp(void)
 {
-	printf(" vnStat daemon %s by Teemu Toivola <tst at iki dot fi>\n\n", VNSTATVERSION);
+	printf(" vnStat daemon %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
 	printf("         -d, --daemon         fork process to background\n");
 	printf("         -n, --nodaemon       stay in foreground attached to the terminal\n\n");
 	printf("         -s, --sync           sync interface counters on first update\n");
