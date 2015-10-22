@@ -256,7 +256,7 @@ char *getversion(void)
 	int i;
 	static char versionbuffer[16];
 	strncpy_nt(versionbuffer, VERSION, 16);
-	for (i=0; i<strlen(versionbuffer); i++) {
+	for (i=0; i<(int)strlen(versionbuffer); i++) {
 		if (versionbuffer[i] == '_') {
 			versionbuffer[i] = ' ';
 		}
