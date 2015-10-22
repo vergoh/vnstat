@@ -1,10 +1,8 @@
 SUBDIRS = .
 
-vnstatconfdir = $(sysconfdir)
-dist_vnstatconf_DATA = cfg/vnstat.conf
 dist_man_MANS = man/vnstat.1 man/vnstat.conf.5 man/vnstatd.1 man/vnstati.1
 
-EXTRA_DIST = examples UPGRADE CHANGES FAQ INSTALL_BSD INSTALL_OSX
+EXTRA_DIST = cfg examples UPGRADE CHANGES FAQ INSTALL_BSD INSTALL_OSX
 
 bin_PROGRAMS = vnstat vnstatd
 if HAVE_LIBGD
@@ -86,6 +84,15 @@ profile:
 	genhtml coverage.lcov --num-spaces 4 -p $(PWD) -o coverage
 
 myclean: maintainer-clean
+
+install-data-hook:
+	$(DESTDIR)$(bindir)/vnstat$(EXEEXT) --showconfig >vnstat.conf && \
+	  $(MKDIR_P) $(DESTDIR)$(sysconfdir) && \
+	  mv -f vnstat.conf $(DESTDIR)$(sysconfdir)/vnstat.conf
+
+uninstall-hook:
+	-rm -f $(DESTDIR)$(sysconfdir)/vnstat.conf
+	-rmdir $(DESTDIR)$(sysconfdir)
 
 clean-local:
 	-rm -fr coverage *.lcov *.gz test*.log test*.xml src/*.gc* tests/*.gc*
