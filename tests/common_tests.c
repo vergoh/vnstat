@@ -65,7 +65,7 @@ END_TEST
 
 START_TEST(mosecs_does_not_change_tz)
 {
-#if defined(_SVID_SOURCE) || defined(_XOPEN_SOURCE)
+#if defined(_SVID_SOURCE) || defined(_XOPEN_SOURCE) || defined(__linux__)
 	extern long timezone;
 #else
 	long timezone = 0;

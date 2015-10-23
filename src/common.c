@@ -152,7 +152,7 @@ int dmonth(int month)
 uint32_t mosecs(void)
 {
 	struct tm d;
-#if defined(_SVID_SOURCE) || defined(_XOPEN_SOURCE)
+#if defined(_SVID_SOURCE) || defined(_XOPEN_SOURCE) || defined(__linux__)
 	extern long timezone;
 #else
 	int timezone = 0;
