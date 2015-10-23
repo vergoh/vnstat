@@ -152,7 +152,11 @@ int dmonth(int month)
 uint32_t mosecs(void)
 {
 	struct tm d;
+#if defined(_SVID_SOURCE) || defined(_XOPEN_SOURCE)
 	extern long timezone;
+#else
+	int timezone = 0;
+#endif
 
 	if (localtime_r(&data.month[0].month, &d) == NULL) {
 		return 0;
