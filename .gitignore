@@ -15,7 +15,8 @@ Makefile
 autom4te.cache
 *.status
 src/.deps
+src/.dirstamp
 src/config.h
 src/stamp-h1
 tests/.deps
-
+tests/.dirstamp
