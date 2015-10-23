@@ -1,6 +1,7 @@
 #ifndef VNSTAT_TESTS_H
 #define VNSTAT_TESTS_H
 
+#include <assert.h>
 #include <check.h>
 
 Suite *test_suite(void);
@@ -22,7 +23,7 @@ int fake_sys_class_net(const char *iface, const int rx, const int tx, const int 
 #define TESTSYSCLASSNETDIR "testdir/sysclassnet"
 
 #if !defined(CFGFILE)
-#define CFGFILE            "../cfg/vnstat.conf"
+#define CFGFILE            "cfg/vnstat.conf"
 #endif
 
 #if !defined(__linux__)
