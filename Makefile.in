@@ -1607,10 +1607,23 @@ install-data-hook:
 	$(DESTDIR)$(bindir)/vnstat$(EXEEXT) --showconfig >vnstat.conf && \
 	  $(MKDIR_P) $(DESTDIR)$(sysconfdir) && \
 	  mv -f vnstat.conf $(DESTDIR)$(sysconfdir)/vnstat.conf
+	@echo
+	@echo "============================================================================"
+	@echo "  Note: No service file has been installed for starting the daemon"
+	@echo "        automatically. Such setup will need to be created manually"
+	@echo "        depending on the used environment. See the included documentation."
+	@echo "============================================================================"
+	@echo
 
 uninstall-hook:
 	-rm -f $(DESTDIR)$(sysconfdir)/vnstat.conf
 	-rmdir $(DESTDIR)$(sysconfdir)
+	@echo
+	@echo "=================================================================="
+	@echo "  Note: The database directory has been left untouched."
+	@echo "        It will need to be removed manually if no longer needed."
+	@echo "=================================================================="
+	@echo
 
 clean-local:
 	-rm -fr coverage *.lcov *.gz test*.log test*.xml src/*.gc* tests/*.gc*
