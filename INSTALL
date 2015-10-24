@@ -5,19 +5,17 @@ Compiling the binaries
  This source package contains the required source files for vnStat including
  the daemon (vnstatd) and image output (vnstati). Executing
 
-     make
+     ./configure --prefix=/usr --sysconfdir=/etc && make
 
  will compile 'vnstat' and 'vnstatd' without requiring additional libraries.
- The optional image output however requires libgd2 to be available. The
+ The optional image output capable binary 'vnstati' will also be compiled if
+ the required additional libgd2 library is found to be available. The
  required extra packages are usually named libgd2 and libgd2-dev (or
  libgd2-noxpm and libgd2-noxpm-dev in Debian/Ubuntu, xpm version can also
- be used, libgd-dev in more recent releases). Executing
+ be used, libgd-dev in more recent releases).
 
-     make all
-
- will compile everything including the image output support. An example
- cgi ('vnstat.cgi') to be used with http server with the image output
- support has been provided in the 'examples' directory. Configuration
+ An example cgi ('vnstat.cgi') to be used with http server with the image
+ output support has been provided in the 'examples' directory. Configuration
  options for the cgi are in the beginning of the file.
 
 
@@ -29,14 +27,8 @@ Installing as root
      make install
 
  If there were no errors, vnStat binaries, man pages and a config file
- should now be installed. Next the used kernel should be checked that it
- is able to provide static information about the system boot time. This has
- mainly been an issue in some kernels from the 2.4 series.
-
-     vnstat --testkernel
-
- The only way to fix a faulty kernel (afaik) is to compile/install a newer
- one.
+ should now be installed. The configuration file will be upgraded
+ using previously configured values if it is found already to exist.
 
  The configuration file /etc/vnstat.conf should also be checked at this
  point. See the vnstat.conf man page for documentation about available
@@ -87,15 +79,14 @@ Installing without root access
  Copy all needed binaries to some directory included in your PATH
  (~/bin/ is an example) and make the database directory.
 
-     cp src/vnstat src/vnstatd src/vnstati ~/bin/
-     cp cfg/vnstat.conf ~/.vnstatrc
+     cp -v vnstat vnstatd vnstati ~/bin/
+     cp -v cfg/vnstat.conf ~/.vnstatrc
      mkdir ~/.vnstat
 
- During version 1.0 it became clear that some kernels are broken and don't
- provide to correct boot time for the system. vnStat requires this information
- so there's a test to see if the kernel is working correctly.
+ Check that the binary got installed to a suitable location and is of the
+ correct version:
 
-     vnstat --testkernel
+     vnstat --version
 
  If this gives 'command not found' then check content of your PATH variable.
  The only way to fix a faulty kernel (afaik) is to compile/install a newer one.

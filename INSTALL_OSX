@@ -23,8 +23,12 @@ Experimental instructions for OS X
 
      whoami
 
- Go to the directory where this package was extracted and compile the
- binaries:
+ Go to the directory where this package was extracted and configure the
+ environmant:
+
+     ./configure
+
+ and then compile the binaries:
 
      make
 
