@@ -1,7 +1,6 @@
 #ifndef VNSTAT_TESTS_H
 #define VNSTAT_TESTS_H
 
-#include <assert.h>
 #include <check.h>
 
 Suite *test_suite(void);
