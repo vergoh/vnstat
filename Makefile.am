@@ -4,7 +4,8 @@ dist_man_MANS = man/vnstat.1 man/vnstat.conf.5 man/vnstatd.1 man/vnstati.1
 
 EXTRA_DIST = cfg examples UPGRADE CHANGES FAQ INSTALL_BSD INSTALL_OSX
 
-bin_PROGRAMS = vnstat vnstatd
+bin_PROGRAMS = vnstat
+sbin_PROGRAMS = vnstatd
 if HAVE_LIBGD
 bin_PROGRAMS += vnstati
 endif
