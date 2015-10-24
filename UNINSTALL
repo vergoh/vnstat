@@ -2,10 +2,7 @@
 If the daemon is running then stop it first and remove
 any manually installed service files.
 
-
-Linux:
-   Run 'make uninstall' and follow the instructions.
-
-BSD:
-   Run 'make bsduninstall' and follow the instructions.
-
+Run 'make uninstall' and follow the instructions. This step
+will not automatically remove any possible databases that have
+been created. This will need to be removed manually if no longer
+needed.

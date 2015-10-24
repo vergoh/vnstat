@@ -23,7 +23,7 @@ END_TEST
 
 START_TEST(loadcfg_included_default)
 {
-	ck_assert_int_eq(loadcfg("../cfg/vnstat.conf"), 1);
+	ck_assert_int_eq(loadcfg(CFGFILE), 1);
 }
 END_TEST
 
@@ -48,7 +48,7 @@ END_TEST
 
 START_TEST(ibwloadcfg_included_default)
 {
-	ck_assert_int_eq(ibwloadcfg("../cfg/vnstat.conf"), 1);
+	ck_assert_int_eq(ibwloadcfg(CFGFILE), 1);
 }
 END_TEST
 
@@ -87,8 +87,8 @@ END_TEST
 
 START_TEST(ibwget_from_config)
 {
-	ck_assert_int_eq(loadcfg("../cfg/vnstat.conf"), 1);
-	ck_assert_int_eq(ibwloadcfg("../cfg/vnstat.conf"), 1);
+	ck_assert_int_eq(loadcfg(CFGFILE), 1);
+	ck_assert_int_eq(ibwloadcfg(CFGFILE), 1);
 	cfg.maxbw = 10;
 	ck_assert_int_eq(ibwget("ethnone"), 8);
 }

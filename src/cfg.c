@@ -5,7 +5,7 @@ void printcfgfile(void)
 {
 	ibwnode *p = ifacebw;
 
-	printf("# vnStat %s config file\n", VNSTATVERSION);
+	printf("# vnStat %s config file\n", getversion());
 	printf("##\n\n");
 
 	printf("# default interface\n");

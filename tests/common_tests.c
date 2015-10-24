@@ -65,7 +65,11 @@ END_TEST
 
 START_TEST(mosecs_does_not_change_tz)
 {
+#if defined(_SVID_SOURCE) || defined(_XOPEN_SOURCE) || defined(__linux__)
 	extern long timezone;
+#else
+	long timezone = 0;
+#endif
 	long timezone_before_call;
 
 	tzset();
@@ -368,6 +372,14 @@ START_TEST(isnumeric_it_is_not)
 }
 END_TEST
 
+START_TEST(getversion_returns_a_version)
+{
+	ck_assert_int_gt((int)strlen(getversion()), 1);
+	ck_assert(strchr(getversion(), '_') == NULL);
+	ck_assert(strchr(getversion(), '.') != NULL);
+}
+END_TEST
+
 void add_common_tests(Suite *s)
 {
 	TCase *tc_common = tcase_create("Common");
@@ -395,5 +407,6 @@ void add_common_tests(Suite *s)
 	tcase_add_test(tc_common, isnumeric_empty);
 	tcase_add_test(tc_common, isnumeric_it_is);
 	tcase_add_test(tc_common, isnumeric_it_is_not);
+	tcase_add_test(tc_common, getversion_returns_a_version);
 	suite_add_tcase(s, tc_common);
 }

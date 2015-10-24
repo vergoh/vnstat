@@ -152,7 +152,11 @@ int dmonth(int month)
 uint32_t mosecs(void)
 {
 	struct tm d;
+#if defined(_SVID_SOURCE) || defined(_XOPEN_SOURCE) || defined(__linux__)
 	extern long timezone;
+#else
+	int timezone = 0;
+#endif
 
 	if (localtime_r(&data.month[0].month, &d) == NULL) {
 		return 0;
@@ -249,4 +253,17 @@ void panicexit(const char *sourcefile, const int sourceline)
 	fprintf(stderr, "%s\n", errorstring);
 	printe(PT_Error);
 	exit(EXIT_FAILURE);
+}
+
+char *getversion(void)
+{
+	int i;
+	static char versionbuffer[16];
+	strncpy_nt(versionbuffer, VERSION, 16);
+	for (i=0; i<(int)strlen(versionbuffer); i++) {
+		if (versionbuffer[i] == '_') {
+			versionbuffer[i] = ' ';
+		}
+	}
+	return versionbuffer;
 }

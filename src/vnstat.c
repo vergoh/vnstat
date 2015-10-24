@@ -305,7 +305,7 @@ int main(int argc, char *argv[]) {
 			free(p.ifacelist);
 			return 0;
 		} else if ((strcmp(argv[currentarg],"-v")==0) || (strcmp(argv[currentarg],"--version")==0)) {
-			printf("vnStat %s by Teemu Toivola <tst at iki dot fi>\n", VNSTATVERSION);
+			printf("vnStat %s by Teemu Toivola <tst at iki dot fi>\n", getversion());
 			return 0;
 		} else if ((strcmp(argv[currentarg],"-r")==0) || (strcmp(argv[currentarg],"--reset")==0)) {
 			p.reset=1;
@@ -442,7 +442,7 @@ int synccounters(const char *iface, const char *dirname)
 
 void showhelp(PARAMS *p)
 {
-			printf(" vnStat %s by Teemu Toivola <tst at iki dot fi>\n\n", VNSTATVERSION);
+			printf(" vnStat %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
 
 			printf("         -q,  --query          query database\n");
 			printf("         -h,  --hours          show hours\n");
@@ -464,7 +464,7 @@ void showhelp(PARAMS *p)
 
 void showlonghelp(PARAMS *p)
 {
-			printf(" vnStat %s by Teemu Toivola <tst at iki dot fi>\n\n", VNSTATVERSION);
+			printf(" vnStat %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
 
 			printf("   Query:\n");
 			printf("         -q, --query           query database\n");

@@ -5,24 +5,20 @@ Compiling the binaries
  This source package contains the required source files for vnStat including
  the daemon (vnstatd) and image output (vnstati). Executing
 
-     gmake
+     ./configure && make
 
  will compile 'vnstat' and 'vnstatd' without requiring additional libraries.
- The optional image output however requires libgd2 to be available. In
+ The optional image output capable binary 'vnstati' will also be compiled if
+ the required additional libgd2 library is found to be available. In
  BSD ports libgd2 is usually named simply 'gd'. Executing
 
-     gmake all
-
- will compile everything including the image output support.  An example
- cgi ('vnstat.cgi') to be used with http server with the image output
- support has been provided in the 'examples' directory. Configuration
+ An example cgi ('vnstat.cgi') to be used with http server with the image
+ output support has been provided in the 'examples' directory. Configuration
  options for the cgi are in the beginning of the file.
 
- Some BSD users may need to use
-
-     LIBRARY_PATH="/usr/local/lib" CPATH="/usr/local/include" gmake all
-
- instead if libgd2 is installed but still not found.
+ Some BSD users may need to provide correct LIBRARY_PATH and CPATH to the
+ configure script if the image output is wanted but the location of libgd2
+ isn't automatically detected.
 
 
 Installing as root
@@ -30,13 +26,14 @@ Installing as root
 
  Login as root and run the following command:
 
-     gmake bsdinstall
+     make install
 
  If there were no errors, vnStat binaries, man pages and a config file
- should now be installed.
+ should now be installed. The configuration file will be upgraded using
+ previously configured values if it is found already to exist.
 
- The configuration file /etc/vnstat.conf should also be checked at this
- point. See the vnstat.conf man page for documentation about available
+ The configuration file /usr/local/etc/vnstat.conf should also be checked
+ at this point. See the vnstat.conf man page for documentation about available
  options.
 
  Finally make vnStat monitor the selected interface(s). Configure init

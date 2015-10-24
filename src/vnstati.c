@@ -213,7 +213,7 @@ int main(int argc, char *argv[])
 					printf("Rateunit changed: %d\n", cfg.rateunit);
 			}
 		} else if ((strcmp(argv[currentarg],"-v")==0) || (strcmp(argv[currentarg],"--version"))==0) {
-			printf("vnStat image output %s by Teemu Toivola <tst at iki dot fi>\n", VNSTATVERSION);
+			printf("vnStat image output %s by Teemu Toivola <tst at iki dot fi>\n", getversion());
 			return 0;
 		} else {
 			printf("Unknown arg \"%s\". Use --help for help.\n",argv[currentarg]);
@@ -258,7 +258,7 @@ void initiparams(IPARAMS *p)
 
 void showihelp(IPARAMS *p)
 {
-	printf(" vnStat image output %s by Teemu Toivola <tst at iki dot fi>\n\n", VNSTATVERSION);
+	printf(" vnStat image output %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
 	printf("         -h,  --hours          output hours\n");
 	printf("         -d,  --days           output days\n");
 	printf("         -m,  --months         output months\n");

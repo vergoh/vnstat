@@ -16,11 +16,10 @@ matrix:
 before_install:
  - if [ "${TRAVIS_OS_NAME}" == "linux" ]; then sudo apt-get update -qq ; fi
  - if [ "${TRAVIS_OS_NAME}" == "linux" ]; then sudo apt-get install -qq libgd2-xpm libgd2-xpm-dev check ; fi
- - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then brew install gd ; fi
+ - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then brew install gd check ; fi
 
 script:
- - if [ "${TRAVIS_OS_NAME}" == "linux" ]; then make debug && make tests && sudo make install && vnstat --version ; fi
- - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then make debug && src/vnstat --version ; fi
+ - CFLAGS='-Wall -Wextra -g' ./configure && make check && ./vnstat --version
 
 notifications:
   email:
