@@ -56,10 +56,47 @@ START_TEST(mosecs_return_values)
 	initdb();
 	defaultcfg();
 	ck_assert_int_eq(cfg.monthrotate, 1);
-	ck_assert_int_eq((int)mosecs(), 0);
-	sleep(1);
-	data.lastupdated = time(NULL);
-	ck_assert_int_ne((int)mosecs(), 0);
+	ck_assert_int_eq(mosecs(), 0);
+	data.month[0].month = 172800;
+	data.lastupdated = 173000;
+	ck_assert_int_eq(mosecs(), 173000);
+}
+END_TEST
+
+START_TEST(mosecs_does_not_change_tz)
+{
+	extern long timezone;
+	long timezone_before_call;
+
+	tzset();
+	timezone_before_call = timezone;
+
+	initdb();
+	defaultcfg();
+	data.month[0].month = 1;
+	data.lastupdated = 2;
+	ck_assert_int_eq(cfg.monthrotate, 1);
+	ck_assert_int_ne(mosecs(), 0);
+	ck_assert_int_eq(timezone_before_call, timezone);
+}
+END_TEST
+
+START_TEST(mosecs_does_not_change_struct_tm_pointer_content)
+{
+	struct tm *stm;
+	time_t current;
+
+	current = time(NULL);
+	stm = localtime(&current);
+
+	initdb();
+	defaultcfg();
+	data.month[0].month = 1;
+	data.lastupdated = 2;
+	ck_assert_int_eq(cfg.monthrotate, 1);
+	ck_assert_int_eq(current, timelocal(stm));
+	ck_assert_int_ne(mosecs(), 0);
+	ck_assert_int_eq(current, timelocal(stm));
 }
 END_TEST
 
@@ -338,6 +375,8 @@ void add_common_tests(Suite *s)
 	tcase_add_test(tc_common, logprint_options);
 	tcase_add_loop_test(tc_common, dmonth_return_within_range, 0, 12);
 	tcase_add_test(tc_common, mosecs_return_values);
+	tcase_add_test(tc_common, mosecs_does_not_change_tz);
+	tcase_add_test(tc_common, mosecs_does_not_change_struct_tm_pointer_content);
 	tcase_add_test(tc_common, countercalc_no_change);
 	tcase_add_test(tc_common, countercalc_small_change);
 	tcase_add_test(tc_common, countercalc_32bit);

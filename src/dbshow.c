@@ -46,8 +46,8 @@ void showdb(int qmode)
 void showsummary(void)
 {
 	struct tm *d;
-	char datebuff[16];
-	char daytemp[32], daytemp2[32];
+	char datebuff[DATEBUFFLEN];
+	char daytemp[DATEBUFFLEN], daytemp2[DATEBUFFLEN];
 	uint64_t e_rx, e_tx;
 	time_t current, yesterday;
 
@@ -58,15 +58,15 @@ void showsummary(void)
 
 	/* get formated date for today */
 	d=localtime(&current);
-	strftime(datebuff, 16, cfg.dformat, d);
+	strftime(datebuff, DATEBUFFLEN, cfg.dformat, d);
 
 	/* get formated date for latest day in database */
 	d=localtime(&data.day[0].date);
-	strftime(daytemp2, 16, cfg.dformat, d);
+	strftime(daytemp2, DATEBUFFLEN, cfg.dformat, d);
 
 	/* change daytemp to today if formated days match */
 	if (strcmp(datebuff, daytemp2)==0) {
-		strncpy_nt(daytemp2, "    today", 32);
+		strncpy_nt(daytemp2, "    today", DATEBUFFLEN);
 	}
 
 	if (data.lastupdated) {
@@ -90,7 +90,7 @@ void showsummary(void)
 
 	/* get formated date for creation date */
 	d=localtime(&data.created);
-	strftime(datebuff, 16, cfg.tformat, d);
+	strftime(datebuff, DATEBUFFLEN, cfg.tformat, d);
 	printf(" since %s\n\n", datebuff);
 
 	indent(10);
@@ -117,10 +117,10 @@ void showsummary(void)
 	if (data.month[1].used) {
 		indent(5);
 		d=localtime(&data.month[1].month);
-		if (strftime(datebuff, 16, cfg.mformat, d)<=8) {
-			printf(" %8s   %s", datebuff, getvalue(data.month[1].rx, data.month[1].rxk, 11, 1));
+		if (strftime(datebuff, DATEBUFFLEN, cfg.mformat, d)<=8) {
+			printf(" %*s   %s", getpadding(8, datebuff), datebuff, getvalue(data.month[1].rx, data.month[1].rxk, 11, 1));
 		} else {
-			printf("%-11s %s", datebuff, getvalue(data.month[1].rx, data.month[1].rxk, 11, 1));
+			printf("%-*s %s", getpadding(11, datebuff), datebuff, getvalue(data.month[1].rx, data.month[1].rxk, 11, 1));
 		}
 		printf(" | %s", getvalue(data.month[1].tx, data.month[1].txk, 11, 1));
 		printf(" | %s", getvalue(data.month[1].rx+data.month[1].tx, data.month[1].rxk+data.month[1].txk, 11, 1));
@@ -131,10 +131,10 @@ void showsummary(void)
 	}
 	indent(5);
 	d=localtime(&data.month[0].month);
-	if (strftime(datebuff, 16, cfg.mformat, d)<=8) {
-		printf(" %8s   %s", datebuff, getvalue(data.month[0].rx, data.month[0].rxk, 11, 1));
+	if (strftime(datebuff, DATEBUFFLEN, cfg.mformat, d)<=8) {
+		printf(" %*s   %s", getpadding(8, datebuff), datebuff, getvalue(data.month[0].rx, data.month[0].rxk, 11, 1));
 	} else {
-		printf("%-11s %s", datebuff, getvalue(data.month[0].rx, data.month[0].rxk, 11, 1));
+		printf("%-*s %s", getpadding(11, datebuff), datebuff, getvalue(data.month[0].rx, data.month[0].rxk, 11, 1));
 	}
 	printf(" | %s", getvalue(data.month[0].tx, data.month[0].txk, 11, 1));
 	printf(" | %s", getvalue(data.month[0].rx+data.month[0].tx, data.month[0].rxk+data.month[0].txk, 11, 1));
@@ -170,15 +170,15 @@ void showsummary(void)
 
 	/* get formated date for yesterday */
 	d=localtime(&yesterday);
-	strftime(datebuff, 16, cfg.dformat, d);
+	strftime(datebuff, DATEBUFFLEN, cfg.dformat, d);
 
 	/* get formated date for previous day in database */
 	d=localtime(&data.day[1].date);
-	strftime(daytemp, 16, cfg.dformat, d);
+	strftime(daytemp, DATEBUFFLEN, cfg.dformat, d);
 
 	/* change daytemp to yesterday if formated days match */
 	if (strcmp(datebuff, daytemp)==0) {
-		strncpy_nt(daytemp, "yesterday", 32);
+		strncpy_nt(daytemp, "yesterday", DATEBUFFLEN);
 	}
 
 	/* use database update time for estimates */
@@ -207,9 +207,9 @@ void showsummary(void)
 	if (data.day[1].date!=0) {
 		indent(5);
 		if (strlen(daytemp)<=9) {
-			printf("%9s   %s", daytemp, getvalue(data.day[1].rx, data.day[1].rxk, 11, 1));
+			printf("%*s   %s", getpadding(9, daytemp), daytemp, getvalue(data.day[1].rx, data.day[1].rxk, 11, 1));
 		} else {
-			printf("%-11s %s", daytemp, getvalue(data.day[1].rx, data.day[1].rxk, 11, 1));
+			printf("%-*s %s", getpadding(11, daytemp), daytemp, getvalue(data.day[1].rx, data.day[1].rxk, 11, 1));
 		}
 		printf(" | %s", getvalue(data.day[1].tx, data.day[1].txk, 11, 1));
 		printf(" | %s", getvalue(data.day[1].rx+data.day[1].tx, data.day[1].rxk+data.day[1].txk, 11, 1));
@@ -220,9 +220,9 @@ void showsummary(void)
 	}
 	indent(5);
 	if (strlen(daytemp2)<=9) {
-		printf("%9s   %s", daytemp2, getvalue(data.day[0].rx, data.day[0].rxk, 11, 1));
+		printf("%*s   %s", getpadding(9, daytemp2), daytemp2, getvalue(data.day[0].rx, data.day[0].rxk, 11, 1));
 	} else {
-		printf("%-11s %s", daytemp2, getvalue(data.day[0].rx, data.day[0].rxk, 11, 1));
+		printf("%-*s %s", getpadding(11, daytemp2), daytemp2, getvalue(data.day[0].rx, data.day[0].rxk, 11, 1));
 	}
 	printf(" | %s", getvalue(data.day[0].tx, data.day[0].txk, 11, 1));
 	printf(" | %s", getvalue(data.day[0].rx+data.day[0].tx, data.day[0].rxk+data.day[0].txk, 11, 1));
@@ -252,8 +252,8 @@ void showsummary(void)
 void showshort(void)
 {
 	struct tm *d;
-	char datebuff[16];
-	char daytemp[32], daytemp2[32];
+	char datebuff[DATEBUFFLEN];
+	char daytemp[DATEBUFFLEN], daytemp2[DATEBUFFLEN];
 	uint64_t e_rx, e_tx;
 	time_t current, yesterday;
 
@@ -276,10 +276,10 @@ void showshort(void)
 
 	if (data.month[1].used) {
 		d=localtime(&data.month[1].month);
-		if (strftime(datebuff, 16, cfg.mformat, d)<=8) {
-			printf("      %8s   %s", datebuff, getvalue(data.month[1].rx, data.month[1].rxk, 11, 1));
+		if (strftime(datebuff, DATEBUFFLEN, cfg.mformat, d)<=8) {
+			printf("      %*s   %s", getpadding(8, datebuff), datebuff, getvalue(data.month[1].rx, data.month[1].rxk, 11, 1));
 		} else {
-			printf("    %-11s  %s", datebuff, getvalue(data.month[1].rx, data.month[1].rxk, 11, 1));
+			printf("    %-*s  %s", getpadding(11, datebuff), datebuff, getvalue(data.month[1].rx, data.month[1].rxk, 11, 1));
 		}
 		printf("  / %s", getvalue(data.month[1].tx, data.month[1].txk, 11, 1));
 		printf("  / %s", getvalue(data.month[1].rx+data.month[1].tx, data.month[1].rxk+data.month[1].txk, 11, 1));
@@ -296,10 +296,10 @@ void showshort(void)
 		}
 	}
 
-	if (strftime(datebuff, 16, cfg.mformat, d)<=8) {
-		printf("      %8s   %s", datebuff, getvalue(data.month[0].rx, data.month[0].rxk, 11, 1));
+	if (strftime(datebuff, DATEBUFFLEN, cfg.mformat, d)<=8) {
+		printf("      %*s   %s", getpadding(8, datebuff), datebuff, getvalue(data.month[0].rx, data.month[0].rxk, 11, 1));
 	} else {
-		printf("    %-11s  %s", datebuff, getvalue(data.month[0].rx, data.month[0].rxk, 11, 1));
+		printf("    %-*s  %s", getpadding(11, datebuff), datebuff, getvalue(data.month[0].rx, data.month[0].rxk, 11, 1));
 	}
 	printf("  / %s", getvalue(data.month[0].tx, data.month[0].txk, 11, 1));
 	printf("  / %s", getvalue(data.month[0].rx+data.month[0].tx, data.month[0].rxk+data.month[0].txk, 11, 1));
@@ -310,15 +310,15 @@ void showshort(void)
 
 	/* get formated date for today */
 	d=localtime(&current);
-	strftime(datebuff, 16, cfg.dformat, d);
+	strftime(datebuff, DATEBUFFLEN, cfg.dformat, d);
 
 	/* get formated date for lastest day in database */
 	d=localtime(&data.day[0].date);
-	strftime(daytemp2, 16, cfg.dformat, d);
+	strftime(daytemp2, DATEBUFFLEN, cfg.dformat, d);
 
 	/* change daytemp to today if formated days match */
 	if (strcmp(datebuff, daytemp2)==0) {
-		strncpy_nt(daytemp2, "today", 32);
+		strncpy_nt(daytemp2, "today", DATEBUFFLEN);
 	}
 
 	/* use database update time for estimates */
@@ -335,24 +335,24 @@ void showshort(void)
 
 	/* get formated date for yesterday */
 	d=localtime(&yesterday);
-	strftime(datebuff, 16, cfg.dformat, d);
+	strftime(datebuff, DATEBUFFLEN, cfg.dformat, d);
 
 	/* get formated date for previous day in database */
 	d=localtime(&data.day[1].date);
-	strftime(daytemp, 16, cfg.dformat, d);
+	strftime(daytemp, DATEBUFFLEN, cfg.dformat, d);
 
 	/* change daytemp to yesterday if formated days match */
 	if (strcmp(datebuff, daytemp)==0) {
-		strncpy_nt(daytemp, "yesterday", 32);
+		strncpy_nt(daytemp, "yesterday", DATEBUFFLEN);
 	}
 
 	if (data.day[1].date!=0) {
-		printf("     %9s   %s",daytemp, getvalue(data.day[1].rx, data.day[1].rxk, 11, 1));
+		printf("     %*s   %s", getpadding(9, daytemp), daytemp, getvalue(data.day[1].rx, data.day[1].rxk, 11, 1));
 		printf("  / %s", getvalue(data.day[1].tx, data.day[1].txk, 11, 1));
 		printf("  / %s", getvalue(data.day[1].rx+data.day[1].tx, data.day[1].rxk+data.day[1].txk, 11, 1));
 		printf("\n");
 	}
-	printf("     %9s   %s", daytemp2, getvalue(data.day[0].rx, data.day[0].rxk, 11, 1));
+	printf("     %*s   %s", getpadding(9, daytemp2), daytemp2, getvalue(data.day[0].rx, data.day[0].rxk, 11, 1));
 	printf("  / %s", getvalue(data.day[0].tx, data.day[0].txk, 11, 1));
 	printf("  / %s", getvalue(data.day[0].rx+data.day[0].tx, data.day[0].rxk+data.day[0].txk, 11, 1));
 	if (cfg.ostyle != 0) {
@@ -365,7 +365,7 @@ void showdays(void)
 {
 	int i, used;
 	struct tm *d;
-	char datebuff[16];
+	char datebuff[DATEBUFFLEN];
 	uint64_t e_rx, e_tx, t_rx, max;
 	int t_rxk;
 
@@ -421,14 +421,14 @@ void showdays(void)
 	for (i=29;i>=0;i--) {
 		if (data.day[i].used) {
 			d=localtime(&data.day[i].date);
-			strftime(datebuff, 16, cfg.dformat, d);
+			strftime(datebuff, DATEBUFFLEN, cfg.dformat, d);
 			if (cfg.ostyle == 3) {
 				printf("    ");
 			}
 			if (strlen(datebuff)<=9) {
-				printf(" %9s   %s", datebuff, getvalue(data.day[i].rx, data.day[i].rxk, 11, 1));
+				printf(" %*s   %s", getpadding(9, datebuff), datebuff, getvalue(data.day[i].rx, data.day[i].rxk, 11, 1));
 			} else {
-				printf(" %-11s %s", datebuff, getvalue(data.day[i].rx, data.day[i].rxk, 11, 1));
+				printf(" %-*s %s", getpadding(11, datebuff), datebuff, getvalue(data.day[i].rx, data.day[i].rxk, 11, 1));
 			}
 			printf(" | %s", getvalue(data.day[i].tx, data.day[i].txk, 11, 1));
 			printf(" | %s", getvalue(data.day[i].rx+data.day[i].tx, data.day[i].rxk+data.day[i].txk, 11, 1));
@@ -483,7 +483,7 @@ void showmonths(void)
 {
 	int i, used;
 	struct tm *d;
-	char datebuff[16];
+	char datebuff[DATEBUFFLEN];
 	uint64_t e_rx, e_tx, t_rx, max;
 	int t_rxk;
 
@@ -542,10 +542,10 @@ void showmonths(void)
 			if (cfg.ostyle == 3) {
 				printf("   ");
 			}
-			if (strftime(datebuff, 16, cfg.mformat, d)<=9) {
-				printf(" %9s   %s", datebuff, getvalue(data.month[i].rx, data.month[i].rxk, 11, 1));
+			if (strftime(datebuff, DATEBUFFLEN, cfg.mformat, d)<=9) {
+				printf(" %*s   %s", getpadding(9, datebuff), datebuff, getvalue(data.month[i].rx, data.month[i].rxk, 11, 1));
 			} else {
-				printf(" %-11s %s", datebuff, getvalue(data.month[i].rx, data.month[i].rxk, 11, 1));
+				printf(" %-*s %s", getpadding(11, datebuff), datebuff, getvalue(data.month[i].rx, data.month[i].rxk, 11, 1));
 			}
 			printf(" | %s", getvalue(data.month[i].tx, data.month[i].txk, 11, 1));
 			printf(" | %s", getvalue(data.month[i].rx+data.month[i].tx, data.month[i].rxk+data.month[i].txk, 11, 1));
@@ -599,7 +599,7 @@ void showtop(void)
 {
 	int i, used;
 	struct tm *d;
-	char datebuff[16];
+	char datebuff[DATEBUFFLEN];
 	uint64_t t_rx, max;
 	int t_rxk;
 
@@ -655,11 +655,11 @@ void showtop(void)
 	for (i=0;i<=9;i++) {
 		if (data.top10[i].used) {
 			d=localtime(&data.top10[i].date);
-			strftime(datebuff, 16, cfg.tformat, d);
+			strftime(datebuff, DATEBUFFLEN, cfg.tformat, d);
 			if (cfg.ostyle == 3) {
 				printf(" ");
 			}
-			printf("  %2d   %-11s %s", i+1, datebuff, getvalue(data.top10[i].rx, data.top10[i].rxk, 11, 1));
+			printf("  %2d   %-*s %s", i+1, getpadding(11, datebuff), datebuff, getvalue(data.top10[i].rx, data.top10[i].rxk, 11, 1));
 			printf(" | %s", getvalue(data.top10[i].tx, data.top10[i].txk, 11, 1));
 			printf(" | %s", getvalue(data.top10[i].rx+data.top10[i].tx, data.top10[i].rxk+data.top10[i].txk, 11, 1));
 			if (cfg.ostyle == 3) {
@@ -688,7 +688,7 @@ void showweeks(void)
 {
 	int i, used, week, temp;
 	struct tm *d;
-	char daytemp[32];
+	char datetemp[DATEBUFFLEN];
 	uint64_t e_rx, e_tx, t_rx, t_tx;
 	int t_rxk, t_txk;
 	time_t current;
@@ -723,8 +723,8 @@ void showweeks(void)
 
 	/* get current week number */
 	d=localtime(&current);
-	strftime(daytemp, 16, "%V", d);
-	week=atoi(daytemp);
+	strftime(datetemp, DATEBUFFLEN, "%V", d);
+	week=atoi(datetemp);
 
 	/* last 7 days */
 	used=0;
@@ -757,8 +757,8 @@ void showweeks(void)
 	for (i=0;i<30;i++) {
 		if (data.day[i].used) {
 			d=localtime(&data.day[i].date);
-			strftime(daytemp, 16, "%V", d);
-			if (atoi(daytemp)==week-1) {
+			strftime(datetemp, DATEBUFFLEN, "%V", d);
+			if (atoi(datetemp)==week-1) {
 				addtraffic(&t_rx, &t_rxk, data.day[i].rx, data.day[i].rxk);
 				addtraffic(&t_tx, &t_txk, data.day[i].tx, data.day[i].txk);
 				used++;
@@ -784,8 +784,8 @@ void showweeks(void)
 	for (i=0;i<30;i++) {
 		if (data.day[i].used) {
 			d=localtime(&data.day[i].date);
-			strftime(daytemp, 16, "%V", d);
-			if (atoi(daytemp)==week) {
+			strftime(datetemp, DATEBUFFLEN, "%V", d);
+			if (atoi(datetemp)==week) {
 				addtraffic(&t_rx, &t_rxk, data.day[i].rx, data.day[i].rxk);
 				addtraffic(&t_tx, &t_txk, data.day[i].tx, data.day[i].txk);
 				used++;
@@ -797,19 +797,19 @@ void showweeks(void)
 	if (used!=0) {
 		/* use database update time for estimates */
 		d=localtime(&data.lastupdated);
-		strftime(daytemp, 16, "%u", d);
-		if ( t_rx==0 || t_tx==0 || ((atoi(daytemp)-1)*24+d->tm_hour)==0 ) {
+		strftime(datetemp, DATEBUFFLEN, "%u", d);
+		if ( t_rx==0 || t_tx==0 || ((atoi(datetemp)-1)*24+d->tm_hour)==0 ) {
 			e_rx=e_tx=0;
 		} else {
-			e_rx=((t_rx)/(float)((atoi(daytemp)-1)*24+d->tm_hour)*168);
-			e_tx=((t_tx)/(float)((atoi(daytemp)-1)*24+d->tm_hour)*168);
+			e_rx=((t_rx)/(float)((atoi(datetemp)-1)*24+d->tm_hour)*168);
+			e_tx=((t_tx)/(float)((atoi(datetemp)-1)*24+d->tm_hour)*168);
 		}
 		indent(3);
 		printf("current week   %s", getvalue(t_rx, t_rxk, 11, 1));
 		printf(" | %s", getvalue(t_tx, t_txk, 11, 1));
 		printf(" | %s", getvalue(t_rx+t_tx, t_rxk+t_txk, 11, 1));
 		if (cfg.ostyle >= 2) {
-			printf(" | %s", getrate(t_rx+t_tx, t_rxk+t_txk, (86400*(atoi(daytemp)-1))+d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600), 14));
+			printf(" | %s", getrate(t_rx+t_tx, t_rxk+t_txk, (86400*(atoi(datetemp)-1))+d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600), 14));
 		}
 		printf("\n");
 		temp++;
@@ -963,7 +963,7 @@ void showhours(void)
 void showoneline(void)
 {
 	struct tm *d;
-	char daytemp[16];
+	char daytemp[DATEBUFFLEN];
 
 	/* version string */
 	printf("%d;", ONELINEVERSION);
@@ -982,7 +982,7 @@ void showoneline(void)
 	}
 
 	d=localtime(&data.day[0].date);
-	strftime(daytemp, 16, cfg.dformat, d);
+	strftime(daytemp, DATEBUFFLEN, cfg.dformat, d);
 	printf("%s;", daytemp);
 
 	d=localtime(&data.lastupdated);
@@ -994,7 +994,7 @@ void showoneline(void)
 	printf("%s;", getrate(data.day[0].rx+data.day[0].tx, data.day[0].rxk+data.day[0].txk, d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600), 1));
 
 	d=localtime(&data.month[0].month);
-	strftime(daytemp, 16, cfg.mformat, d);
+	strftime(daytemp, DATEBUFFLEN, cfg.mformat, d);
 	printf("%s;", daytemp);
 
 	/* monthly */

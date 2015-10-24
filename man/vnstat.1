@@ -1,4 +1,4 @@
-.TH VNSTAT 1 "JANUARY 2015" "version 1.13" "User Manuals"
+.TH VNSTAT 1 "APRIL 2015" "version 1.14" "User Manuals"
 .SH NAME
 
 vnstat \- a console-based network traffic monitor
@@ -117,9 +117,9 @@ or
 filesystems depending on availability. That way vnStat can be used even
 without root permissions on most systems.
 .PP
-The implementation is divided into two commands. The purpose of
+The implementation is divided into two commands. The purpose of the
 .B vnstat
-is to provide an interface for querying the traffic information stored
+command is to provide an interface for querying the traffic information stored
 in network interface specific databases where as the daemon
 .BR vnstatd (1)
 is responsible for data retrieval and storage. Although the daemon process
@@ -184,12 +184,18 @@ to the up script. These two options aren't needed when the daemon is used.
 
 .TP
 .B "--exportdb"
-Instead of showing the database with a formated output, this output will
-dump the whole database in a format that should be easy to parse with most
-script languages or imported back using the
+Instead of showing the database with a formatted output, this output will
+dump the whole database in a plain text based architeture independent format.
+The output can be imported back using the
 .B "--importdb"
-option. Use this for example with PHP, Perl or Python to make a
-custom  webpage. The dump uses ; as field delimeter.
+option and can be used for moving a database from one host to another. See the
+.B "--importdb"
+documentation below for an example. Using the output for scripting is possible but
+the outputs of
+.B "--xml"
+and
+.B "--json"
+are likely to be more suitable. The dump uses ; as field delimeter.
 .TS
 l l.
       active;1	activity status
@@ -235,10 +241,10 @@ Import a database from
 which was previously exported using the
 .B "--exportdb"
 option. This can be used to transfer a database between different architectures and
-machines, as the database is architecture dependant and not compatible between
-different architectures. First dump the database on one machine, e.g. with
+hosts, as the database is architecture dependant and not compatible between
+different architectures. First dump the database on one host, e.g. with
 .B "vnstat -i ppp0 --exportdb >ppp0db.txt"
-and then import the text file on a different machine using
+and then import the text file on a different host using
 .B "vnstat -i ppp0 --importdb ppp0db.txt"
 
 .TP
@@ -271,7 +277,7 @@ until interrupted. Statistics will be shown after interruption if the runtime
 was more than 10 seconds. An optional
 .I mode
 parameter can be used to select between the displaying of packets per
-second (mode 0) and transfer counters (mode 1) during execution. 
+second (mode 0) and transfer counters (mode 1) during execution.
 .B "--style"
 can also be used to affect the layout of the output.
 
@@ -337,7 +343,7 @@ parameter for this option in order to select between bytes (0) and bits
 
 .TP
 .B "--savemerged"
-Write the end result of a database merge to the file 
+Write the end result of a database merge to the file
 .I mergeddb
 that can then be used as a new database if renamed. Top 10 traffic days
 isn't included in the merge and will start empty in the new database.
@@ -382,8 +388,8 @@ Show all time top 10 traffic days.
 .BI "-tr " time
 Calculate how much traffic goes through the selected interface during
 the given
-.I time 
-seconds. The 
+.I time
+seconds. The
 .I time
 will be 5 seconds if a number parameter isn't specified.
 

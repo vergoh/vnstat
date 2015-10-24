@@ -151,23 +151,22 @@ int dmonth(int month)
 
 uint32_t mosecs(void)
 {
-	struct tm *d;
+	struct tm d;
+	extern long timezone;
 
-	d = localtime(&data.month[0].month);
-
-	if (d == NULL) {
+	if (localtime_r(&data.month[0].month, &d) == NULL) {
 		return 0;
 	}
 
-	if (d->tm_mday < cfg.monthrotate) {
+	if (d.tm_mday < cfg.monthrotate) {
 		return 0;
 	}
 
-	d->tm_mday = cfg.monthrotate;
-	d->tm_hour = d->tm_min = d->tm_sec = 0;
+	d.tm_mday = cfg.monthrotate;
+	d.tm_hour = d.tm_min = d.tm_sec = 0;
 
 	if ((data.lastupdated-data.month[0].month)>0) {
-		return data.lastupdated-mktime(d);
+		return data.lastupdated-mktime(&d)+timezone;
 	} else {
 		return 0;
 	}

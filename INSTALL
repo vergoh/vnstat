@@ -2,7 +2,7 @@
 Compiling the binaries
 ::::::::::::::::::::::
 
- This source package contains the required sources for vnStat including
+ This source package contains the required source files for vnStat including
  the daemon (vnstatd) and image output (vnstati). Executing
 
      make
@@ -30,7 +30,8 @@ Installing as root
 
  If there were no errors, vnStat binaries, man pages and a config file
  should now be installed. Next the used kernel should be checked that it
- is able to provide static information about the system boot time.
+ is able to provide static information about the system boot time. This has
+ mainly been an issue in some kernels from the 2.4 series.
 
      vnstat --testkernel
 
@@ -83,7 +84,7 @@ Installing as root
 Installing without root access
 ::::::::::::::::::::::::::::::
 
- Copy all needed binaries to some directory included in your $PATH
+ Copy all needed binaries to some directory included in your PATH
  (~/bin/ is an example) and make the database directory.
 
      cp src/vnstat src/vnstatd src/vnstati ~/bin/
@@ -96,25 +97,25 @@ Installing without root access
 
      vnstat --testkernel
 
- If this gives 'command not found' then check your $PATH. The only way to fix
- a faulty kernel (afaik) is to compile/install a newer one. This can't be done
- without the root account so you'll have to solve this problem with your
- sysadmin if the kernel is broken.
+ If this gives 'command not found' then check content of your PATH variable.
+ The only way to fix a faulty kernel (afaik) is to compile/install a newer one.
+ This can't be done without the root account so you'll have to solve this
+ problem with your sysadmin if the kernel is broken.
 
  Now open the config file ~/.vnstatrc with your favorite text editor and locate
  the following line:
- 
+
      DatabaseDir "/var/lib/vnstat"
 
  and replace it with
- 
+
      DatabaseDir "/pathtomyhomedir/.vnstat"
 
- and save the file. If you are unsure about you homedir path execute
- 
+ and save the file. If you are unsure about your home directory path, execute
+
      cd ; pwd
 
- The ouput should tell your homedir. 
+ The ouput should tell your home directory.
 
  Now it's time to add a crontab entry for vnStat in order to get the daemon
  running automatically after a system startup. Do that by executing the

@@ -9,7 +9,6 @@ void trafficmeter(char iface[], int sampletime)
 	/* transmitted bytes packets errs drop fifo colls carrier compressed */
 	uint64_t rx, tx, rxp, txp;
 	IFINFO firstinfo;
-	int i, len;
 	char buffer[256];
 
 	/* less than 2 seconds doesn't produce good results */
@@ -46,11 +45,8 @@ void trafficmeter(char iface[], int sampletime)
 		sleep(sampletime-((sampletime/3)*3));
 	}
 
-	len=strlen(buffer)+3;
-
-	for (i=0;i<len;i++) {
-		printf("\b \b");
-	}
+	cursortocolumn(1);
+	eraseline();
 
 	/* read those values again... */
 	if (!getifinfo(iface)) {
@@ -80,14 +76,12 @@ void livetrafficmeter(char iface[32], int mode)
 	uint64_t rxtotal, txtotal, rxptotal, txptotal;
 	uint64_t rxpmin, txpmin, rxpmax, txpmax;
 	uint64_t rxmin, txmin, rxmax, txmax;
-	int i, len=0;
 	char buffer[256], buffer2[256];
 	IFINFO previnfo;
 
 	printf("Monitoring %s...    (press CTRL-C to stop)\n\n", iface);
 	if (cfg.ostyle != 4) {
 		printf("   getting traffic...");
-		len=21; /* length of previous print */
 		fflush(stdout);
 	}
 
@@ -110,6 +104,8 @@ void livetrafficmeter(char iface[32], int mode)
 		printf("Error: Interface \"%s\" not available, exiting.\n", iface);
 		exit(EXIT_FAILURE);
 	}
+
+	cursorhide();
 
 	/* loop until user gets bored */
 	while (intsignal==0) {
@@ -134,6 +130,7 @@ void livetrafficmeter(char iface[32], int mode)
 
 		/* read those values again... */
 		if (!getifinfo(iface)) {
+			cursorshow();
 			printf("Error: Interface \"%s\" not available, exiting.\n", iface);
 			exit(EXIT_FAILURE);
 		}
@@ -180,15 +177,9 @@ void livetrafficmeter(char iface[32], int mode)
 		}
 		strncat(buffer, buffer2, 127);
 
-		if (len>1 && cfg.ostyle!=4) {
-			if (debug) {
-				printf("\nlinelen: %d\n", len);
-			} else {
-				for (i=0;i<len;i++) {
-					printf("\b \b");
-				}
-				fflush(stdout);
-			}
+		if (cfg.ostyle!=4 || !debug) {
+			cursortocolumn(1);
+			eraseline();
 		}
 		if (cfg.ostyle!=4) {
 			printf("%s", buffer);
@@ -196,11 +187,10 @@ void livetrafficmeter(char iface[32], int mode)
 		} else {
 			printf("%s\n", buffer);
 		}
-		len=strlen(buffer);
-
 	}
 
 	timespent = (uint64_t)time(NULL) - timespent - timeslept;
+	cursorshow();
 
 	printf("\n\n");
 

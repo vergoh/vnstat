@@ -319,9 +319,9 @@ START_TEST(sighandler_sets_signal)
 	debug = 1;
 	intsignal = 0;
 	disable_logprints();
-	ck_assert_int_ne(signal(SIGINT, sighandler), SIG_ERR);
-	ck_assert_int_ne(signal(SIGHUP, sighandler), SIG_ERR);
-	ck_assert_int_ne(signal(SIGTERM, sighandler), SIG_ERR);
+	ck_assert(signal(SIGINT, sighandler)!=SIG_ERR);
+	ck_assert(signal(SIGHUP, sighandler)!=SIG_ERR);
+	ck_assert(signal(SIGTERM, sighandler)!=SIG_ERR);
 
 	ck_assert_int_eq(kill(getpid(), SIGINT), 0);
 	ck_assert_int_eq(intsignal, SIGINT);

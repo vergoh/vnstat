@@ -22,9 +22,10 @@ Getting started
 :::::::::::::::
 
  vnStat works best when installed. See the INSTALL or INSTALL_BSD file
- depending on used operating system. It contains all needed information
- for the installing process. Instructions for upgrading from a previous
- version are included in the UPGRADE file.
+ depending on used operating system. Experimental instructions for OS X
+ are available in the INSTALL_OSX file. These files contain all needed
+ information for the installing process. Instructions for upgrading from
+ a previous version are included in the UPGRADE file.
 
 
 Available options and documentation
@@ -34,7 +35,7 @@ Available options and documentation
  complete list can be accessed with 'vnstat --longhelp'. The following
  man pages are available with more detailed descriptions of each option
  including some usage examples:
- 
+
     vnstat          general documentation and console query parameters
     vnstatd         daemon documentation
     vnstati         image output documentation
@@ -65,5 +66,5 @@ Contacting the author
 
  git:      https://github.com/vergoh/vnstat
 
- The current version of vnStat is always available from 
+ The current version of vnStat is always available from
  http://humdi.net/vnstat/

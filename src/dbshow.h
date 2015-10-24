@@ -1,6 +1,8 @@
 #ifndef DBSHOW_H
 #define DBSHOW_H
 
+#define DATEBUFFLEN 64
+
 void showdb(int qmode);
 void showsummary(void);
 void showshort(void);

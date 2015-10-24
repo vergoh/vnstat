@@ -22,6 +22,7 @@
 #include <pwd.h>
 #include <grp.h>
 #include <libgen.h>
+#include <fcntl.h>
 
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__FreeBSD_kernel__)
 #include <sys/param.h>
@@ -142,6 +143,9 @@ and most can be changed later from the config file.
 /* log trafficless days by default */
 #define TRAFLESSDAY 1
 
+/* assume that locale can be UTF-n when enabled */
+#define UTFLOCALE 1
+
 /* how many times try file locking before giving up */
 /* each try takes about a second */
 #define LOCKTRYLIMIT 5
@@ -228,7 +232,7 @@ typedef struct {
 	char logfile[512], pidfile[512];
 	char daemonuser[33], daemongroup[33];
 	int32_t updateinterval, pollinterval, saveinterval, offsaveinterval, savestatus, uselogging;
-	int32_t createdirs, updatefileowner, bwdetection, bwdetectioninterval;
+	int32_t createdirs, updatefileowner, bwdetection, bwdetectioninterval, utflocale;
 } CFG;
 
 /* internal interface information structure */

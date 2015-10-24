@@ -1,14 +1,26 @@
 language: c
 
+os:
+ - linux
+ - osx
+
 compiler:
   - gcc
   - clang
 
-before_install:
- - sudo apt-get update -qq
- - sudo apt-get install -qq libsqlite3-0 libsqlite3-dev libgd2-xpm libgd2-xpm-dev check
+matrix:
+  exclude:
+    - os: osx
+      compiler: gcc
 
-script: make debug && make tests && sudo make install && vnstat --version
+before_install:
+ - if [ "${TRAVIS_OS_NAME}" == "linux" ]; then sudo apt-get update -qq ; fi
+ - if [ "${TRAVIS_OS_NAME}" == "linux" ]; then sudo apt-get install -qq libsqlite3-0 libsqlite3-dev libgd2-xpm libgd2-xpm-dev check ; fi
+ - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then brew install gd sqlite ; fi
+
+script:
+ - if [ "${TRAVIS_OS_NAME}" == "linux" ]; then make debug && make tests && sudo make install && vnstat --version ; fi
+ - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then make debug && src/vnstat --version ; fi
 
 notifications:
   email:

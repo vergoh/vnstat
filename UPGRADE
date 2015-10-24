@@ -2,6 +2,8 @@
 New configuration settings
 ::::::::::::::::::::::::::
 
+1.14: (none)
+
 1.13: BandwidthDetection, BandwidthDetectionInterval
 
 1.12: DaemonUser, DaemonGroup, CreateDirs, UpdateFileOwner
@@ -22,16 +24,16 @@ Upgrading from versions 1.3 and later
 1) Follow the normal install procedure, 'make install' will not overwrite
    your configuration file
 
-2) Generate a new configuration file using current settings in order to 
+2) Generate a new configuration file using current settings in order to
    get new configuration tags included:
 
       vnstat --showconfig >/tmp/newconf
 
-   Never overwrite the current configuration file directly! That will 
+   Never overwrite the current configuration file directly! That will
    result in all previous settings getting replaced by defaults.
 
-3) Check that the configuration settings in /tmp/newconf are correct. If 
-   date formatting using system locale is used then use the following 
+3) Check that the configuration settings in /tmp/newconf are correct. If
+   date formatting using system locale is used then use the following
    settings:
 
       Locale "-"
