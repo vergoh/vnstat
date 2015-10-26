@@ -86,6 +86,13 @@ profile:
 
 myclean: maintainer-clean
 
+release: distcheck
+	tar zxf $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.gz
+	rm -f $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.gz
+	fakeroot tar zcf $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.gz $(PACKAGE_NAME)-$(PACKAGE_VERSION)
+	rm -fr $(PACKAGE_NAME)-$(PACKAGE_VERSION)
+	ls -l $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.gz
+
 install-data-hook:
 	$(DESTDIR)$(bindir)/vnstat$(EXEEXT) --showconfig >vnstat.conf && \
 	  $(MKDIR_P) $(DESTDIR)$(sysconfdir) && \

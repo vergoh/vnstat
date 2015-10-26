@@ -1,6 +1,6 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
-AC_INIT([vnstat], [1.5_beta], [tst at iki dot fi])
+AC_INIT([vnstat], [1.5_beta])
 AM_INIT_AUTOMAKE([foreign subdir-objects std-options -Wall -Werror])
 AC_CONFIG_SRCDIR([src/vnstat.c])
 AC_CONFIG_HEADERS([src/config.h])
