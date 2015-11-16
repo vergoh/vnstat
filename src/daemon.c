@@ -142,9 +142,12 @@ int addinterfaces(const char *dirname)
 		}
 
 		/* create database for interface */
-		initdb();
-		strncpy_nt(data.interface, interface, 32);
-		strncpy_nt(data.nick, data.interface, 32);
+		int newdb = readdb(interface, dirname);
+		if (newdb != 1) {
+			if (debug)
+				printf("Interface \"%s\" already exists, skip\n", interface);
+			continue;
+		}
 		if (!getifinfo(interface)) {
 			if (debug)
 				printf("getifinfo failed, skip\n");
@@ -428,12 +431,7 @@ void preparedatabases(DSTATE *s)
 	}
 	closedir(dir);
 
-	if (s->dbcount > 0) {
-		s->dbcount = 0;
-		return;
-	}
-
-	if (s->noadd) {
+	if (s->noadd && s->dbcount == 0) {
 		printf("Zero database found, exiting.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -441,8 +439,8 @@ void preparedatabases(DSTATE *s)
 		printf("Error: Not enough free diskspace available, exiting.\n");
 		exit(EXIT_FAILURE);
 	}
-	printf("Zero database found, adding available interfaces...\n");
-	if (!addinterfaces(s->dirname)) {
+	printf("Adding any new available interfaces...\n");
+	if (!addinterfaces(s->dirname) && s->dbcount == 0) {
 		printf("Nothing to do, exiting.\n");
 		exit(EXIT_FAILURE);
 	}
