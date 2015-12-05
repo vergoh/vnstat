@@ -1,4 +1,4 @@
-.TH VNSTATD 1 "APRIL 2015" "version 1.14" "User Manuals"
+.TH VNSTATD 1 "DECEMBER 2015" "version 1.15" "User Manuals"
 .SH NAME
 
 vnstatd \- daemon based database updating for vnStat
@@ -8,6 +8,8 @@ vnstatd \- daemon based database updating for vnStat
 .B vnstatd
 [
 .B \-Ddnpsv?
+] [
+.B \-\-alwaysadd
 ] [
 .B \-\-config
 .I file
@@ -62,17 +64,33 @@ It supports logging to a user selectable file or using syslog.
 .PP
 Once started, the daemon will read
 .BR vnstat.conf (5)
-if available and then check if there are any databases available
+if available and then check if there are any databases present
 in the database directory that has been specified in the configuration
-file. New databases will be created for all available interfaces excluding
-pseudo interfaces lo, lo0 and sit0 if no databases are found during startup.
-This behaviour can be disabled if needed. The daemon will then
+file. By default, if no databases are found, new databases will be created
+during startup for all available interfaces excluding pseudo interfaces lo,
+lo0 and sit0. This automatic database addition behaviour can be disabled
+using the
+.B --noadd
+option. Alternatively, it is possible to allow the daemon to create new
+databases whenever previously unseen interfaces become visible using the
+.B --alwaysadd
+option.
+.PP
+The daemon will
 proceed to track the availability of monitored interfaces, process the
 interface traffic statistics and write new values to databases
 at a configured interval. As a result, the daemon ends up spending most
 of the time sleeping between updates.
 
 .SH OPTIONS
+
+.TP
+.B "--alwaysadd"
+Enable automatic creation of new databases for previously unseen interfaces
+even if the database directory already contains databases when the daemon
+is started. New databases will also get created for new interfaces seen while
+the daemon is running. Pseudo interfaces lo, lo0 and sit0 are excluded from
+getting added.
 
 .TP
 .BI "--config " file

@@ -78,12 +78,13 @@ START_TEST(addinterfaces_does_nothing_with_no_files)
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	ck_assert_int_eq(clean_testdbdir(), 1);
 
-	ck_assert_int_eq(addinterfaces(TESTDBDIR), 0);
+	ck_assert_int_eq(addinterfaces(TESTDBDIR, 0), 0);
 }
 END_TEST
 
 START_TEST(addinterfaces_adds_interfaces)
 {
+	int ret;
 	linuxonly;
 
 	defaultcfg();
@@ -95,12 +96,92 @@ START_TEST(addinterfaces_adds_interfaces)
 	fake_proc_net_dev("a", "ethtwo", 5, 6, 7, 8);
 	fake_proc_net_dev("a", "sit0", 0, 0, 0, 0);
 
-	ck_assert_int_eq(addinterfaces(TESTDBDIR), 2);
+	ret = addinterfaces(TESTDBDIR, 0);
+	ck_assert_int_eq(ret, 2);
 
 	ck_assert_int_eq(check_dbfile_exists("ethone", sizeof(DATA)), 1);
 	ck_assert_int_eq(check_dbfile_exists(".ethone", sizeof(DATA)), 0);
 	ck_assert_int_eq(check_dbfile_exists("ethtwo", sizeof(DATA)), 1);
 	ck_assert_int_eq(check_dbfile_exists(".ethtwo", sizeof(DATA)), 0);
+}
+END_TEST
+
+START_TEST(addinterfaces_adds_only_new_interfaces)
+{
+	int ret;
+	linuxonly;
+
+	defaultcfg();
+	suppress_output();
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	ck_assert_int_eq(clean_testdbdir(), 1);
+	fake_proc_net_dev("w", "ethone", 1, 2, 3, 4);
+	fake_proc_net_dev("a", "lo0", 0, 0, 0, 0);
+	fake_proc_net_dev("a", "ethtwo", 5, 6, 7, 8);
+	fake_proc_net_dev("a", "sit0", 0, 0, 0, 0);
+
+	ret = addinterfaces(TESTDBDIR, 0);
+	ck_assert_int_eq(ret, 2);
+
+	ck_assert_int_eq(check_dbfile_exists("ethone", sizeof(DATA)), 1);
+	ck_assert_int_eq(check_dbfile_exists(".ethone", sizeof(DATA)), 0);
+	ck_assert_int_eq(check_dbfile_exists("ethtwo", sizeof(DATA)), 1);
+	ck_assert_int_eq(check_dbfile_exists(".ethtwo", sizeof(DATA)), 0);
+	ck_assert_int_eq(check_dbfile_exists("eththree", sizeof(DATA)), 0);
+	ck_assert_int_eq(check_dbfile_exists(".eththree", sizeof(DATA)), 0);
+
+	fake_proc_net_dev("a", "eththree", 9, 10, 11, 12);
+
+	ret = addinterfaces(TESTDBDIR, 0);
+	ck_assert_int_eq(ret, 1);
+
+	ck_assert_int_eq(check_dbfile_exists("ethone", sizeof(DATA)), 1);
+	ck_assert_int_eq(check_dbfile_exists(".ethone", sizeof(DATA)), 0);
+	ck_assert_int_eq(check_dbfile_exists("ethtwo", sizeof(DATA)), 1);
+	ck_assert_int_eq(check_dbfile_exists(".ethtwo", sizeof(DATA)), 0);
+	ck_assert_int_eq(check_dbfile_exists("eththree", sizeof(DATA)), 1);
+	ck_assert_int_eq(check_dbfile_exists(".eththree", sizeof(DATA)), 0);
+	ck_assert_int_eq(cachecount(), 0);
+}
+END_TEST
+
+START_TEST(addinterfaces_adds_to_cache_when_running)
+{
+	int ret;
+	linuxonly;
+
+	defaultcfg();
+	suppress_output();
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	ck_assert_int_eq(clean_testdbdir(), 1);
+	fake_proc_net_dev("w", "ethone", 1, 2, 3, 4);
+	fake_proc_net_dev("a", "ethtwo", 5, 6, 7, 8);
+
+	ck_assert_int_eq(cachecount(), 0);
+
+	ret = addinterfaces(TESTDBDIR, 1);
+	ck_assert_int_eq(ret, 2);
+	ck_assert_int_eq(cachecount(), 2);
+
+	ck_assert_int_eq(check_dbfile_exists("ethone", sizeof(DATA)), 1);
+	ck_assert_int_eq(check_dbfile_exists(".ethone", sizeof(DATA)), 0);
+	ck_assert_int_eq(check_dbfile_exists("ethtwo", sizeof(DATA)), 1);
+	ck_assert_int_eq(check_dbfile_exists(".ethtwo", sizeof(DATA)), 0);
+	ck_assert_int_eq(check_dbfile_exists("eththree", sizeof(DATA)), 0);
+	ck_assert_int_eq(check_dbfile_exists(".eththree", sizeof(DATA)), 0);
+
+	fake_proc_net_dev("a", "eththree", 9, 10, 11, 12);
+
+	ret = addinterfaces(TESTDBDIR, 1);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(cachecount(), 3);
+
+	ck_assert_int_eq(check_dbfile_exists("ethone", sizeof(DATA)), 1);
+	ck_assert_int_eq(check_dbfile_exists(".ethone", sizeof(DATA)), 0);
+	ck_assert_int_eq(check_dbfile_exists("ethtwo", sizeof(DATA)), 1);
+	ck_assert_int_eq(check_dbfile_exists(".ethtwo", sizeof(DATA)), 0);
+	ck_assert_int_eq(check_dbfile_exists("eththree", sizeof(DATA)), 1);
+	ck_assert_int_eq(check_dbfile_exists(".eththree", sizeof(DATA)), 0);
 }
 END_TEST
 
@@ -121,6 +202,7 @@ START_TEST(preparedatabases_exits_with_no_database_dir)
 	defaultcfg();
 	initdstate(&s);
 	suppress_output();
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 
 	preparedatabases(&s);
 }
@@ -135,6 +217,26 @@ START_TEST(preparedatabases_exits_with_no_databases)
 	defaultcfg();
 	initdstate(&s);
 	suppress_output();
+	strncpy_nt(s.dirname, TESTDBDIR, 512);
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	ck_assert_int_eq(clean_testdbdir(), 1);
+
+	preparedatabases(&s);
+}
+END_TEST
+
+START_TEST(preparedatabases_exits_with_no_databases_and_noadd)
+{
+	DSTATE s;
+
+	linuxonly_exit;
+
+	defaultcfg();
+	initdstate(&s);
+	s.noadd = 1;
+	suppress_output();
+	strncpy_nt(s.dirname, TESTDBDIR, 512);
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	ck_assert_int_eq(clean_testdbdir(), 1);
 
 	preparedatabases(&s);
@@ -852,8 +954,11 @@ void add_daemon_tests(Suite *s)
 	tcase_add_test(tc_daemon, initdstate_does_not_crash);
 	tcase_add_test(tc_daemon, addinterfaces_does_nothing_with_no_files);
 	tcase_add_test(tc_daemon, addinterfaces_adds_interfaces);
+	tcase_add_test(tc_daemon, addinterfaces_adds_only_new_interfaces);
+	tcase_add_test(tc_daemon, addinterfaces_adds_to_cache_when_running);
 	tcase_add_exit_test(tc_daemon, preparedatabases_exits_with_no_database_dir, 1);
 	tcase_add_exit_test(tc_daemon, preparedatabases_exits_with_no_databases, 1);
+	tcase_add_exit_test(tc_daemon, preparedatabases_exits_with_no_databases_and_noadd, 1);
 	tcase_add_test(tc_daemon, preparedatabases_with_no_databases_creates_databases);
 	tcase_add_test(tc_daemon, setsignaltraps_does_not_exit);
 	tcase_add_exit_test(tc_daemon, filldatabaselist_exits_with_no_database_dir, 1);

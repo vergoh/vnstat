@@ -109,7 +109,7 @@ void daemonize(void)
 	}
 }
 
-int addinterfaces(const char *dirname)
+int addinterfaces(const char *dirname, const int running)
 {
 	char *ifacelist, interface[32];
 	int index = 0, count = 0, bwlimit = 0;
@@ -141,6 +141,13 @@ int addinterfaces(const char *dirname)
 			continue;
 		}
 
+		/* skip already known interfaces */
+		if (checkdb(interface, dirname)) {
+			if (debug)
+				printf("already known\n");
+			continue;
+		}
+
 		/* create database for interface */
 		initdb();
 		strncpy_nt(data.interface, interface, 32);
@@ -156,25 +163,29 @@ int addinterfaces(const char *dirname)
 		}
 		count++;
 		bwlimit = ibwget(interface);
-		if (bwlimit > 0) {
-			printf("\"%s\" added with %d Mbit bandwidth limit.\n", interface, bwlimit);
+		if (!running) {
+			if (bwlimit > 0) {
+				printf("\"%s\" added with %d Mbit bandwidth limit.\n", interface, bwlimit);
+			} else {
+				printf("\"%s\" added. Warning: no bandwidth limit has been set.\n", interface);
+			}
 		} else {
-			printf("\"%s\" added. Warning: no bandwidth limit has been set.\n", interface);
+			if (debug)
+				printf("\%s\" added with %d Mbit bandwidth limit to cache.\n", interface, bwlimit);
+			cacheadd(interface, 1);
 		}
 	}
 
-	if (count==1) {
-		printf("-> %d interface added.", count);
-	} else {
-		printf("-> %d interfaces added.", count);
-	}
+	if (count && !running) {
+		if (count==1) {
+			printf("-> %d interface added.\n", count);
+		} else {
+			printf("-> %d interfaces added.\n", count);
+		}
 
-	if (count) {
-		printf("\nLimits can be modified using the configuration file. See \"man vnstat.conf\".\n");
-		printf("Unwanted interfaces can be removed from monitoring with \"vnstat --delete\".");
+		printf("Limits can be modified using the configuration file. See \"man vnstat.conf\".\n");
+		printf("Unwanted interfaces can be removed from monitoring with \"vnstat --delete\".\n");
 	}
-
-	printf("\n");
 
 	free(ifacelist);
 	return count;
@@ -388,12 +399,13 @@ void initdstate(DSTATE *s)
 	debug = 0;         /* debug disabled by default */
 	s->rundaemon = 0;  /* daemon disabled by default */
 
-	s->running = 1;
+	s->running = 0;
 	s->dbsaved = 1;
 	s->showhelp = 1;
 	s->sync = 0;
 	s->forcesave = 0;
 	s->noadd = 0;
+	s->alwaysadd = 0;
 	s->dbhash = 0;
 	s->cfgfile[0] = '\0';
 	s->dirname[0] = '\0';
@@ -428,7 +440,7 @@ void preparedatabases(DSTATE *s)
 	}
 	closedir(dir);
 
-	if (s->dbcount > 0) {
+	if (s->dbcount > 0 && !s->alwaysadd) {
 		s->dbcount = 0;
 		return;
 	}
@@ -441,8 +453,11 @@ void preparedatabases(DSTATE *s)
 		printf("Error: Not enough free diskspace available, exiting.\n");
 		exit(EXIT_FAILURE);
 	}
-	printf("Zero database found, adding available interfaces...\n");
-	if (!addinterfaces(s->dirname)) {
+	if (s->dbcount == 0) {
+		printf("Zero database found, adding available interfaces...\n");
+	}
+
+	if (!addinterfaces(s->dirname, s->running) && s->dbcount == 0) {
 		printf("Nothing to do, exiting.\n");
 		exit(EXIT_FAILURE);
 	}
