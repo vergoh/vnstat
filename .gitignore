@@ -10,6 +10,7 @@ vnstati
 *.xml
 coverage
 vnstat_tests
+check_vnstat
 testdir
 Makefile
 autom4te.cache
