@@ -610,6 +610,16 @@ int validatedb(void)
 		}
 	}
 
+	for (i=1; i<30; i++) {
+		if (!data.day[i].used) {
+			break;
+		}
+		if (data.day[i-1].date < data.day[i].date) {
+			printf("Invalid database daily date order: %u (%d) < %u (%d)\n", (unsigned int)data.day[i-1].date, i-1, (unsigned int)data.day[i].date, i);
+			return 0;
+		}
+	}
+
 	if (data.totalrx < rxsum || data.totaltx < txsum) {
 		printf("Invalid database total traffic compared to daily usage.\n");
 		return 0;
@@ -635,6 +645,16 @@ int validatedb(void)
 		if (data.month[i].used) {
 			rxsum += data.month[i].rx;
 			txsum += data.month[i].tx;
+		}
+	}
+
+	for (i=1; i<12; i++) {
+		if (!data.month[i].used) {
+			break;
+		}
+		if (data.month[i-1].month < data.month[i].month) {
+			printf("Invalid database monthly date order: %u (%d) < %u (%d)\n", (unsigned int)data.month[i-1].month, i-1, (unsigned int)data.month[i].month, i);
+			return 0;
 		}
 	}
 
