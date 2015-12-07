@@ -102,50 +102,19 @@ int getiflist(char **ifacelist, int showspeed)
 
 			/* make list of interfaces */
 			while ((di=readdir(dp))) {
-				if (di->d_name[0]!='.') {
-					*ifacelist = realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(di->d_name) + 2 ) * sizeof(char)) );
-					if (*ifacelist == NULL) {
-						panicexit(__FILE__, __LINE__);
-					}
-					strncat(*ifacelist, di->d_name, strlen(di->d_name));
-					strcat(*ifacelist, " ");
-					if (!showspeed) {
-						continue;
-					}
-					speed = getifspeed(di->d_name);
-					if (speed > 0) {
-						snprintf(temp, 64, "(%u Mbit) ", speed);
-						*ifacelist = realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(temp) + 1 ) * sizeof(char)) );
-						if (*ifacelist == NULL) {
-							panicexit(__FILE__, __LINE__);
-						}
-						strncat(*ifacelist, temp, strlen(temp));
-					}
+				if (di->d_name[0] == '.' || strlen(di->d_name) > 31) {
+					continue;
 				}
-			}
-
-			closedir(dp);
-			return 1;
-
-		}
-	}
-
-#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__FreeBSD_kernel__)
-	if (getifaddrs(&ifap) >= 0) {
-
-		/* make list of interfaces */
-		for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
-			if (ifa->ifa_addr->sa_family == AF_LINK) {
-				*ifacelist = realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(ifa->ifa_name) + 2 ) * sizeof(char)) );
+				*ifacelist = realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(di->d_name) + 2 ) * sizeof(char)) );
 				if (*ifacelist == NULL) {
 					panicexit(__FILE__, __LINE__);
 				}
-				strncat(*ifacelist, ifa->ifa_name, strlen(ifa->ifa_name));
+				strncat(*ifacelist, di->d_name, strlen(di->d_name));
 				strcat(*ifacelist, " ");
 				if (!showspeed) {
 					continue;
 				}
-				speed = getifspeed(ifa->ifa_name);
+				speed = getifspeed(di->d_name);
 				if (speed > 0) {
 					snprintf(temp, 64, "(%u Mbit) ", speed);
 					*ifacelist = realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(temp) + 1 ) * sizeof(char)) );
@@ -154,6 +123,38 @@ int getiflist(char **ifacelist, int showspeed)
 					}
 					strncat(*ifacelist, temp, strlen(temp));
 				}
+			}
+
+			closedir(dp);
+			return 1;
+		}
+	}
+
+#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__FreeBSD_kernel__)
+	if (getifaddrs(&ifap) >= 0) {
+
+		/* make list of interfaces */
+		for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
+			if (ifa->ifa_addr->sa_family != AF_LINK || strlen(ifa->ifa_name) > 31) {
+				continue;
+			}
+			*ifacelist = realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(ifa->ifa_name) + 2 ) * sizeof(char)) );
+			if (*ifacelist == NULL) {
+				panicexit(__FILE__, __LINE__);
+			}
+			strncat(*ifacelist, ifa->ifa_name, strlen(ifa->ifa_name));
+			strcat(*ifacelist, " ");
+			if (!showspeed) {
+				continue;
+			}
+			speed = getifspeed(ifa->ifa_name);
+			if (speed > 0) {
+				snprintf(temp, 64, "(%u Mbit) ", speed);
+				*ifacelist = realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(temp) + 1 ) * sizeof(char)) );
+				if (*ifacelist == NULL) {
+					panicexit(__FILE__, __LINE__);
+				}
+				strncat(*ifacelist, temp, strlen(temp));
 			}
 		}
 

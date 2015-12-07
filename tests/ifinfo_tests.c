@@ -422,6 +422,28 @@ START_TEST(getiflist_proc_multiple_interfaces)
 }
 END_TEST
 
+START_TEST(getiflist_proc_long_interface_names)
+{
+	char *ifacelist;
+
+	linuxonly;
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_proc_net_dev("w", "random", 0, 0, 0, 0);
+	fake_proc_net_dev("a", "interfaces", 0, 0, 0, 0);
+	fake_proc_net_dev("a", "having", 0, 0, 0, 0);
+	fake_proc_net_dev("a", "toomuchfun", 0, 0, 0, 0);
+	fake_proc_net_dev("a", "longinterfaceislong", 0, 0, 0, 0);
+	fake_proc_net_dev("a", "longestinterfaceislongerthanshouldbeexpectedanywhereinanormallyfunctioningenvironment", 0, 0, 0, 0);
+	fake_proc_net_dev("a", "a", 0, 0, 0, 0);
+
+	ck_assert_int_eq(getiflist(&ifacelist, 0), 1);
+	ck_assert_str_eq(ifacelist, "lo random interfaces having toomuchfun longinterfaceislong a ");
+
+	free(ifacelist);
+}
+END_TEST
+
 START_TEST(getiflist_sysclassnet_one_interface)
 {
 	char *ifacelist;
@@ -469,6 +491,28 @@ START_TEST(getiflist_sysclassnet_multiple_interfaces)
 
 	ck_assert_int_eq(getiflist(&ifacelist, 0), 1);
 	ck_assert_int_eq(strlen(ifacelist), 31);
+
+	free(ifacelist);
+}
+END_TEST
+
+START_TEST(getiflist_sysclassnet_long_interface_names)
+{
+	char *ifacelist;
+
+	linuxonly;
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_sys_class_net("random", 0, 0, 0, 0, 0);
+	fake_sys_class_net("interfaces", 0, 0, 0, 0, 0);
+	fake_sys_class_net("having", 0, 0, 0, 0, 0);
+	fake_sys_class_net("toomuchfun", 0, 0, 0, 0, 0);
+	fake_sys_class_net("longinterfaceislong", 0, 0, 0, 0, 0);
+	fake_sys_class_net("longestinterfaceislongerthanshouldbeexpectedanywhereinanormallyfunctioningenvironment", 0, 0, 0, 0, 0);
+	fake_sys_class_net("a", 0, 0, 0, 0, 0);
+
+	ck_assert_int_eq(getiflist(&ifacelist, 0), 1);
+	ck_assert_int_eq(strlen(ifacelist), 58);
 
 	free(ifacelist);
 }
@@ -587,9 +631,11 @@ void add_ifinfo_tests(Suite *s)
 	tcase_add_test(tc_ifinfo, getiflist_proc_one_interface);
 	tcase_add_test(tc_ifinfo, getiflist_proc_one_interface_with_speed);
 	tcase_add_test(tc_ifinfo, getiflist_proc_multiple_interfaces);
+	tcase_add_test(tc_ifinfo, getiflist_proc_long_interface_names);
 	tcase_add_test(tc_ifinfo, getiflist_sysclassnet_one_interface);
 	tcase_add_test(tc_ifinfo, getiflist_sysclassnet_one_interface_with_speed);
 	tcase_add_test(tc_ifinfo, getiflist_sysclassnet_multiple_interfaces);
+	tcase_add_test(tc_ifinfo, getiflist_sysclassnet_long_interface_names);
 	tcase_add_test(tc_ifinfo, readproc_no_file);
 	tcase_add_test(tc_ifinfo, readproc_not_found);
 	tcase_add_test(tc_ifinfo, readproc_success);
