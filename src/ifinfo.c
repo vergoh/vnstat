@@ -183,7 +183,7 @@ int readproc(const char *iface)
 
 	check = 0;
 	while (fgets(procline, 512, fp)!=NULL) {
-		sscanf(procline, "%511s", temp[0]);
+		sscanf(procline, "%63s", temp[0]);
 		if (strncmp(ifaceid, temp[0], strlen(ifaceid))==0) {
 			/* if (debug)
 				printf("\n%s\n", procline); */

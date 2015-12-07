@@ -3,6 +3,8 @@
  - Fix: XML output had extra commas, broken since previous version
  - Fix: unintended shared pointer modification in mosecs() sometimes resulted
    in wrong month to be shown for current month
+ - Fix: possible buffer overflow in /proc/net/dev parsing, requires corrupted
+   content in /proc/net/dev or use of address sanitizer (found by Hanno Böck)
  - Use ANSI escape codes in -l and -tr modes for cursor location manipulation
    instead of printing backspaces and hide cursor while running
  - Improve database import robustness
