@@ -1,6 +1,6 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
-AC_INIT([vnstat], [1.5_beta])
+AC_INIT([vnstat], [1.15_beta])
 AM_INIT_AUTOMAKE([foreign subdir-objects std-options -Wall -Werror])
 AC_CONFIG_SRCDIR([src/vnstat.c])
 AC_CONFIG_HEADERS([src/config.h])
@@ -40,3 +40,27 @@ AC_CHECK_FUNCS([dup2 localtime_r memset mkdir pow rmdir setlocale strcasecmp str
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
+
+AC_MSG_NOTICE()
+AC_MSG_NOTICE([ ====================================== ])
+AC_MSG_NOTICE()
+AC_MSG_NOTICE([          prefix: $prefix     ])
+AC_MSG_NOTICE([      sysconfdir: $sysconfdir ])
+AC_MSG_NOTICE()
+AC_MSG_NOTICE([     bin install paths: ])
+AC_MSG_NOTICE([          $prefix/bin/vnstat ])
+
+AM_COND_IF([HAVE_LIBGD], [
+AC_MSG_NOTICE([          $prefix/bin/vnstati ])])
+
+AC_MSG_NOTICE([          $prefix/sbin/vnstatd ])
+AC_MSG_NOTICE()
+AC_MSG_NOTICE([      cfg install path: ])
+AC_MSG_NOTICE([          $sysconfdir/vnstat.conf ])
+AC_MSG_NOTICE()
+AM_COND_IF([HAVE_LIBGD], [
+AC_MSG_NOTICE([   Image output support: enabled ])], [
+AC_MSG_NOTICE([   Image output support: disabled ])])
+AC_MSG_NOTICE()
+AC_MSG_NOTICE([ ====================================== ])
+AC_MSG_NOTICE()
