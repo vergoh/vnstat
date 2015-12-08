@@ -2,6 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 AC_INIT([vnstat], [1.15_beta])
 AM_INIT_AUTOMAKE([foreign subdir-objects std-options -Wall -Werror])
+AM_MAINTAINER_MODE
+
 AC_CONFIG_SRCDIR([src/vnstat.c])
 AC_CONFIG_HEADERS([src/config.h])
 
