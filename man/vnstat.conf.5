@@ -1,4 +1,4 @@
-.TH VNSTAT.CONF 5 "APRIL 2015" "version 1.14" "User Manuals"
+.TH VNSTAT.CONF 5 "DECEMBER 2015" "version 1.15" "User Manuals"
 .SH NAME
 
 vnstat.conf \- vnStat configuration file
@@ -319,6 +319,11 @@ Set background color as transparent. 1 = enabled, 0 = disabled.
 Config file that will be used unless
 .I $HOME/.vnstatrc
 exists or alternative value is given as command line parameter.
+
+.SH RESTRICTIONS
+
+Using long date output formats may cause misalignment in shown columns if the
+length of the date exceeds the fixed size allocation.
 
 .SH AUTHOR
 

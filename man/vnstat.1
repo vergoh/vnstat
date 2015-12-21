@@ -1,4 +1,4 @@
-.TH VNSTAT 1 "APRIL 2015" "version 1.14" "User Manuals"
+.TH VNSTAT 1 "DECEMBER 2015" "version 1.15" "User Manuals"
 .SH NAME
 
 vnstat \- a console-based network traffic monitor
@@ -501,6 +501,9 @@ Virtual and aliased interfaces cannot be monitored because the kernel doesn't
 provide traffic information for that type of interfaces. Such interfaces are
 usually named eth0:0, eth0:1, eth0:2 etc. where eth0 is the actual interface
 being aliased.
+.PP
+Using long date output formats may cause misalignment in shown columns if the
+length of the date exceeds the fixed size allocation.
 
 .SH AUTHOR
 
