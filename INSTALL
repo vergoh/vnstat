@@ -9,14 +9,24 @@ Compiling the binaries
 
  will compile 'vnstat' and 'vnstatd' without requiring additional libraries.
  The optional image output capable binary 'vnstati' will also be compiled if
- the required additional libgd2 library is found to be available. The
- required extra packages are usually named libgd2 and libgd2-dev (or
- libgd2-noxpm and libgd2-noxpm-dev in Debian/Ubuntu, xpm version can also
- be used, libgd-dev in more recent releases).
+ the required additional libgd2 library is found to be available. The name
+ of the libgd2 package depends on the used distribution and its release. The
+ development package for the library is also needed. Some common package
+ names are
+
+     gd
+     gd-devel
+     libgd3
+     libgd-dev
+     libgd2
+     libgd2-dev
+     libgd2-noxpm
+     libgd2-noxpm-dev
 
  An example cgi ('vnstat.cgi') to be used with http server with the image
  output support has been provided in the 'examples' directory. Configuration
- options for the cgi are in the beginning of the file.
+ options for the cgi are in the beginning of the file. Additional examples
+ for using the json output are also available in the same directory.
 
 
 Installing as root

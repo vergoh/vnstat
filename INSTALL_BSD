@@ -14,7 +14,8 @@ Compiling the binaries
 
  An example cgi ('vnstat.cgi') to be used with http server with the image
  output support has been provided in the 'examples' directory. Configuration
- options for the cgi are in the beginning of the file.
+ options for the cgi are in the beginning of the file. Additional examples
+ for using the json output are also available in the same directory.
 
  Some BSD users may need to provide correct LIBRARY_PATH and CPATH to the
  configure script if the image output is wanted but the location of libgd2
