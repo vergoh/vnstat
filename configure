@@ -7070,35 +7070,33 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: " >&5
 $as_echo "$as_me: " >&6;}
-{ $as_echo "$as_me:${as_lineno-$LINENO}:  ====================================== " >&5
-$as_echo "$as_me:  ====================================== " >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}:  ============================================== " >&5
+$as_echo "$as_me:  ============================================== " >&6;}
 { $as_echo "$as_me:${as_lineno-$LINENO}: " >&5
 $as_echo "$as_me: " >&6;}
-{ $as_echo "$as_me:${as_lineno-$LINENO}:           prefix: $prefix     " >&5
-$as_echo "$as_me:           prefix: $prefix     " >&6;}
-{ $as_echo "$as_me:${as_lineno-$LINENO}:       sysconfdir: $sysconfdir " >&5
-$as_echo "$as_me:       sysconfdir: $sysconfdir " >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}:        prefix: $prefix     " >&5
+$as_echo "$as_me:        prefix: $prefix     " >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}:    sysconfdir: $sysconfdir " >&5
+$as_echo "$as_me:    sysconfdir: $sysconfdir " >&6;}
 { $as_echo "$as_me:${as_lineno-$LINENO}: " >&5
 $as_echo "$as_me: " >&6;}
-{ $as_echo "$as_me:${as_lineno-$LINENO}:      bin install paths: " >&5
-$as_echo "$as_me:      bin install paths: " >&6;}
-{ $as_echo "$as_me:${as_lineno-$LINENO}:           $prefix/bin/vnstat " >&5
-$as_echo "$as_me:           $prefix/bin/vnstat " >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}:    Install paths " >&5
+$as_echo "$as_me:    Install paths " >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}: " >&5
+$as_echo "$as_me: " >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}:     vnstat: $prefix/bin/vnstat " >&5
+$as_echo "$as_me:     vnstat: $prefix/bin/vnstat " >&6;}
 
 if test -z "$HAVE_LIBGD_TRUE"; then :
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}:           $prefix/bin/vnstati " >&5
-$as_echo "$as_me:           $prefix/bin/vnstati " >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}:    vnstati: $prefix/bin/vnstati " >&5
+$as_echo "$as_me:    vnstati: $prefix/bin/vnstati " >&6;}
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}:           $prefix/sbin/vnstatd " >&5
-$as_echo "$as_me:           $prefix/sbin/vnstatd " >&6;}
-{ $as_echo "$as_me:${as_lineno-$LINENO}: " >&5
-$as_echo "$as_me: " >&6;}
-{ $as_echo "$as_me:${as_lineno-$LINENO}:       cfg install path: " >&5
-$as_echo "$as_me:       cfg install path: " >&6;}
-{ $as_echo "$as_me:${as_lineno-$LINENO}:           $sysconfdir/vnstat.conf " >&5
-$as_echo "$as_me:           $sysconfdir/vnstat.conf " >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}:    vnstatd: $prefix/sbin/vnstatd " >&5
+$as_echo "$as_me:    vnstatd: $prefix/sbin/vnstatd " >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}:     config: $sysconfdir/vnstat.conf " >&5
+$as_echo "$as_me:     config: $sysconfdir/vnstat.conf " >&6;}
 { $as_echo "$as_me:${as_lineno-$LINENO}: " >&5
 $as_echo "$as_me: " >&6;}
 if test -z "$HAVE_LIBGD_TRUE"; then :
@@ -7112,7 +7110,7 @@ $as_echo "$as_me:    Image output support: disabled " >&6;}
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: " >&5
 $as_echo "$as_me: " >&6;}
-{ $as_echo "$as_me:${as_lineno-$LINENO}:  ====================================== " >&5
-$as_echo "$as_me:  ====================================== " >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}:  ============================================== " >&5
+$as_echo "$as_me:  ============================================== " >&6;}
 { $as_echo "$as_me:${as_lineno-$LINENO}: " >&5
 $as_echo "$as_me: " >&6;}

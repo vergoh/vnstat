@@ -44,25 +44,24 @@ AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 
 AC_MSG_NOTICE()
-AC_MSG_NOTICE([ ====================================== ])
+AC_MSG_NOTICE([ ============================================== ])
 AC_MSG_NOTICE()
-AC_MSG_NOTICE([          prefix: $prefix     ])
-AC_MSG_NOTICE([      sysconfdir: $sysconfdir ])
+AC_MSG_NOTICE([       prefix: $prefix     ])
+AC_MSG_NOTICE([   sysconfdir: $sysconfdir ])
 AC_MSG_NOTICE()
-AC_MSG_NOTICE([     bin install paths: ])
-AC_MSG_NOTICE([          $prefix/bin/vnstat ])
+AC_MSG_NOTICE([   Install paths ])
+AC_MSG_NOTICE()
+AC_MSG_NOTICE([    vnstat: $prefix/bin/vnstat ])
 
 AM_COND_IF([HAVE_LIBGD], [
-AC_MSG_NOTICE([          $prefix/bin/vnstati ])])
+AC_MSG_NOTICE([   vnstati: $prefix/bin/vnstati ])])
 
-AC_MSG_NOTICE([          $prefix/sbin/vnstatd ])
-AC_MSG_NOTICE()
-AC_MSG_NOTICE([      cfg install path: ])
-AC_MSG_NOTICE([          $sysconfdir/vnstat.conf ])
+AC_MSG_NOTICE([   vnstatd: $prefix/sbin/vnstatd ])
+AC_MSG_NOTICE([    config: $sysconfdir/vnstat.conf ])
 AC_MSG_NOTICE()
 AM_COND_IF([HAVE_LIBGD], [
 AC_MSG_NOTICE([   Image output support: enabled ])], [
 AC_MSG_NOTICE([   Image output support: disabled ])])
 AC_MSG_NOTICE()
-AC_MSG_NOTICE([ ====================================== ])
+AC_MSG_NOTICE([ ============================================== ])
 AC_MSG_NOTICE()
