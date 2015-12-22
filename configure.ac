@@ -13,10 +13,16 @@ AM_PROG_CC_C_O
 AC_PROG_MAKE_SET
 AC_PROG_MKDIR_P
 
+AC_ARG_ENABLE([image-output], [
+AS_HELP_STRING([--disable-image-output], [disable PNG image output])])
+
 # Checks for libraries.
 AC_CHECK_LIB([m], [pow])
-AC_CHECK_LIB([gd], [gdImageLine], [IMAGELIBS=-lgd])
-AC_SUBST([IMAGELIBS])
+
+AS_IF([test "x$enable_image_output" != "xno"], [
+AC_CHECK_LIB([gd], [gdImagePng], [IMAGELIBS=-lgd])
+AC_SUBST([IMAGELIBS])])
+
 AM_CONDITIONAL([HAVE_LIBGD], [test "$IMAGELIBS" = "-lgd"])
 PKG_CHECK_MODULES([CHECK], [check >= 0.9.6], [], [AC_MSG_NOTICE([testcases can not be execute without check installed])])
 AM_CONDITIONAL([HAVE_CHECK], [test "$CHECK_LIBS"])
