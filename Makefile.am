@@ -2,7 +2,7 @@ SUBDIRS = .
 
 dist_man_MANS = man/vnstat.1 man/vnstat.conf.5 man/vnstatd.1 man/vnstati.1
 
-EXTRA_DIST = cfg examples UPGRADE CHANGES FAQ INSTALL_BSD INSTALL_OSX
+EXTRA_DIST = cfg examples UPGRADE CHANGES FAQ INSTALL_BSD INSTALL_OSX UNINSTALL
 
 bin_PROGRAMS = vnstat
 sbin_PROGRAMS = vnstatd

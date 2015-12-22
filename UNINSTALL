@@ -4,5 +4,5 @@ any manually installed service files.
 
 Run 'make uninstall' and follow the instructions. This step
 will not automatically remove any possible databases that have
-been created. This will need to be removed manually if no longer
-needed.
+been created. Such files will need to be removed manually if no
+longer needed.
