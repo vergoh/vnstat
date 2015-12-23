@@ -729,6 +729,7 @@ enable_option_checking
 enable_silent_rules
 enable_maintainer_mode
 enable_dependency_tracking
+enable_image_output
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1367,6 +1368,8 @@ Optional Features:
                           do not reject slow dependency extractors
   --disable-dependency-tracking
                           speeds up one-time build
+
+  --disable-image-output  disable PNG image output
 
 Some influential environment variables:
   CC          C compiler command
@@ -2553,8 +2556,8 @@ test "$program_suffix" != NONE &&
 ac_script='s/[\\$]/&&/g;s/;s,x,x,$//'
 program_transform_name=`$as_echo "$program_transform_name" | sed "$ac_script"`
 
-# expand $ac_aux_dir to an absolute path
-am_aux_dir=`cd $ac_aux_dir && pwd`
+# Expand $ac_aux_dir to an absolute path.
+am_aux_dir=`cd "$ac_aux_dir" && pwd`
 
 if test x"${MISSING+set}" != xset; then
   case $am_aux_dir in
@@ -2959,6 +2962,7 @@ END
     as_fn_error $? "Your 'rm' program is bad, sorry." "$LINENO" 5
   fi
 fi
+
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to enable maintainer-specific portions of Makefiles" >&5
 $as_echo_n "checking whether to enable maintainer-specific portions of Makefiles... " >&6; }
@@ -4061,6 +4065,12 @@ fi
 
 
 
+# Check whether --enable-image-output was given.
+if test "${enable_image_output+set}" = set; then :
+  enableval=$enable_image_output;
+fi
+
+
 # Checks for libraries.
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for pow in -lm" >&5
@@ -4108,9 +4118,12 @@ _ACEOF
 
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for gdImageLine in -lgd" >&5
-$as_echo_n "checking for gdImageLine in -lgd... " >&6; }
-if ${ac_cv_lib_gd_gdImageLine+:} false; then :
+
+if test "x$enable_image_output" != "xno"; then :
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for gdImagePng in -lgd" >&5
+$as_echo_n "checking for gdImagePng in -lgd... " >&6; }
+if ${ac_cv_lib_gd_gdImagePng+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -4124,30 +4137,32 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 #ifdef __cplusplus
 extern "C"
 #endif
-char gdImageLine ();
+char gdImagePng ();
 int
 main ()
 {
-return gdImageLine ();
+return gdImagePng ();
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_gd_gdImageLine=yes
+  ac_cv_lib_gd_gdImagePng=yes
 else
-  ac_cv_lib_gd_gdImageLine=no
+  ac_cv_lib_gd_gdImagePng=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_gd_gdImageLine" >&5
-$as_echo "$ac_cv_lib_gd_gdImageLine" >&6; }
-if test "x$ac_cv_lib_gd_gdImageLine" = xyes; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_gd_gdImagePng" >&5
+$as_echo "$ac_cv_lib_gd_gdImagePng" >&6; }
+if test "x$ac_cv_lib_gd_gdImagePng" = xyes; then :
   IMAGELIBS=-lgd
 fi
 
+
+fi
 
  if test "$IMAGELIBS" = "-lgd"; then
   HAVE_LIBGD_TRUE=
