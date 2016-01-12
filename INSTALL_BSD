@@ -59,8 +59,8 @@ Installing without root access
  Copy all needed binaries to some directory included in your PATH
  (~/bin/ is an example) and make the database directory.
 
-     cp src/vnstat src/vnstatd src/vnstati ~/bin/
-     cp cfg/vnstat.conf ~/.vnstatrc
+     cp -v vnstat vnstatd vnstati ~/bin/
+     cp -v cfg/vnstat.conf ~/.vnstatrc
      mkdir ~/.vnstat
 
  Next open the config file ~/.vnstatrc with your favorite text editor and
