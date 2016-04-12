@@ -214,6 +214,9 @@ void addtraffic(uint64_t *destmb, int *destkb, const uint64_t srcmb, const int s
 
 uint64_t mbkbtokb(uint64_t mb, uint64_t kb)
 {
+	if (mb==0) {
+		return kb;
+	}
 	if (kb>=1024) {
 		mb+=kb/1024;
 		kb-=(kb/1024)*1024;

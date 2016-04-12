@@ -237,42 +237,14 @@ char *getvalue(uint64_t mb, uint64_t kb, int len, int type)
 
 char *getrate(uint64_t mb, uint64_t kb, uint32_t interval, int len)
 {
-	static char buffer[64];
-	int unit, declen = 2;
-	uint64_t kB;
-	float rate;
-
-	if (interval==0) {
-		snprintf(buffer, 64, "%*s", len, "n/a");
-		return buffer;
-	}
-
-	if (mb!=0) {
-		kB=mbkbtokb(mb, kb);
-	} else {
-		kB=kb;
-	}
-
-	/* convert to proper unit */
-	if (cfg.rateunit) {
-		rate = (kB*8)/(float)interval;
-		unit = 2;
-		if (interval<5) {
-			declen = 0;
-		}
-	} else {
-		rate = kB/(float)interval;
-		unit = cfg.unit;
-	}
-
-	return getratestring(rate, len, declen, unit);
+	return gettrafficrate(mbkbtokb(mb, kb) * 1024, interval, len);
 }
 
 char *gettrafficrate(uint64_t bytes, uint32_t interval, int len)
 {
 	static char buffer[64];
 	int unit, declen = 2;
-	float rate;
+	uint64_t b;
 
 	if (interval==0) {
 		snprintf(buffer, 64, "%*s", len, "n/a");
@@ -281,17 +253,17 @@ char *gettrafficrate(uint64_t bytes, uint32_t interval, int len)
 
 	/* convert to proper unit */
 	if (cfg.rateunit) {
-		rate = (bytes*8)/(float)(interval*1024);
+		b = bytes * 8;
 		unit = 2;
 		if (interval<5) {
 			declen = 0;
 		}
 	} else {
-		rate = bytes/(float)(interval*1024);
+		b = bytes;
 		unit = cfg.unit;
 	}
 
-	return getratestring(rate, len, declen, unit);
+	return getratestring(b / interval, len, declen, unit);
 }
 
 uint64_t getscale(uint64_t kb)
@@ -353,11 +325,11 @@ char *getrateunit(int unit, int index)
 	}
 }
 
-uint32_t getunitdivider(int unit, int index)
+uint64_t getunitdivider(int unit, int index)
 {
-	uint32_t unitdiv[] = { 0, 0, 1024, 1048576, 1073741824,
-                              0, 1024, 1048576, 1073741824,
-                              0, 1000, 1000000, 1000000000 };
+	uint64_t unitdiv[] = { 0, 1024, 1048576, 1073741824, 1099511627776,
+                              1024, 1048576, 1073741824, 1099511627776,
+                              1000, 1000000, 1000000000, 1000000000000};
 
 	if (index>UNITCOUNT) {
 		return unitdiv[0];
@@ -366,15 +338,15 @@ uint32_t getunitdivider(int unit, int index)
 	}
 }
 
-char *getratestring(float rate, int len, int declen, int unit)
+char *getratestring(uint64_t rate, int len, int declen, int unit)
 {
 	static char buffer[64];
-	uint32_t limit[3] = { 1000, 1024000, 1048576000 };
+	uint64_t limit[3] = { 1024000, 1048576000, 1073741824000 };
 
 	if (cfg.rateunit) {
-		limit[0] = 1000;
-		limit[1] = 1000000;
-		limit[2] = 1000000000;
+		limit[0] = 1000000;
+		limit[1] = 1000000000;
+		limit[2] = 1000000000000;
 	}
 
 	/* tune spacing according to unit */
@@ -391,7 +363,7 @@ char *getratestring(float rate, int len, int declen, int unit)
 	} else if (rate>=limit[0]) {
 		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)getunitdivider(unit, 2), getrateunit(unit, 2));
 	} else {
-		snprintf(buffer, 64, "%"DECCONV"*.*f %s", len, declen, rate, getrateunit(unit, 1));
+		snprintf(buffer, 64, "%"DECCONV"*.*f %s", len, declen, rate/(float)getunitdivider(unit, 1), getrateunit(unit, 1));
 	}
 
 	return buffer;
