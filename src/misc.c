@@ -325,7 +325,7 @@ char *getrateunit(int unit, int index)
 	}
 }
 
-uint64_t getunitdivider(int unit, int index)
+uint64_t getunitdivisor(int unit, int index)
 {
 	uint64_t unitdiv[] = { 0, 1024, 1048576, 1073741824, 1099511627776,
                               1024, 1048576, 1073741824, 1099511627776,
@@ -357,13 +357,13 @@ char *getratestring(uint64_t rate, int len, int declen, int unit)
 
 	/* try to figure out what unit to use */
 	if (rate>=limit[2]) {
-		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)getunitdivider(unit, 4), getrateunit(unit, 4));
+		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)getunitdivisor(unit, 4), getrateunit(unit, 4));
 	} else if (rate>=limit[1]) {
-		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)getunitdivider(unit, 3), getrateunit(unit, 3));
+		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)getunitdivisor(unit, 3), getrateunit(unit, 3));
 	} else if (rate>=limit[0]) {
-		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)getunitdivider(unit, 2), getrateunit(unit, 2));
+		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)getunitdivisor(unit, 2), getrateunit(unit, 2));
 	} else {
-		snprintf(buffer, 64, "%"DECCONV"*.*f %s", len, declen, rate/(float)getunitdivider(unit, 1), getrateunit(unit, 1));
+		snprintf(buffer, 64, "%"DECCONV"*.*f %s", len, declen, rate/(float)getunitdivisor(unit, 1), getrateunit(unit, 1));
 	}
 
 	return buffer;

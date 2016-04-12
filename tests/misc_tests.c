@@ -34,15 +34,15 @@ START_TEST(getrateunit_returns_something_with_all_cfg_combinations)
 }
 END_TEST
 
-START_TEST(getunitdivider_returns_something_with_all_cfg_combinations)
+START_TEST(getunitdivisor_returns_something_with_all_cfg_combinations)
 {
 	int j;
 
 	for (j=1; j<=(UNITCOUNT+1); j++) {
 		if (j>UNITCOUNT) {
-			ck_assert_int_eq(getunitdivider(_i, j), 0);
+			ck_assert_int_eq(getunitdivisor(_i, j), 0);
 		} else {
-			ck_assert_int_ne(getunitdivider(_i, j), 0);
+			ck_assert_int_ne(getunitdivisor(_i, j), 0);
 		}
 	}
 }
@@ -340,7 +340,7 @@ void add_misc_tests(Suite *s)
 	tcase_add_test(tc_misc, getbtime_does_not_return_zero);
 	tcase_add_loop_test(tc_misc, getunit_returns_something_with_all_cfg_combinations, 0, 2);
 	tcase_add_loop_test(tc_misc, getrateunit_returns_something_with_all_cfg_combinations, 0, 3);
-	tcase_add_loop_test(tc_misc, getunitdivider_returns_something_with_all_cfg_combinations, 0, 3);
+	tcase_add_loop_test(tc_misc, getunitdivisor_returns_something_with_all_cfg_combinations, 0, 3);
 	tcase_add_test(tc_misc, spacecheck_does_not_check_when_not_configured);
 	tcase_add_test(tc_misc, spacecheck_checks_space);
 	tcase_add_test(tc_misc, spacecheck_fails_with_invalid_path);

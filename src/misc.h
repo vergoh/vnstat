@@ -13,7 +13,7 @@ char *gettrafficrate(uint64_t bytes, uint32_t interval, int len);
 uint64_t getscale(uint64_t kb);
 char *getunit(int index);
 char *getrateunit(int unit, int index);
-uint64_t getunitdivider(int unit, int index);
+uint64_t getunitdivisor(int unit, int index);
 char *getratestring(uint64_t rate, int len, int declen, int unit);
 int getpadding(int len, char *str);
 void cursortocolumn(int column);
