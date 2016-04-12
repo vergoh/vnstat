@@ -8,6 +8,7 @@ vnstatd
 vnstati
 *.log
 *.xml
+*.trs
 coverage
 vnstat_tests
 check_vnstat

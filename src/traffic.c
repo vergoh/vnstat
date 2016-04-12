@@ -96,6 +96,7 @@ void livetrafficmeter(char iface[32], int mode)
 	rxtotal=txtotal=rxptotal=txptotal=rxpmax=txpmax=0;
 	rxpmin=txpmin=rxmin=txmin=MAX64;
 	rxmax=txmax=0;
+	timeslept = 0;
 
 	timespent = (uint64_t)time(NULL);
 
