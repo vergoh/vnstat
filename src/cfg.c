@@ -35,7 +35,7 @@ void printcfgfile(void)
 	printf("# how units are prefixed when traffic is shown\n");
 	printf("# 0 = IEC standard prefixes (KiB/MiB/GiB/TiB)\n");
 	printf("# 1 = old style binary prefixes (KB/MB/GB/TB)\n");
-	printf("UnitMode %d\n\n", cfg.unit);
+	printf("UnitMode %d\n\n", cfg.unitmode);
 
 	printf("# output style\n");
 	printf("# 0 = minimal & narrow, 1 = bar column visible\n");
@@ -183,7 +183,7 @@ int loadcfg(const char *cfgfile)
 		{ "TXCharacter", cfg.txchar, 0, 2, 0 },
 		{ "RXHourCharacter", cfg.rxhourchar, 0, 2, 0 },
 		{ "TXHourCharacter", cfg.txhourchar, 0, 2, 0 },
-		{ "UnitMode", 0, &cfg.unit, 0, 0 },
+		{ "UnitMode", 0, &cfg.unitmode, 0, 0 },
 		{ "OutputStyle", 0, &cfg.ostyle, 0, 0 },
 		{ "RateUnit", 0, &cfg.rateunit, 0, 0 },
 		{ "BandwidthDetection", 0, &cfg.bwdetection, 0, 0 },
@@ -291,9 +291,9 @@ int loadcfg(const char *cfgfile)
 
 void validatecfg(void)
 {
-	if (cfg.unit<0 || cfg.unit>1) {
-		cfg.unit = UNITMODE;
-		snprintf(errorstring, 512, "Invalid value for UnitMode, resetting to \"%d\".", cfg.unit);
+	if (cfg.unitmode<0 || cfg.unitmode>1) {
+		cfg.unitmode = UNITMODE;
+		snprintf(errorstring, 512, "Invalid value for UnitMode, resetting to \"%d\".", cfg.unitmode);
 		printe(PT_Config);
 	}
 
@@ -468,7 +468,7 @@ void defaultcfg(void)
 	cfg.qmode = DEFQMODE;
 	cfg.sampletime = DEFSAMPTIME;
 	cfg.monthrotate = MONTHROTATE;
-	cfg.unit = UNITMODE;
+	cfg.unitmode = UNITMODE;
 	cfg.ostyle = OSTYLE;
 	cfg.rateunit = RATEUNIT;
 	cfg.bwdetection = BWDETECT;

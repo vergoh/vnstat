@@ -1475,7 +1475,7 @@ char *getimagescale(uint64_t kb, int rate)
 				limit[0] = 1024;
 				limit[1] = 1024000;
 				limit[2] = 1048576000;
-				unit = cfg.unit;
+				unit = cfg.unitmode;
 			}
 
 			if (kb>=limit[2]) {

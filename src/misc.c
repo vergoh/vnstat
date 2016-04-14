@@ -215,7 +215,7 @@ char *getvalue(uint64_t mb, uint64_t kb, int len, int type)
 	}
 
 	if ( (type==2) && (kB==0) ){
-		snprintf(buffer, 64, "%*s    ", len-cfg.unit, "--");
+		snprintf(buffer, 64, "%*s    ", len-cfg.unitmode, "--");
 	} else {
 		/* try to figure out what unit to use */
 		if (kB>=1048576000) { /* 1024*1024*1000 - value >=1000 GiB -> show in TiB */
@@ -243,7 +243,7 @@ char *getrate(uint64_t mb, uint64_t kb, uint32_t interval, int len)
 char *gettrafficrate(uint64_t bytes, uint32_t interval, int len)
 {
 	static char buffer[64];
-	int unit, declen = 2;
+	int unitmode, declen = 2;
 	uint64_t b;
 
 	if (interval==0) {
@@ -254,16 +254,16 @@ char *gettrafficrate(uint64_t bytes, uint32_t interval, int len)
 	/* convert to proper unit */
 	if (cfg.rateunit) {
 		b = bytes * 8;
-		unit = 2;
+		unitmode = 2;
 		if (interval<5) {
 			declen = 0;
 		}
 	} else {
 		b = bytes;
-		unit = cfg.unit;
+		unitmode = cfg.unitmode;
 	}
 
-	return getratestring(b / interval, len, declen, unit);
+	return getratestring(b / interval, len, declen, unitmode);
 }
 
 uint64_t getscale(uint64_t kb)
@@ -308,7 +308,7 @@ char *getunit(int index)
 	if (index>UNITCOUNT) {
 		return unit[0];
 	} else {
-		return unit[(cfg.unit*UNITCOUNT)+index];
+		return unit[(cfg.unitmode*UNITCOUNT)+index];
 	}
 }
 

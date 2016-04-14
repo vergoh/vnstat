@@ -888,7 +888,7 @@ void showhours(void)
 	/* structure */
 	snprintf(matrix[11], 81, " -+--------------------------------------------------------------------------->");
 	for (i=0;i<3;i++) {
-		snprintf(matrix[14]+(i*28), 25, " h %2$*1$srx (%3$s)  %2$*1$stx (%3$s)", 1+cfg.unit, " ", unit);
+		snprintf(matrix[14]+(i*28), 25, " h %2$*1$srx (%3$s)  %2$*1$stx (%3$s)", 1+cfg.unitmode, " ", unit);
 	}
 
 	for (i=10;i>1;i--)
