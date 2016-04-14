@@ -209,7 +209,7 @@ char *getvalue(uint64_t mb, uint64_t kb, int len, int type)
 	}
 
 	/* tune spacing according to unit */
-	len -= strlen(getunit(1)) + 1;
+	len -= strlen(getunitprefix(1)) + 1;
 	if (len<0) {
 		len = 1;
 	}
@@ -219,16 +219,16 @@ char *getvalue(uint64_t mb, uint64_t kb, int len, int type)
 	} else {
 		/* try to figure out what unit to use */
 		if (kB>=1048576000) { /* 1024*1024*1000 - value >=1000 GiB -> show in TiB */
-			snprintf(buffer, 64, "%"DECCONV"*.*f %s", len, declen, kB/(float)1073741824, getunit(4)); /* 1024*1024*1024 */
+			snprintf(buffer, 64, "%"DECCONV"*.*f %s", len, declen, kB/(float)1073741824, getunitprefix(4)); /* 1024*1024*1024 */
 		} else if (kB>=1024000) { /* 1024*1000 - value >=1000 MiB -> show in GiB */
-			snprintf(buffer, 64, "%"DECCONV"*.*f %s", len, declen, kB/(float)1048576, getunit(3)); /* 1024*1024 */
+			snprintf(buffer, 64, "%"DECCONV"*.*f %s", len, declen, kB/(float)1048576, getunitprefix(3)); /* 1024*1024 */
 		} else if (kB>=1000) {
 			if (type==2) {
 				declen=0;
 			}
-			snprintf(buffer, 64, "%"DECCONV"*.*f %s", len, declen, kB/(float)1024, getunit(2));
+			snprintf(buffer, 64, "%"DECCONV"*.*f %s", len, declen, kB/(float)1024, getunitprefix(2));
 		} else {
-			snprintf(buffer, 64, "%"DECCONV"*"PRIu64" %s", len, kB, getunit(1));
+			snprintf(buffer, 64, "%"DECCONV"*"PRIu64" %s", len, kB, getunitprefix(1));
 		}
 	}
 
@@ -252,9 +252,12 @@ char *gettrafficrate(uint64_t bytes, uint32_t interval, int len)
 	}
 
 	/* convert to proper unit */
-	if (cfg.rateunit) {
+	if (cfg.rateunit == 1) {
 		b = bytes * 8;
-		unitmode = 2;
+		unitmode = 3;
+		if (cfg.rateunitmode == 0) {
+			unitmode = 2;
+		}
 		if (interval<5) {
 			declen = 0;
 		}
@@ -300,70 +303,72 @@ uint64_t getscale(uint64_t kb)
 	return result;
 }
 
-char *getunit(int index)
+char *getunitprefix(int index)
 {
-	static char *unit[] = { "na", "KiB", "MiB", "GiB", "TiB",
+	static char *unitprefix[] = { "na", "KiB", "MiB", "GiB", "TiB",
                                    "KB",  "MB",  "GB",  "TB" };
 
-	if (index>UNITCOUNT) {
-		return unit[0];
+	if (index>UNITPREFIXCOUNT) {
+		return unitprefix[0];
 	} else {
-		return unit[(cfg.unitmode*UNITCOUNT)+index];
+		return unitprefix[(cfg.unitmode*UNITPREFIXCOUNT)+index];
 	}
 }
 
-char *getrateunit(int unit, int index)
+char *getrateunitprefix(int unitmode, int index)
 {
-	static char *bunit[] = { "na", "KiB/s", "MiB/s", "GiB/s", "TiB/s",
+	static char *rateunitprefix[] = { "na", "KiB/s", "MiB/s", "GiB/s", "TiB/s",
                                     "KB/s",  "MB/s",  "GB/s",  "TB/s",
+                                    "Kibit/s",  "Mibit/s",  "Gibit/s",  "Tibit/s",
                                     "kbit/s",  "Mbit/s",  "Gbit/s",  "Tbit/s" };
 
-	if (index>UNITCOUNT) {
-		return bunit[0];
+	if (index>UNITPREFIXCOUNT) {
+		return rateunitprefix[0];
 	} else {
-		return bunit[(unit*UNITCOUNT)+index];
+		return rateunitprefix[(unitmode*UNITPREFIXCOUNT)+index];
 	}
 }
 
-uint64_t getunitdivisor(int unit, int index)
+uint64_t getunitdivisor(int unitmode, int index)
 {
 	uint64_t unitdiv[] = { 0, 1024, 1048576, 1073741824, 1099511627776,
                               1024, 1048576, 1073741824, 1099511627776,
+                              1024, 1048576, 1073741824, 1099511627776,
                               1000, 1000000, 1000000000, 1000000000000};
 
-	if (index>UNITCOUNT) {
+	if (index>UNITPREFIXCOUNT) {
 		return unitdiv[0];
 	} else {
-		return unitdiv[(unit*UNITCOUNT)+index];
+		return unitdiv[(unitmode*UNITPREFIXCOUNT)+index];
 	}
 }
 
-char *getratestring(uint64_t rate, int len, int declen, int unit)
+char *getratestring(uint64_t rate, int len, int declen, int unitmode)
 {
 	static char buffer[64];
 	uint64_t limit[3] = { 1024000, 1048576000, 1073741824000 };
 
-	if (cfg.rateunit) {
+	if (cfg.rateunit == 1 && cfg.rateunitmode == 1) {
 		limit[0] = 1000000;
 		limit[1] = 1000000000;
 		limit[2] = 1000000000000;
 	}
 
 	/* tune spacing according to unit */
-	len -= strlen(getrateunit(unit, 1)) + 1;
+	len -= strlen(getrateunitprefix(unitmode, 1)) + 1;
 	if (len<0) {
 		len = 1;
 	}
 
 	/* try to figure out what unit to use */
 	if (rate>=limit[2]) {
-		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)getunitdivisor(unit, 4), getrateunit(unit, 4));
+		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)getunitdivisor(unitmode, 4), getrateunitprefix(unitmode, 4));
 	} else if (rate>=limit[1]) {
-		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)getunitdivisor(unit, 3), getrateunit(unit, 3));
+		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)getunitdivisor(unitmode, 3), getrateunitprefix(unitmode, 3));
 	} else if (rate>=limit[0]) {
-		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)getunitdivisor(unit, 2), getrateunit(unit, 2));
+		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)getunitdivisor(unitmode, 2), getrateunitprefix(unitmode, 2));
 	} else {
-		snprintf(buffer, 64, "%"DECCONV"*.*f %s", len, declen, rate/(float)getunitdivisor(unit, 1), getrateunit(unit, 1));
+		snprintf(buffer, 64, "%"DECCONV"*.*f %s", len, declen, rate/(float)getunitdivisor(unitmode, 1), getrateunitprefix(unitmode, 1));
 	}
 
 	return buffer;

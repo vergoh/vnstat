@@ -37,6 +37,11 @@ void printcfgfile(void)
 	printf("# 1 = old style binary prefixes (KB/MB/GB/TB)\n");
 	printf("UnitMode %d\n\n", cfg.unitmode);
 
+	printf("# how units are prefixed when traffic rate is shown\n");
+	printf("# 0 = IEC binary prefixes (Kibit/s...)\n");
+	printf("# 1 = SI decimal prefixes (kbit/s...)\n");
+	printf("RateUnitMode %d\n\n", cfg.rateunitmode);
+
 	printf("# output style\n");
 	printf("# 0 = minimal & narrow, 1 = bar column visible\n");
 	printf("# 2 = same as 1 except rate in summary and weekly\n");
@@ -184,6 +189,7 @@ int loadcfg(const char *cfgfile)
 		{ "RXHourCharacter", cfg.rxhourchar, 0, 2, 0 },
 		{ "TXHourCharacter", cfg.txhourchar, 0, 2, 0 },
 		{ "UnitMode", 0, &cfg.unitmode, 0, 0 },
+		{ "RateUnitMode", 0, &cfg.rateunitmode, 0, 0 },
 		{ "OutputStyle", 0, &cfg.ostyle, 0, 0 },
 		{ "RateUnit", 0, &cfg.rateunit, 0, 0 },
 		{ "BandwidthDetection", 0, &cfg.bwdetection, 0, 0 },
@@ -294,6 +300,12 @@ void validatecfg(void)
 	if (cfg.unitmode<0 || cfg.unitmode>1) {
 		cfg.unitmode = UNITMODE;
 		snprintf(errorstring, 512, "Invalid value for UnitMode, resetting to \"%d\".", cfg.unitmode);
+		printe(PT_Config);
+	}
+
+	if (cfg.rateunitmode<0 || cfg.rateunitmode>1) {
+		cfg.rateunitmode = RATEUNITMODE;
+		snprintf(errorstring, 512, "Invalid value for RateUnitMode, resetting to \"%d\".", cfg.rateunitmode);
 		printe(PT_Config);
 	}
 
@@ -469,6 +481,7 @@ void defaultcfg(void)
 	cfg.sampletime = DEFSAMPTIME;
 	cfg.monthrotate = MONTHROTATE;
 	cfg.unitmode = UNITMODE;
+	cfg.rateunitmode = RATEUNITMODE;
 	cfg.ostyle = OSTYLE;
 	cfg.rateunit = RATEUNIT;
 	cfg.bwdetection = BWDETECT;

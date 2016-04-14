@@ -876,10 +876,10 @@ void showhours(void)
 	}
 
 	/* unit selection */
-	while (max/(pow(1024, div))>=100 && div<UNITCOUNT) {
+	while (max/(pow(1024, div))>=100 && div<UNITPREFIXCOUNT) {
 		div++;
 	}
-	strncpy_nt(unit, getunit(div), 4);
+	strncpy_nt(unit, getunitprefix(div), 4);
 	div = pow(1024, div-1);
 	if (div == 1) {
 		declen = 0;

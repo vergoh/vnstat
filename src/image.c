@@ -1479,23 +1479,23 @@ char *getimagescale(uint64_t kb, int rate)
 			}
 
 			if (kb>=limit[2]) {
-				snprintf(buffer, 8, "%s", getrateunit(unit, 4));
+				snprintf(buffer, 8, "%s", getrateunitprefix(unit, 4));
 			} else if (kb>=limit[1]) {
-				snprintf(buffer, 8, "%s", getrateunit(unit, 3));
+				snprintf(buffer, 8, "%s", getrateunitprefix(unit, 3));
 			} else if (kb>=limit[0]) {
-				snprintf(buffer, 8, "%s", getrateunit(unit, 2));
+				snprintf(buffer, 8, "%s", getrateunitprefix(unit, 2));
 			} else {
-				snprintf(buffer, 8, "%s", getrateunit(unit, 1));
+				snprintf(buffer, 8, "%s", getrateunitprefix(unit, 1));
 			}
 		} else {
 			if (kb>=1048576000) { /* 1024*1024*1000 - value >=1000 GiB -> show in TiB */
-				snprintf(buffer, 8, "%s", getunit(4));
+				snprintf(buffer, 8, "%s", getunitprefix(4));
 			} else if (kb>=1024000) { /* 1024*1000 - value >=1000 MiB -> show in GiB */
-				snprintf(buffer, 8, "%s", getunit(3));
+				snprintf(buffer, 8, "%s", getunitprefix(3));
 			} else if (kb>=1000) {
-				snprintf(buffer, 8, "%s", getunit(2));
+				snprintf(buffer, 8, "%s", getunitprefix(2));
 			} else {
-				snprintf(buffer, 8, "%s", getunit(1));
+				snprintf(buffer, 8, "%s", getunitprefix(1));
 			}
 		}
 
