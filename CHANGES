@@ -1,5 +1,14 @@
 1.16 / <not released yet>
 
+ - Fix: traffic rate calculation, SI decimal prefixes were shown but
+   calculation was done for IEC binary prefixes
+ - Add option for configure to disable image output support even if required
+   library is available, improve library detection
+   (pull request by Rodrigo Rebello)
+ - Add selection between SI decimal prefixes (kbit/s...) (default) and
+   IEC binary prefixes (Kibit/s...) for traffic rate using RateUnitMode
+   keyword in configuration file
+
 
 1.15 / 22-Dec-2015
 
