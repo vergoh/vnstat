@@ -568,22 +568,26 @@ int validatedb(void)
 	uint64_t rxsum, txsum;
 
 	if (data.version>DBVERSION) {
-		printf("Invalid database version: %d\n", data.version);
+		snprintf(errorstring, 512, "Invalid database version: %d", data.version);
+		printe(PT_Error);
 		return 0;
 	}
 
 	if (data.active<0 || data.active>1) {
-		printf("Invalid database activity status: %d\n", data.active);
+		snprintf(errorstring, 512, "Invalid database activity status: %d", data.active);
+		printe(PT_Error);
 		return 0;
 	}
 
 	if (!strlen(data.interface)) {
-		printf("Invalid database interface string: %s\n", data.interface);
+		snprintf(errorstring, 512, "Invalid database interface string: %s", data.interface);
+		printe(PT_Error);
 		return 0;
 	}
 
 	if (!data.created || !data.lastupdated || !data.btime) {
-		printf("Invalid database timestamp.\n");
+		snprintf(errorstring, 512, "Invalid database timestamp.\n");
+		printe(PT_Error);
 		return 0;
 	}
 
@@ -591,15 +595,18 @@ int validatedb(void)
 	used = 1;
 	for (i=0; i<30; i++) {
 		if (data.day[i].used<0 || data.day[i].used>1) {
-			printf("Invalid database daily use information: %d %d\n", i, data.day[i].used);
+			snprintf(errorstring, 512, "Invalid database daily use information: %d %d", i, data.day[i].used);
+			printe(PT_Error);
 			return 0;
 		}
 		if (data.day[i].rxk<0 || data.day[i].txk<0) {
-			printf("Invalid database daily traffic: %d\n", i);
+			snprintf(errorstring, 512, "Invalid database daily traffic: %d", i);
+			printe(PT_Error);
 			return 0;
 		}
 		if (data.day[i].used && !used) {
-			printf("Invalid database daily use order: %d\n", i);
+			snprintf(errorstring, 512, "Invalid database daily use order: %d", i);
+			printe(PT_Error);
 			return 0;
 		} else if (!data.day[i].used) {
 			used = 0;
@@ -615,13 +622,15 @@ int validatedb(void)
 			break;
 		}
 		if (data.day[i-1].date < data.day[i].date) {
-			printf("Invalid database daily date order: %u (%d) < %u (%d)\n", (unsigned int)data.day[i-1].date, i-1, (unsigned int)data.day[i].date, i);
+			snprintf(errorstring, 512, "Invalid database daily date order: %u (%d) < %u (%d)", (unsigned int)data.day[i-1].date, i-1, (unsigned int)data.day[i].date, i);
+			printe(PT_Error);
 			return 0;
 		}
 	}
 
 	if (data.totalrx < rxsum || data.totaltx < txsum) {
-		printf("Invalid database total traffic compared to daily usage.\n");
+		snprintf(errorstring, 512, "Invalid database total traffic compared to daily usage.");
+		printe(PT_Error);
 		return 0;
 	}
 
@@ -629,15 +638,18 @@ int validatedb(void)
 	used = 1;
 	for (i=0; i<12; i++) {
 		if (data.month[i].used<0 || data.month[i].used>1) {
-			printf("Invalid database monthly use information: %d %d\n", i, data.month[i].used);
+			snprintf(errorstring, 512, "Invalid database monthly use information: %d %d", i, data.month[i].used);
+			printe(PT_Error);
 			return 0;
 		}
 		if (data.month[i].rxk<0 || data.month[i].txk<0) {
-			printf("Invalid database monthly traffic: %d\n", i);
+			snprintf(errorstring, 512, "Invalid database monthly traffic: %d", i);
+			printe(PT_Error);
 			return 0;
 		}
 		if (data.month[i].used && !used) {
-			printf("Invalid database monthly use order: %d\n", i);
+			snprintf(errorstring, 512, "Invalid database monthly use order: %d", i);
+			printe(PT_Error);
 			return 0;
 		} else if (!data.month[i].used) {
 			used = 0;
@@ -653,28 +665,33 @@ int validatedb(void)
 			break;
 		}
 		if (data.month[i-1].month < data.month[i].month) {
-			printf("Invalid database monthly date order: %u (%d) < %u (%d)\n", (unsigned int)data.month[i-1].month, i-1, (unsigned int)data.month[i].month, i);
+			snprintf(errorstring, 512, "Invalid database monthly date order: %u (%d) < %u (%d)", (unsigned int)data.month[i-1].month, i-1, (unsigned int)data.month[i].month, i);
+			printe(PT_Error);
 			return 0;
 		}
 	}
 
 	if (data.totalrx < rxsum || data.totaltx < txsum) {
-		printf("Invalid database total traffic compared to monthly usage.\n");
+		snprintf(errorstring, 512, "Invalid database total traffic compared to monthly usage.");
+		printe(PT_Error);
 		return 0;
 	}
 
 	used = 1;
 	for (i=0; i<10; i++) {
 		if (data.top10[i].used<0 || data.top10[i].used>1) {
-			printf("Invalid database top10 use information: %d %d\n", i, data.top10[i].used);
+			snprintf(errorstring, 512, "Invalid database top10 use information: %d %d", i, data.top10[i].used);
+			printe(PT_Error);
 			return 0;
 		}
 		if (data.top10[i].rxk<0 || data.top10[i].txk<0) {
-			printf("Invalid database top10 traffic: %d\n", i);
+			snprintf(errorstring, 512, "Invalid database top10 traffic: %d", i);
+			printe(PT_Error);
 			return 0;
 		}
 		if (data.top10[i].used && !used) {
-			printf("Invalid database top10 use order: %d\n", i);
+			snprintf(errorstring, 512, "Invalid database top10 use order: %d", i);
+			printe(PT_Error);
 			return 0;
 		} else if (!data.top10[i].used) {
 			used = 0;
