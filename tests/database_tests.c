@@ -637,13 +637,14 @@ START_TEST(rebuilddbtotal_rebuilds_total)
 	cfg.flock = 1;
 	strcpy(data.interface, "ethtest");
 	strcpy(data.nick, "ethtest");
-	data.totalrx = 0;
-	data.totaltx = 0;
+	data.totalrx = 1234;
+	data.totaltx = 1234;
 	for (i=0; i<12; i++) {
 		data.month[i].rx = 1;
 		data.month[i].tx = 2;
 		data.month[i].used = 1;
 	}
+
 	ck_assert_int_eq(clean_testdbdir(), 1);
 	ck_assert_int_eq(writedb("ethtest", TESTDBDIR, 1), 1);
 

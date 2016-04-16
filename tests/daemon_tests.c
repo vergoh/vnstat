@@ -637,6 +637,7 @@ START_TEST(datalist_writedb_detects_missing_database_file)
 	initdstate(&s);
 	s.dodbsave = 1;
 	s.dbsaved = 0;
+	disable_logprints();
 	strncpy_nt(s.dirname, TESTDBDIR, 512);
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	ck_assert_int_eq(cacheadd("name1", 0), 1);
@@ -650,10 +651,12 @@ END_TEST
 START_TEST(datalist_writedb_writes_database_file)
 {
 	DSTATE s;
+	initdb();
 	initdstate(&s);
 	s.dodbsave = 1;
 	s.dbsaved = 0;
 	disable_logprints();
+	strncpy_nt(data.interface, "name1", 32);
 	strncpy_nt(s.dirname, TESTDBDIR, 512);
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	ck_assert_int_eq(clean_testdbdir(), 1);

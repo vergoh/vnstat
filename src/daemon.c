@@ -579,7 +579,7 @@ void processdatalist(DSTATE *s)
 		/* get info if interface has been marked as active */
 		datalist_getifinfo(s);
 
-		/* check that the time is correct */
+		/* check that the time is correct and update cached data */
 		if (!datalist_timevalidation(s)) {
 			s->datalist = s->datalist->next;
 			continue;
@@ -588,7 +588,7 @@ void processdatalist(DSTATE *s)
 		/* write data to file if now is the time for it */
 		if (!datalist_writedb(s)) {
 			/* remove interface from update list since the database file doesn't exist anymore */
-			snprintf(errorstring, 512, "Database for interface \"%s\" no longer exists, removing from update list.", s->datalist->data.interface);
+			snprintf(errorstring, 512, "Removing interface \"%s\" from update list.", s->datalist->data.interface);
 			printe(PT_Info);
 			s->datalist = cacheremove(s->datalist->data.interface);
 			s->dbcount--;
@@ -674,6 +674,19 @@ int datalist_writedb(DSTATE *s)
 	}
 
 	if (!checkdb(s->datalist->data.interface, s->dirname)) {
+		snprintf(errorstring, 512, "Database for interface \"%s\" no longer exists.", s->datalist->data.interface);
+		printe(PT_Info);
+		return 0;
+	}
+
+	if (!validatedb()) { /* TODO: write test to simulate corrupted cached data */
+		snprintf(errorstring, 512, "Cached data for interface \"%s\" failed validation. Reloading data from file.", s->datalist->data.interface);
+		printe(PT_Error);
+		if (readdb(s->datalist->data.interface, s->dirname)==0) {
+			cacheupdate();
+			return 1;
+		}
+		/* remove interface from update list if reload failed */
 		return 0;
 	}
 
