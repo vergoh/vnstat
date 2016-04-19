@@ -442,75 +442,75 @@ int synccounters(const char *iface, const char *dirname)
 
 void showhelp(PARAMS *p)
 {
-			printf(" vnStat %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
+	printf(" vnStat %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
 
-			printf("         -q,  --query          query database\n");
-			printf("         -h,  --hours          show hours\n");
-			printf("         -d,  --days           show days\n");
-			printf("         -m,  --months         show months\n");
-			printf("         -w,  --weeks          show weeks\n");
-			printf("         -t,  --top10          show top 10 days\n");
-			printf("         -s,  --short          use short output\n");
-			printf("         -u,  --update         update database\n");
-			printf("         -i,  --iface          select interface (default: %s)\n", p->definterface);
-			printf("         -?,  --help           short help\n");
-			printf("         -v,  --version        show version\n");
-			printf("         -tr, --traffic        calculate traffic\n");
-			printf("         -ru, --rateunit       swap configured rate unit\n");
-			printf("         -l,  --live           show transfer rate in real time\n\n");
+	printf("         -q,  --query          query database\n");
+	printf("         -h,  --hours          show hours\n");
+	printf("         -d,  --days           show days\n");
+	printf("         -m,  --months         show months\n");
+	printf("         -w,  --weeks          show weeks\n");
+	printf("         -t,  --top10          show top 10 days\n");
+	printf("         -s,  --short          use short output\n");
+	printf("         -u,  --update         update database\n");
+	printf("         -i,  --iface          select interface (default: %s)\n", p->definterface);
+	printf("         -?,  --help           short help\n");
+	printf("         -v,  --version        show version\n");
+	printf("         -tr, --traffic        calculate traffic\n");
+	printf("         -ru, --rateunit       swap configured rate unit\n");
+	printf("         -l,  --live           show transfer rate in real time\n\n");
 
-			printf("See also \"--longhelp\" for complete options list and \"man vnstat\".\n");
+	printf("See also \"--longhelp\" for complete options list and \"man vnstat\".\n");
 }
 
 void showlonghelp(PARAMS *p)
 {
-			printf(" vnStat %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
+	printf(" vnStat %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
 
-			printf("   Query:\n");
-			printf("         -q, --query           query database\n");
-			printf("         -h, --hours           show hours\n");
-			printf("         -d, --days            show days\n");
-			printf("         -m, --months          show months\n");
-			printf("         -w, --weeks           show weeks\n");
-			printf("         -t, --top10           show top 10 days\n");
-			printf("         -s, --short           use short output\n");
-			printf("         -ru, --rateunit       swap configured rate unit\n");
-			printf("         --oneline             show simple parseable format\n");
-			printf("         --exportdb            dump database in text format\n");
-			printf("         --importdb            import previously exported database\n");
-			printf("         --json                show database in json format\n");
-			printf("         --xml                 show database in xml format\n");
+	printf("   Query:\n");
+	printf("         -q, --query           query database\n");
+	printf("         -h, --hours           show hours\n");
+	printf("         -d, --days            show days\n");
+	printf("         -m, --months          show months\n");
+	printf("         -w, --weeks           show weeks\n");
+	printf("         -t, --top10           show top 10 days\n");
+	printf("         -s, --short           use short output\n");
+	printf("         -ru, --rateunit       swap configured rate unit\n");
+	printf("         --oneline             show simple parseable format\n");
+	printf("         --exportdb            dump database in text format\n");
+	printf("         --importdb            import previously exported database\n");
+	printf("         --json                show database in json format\n");
+	printf("         --xml                 show database in xml format\n");
 
-			printf("   Modify:\n");
-			printf("         --create              create database\n");
-			printf("         --delete              delete database\n");
-			printf("         -u, --update          update database\n");
-			printf("         -r, --reset           reset interface counters\n");
-			printf("         --sync                sync interface counters\n");
-			printf("         --enable              enable interface\n");
-			printf("         --disable             disable interface\n");
-			printf("         --nick                set a nickname for interface\n");
-			printf("         --cleartop            clear the top 10\n");
-			printf("         --rebuildtotal        rebuild total transfers from months\n");
+	printf("   Modify:\n");
+	printf("         --create              create database\n");
+	printf("         --delete              delete database\n");
+	printf("         -u, --update          update database\n");
+	printf("         -r, --reset           reset interface counters\n");
+	printf("         --sync                sync interface counters\n");
+	printf("         --enable              enable interface\n");
+	printf("         --disable             disable interface\n");
+	printf("         --nick                set a nickname for interface\n");
+	printf("         --cleartop            clear the top 10\n");
+	printf("         --rebuildtotal        rebuild total transfers from months\n");
 
-			printf("   Misc:\n");
-			printf("         -i,  --iface          select interface (default: %s)\n", p->definterface);
-			printf("         -?,  --help           short help\n");
-			printf("         -D,  --debug          show some additional debug information\n");
-			printf("         -v,  --version        show version\n");
-			printf("         -tr, --traffic        calculate traffic\n");
-			printf("         -l,  --live           show transfer rate in real time\n");
-			printf("         --style               select output style (0-4)\n");
-			printf("         --iflist              show list of available interfaces\n");
-			printf("         --dbdir               select database directory\n");
-			printf("         --locale              set locale\n");
-			printf("         --config              select config file\n");
-			printf("         --savemerged          save merged database to current directory\n");
-			printf("         --showconfig          dump config file with current settings\n");
-			printf("         --testkernel          check if the kernel is broken\n");
-			printf("         --longhelp            display this help\n\n");
+	printf("   Misc:\n");
+	printf("         -i,  --iface          select interface (default: %s)\n", p->definterface);
+	printf("         -?,  --help           short help\n");
+	printf("         -D,  --debug          show some additional debug information\n");
+	printf("         -v,  --version        show version\n");
+	printf("         -tr, --traffic        calculate traffic\n");
+	printf("         -l,  --live           show transfer rate in real time\n");
+	printf("         --style               select output style (0-4)\n");
+	printf("         --iflist              show list of available interfaces\n");
+	printf("         --dbdir               select database directory\n");
+	printf("         --locale              set locale\n");
+	printf("         --config              select config file\n");
+	printf("         --savemerged          save merged database to current directory\n");
+	printf("         --showconfig          dump config file with current settings\n");
+	printf("         --testkernel          check if the kernel is broken\n");
+	printf("         --longhelp            display this help\n\n");
 
-			printf("See also \"man vnstat\".\n");
+	printf("See also \"man vnstat\".\n");
 }
 
 void handledbmerge(PARAMS *p)
@@ -540,7 +540,7 @@ void handlecounterreset(PARAMS *p)
 		return;
 	}
 
-	if (!spacecheck(p->dirname) && !p->force) {
+	if (!p->force && !spacecheck(p->dirname)) {
 		printf("Error: Not enough free diskspace available.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -562,11 +562,11 @@ void handleimport(PARAMS *p)
 		printf("Error: Specify interface to be imported using the -i parameter.\n");
 		exit(EXIT_FAILURE);
 	}
-	if (!spacecheck(p->dirname) && !p->force) {
+	if (!p->force && !spacecheck(p->dirname)) {
 		printf("Error: Not enough free diskspace available.\n");
 		exit(EXIT_FAILURE);
 	}
-	if (checkdb(p->interface, p->dirname) && !p->force) {
+	if (!p->force && checkdb(p->interface, p->dirname)) {
 		printf("Error: Database file for interface \"%s\" already exists.\n", p->interface);
 		printf("Add --force parameter to overwrite it.\n");
 		exit(EXIT_FAILURE);
@@ -594,7 +594,7 @@ void handlecountersync(PARAMS *p)
 		return;
 	}
 
-	if (!spacecheck(p->dirname) && !p->force) {
+	if (!p->force && !spacecheck(p->dirname)) {
 		printf("Error: Not enough free diskspace available.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -639,7 +639,7 @@ void handlecleartop10(PARAMS *p)
 		return;
 	}
 
-	if (!spacecheck(p->dirname) && !p->force) {
+	if (!p->force && !spacecheck(p->dirname)) {
 		printf("Error: Not enough free diskspace available.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -677,7 +677,7 @@ void handleenabledisable(PARAMS *p)
 {
 	/* enable & disable */
 	if (p->active==1) {
-		if (!spacecheck(p->dirname) && !p->force) {
+		if (!p->force && !spacecheck(p->dirname)) {
 			printf("Error: Not enough free diskspace available.\n");
 			exit(EXIT_FAILURE);
 		}
@@ -691,7 +691,7 @@ void handleenabledisable(PARAMS *p)
 			printf("Interface \"%s\" is already enabled.\n", data.interface);
 		}
 	} else if (p->active==0) {
-		if (!spacecheck(p->dirname) && !p->force) {
+		if (!p->force && !spacecheck(p->dirname)) {
 			printf("Error: Not enough free diskspace available.\n");
 			exit(EXIT_FAILURE);
 		}
@@ -718,7 +718,7 @@ void handlecreate(PARAMS *p)
 		exit(EXIT_FAILURE);
 	}
 
-	if (!getifinfo(p->interface) && !p->force) {
+	if (!p->force && !getifinfo(p->interface)) {
 		getiflist(&p->ifacelist, 1);
 		printf("Only available interfaces can be added for monitoring.\n\n");
 		printf("The following interfaces are currently available:\n    %s\n", p->ifacelist);
@@ -731,7 +731,7 @@ void handlecreate(PARAMS *p)
 		exit(EXIT_FAILURE);
 	}
 
-	if (!spacecheck(p->dirname) && !p->force) {
+	if (!p->force && !spacecheck(p->dirname)) {
 		printf("Error: Not enough free diskspace available.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -758,7 +758,7 @@ void handleupdate(PARAMS *p)
 	current = time(NULL);
 
 	/* check that there's some free diskspace left */
-	if (!spacecheck(p->dirname) && !p->force) {
+	if (!p->force && !spacecheck(p->dirname)) {
 		printf("Error: Not enough free diskspace available.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -833,7 +833,7 @@ void handleupdate(PARAMS *p)
 			return;
 		}
 
-		if (!getifinfo(data.interface) && !p->force) {
+		if (!p->force && !getifinfo(data.interface)) {
 			getiflist(&p->ifacelist, 1);
 			printf("Only available interfaces can be added for monitoring.\n\n");
 			printf("The following interfaces are currently available:\n    %s\n", p->ifacelist);
