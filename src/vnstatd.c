@@ -158,6 +158,8 @@ int main(int argc, char *argv[])
 	}
 
 	s.running = 1;
+	snprintf(errorstring, 512, "vnStat daemon %s running with pid %d.", getversion(), (int)getpid());
+	printe(PT_Info);
 
 	/* main loop */
 	while (s.running) {

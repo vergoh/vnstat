@@ -102,11 +102,6 @@ void daemonize(void)
 	signal(SIGTSTP,SIG_IGN); /* ignore tty signals */
 	signal(SIGTTOU,SIG_IGN);
 	signal(SIGTTIN,SIG_IGN);
-
-	if (cfg.uselogging==1) {
-		snprintf(errorstring, 512, "Daemon running with pid %d.", (int)getpid());
-		printe(PT_Info);
-	}
 }
 
 int addinterfaces(const char *dirname, const int running)
