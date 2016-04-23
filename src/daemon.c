@@ -29,12 +29,9 @@ void daemonize(void)
 
 	setsid(); /* obtain a new process group */
 
-	if (cfg.uselogging) {
-		snprintf(errorstring, 512, "vnStat daemon %s started. (uid:%d gid:%d)", getversion(), (int)getuid(), (int)getgid());
-		if (!printe(PT_Info)) {
-			printf("Error: Unable to use logfile. Exiting.\n");
-			exit(EXIT_FAILURE);
-		}
+	if (!verifylogaccess()) {
+		printf("Error: Unable to use logfile. Exiting.\n");
+		exit(EXIT_FAILURE);
 	}
 
 	/* lock / pid file */

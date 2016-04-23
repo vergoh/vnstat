@@ -299,6 +299,7 @@ typedef enum PrintType {
 /* common functions */
 int printe(PrintType type);
 int logprint(PrintType type);
+int verifylogaccess(void);
 int dmonth(int month);
 uint32_t mosecs(void);
 uint64_t countercalc(const uint64_t *a, const uint64_t *b);

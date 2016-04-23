@@ -129,6 +129,20 @@ int logprint(PrintType type)
 	return 0;
 }
 
+int verifylogaccess(void)
+{
+	FILE *logfile;
+
+	/* only logfile logging can be verified */
+	if (cfg.uselogging==1) {
+		if ((logfile = fopen(cfg.logfile, "a")) == NULL) {
+			return 0;
+		}
+		fclose(logfile);
+	}
+	return 1;
+}
+
 int dmonth(int month)
 {
 	static int dmon[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};

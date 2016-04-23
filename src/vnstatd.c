@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
 	}
 
 	s.running = 1;
-	snprintf(errorstring, 512, "vnStat daemon %s running with pid %d.", getversion(), (int)getpid());
+	snprintf(errorstring, 512, "vnStat daemon %s started. (pid:%d uid:%d gid:%d)", getversion(), (int)getpid(), (int)getuid(), (int)getgid());
 	printe(PT_Info);
 
 	/* main loop */
