@@ -131,7 +131,7 @@ Installing without root access
  disabled or set to a file that is located in a place where you have write
  permissions, such as your home dir. Then try starting the daemon with
 
-     vnstat -d
+     vnstatd -d
 
  After that wait for (or generate) at least 1024 bytes of network traffic
  (and 5 min for the next database file save).
