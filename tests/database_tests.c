@@ -5,6 +5,8 @@
 #include "dbaccess.h"
 #include "dbcache.h"
 #include "dbshow.h"
+#include "dbxml.h"
+#include "dbjson.h"
 #include "cfg.h"
 #include "ibw.h"
 
@@ -934,6 +936,22 @@ START_TEST(database_outputs_do_not_crash)
 	showdb(7);
 	showdb(8);
 	showdb(9);
+
+	xmlheader();
+	showxml('d');
+	showxml('m');
+	showxml('t');
+	showxml('h');
+	showxml('a');
+	xmlfooter();
+
+	jsonheader();
+	showjson(0, 'd');
+	showjson(0, 'm');
+	showjson(0, 't');
+	showjson(0, 'h');
+	showjson(0, 'a');
+	jsonfooter();
 }
 END_TEST
 
