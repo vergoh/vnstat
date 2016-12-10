@@ -37,12 +37,14 @@ END_TEST
 START_TEST(getunitdivisor_returns_something_with_all_cfg_combinations)
 {
 	int j;
+	char div[16];
 
 	for (j=1; j<=(UNITPREFIXCOUNT+1); j++) {
+		snprintf(div, 15, "%"PRIu64"", getunitdivisor(_i, j));
 		if (j>UNITPREFIXCOUNT) {
-			ck_assert_int_eq(getunitdivisor(_i, j), 0);
+			ck_assert_str_eq(div, "0");
 		} else {
-			ck_assert_int_ne(getunitdivisor(_i, j), 0);
+			ck_assert_str_ne(div, "0");
 		}
 	}
 }
