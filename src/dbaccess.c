@@ -1,4 +1,5 @@
 #include "common.h"
+#include "fs.h"
 #include "dbaccess.h"
 
 int readdb(const char *iface, const char *dirname)
@@ -270,6 +271,7 @@ int writedb(const char *iface, const char *dirname, int newdb)
 		if ((newdb) && (noexit==0)) {
 			snprintf(errorstring, 512, "-> A new database has been created.");
 			printe(PT_Info);
+			matchdbownerwithdirowner(dirname);
 		}
 	}
 

@@ -67,7 +67,7 @@ void setuser(const char *user)
 		return;
 	}
 
-	if (getuid() != 0 && geteuid() != 0) {
+	if (!hasroot()) {
 		printf("Error: User can only be set as root.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -95,7 +95,7 @@ void setgroup(const char *group)
 		return;
 	}
 
-	if (getuid() != 0 && geteuid() != 0) {
+	if (!hasroot()) {
 		printf("Error: Group can only be set as root.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -113,4 +113,12 @@ void setgroup(const char *group)
 		perror("Error: setgid");
 		exit(EXIT_FAILURE);
 	}
+}
+
+int hasroot(void)
+{
+	if (getuid() != 0 && geteuid() != 0) {
+		return 0;
+	}
+	return 1;
 }

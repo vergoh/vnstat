@@ -44,6 +44,8 @@ vnstati_SOURCES = src/vnstati.c src/vnstati.h \
   src/dbmerge.c src/dbmerge.h \
   src/common.c src/common.h \
   src/misc.c src/misc.h \
+  src/fs.c src/fs.h \
+  src/id.c src/id.h \
   src/cfg.c src/cfg.h
 
 if HAVE_CHECK

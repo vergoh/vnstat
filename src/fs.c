@@ -1,18 +1,23 @@
 #include "common.h"
+#include "id.h"
 #include "fs.h"
 
 int direxists(const char *dir)
 {
+	return fileexists(dir);
+}
+
+int fileexists(const char *file)
+{
 	struct stat statbuf;
 
-	if (stat(dir, &statbuf)!=0) {
+	if (stat(file, &statbuf)!=0) {
 		if (errno==ENOENT) {
 			return 0;
 		}
 		if (debug)
-			printf("Error: stat() \"%s\": %s\n", dir, strerror(errno));
+			printf("Error: stat() \"%s\": %s\n", file, strerror(errno));
 	}
-
 	return 1;
 }
 
@@ -136,10 +141,6 @@ void preparevnstatdir(const char *file, const char *user, const char *group)
 
 void updatedirowner(const char *dir, const char *user, const char *group)
 {
-	DIR *d;
-	struct dirent *di;
-	struct stat statbuf;
-	char entryname[512];
 	uid_t uid;
 	gid_t gid;
 
@@ -147,7 +148,7 @@ void updatedirowner(const char *dir, const char *user, const char *group)
 		return;
 	}
 
-	if (getuid() != 0 && geteuid() != 0) {
+	if (!hasroot()) {
 		if (debug)
 			printf("user not root, skipping chmod\n");
 		return;
@@ -155,6 +156,26 @@ void updatedirowner(const char *dir, const char *user, const char *group)
 
 	uid = getuser(user);
 	gid = getgroup(group);
+
+	updatedirownerid(dir, uid, gid);
+}
+
+void updatedirownerid(const char *dir, const uid_t uid, const gid_t gid)
+{
+	DIR *d;
+	struct dirent *di;
+	struct stat statbuf;
+	char entryname[512];
+
+	if (!cfg.updatefileowner) {
+		return;
+	}
+
+	if (!hasroot()) {
+		if (debug)
+			printf("user not root, skipping chmod\n");
+		return;
+	}
 
 	if (stat(dir, &statbuf)!=0) {
 		return;
@@ -197,4 +218,55 @@ void updatedirowner(const char *dir, const char *user, const char *group)
 	}
 
 	closedir(d);
+}
+
+void matchdbownerwithdirowner(const char *dir)
+{
+	uid_t uid;
+	gid_t gid;
+
+	if (!cfg.updatefileowner) {
+		if (debug)
+			printf("db owner: UpdateFileOwner disabled\n");
+		return;
+	}
+
+	if (!direxists(dir)) {
+		return;
+	}
+
+	if (!hasroot()) {
+		if (debug)
+			printf("db owner: user not root, skipping chmod\n");
+		return;
+	}
+
+	if (!getdirowner(dir, &uid, &gid)) {
+		return;
+	}
+
+	if (debug)
+		printf("db owner: \"%s\" user/group: %d/%d\n", dir, (int)uid, (int)gid);
+
+	updatedirownerid(dir, uid, gid);
+}
+
+int getdirowner(const char *dir, uid_t *uid, gid_t *gid)
+{
+	struct stat statbuf;
+
+	if (!direxists(dir)) {
+		return 0;
+	}
+
+	if (stat(dir, &statbuf)!=0) {
+		if (debug)
+			printf("Error: stat() \"%s\": %s\n", dir, strerror(errno));
+		return 0;
+	}
+
+	*uid = statbuf.st_uid;
+	*gid = statbuf.st_gid;
+
+	return 1;
 }

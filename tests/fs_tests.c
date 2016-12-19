@@ -1,7 +1,33 @@
 #include "vnstat_tests.h"
 #include "fs_tests.h"
 #include "common.h"
+#include "cfg.h"
 #include "fs.h"
+
+START_TEST(fileexists_with_no_file)
+{
+	char testfile[512];
+	defaultcfg();
+
+	snprintf(testfile, 512, "%s/no_file", TESTDIR);
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	ck_assert_int_eq(fileexists(""), 0);
+	ck_assert_int_eq(fileexists(testfile), 0);
+}
+END_TEST
+
+START_TEST(fileexists_with_file)
+{
+	char testfile[512];
+	defaultcfg();
+
+	snprintf(testfile, 512, "%s/dummy_file", TESTDBDIR);
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	ck_assert_int_eq(clean_testdbdir(), 1);
+	ck_assert_int_eq(create_zerosize_dbfile("dummy_file"), 1);
+	ck_assert_int_eq(fileexists(testfile), 1);
+}
+END_TEST
 
 START_TEST(direxists_with_no_dir)
 {
@@ -103,6 +129,8 @@ END_TEST
 void add_fs_tests(Suite *s)
 {
 	TCase *tc_fs = tcase_create("FS");
+	tcase_add_test(tc_fs, fileexists_with_no_file);
+	tcase_add_test(tc_fs, fileexists_with_file);
 	tcase_add_test(tc_fs, direxists_with_no_dir);
 	tcase_add_test(tc_fs, direxists_with_dir);
 	tcase_add_test(tc_fs, mkpath_with_no_dir);

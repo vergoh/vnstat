@@ -4,63 +4,8 @@
 #include "dbaccess.h"
 #include "dbcache.h"
 #include "cfg.h"
+#include "fs.h"
 #include "daemon.h"
-
-START_TEST(getuser_root_string)
-{
-	ck_assert_int_eq((int)getuser("root"), 0);
-}
-END_TEST
-
-START_TEST(getuser_root_numeric)
-{
-	ck_assert_int_eq((int)getuser("0"), 0);
-}
-END_TEST
-
-START_TEST(getuser_no_such_user_string)
-{
-	suppress_output();
-	getuser("reallynosuchuser");
-}
-END_TEST
-
-START_TEST(getuser_no_such_user_numeric)
-{
-	suppress_output();
-	getuser("99999999");
-}
-END_TEST
-
-START_TEST(getgroup_root_string)
-{
-#if defined(__linux__) || defined(__GNU__) || defined(__GLIBC__)
-	ck_assert_int_eq((int)getgroup("root"), 0);
-#else
-	ck_assert_int_eq((int)getgroup("wheel"), 0);
-#endif
-}
-END_TEST
-
-START_TEST(getgroup_root_numeric)
-{
-	ck_assert_int_eq((int)getgroup("0"), 0);
-}
-END_TEST
-
-START_TEST(getgroup_no_such_user_string)
-{
-	suppress_output();
-	getgroup("reallynosuchgroup");
-}
-END_TEST
-
-START_TEST(getgroup_no_such_user_numeric)
-{
-	suppress_output();
-	getgroup("99999999");
-}
-END_TEST
 
 START_TEST(debugtimestamp_does_not_exit)
 {
@@ -791,51 +736,6 @@ START_TEST(handleintsignals_handles_signals)
 }
 END_TEST
 
-START_TEST(direxists_with_no_dir)
-{
-	defaultcfg();
-	ck_assert_int_eq(remove_directory(TESTDIR), 1);
-	ck_assert_int_eq(direxists(""), 0);
-	ck_assert_int_eq(direxists(TESTDIR), 0);
-}
-END_TEST
-
-START_TEST(direxists_with_dir)
-{
-	defaultcfg();
-	ck_assert_int_eq(remove_directory(TESTDIR), 1);
-	ck_assert_int_eq(clean_testdbdir(), 1);
-	ck_assert_int_eq(direxists(TESTDIR), 1);
-	ck_assert_int_eq(direxists(TESTDBDIR), 1);
-}
-END_TEST
-
-START_TEST(mkpath_with_no_dir)
-{
-	defaultcfg();
-	ck_assert_int_eq(remove_directory(TESTDIR), 1);
-	ck_assert_int_eq(mkpath("", 0775), 0);
-}
-END_TEST
-
-START_TEST(mkpath_with_dir)
-{
-	defaultcfg();
-	ck_assert_int_eq(remove_directory(TESTDIR), 1);
-	ck_assert_int_eq(direxists(TESTDIR), 0);
-	ck_assert_int_eq(direxists(TESTDBDIR), 0);
-	ck_assert_int_eq(mkpath(TESTDIR, 0775), 1);
-	ck_assert_int_eq(direxists(TESTDIR), 1);
-	ck_assert_int_eq(direxists(TESTDBDIR), 0);
-	ck_assert_int_eq(mkpath(TESTDBDIR, 0775), 1);
-	ck_assert_int_eq(direxists(TESTDBDIR), 1);
-	ck_assert_int_eq(remove_directory(TESTDIR), 1);
-	ck_assert_int_eq(direxists(TESTDBDIR), 0);
-	ck_assert_int_eq(mkpath(TESTDBDIR, 0775), 1);
-	ck_assert_int_eq(direxists(TESTDBDIR), 1);
-}
-END_TEST
-
 START_TEST(preparedirs_with_no_dir)
 {
 	char logdir[512], piddir[512];
@@ -887,58 +787,6 @@ START_TEST(preparedirs_with_dir)
 	ck_assert_int_eq(direxists(TESTDBDIR), 1);
 	ck_assert_int_eq(direxists(logdir), 1);
 	ck_assert_int_eq(direxists(piddir), 1);
-}
-END_TEST
-
-START_TEST(preparevnstatdir_with_no_vnstat)
-{
-	char testdir[512], testpath[512];
-	defaultcfg();
-	cfg.updatefileowner = 0;
-
-	ck_assert_int_eq(remove_directory(TESTDIR), 1);
-	ck_assert_int_eq(direxists(TESTDIR), 0);
-	snprintf(testdir, 512, "%s/here/be/dragons", TESTDIR);
-	snprintf(testpath, 512, "%s/or_something.txt", testdir);
-	preparevnstatdir(testpath, "user", "group");
-	ck_assert_int_eq(direxists(TESTDIR), 0);
-	ck_assert_int_eq(direxists(testdir), 0);
-
-	snprintf(testdir, 512, "%s/here/be/vnstat/dragons", TESTDIR);
-	snprintf(testpath, 512, "%s/or_something.txt", testdir);
-	preparevnstatdir(testpath, "user", "group");
-	ck_assert_int_eq(direxists(TESTDIR), 0);
-	ck_assert_int_eq(direxists(testdir), 0);
-
-	snprintf(testdir, 512, "%s/here/be/vnstati", TESTDIR);
-	snprintf(testpath, 512, "%s/or_something.txt", testdir);
-	preparevnstatdir(testpath, "user", "group");
-	ck_assert_int_eq(direxists(TESTDIR), 0);
-	ck_assert_int_eq(direxists(testdir), 0);
-}
-END_TEST
-
-START_TEST(preparevnstatdir_with_vnstat)
-{
-	char testdir[512], testpath[512];
-	defaultcfg();
-	cfg.updatefileowner = 0;
-
-	ck_assert_int_eq(remove_directory(TESTDIR), 1);
-	ck_assert_int_eq(direxists(TESTDIR), 0);
-	snprintf(testdir, 512, "%s/here/be/vnstat", TESTDIR);
-	snprintf(testpath, 512, "%s/or_something.txt", testdir);
-	preparevnstatdir(testpath, "user", "group");
-	ck_assert_int_eq(direxists(TESTDIR), 1);
-	ck_assert_int_eq(direxists(testdir), 1);
-
-	ck_assert_int_eq(remove_directory(TESTDIR), 1);
-	ck_assert_int_eq(direxists(TESTDIR), 0);
-	snprintf(testdir, 512, "%s/here/be/vnstatd", TESTDIR);
-	snprintf(testpath, 512, "%s/or_something.txt", testdir);
-	preparevnstatdir(testpath, "user", "group");
-	ck_assert_int_eq(direxists(TESTDIR), 1);
-	ck_assert_int_eq(direxists(testdir), 1);
 }
 END_TEST
 
