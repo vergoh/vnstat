@@ -1,5 +1,5 @@
 /*
-vnStat - Copyright (c) 2002-2015 Teemu Toivola <tst@iki.fi>
+vnStat - Copyright (c) 2002-2016 Teemu Toivola <tst@iki.fi>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by

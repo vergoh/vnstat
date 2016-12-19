@@ -1,5 +1,5 @@
 /*
-vnStat daemon - Copyright (c) 2008-2015 Teemu Toivola <tst@iki.fi>
+vnStat daemon - Copyright (c) 2008-2016 Teemu Toivola <tst@iki.fi>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@ vnStat daemon - Copyright (c) 2008-2015 Teemu Toivola <tst@iki.fi>
 #include "dbcache.h"
 #include "cfg.h"
 #include "ibw.h"
+#include "id.h"
 #include "daemon.h"
 #include "vnstatd.h"
 

@@ -945,14 +945,6 @@ END_TEST
 void add_daemon_tests(Suite *s)
 {
 	TCase *tc_daemon = tcase_create("Daemon");
-	tcase_add_test(tc_daemon, getuser_root_string);
-	tcase_add_test(tc_daemon, getuser_root_numeric);
-	tcase_add_exit_test(tc_daemon, getuser_no_such_user_string, 1);
-	tcase_add_exit_test(tc_daemon, getuser_no_such_user_numeric, 1);
-	tcase_add_test(tc_daemon, getgroup_root_string);
-	tcase_add_test(tc_daemon, getgroup_root_numeric);
-	tcase_add_exit_test(tc_daemon, getgroup_no_such_user_string, 1);
-	tcase_add_exit_test(tc_daemon, getgroup_no_such_user_numeric, 1);
 	tcase_add_test(tc_daemon, debugtimestamp_does_not_exit);
 	tcase_add_test(tc_daemon, initdstate_does_not_crash);
 	tcase_add_test(tc_daemon, addinterfaces_does_nothing_with_no_files);
@@ -987,14 +979,8 @@ void add_daemon_tests(Suite *s)
 	tcase_add_test(tc_daemon, processdatalist_empty_does_nothing);
 	tcase_add_test(tc_daemon, processdatalist_filled_does_things);
 	tcase_add_test(tc_daemon, handleintsignals_handles_signals);
-	tcase_add_test(tc_daemon, direxists_with_no_dir);
-	tcase_add_test(tc_daemon, direxists_with_dir);
-	tcase_add_test(tc_daemon, mkpath_with_no_dir);
-	tcase_add_test(tc_daemon, mkpath_with_dir);
 	tcase_add_test(tc_daemon, preparedirs_with_no_dir);
 	tcase_add_test(tc_daemon, preparedirs_with_dir);
-	tcase_add_test(tc_daemon, preparevnstatdir_with_no_vnstat);
-	tcase_add_test(tc_daemon, preparevnstatdir_with_vnstat);
 	suite_add_tcase(s, tc_daemon);
 }
 
