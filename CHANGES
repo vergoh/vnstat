@@ -14,6 +14,8 @@
    interfaces for monitoring as root. This solves database file ownership
    mismatches when the daemon is started as a non-root user and an interface
    gets added for monitoring with a sudo command as root
+ - Improve user guidance in error situations related to the configured default
+   interface
 
 
 1.15 / 22-Dec-2015

@@ -537,3 +537,15 @@ uint32_t getifspeed(const char *iface)
 	}
 	return speed;
 }
+
+int isifavailable(const char *iface)
+{
+	int ret = 0, printstatus;
+
+	printstatus = disableprints;
+	disableprints = 1;
+	ret = getifinfo(iface);
+	disableprints = printstatus;
+
+	return ret;
+}

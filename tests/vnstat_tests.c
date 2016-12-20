@@ -68,6 +68,7 @@ void disable_logprints(void)
 {
 	noexit = 2;
 	cfg.uselogging = 0;
+	disableprints = 1;
 }
 
 int clean_testdbdir(void)

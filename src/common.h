@@ -228,7 +228,7 @@ typedef struct {
 	char cline[8], clinel[8], cvnstat[8], crx[8], crxd[8], ctx[8], ctxd[8];
 	int32_t unitmode, rateunitmode, rateunit, bvar, qmode, sampletime, hourlyrate, summaryrate;
 	int32_t monthrotate, maxbw, flock, spacecheck, traflessday, transbg, slayout, ostyle;
-	char logfile[512], pidfile[512];
+	char cfgfile[512], logfile[512], pidfile[512];
 	char daemonuser[33], daemongroup[33];
 	int32_t updateinterval, pollinterval, saveinterval, offsaveinterval, savestatus, uselogging;
 	int32_t createdirs, updatefileowner, bwdetection, bwdetectioninterval, utflocale;
@@ -320,5 +320,6 @@ int debug;
 int noexit;      /* = running as daemon if 2 */
 int intsignal;
 int pidfile;
+int disableprints;
 
 #endif

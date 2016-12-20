@@ -381,6 +381,10 @@ int main(int argc, char *argv[]) {
 			printf("A new database can be created with the following command:\n");
 			printf("    %s --create -i eth0\n\n", argv[0]);
 			printf("Replace 'eth0' with the interface that should be monitored.\n\n");
+			if (strlen(cfg.cfgfile)) {
+				printf("The default interface can be changed by updating the \"Interface\" keyword\n");
+				printf("value in the configuration file \"%s\".\n\n", cfg.cfgfile);
+			}
 			printf("The following interfaces are currently available:\n    %s\n", p.ifacelist);
 			free(p.ifacelist);
 		} else {
@@ -398,6 +402,7 @@ void initparams(PARAMS *p)
 {
 	noexit = 0; /* allow functions to exit in case of error */
 	debug = 0; /* debug disabled by default */
+	disableprints = 0; /* let prints be visible */
 
 	p->create = 0;
 	p->update = 0;
@@ -961,6 +966,30 @@ void showoneinterface(PARAMS *p, const char *interface)
 
 void handletrafficmeters(PARAMS *p)
 {
+	if (!p->traffic && !p->livetraffic) {
+		return;
+	}
+
+	if (!isifavailable(p->interface)) {
+		getiflist(&p->ifacelist, 0);
+		if (p->defaultiface) {
+			printf("Error: Configured default interface \"%s\" isn't available.\n\n", p->interface);
+			if (strlen(cfg.cfgfile)) {
+				printf("Update \"Interface\" keyword value in \"%s\" to change\n", cfg.cfgfile);
+				printf("the default interface or give an alternative interface\nusing the -i parameter.\n\n");
+			} else {
+				printf("An alternative interface can be given using the -i parameter.\n\n");
+			}
+			printf("The following interfaces are currently available:\n    %s\n", p->ifacelist);
+
+		} else {
+			printf("Error: Unable to get interface \"%s\" statistics.\n\n", p->interface);
+			printf("The following interfaces are currently available:\n    %s\n", p->ifacelist);
+		}
+		free(p->ifacelist);
+		exit(EXIT_FAILURE);
+	}
+
 	/* calculate traffic */
 	if (p->traffic) {
 		trafficmeter(p->interface, cfg.sampletime);

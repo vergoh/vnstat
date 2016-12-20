@@ -65,7 +65,6 @@ void trafficmeter(char iface[], int sampletime)
 	printf("Traffic average for %s\n", iface);
 	printf("\n      rx     %s         %5"PRIu64" packets/s\n", gettrafficrate(rx, sampletime, 15), (uint64_t)(rxp/sampletime));
 	printf("      tx     %s         %5"PRIu64" packets/s\n\n", gettrafficrate(tx, sampletime, 15), (uint64_t)(txp/sampletime));
-
 }
 
 void livetrafficmeter(char iface[32], int mode)
@@ -232,5 +231,4 @@ void livetrafficmeter(char iface[32], int mode)
 
 		printf("\n");
 	}
-
 }

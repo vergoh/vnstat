@@ -4,8 +4,11 @@ int printe(PrintType type)
 {
 	int result = 1;
 
+	if (disableprints) {
+		return 1;
+
 	/* daemon running but log not enabled */
-	if (noexit==2 && cfg.uselogging==0) {
+	} else if (noexit==2 && cfg.uselogging==0) {
 		return 1;
 
 	/* daemon running, log enabled */

@@ -246,8 +246,9 @@ int main(int argc, char *argv[])
 
 void initiparams(IPARAMS *p)
 {
-	noexit = 0;		/* allow functions to exit in case of error */
-	debug = 0;		/* debug disabled by default */
+	noexit = 0;        /* allow functions to exit in case of error */
+	debug = 0;         /* debug disabled by default */
+	disableprints = 0; /* let prints be visible */
 	p->interface[0] = '\0';
 	p->dirname[0] = '\0';
 	p->filename[0] = '\0';

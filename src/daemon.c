@@ -199,6 +199,7 @@ void initdstate(DSTATE *s)
 {
 	noexit = 1;        /* disable exits in functions */
 	debug = 0;         /* debug disabled by default */
+	disableprints = 0; /* let prints be visible */
 	s->rundaemon = 0;  /* daemon disabled by default */
 
 	s->running = 0;
