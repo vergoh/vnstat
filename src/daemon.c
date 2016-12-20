@@ -61,6 +61,13 @@ void daemonize(void)
 	/* redirect standard i/o to null */
 	i=open("/dev/null",O_RDWR); /* stdin */
 
+	if (i < 0) {
+		perror("Error: open() /dev/null");
+		snprintf(errorstring, 512, "open() /dev/null failed, exiting.");
+		printe(PT_Error);
+		exit(EXIT_FAILURE);
+	}
+
 	/* stdout */
 	if (dup(i) < 0) {
 		perror("Error: dup(stdout)");

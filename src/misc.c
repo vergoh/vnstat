@@ -7,7 +7,8 @@
 
 int kerneltest(void)
 {
-	int i=0, bmax, bmin, btemp;
+	int i=0;
+	uint64_t bmax, bmin, btemp;
 
 	bmax=bmin=getbtime();
 
@@ -37,7 +38,7 @@ int kerneltest(void)
 
 	printf("] done.\n\n");
 
-	printf("Detected boot time variation during test:  %2d\n", bmax-bmin);
+	printf("Detected boot time variation during test:  %2d\n", (int)(bmax-bmin));
 	printf("Maximum boot time variation set in config: %2d\n\n", cfg.bvar);
 
 	if ((bmax-bmin)>20) {
@@ -48,7 +49,7 @@ int kerneltest(void)
 	} else if ((bmax-bmin)>cfg.bvar) {
 		printf("The current kernel has a boot time variation greater than assumed\n");
 		printf("in the vnStat config. That it likely to cause errors in results.\n");
-		printf("Set \"BootVariation\" to something greater than \"%d\" and run this\n", (bmax-bmin));
+		printf("Set \"BootVariation\" to something greater than \"%d\" and run this\n", (int)(bmax-bmin));
 		printf("test again.\n\n");
 		return 1;
 	} else if ((bmax-bmin)==0) {
@@ -132,9 +133,9 @@ void sighandler(int sig)
 	}
 }
 
-int getbtime(void)
+uint64_t getbtime(void)
 {
-	int result=0;
+	uint64_t result=0;
 #if defined(__linux__)
 	FILE *fp;
 	int check;
@@ -172,7 +173,7 @@ int getbtime(void)
 		}
 	}
 
-	result = strtoul(statline+6, (char **)NULL, 0);
+	result = strtoull(statline+6, (char **)NULL, 0);
 
 #elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__FreeBSD_kernel__)
 	struct timeval btm;
@@ -185,7 +186,7 @@ int getbtime(void)
 		return 0;
 	}
 
-	result = btm.tv_sec;
+	result = (uint64_t)btm.tv_sec;
 #endif
 
 	return result;

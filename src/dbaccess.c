@@ -591,6 +591,10 @@ int validatedb(void)
 		printf("validating loaded database\n");
 	}
 
+	/* enforce string termination */
+	data.interface[sizeof(data.interface)-1] = '\0';
+	data.nick[sizeof(data.nick)-1] = '\0';
+
 	if (data.version>DBVERSION) {
 		snprintf(errorstring, 512, "%s: Invalid database version: %d", data.interface, data.version);
 		printe(PT_Error);

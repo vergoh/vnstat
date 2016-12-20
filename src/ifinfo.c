@@ -492,7 +492,7 @@ int readifaddrs(const char *iface)
 
 uint32_t getifspeed(const char *iface)
 {
-	uint32_t speed = 0;
+	uint64_t speed = 0;
 #if defined(__linux__)
 
 	FILE *fp;
@@ -506,7 +506,7 @@ uint32_t getifspeed(const char *iface)
 		return 0;
 	} else {
 		if (fgets(buffer, 64, fp)!=NULL) {
-			speed = strtoul(buffer, (char **)NULL, 0);
+			speed = strtoull(buffer, (char **)NULL, 0);
 		} else {
 			if (debug)
 				printf("Unable to read: %s - %s\n", file, strerror(errno));
@@ -525,17 +525,17 @@ uint32_t getifspeed(const char *iface)
 			printf("Requested interface \"%s\" not found.\n", iface);
 		return 0;
 	} else {
-		speed = ifd.ifi_baudrate;
+		speed = (uint64_t)ifd.ifi_baudrate;
 	}
 
 #endif
 	if (debug)
-		printf("getifspeed: \"%s\": %d\n", iface, speed);
+		printf("getifspeed: \"%s\": %"PRIu64"\n", iface, speed);
 
 	if (speed > 1000000) {
 		speed = 0;
 	}
-	return speed;
+	return (uint32_t)speed;
 }
 
 int isifavailable(const char *iface)

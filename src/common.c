@@ -176,11 +176,11 @@ uint32_t mosecs(void)
 #endif
 
 	if (localtime_r(&data.month[0].month, &d) == NULL) {
-		return 0;
+		return 1;
 	}
 
 	if (d.tm_mday < cfg.monthrotate) {
-		return 0;
+		return 1;
 	}
 
 	d.tm_mday = cfg.monthrotate;
@@ -189,7 +189,7 @@ uint32_t mosecs(void)
 	if ((data.lastupdated-data.month[0].month)>0) {
 		return data.lastupdated-mktime(&d)+timezone;
 	} else {
-		return 0;
+		return 1;
 	}
 }
 
