@@ -1,4 +1,4 @@
-.TH VNSTAT.CONF 5 "DECEMBER 2015" "version 1.15" "User Manuals"
+.TH VNSTAT.CONF 5 "DECEMBER 2016" "version 1.16" "User Manuals"
 .SH NAME
 
 vnstat.conf \- vnStat configuration file
@@ -228,10 +228,16 @@ offline or comes online. 1 = enabled, 0 = disabled.
 
 .TP
 .B UpdateFileOwner
-Enable or disable the update of file ownership during daemon process startup.
-Only database, log and pid files will be modified if the user or group change
-feature is enabled and the files don't match the requested user or group.
-This option can only be used when the process is started as root.
+Enable or disable the update of file ownership during daemon process startup
+or during manual creation of new databases. During daemon startup, only database,
+log and pid files will be modified if the user or group change feature (
+.B DaemonUser
+or
+.B DaemonGroup
+) is enabled and the files don't match the requested user or group. During manual
+database creation, this option will cause file ownership to be inherited from the
+database directory if the directory already exists. This option only has effect
+when the process is started as root or via sudo.
 
 .TP
 .B UpdateInterval

@@ -8,6 +8,12 @@
  - Add selection between SI decimal prefixes (kbit/s...) (default) and
    IEC binary prefixes (Kibit/s...) for traffic rate using RateUnitMode
    keyword in configuration file
+ - Improve database handling resilience
+ - Inherit database file ownership from database directory if UpdateFileOwner
+   configuration option is enabled (default: enabled) when adding new
+   interfaces for monitoring as root. This solves database file ownership
+   mismatches when the daemon is started as a non-root user and an interface
+   gets added for monitoring with a sudo command as root
 
 
 1.15 / 22-Dec-2015
