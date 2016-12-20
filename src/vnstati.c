@@ -326,7 +326,7 @@ void handledatabase(IPARAMS *p)
 			exit(EXIT_FAILURE);
 		}
 	} else {
-		if (readdb(p->interface, p->dirname)==1) {
+		if (readdb(p->interface, p->dirname, 0)==1) {
 			exit(EXIT_FAILURE);
 		}
 	}

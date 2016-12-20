@@ -415,7 +415,7 @@ int datalist_cacheget(DSTATE *s)
 	if (cacheget(s->datalist)==0) {
 
 		/* try to read data from file if not cached */
-		if (readdb(s->datalist->data.interface, s->dirname)==0) {
+		if (readdb(s->datalist->data.interface, s->dirname, 0)==0) {
 			/* mark cache as filled on read success and force interface status update */
 			s->datalist->filled = 1;
 			s->dbhash = 0;
@@ -489,10 +489,10 @@ int datalist_writedb(DSTATE *s)
 		return 0;
 	}
 
-	if (!validatedb()) { /* TODO: write test to simulate corrupted cached data */
+	if (!validatedb()) {
 		snprintf(errorstring, 512, "Cached data for interface \"%s\" failed validation. Reloading data from file.", s->datalist->data.interface);
 		printe(PT_Error);
-		if (readdb(s->datalist->data.interface, s->dirname)==0) {
+		if (readdb(s->datalist->data.interface, s->dirname, 0)==0) {
 			cacheupdate();
 			return 1;
 		}

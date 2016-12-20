@@ -198,7 +198,7 @@ int main(int argc, char *argv[]) {
 		} else if ((strcmp(argv[currentarg],"-h")==0) || (strcmp(argv[currentarg],"--hours")==0)) {
 			cfg.qmode=7;
 		} else if ((strcmp(argv[currentarg],"--exportdb")==0) || (strcmp(argv[currentarg],"--dumpdb")==0)) {
-			cfg.qmode=4; /* TODO: provide some way of forcing export even if database doesn't validate */
+			cfg.qmode=4;
 		} else if (strcmp(argv[currentarg],"--oneline")==0) {
 			cfg.qmode=9;
 		} else if (strcmp(argv[currentarg],"--xml")==0) {
@@ -431,7 +431,7 @@ void initparams(PARAMS *p)
 
 int synccounters(const char *iface, const char *dirname)
 {
-	readdb(iface, dirname);
+	readdb(iface, dirname, 0);
 	if (!getifinfo(iface)) {
 		printf("Error: Unable to sync unavailable interface \"%s\".", iface);
 		return 0;
@@ -549,7 +549,7 @@ void handlecounterreset(PARAMS *p)
 		printf("Error: Not enough free diskspace available.\n");
 		exit(EXIT_FAILURE);
 	}
-	readdb(p->interface, p->dirname);
+	readdb(p->interface, p->dirname, 0);
 	data.currx=0;
 	data.curtx=0;
 	writedb(p->interface, p->dirname, 0);
@@ -686,7 +686,7 @@ void handleenabledisable(PARAMS *p)
 			printf("Error: Not enough free diskspace available.\n");
 			exit(EXIT_FAILURE);
 		}
-		p->newdb=readdb(p->interface, p->dirname);
+		p->newdb=readdb(p->interface, p->dirname, 0);
 		if (!data.active && !p->newdb) {
 			data.active=1;
 			writedb(p->interface, p->dirname, 0);
@@ -700,7 +700,7 @@ void handleenabledisable(PARAMS *p)
 			printf("Error: Not enough free diskspace available.\n");
 			exit(EXIT_FAILURE);
 		}
-		p->newdb=readdb(p->interface, p->dirname);
+		p->newdb=readdb(p->interface, p->dirname, 0);
 		if (data.active && !p->newdb) {
 			data.active=0;
 			writedb(p->interface, p->dirname, 0);
@@ -787,7 +787,7 @@ void handleupdate(PARAMS *p)
 			strncpy_nt(p->interface, di->d_name, 32);
 			if (debug)
 				printf("\nProcessing file \"%s/%s\"...\n", p->dirname, p->interface);
-			p->newdb=readdb(p->interface, p->dirname);
+			p->newdb=readdb(p->interface, p->dirname, 0);
 
 			if (!data.active) {
 				if (debug)
@@ -830,7 +830,7 @@ void handleupdate(PARAMS *p)
 
 	/* update only selected file */
 	} else {
-		p->newdb=readdb(p->interface, p->dirname);
+		p->newdb=readdb(p->interface, p->dirname, 0);
 
 		if (!data.active) {
 			if (debug)
@@ -910,7 +910,7 @@ void handleshowdatabases(PARAMS *p)
 			strncpy_nt(p->interface, di->d_name, 32);
 			if (debug)
 				printf("\nProcessing file \"%s/%s\"...\n", p->dirname, p->interface);
-			p->newdb=readdb(p->interface, p->dirname);
+			p->newdb=readdb(p->interface, p->dirname, p->force);
 			if (p->newdb) {
 				continue;
 			}
@@ -939,7 +939,7 @@ void handleshowdatabases(PARAMS *p)
 void showoneinterface(PARAMS *p, const char *interface)
 {
 	if (!p->merged) {
-		p->newdb=readdb(interface, p->dirname);
+		p->newdb=readdb(interface, p->dirname, p->force);
 	}
 	if (p->newdb) {
 		return;

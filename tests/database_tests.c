@@ -492,7 +492,7 @@ START_TEST(readdb_with_empty_file)
 	cfg.flock = 1;
 	ck_assert_int_eq(clean_testdbdir(), 1);
 	ck_assert_int_eq(create_zerosize_dbfile("existingdb"), 1);
-	ck_assert_int_eq(readdb("existingdb", TESTDBDIR), -1);
+	ck_assert_int_eq(readdb("existingdb", TESTDBDIR, 0), -1);
 }
 END_TEST
 
@@ -503,7 +503,7 @@ START_TEST(readdb_with_empty_file_and_backup)
 	ck_assert_int_eq(clean_testdbdir(), 1);
 	ck_assert_int_eq(create_zerosize_dbfile("existingdb"), 1);
 	ck_assert_int_eq(create_zerosize_dbfile(".existingdb"), 1);
-	ck_assert_int_eq(readdb("existingdb", TESTDBDIR), -1);
+	ck_assert_int_eq(readdb("existingdb", TESTDBDIR, 0), -1);
 }
 END_TEST
 
@@ -513,7 +513,7 @@ START_TEST(readdb_with_nonexisting_file)
 	cfg.flock = 1;
 	strcpy(data.interface, "none");
 	ck_assert_int_eq(clean_testdbdir(), 1);
-	ck_assert_int_eq(readdb("existingdb", TESTDBDIR), 1);
+	ck_assert_int_eq(readdb("existingdb", TESTDBDIR, 0), 1);
 	ck_assert_str_eq(data.interface, "existingdb");
 	ck_assert_str_eq(data.nick, "existingdb");
 }
@@ -530,7 +530,7 @@ START_TEST(readdb_with_existing_dbfile)
 	ck_assert_int_eq(check_dbfile_exists("ethtest", sizeof(DATA)), 1);
 
 	strcpy(data.interface, "none");
-	ck_assert_int_eq(readdb("ethtest", TESTDBDIR), 0);
+	ck_assert_int_eq(readdb("ethtest", TESTDBDIR, 0), 0);
 	ck_assert_str_eq(data.interface, "ethtest");
 }
 END_TEST
@@ -546,7 +546,7 @@ START_TEST(readdb_with_existing_dbfile_and_max_name_length)
 	ck_assert_int_eq(check_dbfile_exists("1234567890123456789012345678901", sizeof(DATA)), 1);
 
 	strcpy(data.interface, "none");
-	ck_assert_int_eq(readdb("1234567890123456789012345678901", TESTDBDIR), 0);
+	ck_assert_int_eq(readdb("1234567890123456789012345678901", TESTDBDIR, 0), 0);
 	ck_assert_str_eq(data.interface, "1234567890123456789012345678901");
 }
 END_TEST
@@ -564,7 +564,7 @@ START_TEST(readdb_with_existing_dbfile_with_rename)
 
 	strcpy(data.interface, "none");
 	strcpy(data.nick, "none");
-	ck_assert_int_eq(readdb("ethtest2", TESTDBDIR), 0);
+	ck_assert_int_eq(readdb("ethtest2", TESTDBDIR, 0), 0);
 	ck_assert_str_eq(data.interface, "ethtest2");
 	ck_assert_str_eq(data.nick, "ethtest2");
 }
@@ -583,7 +583,7 @@ START_TEST(readdb_with_existing_dbfile_and_over_max_name_length)
 
 	strcpy(data.interface, "none");
 	strcpy(data.nick, "none");
-	ck_assert_int_eq(readdb("1234567890123456789012345678901XX", TESTDBDIR), 0);
+	ck_assert_int_eq(readdb("1234567890123456789012345678901XX", TESTDBDIR, 0), 0);
 	ck_assert_str_eq(data.interface, "1234567890123456789012345678901");
 	ck_assert_str_eq(data.nick, "1234567890123456789012345678901");
 }

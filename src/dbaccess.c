@@ -2,7 +2,7 @@
 #include "fs.h"
 #include "dbaccess.h"
 
-int readdb(const char *iface, const char *dirname)
+int readdb(const char *iface, const char *dirname, const int force)
 {
 	FILE *db;
 	char file[512], backup[512];
@@ -39,7 +39,7 @@ int readdb(const char *iface, const char *dirname)
 	}
 
 	if (data.version == DBVERSION) {
-		if (!validatedb()) {
+		if (!validatedb() && !force) {
 			data.version=-1;
 			if (debug) {
 				printf("db: Database for interface \"%s\" fails to validate, trying with backup\n", data.interface);
@@ -548,7 +548,7 @@ void cleartop10(const char *iface, const char *dirname)
 {
 	int i;
 
-	if (readdb(iface, dirname)!=0) {
+	if (readdb(iface, dirname, 0)!=0) {
 		exit(EXIT_FAILURE);
 	}
 
@@ -566,7 +566,7 @@ void rebuilddbtotal(const char *iface, const char *dirname)
 {
 	int i;
 
-	if (readdb(iface, dirname)!=0) {
+	if (readdb(iface, dirname, 0)!=0) {
 		exit(EXIT_FAILURE);
 	}
 
