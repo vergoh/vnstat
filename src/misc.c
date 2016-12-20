@@ -46,7 +46,7 @@ int kerneltest(void)
 		printf("vnStat is likely not to work correctly. Upgrading the kernel\n");
 		printf("is likely to solve this problem.\n\n");
 		return 1;
-	} else if ((bmax-bmin)>cfg.bvar) {
+	} else if ((bmax-bmin)>(uint32_t)cfg.bvar) {
 		printf("The current kernel has a boot time variation greater than assumed\n");
 		printf("in the vnStat config. That it likely to cause errors in results.\n");
 		printf("Set \"BootVariation\" to something greater than \"%d\" and run this\n", (int)(bmax-bmin));
