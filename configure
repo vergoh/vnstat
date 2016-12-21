@@ -5600,7 +5600,7 @@ $as_echo "#define realloc rpl_realloc" >>confdefs.h
 fi
 
 
-for ac_func in dup2 localtime_r memset mkdir pow rmdir setlocale strcasecmp strchr strdup strerror strncasecmp strstr strtol strtoul strtoull tzset
+for ac_func in dup2 localtime_r memset mkdir pow rmdir setlocale strcasecmp strchr strdup strerror strncasecmp strstr strtol strtoul strtoull tzset mbstowcs wcswidth
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -7113,14 +7113,23 @@ $as_echo "$as_me:    vnstatd: $prefix/sbin/vnstatd " >&6;}
 $as_echo "$as_me:     config: $sysconfdir/vnstat.conf " >&6;}
 { $as_echo "$as_me:${as_lineno-$LINENO}: " >&5
 $as_echo "$as_me: " >&6;}
-if test -z "$HAVE_LIBGD_TRUE"; then :
+if test -z "$HAVE_CHECK_TRUE"; then :
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}:    Image output support: enabled " >&5
-$as_echo "$as_me:    Image output support: enabled " >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}:           Tests: available " >&5
+$as_echo "$as_me:           Tests: available " >&6;}
 else
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}:    Image output support: disabled " >&5
-$as_echo "$as_me:    Image output support: disabled " >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}:           Tests: unavailable " >&5
+$as_echo "$as_me:           Tests: unavailable " >&6;}
+fi
+if test -z "$HAVE_LIBGD_TRUE"; then :
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}:    Image output: enabled " >&5
+$as_echo "$as_me:    Image output: enabled " >&6;}
+else
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}:    Image output: disabled " >&5
+$as_echo "$as_me:    Image output: disabled " >&6;}
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: " >&5
 $as_echo "$as_me: " >&6;}

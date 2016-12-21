@@ -377,6 +377,7 @@ char *getratestring(uint64_t rate, int len, int declen, int unitmode)
 
 int getpadding(int len, char *str)
 {
+#if defined(HAVE_MBSTOWCS) && defined(HAVE_WCSWIDTH)
 	wchar_t wbuffer[64];
 	if (!cfg.utflocale) {
 		return len;
@@ -385,6 +386,9 @@ int getpadding(int len, char *str)
 		return len;
 	}
 	return len + ((int)strlen(str) - wcswidth(wbuffer, 64));
+#else
+	return len;
+#endif
 }
 
 void cursortocolumn(int column)

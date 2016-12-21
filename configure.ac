@@ -44,7 +44,7 @@ AC_FUNC_FORK
 AC_FUNC_MALLOC
 AC_FUNC_MKTIME
 AC_FUNC_REALLOC
-AC_CHECK_FUNCS([dup2 localtime_r memset mkdir pow rmdir setlocale strcasecmp strchr strdup strerror strncasecmp strstr strtol strtoul strtoull tzset])
+AC_CHECK_FUNCS([dup2 localtime_r memset mkdir pow rmdir setlocale strcasecmp strchr strdup strerror strncasecmp strstr strtol strtoul strtoull tzset mbstowcs wcswidth])
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
@@ -65,9 +65,12 @@ AC_MSG_NOTICE([   vnstati: $prefix/bin/vnstati ])])
 AC_MSG_NOTICE([   vnstatd: $prefix/sbin/vnstatd ])
 AC_MSG_NOTICE([    config: $sysconfdir/vnstat.conf ])
 AC_MSG_NOTICE()
+AM_COND_IF([HAVE_CHECK], [
+AC_MSG_NOTICE([          Tests: available ])], [
+AC_MSG_NOTICE([          Tests: unavailable ])])
 AM_COND_IF([HAVE_LIBGD], [
-AC_MSG_NOTICE([   Image output support: enabled ])], [
-AC_MSG_NOTICE([   Image output support: disabled ])])
+AC_MSG_NOTICE([   Image output: enabled ])], [
+AC_MSG_NOTICE([   Image output: disabled ])])
 AC_MSG_NOTICE()
 AC_MSG_NOTICE([ ============================================== ])
 AC_MSG_NOTICE()
