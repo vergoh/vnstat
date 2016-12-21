@@ -10,16 +10,18 @@ Compiling the binaries
  will compile 'vnstat' and 'vnstatd' without requiring additional libraries.
  The optional image output capable binary 'vnstati' will also be compiled if
  the required additional libgd2 library is found to be available. In
- BSD ports libgd2 is usually named simply 'gd'. Executing
+ BSD ports libgd2 is usually named simply 'gd'.
 
  An example cgi ('vnstat.cgi') to be used with http server with the image
  output support has been provided in the 'examples' directory. Configuration
  options for the cgi are in the beginning of the file. Additional examples
  for using the json output are also available in the same directory.
 
- Some BSD users may need to provide correct LIBRARY_PATH and CPATH to the
+ Some BSD users may need to provide correct CFLAGS and LDFLAGS paths to the
  configure script if the image output is wanted but the location of libgd2
- isn't automatically detected.
+ isn't automatically detected. For example:
+
+     CFLAGS="-I/usr/local/include" LDFLAGS="-L/usr/local/lib" ./configure
 
 
 Installing as root
@@ -99,3 +101,22 @@ Installing without root access
 
  Now you should get some stats about your network usage. See the config
  file ~/.vnstatrc for interface and other settings.
+
+
+Appendix: Running the test suite
+::::::::::::::::::::::::::::::::
+
+ This step isn't mandatory for using vnStat.
+
+ The source package includes a test suite for validating at least some of the
+ functionalities provided by the executables. The test suite requires the
+ Check unit testing framework ( https://libcheck.github.io/check/ ) to
+ be installed and available. The configure script also assumes that the
+ 'pkg-config' command is installed. That command is usually part of the
+ 'pkgconf' package. After the configure script has been executed the test
+ suite can be executed with:
+
+     make check
+
+ The output should show a non-zero number of tests executed if all the
+ necessary packages were available.

@@ -140,3 +140,22 @@ Installing without root access
 
  Now you should get some stats about your network usage. See the config
  file ~/.vnstatrc for interface and other settings.
+
+
+Appendix: Running the test suite
+::::::::::::::::::::::::::::::::
+
+ This step isn't mandatory for using vnStat.
+
+ The source package includes a test suite for validating at least some of the
+ functionalities provided by the executables. The test suite requires the
+ Check unit testing framework ( https://libcheck.github.io/check/ ) to
+ be installed and available. Depending on the used distribution, the necessary
+ package to be installed is usually called 'check' and may also require
+ 'check-devel' to be installed if available. After the configure script has
+ been executed the test suite can be executed with:
+
+     make check
+
+ The output should show a non-zero number of tests executed if all the
+ necessary packages were available.
