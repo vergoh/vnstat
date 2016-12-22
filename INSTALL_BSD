@@ -35,22 +35,24 @@ Installing as root
  should now be installed. The configuration file will be upgraded using
  previously configured values if it is found already to exist.
 
- The configuration file /usr/local/etc/vnstat.conf should also be checked
- at this point. See the vnstat.conf man page for documentation about available
+ The configuration file /usr/local/etc/vnstat.conf should be checked at
+ this point. See the vnstat.conf man page for documentation about available
  options.
 
  Finally make vnStat monitor the selected interface(s). Configure init
  scripts so that the following command is executed once during system
- start:
+ startup:
 
-     vnstatd -d
+     /usr/local/sbin/vnstatd -d
 
  One suitable place is for example /etc/rc.local.
 
  During first startup, the daemon (vnstatd) should list and add all
- available interfaces for monitoring. Depending on configuration, it may
- take some minutes for the 'vnstat' command to begin showing results.
- Monitoring of unwanted interfaces can be stopped with:
+ available interfaces for monitoring. The command can also be executed
+ manually at this point in order to avoid having to reboot the system
+ Depending on configuration, it may take some minutes for the 'vnstat'
+ command to begin showing results. Monitoring of unwanted interfaces
+ can be stopped with:
 
      vnstat --delete -i ethunwanted
 

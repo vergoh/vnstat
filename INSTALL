@@ -40,9 +40,8 @@ Installing as root
  should now be installed. The configuration file will be upgraded
  using previously configured values if it is found already to exist.
 
- The configuration file /etc/vnstat.conf should also be checked at this
- point. See the vnstat.conf man page for documentation about available
- options.
+ The configuration file /etc/vnstat.conf should be checked at this point.
+ See the vnstat.conf man page for documentation about available options.
 
  Finally, make vnStat monitor available interfaces. Configure init scripts
  so that the following command is executed once during system start:
@@ -71,9 +70,11 @@ Installing as root
        chkconfig vnstat on
        service vnstat start
 
- An alternative method is to just add the command to an already existing
- script that gets executed during startup. In many distributions
- /etc/rc.local can be used if nothing else suitable can be found.
+ An alternative method is to add the command to an already existing
+ script that gets executed during system startup. In many distributions
+ /etc/rc.local can be used if nothing else suitable can be found. Note
+ that the full path to the executable may need to be included instead of
+ only the command itself.
 
  During first startup, the daemon (vnstatd) should list and add all
  available interfaces for monitoring. Depending on configuration, it may
