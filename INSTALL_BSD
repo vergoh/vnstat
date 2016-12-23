@@ -61,7 +61,7 @@ Installing without root access
 ::::::::::::::::::::::::::::::
 
  Copy all needed binaries to some directory included in your PATH
- (~/bin/ is an example) and make the database directory.
+ (~/bin/ is an example) and create the database directory.
 
      cp -v vnstat vnstatd vnstati ~/bin/
      cp -v cfg/vnstat.conf ~/.vnstatrc
@@ -88,7 +88,7 @@ Installing without root access
 
      @reboot ~/bin/vnstatd -d
 
- If you found yourself using a strange editor then 'man vi' should help.
+ If you found yourself using a strange editor then 'man vi' may help.
 
  Make sure the configuration file (~/.vnstatrc) has the log option either
  disabled or set to a file that is located in a place where you have write

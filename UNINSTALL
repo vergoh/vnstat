@@ -1,8 +1,7 @@
 
-If the daemon is running then stop it first and remove
-any manually installed service files.
+If the daemon is running then stop it first and remove any manually
+installed service files or file entries used to start the daemon process.
 
-Run 'make uninstall' and follow the instructions. This step
-will not automatically remove any possible databases that have
-been created. Such files will need to be removed manually if no
-longer needed.
+Run 'make uninstall' and follow the instructions. This step will not
+automatically remove any possible databases that have been created. Such
+files will need to be removed manually if no longer needed.

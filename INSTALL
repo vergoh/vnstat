@@ -44,12 +44,12 @@ Installing as root
  See the vnstat.conf man page for documentation about available options.
 
  Finally, make vnStat monitor available interfaces. Configure init scripts
- so that the following command is executed once during system start:
+ so that the following command is executed once during system startup:
 
      vnstatd -d
 
- The 'examples' directory contains suitable files for most commonly
- used service managers:
+ The 'examples' directory contains suitable files for most commonly used
+ service managers:
 
    systemd:
      cp -v examples/systemd/vnstat.service /etc/systemd/system/
@@ -88,23 +88,21 @@ Installing without root access
 ::::::::::::::::::::::::::::::
 
  Copy all needed binaries to some directory included in your PATH
- (~/bin/ is an example) and make the database directory.
+ (~/bin/ is an example) and create the database directory.
 
      cp -v vnstat vnstatd vnstati ~/bin/
      cp -v cfg/vnstat.conf ~/.vnstatrc
      mkdir ~/.vnstat
 
- Check that the binary got installed to a suitable location and is of the
+ Check that the binaries got installed to a suitable location and are of the
  correct version:
 
      vnstat --version
 
- If this gives 'command not found' then check content of your PATH variable.
- The only way to fix a faulty kernel (afaik) is to compile/install a newer one.
- This can't be done without the root account so you'll have to solve this
- problem with your sysadmin if the kernel is broken.
+ If this gives an 'command not found' error or a different than expected
+ version then check then content of the PATH variable and try again.
 
- Now open the config file ~/.vnstatrc with your favorite text editor and locate
+ Next open the config file ~/.vnstatrc with your favorite text editor and locate
  the following line:
 
      DatabaseDir "/var/lib/vnstat"
@@ -126,7 +124,7 @@ Installing without root access
 
      @reboot ~/bin/vnstatd -d
 
- If you found yourself using a strange editor then 'man vi' should help.
+ If you found yourself using a strange editor then 'man vi' may help.
 
  Make sure the configuration file (~/.vnstatrc) has the log option either
  disabled or set to a file that is located in a place where you have write
@@ -150,8 +148,8 @@ Appendix: Running the test suite
 
  The source package includes a test suite for validating at least some of the
  functionalities provided by the executables. The test suite requires the
- Check unit testing framework ( https://libcheck.github.io/check/ ) to
- be installed and available. Depending on the used distribution, the necessary
+ Check unit testing framework ( https://libcheck.github.io/check/ ) to be
+ installed and available. Depending on the used distribution, the necessary
  package to be installed is usually called 'check' and may also require
  'check-devel' to be installed if available. After the configure script has
  been executed the test suite can be executed with:
