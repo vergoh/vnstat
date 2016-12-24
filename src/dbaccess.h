@@ -1,7 +1,7 @@
 #ifndef DBACCESS_H
 #define DBACCESS_H
 
-int readdb(const char *iface, const char *dirname);
+int readdb(const char *iface, const char *dirname, const int force);
 void initdb(void);
 int writedb(const char *iface, const char *dirname, int newdb);
 int backupdb(const char *current, const char *backup);

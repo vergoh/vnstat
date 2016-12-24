@@ -5,24 +5,23 @@ Compiling the binaries
  This source package contains the required source files for vnStat including
  the daemon (vnstatd) and image output (vnstati). Executing
 
-     gmake
+     ./configure && make
 
  will compile 'vnstat' and 'vnstatd' without requiring additional libraries.
- The optional image output however requires libgd2 to be available. In
- BSD ports libgd2 is usually named simply 'gd'. Executing
+ The optional image output capable binary 'vnstati' will also be compiled if
+ the required additional libgd2 library is found to be available. In
+ BSD ports libgd2 is usually named simply 'gd'.
 
-     gmake all
+ An example cgi ('vnstat.cgi') to be used with http server with the image
+ output support has been provided in the 'examples' directory. Configuration
+ options for the cgi are in the beginning of the file. Additional examples
+ for using the json output are also available in the same directory.
 
- will compile everything including the image output support.  An example
- cgi ('vnstat.cgi') to be used with http server with the image output
- support has been provided in the 'examples' directory. Configuration
- options for the cgi are in the beginning of the file.
+ Some BSD users may need to provide correct CFLAGS and LDFLAGS paths to the
+ configure script if the image output is wanted but the location of libgd2
+ isn't automatically detected. For example:
 
- Some BSD users may need to use
-
-     LIBRARY_PATH="/usr/local/lib" CPATH="/usr/local/include" gmake all
-
- instead if libgd2 is installed but still not found.
+     CFLAGS="-I/usr/local/include" LDFLAGS="-L/usr/local/lib" ./configure
 
 
 Installing as root
@@ -30,27 +29,30 @@ Installing as root
 
  Login as root and run the following command:
 
-     gmake bsdinstall
+     make install
 
  If there were no errors, vnStat binaries, man pages and a config file
- should now be installed.
+ should now be installed. The configuration file will be upgraded using
+ previously configured values if it is found already to exist.
 
- The configuration file /etc/vnstat.conf should also be checked at this
- point. See the vnstat.conf man page for documentation about available
+ The configuration file /usr/local/etc/vnstat.conf should be checked at
+ this point. See the vnstat.conf man page for documentation about available
  options.
 
  Finally make vnStat monitor the selected interface(s). Configure init
  scripts so that the following command is executed once during system
- start:
+ startup:
 
-     vnstatd -d
+     /usr/local/sbin/vnstatd -d
 
  One suitable place is for example /etc/rc.local.
 
  During first startup, the daemon (vnstatd) should list and add all
- available interfaces for monitoring. Depending on configuration, it may
- take some minutes for the 'vnstat' command to begin showing results.
- Monitoring of unwanted interfaces can be stopped with:
+ available interfaces for monitoring. The command can also be executed
+ manually at this point in order to avoid having to reboot the system
+ Depending on configuration, it may take some minutes for the 'vnstat'
+ command to begin showing results. Monitoring of unwanted interfaces
+ can be stopped with:
 
      vnstat --delete -i ethunwanted
 
@@ -59,10 +61,10 @@ Installing without root access
 ::::::::::::::::::::::::::::::
 
  Copy all needed binaries to some directory included in your PATH
- (~/bin/ is an example) and make the database directory.
+ (~/bin/ is an example) and create the database directory.
 
-     cp src/vnstat src/vnstatd src/vnstati ~/bin/
-     cp cfg/vnstat.conf ~/.vnstatrc
+     cp -v vnstat vnstatd vnstati ~/bin/
+     cp -v cfg/vnstat.conf ~/.vnstatrc
      mkdir ~/.vnstat
 
  Next open the config file ~/.vnstatrc with your favorite text editor and
@@ -86,13 +88,13 @@ Installing without root access
 
      @reboot ~/bin/vnstatd -d
 
- If you found yourself using a strange editor then 'man vi' should help.
+ If you found yourself using a strange editor then 'man vi' may help.
 
  Make sure the configuration file (~/.vnstatrc) has the log option either
  disabled or set to a file that is located in a place where you have write
  permissions, such as your home dir. Then try starting the daemon with
 
-     vnstat -d
+     vnstatd -d
 
  After that wait for (or generate) at least 1024 bytes of network traffic
  (and 5 min for the next database file save).
@@ -101,3 +103,22 @@ Installing without root access
 
  Now you should get some stats about your network usage. See the config
  file ~/.vnstatrc for interface and other settings.
+
+
+Appendix: Running the test suite
+::::::::::::::::::::::::::::::::
+
+ This step isn't mandatory for using vnStat.
+
+ The source package includes a test suite for validating at least some of the
+ functionalities provided by the executables. The test suite requires the
+ Check unit testing framework ( https://libcheck.github.io/check/ ) to
+ be installed and available. The configure script also assumes that the
+ 'pkg-config' command is installed. That command is usually part of the
+ 'pkgconf' package. After the configure script has been executed the test
+ suite can be executed with:
+
+     make check
+
+ The output should show a non-zero number of tests executed if all the
+ necessary packages were available.

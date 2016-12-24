@@ -1,5 +1,5 @@
 /*
-vnStat daemon - Copyright (c) 2008-2015 Teemu Toivola <tst@iki.fi>
+vnStat daemon - Copyright (c) 2008-2016 Teemu Toivola <tst@iki.fi>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -20,12 +20,14 @@ vnStat daemon - Copyright (c) 2008-2015 Teemu Toivola <tst@iki.fi>
 #include "dbsql.h"
 #include "cfg.h"
 #include "ibw.h"
+#include "id.h"
 #include "daemon.h"
 #include "vnstatd.h"
 
 int main(int argc, char *argv[])
 {
 	int currentarg;
+	uint32_t prevdbhash;
 	DSTATE s;
 
 	initdstate(&s);
@@ -108,8 +110,10 @@ int main(int argc, char *argv[])
 			}
 		} else if (strcmp(argv[currentarg],"--noadd")==0) {
 			s.noadd = 1;
+		} else if (strcmp(argv[currentarg],"--alwaysadd")==0) {
+			s.alwaysadd = 1;
 		} else if ((strcmp(argv[currentarg],"-v")==0) || (strcmp(argv[currentarg],"--version")==0)) {
-			printf("vnStat daemon %s by Teemu Toivola <tst at iki dot fi>\n", VNSTATVERSION);
+			printf("vnStat daemon %s by Teemu Toivola <tst at iki dot fi>\n", getversion());
 			return 0;
 		} else if ((strcmp(argv[currentarg],"-p")==0) || (strcmp(argv[currentarg],"--pidfile")==0)) {
 			if (currentarg+1<argc) {
@@ -127,6 +131,11 @@ int main(int argc, char *argv[])
 			printf("Unknown arg \"%s\". Use --help for help.\n",argv[currentarg]);
 			return 1;
 		}
+	}
+
+	if (s.noadd && s.alwaysadd) {
+		printf("Error: --noadd and --alwaysadd can't both be used at the same time.\n");
+		return 1;
 	}
 
 	/* show help if nothing else was asked to be done */
@@ -156,14 +165,22 @@ int main(int argc, char *argv[])
 		daemonize();
 	}
 
+	s.running = 1;
+	snprintf(errorstring, 512, "vnStat daemon %s started. (pid:%d uid:%d gid:%d)", getversion(), (int)getpid(), (int)getuid(), (int)getgid());
+	printe(PT_Info);
+
 	/* main loop */
 	while (s.running) {
 
 		s.current = time(NULL);
 
 		/* track interface status only if at least one database exists */
-		if (s.dbcount!=0) {
+		if (s.dbcount != 0) {
+			prevdbhash = s.dbhash;
 			s.dbhash = dbcheck(s.dbhash, &s.forcesave);
+			if (s.alwaysadd && s.dbhash != prevdbhash && prevdbhash != 0) {
+				s.dbcount += addinterfaces(s.dirname, s.running);
+			}
 		}
 
 		/* do update only if enough time has passed since the previous update */
@@ -197,7 +214,7 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		if (s.running && intsignal==0) {
+		if (s.running && intsignal == 0) {
 			sleep(cfg.pollinterval);
 		}
 
@@ -220,7 +237,7 @@ int main(int argc, char *argv[])
 
 void showhelp(void)
 {
-	printf(" vnStat daemon %s by Teemu Toivola <tst at iki dot fi>\n\n", VNSTATVERSION);
+	printf(" vnStat daemon %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
 	printf("         -d, --daemon         fork process to background\n");
 	printf("         -n, --nodaemon       stay in foreground attached to the terminal\n\n");
 	printf("         -s, --sync           sync interface counters on first update\n");
@@ -231,6 +248,7 @@ void showhelp(void)
 	printf("         -u, --user           set daemon process user\n");
 	printf("         -g, --group          set daemon process group\n");
 	printf("         --config             select used config file\n");
-	printf("         --noadd              don't add found interfaces if no dbs are found\n\n");
+	printf("         --noadd              don't add found interfaces if no dbs are found\n");
+	printf("         --alwaysadd          always add new interfaces even when some dbs exist\n\n");
 	printf("See also \"man vnstatd\".\n");
 }

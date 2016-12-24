@@ -1,10 +1,40 @@
-1.15 / <not released yet>
+1.17 / <not released yet>
+
+
+1.16 / 24-Dec-2016
+
+ - Fix: traffic rate calculation, SI decimal prefixes were shown but
+   calculation was done for IEC binary prefixes
+ - Add option for configure to disable image output support even if required
+   library is available, improve library detection
+   (pull request by Rodrigo Rebello)
+ - Add selection between SI decimal prefixes (kbit/s...) (default) and
+   IEC binary prefixes (Kibit/s...) for traffic rate using RateUnitMode
+   keyword in configuration file
+ - Improve database handling resilience
+ - Inherit database file ownership from database directory if UpdateFileOwner
+   configuration option is enabled (default: enabled) when adding new
+   interfaces for monitoring as root. This solves database file ownership
+   mismatches when the daemon is started as a non-root user and an interface
+   gets added for monitoring with a sudo command as root
+ - Improve user guidance in error situations related to the configured default
+   interface
+
+
+1.15 / 22-Dec-2015
 
  - Fix: XML output had extra commas, broken since previous version
+ - Fix: unintended shared pointer modification in mosecs() sometimes resulted
+   in wrong month name to be shown for the current month
+ - Fix: possible buffer overflow in /proc/net/dev parsing, requires corrupted
+   content in /proc/net/dev or use of address sanitizer (found by Hanno Böck)
  - Use ANSI escape codes in -l and -tr modes for cursor location manipulation
-   instead of printing backspaces and hide cursor while running
+   instead of printing backspaces, hide cursor while output is active
  - Improve database import robustness
  - Improve support for Asian UTF-8 date strings
+ - Replace hand written Makefiles with Autotools
+ - Add --alwaysadd parameter to daemon for allowing automatic addition of
+   interfaces even if the database directory was populated during startup
 
 
 1.14 / 26-Apr-2015

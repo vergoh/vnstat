@@ -15,5 +15,6 @@ int getifdata(const char *iface, struct if_data *ifd);
 int readifaddrs(const char *iface);
 #endif
 uint32_t getifspeed(const char *iface);
+int isifavailable(const char *iface);
 
 #endif

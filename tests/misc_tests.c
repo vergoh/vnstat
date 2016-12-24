@@ -9,40 +9,42 @@ START_TEST(getbtime_does_not_return_zero)
 }
 END_TEST
 
-START_TEST(getunit_returns_something_with_all_cfg_combinations)
+START_TEST(getunitprefix_returns_something_with_all_cfg_combinations)
 {
 	char *string;
 	int j;
 
-	cfg.unit = _i;
-	for (j=1; j<=(UNITCOUNT+1); j++) {
-		string = getunit(j);
+	cfg.unitmode = _i;
+	for (j=1; j<=(UNITPREFIXCOUNT+1); j++) {
+		string = getunitprefix(j);
 		ck_assert_int_gt(strlen(string), 0);
 	}
 }
 END_TEST
 
-START_TEST(getrateunit_returns_something_with_all_cfg_combinations)
+START_TEST(getrateunitprefix_returns_something_with_all_cfg_combinations)
 {
 	char *string;
 	int j;
 
-	for (j=1; j<=(UNITCOUNT+1); j++) {
-		string = getrateunit(_i, j);
+	for (j=1; j<=(UNITPREFIXCOUNT+1); j++) {
+		string = getrateunitprefix(_i, j);
 		ck_assert_int_gt(strlen(string), 0);
 	}
 }
 END_TEST
 
-START_TEST(getunitdivider_returns_something_with_all_cfg_combinations)
+START_TEST(getunitdivisor_returns_something_with_all_cfg_combinations)
 {
 	int j;
+	char div[16];
 
-	for (j=1; j<=(UNITCOUNT+1); j++) {
-		if (j==1 || j>UNITCOUNT) {
-			ck_assert_int_eq(getunitdivider(_i, j), 0);
+	for (j=1; j<=(UNITPREFIXCOUNT+1); j++) {
+		snprintf(div, 15, "%"PRIu64"", getunitdivisor(_i, j));
+		if (j>UNITPREFIXCOUNT) {
+			ck_assert_str_eq(div, "0");
 		} else {
-			ck_assert_int_ne(getunitdivider(_i, j), 0);
+			ck_assert_str_ne(div, "0");
 		}
 	}
 }
@@ -73,12 +75,12 @@ END_TEST
 
 START_TEST(getvalue_normal)
 {
-	cfg.unit = 0;
+	cfg.unitmode = 0;
 	ck_assert_str_eq(getvalue(0, 100, 0, 1), "100 KiB");
 	ck_assert_str_eq(getvalue(1, 0, 0, 1), "1.00 MiB");
 	ck_assert_str_eq(getvalue(1024, 0, 0, 1), "1.00 GiB");
 	ck_assert_str_eq(getvalue(1048576, 0, 0, 2), "1.00 TiB");
-	cfg.unit = 1;
+	cfg.unitmode = 1;
 	ck_assert_str_eq(getvalue(0, 100, 0, 1), "100 KB");
 	ck_assert_str_eq(getvalue(1, 0, 0, 1), "1.00 MB");
 	ck_assert_str_eq(getvalue(1024, 0, 0, 1), "1.00 GB");
@@ -88,12 +90,12 @@ END_TEST
 
 START_TEST(getvalue_estimate)
 {
-	cfg.unit = 0;
+	cfg.unitmode = 0;
 	ck_assert_str_eq(getvalue(0, 100, 0, 2), "100 KiB");
 	ck_assert_str_eq(getvalue(1, 0, 0, 2), "1 MiB");
 	ck_assert_str_eq(getvalue(1024, 0, 0, 2), "1.00 GiB");
 	ck_assert_str_eq(getvalue(1048576, 0, 0, 2), "1.00 TiB");
-	cfg.unit = 1;
+	cfg.unitmode = 1;
 	ck_assert_str_eq(getvalue(0, 100, 0, 2), "100 KB");
 	ck_assert_str_eq(getvalue(1, 0, 0, 2), "1 MB");
 	ck_assert_str_eq(getvalue(1024, 0, 0, 2), "1.00 GB");
@@ -103,12 +105,12 @@ END_TEST
 
 START_TEST(getvalue_imagescale)
 {
-	cfg.unit = 0;
+	cfg.unitmode = 0;
 	ck_assert_str_eq(getvalue(0, 100, 0, 3), "100 KiB");
 	ck_assert_str_eq(getvalue(1, 0, 0, 3), "1 MiB");
 	ck_assert_str_eq(getvalue(1024, 0, 0, 3), "1 GiB");
 	ck_assert_str_eq(getvalue(1048576, 0, 0, 3), "1 TiB");
-	cfg.unit = 1;
+	cfg.unitmode = 1;
 	ck_assert_str_eq(getvalue(0, 100, 0, 3), "100 KB");
 	ck_assert_str_eq(getvalue(1, 0, 0, 3), "1 MB");
 	ck_assert_str_eq(getvalue(1024, 0, 0, 3), "1 GB");
@@ -118,29 +120,29 @@ END_TEST
 
 START_TEST(getvalue_padding)
 {
-	cfg.unit = 0;
+	cfg.unitmode = 0;
 	ck_assert_str_eq(getvalue(0, 100, 10, 1), "   100 KiB");
-	cfg.unit = 1;
+	cfg.unitmode = 1;
 	ck_assert_str_eq(getvalue(0, 100, 10, 1), "    100 KB");
 }
 END_TEST
 
 START_TEST(getvalue_mb_kb_mixed)
 {
-	cfg.unit = 0;
+	cfg.unitmode = 0;
 	ck_assert_str_eq(getvalue(1, 3210, 0, 1), "4.13 MiB");
-	cfg.unit = 1;
+	cfg.unitmode = 1;
 	ck_assert_str_eq(getvalue(1, 3210, 0, 1), "4.13 MB");
 }
 END_TEST
 
 START_TEST(getvalue_zero_values)
 {
-	cfg.unit = 0;
+	cfg.unitmode = 0;
 	ck_assert_str_eq(getvalue(0, 0, 0, 1), "0 KiB");
 	ck_assert_str_eq(getvalue(0, 0, 0, 2), "--    ");
 	ck_assert_str_eq(getvalue(0, 0, 0, 3), "0 KiB");
-	cfg.unit = 1;
+	cfg.unitmode = 1;
 	ck_assert_str_eq(getvalue(0, 0, 0, 1), "0 KB");
 	ck_assert_str_eq(getvalue(0, 0, 0, 2), "--    ");
 	ck_assert_str_eq(getvalue(0, 0, 0, 3), "0 KB");
@@ -154,7 +156,7 @@ START_TEST(getrate_zero_interval)
 	for (i=0; i<=1; i++) {
 		cfg.rateunit = i;
 		for (j=0; j<=2; j++) {
-			cfg.unit = j;
+			cfg.unitmode = j;
 			ck_assert_str_eq(getrate(1, 0, 0, 0), "n/a");
 		}
 	}
@@ -164,12 +166,12 @@ END_TEST
 START_TEST(getrate_bytes)
 {
 	cfg.rateunit = 0;
-	cfg.unit = 0;
+	cfg.unitmode = 0;
 	ck_assert_str_eq(getrate(0, 100, 1, 0), "100.00 KiB/s");
 	ck_assert_str_eq(getrate(1, 3210, 1, 0), "4.13 MiB/s");
 	ck_assert_str_eq(getrate(1024, 0, 1, 0), "1.00 GiB/s");
 	ck_assert_str_eq(getrate(1048576, 0, 1, 0), "1.00 TiB/s");
-	cfg.unit = 1;
+	cfg.unitmode = 1;
 	ck_assert_str_eq(getrate(0, 100, 1, 0), "100.00 KB/s");
 	ck_assert_str_eq(getrate(1, 3210, 1, 0), "4.13 MB/s");
 	ck_assert_str_eq(getrate(1024, 0, 1, 0), "1.00 GB/s");
@@ -180,36 +182,52 @@ END_TEST
 START_TEST(getrate_bits)
 {
 	cfg.rateunit = 1;
-	cfg.unit = 0;
-	ck_assert_str_eq(getrate(0, 100, 1, 0), "800 kbit/s");
-	ck_assert_str_eq(getrate(1, 3210, 1, 0), "33.87 Mbit/s");
-	ck_assert_str_eq(getrate(1024, 0, 1, 0), "8.39 Gbit/s");
-	ck_assert_str_eq(getrate(1048576, 0, 1, 0), "8.59 Tbit/s");
-	cfg.unit = 1;
-	ck_assert_str_eq(getrate(0, 100, 1, 0), "800 kbit/s");
-	ck_assert_str_eq(getrate(1, 3210, 1, 0), "33.87 Mbit/s");
-	ck_assert_str_eq(getrate(1024, 0, 1, 0), "8.39 Gbit/s");
-	ck_assert_str_eq(getrate(1048576, 0, 1, 0), "8.59 Tbit/s");
+
+	cfg.rateunitmode = 1;
+	cfg.unitmode = 0;
+	ck_assert_str_eq(getrate(0, 100, 1, 0), "819 kbit/s");
+	ck_assert_str_eq(getrate(1, 3210, 1, 0), "34.68 Mbit/s");
+	ck_assert_str_eq(getrate(1024, 0, 1, 0), "8.59 Gbit/s");
+	ck_assert_str_eq(getrate(1048576, 0, 1, 0), "8.80 Tbit/s");
+	cfg.unitmode = 1;
+	ck_assert_str_eq(getrate(0, 100, 1, 0), "819 kbit/s");
+	ck_assert_str_eq(getrate(1, 3210, 1, 0), "34.68 Mbit/s");
+	ck_assert_str_eq(getrate(1024, 0, 1, 0), "8.59 Gbit/s");
+	ck_assert_str_eq(getrate(1048576, 0, 1, 0), "8.80 Tbit/s");
+
+	cfg.rateunitmode = 0;
+	cfg.unitmode = 0;
+	ck_assert_str_eq(getrate(0, 100, 1, 0), "800 Kibit/s");
+	ck_assert_str_eq(getrate(1, 3210, 1, 0), "33.08 Mibit/s");
+	ck_assert_str_eq(getrate(1024, 0, 1, 0), "8.00 Gibit/s");
+	ck_assert_str_eq(getrate(1048576, 0, 1, 0), "8.00 Tibit/s");
+	cfg.unitmode = 1;
+	ck_assert_str_eq(getrate(0, 100, 1, 0), "800 Kibit/s");
+	ck_assert_str_eq(getrate(1, 3210, 1, 0), "33.08 Mibit/s");
+	ck_assert_str_eq(getrate(1024, 0, 1, 0), "8.00 Gibit/s");
+	ck_assert_str_eq(getrate(1048576, 0, 1, 0), "8.00 Tibit/s");
 }
 END_TEST
 
 START_TEST(getrate_interval_divides)
 {
-	cfg.unit = 0;
+	cfg.unitmode = 0;
+	cfg.rateunitmode = 1;
 	cfg.rateunit = 0;
 	ck_assert_str_eq(getrate(0, 100, 1, 0), "100.00 KiB/s");
 	ck_assert_str_eq(getrate(0, 100, 2, 0), "50.00 KiB/s");
 	ck_assert_str_eq(getrate(0, 100, 10, 0), "10.00 KiB/s");
 	cfg.rateunit = 1;
-	ck_assert_str_eq(getrate(0, 100, 1, 0), "800 kbit/s");
-	ck_assert_str_eq(getrate(0, 100, 2, 0), "400 kbit/s");
-	ck_assert_str_eq(getrate(0, 100, 10, 0), "80.00 kbit/s");
+	ck_assert_str_eq(getrate(0, 100, 1, 0), "819 kbit/s");
+	ck_assert_str_eq(getrate(0, 100, 2, 0), "410 kbit/s");
+	ck_assert_str_eq(getrate(0, 100, 10, 0), "81.92 kbit/s");
 }
 END_TEST
 
 START_TEST(getrate_padding)
 {
-	cfg.unit = 0;
+	cfg.unitmode = 0;
+	cfg.rateunitmode = 1;
 	cfg.rateunit = 0;
 	ck_assert_str_eq(getrate(0, 100, 1, 0), "100.00 KiB/s");
 	ck_assert_str_eq(getrate(0, 100, 1, 12), "100.00 KiB/s");
@@ -224,7 +242,7 @@ START_TEST(gettrafficrate_zero_interval)
 	for (i=0; i<=1; i++) {
 		cfg.rateunit = i;
 		for (j=0; j<=2; j++) {
-			cfg.unit = j;
+			cfg.unitmode = j;
 			ck_assert_str_eq(gettrafficrate(1, 0, 0), "n/a");
 		}
 	}
@@ -234,12 +252,12 @@ END_TEST
 START_TEST(gettrafficrate_bytes)
 {
 	cfg.rateunit = 0;
-	cfg.unit = 0;
+	cfg.unitmode = 0;
 	ck_assert_str_eq(gettrafficrate(102400, 1, 0), "100.00 KiB/s");
 	ck_assert_str_eq(gettrafficrate(1048576, 1, 0), "1.00 MiB/s");
 	ck_assert_str_eq(gettrafficrate(1073741824, 1, 0), "1.00 GiB/s");
 	ck_assert_str_eq(gettrafficrate(1099511627776ULL, 1, 0), "1.00 TiB/s");
-	cfg.unit = 1;
+	cfg.unitmode = 1;
 	ck_assert_str_eq(gettrafficrate(102400, 1, 0), "100.00 KB/s");
 	ck_assert_str_eq(gettrafficrate(1048576, 1, 0), "1.00 MB/s");
 	ck_assert_str_eq(gettrafficrate(1073741824, 1, 0), "1.00 GB/s");
@@ -250,36 +268,51 @@ END_TEST
 START_TEST(gettrafficrate_bits)
 {
 	cfg.rateunit = 1;
-	cfg.unit = 0;
-	ck_assert_str_eq(gettrafficrate(102400, 1, 0), "800 kbit/s");
-	ck_assert_str_eq(gettrafficrate(1048576, 1, 0), "8.19 Mbit/s");
-	ck_assert_str_eq(gettrafficrate(1073741824, 1, 0), "8.39 Gbit/s");
-	ck_assert_str_eq(gettrafficrate(1099511627776ULL, 1, 0), "8.59 Tbit/s");
-	cfg.unit = 1;
-	ck_assert_str_eq(gettrafficrate(102400, 1, 0), "800 kbit/s");
-	ck_assert_str_eq(gettrafficrate(1048576, 1, 0), "8.19 Mbit/s");
-	ck_assert_str_eq(gettrafficrate(1073741824, 1, 0), "8.39 Gbit/s");
-	ck_assert_str_eq(gettrafficrate(1099511627776ULL, 1, 0), "8.59 Tbit/s");
+
+	cfg.rateunitmode = 1;
+	cfg.unitmode = 0;
+	ck_assert_str_eq(gettrafficrate(102400, 1, 0), "819 kbit/s");
+	ck_assert_str_eq(gettrafficrate(1048576, 1, 0), "8.39 Mbit/s");
+	ck_assert_str_eq(gettrafficrate(1073741824, 1, 0), "8.59 Gbit/s");
+	ck_assert_str_eq(gettrafficrate(1099511627776ULL, 1, 0), "8.80 Tbit/s");
+	cfg.unitmode = 1;
+	ck_assert_str_eq(gettrafficrate(102400, 1, 0), "819 kbit/s");
+	ck_assert_str_eq(gettrafficrate(1048576, 1, 0), "8.39 Mbit/s");
+	ck_assert_str_eq(gettrafficrate(1073741824, 1, 0), "8.59 Gbit/s");
+	ck_assert_str_eq(gettrafficrate(1099511627776ULL, 1, 0), "8.80 Tbit/s");
+
+	cfg.rateunitmode = 0;
+	cfg.unitmode = 0;
+	ck_assert_str_eq(gettrafficrate(102400, 1, 0), "800 Kibit/s");
+	ck_assert_str_eq(gettrafficrate(1048576, 1, 0), "8.00 Mibit/s");
+	ck_assert_str_eq(gettrafficrate(1073741824, 1, 0), "8.00 Gibit/s");
+	ck_assert_str_eq(gettrafficrate(1099511627776ULL, 1, 0), "8.00 Tibit/s");
+	cfg.unitmode = 1;
+	ck_assert_str_eq(gettrafficrate(102400, 1, 0), "800 Kibit/s");
+	ck_assert_str_eq(gettrafficrate(1048576, 1, 0), "8.00 Mibit/s");
+	ck_assert_str_eq(gettrafficrate(1073741824, 1, 0), "8.00 Gibit/s");
+	ck_assert_str_eq(gettrafficrate(1099511627776ULL, 1, 0), "8.00 Tibit/s");
 }
 END_TEST
 
 START_TEST(gettrafficrate_interval_divides)
 {
-	cfg.unit = 0;
+	cfg.unitmode = 0;
+	cfg.rateunitmode = 1;
 	cfg.rateunit = 0;
 	ck_assert_str_eq(gettrafficrate(102400, 1, 0), "100.00 KiB/s");
 	ck_assert_str_eq(gettrafficrate(102400, 2, 0), "50.00 KiB/s");
 	ck_assert_str_eq(gettrafficrate(102400, 10, 0), "10.00 KiB/s");
 	cfg.rateunit = 1;
-	ck_assert_str_eq(gettrafficrate(102400, 1, 0), "800 kbit/s");
-	ck_assert_str_eq(gettrafficrate(102400, 2, 0), "400 kbit/s");
-	ck_assert_str_eq(gettrafficrate(102400, 10, 0), "80.00 kbit/s");
+	ck_assert_str_eq(gettrafficrate(102400, 1, 0), "819 kbit/s");
+	ck_assert_str_eq(gettrafficrate(102400, 2, 0), "410 kbit/s");
+	ck_assert_str_eq(gettrafficrate(102400, 10, 0), "81.92 kbit/s");
 }
 END_TEST
 
 START_TEST(gettrafficrate_padding)
 {
-	cfg.unit = 0;
+	cfg.unitmode = 0;
 	cfg.rateunit = 0;
 	ck_assert_str_eq(gettrafficrate(102400, 1, 0), "100.00 KiB/s");
 	ck_assert_str_eq(gettrafficrate(102400, 1, 12), "100.00 KiB/s");
@@ -338,9 +371,9 @@ void add_misc_tests(Suite *s)
 {
 	TCase *tc_misc = tcase_create("Misc");
 	tcase_add_test(tc_misc, getbtime_does_not_return_zero);
-	tcase_add_loop_test(tc_misc, getunit_returns_something_with_all_cfg_combinations, 0, 2);
-	tcase_add_loop_test(tc_misc, getrateunit_returns_something_with_all_cfg_combinations, 0, 3);
-	tcase_add_loop_test(tc_misc, getunitdivider_returns_something_with_all_cfg_combinations, 0, 3);
+	tcase_add_loop_test(tc_misc, getunitprefix_returns_something_with_all_cfg_combinations, 0, 2);
+	tcase_add_loop_test(tc_misc, getrateunitprefix_returns_something_with_all_cfg_combinations, 0, 3);
+	tcase_add_loop_test(tc_misc, getunitdivisor_returns_something_with_all_cfg_combinations, 0, 3);
 	tcase_add_test(tc_misc, spacecheck_does_not_check_when_not_configured);
 	tcase_add_test(tc_misc, spacecheck_checks_space);
 	tcase_add_test(tc_misc, spacecheck_fails_with_invalid_path);

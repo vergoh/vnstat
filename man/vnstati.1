@@ -1,4 +1,4 @@
-.TH VNSTATI 1 "APRIL 2015" "version 1.14" "User Manuals"
+.TH VNSTATI 1 "DECEMBER 2016" "version 1.16" "User Manuals"
 .SH NAME
 
 vnstati \- png image output support for vnStat
@@ -266,6 +266,9 @@ file /home/me/vnstat.cfg to standard output (stdout).
 
 Depending on the font provided by the GD library, not all characters may end up shown
 correctly when a UTF-8 locale is used.
+.PP
+Using long date output formats may cause misalignment in shown columns if the
+length of the date exceeds the fixed size allocation.
 
 .SH AUTHOR
 

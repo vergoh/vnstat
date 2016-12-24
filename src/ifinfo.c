@@ -103,50 +103,19 @@ int getiflist(char **ifacelist, int showspeed)
 
 			/* make list of interfaces */
 			while ((di=readdir(dp))) {
-				if (di->d_name[0]!='.') {
-					*ifacelist = realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(di->d_name) + 2 ) * sizeof(char)) );
-					if (*ifacelist == NULL) {
-						panicexit(__FILE__, __LINE__);
-					}
-					strncat(*ifacelist, di->d_name, strlen(di->d_name));
-					strcat(*ifacelist, " ");
-					if (!showspeed) {
-						continue;
-					}
-					speed = getifspeed(di->d_name);
-					if (speed > 0) {
-						snprintf(temp, 64, "(%u Mbit) ", speed);
-						*ifacelist = realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(temp) + 1 ) * sizeof(char)) );
-						if (*ifacelist == NULL) {
-							panicexit(__FILE__, __LINE__);
-						}
-						strncat(*ifacelist, temp, strlen(temp));
-					}
+				if (di->d_name[0] == '.' || strlen(di->d_name) > 31) {
+					continue;
 				}
-			}
-
-			closedir(dp);
-			return 1;
-
-		}
-	}
-
-#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__FreeBSD_kernel__)
-	if (getifaddrs(&ifap) >= 0) {
-
-		/* make list of interfaces */
-		for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
-			if (ifa->ifa_addr->sa_family == AF_LINK) {
-				*ifacelist = realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(ifa->ifa_name) + 2 ) * sizeof(char)) );
+				*ifacelist = realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(di->d_name) + 2 ) * sizeof(char)) );
 				if (*ifacelist == NULL) {
 					panicexit(__FILE__, __LINE__);
 				}
-				strncat(*ifacelist, ifa->ifa_name, strlen(ifa->ifa_name));
+				strncat(*ifacelist, di->d_name, strlen(di->d_name));
 				strcat(*ifacelist, " ");
 				if (!showspeed) {
 					continue;
 				}
-				speed = getifspeed(ifa->ifa_name);
+				speed = getifspeed(di->d_name);
 				if (speed > 0) {
 					snprintf(temp, 64, "(%u Mbit) ", speed);
 					*ifacelist = realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(temp) + 1 ) * sizeof(char)) );
@@ -155,6 +124,38 @@ int getiflist(char **ifacelist, int showspeed)
 					}
 					strncat(*ifacelist, temp, strlen(temp));
 				}
+			}
+
+			closedir(dp);
+			return 1;
+		}
+	}
+
+#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__FreeBSD_kernel__)
+	if (getifaddrs(&ifap) >= 0) {
+
+		/* make list of interfaces */
+		for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
+			if (ifa->ifa_addr->sa_family != AF_LINK || strlen(ifa->ifa_name) > 31) {
+				continue;
+			}
+			*ifacelist = realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(ifa->ifa_name) + 2 ) * sizeof(char)) );
+			if (*ifacelist == NULL) {
+				panicexit(__FILE__, __LINE__);
+			}
+			strncat(*ifacelist, ifa->ifa_name, strlen(ifa->ifa_name));
+			strcat(*ifacelist, " ");
+			if (!showspeed) {
+				continue;
+			}
+			speed = getifspeed(ifa->ifa_name);
+			if (speed > 0) {
+				snprintf(temp, 64, "(%u Mbit) ", speed);
+				*ifacelist = realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(temp) + 1 ) * sizeof(char)) );
+				if (*ifacelist == NULL) {
+					panicexit(__FILE__, __LINE__);
+				}
+				strncat(*ifacelist, temp, strlen(temp));
 			}
 		}
 
@@ -184,7 +185,7 @@ int readproc(const char *iface)
 
 	check = 0;
 	while (fgets(procline, 512, fp)!=NULL) {
-		sscanf(procline, "%511s", temp[0]);
+		sscanf(procline, "%63s", temp[0]);
 		if (strncmp(ifaceid, temp[0], strlen(ifaceid))==0) {
 			/* if (debug)
 				printf("\n%s\n", procline); */
@@ -499,7 +500,7 @@ int readifaddrs(const char *iface)
 
 uint32_t getifspeed(const char *iface)
 {
-	uint32_t speed = 0;
+	uint64_t speed = 0;
 #if defined(__linux__)
 
 	FILE *fp;
@@ -513,7 +514,7 @@ uint32_t getifspeed(const char *iface)
 		return 0;
 	} else {
 		if (fgets(buffer, 64, fp)!=NULL) {
-			speed = strtoul(buffer, (char **)NULL, 0);
+			speed = strtoull(buffer, (char **)NULL, 0);
 		} else {
 			if (debug)
 				printf("Unable to read: %s - %s\n", file, strerror(errno));
@@ -532,15 +533,27 @@ uint32_t getifspeed(const char *iface)
 			printf("Requested interface \"%s\" not found.\n", iface);
 		return 0;
 	} else {
-		speed = ifd.ifi_baudrate;
+		speed = (uint64_t)ifd.ifi_baudrate;
 	}
 
 #endif
 	if (debug)
-		printf("getifspeed: \"%s\": %d\n", iface, speed);
+		printf("getifspeed: \"%s\": %"PRIu64"\n", iface, speed);
 
 	if (speed > 1000000) {
 		speed = 0;
 	}
-	return speed;
+	return (uint32_t)speed;
+}
+
+int isifavailable(const char *iface)
+{
+	int ret = 0, printstatus;
+
+	printstatus = disableprints;
+	disableprints = 1;
+	ret = getifinfo(iface);
+	disableprints = printstatus;
+
+	return ret;
 }

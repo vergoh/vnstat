@@ -5,6 +5,8 @@
 #include "misc.h"
 #include "cfg.h"
 #include "ibw.h"
+#include "fs.h"
+#include "id.h"
 #include "daemon.h"
 
 void daemonize(void)
@@ -29,12 +31,9 @@ void daemonize(void)
 
 	setsid(); /* obtain a new process group */
 
-	if (cfg.uselogging) {
-		snprintf(errorstring, 512, "vnStat daemon %s started. (uid:%d gid:%d)", VNSTATVERSION, (int)getuid(), (int)getgid());
-		if (!printe(PT_Info)) {
-			printf("Error: Unable to use logfile. Exiting.\n");
-			exit(EXIT_FAILURE);
-		}
+	if (!verifylogaccess()) {
+		printf("Error: Unable to use logfile. Exiting.\n");
+		exit(EXIT_FAILURE);
 	}
 
 	/* lock / pid file */
@@ -61,6 +60,13 @@ void daemonize(void)
 
 	/* redirect standard i/o to null */
 	i=open("/dev/null",O_RDWR); /* stdin */
+
+	if (i < 0) {
+		perror("Error: open() /dev/null");
+		snprintf(errorstring, 512, "open() /dev/null failed, exiting.");
+		printe(PT_Error);
+		exit(EXIT_FAILURE);
+	}
 
 	/* stdout */
 	if (dup(i) < 0) {
@@ -102,14 +108,9 @@ void daemonize(void)
 	signal(SIGTSTP,SIG_IGN); /* ignore tty signals */
 	signal(SIGTTOU,SIG_IGN);
 	signal(SIGTTIN,SIG_IGN);
-
-	if (cfg.uselogging==1) {
-		snprintf(errorstring, 512, "Daemon running with pid %d.", (int)getpid());
-		printe(PT_Info);
-	}
 }
 
-int addinterfaces(const char *dirname)
+int addinterfaces(const char *dirname, const int running)
 {
 	char *ifacelist, interface[32];
 	int index = 0, count = 0, bwlimit = 0;
@@ -141,6 +142,13 @@ int addinterfaces(const char *dirname)
 			continue;
 		}
 
+		/* skip already known interfaces */
+		if (checkdb(interface, dirname)) {
+			if (debug)
+				printf("already known\n");
+			continue;
+		}
+
 		/* create database for interface */
 		initdb();
 		strncpy_nt(data.interface, interface, 32);
@@ -156,25 +164,29 @@ int addinterfaces(const char *dirname)
 		}
 		count++;
 		bwlimit = ibwget(interface);
-		if (bwlimit > 0) {
-			printf("\"%s\" added with %d Mbit bandwidth limit.\n", interface, bwlimit);
+		if (!running) {
+			if (bwlimit > 0) {
+				printf("\"%s\" added with %d Mbit bandwidth limit.\n", interface, bwlimit);
+			} else {
+				printf("\"%s\" added. Warning: no bandwidth limit has been set.\n", interface);
+			}
 		} else {
-			printf("\"%s\" added. Warning: no bandwidth limit has been set.\n", interface);
+			if (debug)
+				printf("\%s\" added with %d Mbit bandwidth limit to cache.\n", interface, bwlimit);
+			cacheadd(interface, 1);
 		}
 	}
 
-	if (count==1) {
-		printf("-> %d interface added.", count);
-	} else {
-		printf("-> %d interfaces added.", count);
-	}
+	if (count && !running) {
+		if (count==1) {
+			printf("-> %d interface added.\n", count);
+		} else {
+			printf("-> %d interfaces added.\n", count);
+		}
 
-	if (count) {
-		printf("\nLimits can be modified using the configuration file. See \"man vnstat.conf\".\n");
-		printf("Unwanted interfaces can be removed from monitoring with \"vnstat --delete\".");
+		printf("Limits can be modified using the configuration file. See \"man vnstat.conf\".\n");
+		printf("Unwanted interfaces can be removed from monitoring with \"vnstat --delete\".\n");
 	}
-
-	printf("\n");
 
 	free(ifacelist);
 	return count;
@@ -190,210 +202,20 @@ void debugtimestamp(void)
 	printf("%s\n", timestamp);
 }
 
-uid_t getuser(const char *user)
-{
-	struct passwd *pw;
-	uid_t uid;
-
-	if (!strlen(user)) {
-		return getuid();
-	}
-
-	if (isnumeric(user)) {
-		uid = atoi(user);
-		pw = getpwuid(uid);
-	} else {
-		pw = getpwnam(user);
-	}
-
-	if (pw == NULL) {
-		printf("Error: No such user: \"%s\".\n", user);
-		exit(EXIT_FAILURE);
-	}
-
-	uid = pw->pw_uid;
-
-	if (debug)
-		printf("getuser(%s / %d): %s (%d)\n", user, atoi(user), pw->pw_name, (int)uid);
-
-	return uid;
-}
-
-gid_t getgroup(const char *group)
-{
-	struct group *gr;
-	gid_t gid;
-
-	if (!strlen(group)) {
-		return getgid();
-	}
-
-	if (isnumeric(group)) {
-		gid = atoi(group);
-		gr = getgrgid(gid);
-	} else {
-		gr = getgrnam(group);
-	}
-
-	if (gr == NULL) {
-		printf("Error: No such group: \"%s\".\n", group);
-		exit(EXIT_FAILURE);
-	}
-
-	gid = gr->gr_gid;
-
-	if (debug)
-		printf("getgroup(%s / %d): %s (%d)\n", group, atoi(group), gr->gr_name, (int)gid);
-
-	return gid;
-}
-
-void setuser(const char *user)
-{
-	uid_t uid;
-
-	if (!strlen(user)) {
-		return;
-	}
-
-	if (getuid() != 0 && geteuid() != 0) {
-		printf("Error: User can only be set as root.\n");
-		exit(EXIT_FAILURE);
-	}
-
-	if (isnumeric(user) && atoi(user) == 0) {
-		return;
-	}
-
-	uid = getuser(user);
-
-	if (debug)
-		printf("switching to user id %d.\n", uid);
-
-	if (setuid(uid) != 0) {
-		perror("Error: setuid");
-		exit(EXIT_FAILURE);
-	}
-}
-
-void setgroup(const char *group)
-{
-	gid_t gid;
-
-	if (!strlen(group)) {
-		return;
-	}
-
-	if (getuid() != 0 && geteuid() != 0) {
-		printf("Error: Group can only be set as root.\n");
-		exit(EXIT_FAILURE);
-	}
-
-	if (isnumeric(group) && atoi(group) == 0) {
-		return;
-	}
-
-	gid = getgroup(group);
-
-	if (debug)
-		printf("switching to group id %d.\n", gid);
-
-	if (setgid(gid) != 0) {
-		perror("Error: setgid");
-		exit(EXIT_FAILURE);
-	}
-}
-
-int direxists(const char *dir)
-{
-	struct stat statbuf;
-
-	if (stat(dir, &statbuf)!=0) {
-		if (errno==ENOENT) {
-			return 0;
-		}
-		if (debug)
-			printf("Error: stat() \"%s\": %s\n", dir, strerror(errno));
-	}
-
-	return 1;
-}
-
-int mkpath(const char *dir, const mode_t mode)
-{
-	int i = 0, len = 0, ret = 1;
-	char *tmp = NULL;
-
-	if (!strlen(dir)) {
-		if (debug)
-			printf("Error: mkpath(), no directory given\n");
-		return 0;
-	}
-
-	if (direxists(dir)) {
-		if (debug)
-			printf("already exists: %s\n", dir);
-		return 1;
-	}
-
-	if (!cfg.createdirs) {
-		return 0;
-	}
-
-	tmp = strdup(dir);
-	if (tmp == NULL) {
-		return 0;
-	}
-
-	len = strlen(tmp);
-	if (tmp[len-1] == '/') {
-		tmp[len-1] = '\0';
-	}
-
-	if (tmp[0] == '/') {
-		i++;
-	}
-
-	for (; i<len; i++) {
-		if (tmp[i] == '/') {
-			tmp[i] = '\0';
-			if (!direxists(tmp)) {
-				if (mkdir(tmp, mode)!=0) {
-					if (debug)
-						printf("Error: mkdir() \"%s\": %s\n", tmp, strerror(errno));
-					ret = 0;
-					break;
-				}
-			}
-			tmp[i] = '/';
-		}
-	}
-	if (ret) {
-		if (mkdir(tmp, mode)!=0) {
-			if (debug)
-				printf("Error: mkdir() \"%s\": %s\n", tmp, strerror(errno));
-			ret = 0;
-		} else if (debug) {
-			printf("created: %s\n", tmp);
-		}
-	}
-
-	free(tmp);
-	return ret;
-}
-
 void initdstate(DSTATE *s)
 {
 	noexit = 1;        /* disable exits in functions */
 	debug = 0;         /* debug disabled by default */
+	disableprints = 0; /* let prints be visible */
 	s->rundaemon = 0;  /* daemon disabled by default */
 
-	s->running = 1;
+	s->running = 0;
 	s->dbsaved = 1;
 	s->showhelp = 1;
 	s->sync = 0;
 	s->forcesave = 0;
 	s->noadd = 0;
+	s->alwaysadd = 0;
 	s->dbhash = 0;
 	s->cfgfile[0] = '\0';
 	s->dirname[0] = '\0';
@@ -428,7 +250,7 @@ void preparedatabases(DSTATE *s)
 	}
 	closedir(dir);
 
-	if (s->dbcount > 0) {
+	if (s->dbcount > 0 && !s->alwaysadd) {
 		s->dbcount = 0;
 		return;
 	}
@@ -441,8 +263,11 @@ void preparedatabases(DSTATE *s)
 		printf("Error: Not enough free diskspace available, exiting.\n");
 		exit(EXIT_FAILURE);
 	}
-	printf("Zero database found, adding available interfaces...\n");
-	if (!addinterfaces(s->dirname)) {
+	if (s->dbcount == 0) {
+		printf("Zero database found, adding available interfaces...\n");
+	}
+
+	if (!addinterfaces(s->dirname, s->running) && s->dbcount == 0) {
 		printf("Nothing to do, exiting.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -564,7 +389,7 @@ void processdatalist(DSTATE *s)
 		/* get info if interface has been marked as active */
 		datalist_getifinfo(s);
 
-		/* check that the time is correct */
+		/* check that the time is correct and update cached data */
 		if (!datalist_timevalidation(s)) {
 			s->datalist = s->datalist->next;
 			continue;
@@ -573,7 +398,7 @@ void processdatalist(DSTATE *s)
 		/* write data to file if now is the time for it */
 		if (!datalist_writedb(s)) {
 			/* remove interface from update list since the database file doesn't exist anymore */
-			snprintf(errorstring, 512, "Database for interface \"%s\" no longer exists, removing from update list.", s->datalist->data.interface);
+			snprintf(errorstring, 512, "Removing interface \"%s\" from update list.", s->datalist->data.interface);
 			printe(PT_Info);
 			s->datalist = cacheremove(s->datalist->data.interface);
 			s->dbcount--;
@@ -590,7 +415,7 @@ int datalist_cacheget(DSTATE *s)
 	if (cacheget(s->datalist)==0) {
 
 		/* try to read data from file if not cached */
-		if (readdb(s->datalist->data.interface, s->dirname)==0) {
+		if (readdb(s->datalist->data.interface, s->dirname, 0)==0) {
 			/* mark cache as filled on read success and force interface status update */
 			s->datalist->filled = 1;
 			s->dbhash = 0;
@@ -659,6 +484,19 @@ int datalist_writedb(DSTATE *s)
 	}
 
 	if (!checkdb(s->datalist->data.interface, s->dirname)) {
+		snprintf(errorstring, 512, "Database for interface \"%s\" no longer exists.", s->datalist->data.interface);
+		printe(PT_Info);
+		return 0;
+	}
+
+	if (!validatedb()) {
+		snprintf(errorstring, 512, "Cached data for interface \"%s\" failed validation. Reloading data from file.", s->datalist->data.interface);
+		printe(PT_Error);
+		if (readdb(s->datalist->data.interface, s->dirname, 0)==0) {
+			cacheupdate();
+			return 1;
+		}
+		/* remove interface from update list if reload failed */
 		return 0;
 	}
 
@@ -747,124 +585,4 @@ void preparedirs(DSTATE *s)
 	if (cfg.uselogging == 1) {
 		preparevnstatdir(cfg.logfile, s->user, s->group);
 	}
-}
-
-void preparevnstatdir(const char *file, const char *user, const char *group)
-{
-	int len, i, lastslash=0;
-	char *path, *base;
-
-	if (file == NULL) {
-		return;
-	}
-
-	len = strlen(file);
-	if (len<2) {
-		return;
-	}
-
-	if (file[len-1] == '/') {
-		return;
-	}
-
-	path = strdup(file);
-	if (path == NULL) {
-		return;
-	}
-
-	/* verify that path ends with vnstat or vnstatd */
-	base = basename(dirname(path));
-	if (strcmp(base, "vnstat")!=0 && strcmp(base, "vnstatd")!=0) {
-		free(path);
-		return;
-	}
-	free(path);
-
-	path = strdup(file);
-	if (path == NULL) {
-		return;
-	}
-
-	/* extract path */
-	for (i=0; i<len; i++) {
-		if (path[i] == '/') {
-			lastslash = i;
-		}
-	}
-	if (lastslash == 0) {
-		free(path);
-		return;
-	}
-	path[lastslash] = '\0';
-
-	/* create & chmod if needed */
-	if (mkpath(path, 0775)) {
-		updatedirowner(path, user, group);
-	}
-	free(path);
-}
-
-void updatedirowner(const char *dir, const char *user, const char *group)
-{
-	DIR *d;
-	struct dirent *di;
-	struct stat statbuf;
-	char entryname[512];
-	uid_t uid;
-	gid_t gid;
-
-	if (!cfg.updatefileowner) {
-		return;
-	}
-
-	if (getuid() != 0 && geteuid() != 0) {
-		if (debug)
-			printf("user not root, skipping chmod\n");
-		return;
-	}
-
-	uid = getuser(user);
-	gid = getgroup(group);
-
-	if (stat(dir, &statbuf)!=0) {
-		return;
-	}
-
-	if (statbuf.st_uid != uid || statbuf.st_gid != gid) {
-		if (chown(dir, uid, gid) != 0) {
-			if (debug)
-				printf("Error: updatedirowner() chown() \"%s\": %s\n", dir, strerror(errno));
-			return;
-		} else {
-			if (debug)
-				printf("\"%s\" chown completed\n", dir);
-		}
-	}
-
-	if ((d=opendir(dir))==NULL) {
-		if (debug)
-			printf("Error: updatedirowner() diropen() \"%s\": %s\n", dir, strerror(errno));
-		return;
-	}
-
-	while ((di=readdir(d))) {
-		if (di->d_type != DT_REG) {
-			continue;
-		}
-		snprintf(entryname, 512, "%s/%s", dir, di->d_name);
-		if (stat(entryname, &statbuf)!=0) {
-			continue;
-		}
-		if (statbuf.st_uid != uid || statbuf.st_gid != gid) {
-			if (chown(entryname, uid, gid) != 0) {
-				if (debug)
-					printf("Error: chown() \"%s\": %s\n", entryname, strerror(errno));
-			} else {
-				if (debug)
-					printf("\"%s\" chown completed\n", entryname);
-			}
-		}
-	}
-
-	closedir(d);
 }

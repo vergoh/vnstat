@@ -4,6 +4,7 @@
 typedef struct {
 	int running, updateinterval, dbcount, dodbsave, rundaemon;
 	int dbsaved, showhelp, sync, saveinterval, forcesave, noadd;
+	int alwaysadd;
 	uint32_t dbhash;
 	char cfgfile[512], dirname[512];
 	char user[33], group[33];
@@ -12,14 +13,8 @@ typedef struct {
 } DSTATE;
 
 void daemonize(void);
-int addinterfaces(const char *dirname);
+int addinterfaces(const char *dirname, const int running);
 void debugtimestamp(void);
-uid_t getuser(const char *user);
-gid_t getgroup(const char *group);
-void setuser(const char *user);
-void setgroup(const char *group);
-int direxists(const char *dir);
-int mkpath(const char *dir, const mode_t mode);
 
 void initdstate(DSTATE *s);
 void preparedatabases(DSTATE *s);
@@ -34,7 +29,5 @@ int datalist_timevalidation(DSTATE *s);
 int datalist_writedb(DSTATE *s);
 void handleintsignals(DSTATE *s);
 void preparedirs(DSTATE *s);
-void preparevnstatdir(const char *dir, const char *user, const char *group);
-void updatedirowner(const char *dir, const char *user, const char *group);
 
 #endif

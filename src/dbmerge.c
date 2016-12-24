@@ -26,7 +26,7 @@ int mergedb(char iface[], char dirname[])
 		if (debug)
 			printf("merging %s:\n", ifaceptr);
 
-		if (readdb(ifaceptr, dirname)!=0) {
+		if (readdb(ifaceptr, dirname, 0)!=0) {
 			printf("Merge \"%s\" failed.\n", mergedata.interface);
 			return 0;
 		}

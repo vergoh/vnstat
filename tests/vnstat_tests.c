@@ -6,6 +6,8 @@
 #include "ifinfo_tests.h"
 #include "misc_tests.h"
 #include "daemon_tests.h"
+#include "fs_tests.h"
+#include "id_tests.h"
 #include "common.h"
 
 int main(void)
@@ -39,6 +41,8 @@ Suite *test_suite(void)
 	add_ifinfo_tests(s);
 	add_misc_tests(s);
 	add_daemon_tests(s);
+	add_fs_tests(s);
+	add_id_tests(s);
 
 	return s;
 }
@@ -66,6 +70,7 @@ void disable_logprints(void)
 {
 	noexit = 2;
 	cfg.uselogging = 0;
+	disableprints = 1;
 }
 
 int clean_testdbdir(void)

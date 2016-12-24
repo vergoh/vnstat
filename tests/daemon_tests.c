@@ -4,63 +4,8 @@
 #include "dbaccess.h"
 #include "dbcache.h"
 #include "cfg.h"
+#include "fs.h"
 #include "daemon.h"
-
-START_TEST(getuser_root_string)
-{
-	ck_assert_int_eq((int)getuser("root"), 0);
-}
-END_TEST
-
-START_TEST(getuser_root_numeric)
-{
-	ck_assert_int_eq((int)getuser("0"), 0);
-}
-END_TEST
-
-START_TEST(getuser_no_such_user_string)
-{
-	suppress_output();
-	getuser("reallynosuchuser");
-}
-END_TEST
-
-START_TEST(getuser_no_such_user_numeric)
-{
-	suppress_output();
-	getuser("99999999");
-}
-END_TEST
-
-START_TEST(getgroup_root_string)
-{
-#if defined(__linux__) || defined(__GNU__) || defined(__GLIBC__)
-	ck_assert_int_eq((int)getgroup("root"), 0);
-#else
-	ck_assert_int_eq((int)getgroup("wheel"), 0);
-#endif
-}
-END_TEST
-
-START_TEST(getgroup_root_numeric)
-{
-	ck_assert_int_eq((int)getgroup("0"), 0);
-}
-END_TEST
-
-START_TEST(getgroup_no_such_user_string)
-{
-	suppress_output();
-	getgroup("reallynosuchgroup");
-}
-END_TEST
-
-START_TEST(getgroup_no_such_user_numeric)
-{
-	suppress_output();
-	getgroup("99999999");
-}
-END_TEST
 
 START_TEST(debugtimestamp_does_not_exit)
 {
@@ -78,12 +23,13 @@ START_TEST(addinterfaces_does_nothing_with_no_files)
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	ck_assert_int_eq(clean_testdbdir(), 1);
 
-	ck_assert_int_eq(addinterfaces(TESTDBDIR), 0);
+	ck_assert_int_eq(addinterfaces(TESTDBDIR, 0), 0);
 }
 END_TEST
 
 START_TEST(addinterfaces_adds_interfaces)
 {
+	int ret;
 	linuxonly;
 
 	defaultcfg();
@@ -95,12 +41,92 @@ START_TEST(addinterfaces_adds_interfaces)
 	fake_proc_net_dev("a", "ethtwo", 5, 6, 7, 8);
 	fake_proc_net_dev("a", "sit0", 0, 0, 0, 0);
 
-	ck_assert_int_eq(addinterfaces(TESTDBDIR), 2);
+	ret = addinterfaces(TESTDBDIR, 0);
+	ck_assert_int_eq(ret, 2);
 
 	ck_assert_int_eq(check_dbfile_exists("ethone", sizeof(DATA)), 1);
 	ck_assert_int_eq(check_dbfile_exists(".ethone", sizeof(DATA)), 0);
 	ck_assert_int_eq(check_dbfile_exists("ethtwo", sizeof(DATA)), 1);
 	ck_assert_int_eq(check_dbfile_exists(".ethtwo", sizeof(DATA)), 0);
+}
+END_TEST
+
+START_TEST(addinterfaces_adds_only_new_interfaces)
+{
+	int ret;
+	linuxonly;
+
+	defaultcfg();
+	suppress_output();
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	ck_assert_int_eq(clean_testdbdir(), 1);
+	fake_proc_net_dev("w", "ethone", 1, 2, 3, 4);
+	fake_proc_net_dev("a", "lo0", 0, 0, 0, 0);
+	fake_proc_net_dev("a", "ethtwo", 5, 6, 7, 8);
+	fake_proc_net_dev("a", "sit0", 0, 0, 0, 0);
+
+	ret = addinterfaces(TESTDBDIR, 0);
+	ck_assert_int_eq(ret, 2);
+
+	ck_assert_int_eq(check_dbfile_exists("ethone", sizeof(DATA)), 1);
+	ck_assert_int_eq(check_dbfile_exists(".ethone", sizeof(DATA)), 0);
+	ck_assert_int_eq(check_dbfile_exists("ethtwo", sizeof(DATA)), 1);
+	ck_assert_int_eq(check_dbfile_exists(".ethtwo", sizeof(DATA)), 0);
+	ck_assert_int_eq(check_dbfile_exists("eththree", sizeof(DATA)), 0);
+	ck_assert_int_eq(check_dbfile_exists(".eththree", sizeof(DATA)), 0);
+
+	fake_proc_net_dev("a", "eththree", 9, 10, 11, 12);
+
+	ret = addinterfaces(TESTDBDIR, 0);
+	ck_assert_int_eq(ret, 1);
+
+	ck_assert_int_eq(check_dbfile_exists("ethone", sizeof(DATA)), 1);
+	ck_assert_int_eq(check_dbfile_exists(".ethone", sizeof(DATA)), 0);
+	ck_assert_int_eq(check_dbfile_exists("ethtwo", sizeof(DATA)), 1);
+	ck_assert_int_eq(check_dbfile_exists(".ethtwo", sizeof(DATA)), 0);
+	ck_assert_int_eq(check_dbfile_exists("eththree", sizeof(DATA)), 1);
+	ck_assert_int_eq(check_dbfile_exists(".eththree", sizeof(DATA)), 0);
+	ck_assert_int_eq(cachecount(), 0);
+}
+END_TEST
+
+START_TEST(addinterfaces_adds_to_cache_when_running)
+{
+	int ret;
+	linuxonly;
+
+	defaultcfg();
+	suppress_output();
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	ck_assert_int_eq(clean_testdbdir(), 1);
+	fake_proc_net_dev("w", "ethone", 1, 2, 3, 4);
+	fake_proc_net_dev("a", "ethtwo", 5, 6, 7, 8);
+
+	ck_assert_int_eq(cachecount(), 0);
+
+	ret = addinterfaces(TESTDBDIR, 1);
+	ck_assert_int_eq(ret, 2);
+	ck_assert_int_eq(cachecount(), 2);
+
+	ck_assert_int_eq(check_dbfile_exists("ethone", sizeof(DATA)), 1);
+	ck_assert_int_eq(check_dbfile_exists(".ethone", sizeof(DATA)), 0);
+	ck_assert_int_eq(check_dbfile_exists("ethtwo", sizeof(DATA)), 1);
+	ck_assert_int_eq(check_dbfile_exists(".ethtwo", sizeof(DATA)), 0);
+	ck_assert_int_eq(check_dbfile_exists("eththree", sizeof(DATA)), 0);
+	ck_assert_int_eq(check_dbfile_exists(".eththree", sizeof(DATA)), 0);
+
+	fake_proc_net_dev("a", "eththree", 9, 10, 11, 12);
+
+	ret = addinterfaces(TESTDBDIR, 1);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(cachecount(), 3);
+
+	ck_assert_int_eq(check_dbfile_exists("ethone", sizeof(DATA)), 1);
+	ck_assert_int_eq(check_dbfile_exists(".ethone", sizeof(DATA)), 0);
+	ck_assert_int_eq(check_dbfile_exists("ethtwo", sizeof(DATA)), 1);
+	ck_assert_int_eq(check_dbfile_exists(".ethtwo", sizeof(DATA)), 0);
+	ck_assert_int_eq(check_dbfile_exists("eththree", sizeof(DATA)), 1);
+	ck_assert_int_eq(check_dbfile_exists(".eththree", sizeof(DATA)), 0);
 }
 END_TEST
 
@@ -121,6 +147,7 @@ START_TEST(preparedatabases_exits_with_no_database_dir)
 	defaultcfg();
 	initdstate(&s);
 	suppress_output();
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 
 	preparedatabases(&s);
 }
@@ -135,6 +162,26 @@ START_TEST(preparedatabases_exits_with_no_databases)
 	defaultcfg();
 	initdstate(&s);
 	suppress_output();
+	strncpy_nt(s.dirname, TESTDBDIR, 512);
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	ck_assert_int_eq(clean_testdbdir(), 1);
+
+	preparedatabases(&s);
+}
+END_TEST
+
+START_TEST(preparedatabases_exits_with_no_databases_and_noadd)
+{
+	DSTATE s;
+
+	linuxonly_exit;
+
+	defaultcfg();
+	initdstate(&s);
+	s.noadd = 1;
+	suppress_output();
+	strncpy_nt(s.dirname, TESTDBDIR, 512);
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	ck_assert_int_eq(clean_testdbdir(), 1);
 
 	preparedatabases(&s);
@@ -535,6 +582,7 @@ START_TEST(datalist_writedb_detects_missing_database_file)
 	initdstate(&s);
 	s.dodbsave = 1;
 	s.dbsaved = 0;
+	disable_logprints();
 	strncpy_nt(s.dirname, TESTDBDIR, 512);
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	ck_assert_int_eq(cacheadd("name1", 0), 1);
@@ -548,10 +596,12 @@ END_TEST
 START_TEST(datalist_writedb_writes_database_file)
 {
 	DSTATE s;
+	initdb();
 	initdstate(&s);
 	s.dodbsave = 1;
 	s.dbsaved = 0;
 	disable_logprints();
+	strncpy_nt(data.interface, "name1", 32);
 	strncpy_nt(s.dirname, TESTDBDIR, 512);
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	ck_assert_int_eq(clean_testdbdir(), 1);
@@ -686,51 +736,6 @@ START_TEST(handleintsignals_handles_signals)
 }
 END_TEST
 
-START_TEST(direxists_with_no_dir)
-{
-	defaultcfg();
-	ck_assert_int_eq(remove_directory(TESTDIR), 1);
-	ck_assert_int_eq(direxists(""), 0);
-	ck_assert_int_eq(direxists(TESTDIR), 0);
-}
-END_TEST
-
-START_TEST(direxists_with_dir)
-{
-	defaultcfg();
-	ck_assert_int_eq(remove_directory(TESTDIR), 1);
-	ck_assert_int_eq(clean_testdbdir(), 1);
-	ck_assert_int_eq(direxists(TESTDIR), 1);
-	ck_assert_int_eq(direxists(TESTDBDIR), 1);
-}
-END_TEST
-
-START_TEST(mkpath_with_no_dir)
-{
-	defaultcfg();
-	ck_assert_int_eq(remove_directory(TESTDIR), 1);
-	ck_assert_int_eq(mkpath("", 0775), 0);
-}
-END_TEST
-
-START_TEST(mkpath_with_dir)
-{
-	defaultcfg();
-	ck_assert_int_eq(remove_directory(TESTDIR), 1);
-	ck_assert_int_eq(direxists(TESTDIR), 0);
-	ck_assert_int_eq(direxists(TESTDBDIR), 0);
-	ck_assert_int_eq(mkpath(TESTDIR, 0775), 1);
-	ck_assert_int_eq(direxists(TESTDIR), 1);
-	ck_assert_int_eq(direxists(TESTDBDIR), 0);
-	ck_assert_int_eq(mkpath(TESTDBDIR, 0775), 1);
-	ck_assert_int_eq(direxists(TESTDBDIR), 1);
-	ck_assert_int_eq(remove_directory(TESTDIR), 1);
-	ck_assert_int_eq(direxists(TESTDBDIR), 0);
-	ck_assert_int_eq(mkpath(TESTDBDIR, 0775), 1);
-	ck_assert_int_eq(direxists(TESTDBDIR), 1);
-}
-END_TEST
-
 START_TEST(preparedirs_with_no_dir)
 {
 	char logdir[512], piddir[512];
@@ -785,75 +790,18 @@ START_TEST(preparedirs_with_dir)
 }
 END_TEST
 
-START_TEST(preparevnstatdir_with_no_vnstat)
-{
-	char testdir[512], testpath[512];
-	defaultcfg();
-	cfg.updatefileowner = 0;
-
-	ck_assert_int_eq(remove_directory(TESTDIR), 1);
-	ck_assert_int_eq(direxists(TESTDIR), 0);
-	snprintf(testdir, 512, "%s/here/be/dragons", TESTDIR);
-	snprintf(testpath, 512, "%s/or_something.txt", testdir);
-	preparevnstatdir(testpath, "user", "group");
-	ck_assert_int_eq(direxists(TESTDIR), 0);
-	ck_assert_int_eq(direxists(testdir), 0);
-
-	snprintf(testdir, 512, "%s/here/be/vnstat/dragons", TESTDIR);
-	snprintf(testpath, 512, "%s/or_something.txt", testdir);
-	preparevnstatdir(testpath, "user", "group");
-	ck_assert_int_eq(direxists(TESTDIR), 0);
-	ck_assert_int_eq(direxists(testdir), 0);
-
-	snprintf(testdir, 512, "%s/here/be/vnstati", TESTDIR);
-	snprintf(testpath, 512, "%s/or_something.txt", testdir);
-	preparevnstatdir(testpath, "user", "group");
-	ck_assert_int_eq(direxists(TESTDIR), 0);
-	ck_assert_int_eq(direxists(testdir), 0);
-}
-END_TEST
-
-START_TEST(preparevnstatdir_with_vnstat)
-{
-	char testdir[512], testpath[512];
-	defaultcfg();
-	cfg.updatefileowner = 0;
-
-	ck_assert_int_eq(remove_directory(TESTDIR), 1);
-	ck_assert_int_eq(direxists(TESTDIR), 0);
-	snprintf(testdir, 512, "%s/here/be/vnstat", TESTDIR);
-	snprintf(testpath, 512, "%s/or_something.txt", testdir);
-	preparevnstatdir(testpath, "user", "group");
-	ck_assert_int_eq(direxists(TESTDIR), 1);
-	ck_assert_int_eq(direxists(testdir), 1);
-
-	ck_assert_int_eq(remove_directory(TESTDIR), 1);
-	ck_assert_int_eq(direxists(TESTDIR), 0);
-	snprintf(testdir, 512, "%s/here/be/vnstatd", TESTDIR);
-	snprintf(testpath, 512, "%s/or_something.txt", testdir);
-	preparevnstatdir(testpath, "user", "group");
-	ck_assert_int_eq(direxists(TESTDIR), 1);
-	ck_assert_int_eq(direxists(testdir), 1);
-}
-END_TEST
-
 void add_daemon_tests(Suite *s)
 {
 	TCase *tc_daemon = tcase_create("Daemon");
-	tcase_add_test(tc_daemon, getuser_root_string);
-	tcase_add_test(tc_daemon, getuser_root_numeric);
-	tcase_add_exit_test(tc_daemon, getuser_no_such_user_string, 1);
-	tcase_add_exit_test(tc_daemon, getuser_no_such_user_numeric, 1);
-	tcase_add_test(tc_daemon, getgroup_root_string);
-	tcase_add_test(tc_daemon, getgroup_root_numeric);
-	tcase_add_exit_test(tc_daemon, getgroup_no_such_user_string, 1);
-	tcase_add_exit_test(tc_daemon, getgroup_no_such_user_numeric, 1);
 	tcase_add_test(tc_daemon, debugtimestamp_does_not_exit);
 	tcase_add_test(tc_daemon, initdstate_does_not_crash);
 	tcase_add_test(tc_daemon, addinterfaces_does_nothing_with_no_files);
 	tcase_add_test(tc_daemon, addinterfaces_adds_interfaces);
+	tcase_add_test(tc_daemon, addinterfaces_adds_only_new_interfaces);
+	tcase_add_test(tc_daemon, addinterfaces_adds_to_cache_when_running);
 	tcase_add_exit_test(tc_daemon, preparedatabases_exits_with_no_database_dir, 1);
 	tcase_add_exit_test(tc_daemon, preparedatabases_exits_with_no_databases, 1);
+	tcase_add_exit_test(tc_daemon, preparedatabases_exits_with_no_databases_and_noadd, 1);
 	tcase_add_test(tc_daemon, preparedatabases_with_no_databases_creates_databases);
 	tcase_add_test(tc_daemon, setsignaltraps_does_not_exit);
 	tcase_add_exit_test(tc_daemon, filldatabaselist_exits_with_no_database_dir, 1);
@@ -879,14 +827,8 @@ void add_daemon_tests(Suite *s)
 	tcase_add_test(tc_daemon, processdatalist_empty_does_nothing);
 	tcase_add_test(tc_daemon, processdatalist_filled_does_things);
 	tcase_add_test(tc_daemon, handleintsignals_handles_signals);
-	tcase_add_test(tc_daemon, direxists_with_no_dir);
-	tcase_add_test(tc_daemon, direxists_with_dir);
-	tcase_add_test(tc_daemon, mkpath_with_no_dir);
-	tcase_add_test(tc_daemon, mkpath_with_dir);
 	tcase_add_test(tc_daemon, preparedirs_with_no_dir);
 	tcase_add_test(tc_daemon, preparedirs_with_dir);
-	tcase_add_test(tc_daemon, preparevnstatdir_with_no_vnstat);
-	tcase_add_test(tc_daemon, preparevnstatdir_with_vnstat);
 	suite_add_tcase(s, tc_daemon);
 }
 

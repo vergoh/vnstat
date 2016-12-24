@@ -1,5 +1,5 @@
 /*
-vnStat image output - Copyright (c) 2007-2015 Teemu Toivola <tst@iki.fi>
+vnStat image output - Copyright (c) 2007-2016 Teemu Toivola <tst@iki.fi>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -213,7 +213,7 @@ int main(int argc, char *argv[])
 					printf("Rateunit changed: %d\n", cfg.rateunit);
 			}
 		} else if ((strcmp(argv[currentarg],"-v")==0) || (strcmp(argv[currentarg],"--version"))==0) {
-			printf("vnStat image output %s by Teemu Toivola <tst at iki dot fi>\n", VNSTATVERSION);
+			printf("vnStat image output %s by Teemu Toivola <tst at iki dot fi>\n", getversion());
 			return 0;
 		} else {
 			printf("Unknown arg \"%s\". Use --help for help.\n",argv[currentarg]);
@@ -246,8 +246,9 @@ int main(int argc, char *argv[])
 
 void initiparams(IPARAMS *p)
 {
-	noexit = 0;		/* allow functions to exit in case of error */
-	debug = 0;		/* debug disabled by default */
+	noexit = 0;        /* allow functions to exit in case of error */
+	debug = 0;         /* debug disabled by default */
+	disableprints = 0; /* let prints be visible */
 	p->interface[0] = '\0';
 	p->dirname[0] = '\0';
 	p->filename[0] = '\0';
@@ -258,7 +259,7 @@ void initiparams(IPARAMS *p)
 
 void showihelp(IPARAMS *p)
 {
-	printf(" vnStat image output %s by Teemu Toivola <tst at iki dot fi>\n\n", VNSTATVERSION);
+	printf(" vnStat image output %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
 	printf("         -h,  --hours          output hours\n");
 	printf("         -d,  --days           output days\n");
 	printf("         -m,  --months         output months\n");
@@ -325,7 +326,7 @@ void handledatabase(IPARAMS *p)
 			exit(EXIT_FAILURE);
 		}
 	} else {
-		if (readdb(p->interface, p->dirname)==1) {
+		if (readdb(p->interface, p->dirname, 0)==1) {
 			exit(EXIT_FAILURE);
 		}
 	}

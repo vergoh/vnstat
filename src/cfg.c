@@ -5,7 +5,7 @@ void printcfgfile(void)
 {
 	ibwnode *p = ifacebw;
 
-	printf("# vnStat %s config file\n", VNSTATVERSION);
+	printf("# vnStat %s config file\n", getversion());
 	printf("##\n\n");
 
 	printf("# default interface\n");
@@ -35,7 +35,12 @@ void printcfgfile(void)
 	printf("# how units are prefixed when traffic is shown\n");
 	printf("# 0 = IEC standard prefixes (KiB/MiB/GiB/TiB)\n");
 	printf("# 1 = old style binary prefixes (KB/MB/GB/TB)\n");
-	printf("UnitMode %d\n\n", cfg.unit);
+	printf("UnitMode %d\n\n", cfg.unitmode);
+
+	printf("# how units are prefixed when traffic rate is shown\n");
+	printf("# 0 = IEC binary prefixes (Kibit/s...)\n");
+	printf("# 1 = SI decimal prefixes (kbit/s...)\n");
+	printf("RateUnitMode %d\n\n", cfg.rateunitmode);
 
 	printf("# output style\n");
 	printf("# 0 = minimal & narrow, 1 = bar column visible\n");
@@ -183,7 +188,8 @@ int loadcfg(const char *cfgfile)
 		{ "TXCharacter", cfg.txchar, 0, 2, 0 },
 		{ "RXHourCharacter", cfg.rxhourchar, 0, 2, 0 },
 		{ "TXHourCharacter", cfg.txhourchar, 0, 2, 0 },
-		{ "UnitMode", 0, &cfg.unit, 0, 0 },
+		{ "UnitMode", 0, &cfg.unitmode, 0, 0 },
+		{ "RateUnitMode", 0, &cfg.rateunitmode, 0, 0 },
 		{ "OutputStyle", 0, &cfg.ostyle, 0, 0 },
 		{ "RateUnit", 0, &cfg.rateunit, 0, 0 },
 		{ "BandwidthDetection", 0, &cfg.bwdetection, 0, 0 },
@@ -291,9 +297,15 @@ int loadcfg(const char *cfgfile)
 
 void validatecfg(void)
 {
-	if (cfg.unit<0 || cfg.unit>1) {
-		cfg.unit = UNITMODE;
-		snprintf(errorstring, 512, "Invalid value for UnitMode, resetting to \"%d\".", cfg.unit);
+	if (cfg.unitmode<0 || cfg.unitmode>1) {
+		cfg.unitmode = UNITMODE;
+		snprintf(errorstring, 512, "Invalid value for UnitMode, resetting to \"%d\".", cfg.unitmode);
+		printe(PT_Config);
+	}
+
+	if (cfg.rateunitmode<0 || cfg.rateunitmode>1) {
+		cfg.rateunitmode = RATEUNITMODE;
+		snprintf(errorstring, 512, "Invalid value for RateUnitMode, resetting to \"%d\".", cfg.rateunitmode);
 		printe(PT_Config);
 	}
 
@@ -468,7 +480,8 @@ void defaultcfg(void)
 	cfg.qmode = DEFQMODE;
 	cfg.sampletime = DEFSAMPTIME;
 	cfg.monthrotate = MONTHROTATE;
-	cfg.unit = UNITMODE;
+	cfg.unitmode = UNITMODE;
+	cfg.rateunitmode = RATEUNITMODE;
 	cfg.ostyle = OSTYLE;
 	cfg.rateunit = RATEUNIT;
 	cfg.bwdetection = BWDETECT;
@@ -530,6 +543,7 @@ int opencfgfile(const char *cfgfile, FILE **fd)
 	for (i=0; i<512; i++) {
 		buffer[i] = '\0';
 	}
+	cfg.cfgfile[0] = '\0';
 
 	/* possible config files: 1) --config   2) $HOME/.vnstatrc   3) /etc/vnstat.conf   4) none */
 
@@ -537,6 +551,7 @@ int opencfgfile(const char *cfgfile, FILE **fd)
 
 		/* try to open given file */
 		if ((*fd=fopen(cfgfile, "r"))!=NULL) {
+			strncpy_nt(cfg.cfgfile, cfgfile, 512);
 			if (debug)
 				printf("Config file: --config\n");
 		} else {
@@ -557,19 +572,18 @@ int opencfgfile(const char *cfgfile, FILE **fd)
 
 		/* try to open first available config file */
 		if (tryhome && (*fd=fopen(buffer, "r"))!=NULL) {
-			if (debug)
-				printf("Config file: $HOME/.vnstatrc\n");
+			strncpy_nt(cfg.cfgfile, buffer, 512);
 		} else if ((*fd=fopen("/etc/vnstat.conf", "r"))!=NULL) {
-			if (debug)
-				printf("Config file: /etc/vnstat.conf\n");
+			snprintf(cfg.cfgfile, 512, "/etc/vnstat.conf");
 		} else if ((*fd=fopen("/usr/local/etc/vnstat.conf", "r"))!=NULL) {
-			if (debug)
-				printf("Config file: /usr/local/etc/vnstat.conf\n");
+			snprintf(cfg.cfgfile, 512, "/usr/local/etc/vnstat.conf");
 		} else {
 			if (debug)
 				printf("Config file: none\n");
 			return 1;
 		}
+		if (debug)
+			printf("Config file: %s\n", cfg.cfgfile);
 	}
 
 	return 2;

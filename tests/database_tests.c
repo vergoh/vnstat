@@ -5,6 +5,8 @@
 #include "dbaccess.h"
 #include "dbcache.h"
 #include "dbshow.h"
+#include "dbxml.h"
+#include "dbjson.h"
 #include "cfg.h"
 #include "ibw.h"
 
@@ -490,7 +492,7 @@ START_TEST(readdb_with_empty_file)
 	cfg.flock = 1;
 	ck_assert_int_eq(clean_testdbdir(), 1);
 	ck_assert_int_eq(create_zerosize_dbfile("existingdb"), 1);
-	ck_assert_int_eq(readdb("existingdb", TESTDBDIR), -1);
+	ck_assert_int_eq(readdb("existingdb", TESTDBDIR, 0), -1);
 }
 END_TEST
 
@@ -501,7 +503,7 @@ START_TEST(readdb_with_empty_file_and_backup)
 	ck_assert_int_eq(clean_testdbdir(), 1);
 	ck_assert_int_eq(create_zerosize_dbfile("existingdb"), 1);
 	ck_assert_int_eq(create_zerosize_dbfile(".existingdb"), 1);
-	ck_assert_int_eq(readdb("existingdb", TESTDBDIR), -1);
+	ck_assert_int_eq(readdb("existingdb", TESTDBDIR, 0), -1);
 }
 END_TEST
 
@@ -511,7 +513,7 @@ START_TEST(readdb_with_nonexisting_file)
 	cfg.flock = 1;
 	strcpy(data.interface, "none");
 	ck_assert_int_eq(clean_testdbdir(), 1);
-	ck_assert_int_eq(readdb("existingdb", TESTDBDIR), 1);
+	ck_assert_int_eq(readdb("existingdb", TESTDBDIR, 0), 1);
 	ck_assert_str_eq(data.interface, "existingdb");
 	ck_assert_str_eq(data.nick, "existingdb");
 }
@@ -528,7 +530,7 @@ START_TEST(readdb_with_existing_dbfile)
 	ck_assert_int_eq(check_dbfile_exists("ethtest", sizeof(DATA)), 1);
 
 	strcpy(data.interface, "none");
-	ck_assert_int_eq(readdb("ethtest", TESTDBDIR), 0);
+	ck_assert_int_eq(readdb("ethtest", TESTDBDIR, 0), 0);
 	ck_assert_str_eq(data.interface, "ethtest");
 }
 END_TEST
@@ -544,7 +546,7 @@ START_TEST(readdb_with_existing_dbfile_and_max_name_length)
 	ck_assert_int_eq(check_dbfile_exists("1234567890123456789012345678901", sizeof(DATA)), 1);
 
 	strcpy(data.interface, "none");
-	ck_assert_int_eq(readdb("1234567890123456789012345678901", TESTDBDIR), 0);
+	ck_assert_int_eq(readdb("1234567890123456789012345678901", TESTDBDIR, 0), 0);
 	ck_assert_str_eq(data.interface, "1234567890123456789012345678901");
 }
 END_TEST
@@ -562,7 +564,7 @@ START_TEST(readdb_with_existing_dbfile_with_rename)
 
 	strcpy(data.interface, "none");
 	strcpy(data.nick, "none");
-	ck_assert_int_eq(readdb("ethtest2", TESTDBDIR), 0);
+	ck_assert_int_eq(readdb("ethtest2", TESTDBDIR, 0), 0);
 	ck_assert_str_eq(data.interface, "ethtest2");
 	ck_assert_str_eq(data.nick, "ethtest2");
 }
@@ -581,7 +583,7 @@ START_TEST(readdb_with_existing_dbfile_and_over_max_name_length)
 
 	strcpy(data.interface, "none");
 	strcpy(data.nick, "none");
-	ck_assert_int_eq(readdb("1234567890123456789012345678901XX", TESTDBDIR), 0);
+	ck_assert_int_eq(readdb("1234567890123456789012345678901XX", TESTDBDIR, 0), 0);
 	ck_assert_str_eq(data.interface, "1234567890123456789012345678901");
 	ck_assert_str_eq(data.nick, "1234567890123456789012345678901");
 }
@@ -637,13 +639,14 @@ START_TEST(rebuilddbtotal_rebuilds_total)
 	cfg.flock = 1;
 	strcpy(data.interface, "ethtest");
 	strcpy(data.nick, "ethtest");
-	data.totalrx = 0;
-	data.totaltx = 0;
+	data.totalrx = 1234;
+	data.totaltx = 1234;
 	for (i=0; i<12; i++) {
 		data.month[i].rx = 1;
 		data.month[i].tx = 2;
 		data.month[i].used = 1;
 	}
+
 	ck_assert_int_eq(clean_testdbdir(), 1);
 	ck_assert_int_eq(writedb("ethtest", TESTDBDIR, 1), 1);
 
@@ -933,6 +936,22 @@ START_TEST(database_outputs_do_not_crash)
 	showdb(7);
 	showdb(8);
 	showdb(9);
+
+	xmlheader();
+	showxml('d');
+	showxml('m');
+	showxml('t');
+	showxml('h');
+	showxml('a');
+	xmlfooter();
+
+	jsonheader();
+	showjson(0, 'd');
+	showjson(0, 'm');
+	showjson(0, 't');
+	showjson(0, 'h');
+	showjson(0, 'a');
+	jsonfooter();
 }
 END_TEST
 
@@ -968,7 +987,7 @@ START_TEST(showbar_with_all_rx)
 	ck_assert_int_eq(len, 10);
 	fflush(stdout);
 
-	read(pipe, buffer, 512);
+	len = read(pipe, buffer, 512);
 	ck_assert_str_eq(buffer, "  rrrrrrrrrr");
 }
 END_TEST
@@ -987,7 +1006,7 @@ START_TEST(showbar_with_all_tx)
 	ck_assert_int_eq(len, 10);
 	fflush(stdout);
 
-	read(pipe, buffer, 512);
+	len = read(pipe, buffer, 512);
 	ck_assert_str_eq(buffer, "  tttttttttt");
 }
 END_TEST
@@ -1006,7 +1025,7 @@ START_TEST(showbar_with_half_and_half)
 	ck_assert_int_eq(len, 10);
 	fflush(stdout);
 
-	read(pipe, buffer, 512);
+	len = read(pipe, buffer, 512);
 	ck_assert_str_eq(buffer, "  rrrrrttttt");
 }
 END_TEST
@@ -1025,7 +1044,7 @@ START_TEST(showbar_with_one_tenth)
 	ck_assert_int_eq(len, 10);
 	fflush(stdout);
 
-	read(pipe, buffer, 512);
+	len = read(pipe, buffer, 512);
 	ck_assert_str_eq(buffer, "  rttttttttt");
 }
 END_TEST
@@ -1044,7 +1063,7 @@ START_TEST(showbar_with_small_rx_shows_all_tx)
 	ck_assert_int_eq(len, 10);
 	fflush(stdout);
 
-	read(pipe, buffer, 512);
+	len = read(pipe, buffer, 512);
 	ck_assert_str_eq(buffer, "  tttttttttt");
 }
 END_TEST
@@ -1072,7 +1091,7 @@ START_TEST(showbar_can_also_do_mb_calculations)
 	ck_assert_int_eq(len, 2);
 	fflush(stdout);
 
-	read(pipe, buffer, 512);
+	len = read(pipe, buffer, 512);
 	ck_assert_str_eq(buffer, "  rt");
 }
 END_TEST

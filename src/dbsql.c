@@ -67,7 +67,7 @@ int db_open(int createifnotfound)
 	}
 
 	if (createifnotfound) {
-		if (!db_setinfo("vnstatversion", VNSTATVERSION, 1)) {
+		if (!db_setinfo("vnstatversion", getversion(), 1)) {
 			return 0;
 		}
 	}

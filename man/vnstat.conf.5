@@ -1,4 +1,4 @@
-.TH VNSTAT.CONF 5 "APRIL 2015" "version 1.14" "User Manuals"
+.TH VNSTAT.CONF 5 "DECEMBER 2016" "version 1.16" "User Manuals"
 .SH NAME
 
 vnstat.conf \- vnStat configuration file
@@ -114,6 +114,12 @@ Select which unit is used when traffic rate is visible. 0 = bytes, 1 = bits.
 (vnstat and vnstati only)
 
 .TP
+.B RateUnitMode
+Select used prefix when traffic rate is visible in bits per second.
+0 = IEC binary prefixes (Kibit/s...), 1 = SI decimal prefixes (kbit/s...).
+(vnstat and vnstati only)
+
+.TP
 .B "RXCharacter, TXCharacter"
 Character used for representing the percentual share of received
 and transmitted traffic in daily output. (vnstat only)
@@ -206,7 +212,7 @@ Specify pid file path and name to be used.
 .TP
 .B PollInterval
 How often in seconds interfaces are checked for status changes.
-Value range: 2..300
+Value range: 2..60
 
 .TP
 .B SaveInterval
@@ -222,10 +228,16 @@ offline or comes online. 1 = enabled, 0 = disabled.
 
 .TP
 .B UpdateFileOwner
-Enable or disable the update of file ownership during daemon process startup.
-Only database, log and pid files will be modified if the user or group change
-feature is enabled and the files don't match the requested user or group.
-This option can only be used when the process is started as root.
+Enable or disable the update of file ownership during daemon process startup
+or during manual creation of new databases. During daemon startup, only database,
+log and pid files will be modified if the user or group change feature (
+.B DaemonUser
+or
+.B DaemonGroup
+) is enabled and the files don't match the requested user or group. During manual
+database creation, this option will cause file ownership to be inherited from the
+database directory if the directory already exists. This option only has effect
+when the process is started as root or via sudo.
 
 .TP
 .B UpdateInterval
@@ -319,6 +331,11 @@ Set background color as transparent. 1 = enabled, 0 = disabled.
 Config file that will be used unless
 .I $HOME/.vnstatrc
 exists or alternative value is given as command line parameter.
+
+.SH RESTRICTIONS
+
+Using long date output formats may cause misalignment in shown columns if the
+length of the date exceeds the fixed size allocation.
 
 .SH AUTHOR
 

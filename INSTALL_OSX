@@ -23,8 +23,12 @@ Experimental instructions for OS X
 
      whoami
 
- Go to the directory where this package was extracted and compile the
- binaries:
+ Go to the directory where this package was extracted and configure the
+ environmant:
+
+     ./configure
+
+ and then compile the binaries:
 
      make
 
@@ -39,8 +43,8 @@ Experimental instructions for OS X
 
      mkdir -p /usr/local/bin
      mkdir -p /usr/local/libexec
-     cp -v src/vnstat /usr/local/bin/
-     cp -v src/vnstatd /usr/local/libexec/
+     cp -v vnstat /usr/local/bin/
+     cp -v vnstatd /usr/local/libexec/
      cp -v examples/launchd/net.humdi.vnstat.plist /Library/LaunchDaemons/
      chown root:wheel /Library/LaunchDaemons/net.humdi.vnstat.plist
 

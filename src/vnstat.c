@@ -1,5 +1,5 @@
 /*
-vnStat - Copyright (c) 2002-2015 Teemu Toivola <tst@iki.fi>
+vnStat - Copyright (c) 2002-2016 Teemu Toivola <tst@iki.fi>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -305,7 +305,7 @@ int main(int argc, char *argv[]) {
 			free(p.ifacelist);
 			return 0;
 		} else if ((strcmp(argv[currentarg],"-v")==0) || (strcmp(argv[currentarg],"--version")==0)) {
-			printf("vnStat %s by Teemu Toivola <tst at iki dot fi>\n", VNSTATVERSION);
+			printf("vnStat %s by Teemu Toivola <tst at iki dot fi>\n", getversion());
 			return 0;
 		} else if ((strcmp(argv[currentarg],"-r")==0) || (strcmp(argv[currentarg],"--reset")==0)) {
 			p.reset=1;
@@ -381,6 +381,10 @@ int main(int argc, char *argv[]) {
 			printf("A new database can be created with the following command:\n");
 			printf("    %s --create -i eth0\n\n", argv[0]);
 			printf("Replace 'eth0' with the interface that should be monitored.\n\n");
+			if (strlen(cfg.cfgfile)) {
+				printf("The default interface can be changed by updating the \"Interface\" keyword\n");
+				printf("value in the configuration file \"%s\".\n\n", cfg.cfgfile);
+			}
 			printf("The following interfaces are currently available:\n    %s\n", p.ifacelist);
 			free(p.ifacelist);
 		} else {
@@ -398,6 +402,7 @@ void initparams(PARAMS *p)
 {
 	noexit = 0; /* allow functions to exit in case of error */
 	debug = 0; /* debug disabled by default */
+	disableprints = 0; /* let prints be visible */
 
 	p->create = 0;
 	p->update = 0;
@@ -426,7 +431,7 @@ void initparams(PARAMS *p)
 
 int synccounters(const char *iface, const char *dirname)
 {
-	readdb(iface, dirname);
+	readdb(iface, dirname, 0);
 	if (!getifinfo(iface)) {
 		printf("Error: Unable to sync unavailable interface \"%s\".", iface);
 		return 0;
@@ -442,75 +447,75 @@ int synccounters(const char *iface, const char *dirname)
 
 void showhelp(PARAMS *p)
 {
-			printf(" vnStat %s by Teemu Toivola <tst at iki dot fi>\n\n", VNSTATVERSION);
+	printf(" vnStat %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
 
-			printf("         -q,  --query          query database\n");
-			printf("         -h,  --hours          show hours\n");
-			printf("         -d,  --days           show days\n");
-			printf("         -m,  --months         show months\n");
-			printf("         -w,  --weeks          show weeks\n");
-			printf("         -t,  --top10          show top 10 days\n");
-			printf("         -s,  --short          use short output\n");
-			printf("         -u,  --update         update database\n");
-			printf("         -i,  --iface          select interface (default: %s)\n", p->definterface);
-			printf("         -?,  --help           short help\n");
-			printf("         -v,  --version        show version\n");
-			printf("         -tr, --traffic        calculate traffic\n");
-			printf("         -ru, --rateunit       swap configured rate unit\n");
-			printf("         -l,  --live           show transfer rate in real time\n\n");
+	printf("         -q,  --query          query database\n");
+	printf("         -h,  --hours          show hours\n");
+	printf("         -d,  --days           show days\n");
+	printf("         -m,  --months         show months\n");
+	printf("         -w,  --weeks          show weeks\n");
+	printf("         -t,  --top10          show top 10 days\n");
+	printf("         -s,  --short          use short output\n");
+	printf("         -u,  --update         update database\n");
+	printf("         -i,  --iface          select interface (default: %s)\n", p->definterface);
+	printf("         -?,  --help           short help\n");
+	printf("         -v,  --version        show version\n");
+	printf("         -tr, --traffic        calculate traffic\n");
+	printf("         -ru, --rateunit       swap configured rate unit\n");
+	printf("         -l,  --live           show transfer rate in real time\n\n");
 
-			printf("See also \"--longhelp\" for complete options list and \"man vnstat\".\n");
+	printf("See also \"--longhelp\" for complete options list and \"man vnstat\".\n");
 }
 
 void showlonghelp(PARAMS *p)
 {
-			printf(" vnStat %s by Teemu Toivola <tst at iki dot fi>\n\n", VNSTATVERSION);
+	printf(" vnStat %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
 
-			printf("   Query:\n");
-			printf("         -q, --query           query database\n");
-			printf("         -h, --hours           show hours\n");
-			printf("         -d, --days            show days\n");
-			printf("         -m, --months          show months\n");
-			printf("         -w, --weeks           show weeks\n");
-			printf("         -t, --top10           show top 10 days\n");
-			printf("         -s, --short           use short output\n");
-			printf("         -ru, --rateunit       swap configured rate unit\n");
-			printf("         --oneline             show simple parseable format\n");
-			printf("         --exportdb            dump database in text format\n");
-			printf("         --importdb            import previously exported database\n");
-			printf("         --json                show database in json format\n");
-			printf("         --xml                 show database in xml format\n");
+	printf("   Query:\n");
+	printf("         -q, --query           query database\n");
+	printf("         -h, --hours           show hours\n");
+	printf("         -d, --days            show days\n");
+	printf("         -m, --months          show months\n");
+	printf("         -w, --weeks           show weeks\n");
+	printf("         -t, --top10           show top 10 days\n");
+	printf("         -s, --short           use short output\n");
+	printf("         -ru, --rateunit       swap configured rate unit\n");
+	printf("         --oneline             show simple parseable format\n");
+	printf("         --exportdb            dump database in text format\n");
+	printf("         --importdb            import previously exported database\n");
+	printf("         --json                show database in json format\n");
+	printf("         --xml                 show database in xml format\n");
 
-			printf("   Modify:\n");
-			printf("         --create              create database\n");
-			printf("         --delete              delete database\n");
-			printf("         -u, --update          update database\n");
-			printf("         -r, --reset           reset interface counters\n");
-			printf("         --sync                sync interface counters\n");
-			printf("         --enable              enable interface\n");
-			printf("         --disable             disable interface\n");
-			printf("         --nick                set a nickname for interface\n");
-			printf("         --cleartop            clear the top 10\n");
-			printf("         --rebuildtotal        rebuild total transfers from months\n");
+	printf("   Modify:\n");
+	printf("         --create              create database\n");
+	printf("         --delete              delete database\n");
+	printf("         -u, --update          update database\n");
+	printf("         -r, --reset           reset interface counters\n");
+	printf("         --sync                sync interface counters\n");
+	printf("         --enable              enable interface\n");
+	printf("         --disable             disable interface\n");
+	printf("         --nick                set a nickname for interface\n");
+	printf("         --cleartop            clear the top 10\n");
+	printf("         --rebuildtotal        rebuild total transfers from months\n");
 
-			printf("   Misc:\n");
-			printf("         -i,  --iface          select interface (default: %s)\n", p->definterface);
-			printf("         -?,  --help           short help\n");
-			printf("         -D,  --debug          show some additional debug information\n");
-			printf("         -v,  --version        show version\n");
-			printf("         -tr, --traffic        calculate traffic\n");
-			printf("         -l,  --live           show transfer rate in real time\n");
-			printf("         --style               select output style (0-4)\n");
-			printf("         --iflist              show list of available interfaces\n");
-			printf("         --dbdir               select database directory\n");
-			printf("         --locale              set locale\n");
-			printf("         --config              select config file\n");
-			printf("         --savemerged          save merged database to current directory\n");
-			printf("         --showconfig          dump config file with current settings\n");
-			printf("         --testkernel          check if the kernel is broken\n");
-			printf("         --longhelp            display this help\n\n");
+	printf("   Misc:\n");
+	printf("         -i,  --iface          select interface (default: %s)\n", p->definterface);
+	printf("         -?,  --help           short help\n");
+	printf("         -D,  --debug          show some additional debug information\n");
+	printf("         -v,  --version        show version\n");
+	printf("         -tr, --traffic        calculate traffic\n");
+	printf("         -l,  --live           show transfer rate in real time\n");
+	printf("         --style               select output style (0-4)\n");
+	printf("         --iflist              show list of available interfaces\n");
+	printf("         --dbdir               select database directory\n");
+	printf("         --locale              set locale\n");
+	printf("         --config              select config file\n");
+	printf("         --savemerged          save merged database to current directory\n");
+	printf("         --showconfig          dump config file with current settings\n");
+	printf("         --testkernel          check if the kernel is broken\n");
+	printf("         --longhelp            display this help\n\n");
 
-			printf("See also \"man vnstat\".\n");
+	printf("See also \"man vnstat\".\n");
 }
 
 void handledbmerge(PARAMS *p)
@@ -540,11 +545,11 @@ void handlecounterreset(PARAMS *p)
 		return;
 	}
 
-	if (!spacecheck(p->dirname) && !p->force) {
+	if (!p->force && !spacecheck(p->dirname)) {
 		printf("Error: Not enough free diskspace available.\n");
 		exit(EXIT_FAILURE);
 	}
-	readdb(p->interface, p->dirname);
+	readdb(p->interface, p->dirname, 0);
 	data.currx=0;
 	data.curtx=0;
 	writedb(p->interface, p->dirname, 0);
@@ -562,11 +567,11 @@ void handleimport(PARAMS *p)
 		printf("Error: Specify interface to be imported using the -i parameter.\n");
 		exit(EXIT_FAILURE);
 	}
-	if (!spacecheck(p->dirname) && !p->force) {
+	if (!p->force && !spacecheck(p->dirname)) {
 		printf("Error: Not enough free diskspace available.\n");
 		exit(EXIT_FAILURE);
 	}
-	if (checkdb(p->interface, p->dirname) && !p->force) {
+	if (!p->force && checkdb(p->interface, p->dirname)) {
 		printf("Error: Database file for interface \"%s\" already exists.\n", p->interface);
 		printf("Add --force parameter to overwrite it.\n");
 		exit(EXIT_FAILURE);
@@ -594,7 +599,7 @@ void handlecountersync(PARAMS *p)
 		return;
 	}
 
-	if (!spacecheck(p->dirname) && !p->force) {
+	if (!p->force && !spacecheck(p->dirname)) {
 		printf("Error: Not enough free diskspace available.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -639,7 +644,7 @@ void handlecleartop10(PARAMS *p)
 		return;
 	}
 
-	if (!spacecheck(p->dirname) && !p->force) {
+	if (!p->force && !spacecheck(p->dirname)) {
 		printf("Error: Not enough free diskspace available.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -677,11 +682,11 @@ void handleenabledisable(PARAMS *p)
 {
 	/* enable & disable */
 	if (p->active==1) {
-		if (!spacecheck(p->dirname) && !p->force) {
+		if (!p->force && !spacecheck(p->dirname)) {
 			printf("Error: Not enough free diskspace available.\n");
 			exit(EXIT_FAILURE);
 		}
-		p->newdb=readdb(p->interface, p->dirname);
+		p->newdb=readdb(p->interface, p->dirname, 0);
 		if (!data.active && !p->newdb) {
 			data.active=1;
 			writedb(p->interface, p->dirname, 0);
@@ -691,11 +696,11 @@ void handleenabledisable(PARAMS *p)
 			printf("Interface \"%s\" is already enabled.\n", data.interface);
 		}
 	} else if (p->active==0) {
-		if (!spacecheck(p->dirname) && !p->force) {
+		if (!p->force && !spacecheck(p->dirname)) {
 			printf("Error: Not enough free diskspace available.\n");
 			exit(EXIT_FAILURE);
 		}
-		p->newdb=readdb(p->interface, p->dirname);
+		p->newdb=readdb(p->interface, p->dirname, 0);
 		if (data.active && !p->newdb) {
 			data.active=0;
 			writedb(p->interface, p->dirname, 0);
@@ -718,7 +723,7 @@ void handlecreate(PARAMS *p)
 		exit(EXIT_FAILURE);
 	}
 
-	if (!getifinfo(p->interface) && !p->force) {
+	if (!p->force && !getifinfo(p->interface)) {
 		getiflist(&p->ifacelist, 1);
 		printf("Only available interfaces can be added for monitoring.\n\n");
 		printf("The following interfaces are currently available:\n    %s\n", p->ifacelist);
@@ -731,7 +736,7 @@ void handlecreate(PARAMS *p)
 		exit(EXIT_FAILURE);
 	}
 
-	if (!spacecheck(p->dirname) && !p->force) {
+	if (!p->force && !spacecheck(p->dirname)) {
 		printf("Error: Not enough free diskspace available.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -758,7 +763,7 @@ void handleupdate(PARAMS *p)
 	current = time(NULL);
 
 	/* check that there's some free diskspace left */
-	if (!spacecheck(p->dirname) && !p->force) {
+	if (!p->force && !spacecheck(p->dirname)) {
 		printf("Error: Not enough free diskspace available.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -782,7 +787,7 @@ void handleupdate(PARAMS *p)
 			strncpy_nt(p->interface, di->d_name, 32);
 			if (debug)
 				printf("\nProcessing file \"%s/%s\"...\n", p->dirname, p->interface);
-			p->newdb=readdb(p->interface, p->dirname);
+			p->newdb=readdb(p->interface, p->dirname, 0);
 
 			if (!data.active) {
 				if (debug)
@@ -825,7 +830,7 @@ void handleupdate(PARAMS *p)
 
 	/* update only selected file */
 	} else {
-		p->newdb=readdb(p->interface, p->dirname);
+		p->newdb=readdb(p->interface, p->dirname, 0);
 
 		if (!data.active) {
 			if (debug)
@@ -833,7 +838,7 @@ void handleupdate(PARAMS *p)
 			return;
 		}
 
-		if (!getifinfo(data.interface) && !p->force) {
+		if (!p->force && !getifinfo(data.interface)) {
 			getiflist(&p->ifacelist, 1);
 			printf("Only available interfaces can be added for monitoring.\n\n");
 			printf("The following interfaces are currently available:\n    %s\n", p->ifacelist);
@@ -905,7 +910,7 @@ void handleshowdatabases(PARAMS *p)
 			strncpy_nt(p->interface, di->d_name, 32);
 			if (debug)
 				printf("\nProcessing file \"%s/%s\"...\n", p->dirname, p->interface);
-			p->newdb=readdb(p->interface, p->dirname);
+			p->newdb=readdb(p->interface, p->dirname, p->force);
 			if (p->newdb) {
 				continue;
 			}
@@ -934,7 +939,7 @@ void handleshowdatabases(PARAMS *p)
 void showoneinterface(PARAMS *p, const char *interface)
 {
 	if (!p->merged) {
-		p->newdb=readdb(interface, p->dirname);
+		p->newdb=readdb(interface, p->dirname, p->force);
 	}
 	if (p->newdb) {
 		return;
@@ -961,6 +966,30 @@ void showoneinterface(PARAMS *p, const char *interface)
 
 void handletrafficmeters(PARAMS *p)
 {
+	if (!p->traffic && !p->livetraffic) {
+		return;
+	}
+
+	if (!isifavailable(p->interface)) {
+		getiflist(&p->ifacelist, 0);
+		if (p->defaultiface) {
+			printf("Error: Configured default interface \"%s\" isn't available.\n\n", p->interface);
+			if (strlen(cfg.cfgfile)) {
+				printf("Update \"Interface\" keyword value in \"%s\" to change\n", cfg.cfgfile);
+				printf("the default interface or give an alternative interface\nusing the -i parameter.\n\n");
+			} else {
+				printf("An alternative interface can be given using the -i parameter.\n\n");
+			}
+			printf("The following interfaces are currently available:\n    %s\n", p->ifacelist);
+
+		} else {
+			printf("Error: Unable to get interface \"%s\" statistics.\n\n", p->interface);
+			printf("The following interfaces are currently available:\n    %s\n", p->ifacelist);
+		}
+		free(p->ifacelist);
+		exit(EXIT_FAILURE);
+	}
+
 	/* calculate traffic */
 	if (p->traffic) {
 		trafficmeter(p->interface, cfg.sampletime);
