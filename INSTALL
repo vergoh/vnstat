@@ -102,8 +102,8 @@ Installing without root access
  If this gives an 'command not found' error or a different than expected
  version then check then content of the PATH variable and try again.
 
- Next open the config file ~/.vnstatrc with your favorite text editor and locate
- the following line:
+ Next open the config file ~/.vnstatrc with your favorite text editor and
+ locate the following line:
 
      DatabaseDir "/var/lib/vnstat"
 

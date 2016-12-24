@@ -1,4 +1,4 @@
-1.16 / <not released yet>
+1.16 / 24-Dec-2016
 
  - Fix: traffic rate calculation, SI decimal prefixes were shown but
    calculation was done for IEC binary prefixes
