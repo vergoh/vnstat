@@ -2051,9 +2051,15 @@ release: distcheck
 	ls -l $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.gz
 
 install-data-hook:
-	$(DESTDIR)$(bindir)/vnstat$(EXEEXT) --showconfig >vnstat.conf && \
-	  $(MKDIR_P) $(DESTDIR)$(sysconfdir) && \
-	  mv -f vnstat.conf $(DESTDIR)$(sysconfdir)/vnstat.conf
+	$(MKDIR_P) $(DESTDIR)$(sysconfdir)
+@IS_CROSSCOMPILED_TRUE@	if [ ! -f $(DESTDIR)$(sysconfdir)/vnstat.conf ]; \
+@IS_CROSSCOMPILED_TRUE@	then cp -fv $(srcdir)/cfg/vnstat.conf $(DESTDIR)$(sysconfdir)/vnstat.conf; \
+@IS_CROSSCOMPILED_TRUE@	fi
+@IS_CROSSCOMPILED_FALSE@	$(DESTDIR)$(bindir)/vnstat$(EXEEXT) --showconfig >vnstat.conf.new
+@IS_CROSSCOMPILED_FALSE@	if [ -f $(DESTDIR)$(sysconfdir)/vnstat.conf ]; \
+@IS_CROSSCOMPILED_FALSE@	then cp -fv $(DESTDIR)$(sysconfdir)/vnstat.conf vnstat.conf.old; \
+@IS_CROSSCOMPILED_FALSE@	fi
+@IS_CROSSCOMPILED_FALSE@	cp -fv vnstat.conf.new $(DESTDIR)$(sysconfdir)/vnstat.conf
 	@echo
 	@echo "============================================================================"
 	@echo "  Note: No service file has been installed for starting the daemon"
@@ -2073,7 +2079,7 @@ uninstall-hook:
 	@echo
 
 clean-local:
-	-rm -fr coverage *.lcov *.gz test*.log test*.xml src/*.gc* tests/*.gc*
+	-rm -fr coverage *.lcov *.gz test*.log test*.xml src/*.gc* tests/*.gc* *.old *.new
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
