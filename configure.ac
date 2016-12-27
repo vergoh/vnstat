@@ -31,7 +31,9 @@ AM_CONDITIONAL([HAVE_CHECK], [test "$CHECK_LIBS"])
 AC_CHECK_HEADERS([fcntl.h inttypes.h locale.h stdint.h stdlib.h string.h sys/file.h sys/mount.h sys/param.h sys/socket.h sys/statvfs.h sys/time.h syslog.h unistd.h wchar.h])
 
 # Check if being cross-compiled
-AM_CONDITIONAL([IS_CROSSCOMPILED], [test "$CHOST" != "$CBUILD"])
+AC_CANONICAL_BUILD
+AC_CANONICAL_HOST
+AM_CONDITIONAL([IS_CROSSCOMPILED], [test "$host" != "$build"])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_UID_T
@@ -52,6 +54,9 @@ AC_OUTPUT
 
 AC_MSG_NOTICE()
 AC_MSG_NOTICE([ ============================================== ])
+AC_MSG_NOTICE()
+AC_MSG_NOTICE([         host: $host ])
+AC_MSG_NOTICE([        build: $build ])
 AC_MSG_NOTICE()
 AC_MSG_NOTICE([       prefix: $prefix     ])
 AC_MSG_NOTICE([   sysconfdir: $sysconfdir ])
