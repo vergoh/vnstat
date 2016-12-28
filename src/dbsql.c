@@ -122,7 +122,7 @@ int db_create(void)
 {
 	int i;
 	char *sql;
-	char *datatables[] = {"fiveminute", "hour", "day", "month", "year"};
+	char *datatables[] = {"fiveminute", "hour", "day", "month", "year", "top"};
 
 	/* TODO: check: COMMIT, END or ROLLBACK may be missing in error cases and return gets called before COMMIT */
 
@@ -156,7 +156,7 @@ int db_create(void)
 	}
 
 	sql = malloc(sizeof(char)*512);
-	for (i=0; i<5; i++) {
+	for (i=0; i<6; i++) {
 		sqlite3_snprintf(512, sql, "CREATE TABLE %s(\n" \
 			"  id           INTEGER PRIMARY KEY,\n" \
 			"  interface    INTEGER REFERENCES interface ON DELETE CASCADE,\n" \
@@ -403,12 +403,14 @@ int db_addtraffic_dated(const char *iface, const uint64_t rx, const uint64_t tx,
 
 	/* time specific */
 	for (i=0; i<5; i++) {
-		sqlite3_snprintf(1024, sql, "insert or ignore into %s (interface, date, rx, tx) values (%"PRId64", %s, 0, 0);", datatables[i], (int64_t)ifaceid, datadates[i]);
-		db_exec(sql);
 		snprintf(datebuffer, 512, datadates[i], nowdate);
+		sqlite3_snprintf(1024, sql, "insert or ignore into %s (interface, date, rx, tx) values (%"PRId64", %s, 0, 0);", datatables[i], (int64_t)ifaceid, datebuffer);
+		db_exec(sql);
 		sqlite3_snprintf(1024, sql, "update %s set rx=rx+%"PRIu64", tx=tx+%"PRIu64" where interface=%"PRId64" and date=%s;", datatables[i], rx, tx, (int64_t)ifaceid, datebuffer);
 		db_exec(sql);
 	}
+
+	/* TODO: db_exec return value checks missing */
 
 	return db_committransaction();
 }
@@ -420,6 +422,8 @@ int db_removeoldentries(void)
 	if (!db_begintransaction()) {
 		return 0;
 	}
+
+	/* TODO: read cleanup limits from configuration and actually use this function somewhere */
 
 	sqlite3_snprintf(512, sql, "delete from fiveminute where date < datetime('now', '-48 hours', 'localtime');");
 	db_exec(sql);
@@ -435,6 +439,8 @@ int db_removeoldentries(void)
 
 	sqlite3_snprintf(512, sql, "delete from year where date < date('now', '-10 years', 'localtime');");
 	db_exec(sql);
+
+	/* TODO: handle top days */
 
 	return db_committransaction();
 }
