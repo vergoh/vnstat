@@ -183,6 +183,29 @@ int db_addinterface(const char *iface)
 	return db_exec(sql);
 }
 
+uint64_t db_getinterfacecount(void)
+{
+	int rc;
+	uint64_t result = 0;
+	char sql[512];
+	sqlite3_stmt *sqlstmt;
+
+	sqlite3_snprintf(512, sql, "select count(*) from interface");
+	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
+	if (rc) {
+		return 0;
+	}
+	if (sqlite3_column_count(sqlstmt) != 1) {
+		return 0;
+	}
+	if (sqlite3_step(sqlstmt) == SQLITE_ROW) {
+		result = (uint64_t)sqlite3_column_int64(sqlstmt, 0);
+	}
+	sqlite3_finalize(sqlstmt);
+
+	return result;
+}
+
 sqlite3_int64 db_getinterfaceid(const char *iface, const int createifnotfound)
 {
 	int rc;
