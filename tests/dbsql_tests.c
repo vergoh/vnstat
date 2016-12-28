@@ -397,6 +397,43 @@ START_TEST(db_getinterfacecount_counts_interfaces)
 }
 END_TEST
 
+START_TEST(db_getinterfacecountbyname_counts_interfaces)
+{
+	uint64_t ret;
+
+	defaultcfg();
+	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
+	ck_assert_int_eq(clean_testdbdir(), 1);
+
+	ret = db_open(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getinterfacecountbyname("foo");
+	ck_assert_int_eq(ret, 0);
+
+	ret = db_getinterfacecountbyname("eth0");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getinterfacecountbyname("eth1");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getinterfacecountbyname("eth2");
+	ck_assert_int_eq(ret, 0);
+
+	ret = db_getinterfacecountbyname("");
+	ck_assert_int_eq(ret, 2);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 START_TEST(db_getcounters_with_no_interface)
 {
 	int ret;
@@ -498,6 +535,7 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_addtraffic_with_no_traffic_does_nothing);
 	tcase_add_test(tc_dbsql, db_addtraffic_can_add_traffic_and_interfaces);
 	tcase_add_test(tc_dbsql, db_getinterfacecount_counts_interfaces);
+	tcase_add_test(tc_dbsql, db_getinterfacecountbyname_counts_interfaces);
 	tcase_add_test(tc_dbsql, db_setactive_fails_with_no_open_db);
 	tcase_add_test(tc_dbsql, db_setactive_fails_if_interface_does_not_exist_in_database);
 	tcase_add_test(tc_dbsql, db_setactive_can_change_interface_activity_status);

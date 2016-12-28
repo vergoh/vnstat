@@ -179,18 +179,31 @@ int db_addinterface(const char *iface)
 {
 	char sql[1024];
 
+	if (!strlen(iface)) {
+		return 0;
+	}
+
 	sqlite3_snprintf(1024, sql, "insert into interface (name, active, created, updated, rxcounter, txcounter, rxtotal, txtotal) values ('%q', 1, datetime('now', 'localtime'), datetime('now', 'localtime'), 0, 0, 0, 0);", iface);
 	return db_exec(sql);
 }
 
 uint64_t db_getinterfacecount(void)
 {
+	return db_getinterfacecountbyname("");
+}
+
+uint64_t db_getinterfacecountbyname(const char *iface)
+{
 	int rc;
 	uint64_t result = 0;
 	char sql[512];
 	sqlite3_stmt *sqlstmt;
 
-	sqlite3_snprintf(512, sql, "select count(*) from interface");
+	if (strlen(iface) > 0) {
+		sqlite3_snprintf(512, sql, "select count(*) from interface where name='%q'", iface);
+	} else {
+		sqlite3_snprintf(512, sql, "select count(*) from interface");
+	}
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
 	if (rc) {
 		return 0;

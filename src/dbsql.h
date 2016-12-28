@@ -9,6 +9,7 @@ int db_exec(const char *sql);
 int db_create(void);
 int db_addinterface(const char *iface);
 uint64_t db_getinterfacecount(void);
+uint64_t db_getinterfacecountbyname(const char *iface);
 sqlite3_int64 db_getinterfaceid(const char *iface, const int createifnotfound);
 int db_setactive(const char *iface, const int active);
 int db_setcounters(const char *iface, const uint64_t rxcounter, const uint64_t txcounter);
