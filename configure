@@ -582,7 +582,7 @@ PACKAGE_STRING='vnstat 2.0_prototype'
 PACKAGE_BUGREPORT=''
 PACKAGE_URL=''
 
-ac_unique_file="src/vnstat.c"
+ac_unique_file="src/vnstatd.c"
 # Factoring default headers for most tests.
 ac_includes_default="\
 #include <stdio.h>

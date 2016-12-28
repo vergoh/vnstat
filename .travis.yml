@@ -19,7 +19,7 @@ before_install:
  - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then brew install gd sqlite check ; fi
 
 script:
- - CFLAGS='-Wall -Wextra -g' ./configure && make check && ./vnstat --version
+ - CFLAGS='-Wall -Wextra -g' ./configure && make check && ./vnstatd --version
 
 notifications:
   email:

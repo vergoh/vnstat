@@ -4,28 +4,28 @@ dist_man_MANS = man/vnstat.1 man/vnstat.conf.5 man/vnstatd.1 man/vnstati.1
 
 EXTRA_DIST = cfg examples UPGRADE CHANGES FAQ INSTALL_BSD INSTALL_OSX UNINSTALL
 
-bin_PROGRAMS = vnstat
+#bin_PROGRAMS = vnstat
 sbin_PROGRAMS = vnstatd
-if HAVE_LIBGD
-bin_PROGRAMS += vnstati
-endif
-vnstati_LDADD = $(IMAGELIBS)
+#if HAVE_LIBGD
+#bin_PROGRAMS += vnstati
+#endif
+#vnstati_LDADD = $(IMAGELIBS)
 
-vnstat_SOURCES = src/vnstat.c src/vnstat.h \
-  src/ifinfo.c src/ifinfo.h \
-  src/dbsql.c src/dbsql.h \
-  src/dbxml.c src/dbxml.h \
-  src/dbjson.c src/dbjson.h \
-  src/dbshow.c src/dbshow.h \
-  src/dbaccess.c src/dbaccess.h \
-  src/dbmerge.c src/dbmerge.h \
-  src/common.c src/common.h \
-  src/misc.c src/misc.h \
-  src/cfg.c src/cfg.h \
-  src/ibw.c src/ibw.h \
-  src/fs.c src/fs.h \
-  src/id.c src/id.h \
-  src/traffic.c src/traffic.h
+#vnstat_SOURCES = src/vnstat.c src/vnstat.h \
+#  src/ifinfo.c src/ifinfo.h \
+#  src/dbsql.c src/dbsql.h \
+#  src/dbxml.c src/dbxml.h \
+#  src/dbjson.c src/dbjson.h \
+#  src/dbshow.c src/dbshow.h \
+#  src/dbaccess.c src/dbaccess.h \
+#  src/dbmerge.c src/dbmerge.h \
+#  src/common.c src/common.h \
+#  src/misc.c src/misc.h \
+#  src/cfg.c src/cfg.h \
+#  src/ibw.c src/ibw.h \
+#  src/fs.c src/fs.h \
+#  src/id.c src/id.h \
+#  src/traffic.c src/traffic.h
 
 vnstatd_SOURCES = src/vnstatd.c src/vnstatd.h \
   src/ifinfo.c src/ifinfo.h \
@@ -40,16 +40,16 @@ vnstatd_SOURCES = src/vnstatd.c src/vnstatd.h \
   src/id.c src/id.h \
   src/daemon.c src/daemon.h
 
-vnstati_SOURCES = src/vnstati.c src/vnstati.h \
-  src/image.c src/image.h \
-  src/dbsql.c src/dbsql.h \
-  src/dbaccess.c src/dbaccess.h \
-  src/dbmerge.c src/dbmerge.h \
-  src/common.c src/common.h \
-  src/misc.c src/misc.h \
-  src/fs.c src/fs.h \
-  src/id.c src/id.h \
-  src/cfg.c src/cfg.h
+#vnstati_SOURCES = src/vnstati.c src/vnstati.h \
+#  src/image.c src/image.h \
+#  src/dbsql.c src/dbsql.h \
+#  src/dbaccess.c src/dbaccess.h \
+#  src/dbmerge.c src/dbmerge.h \
+#  src/common.c src/common.h \
+#  src/misc.c src/misc.h \
+#  src/fs.c src/fs.h \
+#  src/id.c src/id.h \
+#  src/cfg.c src/cfg.h
 
 if HAVE_CHECK
 TESTS = check_vnstat
@@ -63,14 +63,21 @@ check_vnstat_LDADD = @CHECK_LIBS@
 
 check_vnstat_SOURCES = tests/vnstat_tests.c tests/vnstat_tests.h \
   tests/common_tests.c tests/common_tests.h \
-  tests/database_tests.c tests/database_tests.h \
   tests/dbsql_tests.c tests/dbsql_tests.h \
   tests/config_tests.c tests/config_tests.h \
-  tests/ifinfo_tests.c tests/ifinfo_tests.h \
-  tests/misc_tests.c tests/misc_tests.h \
   tests/fs_tests.c tests/fs_tests.h \
-  tests/id_tests.c tests/id_tests.h \
-  tests/daemon_tests.c tests/daemon_tests.h
+  tests/id_tests.c tests/id_tests.h
+
+#check_vnstat_SOURCES = tests/vnstat_tests.c tests/vnstat_tests.h \
+#  tests/common_tests.c tests/common_tests.h \
+#  tests/database_tests.c tests/database_tests.h \
+#  tests/dbsql_tests.c tests/dbsql_tests.h \
+#  tests/config_tests.c tests/config_tests.h \
+#  tests/ifinfo_tests.c tests/ifinfo_tests.h \
+#  tests/misc_tests.c tests/misc_tests.h \
+#  tests/fs_tests.c tests/fs_tests.h \
+#  tests/id_tests.c tests/id_tests.h \
+#  tests/daemon_tests.c tests/daemon_tests.h
 
 check_vnstat_SOURCES += src/cfg.c src/cfg.h \
   src/common.c src/common.h \

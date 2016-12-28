@@ -1,11 +1,11 @@
 #include "vnstat_tests.h"
 #include "common_tests.h"
 #include "dbsql_tests.h"
-#include "database_tests.h"
+//#include "database_tests.h"
 #include "config_tests.h"
-#include "ifinfo_tests.h"
-#include "misc_tests.h"
-#include "daemon_tests.h"
+//#include "ifinfo_tests.h"
+//#include "misc_tests.h"
+//#include "daemon_tests.h"
 #include "fs_tests.h"
 #include "id_tests.h"
 #include "common.h"
@@ -36,11 +36,11 @@ Suite *test_suite(void)
 
 	add_common_tests(s);
 	add_dbsql_tests(s);
-	add_database_tests(s);
+	//add_database_tests(s);
 	add_config_tests(s);
-	add_ifinfo_tests(s);
-	add_misc_tests(s);
-	add_daemon_tests(s);
+	//add_ifinfo_tests(s);
+	//add_misc_tests(s);
+	//add_daemon_tests(s);
 	add_fs_tests(s);
 	add_id_tests(s);
 

@@ -4,7 +4,7 @@ AC_INIT([vnstat], [2.0_prototype])
 AM_INIT_AUTOMAKE([foreign subdir-objects std-options -Wall -Werror])
 AM_MAINTAINER_MODE
 
-AC_CONFIG_SRCDIR([src/vnstat.c])
+AC_CONFIG_SRCDIR([src/vnstatd.c])
 AC_CONFIG_HEADERS([src/config.h])
 
 # Checks for programs.
