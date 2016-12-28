@@ -360,6 +360,91 @@ START_TEST(db_addinterface_can_not_add_same_interface_twice)
 }
 END_TEST
 
+START_TEST(db_getcounters_with_no_interface)
+{
+	int ret;
+	uint64_t rx, tx;
+
+	defaultcfg();
+	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
+	ck_assert_int_eq(clean_testdbdir(), 1);
+
+	rx = tx = 1;
+
+	ret = db_open(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getcounters("eth0", &rx, &tx);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(rx, 0);
+	ck_assert_int_eq(tx, 0);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_setcounters_with_no_interface)
+{
+	int ret;
+	uint64_t rx, tx;
+
+	defaultcfg();
+	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
+	ck_assert_int_eq(clean_testdbdir(), 1);
+
+	rx = tx = 1;
+
+	ret = db_open(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setcounters("eth0", 2, 2);
+	ck_assert_int_eq(ret, 0);
+
+	ret = db_getcounters("eth0", &rx, &tx);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(rx, 0);
+	ck_assert_int_eq(tx, 0);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_counters_with_interface)
+{
+	int ret;
+	uint64_t rx, tx;
+
+	defaultcfg();
+	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
+	ck_assert_int_eq(clean_testdbdir(), 1);
+
+	rx = tx = 1;
+
+	ret = db_open(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getcounters("eth0", &rx, &tx);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(rx, 0);
+	ck_assert_int_eq(tx, 0);
+
+	ret = db_setcounters("eth0", 2, 2);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getcounters("eth0", &rx, &tx);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(rx, 2);
+	ck_assert_int_eq(tx, 2);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 void add_dbsql_tests(Suite *s)
 {
 	TCase *tc_dbsql = tcase_create("DB SQL");
@@ -384,5 +469,8 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_addinterface_fails_with_no_open_db);
 	tcase_add_test(tc_dbsql, db_addinterface_can_add_interfaces);
 	tcase_add_test(tc_dbsql, db_addinterface_can_not_add_same_interface_twice);
+	tcase_add_test(tc_dbsql, db_getcounters_with_no_interface);
+	tcase_add_test(tc_dbsql, db_setcounters_with_no_interface);
+	tcase_add_test(tc_dbsql, db_counters_with_interface);
 	suite_add_tcase(s, tc_dbsql);
 }
