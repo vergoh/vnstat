@@ -519,6 +519,52 @@ START_TEST(db_counters_with_interface)
 }
 END_TEST
 
+START_TEST(db_getiflist_lists_interfaces)
+{
+	int ret;
+	dbiflist *dbifl = NULL;
+
+	defaultcfg();
+	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
+	ck_assert_int_eq(clean_testdbdir(), 1);
+
+	ret = db_open(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("a");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("b");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getiflist(&dbifl);
+	ck_assert_int_eq(ret, 4);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+
+	ck_assert_str_eq(dbifl->interface, "a");
+	ck_assert_ptr_ne(dbifl->next, NULL);
+	dbifl = dbifl->next;
+
+	ck_assert_str_eq(dbifl->interface, "b");
+	ck_assert_ptr_ne(dbifl->next, NULL);
+	dbifl = dbifl->next;
+
+	ck_assert_str_eq(dbifl->interface, "eth0");
+	ck_assert_ptr_ne(dbifl->next, NULL);
+	dbifl = dbifl->next;
+
+	ck_assert_str_eq(dbifl->interface, "eth1");
+	ck_assert_ptr_eq(dbifl->next, NULL);
+
+	dbiflistfree(&dbifl);
+	ck_assert_ptr_eq(dbifl, NULL);
+}
+END_TEST
+
 void add_dbsql_tests(Suite *s)
 {
 	TCase *tc_dbsql = tcase_create("DB SQL");
@@ -548,5 +594,6 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_getcounters_with_no_interface);
 	tcase_add_test(tc_dbsql, db_setcounters_with_no_interface);
 	tcase_add_test(tc_dbsql, db_counters_with_interface);
+	tcase_add_test(tc_dbsql, db_getiflist_lists_interfaces);
 	suite_add_tcase(s, tc_dbsql);
 }

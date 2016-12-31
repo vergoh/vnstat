@@ -357,6 +357,32 @@ char *db_getinfo(const char *name)
 	return buffer;
 }
 
+int db_getiflist(dbiflist **dbifl)
+{
+	int rc;
+	char sql[512];
+	static sqlite3_stmt *sqlstmt;
+
+	sqlite3_snprintf(512, sql, "select name from interface order by name desc;");
+
+	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
+	if (rc) {
+		return 0;
+	}
+
+	rc = 0;
+	while (sqlite3_step(sqlstmt) == SQLITE_ROW) {
+		if (!dbiflistadd(dbifl, (const char *)sqlite3_column_text(sqlstmt, 0))) {
+			break;
+		}
+		rc++;
+	}
+
+	sqlite3_finalize(sqlstmt);
+
+	return rc;
+}
+
 int db_addtraffic(const char *iface, const uint64_t rx, const uint64_t tx)
 {
 	return db_addtraffic_dated(iface, rx, tx, 0);
@@ -487,4 +513,31 @@ int db_rollbacktransaction(void)
 		return 0;
 	}
 	return 1;
+}
+
+int dbiflistadd(dbiflist **dbifl, const char *iface)
+{
+	dbiflist *newif;
+
+	newif = malloc(sizeof(dbiflist));
+	if (newif == NULL) {
+		return 0;
+	}
+
+	newif->next = *dbifl;
+	*dbifl = newif;
+	strncpy_nt(newif->interface, iface, 32);
+
+	return 1;
+}
+
+void dbiflistfree(dbiflist **dbifl)
+{
+	dbiflist *dbifl_prev;
+
+	while (*dbifl != NULL) {
+		dbifl_prev = *dbifl;
+		*dbifl = (*dbifl)->next;
+		free(dbifl_prev);
+	}
 }
