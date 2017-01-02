@@ -32,6 +32,7 @@ vnstatd_SOURCES = src/vnstatd.c src/vnstatd.h \
   src/dbsql.c src/dbsql.h \
   src/dbaccess.c src/dbaccess.h \
   src/dbcache.c src/dbcache.h \
+  src/datacache.c src/datacache.h \
   src/common.c src/common.h \
   src/misc.c src/misc.h \
   src/cfg.c src/cfg.h \
@@ -64,6 +65,7 @@ check_vnstat_LDADD = @CHECK_LIBS@
 check_vnstat_SOURCES = tests/vnstat_tests.c tests/vnstat_tests.h \
   tests/common_tests.c tests/common_tests.h \
   tests/dbsql_tests.c tests/dbsql_tests.h \
+  tests/datacache_tests.c tests/datacache_tests.h \
   tests/config_tests.c tests/config_tests.h \
   tests/fs_tests.c tests/fs_tests.h \
   tests/id_tests.c tests/id_tests.h
@@ -85,6 +87,7 @@ check_vnstat_SOURCES += src/cfg.c src/cfg.h \
   src/dbsql.c src/dbsql.h \
   src/dbaccess.c src/dbaccess.h \
   src/dbcache.c src/dbcache.h \
+  src/datacache.c src/datacache.h \
   src/dbjson.c src/dbjson.h \
   src/dbmerge.c src/dbmerge.h \
   src/dbshow.c src/dbshow.h \

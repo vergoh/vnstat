@@ -99,21 +99,24 @@ am__installdirs = "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(man1dir)" \
 PROGRAMS = $(sbin_PROGRAMS)
 am__check_vnstat_SOURCES_DIST = tests/vnstat_tests.c \
 	tests/vnstat_tests.h tests/common_tests.c tests/common_tests.h \
-	tests/dbsql_tests.c tests/dbsql_tests.h tests/config_tests.c \
-	tests/config_tests.h tests/fs_tests.c tests/fs_tests.h \
-	tests/id_tests.c tests/id_tests.h src/cfg.c src/cfg.h \
-	src/common.c src/common.h src/daemon.c src/daemon.h \
+	tests/dbsql_tests.c tests/dbsql_tests.h \
+	tests/datacache_tests.c tests/datacache_tests.h \
+	tests/config_tests.c tests/config_tests.h tests/fs_tests.c \
+	tests/fs_tests.h tests/id_tests.c tests/id_tests.h src/cfg.c \
+	src/cfg.h src/common.c src/common.h src/daemon.c src/daemon.h \
 	src/dbsql.c src/dbsql.h src/dbaccess.c src/dbaccess.h \
-	src/dbcache.c src/dbcache.h src/dbjson.c src/dbjson.h \
-	src/dbmerge.c src/dbmerge.h src/dbshow.c src/dbshow.h \
-	src/dbxml.c src/dbxml.h src/ibw.c src/ibw.h src/ifinfo.c \
-	src/ifinfo.h src/misc.c src/misc.h src/fs.c src/fs.h src/id.c \
-	src/id.h src/traffic.c src/traffic.h
+	src/dbcache.c src/dbcache.h src/datacache.c src/datacache.h \
+	src/dbjson.c src/dbjson.h src/dbmerge.c src/dbmerge.h \
+	src/dbshow.c src/dbshow.h src/dbxml.c src/dbxml.h src/ibw.c \
+	src/ibw.h src/ifinfo.c src/ifinfo.h src/misc.c src/misc.h \
+	src/fs.c src/fs.h src/id.c src/id.h src/traffic.c \
+	src/traffic.h
 am__dirstamp = $(am__leading_dot)dirstamp
 @HAVE_CHECK_TRUE@am_check_vnstat_OBJECTS =  \
 @HAVE_CHECK_TRUE@	tests/check_vnstat-vnstat_tests.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	tests/check_vnstat-common_tests.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	tests/check_vnstat-dbsql_tests.$(OBJEXT) \
+@HAVE_CHECK_TRUE@	tests/check_vnstat-datacache_tests.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	tests/check_vnstat-config_tests.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	tests/check_vnstat-fs_tests.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	tests/check_vnstat-id_tests.$(OBJEXT) \
@@ -123,6 +126,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @HAVE_CHECK_TRUE@	src/check_vnstat-dbsql.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	src/check_vnstat-dbaccess.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	src/check_vnstat-dbcache.$(OBJEXT) \
+@HAVE_CHECK_TRUE@	src/check_vnstat-datacache.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	src/check_vnstat-dbjson.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	src/check_vnstat-dbmerge.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	src/check_vnstat-dbshow.$(OBJEXT) \
@@ -139,9 +143,10 @@ check_vnstat_LINK = $(CCLD) $(check_vnstat_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 am_vnstatd_OBJECTS = src/vnstatd.$(OBJEXT) src/ifinfo.$(OBJEXT) \
 	src/dbsql.$(OBJEXT) src/dbaccess.$(OBJEXT) \
-	src/dbcache.$(OBJEXT) src/common.$(OBJEXT) src/misc.$(OBJEXT) \
-	src/cfg.$(OBJEXT) src/ibw.$(OBJEXT) src/fs.$(OBJEXT) \
-	src/id.$(OBJEXT) src/daemon.$(OBJEXT)
+	src/dbcache.$(OBJEXT) src/datacache.$(OBJEXT) \
+	src/common.$(OBJEXT) src/misc.$(OBJEXT) src/cfg.$(OBJEXT) \
+	src/ibw.$(OBJEXT) src/fs.$(OBJEXT) src/id.$(OBJEXT) \
+	src/daemon.$(OBJEXT)
 vnstatd_OBJECTS = $(am_vnstatd_OBJECTS)
 vnstatd_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -591,6 +596,7 @@ vnstatd_SOURCES = src/vnstatd.c src/vnstatd.h \
   src/dbsql.c src/dbsql.h \
   src/dbaccess.c src/dbaccess.h \
   src/dbcache.c src/dbcache.h \
+  src/datacache.c src/datacache.h \
   src/common.c src/common.h \
   src/misc.c src/misc.h \
   src/cfg.c src/cfg.h \
@@ -620,19 +626,21 @@ vnstatd_SOURCES = src/vnstatd.c src/vnstatd.h \
 @HAVE_CHECK_TRUE@check_vnstat_SOURCES = tests/vnstat_tests.c \
 @HAVE_CHECK_TRUE@	tests/vnstat_tests.h tests/common_tests.c \
 @HAVE_CHECK_TRUE@	tests/common_tests.h tests/dbsql_tests.c \
-@HAVE_CHECK_TRUE@	tests/dbsql_tests.h tests/config_tests.c \
+@HAVE_CHECK_TRUE@	tests/dbsql_tests.h tests/datacache_tests.c \
+@HAVE_CHECK_TRUE@	tests/datacache_tests.h tests/config_tests.c \
 @HAVE_CHECK_TRUE@	tests/config_tests.h tests/fs_tests.c \
 @HAVE_CHECK_TRUE@	tests/fs_tests.h tests/id_tests.c \
 @HAVE_CHECK_TRUE@	tests/id_tests.h src/cfg.c src/cfg.h \
 @HAVE_CHECK_TRUE@	src/common.c src/common.h src/daemon.c \
 @HAVE_CHECK_TRUE@	src/daemon.h src/dbsql.c src/dbsql.h \
 @HAVE_CHECK_TRUE@	src/dbaccess.c src/dbaccess.h src/dbcache.c \
-@HAVE_CHECK_TRUE@	src/dbcache.h src/dbjson.c src/dbjson.h \
-@HAVE_CHECK_TRUE@	src/dbmerge.c src/dbmerge.h src/dbshow.c \
-@HAVE_CHECK_TRUE@	src/dbshow.h src/dbxml.c src/dbxml.h \
-@HAVE_CHECK_TRUE@	src/ibw.c src/ibw.h src/ifinfo.c src/ifinfo.h \
-@HAVE_CHECK_TRUE@	src/misc.c src/misc.h src/fs.c src/fs.h \
-@HAVE_CHECK_TRUE@	src/id.c src/id.h src/traffic.c src/traffic.h
+@HAVE_CHECK_TRUE@	src/dbcache.h src/datacache.c src/datacache.h \
+@HAVE_CHECK_TRUE@	src/dbjson.c src/dbjson.h src/dbmerge.c \
+@HAVE_CHECK_TRUE@	src/dbmerge.h src/dbshow.c src/dbshow.h \
+@HAVE_CHECK_TRUE@	src/dbxml.c src/dbxml.h src/ibw.c src/ibw.h \
+@HAVE_CHECK_TRUE@	src/ifinfo.c src/ifinfo.h src/misc.c \
+@HAVE_CHECK_TRUE@	src/misc.h src/fs.c src/fs.h src/id.c \
+@HAVE_CHECK_TRUE@	src/id.h src/traffic.c src/traffic.h
 all: all-recursive
 
 .SUFFIXES:
@@ -759,6 +767,8 @@ tests/check_vnstat-common_tests.$(OBJEXT): tests/$(am__dirstamp) \
 	tests/$(DEPDIR)/$(am__dirstamp)
 tests/check_vnstat-dbsql_tests.$(OBJEXT): tests/$(am__dirstamp) \
 	tests/$(DEPDIR)/$(am__dirstamp)
+tests/check_vnstat-datacache_tests.$(OBJEXT): tests/$(am__dirstamp) \
+	tests/$(DEPDIR)/$(am__dirstamp)
 tests/check_vnstat-config_tests.$(OBJEXT): tests/$(am__dirstamp) \
 	tests/$(DEPDIR)/$(am__dirstamp)
 tests/check_vnstat-fs_tests.$(OBJEXT): tests/$(am__dirstamp) \
@@ -782,6 +792,8 @@ src/check_vnstat-dbsql.$(OBJEXT): src/$(am__dirstamp) \
 src/check_vnstat-dbaccess.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/check_vnstat-dbcache.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/check_vnstat-datacache.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/check_vnstat-dbjson.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
@@ -816,6 +828,8 @@ src/dbaccess.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/dbcache.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
+src/datacache.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
 src/common.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/misc.$(OBJEXT): src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
@@ -842,6 +856,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-cfg.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-common.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-daemon.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-datacache.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-dbaccess.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-dbcache.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-dbjson.Po@am__quote@
@@ -857,6 +872,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-traffic.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/common.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/daemon.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/datacache.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/dbaccess.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/dbcache.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/dbsql.Po@am__quote@
@@ -868,6 +884,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/vnstatd.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/check_vnstat-common_tests.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/check_vnstat-config_tests.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/check_vnstat-datacache_tests.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/check_vnstat-dbsql_tests.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/check_vnstat-fs_tests.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/check_vnstat-id_tests.Po@am__quote@
@@ -930,6 +947,20 @@ tests/check_vnstat-dbsql_tests.obj: tests/dbsql_tests.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tests/dbsql_tests.c' object='tests/check_vnstat-dbsql_tests.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o tests/check_vnstat-dbsql_tests.obj `if test -f 'tests/dbsql_tests.c'; then $(CYGPATH_W) 'tests/dbsql_tests.c'; else $(CYGPATH_W) '$(srcdir)/tests/dbsql_tests.c'; fi`
+
+tests/check_vnstat-datacache_tests.o: tests/datacache_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT tests/check_vnstat-datacache_tests.o -MD -MP -MF tests/$(DEPDIR)/check_vnstat-datacache_tests.Tpo -c -o tests/check_vnstat-datacache_tests.o `test -f 'tests/datacache_tests.c' || echo '$(srcdir)/'`tests/datacache_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) tests/$(DEPDIR)/check_vnstat-datacache_tests.Tpo tests/$(DEPDIR)/check_vnstat-datacache_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tests/datacache_tests.c' object='tests/check_vnstat-datacache_tests.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o tests/check_vnstat-datacache_tests.o `test -f 'tests/datacache_tests.c' || echo '$(srcdir)/'`tests/datacache_tests.c
+
+tests/check_vnstat-datacache_tests.obj: tests/datacache_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT tests/check_vnstat-datacache_tests.obj -MD -MP -MF tests/$(DEPDIR)/check_vnstat-datacache_tests.Tpo -c -o tests/check_vnstat-datacache_tests.obj `if test -f 'tests/datacache_tests.c'; then $(CYGPATH_W) 'tests/datacache_tests.c'; else $(CYGPATH_W) '$(srcdir)/tests/datacache_tests.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) tests/$(DEPDIR)/check_vnstat-datacache_tests.Tpo tests/$(DEPDIR)/check_vnstat-datacache_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tests/datacache_tests.c' object='tests/check_vnstat-datacache_tests.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o tests/check_vnstat-datacache_tests.obj `if test -f 'tests/datacache_tests.c'; then $(CYGPATH_W) 'tests/datacache_tests.c'; else $(CYGPATH_W) '$(srcdir)/tests/datacache_tests.c'; fi`
 
 tests/check_vnstat-config_tests.o: tests/config_tests.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT tests/check_vnstat-config_tests.o -MD -MP -MF tests/$(DEPDIR)/check_vnstat-config_tests.Tpo -c -o tests/check_vnstat-config_tests.o `test -f 'tests/config_tests.c' || echo '$(srcdir)/'`tests/config_tests.c
@@ -1056,6 +1087,20 @@ src/check_vnstat-dbcache.obj: src/dbcache.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/dbcache.c' object='src/check_vnstat-dbcache.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o src/check_vnstat-dbcache.obj `if test -f 'src/dbcache.c'; then $(CYGPATH_W) 'src/dbcache.c'; else $(CYGPATH_W) '$(srcdir)/src/dbcache.c'; fi`
+
+src/check_vnstat-datacache.o: src/datacache.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT src/check_vnstat-datacache.o -MD -MP -MF src/$(DEPDIR)/check_vnstat-datacache.Tpo -c -o src/check_vnstat-datacache.o `test -f 'src/datacache.c' || echo '$(srcdir)/'`src/datacache.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/check_vnstat-datacache.Tpo src/$(DEPDIR)/check_vnstat-datacache.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/datacache.c' object='src/check_vnstat-datacache.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o src/check_vnstat-datacache.o `test -f 'src/datacache.c' || echo '$(srcdir)/'`src/datacache.c
+
+src/check_vnstat-datacache.obj: src/datacache.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT src/check_vnstat-datacache.obj -MD -MP -MF src/$(DEPDIR)/check_vnstat-datacache.Tpo -c -o src/check_vnstat-datacache.obj `if test -f 'src/datacache.c'; then $(CYGPATH_W) 'src/datacache.c'; else $(CYGPATH_W) '$(srcdir)/src/datacache.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/check_vnstat-datacache.Tpo src/$(DEPDIR)/check_vnstat-datacache.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/datacache.c' object='src/check_vnstat-datacache.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o src/check_vnstat-datacache.obj `if test -f 'src/datacache.c'; then $(CYGPATH_W) 'src/datacache.c'; else $(CYGPATH_W) '$(srcdir)/src/datacache.c'; fi`
 
 src/check_vnstat-dbjson.o: src/dbjson.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT src/check_vnstat-dbjson.o -MD -MP -MF src/$(DEPDIR)/check_vnstat-dbjson.Tpo -c -o src/check_vnstat-dbjson.o `test -f 'src/dbjson.c' || echo '$(srcdir)/'`src/dbjson.c
