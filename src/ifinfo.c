@@ -11,6 +11,7 @@ int getifinfo(const char *iface)
 	char inface[32];
 
 	ifinfo.filled = 0;
+	ifinfo.timestamp = 0;
 
 	if (strcmp(iface, "default")==0) {
 		strncpy_nt(inface, cfg.iface, 32);
@@ -40,7 +41,7 @@ int getifinfo(const char *iface)
 #else
 	return 0;
 #endif
-
+	ifinfo.timestamp = time(NULL);
 	return 1;
 }
 

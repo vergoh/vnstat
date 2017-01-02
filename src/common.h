@@ -245,6 +245,7 @@ typedef struct {
 	uint64_t tx;
 	uint64_t rxp;
 	uint64_t txp;
+	time_t timestamp;
 } IFINFO;
 
 typedef struct {
