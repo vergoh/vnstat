@@ -124,8 +124,6 @@ int db_create(void)
 	char *sql;
 	char *datatables[] = {"fiveminute", "hour", "day", "month", "year", "top"};
 
-	/* TODO: check: COMMIT, END or ROLLBACK may be missing in error cases and return gets called before COMMIT */
-
 	if (!db_begintransaction()) {
 		return 0;
 	}
@@ -136,6 +134,7 @@ int db_create(void)
 		"  value    TEXT NOT NULL);";
 
 	if (!db_exec(sql)) {
+		db_rollbacktransaction();
 		return 0;
 	}
 
@@ -152,6 +151,7 @@ int db_create(void)
 		"  txtotal      INTEGER NOT NULL);";
 
 	if (!db_exec(sql)) {
+		db_rollbacktransaction();
 		return 0;
 	}
 
@@ -167,6 +167,7 @@ int db_create(void)
 
 		if (!db_exec(sql)) {
 			free(sql);
+			db_rollbacktransaction();
 			return 0;
 		}
 	}
@@ -367,7 +368,7 @@ int db_getiflist(dbiflist **dbifl)
 
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
 	if (rc) {
-		return 0;
+		return -1;
 	}
 
 	rc = 0;
@@ -425,18 +426,25 @@ int db_addtraffic_dated(const char *iface, const uint64_t rx, const uint64_t tx,
 
 	/* total */
 	sqlite3_snprintf(1024, sql, "update interface set rxtotal=rxtotal+%"PRIu64", txtotal=txtotal+%"PRIu64", updated=datetime(%s, 'localtime'), active=1 where id=%"PRId64";", rx, tx, nowdate, (int64_t)ifaceid);
-	db_exec(sql);
+	if (!db_exec(sql)) {
+		db_rollbacktransaction();
+		return 0;
+	}
 
 	/* time specific */
 	for (i=0; i<5; i++) {
 		snprintf(datebuffer, 512, datadates[i], nowdate);
 		sqlite3_snprintf(1024, sql, "insert or ignore into %s (interface, date, rx, tx) values (%"PRId64", %s, 0, 0);", datatables[i], (int64_t)ifaceid, datebuffer);
-		db_exec(sql);
+		if (!db_exec(sql)) {
+			db_rollbacktransaction();
+			return 0;
+		}
 		sqlite3_snprintf(1024, sql, "update %s set rx=rx+%"PRIu64", tx=tx+%"PRIu64" where interface=%"PRId64" and date=%s;", datatables[i], rx, tx, (int64_t)ifaceid, datebuffer);
-		db_exec(sql);
+		if (!db_exec(sql)) {
+			db_rollbacktransaction();
+			return 0;
+		}
 	}
-
-	/* TODO: db_exec return value checks missing */
 
 	return db_committransaction();
 }
@@ -452,19 +460,34 @@ int db_removeoldentries(void)
 	/* TODO: read cleanup limits from configuration and actually use this function somewhere */
 
 	sqlite3_snprintf(512, sql, "delete from fiveminute where date < datetime('now', '-48 hours', 'localtime');");
-	db_exec(sql);
+	if (!db_exec(sql)) {
+		db_rollbacktransaction();
+		return 0;
+	}
 
 	sqlite3_snprintf(512, sql, "delete from hour where date < datetime('now', '-7 days', 'localtime');");
-	db_exec(sql);
+	if (!db_exec(sql)) {
+		db_rollbacktransaction();
+		return 0;
+	}
 
 	sqlite3_snprintf(512, sql, "delete from day where date < date('now', '-30 days', 'localtime');");
-	db_exec(sql);
+	if (!db_exec(sql)) {
+		db_rollbacktransaction();
+		return 0;
+	}
 
 	sqlite3_snprintf(512, sql, "delete from month where date < date('now', '-12 months', 'localtime');");
-	db_exec(sql);
+	if (!db_exec(sql)) {
+		db_rollbacktransaction();
+		return 0;
+	}
 
 	sqlite3_snprintf(512, sql, "delete from year where date < date('now', '-10 years', 'localtime');");
-	db_exec(sql);
+	if (!db_exec(sql)) {
+		db_rollbacktransaction();
+		return 0;
+	}
 
 	/* TODO: handle top days */
 
@@ -480,7 +503,7 @@ int db_begintransaction(void)
 {
 	int rc;
 
-	rc = sqlite3_exec(db, "BEGIN", 0, 0, 0);
+	rc = sqlite3_exec(db, "BEGIN IMMEDIATE", 0, 0, 0);
 	if (rc) {
 		if (debug)
 			printf("Error: BEGIN failed (%d): %s\n", rc, sqlite3_errmsg(db));
