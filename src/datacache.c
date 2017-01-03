@@ -13,7 +13,7 @@ int datacache_add(datacache **dc, const char *interface, const short sync)
 	*dc = newdc;
 
 	strncpy_nt((*dc)->interface, interface, 32);
-	(*dc)->active = 0;
+	(*dc)->active = 1;
 	(*dc)->filled = 0;
 	(*dc)->syncneeded = sync;
 	(*dc)->currx = 0;

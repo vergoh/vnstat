@@ -20,7 +20,7 @@ START_TEST(datacache_can_add_to_cache)
 	ret = datacache_add(&dc, "eth0", 0);
 	ck_assert_int_eq(ret, 1);
 	ck_assert_str_eq(dc->interface, "eth0");
-	ck_assert_int_eq(dc->active, 0);
+	ck_assert_int_eq(dc->active, 1);
 	ck_assert_int_eq(dc->filled, 0);
 	ck_assert_int_eq(dc->syncneeded, 0);
 	ck_assert_int_eq(dc->currx, 0);
@@ -42,7 +42,7 @@ START_TEST(datacache_can_add_to_cache_consistently)
 	ret = datacache_add(&dc, "eth0", 0);
 	ck_assert_int_eq(ret, 1);
 	ck_assert_str_eq(dc->interface, "eth0");
-	ck_assert_int_eq(dc->active, 0);
+	ck_assert_int_eq(dc->active, 1);
 	ck_assert_int_eq(dc->filled, 0);
 	ck_assert_int_eq(dc->syncneeded, 0);
 	ck_assert_int_eq(dc->currx, 0);
@@ -56,7 +56,7 @@ START_TEST(datacache_can_add_to_cache_consistently)
 	ck_assert_int_eq(ret, 1);
 
 	ck_assert_str_eq(dc->interface, "eth1");
-	ck_assert_int_eq(dc->active, 0);
+	ck_assert_int_eq(dc->active, 1);
 	ck_assert_int_eq(dc->filled, 0);
 	ck_assert_int_eq(dc->syncneeded, 0);
 	ck_assert_int_eq(dc->currx, 0);
@@ -95,9 +95,9 @@ START_TEST(datacache_knows_how_to_count)
 	ck_assert_int_eq(ret, 2);
 
 	ret = datacache_activecount(&dc);
-	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(ret, 2);
 
-	dc->active = 1;
+	dc->active = 0;
 
 	ret = datacache_activecount(&dc);
 	ck_assert_int_eq(ret, 1);
