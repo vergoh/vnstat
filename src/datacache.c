@@ -117,12 +117,20 @@ void datacache_debug(datacache **dc)
 	int i = 1;
 	datacache *cacheiterator = *dc;
 
+	if (cacheiterator == NULL) {
+		printf("cache: empty\n");
+		return;
+	}
+
+	printf("cache: ");
 	while (cacheiterator != NULL) {
-		printf("datacache %d: %s\n", i, cacheiterator->interface);
-		xferlog_debug(&cacheiterator->log);
+		printf(" %d: \"%s\" (", i, cacheiterator->interface);
+		xferlog_debug(&cacheiterator->log, 0);
+		printf(")  ");
 		cacheiterator = cacheiterator->next;
 		i++;
 	}
+	printf("\n");
 }
 
 int xferlog_add(xferlog **log, const time_t timestamp, const uint64_t rx, const uint64_t tx)
@@ -159,14 +167,25 @@ void xferlog_clear(xferlog **log)
 	}
 }
 
-void xferlog_debug(xferlog **log)
+void xferlog_debug(xferlog **log, const int newline)
 {
 	int i = 1;
 	xferlog *logiterator = *log;
 
+	if (newline && logiterator == NULL) {
+		printf("  xferlog: empty\n");
+		return;
+	}
+
+	if (newline) {
+		printf("  xferlog: ");
+	}
 	while (logiterator != NULL) {
-		printf("  xferlog %d: %"PRIu64": %"PRIu64" / %"PRIu64"\n", i, (uint64_t)logiterator->timestamp, logiterator->rx, logiterator->tx);
+		printf("%d: %"PRIu64" - %"PRIu64" / %"PRIu64"  ", i, (uint64_t)logiterator->timestamp, logiterator->rx, logiterator->tx);
 		logiterator = logiterator->next;
 		i++;
+	}
+	if (newline) {
+		printf("\n");
 	}
 }

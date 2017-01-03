@@ -28,6 +28,6 @@ void datacache_debug(datacache **dc);
 
 int xferlog_add(xferlog **log, const time_t timestamp, const uint64_t rx, const uint64_t tx);
 void xferlog_clear(xferlog **log);
-void xferlog_debug(xferlog **log);
+void xferlog_debug(xferlog **log, const int newline);
 
 #endif
