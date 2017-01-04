@@ -16,7 +16,7 @@ vnStat daemon - Copyright (c) 2008-2016 Teemu Toivola <tst@iki.fi>
 */
 
 #include "common.h"
-#include "dbcache.h"
+#include "datacache.h"
 #include "dbsql.h"
 #include "cfg.h"
 #include "ibw.h"
@@ -27,7 +27,7 @@ vnStat daemon - Copyright (c) 2008-2016 Teemu Toivola <tst@iki.fi>
 int main(int argc, char *argv[])
 {
 	int currentarg;
-	uint32_t prevdbhash;
+	uint32_t previflisthash;
 	DSTATE s;
 
 	initdstate(&s);
@@ -176,10 +176,10 @@ int main(int argc, char *argv[])
 
 		/* track interface status only if at least one database exists */
 		if (s.dbcount != 0) {
-			prevdbhash = s.dbhash;
-			s.dbhash = dbcheck(s.dbhash, &s.forcesave);
-			if (s.alwaysadd && s.dbhash != prevdbhash && prevdbhash != 0) {
-				s.dbcount += addinterfaces(s.dirname, s.running);
+			previflisthash = s.iflisthash;
+			interfacechangecheck(&s);
+			if (s.alwaysadd && s.iflisthash != previflisthash && previflisthash != 0) {
+				s.dbcount += addinterfaces(&s);
 			}
 		}
 
@@ -190,7 +190,7 @@ int main(int argc, char *argv[])
 
 			if (debug) {
 				debugtimestamp();
-				cacheshow();
+				datacache_debug(&s.dcache);
 				ibwlist();
 			}
 
@@ -201,12 +201,11 @@ int main(int argc, char *argv[])
 			/* update data cache */
 			} else {
 				s.prevdbupdate = s.current;
-				s.datalist = dataptr;
 
 				adjustsaveinterval(&s);
 				checkdbsaveneed(&s);
 
-				processdatalist(&s);
+				processdatacache(&s);
 
 				if (debug) {
 					printf("\n");
@@ -223,7 +222,12 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	cacheflush(s.dirname);
+	// TODO: replace: cacheflush(s.dirname);
+
+	/* TODO: remove this temporary cleanup */
+	datacache_clear(&s.dcache);
+
+
 	ibwflush();
 	db_close();
 

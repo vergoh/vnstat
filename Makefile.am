@@ -68,7 +68,8 @@ check_vnstat_SOURCES = tests/vnstat_tests.c tests/vnstat_tests.h \
   tests/datacache_tests.c tests/datacache_tests.h \
   tests/config_tests.c tests/config_tests.h \
   tests/fs_tests.c tests/fs_tests.h \
-  tests/id_tests.c tests/id_tests.h
+  tests/id_tests.c tests/id_tests.h \
+  tests/daemon_tests.c tests/daemon_tests.h
 
 #check_vnstat_SOURCES = tests/vnstat_tests.c tests/vnstat_tests.h \
 #  tests/common_tests.c tests/common_tests.h \

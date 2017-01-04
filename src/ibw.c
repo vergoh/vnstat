@@ -136,7 +136,7 @@ int ibwget(const char *iface)
 			p->limit = speed;
 			p->retries = 0;
 			p->detected = current;
-			return speed;
+			return speed; /* TODO: fix mismatch between type of speed and return */
 		}
 		p->retries++;
 	}

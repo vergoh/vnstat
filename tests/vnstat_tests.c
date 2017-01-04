@@ -5,7 +5,7 @@
 #include "config_tests.h"
 //#include "ifinfo_tests.h"
 //#include "misc_tests.h"
-//#include "daemon_tests.h"
+#include "daemon_tests.h"
 #include "datacache_tests.h"
 #include "fs_tests.h"
 #include "id_tests.h"
@@ -41,7 +41,7 @@ Suite *test_suite(void)
 	add_config_tests(s);
 	//add_ifinfo_tests(s);
 	//add_misc_tests(s);
-	//add_daemon_tests(s);
+	add_daemon_tests(s);
 	add_datacache_tests(s);
 	add_fs_tests(s);
 	add_id_tests(s);

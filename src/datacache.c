@@ -181,7 +181,10 @@ void xferlog_debug(xferlog **log, const int newline)
 		printf("  xferlog: ");
 	}
 	while (logiterator != NULL) {
-		printf("%d: %"PRIu64" - %"PRIu64" / %"PRIu64"  ", i, (uint64_t)logiterator->timestamp, logiterator->rx, logiterator->tx);
+		printf("%d: %"PRIu64" - %"PRIu64" / %"PRIu64"", i, (uint64_t)logiterator->timestamp, logiterator->rx, logiterator->tx);
+		if (logiterator->next != NULL) {
+			printf(", ");
+		}
 		logiterator = logiterator->next;
 		i++;
 	}
