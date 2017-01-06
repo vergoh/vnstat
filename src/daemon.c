@@ -156,25 +156,17 @@ int addinterfaces(DSTATE *s)
 				printf("add failed, skip\n");
 		}
 
-		/* TODO: cleanup, this isn't probably going to be needed
-		initdb();
-		strncpy_nt(data.interface, interface, 32);
-		strncpy_nt(data.nick, data.interface, 32);*/
-
 		if (!getifinfo(interface)) {
 			if (debug)
 				printf("getifinfo failed, skip\n");
 			continue;
 		}
 
-		/* TODO: this is most likely the wrong place to set btime */
+		/* TODO: this is most likely the wrong place to store btime */
 		snprintf(buffer, 32, "%"PRIu64"", (uint64_t)MAX32);
 		db_setinfo("btime", buffer, 1);
 
 		db_setcounters(interface, ifinfo.rx, ifinfo.tx);
-
-		// TODO: cleanup
-		//parseifinfo(1);
 
 		count++;
 		bwlimit = ibwget(interface);
@@ -187,7 +179,6 @@ int addinterfaces(DSTATE *s)
 		} else {
 			if (debug)
 				printf("\%s\" added with %d Mbit bandwidth limit to cache.\n", interface, bwlimit);
-			// TODO: cleanup: cacheadd(interface, 1);
 			datacache_add(&s->dcache, interface, 1);
 		}
 	}
@@ -334,7 +325,6 @@ void filldatabaselist(DSTATE *s)
 		if (debug) {
 			printf("\nProcessing interface \"%s\"...\n", dbifl_iterator->interface);
 		}
-		// TODO: cleanup: if (!cacheadd(dbifl->interface, s->sync)) {
 		if (!datacache_add(&s->dcache, dbifl_iterator->interface, s->sync)) {
 			snprintf(errorstring, 512, "Cache memory allocation failed, exiting.");
 			printe(PT_Error);
@@ -456,8 +446,16 @@ void processdatacache(DSTATE *s)
 					}
 
 					interval = ifinfo.timestamp - iterator->updated;
-					if ( (interval > 1) && (interval < (60*MAXUPDATEINTERVAL)) ) {
-						/* TODO: add btime handling here */
+					if ( (interval >= 1) && (interval <= (60*MAXUPDATEINTERVAL)) ) {
+						/* TODO: add btime handling here or somewhere else */
+						/*
+						if (data.btime < (btime-cfg.bvar)) {
+							data.currx=0;
+							data.curtx=0;
+							if (debug)
+								printf("System has been booted.\n");
+						}
+						*/
 
 						rxchange = countercalc(&iterator->currx, &ifinfo.rx);
 						txchange = countercalc(&iterator->curtx, &ifinfo.tx);
@@ -520,6 +518,7 @@ void processdatacache(DSTATE *s)
 		iterator = iterator->next;
 	}
 
+	/* remove marked interfaces from monitoring */
 	if (dbifl != NULL) {
 		dbifl_iterator = dbifl;
 		while (dbifl_iterator != NULL) {

@@ -222,11 +222,8 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	// TODO: replace: cacheflush(s.dirname);
-
-	/* TODO: remove this temporary cleanup */
+	/* TODO: replace this temporary cleanup with flush to database */
 	datacache_clear(&s.dcache);
-
 
 	ibwflush();
 	db_close();
