@@ -307,16 +307,7 @@ void filldatabaselist(DSTATE *s)
 	if (db_getiflist(&dbifl) < 0) {
 		snprintf(errorstring, 512, "Unable to access database(%s), exiting.", strerror(errno));
 		printe(PT_Error);
-
-		/* TODO: this sequence should be a function, database handling is missing */
-
-		/* clean daemon stuff before exit */
-		if (s->rundaemon && !debug) {
-			close(pidfile);
-			unlink(cfg.pidfile);
-		}
-		ibwflush();
-		exit(EXIT_FAILURE);
+		errorexitdaemon(s);
 	}
 
 	dbifl_iterator = dbifl;
@@ -328,14 +319,7 @@ void filldatabaselist(DSTATE *s)
 		if (!datacache_add(&s->dcache, dbifl_iterator->interface, s->sync)) {
 			snprintf(errorstring, 512, "Cache memory allocation failed, exiting.");
 			printe(PT_Error);
-
-			/* clean daemon stuff before exit */
-			if (s->rundaemon && !debug) {
-				close(pidfile);
-				unlink(cfg.pidfile);
-			}
-			ibwflush();
-			exit(EXIT_FAILURE);
+			errorexitdaemon(s);
 		}
 		s->dbcount++;
 		dbifl_iterator = dbifl_iterator->next;
@@ -459,14 +443,7 @@ int processifinfo(DSTATE *s, datacache **dc)
 		if ((*dc)->updated > (ifinfo.timestamp+86400)) {
 			snprintf(errorstring, 512, "Interface \"%s\" has previous update date too much in the future, exiting. (%u / %u)", (*dc)->interface, (unsigned int)(*dc)->updated, (unsigned int)ifinfo.timestamp);
 			printe(PT_Error);
-
-			/* clean daemon stuff before exit */
-			if (s->rundaemon && !debug) {
-				close(pidfile);
-				unlink(cfg.pidfile);
-			}
-			ibwflush();
-			exit(EXIT_FAILURE);
+			errorexitdaemon(s);
 		}
 		return 0;
 	}
@@ -759,4 +736,20 @@ uint32_t simplehash(const char *data, int len)
 	}
 
 	return hash;
+}
+
+void errorexitdaemon(DSTATE *s)
+{
+	flushcachetodisk(s);
+	db_close();
+
+	datacache_clear(&s->dcache);
+	ibwflush();
+
+	if (s->rundaemon && !debug) {
+		close(pidfile);
+		unlink(cfg.pidfile);
+	}
+
+	exit(EXIT_FAILURE);
 }

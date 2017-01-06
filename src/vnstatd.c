@@ -222,11 +222,11 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	/* TODO: replace this temporary cleanup with flush to database */
-	datacache_clear(&s.dcache);
-
-	ibwflush();
+	flushcachetodisk(&s);
 	db_close();
+
+	datacache_clear(&s.dcache);
+	ibwflush();
 
 	if (s.rundaemon && !debug) {
 		close(pidfile);

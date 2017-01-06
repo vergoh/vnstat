@@ -37,4 +37,6 @@ void datacache_status(datacache **dc);
 void interfacechangecheck(DSTATE *s);
 uint32_t simplehash(const char *data, int len);
 
+void errorexitdaemon(DSTATE *s);
+
 #endif
