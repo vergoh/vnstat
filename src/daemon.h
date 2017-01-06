@@ -27,6 +27,11 @@ void processdatalist(DSTATE *s);
 void handleintsignals(DSTATE *s);
 void preparedirs(DSTATE *s);
 
+int initcachevalues(datacache **dc);
+int processifinfo(DSTATE *s, datacache **dc);
+void flushcachetodisk(DSTATE *s);
+void cleanremovedinterfaces(DSTATE *s);
+
 void datacache_status(datacache **dc);
 
 void interfacechangecheck(DSTATE *s);

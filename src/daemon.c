@@ -380,145 +380,184 @@ void checkdbsaveneed(DSTATE *s)
 
 void processdatacache(DSTATE *s)
 {
-	uint64_t rx, tx;
-	uint64_t rxchange, txchange;
-	uint64_t maxtransfer;
-	time_t interval;
-	int maxbw;
 	datacache *iterator = s->dcache;
-	xferlog *logiterator;
-	dbiflist *dbifl = NULL, *dbifl_iterator = NULL;
 
 	while (iterator != NULL) {
-
-		maxbw = 0;
-		maxtransfer = 0;
-		rx = tx = 0;
-		rxchange = txchange = 0;
 
 		if (debug) {
 			printf("dc: processing %s (%d)...\n", iterator->interface, s->dodbsave);
 		}
 
 		if (!iterator->filled) {
-			if (!db_getcounters(iterator->interface, &rx, &tx)) {
+			if (!initcachevalues(&iterator)) {
 				iterator = iterator->next;
 				continue;
 			}
-			iterator->currx = rx;
-			iterator->curtx = tx;
-			/* TODO: "updated" info from database needed */
-			iterator->updated = time(NULL);
-			iterator->filled = 1;
-			/* enforce interface status check */
 			s->iflisthash = 0;
 		}
 
 		if (iterator->active) {
 			if (!getifinfo(iterator->interface)) {
 				/* disable interface since we can't access its data */
-				data.active = 0;
-				snprintf(errorstring, 512, "Interface \"%s\" not available, disabling.", data.interface);
+				iterator->active = 0;
+				snprintf(errorstring, 512, "Interface \"%s\" not available, disabling.", iterator->interface);
 				printe(PT_Info);
 			} else {
-				if (iterator->syncneeded) { /* if --sync was used during startup */
-					iterator->currx = ifinfo.rx;
-					iterator->curtx = ifinfo.tx;
-					iterator->syncneeded = 0;
-				} else {
-					if (iterator->updated > ifinfo.timestamp) {
-						/* skip update if previous update is less than a day in the future */
-						/* otherwise exit with error message since the clock is problably messed */
-						if (iterator->updated > (ifinfo.timestamp+86400)) {
-							snprintf(errorstring, 512, "Interface \"%s\" has previous update date too much in the future, exiting. (%u / %u)", iterator->interface, (unsigned int)iterator->updated, (unsigned int)ifinfo.timestamp);
-							printe(PT_Error);
-
-							/* clean daemon stuff before exit */
-							if (s->rundaemon && !debug) {
-								close(pidfile);
-								unlink(cfg.pidfile);
-							}
-							ibwflush();
-							exit(EXIT_FAILURE);
-						}
-						iterator = iterator->next;
-						continue;
-					}
-
-					interval = ifinfo.timestamp - iterator->updated;
-					if ( (interval >= 1) && (interval <= (60*MAXUPDATEINTERVAL)) ) {
-						/* TODO: add btime handling here or somewhere else */
-						/*
-						if (data.btime < (btime-cfg.bvar)) {
-							data.currx=0;
-							data.curtx=0;
-							if (debug)
-								printf("System has been booted.\n");
-						}
-						*/
-
-						rxchange = countercalc(&iterator->currx, &ifinfo.rx);
-						txchange = countercalc(&iterator->curtx, &ifinfo.tx);
-
-						/* get bandwidth limit for current interface */
-						maxbw = ibwget(iterator->interface);
-
-						if (maxbw > 0) {
-
-							/* calculate maximum possible transfer since last update based on set maximum rate */
-							/* and add 10% in order to be on the safe side */
-							maxtransfer = ceil((maxbw/(float)8)*interval*(float)1.1) * 1024 * 1024;
-
-							if (debug)
-								printf("interval: %"PRIu64"  maxbw: %d  maxrate: %"PRIu64"  rxc: %"PRIu64"  txc: %"PRIu64"\n", (uint64_t)interval, maxbw, maxtransfer, rxchange, txchange);
-
-							/* sync counters if traffic is greater than set maximum */
-							if ( (rxchange > maxtransfer) || (txchange > maxtransfer) ) {
-								snprintf(errorstring, 512, "Traffic rate for \"%s\" higher than set maximum %d Mbit (%"PRIu64"->%"PRIu64", r%"PRIu64" t%"PRIu64"), syncing.", iterator->interface, maxbw, (uint64_t)interval, maxtransfer, rxchange, txchange);
-								printe(PT_Info);
-								rxchange = txchange = 0;
-							}
-						}
-
-						if (rxchange || txchange) {
-							xferlog_add(&iterator->log, ifinfo.timestamp - (ifinfo.timestamp % 300), rxchange, txchange);
-						}
-					}
-					iterator->currx = ifinfo.rx;
-					iterator->curtx = ifinfo.tx;
-					iterator->updated = ifinfo.timestamp;
+				if (!processifinfo(s, &iterator)) {
+					iterator = iterator->next;
+					continue;
 				}
-
 			}
 		} else {
 			if (debug)
 				printf("dc: interface is disabled\n");
 		}
 
-		if (s->dodbsave) {
-			/* TODO: error handling needed, if the disk is full then keep the cache up to some time limit */
+		iterator = iterator->next;
+	}
 
-			if (db_getinterfacecountbyname(iterator->interface)) {
-				logiterator = iterator->log;
-				while (logiterator != NULL) {
-					db_addtraffic_dated(iterator->interface, logiterator->rx, logiterator->tx, (uint64_t)logiterator->timestamp);
-					logiterator = logiterator->next;
-				}
-				xferlog_clear(&iterator->log);
-				db_setcounters(iterator->interface, iterator->currx, iterator->curtx);
-				if (!iterator->active) {
-					db_setactive(iterator->interface, iterator->active);
-				}
-			} else {
-				/* add interface for removal since it doesn't exists in the database anymore */
-				dbiflistadd(&dbifl, iterator->interface);
+	if (s->dodbsave) {
+		flushcachetodisk(s);
+		cleanremovedinterfaces(s);
+	}
+}
+
+int initcachevalues(datacache **dc)
+{
+	uint64_t rx, tx;
+
+	if (!db_getcounters((*dc)->interface, &rx, &tx)) {
+		return 0;
+	}
+
+	(*dc)->currx = rx;
+	(*dc)->curtx = tx;
+	/* TODO: "updated" should come from database */
+	(*dc)->updated = time(NULL);
+	(*dc)->filled = 1;
+
+	return 1;
+}
+
+int processifinfo(DSTATE *s, datacache **dc)
+{
+	uint64_t rxchange, txchange;
+	uint64_t maxtransfer;
+	time_t interval;
+	int maxbw;
+
+	if ((*dc)->syncneeded) { /* if --sync was used during startup */
+		(*dc)->currx = ifinfo.rx;
+		(*dc)->curtx = ifinfo.tx;
+		(*dc)->syncneeded = 0;
+		return 1;
+	}
+
+	if ((*dc)->updated > ifinfo.timestamp) {
+		/* skip update if previous update is less than a day in the future */
+		/* otherwise exit with error message since the clock is problably messed */
+		if ((*dc)->updated > (ifinfo.timestamp+86400)) {
+			snprintf(errorstring, 512, "Interface \"%s\" has previous update date too much in the future, exiting. (%u / %u)", (*dc)->interface, (unsigned int)(*dc)->updated, (unsigned int)ifinfo.timestamp);
+			printe(PT_Error);
+
+			/* clean daemon stuff before exit */
+			if (s->rundaemon && !debug) {
+				close(pidfile);
+				unlink(cfg.pidfile);
 			}
+			ibwflush();
+			exit(EXIT_FAILURE);
+		}
+		return 0;
+	}
+
+	interval = ifinfo.timestamp -(*dc)->updated;
+	if ( (interval >= 1) && (interval <= (60*MAXUPDATEINTERVAL)) ) {
+		/* TODO: add btime handling here or somewhere else */
+		/*
+		if (data.btime < (btime-cfg.bvar)) {
+			data.currx=0;
+			data.curtx=0;
+			if (debug)
+				printf("System has been booted.\n");
+		}
+		*/
+
+		rxchange = countercalc(&(*dc)->currx, &ifinfo.rx);
+		txchange = countercalc(&(*dc)->curtx, &ifinfo.tx);
+
+		/* get bandwidth limit for current interface */
+		maxbw = ibwget((*dc)->interface);
+
+		if (maxbw > 0) {
+
+			/* calculate maximum possible transfer since last update based on set maximum rate */
+			/* and add 10% in order to be on the safe side */
+			maxtransfer = ceil((maxbw/(float)8)*interval*(float)1.1) * 1024 * 1024;
+
+			if (debug)
+				printf("interval: %"PRIu64"  maxbw: %d  maxrate: %"PRIu64"  rxc: %"PRIu64"  txc: %"PRIu64"\n", (uint64_t)interval, maxbw, maxtransfer, rxchange, txchange);
+
+			/* sync counters if traffic is greater than set maximum */
+			if ( (rxchange > maxtransfer) || (txchange > maxtransfer) ) {
+				snprintf(errorstring, 512, "Traffic rate for \"%s\" higher than set maximum %d Mbit (%"PRIu64"->%"PRIu64", r%"PRIu64" t%"PRIu64"), syncing.", (*dc)->interface, maxbw, (uint64_t)interval, maxtransfer, rxchange, txchange);
+				printe(PT_Info);
+				rxchange = txchange = 0;
+			}
+		}
+
+		if (rxchange || txchange) {
+			xferlog_add(&(*dc)->log, ifinfo.timestamp - (ifinfo.timestamp % 300), rxchange, txchange);
+		}
+	}
+	(*dc)->currx = ifinfo.rx;
+	(*dc)->curtx = ifinfo.tx;
+	(*dc)->updated = ifinfo.timestamp;
+
+	return 1;
+}
+
+void flushcachetodisk(DSTATE *s)
+{
+	datacache *iterator = s->dcache;
+	xferlog *logiterator;
+
+	while (iterator != NULL) {
+		/* TODO: error handling needed, if the disk is full then keep the cache up to some time limit */
+
+		/* ignore interface no longer in database */
+		if (!db_getinterfacecountbyname(iterator->interface)) {
+			iterator = iterator->next;
+			continue;
+		}
+
+		logiterator = iterator->log;
+		while (logiterator != NULL) {
+			db_addtraffic_dated(iterator->interface, logiterator->rx, logiterator->tx, (uint64_t)logiterator->timestamp);
+			logiterator = logiterator->next;
+		}
+		xferlog_clear(&iterator->log);
+		db_setcounters(iterator->interface, iterator->currx, iterator->curtx);
+		if (!iterator->active) {
+			db_setactive(iterator->interface, iterator->active);
 		}
 
 		iterator = iterator->next;
 	}
+}
 
-	/* remove marked interfaces from monitoring */
+void cleanremovedinterfaces(DSTATE *s)
+{
+	datacache *iterator = s->dcache;
+	dbiflist *dbifl = NULL, *dbifl_iterator = NULL;
+
+	while (iterator != NULL) {
+		if (!db_getinterfacecountbyname(iterator->interface)) {
+			dbiflistadd(&dbifl, iterator->interface);
+		}
+		iterator = iterator->next;
+	}
+
 	if (dbifl != NULL) {
 		dbifl_iterator = dbifl;
 		while (dbifl_iterator != NULL) {
@@ -531,7 +570,6 @@ void processdatacache(DSTATE *s)
 		datacache_status(&s->dcache);
 		dbiflistfree(&dbifl);
 	}
-
 }
 
 void handleintsignals(DSTATE *s)

@@ -3,6 +3,7 @@
 #include "common.h"
 #include "dbaccess.h"
 #include "datacache.h"
+#include "dbsql.h"
 #include "ifinfo.h"
 #include "cfg.h"
 #include "fs.h"
