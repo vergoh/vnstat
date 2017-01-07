@@ -449,6 +449,70 @@ int db_addtraffic_dated(const char *iface, const uint64_t rx, const uint64_t tx,
 	return db_committransaction();
 }
 
+int db_setcreation(const char *iface, const uint64_t timestamp)
+{
+	char sql[512];
+	sqlite3_int64 ifaceid = 0;
+
+	ifaceid = db_getinterfaceid(iface, 0);
+	if (ifaceid == 0) {
+		return 0;
+	}
+
+	sqlite3_snprintf(512, sql, "update interface set created=%"PRIu64" where id=%"PRId64";", timestamp, (int64_t)ifaceid);
+	return db_exec(sql);
+}
+
+int db_settotal(const char *iface, const uint64_t rx, const uint64_t tx)
+{
+	char sql[512];
+	sqlite3_int64 ifaceid = 0;
+
+	ifaceid = db_getinterfaceid(iface, 0);
+	if (ifaceid == 0) {
+		return 0;
+	}
+
+	sqlite3_snprintf(512, sql, "update interface set rxtotal=%"PRIu64", txtotal=%"PRIu64" where id=%"PRId64";", rx, tx, (int64_t)ifaceid);
+	return db_exec(sql);
+}
+
+int db_insertdata(const char *table, const char *iface, const uint64_t rx, const uint64_t tx, const uint64_t timestamp)
+{
+	int i, index = -1;
+	char sql[1024], datebuffer[512], nowdate[64];
+	sqlite3_int64 ifaceid = 0;
+
+	char *datatables[] = {"hour", "day", "month", "year", "top"};
+	char *datadates[] = {"strftime('%%Y-%%m-%%d %%H:00:00', %s, 'localtime')", \
+			"date(%s, 'localtime')", \
+			"strftime('%%Y-%%m-01', %s, 'localtime')", \
+			"strftime('%%Y-01-01', %s, 'localtime')", \
+			"date(%s, 'localtime')"};
+
+	for (i=0; i<5; i++) {
+		if (strcmp(table, datatables[i]) == 0) {
+			index = i;
+			break;
+		}
+	}
+
+	if (index == -1) {
+		return 0;
+	}
+
+	ifaceid = db_getinterfaceid(iface, 0);
+	if (ifaceid == 0) {
+		return 0;
+	}
+
+	snprintf(nowdate, 64, "datetime(%"PRIu64", 'unixepoch')", timestamp);
+	snprintf(datebuffer, 512, datadates[i], nowdate);
+
+	sqlite3_snprintf(1024, sql, "insert or ignore into %s (interface, date, rx, tx) values (%"PRId64", %s, %"PRIu64", %"PRIu64");", table, (int64_t)ifaceid, datebuffer, rx, tx);
+	return db_exec(sql);
+}
+
 int db_removeoldentries(void)
 {
 	char sql[512];
@@ -489,7 +553,11 @@ int db_removeoldentries(void)
 		return 0;
 	}
 
-	/* TODO: handle top days */
+	sqlite3_snprintf(512, sql, "delete from top order by rx+tx desc limit -1 offset 10;");
+	if (!db_exec(sql)) {
+		db_rollbacktransaction();
+		return 0;
+	}
 
 	return db_committransaction();
 }
