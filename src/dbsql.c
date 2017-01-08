@@ -507,7 +507,7 @@ int db_insertdata(const char *table, const char *iface, const uint64_t rx, const
 	}
 
 	snprintf(nowdate, 64, "datetime(%"PRIu64", 'unixepoch')", timestamp);
-	snprintf(datebuffer, 512, datadates[i], nowdate);
+	snprintf(datebuffer, 512, datadates[index], nowdate);
 
 	sqlite3_snprintf(1024, sql, "insert or ignore into %s (interface, date, rx, tx) values (%"PRId64", %s, %"PRIu64", %"PRIu64");", table, (int64_t)ifaceid, datebuffer, rx, tx);
 	return db_exec(sql);
@@ -522,6 +522,7 @@ int db_removeoldentries(void)
 	}
 
 	/* TODO: read cleanup limits from configuration and actually use this function somewhere */
+	/* running this about once every hour during cache flush would keep the fiveminute table from accumulating too much excess data */
 
 	sqlite3_snprintf(512, sql, "delete from fiveminute where date < datetime('now', '-48 hours', 'localtime');");
 	if (!db_exec(sql)) {

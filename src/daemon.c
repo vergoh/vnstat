@@ -236,9 +236,6 @@ void initdstate(DSTATE *s)
 
 void preparedatabases(DSTATE *s)
 {
-	/*DIR *dir;
-	struct dirent *di;*/
-
 	s->dbcount = db_getinterfacecount();
 
 	if (s->dbcount > 0 && !s->alwaysadd) {
@@ -250,15 +247,36 @@ void preparedatabases(DSTATE *s)
 		printf("Zero database found, exiting.\n");
 		exit(EXIT_FAILURE);
 	}
+
 	if (!spacecheck(s->dirname)) {
 		printf("Error: Not enough free diskspace available, exiting.\n");
 		exit(EXIT_FAILURE);
 	}
+
+	if (importlegacydbs(s) && !s->alwaysadd) {
+		s->dbcount = 0;
+		return;
+	}
+
 	if (s->dbcount == 0) {
 		printf("Zero database found, adding available interfaces...\n");
 	}
 
-	/* TODO: import legacy databases first if found when the sqldb doesn't contain any interfaces
+	if (!addinterfaces(s) && s->dbcount == 0) {
+		printf("Nothing to do, exiting.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	/* set counter back to zero so that dbs will be cached later */
+	s->dbcount = 0;
+}
+
+int importlegacydbs(DSTATE *s)
+{
+	DIR *dir;
+	struct dirent *di;
+	int importcount = 0;
+
 	if ((dir=opendir(s->dirname))==NULL) {
 		printf("Error: Unable to open database directory \"%s\": %s\n", s->dirname, strerror(errno));
 		printf("Make sure it exists and is at least read enabled for current user.\n");
@@ -269,18 +287,19 @@ void preparedatabases(DSTATE *s)
 	s->dbcount = 0;
 	while ((di=readdir(dir))) {
 		if ((di->d_name[0]!='.') && (strcmp(di->d_name, DATABASEFILE)!=0)) {
-			s->dbcount++;
+			/* ignore already known interfaces */
+			if (db_getinterfacecountbyname(di->d_name)) {
+				continue;
+			}
+			if (importlegacydb(di->d_name, s->dirname)) {
+				importcount++;
+			}
 		}
 	}
-	closedir(dir);*/
+	closedir(dir);
 
-	if (!addinterfaces(s) && s->dbcount == 0) {
-		printf("Nothing to do, exiting.\n");
-		exit(EXIT_FAILURE);
-	}
-
-	/* set counter back to zero so that dbs will be cached later */
-	s->dbcount = 0;
+	s->dbcount += importcount;
+	return importcount;
 }
 
 void setsignaltraps(void)

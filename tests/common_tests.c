@@ -54,25 +54,19 @@ END_TEST
 #if defined(_SVID_SOURCE) || defined(_XOPEN_SOURCE) || defined(__linux__)
 START_TEST(mosecs_return_values)
 {
-	initdb();
 	defaultcfg();
 	ck_assert_int_eq(cfg.monthrotate, 1);
-	ck_assert_int_eq(mosecs(), 1);
-	data.month[0].month = 172800;
-	data.lastupdated = 173000;
-	ck_assert_int_eq(mosecs(), 173000);
+	ck_assert_int_eq(mosecs(0, 0), 1);
+	ck_assert_int_eq(mosecs(172800, 173000), 173000);
 }
 END_TEST
 #else
 START_TEST(mosecs_return_values_without_timezone)
 {
-	initdb();
 	defaultcfg();
 	ck_assert_int_eq(cfg.monthrotate, 1);
-	ck_assert_int_eq(mosecs(), 1);
-	data.month[0].month = 172800;
-	data.lastupdated = 173000;
-	ck_assert_int_gt(mosecs(), 1);
+	ck_assert_int_eq(mosecs(0, 0), 1);
+	ck_assert_int_gt(mosecs(172800, 173000), 1);
 }
 END_TEST
 #endif
@@ -89,13 +83,10 @@ START_TEST(mosecs_does_not_change_tz)
 	tzset();
 	timezone_before_call = timezone;
 
-	initdb();
 	defaultcfg();
-	data.month[0].month = 1;
-	data.lastupdated = 2;
 	ck_assert_int_eq(cfg.monthrotate, 1);
-	ck_assert_int_ne(mosecs(), 0);
-	ck_assert_int_ne(mosecs(), 1);
+	ck_assert_int_ne(mosecs(1, 2), 0);
+	ck_assert_int_ne(mosecs(1, 2), 1);
 	ck_assert_int_eq(timezone_before_call, timezone);
 }
 END_TEST
@@ -108,14 +99,11 @@ START_TEST(mosecs_does_not_change_struct_tm_pointer_content)
 	current = time(NULL);
 	stm = localtime(&current);
 
-	initdb();
 	defaultcfg();
-	data.month[0].month = 1;
-	data.lastupdated = 2;
 	ck_assert_int_eq(cfg.monthrotate, 1);
 	ck_assert_int_eq(current, timelocal(stm));
-	ck_assert_int_ne(mosecs(), 0);
-	ck_assert_int_ne(mosecs(), 1);
+	ck_assert_int_ne(mosecs(1, 2), 0);
+	ck_assert_int_ne(mosecs(1, 2), 1);
 	ck_assert_int_eq(current, timelocal(stm));
 }
 END_TEST

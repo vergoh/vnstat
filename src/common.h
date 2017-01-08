@@ -155,10 +155,6 @@ and most can be changed later from the config file.
 /* each try takes about a second */
 #define LOCKTRYLIMIT 5
 
-/* database version */
-/* 1 = 1.0, 2 = 1.1-1.2, 3 = 1.3- */
-#define DBVERSION 3
-
 /* 1 = 2.0 */
 #define SQLDBVERSION "1"
 
@@ -248,41 +244,6 @@ typedef struct {
 	time_t timestamp;
 } IFINFO;
 
-typedef struct {
-	time_t date;
-	uint64_t rx, tx;
-} HOUR;
-
-typedef struct {
-	time_t date;
-	uint64_t rx, tx;
-	int rxk, txk;
-	int used;
-} DAY;
-
-typedef struct {
-	time_t month;
-	uint64_t rx, tx;
-	int rxk, txk;
-	int used;
-} MONTH;
-
-/* db structure */
-typedef struct {
-	int version;
-	char interface[32];
-	char nick[32];
-	int active;
-	uint64_t totalrx, totaltx, currx, curtx;
-	int totalrxk, totaltxk;
-	time_t lastupdated, created;
-	DAY day[30];
-	MONTH month[12];
-	DAY top10[10];
-	HOUR hour[24];
-	uint64_t btime;
-} DATA;
-
 typedef struct ibwnode {
 	char interface[32];
 	uint32_t limit;
@@ -305,7 +266,7 @@ int printe(PrintType type);
 int logprint(PrintType type);
 int verifylogaccess(void);
 int dmonth(int month);
-uint32_t mosecs(void);
+uint32_t mosecs(time_t month, time_t updated);
 uint64_t countercalc(const uint64_t *a, const uint64_t *b);
 void addtraffic(uint64_t *destmb, int *destkb, const uint64_t srcmb, const int srckb);
 uint64_t mbkbtokb(uint64_t mb, uint64_t kb);
@@ -315,7 +276,6 @@ void panicexit(const char *sourcefile, const int sourceline);
 char *getversion(void);
 
 /* global variables */
-DATA data;
 CFG cfg;
 IFINFO ifinfo;
 char errorstring[512];

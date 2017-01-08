@@ -18,6 +18,7 @@ void debugtimestamp(void);
 int addinterfaces(DSTATE *s);
 void initdstate(DSTATE *s);
 void preparedatabases(DSTATE *s);
+int importlegacydbs(DSTATE *s);
 void setsignaltraps(void);
 void filldatabaselist(DSTATE *s);
 void adjustsaveinterval(DSTATE *s);

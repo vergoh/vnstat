@@ -166,7 +166,7 @@ int dmonth(int month)
 	}
 }
 
-uint32_t mosecs(void)
+uint32_t mosecs(time_t month, time_t updated)
 {
 	struct tm d;
 #if defined(_SVID_SOURCE) || defined(_XOPEN_SOURCE) || defined(__linux__)
@@ -175,7 +175,7 @@ uint32_t mosecs(void)
 	int timezone = 0;
 #endif
 
-	if (localtime_r(&data.month[0].month, &d) == NULL) {
+	if (localtime_r(&month, &d) == NULL) {
 		return 1;
 	}
 
@@ -186,8 +186,8 @@ uint32_t mosecs(void)
 	d.tm_mday = cfg.monthrotate;
 	d.tm_hour = d.tm_min = d.tm_sec = 0;
 
-	if ((data.lastupdated-data.month[0].month)>0) {
-		return data.lastupdated-mktime(&d)+timezone;
+	if ((updated-month)>0) {
+		return updated-mktime(&d)+timezone;
 	} else {
 		return 1;
 	}
