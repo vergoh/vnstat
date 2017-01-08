@@ -1,6 +1,7 @@
 #include "vnstat_tests.h"
 #include "database_tests.h"
 #include "common.h"
+#include "dbaccess.h"
 #include "ifinfo.h"
 //#include "dbshow.h"
 //#include "dbxml.h"
@@ -8,6 +9,9 @@
 #include "cfg.h"
 #include "ibw.h"
 #include "fs.h"
+
+int writedb(DATA *data, const char *iface, const char *dirname, int newdb);
+int backupdb(const char *current, const char *backup);
 
 START_TEST(initdb_activates_database)
 {
