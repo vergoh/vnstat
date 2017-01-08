@@ -578,6 +578,21 @@ START_TEST(interfacechangecheck_with_filled_cache)
 END_TEST
 */
 
+START_TEST(simplehash_with_empty_strings)
+{
+	ck_assert_int_eq(simplehash(NULL, 10), 0);
+	ck_assert_int_eq(simplehash("empty", 0), 0);
+}
+END_TEST
+
+START_TEST(simplehash_with_simple_strings)
+{
+	ck_assert_int_eq(simplehash("0", 1), 49);
+	ck_assert_int_eq(simplehash("1", 1), 50);
+	ck_assert_int_eq(simplehash("12", 2), 101);
+}
+END_TEST
+
 void add_daemon_tests(Suite *s)
 {
 	TCase *tc_daemon = tcase_create("Daemon");
@@ -608,5 +623,7 @@ void add_daemon_tests(Suite *s)
 	tcase_add_test(tc_daemon, interfacechangecheck_with_empty_cache);
 	tcase_add_test(tc_daemon, interfacechangecheck_with_no_changes_in_iflist);
 	//tcase_add_test(tc_daemon, interfacechangecheck_with_filled_cache);
+	tcase_add_test(tc_daemon, simplehash_with_empty_strings);
+	tcase_add_test(tc_daemon, simplehash_with_simple_strings);
 	suite_add_tcase(s, tc_daemon);
 }

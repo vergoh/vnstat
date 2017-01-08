@@ -99,23 +99,27 @@ am__installdirs = "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(man1dir)" \
 PROGRAMS = $(sbin_PROGRAMS)
 am__check_vnstat_SOURCES_DIST = tests/vnstat_tests.c \
 	tests/vnstat_tests.h tests/common_tests.c tests/common_tests.h \
+	tests/database_tests.c tests/database_tests.h \
 	tests/dbsql_tests.c tests/dbsql_tests.h \
 	tests/datacache_tests.c tests/datacache_tests.h \
-	tests/config_tests.c tests/config_tests.h tests/misc_tests.c \
-	tests/misc_tests.h tests/fs_tests.c tests/fs_tests.h \
-	tests/id_tests.c tests/id_tests.h tests/daemon_tests.c \
-	tests/daemon_tests.h src/cfg.c src/cfg.h src/common.c \
-	src/common.h src/daemon.c src/daemon.h src/dbsql.c src/dbsql.h \
-	src/dbaccess.c src/dbaccess.h src/datacache.c src/datacache.h \
-	src/ibw.c src/ibw.h src/ifinfo.c src/ifinfo.h src/misc.c \
-	src/misc.h src/fs.c src/fs.h src/id.c src/id.h
+	tests/config_tests.c tests/config_tests.h tests/ifinfo_tests.c \
+	tests/ifinfo_tests.h tests/misc_tests.c tests/misc_tests.h \
+	tests/fs_tests.c tests/fs_tests.h tests/id_tests.c \
+	tests/id_tests.h tests/daemon_tests.c tests/daemon_tests.h \
+	src/cfg.c src/cfg.h src/common.c src/common.h src/daemon.c \
+	src/daemon.h src/dbsql.c src/dbsql.h src/dbaccess.c \
+	src/dbaccess.h src/datacache.c src/datacache.h src/ibw.c \
+	src/ibw.h src/ifinfo.c src/ifinfo.h src/misc.c src/misc.h \
+	src/fs.c src/fs.h src/id.c src/id.h
 am__dirstamp = $(am__leading_dot)dirstamp
 @HAVE_CHECK_TRUE@am_check_vnstat_OBJECTS =  \
 @HAVE_CHECK_TRUE@	tests/check_vnstat-vnstat_tests.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	tests/check_vnstat-common_tests.$(OBJEXT) \
+@HAVE_CHECK_TRUE@	tests/check_vnstat-database_tests.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	tests/check_vnstat-dbsql_tests.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	tests/check_vnstat-datacache_tests.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	tests/check_vnstat-config_tests.$(OBJEXT) \
+@HAVE_CHECK_TRUE@	tests/check_vnstat-ifinfo_tests.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	tests/check_vnstat-misc_tests.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	tests/check_vnstat-fs_tests.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	tests/check_vnstat-id_tests.$(OBJEXT) \
@@ -604,23 +608,14 @@ vnstatd_SOURCES = src/vnstatd.c src/vnstatd.h \
 @HAVE_CHECK_TRUE@  -I$(top_srcdir)/src
 
 @HAVE_CHECK_TRUE@check_vnstat_LDADD = @CHECK_LIBS@
-
-#check_vnstat_SOURCES = tests/vnstat_tests.c tests/vnstat_tests.h \
-#  tests/common_tests.c tests/common_tests.h \
-#  tests/database_tests.c tests/database_tests.h \
-#  tests/dbsql_tests.c tests/dbsql_tests.h \
-#  tests/config_tests.c tests/config_tests.h \
-#  tests/ifinfo_tests.c tests/ifinfo_tests.h \
-#  tests/misc_tests.c tests/misc_tests.h \
-#  tests/fs_tests.c tests/fs_tests.h \
-#  tests/id_tests.c tests/id_tests.h \
-#  tests/daemon_tests.c tests/daemon_tests.h
 @HAVE_CHECK_TRUE@check_vnstat_SOURCES = tests/vnstat_tests.c \
 @HAVE_CHECK_TRUE@	tests/vnstat_tests.h tests/common_tests.c \
-@HAVE_CHECK_TRUE@	tests/common_tests.h tests/dbsql_tests.c \
+@HAVE_CHECK_TRUE@	tests/common_tests.h tests/database_tests.c \
+@HAVE_CHECK_TRUE@	tests/database_tests.h tests/dbsql_tests.c \
 @HAVE_CHECK_TRUE@	tests/dbsql_tests.h tests/datacache_tests.c \
 @HAVE_CHECK_TRUE@	tests/datacache_tests.h tests/config_tests.c \
-@HAVE_CHECK_TRUE@	tests/config_tests.h tests/misc_tests.c \
+@HAVE_CHECK_TRUE@	tests/config_tests.h tests/ifinfo_tests.c \
+@HAVE_CHECK_TRUE@	tests/ifinfo_tests.h tests/misc_tests.c \
 @HAVE_CHECK_TRUE@	tests/misc_tests.h tests/fs_tests.c \
 @HAVE_CHECK_TRUE@	tests/fs_tests.h tests/id_tests.c \
 @HAVE_CHECK_TRUE@	tests/id_tests.h tests/daemon_tests.c \
@@ -756,11 +751,15 @@ tests/check_vnstat-vnstat_tests.$(OBJEXT): tests/$(am__dirstamp) \
 	tests/$(DEPDIR)/$(am__dirstamp)
 tests/check_vnstat-common_tests.$(OBJEXT): tests/$(am__dirstamp) \
 	tests/$(DEPDIR)/$(am__dirstamp)
+tests/check_vnstat-database_tests.$(OBJEXT): tests/$(am__dirstamp) \
+	tests/$(DEPDIR)/$(am__dirstamp)
 tests/check_vnstat-dbsql_tests.$(OBJEXT): tests/$(am__dirstamp) \
 	tests/$(DEPDIR)/$(am__dirstamp)
 tests/check_vnstat-datacache_tests.$(OBJEXT): tests/$(am__dirstamp) \
 	tests/$(DEPDIR)/$(am__dirstamp)
 tests/check_vnstat-config_tests.$(OBJEXT): tests/$(am__dirstamp) \
+	tests/$(DEPDIR)/$(am__dirstamp)
+tests/check_vnstat-ifinfo_tests.$(OBJEXT): tests/$(am__dirstamp) \
 	tests/$(DEPDIR)/$(am__dirstamp)
 tests/check_vnstat-misc_tests.$(OBJEXT): tests/$(am__dirstamp) \
 	tests/$(DEPDIR)/$(am__dirstamp)
@@ -859,10 +858,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/check_vnstat-common_tests.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/check_vnstat-config_tests.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/check_vnstat-daemon_tests.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/check_vnstat-database_tests.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/check_vnstat-datacache_tests.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/check_vnstat-dbsql_tests.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/check_vnstat-fs_tests.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/check_vnstat-id_tests.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/check_vnstat-ifinfo_tests.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/check_vnstat-misc_tests.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/check_vnstat-vnstat_tests.Po@am__quote@
 
@@ -910,6 +911,20 @@ tests/check_vnstat-common_tests.obj: tests/common_tests.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o tests/check_vnstat-common_tests.obj `if test -f 'tests/common_tests.c'; then $(CYGPATH_W) 'tests/common_tests.c'; else $(CYGPATH_W) '$(srcdir)/tests/common_tests.c'; fi`
 
+tests/check_vnstat-database_tests.o: tests/database_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT tests/check_vnstat-database_tests.o -MD -MP -MF tests/$(DEPDIR)/check_vnstat-database_tests.Tpo -c -o tests/check_vnstat-database_tests.o `test -f 'tests/database_tests.c' || echo '$(srcdir)/'`tests/database_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) tests/$(DEPDIR)/check_vnstat-database_tests.Tpo tests/$(DEPDIR)/check_vnstat-database_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tests/database_tests.c' object='tests/check_vnstat-database_tests.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o tests/check_vnstat-database_tests.o `test -f 'tests/database_tests.c' || echo '$(srcdir)/'`tests/database_tests.c
+
+tests/check_vnstat-database_tests.obj: tests/database_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT tests/check_vnstat-database_tests.obj -MD -MP -MF tests/$(DEPDIR)/check_vnstat-database_tests.Tpo -c -o tests/check_vnstat-database_tests.obj `if test -f 'tests/database_tests.c'; then $(CYGPATH_W) 'tests/database_tests.c'; else $(CYGPATH_W) '$(srcdir)/tests/database_tests.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) tests/$(DEPDIR)/check_vnstat-database_tests.Tpo tests/$(DEPDIR)/check_vnstat-database_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tests/database_tests.c' object='tests/check_vnstat-database_tests.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o tests/check_vnstat-database_tests.obj `if test -f 'tests/database_tests.c'; then $(CYGPATH_W) 'tests/database_tests.c'; else $(CYGPATH_W) '$(srcdir)/tests/database_tests.c'; fi`
+
 tests/check_vnstat-dbsql_tests.o: tests/dbsql_tests.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT tests/check_vnstat-dbsql_tests.o -MD -MP -MF tests/$(DEPDIR)/check_vnstat-dbsql_tests.Tpo -c -o tests/check_vnstat-dbsql_tests.o `test -f 'tests/dbsql_tests.c' || echo '$(srcdir)/'`tests/dbsql_tests.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) tests/$(DEPDIR)/check_vnstat-dbsql_tests.Tpo tests/$(DEPDIR)/check_vnstat-dbsql_tests.Po
@@ -951,6 +966,20 @@ tests/check_vnstat-config_tests.obj: tests/config_tests.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tests/config_tests.c' object='tests/check_vnstat-config_tests.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o tests/check_vnstat-config_tests.obj `if test -f 'tests/config_tests.c'; then $(CYGPATH_W) 'tests/config_tests.c'; else $(CYGPATH_W) '$(srcdir)/tests/config_tests.c'; fi`
+
+tests/check_vnstat-ifinfo_tests.o: tests/ifinfo_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT tests/check_vnstat-ifinfo_tests.o -MD -MP -MF tests/$(DEPDIR)/check_vnstat-ifinfo_tests.Tpo -c -o tests/check_vnstat-ifinfo_tests.o `test -f 'tests/ifinfo_tests.c' || echo '$(srcdir)/'`tests/ifinfo_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) tests/$(DEPDIR)/check_vnstat-ifinfo_tests.Tpo tests/$(DEPDIR)/check_vnstat-ifinfo_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tests/ifinfo_tests.c' object='tests/check_vnstat-ifinfo_tests.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o tests/check_vnstat-ifinfo_tests.o `test -f 'tests/ifinfo_tests.c' || echo '$(srcdir)/'`tests/ifinfo_tests.c
+
+tests/check_vnstat-ifinfo_tests.obj: tests/ifinfo_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT tests/check_vnstat-ifinfo_tests.obj -MD -MP -MF tests/$(DEPDIR)/check_vnstat-ifinfo_tests.Tpo -c -o tests/check_vnstat-ifinfo_tests.obj `if test -f 'tests/ifinfo_tests.c'; then $(CYGPATH_W) 'tests/ifinfo_tests.c'; else $(CYGPATH_W) '$(srcdir)/tests/ifinfo_tests.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) tests/$(DEPDIR)/check_vnstat-ifinfo_tests.Tpo tests/$(DEPDIR)/check_vnstat-ifinfo_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tests/ifinfo_tests.c' object='tests/check_vnstat-ifinfo_tests.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o tests/check_vnstat-ifinfo_tests.obj `if test -f 'tests/ifinfo_tests.c'; then $(CYGPATH_W) 'tests/ifinfo_tests.c'; else $(CYGPATH_W) '$(srcdir)/tests/ifinfo_tests.c'; fi`
 
 tests/check_vnstat-misc_tests.o: tests/misc_tests.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT tests/check_vnstat-misc_tests.o -MD -MP -MF tests/$(DEPDIR)/check_vnstat-misc_tests.Tpo -c -o tests/check_vnstat-misc_tests.o `test -f 'tests/misc_tests.c' || echo '$(srcdir)/'`tests/misc_tests.c
