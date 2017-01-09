@@ -294,6 +294,7 @@ int importlegacydbs(DSTATE *s)
 			if (importlegacydb(di->d_name, s->dirname)) {
 				importcount++;
 			}
+			/* TODO: do something if import fails? */
 		}
 	}
 	closedir(dir);
