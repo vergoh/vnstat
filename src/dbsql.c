@@ -305,6 +305,50 @@ int db_getcounters(const char *iface, uint64_t *rxcounter, uint64_t *txcounter)
 	return 1;
 }
 
+int db_getinterfaceinfo(const char *iface, interfaceinfo *info)
+{
+	int rc;
+	char sql[512];
+	sqlite3_int64 ifaceid = 0;
+	sqlite3_stmt *sqlstmt;
+
+	ifaceid = db_getinterfaceid(iface, 0);
+	if (ifaceid == 0) {
+		return 0;
+	}
+
+	sqlite3_snprintf(512, sql, "select name, alias, active, created, updated, rxcounter, txcounter, rxtotal, txtotal from interface where id=%"PRId64";", (int64_t)ifaceid);
+	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
+	if (rc) {
+		return 0;
+	}
+	if (sqlite3_column_count(sqlstmt) != 9) {
+		return 0;
+	}
+	if (sqlite3_step(sqlstmt) == SQLITE_ROW) {
+		if (sqlite3_column_text(sqlstmt, 0) != NULL) {
+			strncpy_nt(info->name, (const char *)sqlite3_column_text(sqlstmt, 0), 32);
+		} else {
+			info->name[0] = '\0';
+		}
+		if (sqlite3_column_text(sqlstmt, 1) != NULL) {
+			strncpy_nt(info->alias, (const char *)sqlite3_column_text(sqlstmt, 1), 32);
+		} else {
+			info->alias[0] = '\0';
+		}
+		info->active = sqlite3_column_int(sqlstmt, 2);
+		info->created = (time_t)sqlite3_column_int64(sqlstmt, 3);
+		info->updated = (time_t)sqlite3_column_int64(sqlstmt, 4);
+		info->rxcounter = (uint64_t)sqlite3_column_int64(sqlstmt, 5);
+		info->txcounter = (uint64_t)sqlite3_column_int64(sqlstmt, 6);
+		info->rxtotal = (uint64_t)sqlite3_column_int64(sqlstmt, 7);
+		info->txtotal = (uint64_t)sqlite3_column_int64(sqlstmt, 8);
+	}
+	sqlite3_finalize(sqlstmt);
+
+	return 1;
+}
+
 int db_setalias(const char *iface, const char *alias)
 {
 	char sql[512];
@@ -351,7 +395,9 @@ char *db_getinfo(const char *name)
 		return buffer;
 	}
 	if (sqlite3_step(sqlstmt) == SQLITE_ROW) {
-		strncpy_nt(buffer, (const char *)sqlite3_column_text(sqlstmt, 0), 64);
+		if (sqlite3_column_text(sqlstmt, 0) != NULL) {
+			strncpy_nt(buffer, (const char *)sqlite3_column_text(sqlstmt, 0), 64);
+		}
 	}
 	sqlite3_finalize(sqlstmt);
 
@@ -373,6 +419,9 @@ int db_getiflist(dbiflist **dbifl)
 
 	rc = 0;
 	while (sqlite3_step(sqlstmt) == SQLITE_ROW) {
+		if (sqlite3_column_text(sqlstmt, 0) == NULL) {
+			continue;
+		}
 		if (!dbiflistadd(dbifl, (const char *)sqlite3_column_text(sqlstmt, 0))) {
 			break;
 		}

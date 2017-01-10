@@ -428,16 +428,15 @@ void processdatacache(DSTATE *s)
 
 int initcachevalues(datacache **dc)
 {
-	uint64_t rx, tx;
+	interfaceinfo info;
 
-	if (!db_getcounters((*dc)->interface, &rx, &tx)) {
+	if (!db_getinterfaceinfo((*dc)->interface, &info)) {
 		return 0;
 	}
 
-	(*dc)->currx = rx;
-	(*dc)->curtx = tx;
-	/* TODO: "updated" should come from database */
-	(*dc)->updated = time(NULL);
+	(*dc)->currx = info.rxcounter;
+	(*dc)->curtx = info.txcounter;
+	(*dc)->updated = info.updated;
 	(*dc)->filled = 1;
 
 	return 1;
@@ -576,7 +575,8 @@ void handleintsignals(DSTATE *s)
 		case SIGHUP:
 			snprintf(errorstring, 512, "SIGHUP received, flushing data to disk and reloading config.");
 			printe(PT_Info);
-			/* TODO: cleanup: cacheflush(s->dirname); */
+			flushcachetodisk(s);
+			datacache_clear(&s->dcache);
 			s->dbcount = 0;
 			ibwflush();
 			db_close();
@@ -585,6 +585,7 @@ void handleintsignals(DSTATE *s)
 			}
 			ibwloadcfg(s->cfgfile);
 			db_open(1);
+			/* TODO: verify that everything continues correctly after this point */
 			break;
 
 		case SIGINT:

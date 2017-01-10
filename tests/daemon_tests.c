@@ -335,7 +335,7 @@ START_TEST(filldatabaselist_adds_databases)
 	defaultcfg();
 	initdstate(&s);
 	disable_logprints();
-        strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
+	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
 	strncpy_nt(s.dirname, TESTDBDIR, 512);
 	s.sync = 1;
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
@@ -678,6 +678,58 @@ START_TEST(simplehash_with_simple_strings)
 }
 END_TEST
 
+START_TEST(initcachevalues_does_not_init_without_database)
+{
+	int ret;
+	DSTATE s;
+
+	defaultcfg();
+	initdstate(&s);
+	disable_logprints();
+
+	ret = datacache_add(&s.dcache, "eth0", 0);
+	ck_assert_int_eq(ret, 1);
+
+	ret = initcachevalues(&s.dcache);
+	ck_assert_int_eq(ret, 0);
+}
+END_TEST
+
+START_TEST(initcachevalues_does_init)
+{
+	int ret;
+	DSTATE s;
+
+	defaultcfg();
+	initdstate(&s);
+	disable_logprints();
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	ck_assert_int_eq(clean_testdbdir(), 1);
+	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
+	ret = db_open(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setcounters("eth0", 1, 2);
+	ck_assert_int_eq(ret, 1);
+
+	ret = datacache_add(&s.dcache, "eth0", 0);
+	ck_assert_int_eq(ret, 1);
+
+	ret = initcachevalues(&s.dcache);
+	ck_assert_int_eq(ret, 1);
+
+	ck_assert_int_eq(s.dcache->currx, 1);
+	ck_assert_int_eq(s.dcache->curtx, 2);
+	ck_assert_int_ne(s.dcache->updated, 0);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 void add_daemon_tests(Suite *s)
 {
 	TCase *tc_daemon = tcase_create("Daemon");
@@ -710,5 +762,7 @@ void add_daemon_tests(Suite *s)
 	tcase_add_test(tc_daemon, interfacechangecheck_with_filled_cache);
 	tcase_add_test(tc_daemon, simplehash_with_empty_strings);
 	tcase_add_test(tc_daemon, simplehash_with_simple_strings);
+	tcase_add_test(tc_daemon, initcachevalues_does_not_init_without_database);
+	tcase_add_test(tc_daemon, initcachevalues_does_init);
 	suite_add_tcase(s, tc_daemon);
 }

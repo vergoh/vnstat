@@ -384,6 +384,14 @@ START_TEST(getversion_returns_a_version)
 }
 END_TEST
 
+START_TEST(can_panic)
+{
+	suppress_output();
+	fclose(stderr);
+	panicexit(__FILE__, __LINE__);
+}
+END_TEST
+
 void add_common_tests(Suite *s)
 {
 	TCase *tc_common = tcase_create("Common");
@@ -416,5 +424,6 @@ void add_common_tests(Suite *s)
 	tcase_add_test(tc_common, isnumeric_it_is);
 	tcase_add_test(tc_common, isnumeric_it_is_not);
 	tcase_add_test(tc_common, getversion_returns_a_version);
+	tcase_add_exit_test(tc_common, can_panic, 1);
 	suite_add_tcase(s, tc_common);
 }

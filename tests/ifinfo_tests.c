@@ -269,6 +269,22 @@ START_TEST(getifinfo_success)
 }
 END_TEST
 
+START_TEST(isifavailable_knows_interface_availability)
+{
+	linuxonly;
+
+	suppress_output();
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_proc_net_dev("w", "eth0", 10, 20, 30, 40);
+	fake_proc_net_dev("a", "eth1", 1, 2, 3, 4);
+
+	ck_assert_int_eq(isifavailable("eth0"), 1);
+	ck_assert_int_eq(isifavailable("eth1"), 1);
+	ck_assert_int_eq(isifavailable("eth2"), 0);
+}
+END_TEST
+
 void add_ifinfo_tests(Suite *s)
 {
 	TCase *tc_ifinfo = tcase_create("Ifinfo");
@@ -288,5 +304,6 @@ void add_ifinfo_tests(Suite *s)
 	tcase_add_test(tc_ifinfo, readsysclassnet_success);
 	tcase_add_test(tc_ifinfo, getifinfo_not_found);
 	tcase_add_test(tc_ifinfo, getifinfo_success);
+	tcase_add_test(tc_ifinfo, isifavailable_knows_interface_availability);
 	suite_add_tcase(s, tc_ifinfo);
 }

@@ -485,10 +485,11 @@ START_TEST(db_setcounters_with_no_interface)
 }
 END_TEST
 
-START_TEST(db_counters_with_interface)
+START_TEST(db_interface_info_manipulation)
 {
 	int ret;
-	uint64_t rx, tx;
+	uint64_t rx, tx, c;
+	interfaceinfo info;
 
 	defaultcfg();
 	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
@@ -499,6 +500,8 @@ START_TEST(db_counters_with_interface)
 	ret = db_open(1);
 	ck_assert_int_eq(ret, 1);
 	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth1");
 	ck_assert_int_eq(ret, 1);
 
 	ret = db_getcounters("eth0", &rx, &tx);
@@ -513,6 +516,32 @@ START_TEST(db_counters_with_interface)
 	ck_assert_int_eq(ret, 1);
 	ck_assert_int_eq(rx, 2);
 	ck_assert_int_eq(tx, 2);
+
+	ret = db_settotal("eth1", 42, 24);
+	ck_assert_int_eq(ret, 1);
+
+	c = (uint64_t)time(NULL) - 100;
+	ret = db_setcreation("eth1", c);
+
+	ret = db_getinterfaceinfo("eth0", &info);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(info.active, 1);
+	ck_assert_int_eq(info.rxcounter, 2);
+	ck_assert_int_eq(info.txcounter, 2);
+	ck_assert_int_eq(info.rxtotal, 0);
+	ck_assert_int_eq(info.txtotal, 0);
+	ck_assert_int_ne(info.created, 0);
+
+	ck_assert_int_eq(db_setactive("eth1", 0), 1);
+
+	ret = db_getinterfaceinfo("eth1", &info);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(info.active, 0);
+	ck_assert_int_eq(info.rxcounter, 0);
+	ck_assert_int_eq(info.txcounter, 0);
+	ck_assert_int_eq(info.rxtotal, 42);
+	ck_assert_int_eq(info.txtotal, 24);
+	ck_assert_int_eq(info.created, c);
 
 	ret = db_close();
 	ck_assert_int_eq(ret, 1);
@@ -565,6 +594,82 @@ START_TEST(db_getiflist_lists_interfaces)
 }
 END_TEST
 
+START_TEST(db_maintenance_does_not_crash)
+{
+	int ret;
+
+	defaultcfg();
+	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
+	ck_assert_int_eq(clean_testdbdir(), 1);
+
+	ret = db_open(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_vacuum();
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_removeoldentries();
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_data_can_be_inserted)
+{
+	int ret;
+	interfaceinfo info;
+
+	defaultcfg();
+	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
+	ck_assert_int_eq(clean_testdbdir(), 1);
+
+	ret = db_open(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_insertdata("foo", "eth0", 1, 2, 3);
+	ck_assert_int_eq(ret, 0);
+
+	ret = db_insertdata("hour", "eth1", 1, 2, 3);
+	ck_assert_int_eq(ret, 0);
+
+	ret = db_insertdata("hour", "eth0", 1, 2, 3);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_insertdata("day", "eth0", 1, 2, 3);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_insertdata("month", "eth0", 1, 2, 3);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_insertdata("year", "eth0", 1, 2, 3);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_insertdata("top", "eth0", 1, 2, 3);
+	ck_assert_int_eq(ret, 1);
+
+	/* verify that totals don't get changed */
+	ret = db_getinterfaceinfo("eth0", &info);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(info.active, 1);
+	ck_assert_int_eq(info.rxcounter, 0);
+	ck_assert_int_eq(info.txcounter, 0);
+	ck_assert_int_eq(info.rxtotal, 0);
+	ck_assert_int_eq(info.txtotal, 0);
+	ck_assert_int_ne(info.created, 0);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 void add_dbsql_tests(Suite *s)
 {
 	TCase *tc_dbsql = tcase_create("DB SQL");
@@ -593,7 +698,9 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_addinterface_can_not_add_same_interface_twice);
 	tcase_add_test(tc_dbsql, db_getcounters_with_no_interface);
 	tcase_add_test(tc_dbsql, db_setcounters_with_no_interface);
-	tcase_add_test(tc_dbsql, db_counters_with_interface);
+	tcase_add_test(tc_dbsql, db_interface_info_manipulation);
 	tcase_add_test(tc_dbsql, db_getiflist_lists_interfaces);
+	tcase_add_test(tc_dbsql, db_maintenance_does_not_crash);
+	tcase_add_test(tc_dbsql, db_data_can_be_inserted);
 	suite_add_tcase(s, tc_dbsql);
 }

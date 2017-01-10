@@ -8,6 +8,14 @@ typedef struct dbiflist {
 	struct dbiflist *next;
 } dbiflist;
 
+typedef struct interfaceinfo {
+	char name[32], alias[32];
+	int active;
+	time_t created, updated;
+	uint64_t rxcounter, txcounter;
+	uint64_t rxtotal, txtotal;
+} interfaceinfo;
+
 int db_open(int createifnotfound);
 int db_close(void);
 int db_exec(const char *sql);
@@ -19,6 +27,7 @@ sqlite3_int64 db_getinterfaceid(const char *iface, const int createifnotfound);
 int db_setactive(const char *iface, const int active);
 int db_setcounters(const char *iface, const uint64_t rxcounter, const uint64_t txcounter);
 int db_getcounters(const char *iface, uint64_t *rxcounter, uint64_t *txcounter);
+int db_getinterfaceinfo(const char *iface, interfaceinfo *info);
 int db_setalias(const char *iface, const char *alias);
 int db_setinfo(const char *name, const char *value, const int createifnotfound);
 char *db_getinfo(const char *name);
