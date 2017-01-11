@@ -541,7 +541,7 @@ START_TEST(db_interface_info_manipulation)
 	ck_assert_int_eq(info.txcounter, 0);
 	ck_assert_int_eq(info.rxtotal, 42);
 	ck_assert_int_eq(info.txtotal, 24);
-	ck_assert_int_eq(info.created, c);
+	ck_assert_int_eq((uint64_t)info.created, c);
 
 	ret = db_close();
 	ck_assert_int_eq(ret, 1);
