@@ -32,7 +32,7 @@ int db_open(const int createifnotfound)
 
 #ifdef TESTDIR
 	/* use ram based database when testing for shorter test execution times */
-	rc = sqlite3_open(NULL, &db);
+	rc = sqlite3_open(":memory:", &db);
 #else
 	rc = sqlite3_open(dbfilename, &db);
 #endif
@@ -96,14 +96,14 @@ int db_exec(const char *sql)
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
 	if (rc) {
 		if (debug)
-			printf("Error: Insert \"%s\" prepare failed (%d): %s\n", sql, rc, sqlite3_errmsg(db));
+			printf("Error: Exec prepare \"%s\" failed (%d): %s\n", sql, rc, sqlite3_errmsg(db));
 		return 0;
 	}
 
 	rc = sqlite3_step(sqlstmt);
 	if (rc != SQLITE_DONE) {
 		if (debug)
-			printf("Error: Insert \"%s\" step failed (%d): %s\n", sql, rc, sqlite3_errmsg(db));
+			printf("Error: Exec step \"%s\" failed (%d): %s\n", sql, rc, sqlite3_errmsg(db));
 		sqlite3_finalize(sqlstmt);
 		return 0;
 	}
@@ -111,7 +111,7 @@ int db_exec(const char *sql)
 	rc = sqlite3_finalize(sqlstmt);
 	if (rc) {
 		if (debug)
-			printf("Error: Finalize \"%s\" failed (%d): %s\n", sql, rc, sqlite3_errmsg(db));
+			printf("Error: Exec finalize \"%s\" failed (%d): %s\n", sql, rc, sqlite3_errmsg(db));
 		return 0;
 	}
 
@@ -603,11 +603,14 @@ int db_removeoldentries(void)
 		return 0;
 	}
 
-	sqlite3_snprintf(512, sql, "delete from top order by rx+tx desc limit -1 offset 10;");
+	/* TODO: rewrite to handle entries per interface and use select for getting entry list */
+	/* as the syntax below works only when sqlite is compiled with SQLITE_ENABLE_UPDATE_DELETE_LIMIT */
+	/* causing failure in at least in Ubuntu <= 12.04, RHEL, Fedora and CentOS */
+	/*sqlite3_snprintf(512, sql, "delete from top order by rx+tx desc limit -1 offset 10;");
 	if (!db_exec(sql)) {
 		db_rollbacktransaction();
 		return 0;
-	}
+	}*/
 
 	return db_committransaction();
 }
