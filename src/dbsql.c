@@ -122,6 +122,7 @@ int db_create(void)
 {
 	int i;
 	char *sql;
+	char buffer[32];
 	char *datatables[] = {"fiveminute", "hour", "day", "month", "year", "top"};
 
 	if (!db_begintransaction()) {
@@ -172,6 +173,12 @@ int db_create(void)
 		}
 	}
 	free(sql);
+
+	snprintf(buffer, 32, "%"PRIu64"", (uint64_t)MAX32);
+	if (!db_setinfo("btime", buffer, 1)) {
+		db_rollbacktransaction();
+		return 0;
+	}
 
 	return db_committransaction();
 }
@@ -467,7 +474,7 @@ int db_addtraffic_dated(const char *iface, const uint64_t rx, const uint64_t tx,
 	}
 
 	if (debug)
-		printf("db add %s (%"PRId64"): rx %"PRIu64" - tx %"PRIu64"\n", iface, (int64_t)ifaceid, rx, tx);
+		printf("db add %s (%"PRId64") %"PRIu64": rx %"PRIu64" - tx %"PRIu64"\n", iface, (int64_t)ifaceid, timestamp, rx, tx);
 
 	if (!db_begintransaction()) {
 		return 0;

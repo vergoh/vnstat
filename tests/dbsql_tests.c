@@ -594,7 +594,7 @@ START_TEST(db_getiflist_lists_interfaces)
 }
 END_TEST
 
-START_TEST(db_maintenance_does_not_crash)
+START_TEST(db_maintenance_does_not_fault)
 {
 	int ret;
 
@@ -700,7 +700,7 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_setcounters_with_no_interface);
 	tcase_add_test(tc_dbsql, db_interface_info_manipulation);
 	tcase_add_test(tc_dbsql, db_getiflist_lists_interfaces);
-	tcase_add_test(tc_dbsql, db_maintenance_does_not_crash);
+	tcase_add_test(tc_dbsql, db_maintenance_does_not_fault);
 	tcase_add_test(tc_dbsql, db_data_can_be_inserted);
 	suite_add_tcase(s, tc_dbsql);
 }

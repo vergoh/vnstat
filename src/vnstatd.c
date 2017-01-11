@@ -156,6 +156,7 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
+	detectboot(&s);
 	preparedatabases(&s);
 	setsignaltraps();
 

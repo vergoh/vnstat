@@ -690,7 +690,7 @@ START_TEST(initcachevalues_does_not_init_without_database)
 	ret = datacache_add(&s.dcache, "eth0", 0);
 	ck_assert_int_eq(ret, 1);
 
-	ret = initcachevalues(&s.dcache);
+	ret = initcachevalues(&s, &s.dcache);
 	ck_assert_int_eq(ret, 0);
 }
 END_TEST
@@ -718,7 +718,7 @@ START_TEST(initcachevalues_does_init)
 	ret = datacache_add(&s.dcache, "eth0", 0);
 	ck_assert_int_eq(ret, 1);
 
-	ret = initcachevalues(&s.dcache);
+	ret = initcachevalues(&s, &s.dcache);
 	ck_assert_int_eq(ret, 1);
 
 	ck_assert_int_eq(s.dcache->currx, 1);

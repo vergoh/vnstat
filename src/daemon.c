@@ -113,7 +113,7 @@ void daemonize(void)
 
 int addinterfaces(DSTATE *s)
 {
-	char *ifacelist, interface[32], buffer[32];
+	char *ifacelist, interface[32];
 	int index = 0, count = 0, bwlimit = 0;
 
 	/* get list of currently visible interfaces */
@@ -162,10 +162,6 @@ int addinterfaces(DSTATE *s)
 			continue;
 		}
 
-		/* TODO: this is most likely the wrong place to store btime */
-		snprintf(buffer, 32, "%"PRIu64"", (uint64_t)MAX32);
-		db_setinfo("btime", buffer, 1);
-
 		db_setcounters(interface, ifinfo.rx, ifinfo.tx);
 
 		count++;
@@ -196,6 +192,30 @@ int addinterfaces(DSTATE *s)
 
 	free(ifacelist);
 	return count;
+}
+
+void detectboot(DSTATE *s)
+{
+	char buffer[32];
+	char *btime_buffer;
+	uint64_t current_btime, db_btime;
+
+	current_btime = getbtime();
+	btime_buffer = db_getinfo("btime");
+
+	if (current_btime == 0 || strlen(btime_buffer) == 0) {
+		return;
+	}
+	db_btime = strtoull(btime_buffer, (char **)NULL, 0);
+
+	if (db_btime < (current_btime-cfg.bvar)) {
+		s->bootdetected = 1;
+		if (debug)
+			printf("System has been booted, %"PRIu64" < %"PRIu64" - %d\n", db_btime, current_btime, cfg.bvar);
+	}
+
+	snprintf(buffer, 32, "%"PRIu64"", (uint64_t)current_btime);
+	db_setinfo("btime", buffer, 1);
 }
 
 void debugtimestamp(void)
@@ -231,6 +251,7 @@ void initdstate(DSTATE *s)
 	s->prevdbsave = 0;
 	s->dbcount = 0;
 	s->dodbsave = 0;
+	s->bootdetected = 0;
 	s->dcache = NULL;
 }
 
@@ -393,7 +414,7 @@ void processdatacache(DSTATE *s)
 		}
 
 		if (!iterator->filled) {
-			if (!initcachevalues(&iterator)) {
+			if (!initcachevalues(s, &iterator)) {
 				iterator = iterator->next;
 				continue;
 			}
@@ -420,13 +441,17 @@ void processdatacache(DSTATE *s)
 		iterator = iterator->next;
 	}
 
+	if (s->bootdetected) {
+		s->bootdetected = 0;
+	}
+
 	if (s->dodbsave) {
 		flushcachetodisk(s);
 		cleanremovedinterfaces(s);
 	}
 }
 
-int initcachevalues(datacache **dc)
+int initcachevalues(DSTATE *s, datacache **dc)
 {
 	interfaceinfo info;
 
@@ -434,8 +459,13 @@ int initcachevalues(datacache **dc)
 		return 0;
 	}
 
-	(*dc)->currx = info.rxcounter;
-	(*dc)->curtx = info.txcounter;
+	if (s->bootdetected) {
+		(*dc)->currx = 0;
+		(*dc)->curtx = 0;
+	} else {
+		(*dc)->currx = info.rxcounter;
+		(*dc)->curtx = info.txcounter;
+	}
 	(*dc)->updated = info.updated;
 	(*dc)->filled = 1;
 
@@ -469,15 +499,6 @@ int processifinfo(DSTATE *s, datacache **dc)
 
 	interval = ifinfo.timestamp -(*dc)->updated;
 	if ( (interval >= 1) && (interval <= (60*MAXUPDATEINTERVAL)) ) {
-		/* TODO: add btime handling here or somewhere else */
-		/*
-		if (data.btime < (btime-cfg.bvar)) {
-			data.currx=0;
-			data.curtx=0;
-			if (debug)
-				printf("System has been booted.\n");
-		}
-		*/
 
 		rxchange = countercalc(&(*dc)->currx, &ifinfo.rx);
 		txchange = countercalc(&(*dc)->curtx, &ifinfo.tx);
