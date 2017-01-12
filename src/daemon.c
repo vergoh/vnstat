@@ -114,7 +114,8 @@ void daemonize(void)
 int addinterfaces(DSTATE *s)
 {
 	char *ifacelist, interface[32];
-	int index = 0, count = 0, bwlimit = 0;
+	int index = 0, count = 0;
+	uint32_t bwlimit = 0;
 
 	/* get list of currently visible interfaces */
 	if (getiflist(&ifacelist, 0)==0) {
@@ -165,16 +166,16 @@ int addinterfaces(DSTATE *s)
 		db_setcounters(interface, ifinfo.rx, ifinfo.tx);
 
 		count++;
-		bwlimit = ibwget(interface);
+		ibwget(interface, &bwlimit);
 		if (!s->running) {
 			if (bwlimit > 0) {
-				printf("\"%s\" added with %d Mbit bandwidth limit.\n", interface, bwlimit);
+				printf("\"%s\" added with %"PRIu32" Mbit bandwidth limit.\n", interface, bwlimit);
 			} else {
 				printf("\"%s\" added. Warning: no bandwidth limit has been set.\n", interface);
 			}
 		} else {
 			if (debug)
-				printf("\%s\" added with %d Mbit bandwidth limit to cache.\n", interface, bwlimit);
+				printf("\%s\" added with %"PRIu32" Mbit bandwidth limit to cache.\n", interface, bwlimit);
 			datacache_add(&s->dcache, interface, 1);
 		}
 	}
@@ -476,8 +477,8 @@ int processifinfo(DSTATE *s, datacache **dc)
 {
 	uint64_t rxchange, txchange;
 	uint64_t maxtransfer;
+	uint32_t maxbw;
 	time_t interval;
-	int maxbw;
 
 	if ((*dc)->syncneeded) { /* if --sync was used during startup */
 		(*dc)->currx = ifinfo.rx;
@@ -504,7 +505,7 @@ int processifinfo(DSTATE *s, datacache **dc)
 		txchange = countercalc(&(*dc)->curtx, &ifinfo.tx);
 
 		/* get bandwidth limit for current interface */
-		maxbw = ibwget((*dc)->interface);
+		ibwget((*dc)->interface, &maxbw);
 
 		if (maxbw > 0) {
 
@@ -513,11 +514,11 @@ int processifinfo(DSTATE *s, datacache **dc)
 			maxtransfer = ceil((maxbw/(float)8)*interval*(float)1.1) * 1024 * 1024;
 
 			if (debug)
-				printf("interval: %"PRIu64"  maxbw: %d  maxrate: %"PRIu64"  rxc: %"PRIu64"  txc: %"PRIu64"\n", (uint64_t)interval, maxbw, maxtransfer, rxchange, txchange);
+				printf("interval: %"PRIu64"  maxbw: %"PRIu32"  maxrate: %"PRIu64"  rxc: %"PRIu64"  txc: %"PRIu64"\n", (uint64_t)interval, maxbw, maxtransfer, rxchange, txchange);
 
 			/* sync counters if traffic is greater than set maximum */
 			if ( (rxchange > maxtransfer) || (txchange > maxtransfer) ) {
-				snprintf(errorstring, 512, "Traffic rate for \"%s\" higher than set maximum %d Mbit (%"PRIu64"->%"PRIu64", r%"PRIu64" t%"PRIu64"), syncing.", (*dc)->interface, maxbw, (uint64_t)interval, maxtransfer, rxchange, txchange);
+				snprintf(errorstring, 512, "Traffic rate for \"%s\" higher than set maximum %"PRIu32" Mbit (%"PRIu64"->%"PRIu64", r%"PRIu64" t%"PRIu64"), syncing.", (*dc)->interface, maxbw, (uint64_t)interval, maxtransfer, rxchange, txchange);
 				printe(PT_Info);
 				rxchange = txchange = 0;
 			}
@@ -658,18 +659,18 @@ void preparedirs(DSTATE *s)
 void datacache_status(datacache **dc)
 {
 	char buffer[512], bwtemp[16];
-	int b = 13, count = 0, bwlimit = 0;
+	int b = 13, count = 0;
+	uint32_t bwlimit = 0;
 	datacache *iterator = *dc;
 
 	snprintf(buffer, b, "Monitoring: ");
 
 	while (iterator != NULL) {
 		if ((b+strlen(iterator->interface)+16) < 508) {
-			bwlimit = ibwget(iterator->interface);
-			if (bwlimit < 0) {
+			if (!ibwget(iterator->interface, &bwlimit) || bwlimit == 0) {
 				snprintf(bwtemp, 16, " (no limit) ");
 			} else {
-				snprintf(bwtemp, 16, " (%d Mbit) ", bwlimit);
+				snprintf(bwtemp, 16, " (%"PRIu32" Mbit) ", bwlimit);
 			}
 			strncat(buffer, iterator->interface, strlen(iterator->interface));
 			strncat(buffer, bwtemp, strlen(bwtemp));
