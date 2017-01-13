@@ -46,7 +46,6 @@ START_TEST(addinterfaces_adds_interfaces)
 	fake_proc_net_dev("a", "lo0", 0, 0, 0, 0);
 	fake_proc_net_dev("a", "ethtwo", 5, 6, 7, 8);
 	fake_proc_net_dev("a", "sit0", 0, 0, 0, 0);
-	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
 	ret = db_open(1);
 	ck_assert_int_eq(ret, 1);
 
@@ -81,7 +80,6 @@ START_TEST(addinterfaces_adds_only_new_interfaces)
 	fake_proc_net_dev("a", "lo0", 0, 0, 0, 0);
 	fake_proc_net_dev("a", "ethtwo", 5, 6, 7, 8);
 	fake_proc_net_dev("a", "sit0", 0, 0, 0, 0);
-	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
 	ret = db_open(1);
 	ck_assert_int_eq(ret, 1);
 
@@ -140,7 +138,6 @@ START_TEST(addinterfaces_adds_to_cache_when_running)
 	ck_assert_int_eq(clean_testdbdir(), 1);
 	fake_proc_net_dev("w", "ethone", 1, 2, 3, 4);
 	fake_proc_net_dev("a", "ethtwo", 5, 6, 7, 8);
-	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
 	ret = db_open(1);
 	ck_assert_int_eq(ret, 1);
 
@@ -263,7 +260,6 @@ START_TEST(preparedatabases_with_no_databases_creates_databases)
 	fake_proc_net_dev("a", "lo0", 0, 0, 0, 0);
 	fake_proc_net_dev("a", "ethtwo", 5, 6, 7, 8);
 	fake_proc_net_dev("a", "sit0", 0, 0, 0, 0);
-	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
 	ret = db_open(1);
 	ck_assert_int_eq(ret, 1);
 
@@ -310,11 +306,7 @@ START_TEST(filldatabaselist_does_not_exit_with_empty_database_dir)
 	defaultcfg();
 	initdstate(&s);
 	disable_logprints();
-	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
-	strncpy_nt(s.dirname, TESTDBDIR, 512);
 	s.sync = 1;
-	ck_assert_int_eq(remove_directory(TESTDIR), 1);
-	ck_assert_int_eq(clean_testdbdir(), 1);
 	ret = db_open(1);
 	ck_assert_int_eq(ret, 1);
 

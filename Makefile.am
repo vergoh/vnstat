@@ -58,6 +58,7 @@ check_vnstat_CFLAGS = @CHECK_CFLAGS@ \
   -DPROCNETDEV=\"testdir/proc/dev\" \
   -DSYSCLASSNET=\"testdir/sysclassnet\" \
   -DCFGFILE=\"$(top_srcdir)/cfg/vnstat.conf\" \
+  -DCHECK_VNSTAT \
   -I$(top_srcdir)/src
 check_vnstat_LDADD = @CHECK_LIBS@
 

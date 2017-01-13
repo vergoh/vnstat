@@ -605,6 +605,7 @@ vnstatd_SOURCES = src/vnstatd.c src/vnstatd.h \
 @HAVE_CHECK_TRUE@  -DPROCNETDEV=\"testdir/proc/dev\" \
 @HAVE_CHECK_TRUE@  -DSYSCLASSNET=\"testdir/sysclassnet\" \
 @HAVE_CHECK_TRUE@  -DCFGFILE=\"$(top_srcdir)/cfg/vnstat.conf\" \
+@HAVE_CHECK_TRUE@  -DCHECK_VNSTAT \
 @HAVE_CHECK_TRUE@  -I$(top_srcdir)/src
 
 @HAVE_CHECK_TRUE@check_vnstat_LDADD = @CHECK_LIBS@

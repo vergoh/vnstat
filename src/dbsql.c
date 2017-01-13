@@ -6,6 +6,12 @@ int db_open(const int createifnotfound)
 {
 	int rc, createdb = 0;
 	char dbfilename[512];
+
+#ifdef CHECK_VNSTAT
+	/* use ram based database when testing for shorter test execution times by reducing disk i/o */
+	snprintf(dbfilename, 512, ":memory:");
+	createdb = 1;
+#else
 	struct stat filestat;
 
 	snprintf(dbfilename, 512, "%s/%s", cfg.dbdir, DATABASEFILE);
@@ -29,13 +35,8 @@ int db_open(const int createifnotfound)
 			}
 		}
 	}
-
-#ifdef TESTDIR
-	/* use ram based database when testing for shorter test execution times */
-	rc = sqlite3_open(":memory:", &db);
-#else
-	rc = sqlite3_open(dbfilename, &db);
 #endif
+	rc = sqlite3_open(dbfilename, &db);
 
 	if (rc) {
 		if (debug)
