@@ -48,10 +48,12 @@ int db_open(const int createifnotfound)
 	}
 
 	if (createdb) {
+#ifndef CHECK_VNSTAT
 		if (!spacecheck(cfg.dbdir)) {
 			printf("Error: Not enough free diskspace available in \"%s\", exiting.\n", cfg.dbdir);
 			exit(EXIT_FAILURE);
 		}
+#endif
 		if (!db_create()) {
 			if (debug)
 				printf("Error: Creating database \"%s\" structure failed\n", dbfilename);
