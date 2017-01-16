@@ -162,6 +162,64 @@ START_TEST(db_addtraffic_can_add_traffic_and_interfaces)
 }
 END_TEST
 
+START_TEST(db_addtraffic_dated_does_not_turn_back_time)
+{
+	int ret;
+	interfaceinfo info;
+
+	defaultcfg();
+
+	ret = db_open(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addtraffic("eth0", 1, 1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_getinterfaceinfo("eth0", &info);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(info.rxtotal, 1);
+	ck_assert_int_eq(info.txtotal, 1);
+	ck_assert_int_gt(info.updated, 1000);
+	ck_assert_int_lt(info.updated, 2100000000);
+
+	ret = db_addtraffic_dated("eth0", 1, 1, 1000);
+	ck_assert_int_eq(ret, 1);
+	ret = db_getinterfaceinfo("eth0", &info);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(info.rxtotal, 2);
+	ck_assert_int_eq(info.txtotal, 2);
+	ck_assert_int_gt(info.updated, 1000);
+	ck_assert_int_lt(info.updated, 2100000000);
+
+	ret = db_addtraffic_dated("eth0", 1, 1, 2100000000);
+	ck_assert_int_eq(ret, 1);
+	ret = db_getinterfaceinfo("eth0", &info);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(info.rxtotal, 3);
+	ck_assert_int_eq(info.txtotal, 3);
+	ck_assert_int_eq(info.updated, 2100000000);
+
+	ret = db_addtraffic_dated("eth0", 1, 1, 1000);
+	ck_assert_int_eq(ret, 1);
+	ret = db_getinterfaceinfo("eth0", &info);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(info.rxtotal, 4);
+	ck_assert_int_eq(info.txtotal, 4);
+	ck_assert_int_eq(info.updated, 2100000000);
+
+	ret = db_addtraffic("eth0", 1, 1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_getinterfaceinfo("eth0", &info);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(info.rxtotal, 5);
+	ck_assert_int_eq(info.txtotal, 5);
+	ck_assert_int_gt(info.updated, 1000);
+	ck_assert_int_lt(info.updated, 2100000000);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 START_TEST(db_setactive_fails_with_no_open_db)
 {
 	defaultcfg();
@@ -614,6 +672,7 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_setinfo_can_not_update_nonexisting_name);
 	tcase_add_test(tc_dbsql, db_addtraffic_with_no_traffic_does_nothing);
 	tcase_add_test(tc_dbsql, db_addtraffic_can_add_traffic_and_interfaces);
+	tcase_add_test(tc_dbsql, db_addtraffic_dated_does_not_turn_back_time);
 	tcase_add_test(tc_dbsql, db_getinterfacecount_counts_interfaces);
 	tcase_add_test(tc_dbsql, db_getinterfacecountbyname_counts_interfaces);
 	tcase_add_test(tc_dbsql, db_setactive_fails_with_no_open_db);

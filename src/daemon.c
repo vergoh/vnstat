@@ -551,7 +551,6 @@ void flushcachetodisk(DSTATE *s)
 
 		logiterator = iterator->log;
 		while (logiterator != NULL) {
-			/* TODO: log order may cause older timestamp to be set as interface updated time */
 			db_addtraffic_dated(iterator->interface, logiterator->rx, logiterator->tx, (uint64_t)logiterator->timestamp);
 			logiterator = logiterator->next;
 		}

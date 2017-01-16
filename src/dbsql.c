@@ -327,7 +327,7 @@ int db_getinterfaceinfo(const char *iface, interfaceinfo *info)
 		return 0;
 	}
 
-	sqlite3_snprintf(512, sql, "select name, alias, active, created, updated, rxcounter, txcounter, rxtotal, txtotal from interface where id=%"PRId64";", (int64_t)ifaceid);
+	sqlite3_snprintf(512, sql, "select name, alias, active, strftime('%%s', created, 'utc'), strftime('%%s', updated, 'utc'), rxcounter, txcounter, rxtotal, txtotal from interface where id=%"PRId64";", (int64_t)ifaceid);
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
 	if (rc) {
 		return 0;
@@ -483,8 +483,19 @@ int db_addtraffic_dated(const char *iface, const uint64_t rx, const uint64_t tx,
 		return 0;
 	}
 
+	/* change updated only if more recent than previous when timestamp provided */
+	if (timestamp > 0) {
+		sqlite3_snprintf(1024, sql, "update interface set updated=datetime(%s, 'localtime') where id=%"PRId64" and updated < datetime(%s, 'localtime');", nowdate, (int64_t)ifaceid, nowdate);
+	} else {
+		sqlite3_snprintf(1024, sql, "update interface set updated=datetime(%s, 'localtime') where id=%"PRId64";", nowdate, (int64_t)ifaceid);
+	}
+	if (!db_exec(sql)) {
+		db_rollbacktransaction();
+		return 0;
+	}
+
 	/* total */
-	sqlite3_snprintf(1024, sql, "update interface set rxtotal=rxtotal+%"PRIu64", txtotal=txtotal+%"PRIu64", updated=datetime(%s, 'localtime'), active=1 where id=%"PRId64";", rx, tx, nowdate, (int64_t)ifaceid);
+	sqlite3_snprintf(1024, sql, "update interface set rxtotal=rxtotal+%"PRIu64", txtotal=txtotal+%"PRIu64", active=1 where id=%"PRId64";", rx, tx, (int64_t)ifaceid);
 	if (!db_exec(sql)) {
 		db_rollbacktransaction();
 		return 0;
@@ -518,7 +529,7 @@ int db_setcreation(const char *iface, const uint64_t timestamp)
 		return 0;
 	}
 
-	sqlite3_snprintf(512, sql, "update interface set created=%"PRIu64" where id=%"PRId64";", timestamp, (int64_t)ifaceid);
+	sqlite3_snprintf(512, sql, "update interface set created=datetime(%"PRIu64", 'unixepoch', 'localtime') where id=%"PRId64";", timestamp, (int64_t)ifaceid);
 	return db_exec(sql);
 }
 
