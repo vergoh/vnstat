@@ -455,6 +455,7 @@ int db_addtraffic_dated(const char *iface, const uint64_t rx, const uint64_t tx,
 	sqlite3_int64 ifaceid = 0;
 
 	char *datatables[] = {"fiveminute", "hour", "day", "month", "year"};
+	int32_t *featurecfg[] = {&cfg.fiveminutehours, &cfg.hourlydays, &cfg.dailydays, &cfg.monthlymonths, &cfg.yearlyyears};
 	char *datadates[] = {"datetime(%1$s, ('-' || (strftime('%%M', %1$s)) || ' minutes'), ('-' || (strftime('%%S', %1$s)) || ' seconds'), ('+' || (round(strftime('%%M', %1$s)/5,0)*5) || ' minutes'), 'localtime')", \
 			"strftime('%%Y-%%m-%%d %%H:00:00', %s, 'localtime')", \
 			"date(%s, 'localtime')", \
@@ -502,8 +503,10 @@ int db_addtraffic_dated(const char *iface, const uint64_t rx, const uint64_t tx,
 	}
 
 	/* time specific */
-	/* TODO: skip if feature disabled in configuration */
 	for (i=0; i<5; i++) {
+		if (featurecfg[i] == 0) {
+			continue;
+		}
 		snprintf(datebuffer, 512, datadates[i], nowdate);
 		sqlite3_snprintf(1024, sql, "insert or ignore into %s (interface, date, rx, tx) values (%"PRId64", %s, 0, 0);", datatables[i], (int64_t)ifaceid, datebuffer);
 		if (!db_exec(sql)) {

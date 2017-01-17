@@ -27,7 +27,8 @@ configurable durations. Yearly and 5 minute resolution statistics are also plann
   * full data import from vnStat 1.x database format including reconstructed yearly data
   * legacy database is not kept in memory for each interface during daemon runtime
   * new configuration options for data retention durations
-    * the daemon doesn't however yet use these new options
+    * features can be disabled
+    * database cleanup isn't being called
 
 ##### TODO
 
