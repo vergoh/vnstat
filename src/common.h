@@ -148,6 +148,14 @@ and most can be changed later from the config file.
 /* log trafficless days by default */
 #define TRAFLESSDAY 1
 
+/* data retention defaults */
+#define FIVEMINUTEHOURS 48
+#define HOURLYDAYS 2
+#define DAILYDAYS 30
+#define MONTHLYMONTHS 12
+#define YEARLYYEARS -1
+#define TOPDAYENTRIES 10
+
 /* assume that locale can be UTF-n when enabled */
 #define UTFLOCALE 1
 
@@ -231,6 +239,7 @@ typedef struct {
 	char daemonuser[33], daemongroup[33];
 	int32_t updateinterval, pollinterval, saveinterval, offsaveinterval, savestatus, uselogging;
 	int32_t createdirs, updatefileowner, bwdetection, bwdetectioninterval, utflocale;
+	int32_t fiveminutehours, hourlydays, dailydays, monthlymonths, yearlyyears, topdayentries;
 } CFG;
 
 /* internal interface information structure */

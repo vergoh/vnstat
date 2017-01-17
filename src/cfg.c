@@ -87,7 +87,15 @@ void printcfgfile(void)
 	printf("BootVariation %d\n\n", cfg.bvar);
 
 	printf("# log days without traffic to daily list (1 = enabled, 0 = disabled)\n");
-	printf("TrafficlessDays %d\n", cfg.traflessday);
+	printf("TrafficlessDays %d\n\n", cfg.traflessday);
+
+	printf("# data retention durations (-1 = unlimited, 0 = log disabled)\n");
+	printf("5MinuteHours   %2d\n", cfg.fiveminutehours);
+	printf("HourlyDays     %2d\n", cfg.hourlydays);
+	printf("DailyDays      %2d\n", cfg.dailydays);
+	printf("MonthlyMonths  %2d\n", cfg.monthlymonths);
+	printf("YearlyYears    %2d\n", cfg.yearlyyears);
+	printf("TopDayEntries  %2d\n", cfg.topdayentries);
 
 	printf("\n\n");
 
@@ -200,6 +208,12 @@ int loadcfg(const char *cfgfile)
 		{ "UseFileLocking", 0, &cfg.flock, 0, 0 },
 		{ "BootVariation", 0, &cfg.bvar, 0, 0 },
 		{ "TrafficlessDays", 0, &cfg.traflessday, 0, 0 },
+		{ "5MinuteHours", 0, &cfg.fiveminutehours, 0, 0 },
+		{ "HourlyDays", 0, &cfg.hourlydays, 0, 0 },
+		{ "DailyDays", 0, &cfg.dailydays, 0, 0 },
+		{ "MonthlyMonths", 0, &cfg.monthlymonths, 0, 0 },
+		{ "YearlyYears", 0, &cfg.yearlyyears, 0, 0 },
+		{ "TopDayEntries", 0, &cfg.topdayentries, 0, 0 },
 		{ "DaemonUser", cfg.daemonuser, 0, 33, 0 },
 		{ "DaemonGroup", cfg.daemongroup, 0, 33, 0 },
 		{ "UpdateInterval", 0, &cfg.updateinterval, 0, 0 },
@@ -297,69 +311,72 @@ int loadcfg(const char *cfgfile)
 
 void validatecfg(void)
 {
+	const char *invalidvalue = "Invalid value for";
+	const char *resettingto = "resetting to";
+
 	if (cfg.unitmode<0 || cfg.unitmode>1) {
 		cfg.unitmode = UNITMODE;
-		snprintf(errorstring, 512, "Invalid value for UnitMode, resetting to \"%d\".", cfg.unitmode);
+		snprintf(errorstring, 512, "%s UnitMode, %s \"%d\".", invalidvalue, resettingto, cfg.unitmode);
 		printe(PT_Config);
 	}
 
 	if (cfg.rateunitmode<0 || cfg.rateunitmode>1) {
 		cfg.rateunitmode = RATEUNITMODE;
-		snprintf(errorstring, 512, "Invalid value for RateUnitMode, resetting to \"%d\".", cfg.rateunitmode);
+		snprintf(errorstring, 512, "%s RateUnitMode, %s \"%d\".", invalidvalue, resettingto, cfg.rateunitmode);
 		printe(PT_Config);
 	}
 
 	if (cfg.ostyle<0 || cfg.ostyle>3) {
 		cfg.ostyle = OSTYLE;
-		snprintf(errorstring, 512, "Invalid value for OutputStyle, resetting to \"%d\".", cfg.ostyle);
+		snprintf(errorstring, 512, "%s OutputStyle, %s \"%d\".", invalidvalue, resettingto, cfg.ostyle);
 		printe(PT_Config);
 	}
 
 	if (cfg.bvar<0 || cfg.bvar>300) {
 		cfg.bvar = BVAR;
-		snprintf(errorstring, 512, "Invalid value for BootVariation, resetting to \"%d\".", cfg.bvar);
+		snprintf(errorstring, 512, "%s BootVariation, %s \"%d\".", invalidvalue, resettingto, cfg.bvar);
 		printe(PT_Config);
 	}
 
 	if (cfg.sampletime<2 || cfg.sampletime>600) {
 		cfg.sampletime = DEFSAMPTIME;
-		snprintf(errorstring, 512, "Invalid value for Sampletime, resetting to \"%d\".", cfg.sampletime);
+		snprintf(errorstring, 512, "%s Sampletime, %s \"%d\".", invalidvalue, resettingto, cfg.sampletime);
 		printe(PT_Config);
 	}
 
 	if (cfg.monthrotate<1 || cfg.monthrotate>28) {
 		cfg.monthrotate = MONTHROTATE;
-		snprintf(errorstring, 512, "Invalid value for MonthRotate, resetting to \"%d\".", cfg.monthrotate);
+		snprintf(errorstring, 512, "%s MonthRotate, %s \"%d\".", invalidvalue, resettingto, cfg.monthrotate);
 		printe(PT_Config);
 	}
 
 	if (cfg.maxbw<0 || cfg.maxbw>BWMAX) {
 		cfg.maxbw = DEFMAXBW;
-		snprintf(errorstring, 512, "Invalid value for MaxBandwidth, resetting to \"%d\".", cfg.maxbw);
+		snprintf(errorstring, 512, "%s MaxBandwidth, %s \"%d\".", invalidvalue, resettingto, cfg.maxbw);
 		printe(PT_Config);
 	}
 
 	if (cfg.spacecheck<0 || cfg.spacecheck>1) {
 		cfg.spacecheck = USESPACECHECK;
-		snprintf(errorstring, 512, "Invalid value for CheckDiskSpace, resetting to \"%d\".", cfg.spacecheck);
+		snprintf(errorstring, 512, "%s CheckDiskSpace, %s \"%d\".", invalidvalue, resettingto, cfg.spacecheck);
 		printe(PT_Config);
 	}
 
 	if (cfg.flock<0 || cfg.flock>1) {
 		cfg.flock = USEFLOCK;
-		snprintf(errorstring, 512, "Invalid value for UseFileLocking, resetting to \"%d\".", cfg.flock);
+		snprintf(errorstring, 512, "%s UseFileLocking, %s \"%d\".", invalidvalue, resettingto, cfg.flock);
 		printe(PT_Config);
 	}
 
 	if (cfg.dbdir[0] != '/') {
 		strncpy_nt(cfg.dbdir, DATABASEDIR, 512);
-		snprintf(errorstring, 512, "DatabaseDir doesn't start with \"/\", resetting to default.");
+		snprintf(errorstring, 512, "DatabaseDir doesn't start with \"/\", %s default.", resettingto);
 		printe(PT_Config);
 	}
 
 	if (cfg.pollinterval<2 || cfg.pollinterval>60) {
 		cfg.pollinterval = POLLINTERVAL;
-		snprintf(errorstring, 512, "Invalid value for PollInterval, resetting to \"%d\".", cfg.pollinterval);
+		snprintf(errorstring, 512, "%s PollInterval, %s \"%d\".", invalidvalue, resettingto, cfg.pollinterval);
 		printe(PT_Config);
 	}
 
@@ -369,7 +386,7 @@ void validatecfg(void)
 		} else {
 			cfg.updateinterval = UPDATEINTERVAL;
 		}
-		snprintf(errorstring, 512, "Invalid value for UpdateInterval, resetting to \"%d\".", cfg.updateinterval);
+		snprintf(errorstring, 512, "%s UpdateInterval, %s \"%d\".", invalidvalue, resettingto, cfg.updateinterval);
 		printe(PT_Config);
 	}
 
@@ -379,7 +396,7 @@ void validatecfg(void)
 		} else {
 			cfg.saveinterval = SAVEINTERVAL;
 		}
-		snprintf(errorstring, 512, "Invalid value for SaveInterval, resetting to \"%d\".", cfg.saveinterval);
+		snprintf(errorstring, 512, "%s SaveInterval, %s \"%d\".", invalidvalue, resettingto, cfg.saveinterval);
 		printe(PT_Config);
 	}
 
@@ -389,85 +406,121 @@ void validatecfg(void)
 		} else {
 			cfg.offsaveinterval = OFFSAVEINTERVAL;
 		}
-		snprintf(errorstring, 512, "Invalid value for OfflineSaveInterval, resetting to \"%d\".", cfg.offsaveinterval);
+		snprintf(errorstring, 512, "%s OfflineSaveInterval, %s \"%d\".", invalidvalue, resettingto, cfg.offsaveinterval);
 		printe(PT_Config);
 	}
 
 	if (cfg.savestatus<0 || cfg.savestatus>1) {
 		cfg.savestatus = SAVESTATUS;
-		snprintf(errorstring, 512, "Invalid value for SaveOnStatusChange, resetting to \"%d\".", cfg.savestatus);
+		snprintf(errorstring, 512, "%s SaveOnStatusChange, %s \"%d\".", invalidvalue, resettingto, cfg.savestatus);
 		printe(PT_Config);
 	}
 
 	if (cfg.uselogging<0 || cfg.uselogging>2) {
 		cfg.uselogging = USELOGGING;
-		snprintf(errorstring, 512, "Invalid value for UseLogging, resetting to \"%d\".", cfg.uselogging);
+		snprintf(errorstring, 512, "%s UseLogging, %s \"%d\".", invalidvalue, resettingto, cfg.uselogging);
 		printe(PT_Config);
 	}
 
 	if (cfg.createdirs<0 || cfg.createdirs>2) {
 		cfg.createdirs = CREATEDIRS;
-		snprintf(errorstring, 512, "Invalid value for CreateDirs, resetting to \"%d\".", cfg.createdirs);
+		snprintf(errorstring, 512, "%s CreateDirs, %s \"%d\".", invalidvalue, resettingto, cfg.createdirs);
 		printe(PT_Config);
 	}
 
 	if (cfg.updatefileowner<0 || cfg.updatefileowner>2) {
 		cfg.updatefileowner = UPDATEFILEOWNER;
-		snprintf(errorstring, 512, "Invalid value for UpdateFileOwner, resetting to \"%d\".", cfg.updatefileowner);
+		snprintf(errorstring, 512, "%s UpdateFileOwner, %s \"%d\".", invalidvalue, resettingto, cfg.updatefileowner);
 		printe(PT_Config);
 	}
 
 	if (cfg.logfile[0] != '/') {
 		strncpy_nt(cfg.logfile, LOGFILE, 512);
-		snprintf(errorstring, 512, "LogFile doesn't start with \"/\", resetting to default.");
+		snprintf(errorstring, 512, "LogFile doesn't start with \"/\", %s default.", resettingto);
 		printe(PT_Config);
 	}
 
 	if (cfg.pidfile[0] != '/') {
 		strncpy_nt(cfg.pidfile, PIDFILE, 512);
-		snprintf(errorstring, 512, "PidFile doesn't start with \"/\", resetting to default.");
+		snprintf(errorstring, 512, "PidFile doesn't start with \"/\", %s default.", resettingto);
 		printe(PT_Config);
 	}
 
 	if (cfg.transbg<0 || cfg.transbg>1) {
 		cfg.transbg = TRANSBG;
-		snprintf(errorstring, 512, "Invalid value for TransparentBg, resetting to \"%d\".", cfg.transbg);
+		snprintf(errorstring, 512, "%s TransparentBg, %s \"%d\".", invalidvalue, resettingto, cfg.transbg);
 		printe(PT_Config);
 	}
 
 	if (cfg.hourlyrate<0 || cfg.hourlyrate>1) {
 		cfg.hourlyrate = HOURLYRATE;
-		snprintf(errorstring, 512, "Invalid value for HourlyRate, resetting to \"%d\".", cfg.hourlyrate);
+		snprintf(errorstring, 512, "%s HourlyRate, %s \"%d\".", invalidvalue, resettingto, cfg.hourlyrate);
 		printe(PT_Config);
 	}
 
 	if (cfg.summaryrate<0 || cfg.summaryrate>1) {
 		cfg.summaryrate = SUMMARYRATE;
-		snprintf(errorstring, 512, "Invalid value for SummaryRate, resetting to \"%d\".", cfg.summaryrate);
+		snprintf(errorstring, 512, "%s SummaryRate, %s \"%d\".", invalidvalue, resettingto, cfg.summaryrate);
 		printe(PT_Config);
 	}
 
 	if (cfg.slayout<0 || cfg.slayout>1) {
 		cfg.slayout = SUMMARYLAYOUT;
-		snprintf(errorstring, 512, "Invalid value for SummaryLayout, resetting to \"%d\".", cfg.slayout);
+		snprintf(errorstring, 512, "%s SummaryLayout, %s \"%d\".", invalidvalue, resettingto, cfg.slayout);
 		printe(PT_Config);
 	}
 
 	if (cfg.traflessday<0 || cfg.traflessday>1) {
 		cfg.traflessday = TRAFLESSDAY;
-		snprintf(errorstring, 512, "Invalid value for TrafficlessDays, resetting to \"%d\".", cfg.transbg);
+		snprintf(errorstring, 512, "%s TrafficlessDays, %s \"%d\".", invalidvalue, resettingto, cfg.traflessday);
+		printe(PT_Config);
+	}
+
+	if (cfg.fiveminutehours<-1) {
+		cfg.fiveminutehours = FIVEMINUTEHOURS;
+		snprintf(errorstring, 512, "%s 5MinuteHours, %s \"%d\".", invalidvalue, resettingto, cfg.fiveminutehours);
+		printe(PT_Config);
+	}
+
+	if (cfg.hourlydays<-1) {
+		cfg.hourlydays = HOURLYDAYS;
+		snprintf(errorstring, 512, "%s HourlyDays, %s \"%d\".", invalidvalue, resettingto, cfg.hourlydays);
+		printe(PT_Config);
+	}
+
+	if (cfg.dailydays<-1) {
+		cfg.dailydays = DAILYDAYS;
+		snprintf(errorstring, 512, "%s DailyDays, %s \"%d\".", invalidvalue, resettingto, cfg.dailydays);
+		printe(PT_Config);
+	}
+
+	if (cfg.monthlymonths<-1) {
+		cfg.monthlymonths = MONTHLYMONTHS;
+		snprintf(errorstring, 512, "%s MonthlyMonths, %s \"%d\".", invalidvalue, resettingto, cfg.monthlymonths);
+		printe(PT_Config);
+	}
+
+	if (cfg.yearlyyears<-1) {
+		cfg.yearlyyears = YEARLYYEARS;
+		snprintf(errorstring, 512, "%s YearlyYears, %s \"%d\".", invalidvalue, resettingto, cfg.yearlyyears);
+		printe(PT_Config);
+	}
+
+	if (cfg.topdayentries<-1) {
+		cfg.topdayentries = TOPDAYENTRIES;
+		snprintf(errorstring, 512, "%s TopDayEntries, %s \"%d\".", invalidvalue, resettingto, cfg.topdayentries);
 		printe(PT_Config);
 	}
 
 	if (cfg.bwdetection<0 || cfg.bwdetection>1) {
 		cfg.bwdetection = BWDETECT;
-		snprintf(errorstring, 512, "Invalid value for BandwidthDetection, resetting to \"%d\".", cfg.bwdetection);
+		snprintf(errorstring, 512, "%s BandwidthDetection, %s \"%d\".", invalidvalue, resettingto, cfg.bwdetection);
 		printe(PT_Config);
 	}
 
 	if (cfg.bwdetectioninterval<0 || cfg.bwdetectioninterval>30) {
 		cfg.bwdetectioninterval = BWDETECTINTERVAL;
-		snprintf(errorstring, 512, "Invalid value for BandwidthDetectionInterval, resetting to \"%d\".", cfg.bwdetectioninterval);
+		snprintf(errorstring, 512, "%s BandwidthDetectionInterval, %s \"%d\".", invalidvalue, resettingto, cfg.bwdetectioninterval);
 		printe(PT_Config);
 	}
 }
@@ -494,6 +547,14 @@ void defaultcfg(void)
 	cfg.slayout = SUMMARYLAYOUT;
 	cfg.traflessday = TRAFLESSDAY;
 	cfg.utflocale = UTFLOCALE;
+
+	cfg.fiveminutehours = FIVEMINUTEHOURS;
+	cfg.hourlydays = HOURLYDAYS;
+	cfg.dailydays = DAILYDAYS;
+	cfg.monthlymonths = MONTHLYMONTHS;
+	cfg.yearlyyears = YEARLYYEARS;
+	cfg.topdayentries = TOPDAYENTRIES;
+
 	strncpy_nt(cfg.dbdir, DATABASEDIR, 512);
 	strncpy_nt(cfg.iface, DEFIFACE, 32);
 	strncpy_nt(cfg.locale, LOCALE, 32);

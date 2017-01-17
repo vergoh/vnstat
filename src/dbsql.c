@@ -502,6 +502,7 @@ int db_addtraffic_dated(const char *iface, const uint64_t rx, const uint64_t tx,
 	}
 
 	/* time specific */
+	/* TODO: skip if feature disabled in configuration */
 	for (i=0; i<5; i++) {
 		snprintf(datebuffer, 512, datadates[i], nowdate);
 		sqlite3_snprintf(1024, sql, "insert or ignore into %s (interface, date, rx, tx) values (%"PRId64", %s, 0, 0);", datatables[i], (int64_t)ifaceid, datebuffer);
@@ -591,47 +592,61 @@ int db_removeoldentries(void)
 		return 0;
 	}
 
-	/* TODO: read cleanup limits from configuration and actually use this function somewhere */
+	/* TODO: actually use this function somewhere */
 	/* running this about once every hour during cache flush would keep the fiveminute table from accumulating too much excess data */
 
-	sqlite3_snprintf(512, sql, "delete from fiveminute where date < datetime('now', '-48 hours', 'localtime');");
-	if (!db_exec(sql)) {
-		db_rollbacktransaction();
-		return 0;
+	if (cfg.fiveminutehours > 0) {
+		sqlite3_snprintf(512, sql, "delete from fiveminute where date < datetime('now', '-%d hours', 'localtime');", cfg.fiveminutehours);
+		if (!db_exec(sql)) {
+			db_rollbacktransaction();
+			return 0;
+		}
 	}
 
-	sqlite3_snprintf(512, sql, "delete from hour where date < datetime('now', '-7 days', 'localtime');");
-	if (!db_exec(sql)) {
-		db_rollbacktransaction();
-		return 0;
+	if (cfg.hourlydays > 0) {
+		sqlite3_snprintf(512, sql, "delete from hour where date < datetime('now', '-%d days', 'localtime');", cfg.hourlydays);
+		if (!db_exec(sql)) {
+			db_rollbacktransaction();
+			return 0;
+		}
 	}
 
-	sqlite3_snprintf(512, sql, "delete from day where date < date('now', '-30 days', 'localtime');");
-	if (!db_exec(sql)) {
-		db_rollbacktransaction();
-		return 0;
+	if (cfg.dailydays > 0) {
+		sqlite3_snprintf(512, sql, "delete from day where date < date('now', '-%d days', 'localtime');", cfg.dailydays);
+		if (!db_exec(sql)) {
+			db_rollbacktransaction();
+			return 0;
+		}
 	}
 
-	sqlite3_snprintf(512, sql, "delete from month where date < date('now', '-12 months', 'localtime');");
-	if (!db_exec(sql)) {
-		db_rollbacktransaction();
-		return 0;
+	if (cfg.monthlymonths > 0) {
+		sqlite3_snprintf(512, sql, "delete from month where date < date('now', '-%d months', 'localtime');", cfg.monthlymonths);
+		if (!db_exec(sql)) {
+			db_rollbacktransaction();
+			return 0;
+		}
 	}
 
-	sqlite3_snprintf(512, sql, "delete from year where date < date('now', '-10 years', 'localtime');");
-	if (!db_exec(sql)) {
-		db_rollbacktransaction();
-		return 0;
+	if (cfg.yearlyyears > 0) {
+		sqlite3_snprintf(512, sql, "delete from year where date < date('now', '-%d years', 'localtime');", cfg.yearlyyears);
+		if (!db_exec(sql)) {
+			db_rollbacktransaction();
+			return 0;
+		}
 	}
 
 	/* TODO: rewrite to handle entries per interface and use select for getting entry list */
 	/* as the syntax below works only when sqlite is compiled with SQLITE_ENABLE_UPDATE_DELETE_LIMIT */
 	/* causing failure in at least in Ubuntu <= 12.04, RHEL, Fedora and CentOS */
-	/*sqlite3_snprintf(512, sql, "delete from top order by rx+tx desc limit -1 offset 10;");
-	if (!db_exec(sql)) {
-		db_rollbacktransaction();
-		return 0;
-	}*/
+	/*
+	if (cfg.topdayentries > 0) {
+		sqlite3_snprintf(512, sql, "delete from top order by rx+tx desc limit -1 offset %d;", cfg.topdayentries);
+		if (!db_exec(sql)) {
+			db_rollbacktransaction();
+			return 0;
+		}
+	}
+	*/
 
 	return db_committransaction();
 }

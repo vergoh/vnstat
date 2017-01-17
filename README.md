@@ -26,13 +26,14 @@ configurable durations. Yearly and 5 minute resolution statistics are also plann
     * write support is no longer included in code
   * full data import from vnStat 1.x database format including reconstructed yearly data
   * legacy database is not kept in memory for each interface during daemon runtime
+  * new configuration options for data retention durations
+    * the daemon doesn't however yet use these new options
 
 ##### TODO
 
   * `grep TODO src/* tests/*`
   * continue daemon refactoring
   * add missing sanity checks to daemon
-  * rewrite disabled tests
   * all outputs (text and image)
     * use of 5 minute resolution statistics
   * old data cleanup, everything gets currently stored forever
