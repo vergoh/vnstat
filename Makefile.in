@@ -76,6 +76,8 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
+build_triplet = @build@
+host_triplet = @host@
 sbin_PROGRAMS = vnstatd$(EXEEXT)
 @HAVE_CHECK_TRUE@TESTS = check_vnstat$(EXEEXT)
 @HAVE_CHECK_TRUE@check_PROGRAMS = check_vnstat$(EXEEXT)
@@ -83,7 +85,8 @@ subdir = .
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
 	$(top_srcdir)/src/config.h.in depcomp $(dist_man_MANS) \
-	test-driver COPYING INSTALL README compile install-sh missing
+	test-driver COPYING INSTALL README compile config.guess \
+	config.sub install-sh missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -534,14 +537,22 @@ am__quote = @am__quote@
 am__tar = @am__tar@
 am__untar = @am__untar@
 bindir = @bindir@
+build = @build@
 build_alias = @build_alias@
+build_cpu = @build_cpu@
+build_os = @build_os@
+build_vendor = @build_vendor@
 builddir = @builddir@
 datadir = @datadir@
 datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
+host = @host@
 host_alias = @host_alias@
+host_cpu = @host_cpu@
+host_os = @host_os@
+host_vendor = @host_vendor@
 htmldir = @htmldir@
 includedir = @includedir@
 infodir = @infodir@
@@ -1921,9 +1932,15 @@ release: distcheck
 	ls -l $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.gz
 
 install-data-hook:
-	$(DESTDIR)$(bindir)/vnstat$(EXEEXT) --showconfig >vnstat.conf && \
-	  $(MKDIR_P) $(DESTDIR)$(sysconfdir) && \
-	  mv -f vnstat.conf $(DESTDIR)$(sysconfdir)/vnstat.conf
+	$(MKDIR_P) $(DESTDIR)$(sysconfdir)
+@IS_CROSSCOMPILED_TRUE@	if [ ! -f $(DESTDIR)$(sysconfdir)/vnstat.conf ]; \
+@IS_CROSSCOMPILED_TRUE@	then cp -fv $(srcdir)/cfg/vnstat.conf $(DESTDIR)$(sysconfdir)/vnstat.conf; \
+@IS_CROSSCOMPILED_TRUE@	fi
+@IS_CROSSCOMPILED_FALSE@	$(DESTDIR)$(bindir)/vnstat$(EXEEXT) --showconfig >vnstat.conf.new
+@IS_CROSSCOMPILED_FALSE@	if [ -f $(DESTDIR)$(sysconfdir)/vnstat.conf ]; \
+@IS_CROSSCOMPILED_FALSE@	then cp -fv $(DESTDIR)$(sysconfdir)/vnstat.conf vnstat.conf.old; \
+@IS_CROSSCOMPILED_FALSE@	fi
+@IS_CROSSCOMPILED_FALSE@	cp -fv vnstat.conf.new $(DESTDIR)$(sysconfdir)/vnstat.conf
 	@echo
 	@echo "============================================================================"
 	@echo "  Note: No service file has been installed for starting the daemon"
@@ -1943,7 +1960,7 @@ uninstall-hook:
 	@echo
 
 clean-local:
-	-rm -fr coverage *.lcov *.gz test*.log test*.xml src/*.gc* tests/*.gc*
+	-rm -fr coverage *.lcov *.gz test*.log test*.xml src/*.gc* tests/*.gc* *.old *.new
 
 check-local:
 	-tail -n 2 test.log

@@ -124,9 +124,18 @@ release: distcheck
 	ls -l $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.gz
 
 install-data-hook:
-	$(DESTDIR)$(bindir)/vnstat$(EXEEXT) --showconfig >vnstat.conf && \
-	  $(MKDIR_P) $(DESTDIR)$(sysconfdir) && \
-	  mv -f vnstat.conf $(DESTDIR)$(sysconfdir)/vnstat.conf
+	$(MKDIR_P) $(DESTDIR)$(sysconfdir)
+if IS_CROSSCOMPILED
+	if [ ! -f $(DESTDIR)$(sysconfdir)/vnstat.conf ]; \
+	then cp -fv $(srcdir)/cfg/vnstat.conf $(DESTDIR)$(sysconfdir)/vnstat.conf; \
+	fi
+else
+	$(DESTDIR)$(bindir)/vnstat$(EXEEXT) --showconfig >vnstat.conf.new
+	if [ -f $(DESTDIR)$(sysconfdir)/vnstat.conf ]; \
+	then cp -fv $(DESTDIR)$(sysconfdir)/vnstat.conf vnstat.conf.old; \
+	fi
+	cp -fv vnstat.conf.new $(DESTDIR)$(sysconfdir)/vnstat.conf
+endif
 	@echo
 	@echo "============================================================================"
 	@echo "  Note: No service file has been installed for starting the daemon"
@@ -146,7 +155,7 @@ uninstall-hook:
 	@echo
 
 clean-local:
-	-rm -fr coverage *.lcov *.gz test*.log test*.xml src/*.gc* tests/*.gc*
+	-rm -fr coverage *.lcov *.gz test*.log test*.xml src/*.gc* tests/*.gc* *.old *.new
 
 check-local:
 	-tail -n 2 test.log
