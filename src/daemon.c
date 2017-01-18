@@ -253,6 +253,7 @@ void initdstate(DSTATE *s)
 	s->dbcount = 0;
 	s->dodbsave = 0;
 	s->bootdetected = 0;
+	s->cleanuphour = getcurrenthour();
 	s->dcache = NULL;
 }
 
@@ -316,7 +317,6 @@ int importlegacydbs(DSTATE *s)
 			if (importlegacydb(di->d_name, s->dirname)) {
 				importcount++;
 			}
-			/* TODO: do something if import fails? */
 		}
 	}
 	closedir(dir);
@@ -449,6 +449,10 @@ void processdatacache(DSTATE *s)
 	if (s->dodbsave) {
 		flushcachetodisk(s);
 		cleanremovedinterfaces(s);
+		if (s->cleanuphour != getcurrenthour()) {
+			db_removeoldentries();
+			s->cleanuphour = getcurrenthour();
+		}
 	}
 }
 
@@ -542,6 +546,7 @@ void flushcachetodisk(DSTATE *s)
 
 	while (iterator != NULL) {
 		/* TODO: error handling needed, if the disk is full then keep the cache up to some time limit */
+		/* some solution needed for detecting how fatal possible sqlite errors are */
 
 		/* ignore interface no longer in database */
 		if (!db_getinterfacecountbyname(iterator->interface)) {
@@ -606,8 +611,11 @@ void handleintsignals(DSTATE *s)
 				strncpy_nt(s->dirname, cfg.dbdir, 512);
 			}
 			ibwloadcfg(s->cfgfile);
-			db_open(1);
-			/* TODO: verify that everything continues correctly after this point */
+			if (!db_open(1)) {
+				snprintf(errorstring, 512, "Opening database after SIGHUP failed (%s), exiting.", strerror(errno));
+				printe(PT_Error);
+				exit(EXIT_FAILURE);
+			}
 			break;
 
 		case SIGINT:
@@ -795,4 +803,29 @@ void errorexitdaemon(DSTATE *s)
 	}
 
 	exit(EXIT_FAILURE);
+}
+
+int getcurrenthour(void)
+{
+	int ret = 0;
+	time_t current;
+	struct tm *stm;
+	char buffer[4];
+
+	current = time(NULL);
+	stm = localtime(&current);
+	if (stm == NULL) {
+		return 0;
+	}
+
+	if (!strftime(buffer, sizeof(buffer), "%H", stm)) {
+		return 0;
+	}
+
+	ret = atoi(buffer);
+	if (ret > 23 || ret < 0) {
+		ret = 0;
+	}
+
+	return ret;
 }

@@ -10,11 +10,9 @@ configurable durations. Yearly and 5 minute resolution statistics are also plann
 ##### Overall status
 
   * only daemon is being compiled
-  * alpha version with minimal working daemon implementation
-    * many sanity checks are missing or disabled
-    * some daemon related configuration options aren't active
-  * don't try with a user that has write access to any vnStat 1.x database files
-    * just to be on the safe side
+  * alpha version with working daemon implementation
+    * some sanity checks may be missing or disabled
+  * not ready to replace vnStat 1.x due to lack of outputs
 
 ##### Done
 
@@ -28,7 +26,9 @@ configurable durations. Yearly and 5 minute resolution statistics are also plann
   * legacy database is not kept in memory for each interface during daemon runtime
   * new configuration options for data retention durations
     * features can be disabled
-    * database cleanup isn't being called
+  * old data cleanup
+    * executed during startup and then once every hour
+    * top 10 cleanup is still missing
 
 ##### TODO
 
@@ -37,9 +37,10 @@ configurable durations. Yearly and 5 minute resolution statistics are also plann
   * add missing sanity checks to daemon
   * all outputs (text and image)
     * use of 5 minute resolution statistics
-  * old data cleanup, everything gets currently stored forever
   * top 10, included in database schema but not populated
   * feature configurability
   * freeze database structure
+    * plan ahead and figure out how to migrate data to new structure if necessary?
   * documentation
+    * especially feature comparison with 1.x versions is needed as some features may be left out
   * remember what else has been forgotten from this list

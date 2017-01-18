@@ -722,6 +722,16 @@ START_TEST(initcachevalues_does_init)
 }
 END_TEST
 
+START_TEST(getcurrenthour_returns_something_realistic)
+{
+	int ret;
+
+	ret = getcurrenthour();
+	ck_assert_int_ge(ret, 0);
+	ck_assert_int_le(ret, 23);
+}
+END_TEST
+
 void add_daemon_tests(Suite *s)
 {
 	TCase *tc_daemon = tcase_create("Daemon");
@@ -756,5 +766,6 @@ void add_daemon_tests(Suite *s)
 	tcase_add_test(tc_daemon, simplehash_with_simple_strings);
 	tcase_add_test(tc_daemon, initcachevalues_does_not_init_without_database);
 	tcase_add_test(tc_daemon, initcachevalues_does_init);
+	tcase_add_test(tc_daemon, getcurrenthour_returns_something_realistic);
 	suite_add_tcase(s, tc_daemon);
 }

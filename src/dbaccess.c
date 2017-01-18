@@ -7,8 +7,8 @@ int importlegacydb(const char *iface, const char *dirname)
 {
 	DATA data;
 
-	/* TODO: check consistency of this print with other output when debug isn't enabled */
-	printf("Importing legacy database \"%s\"...\n", iface);
+	snprintf(errorstring, 512, "Importing data from legacy database \"%s\"...", iface);
+	printe(PT_Info);
 
 	if (db_getinterfacecountbyname(iface)) {
 		return 0;

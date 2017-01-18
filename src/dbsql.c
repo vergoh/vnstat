@@ -454,13 +454,14 @@ int db_addtraffic_dated(const char *iface, const uint64_t rx, const uint64_t tx,
 	char sql[1024], datebuffer[512], nowdate[64];
 	sqlite3_int64 ifaceid = 0;
 
-	char *datatables[] = {"fiveminute", "hour", "day", "month", "year"};
-	int32_t *featurecfg[] = {&cfg.fiveminutehours, &cfg.hourlydays, &cfg.dailydays, &cfg.monthlymonths, &cfg.yearlyyears};
+	char *datatables[] = {"fiveminute", "hour", "day", "month", "year", "top"};
+	int32_t *featurecfg[] = {&cfg.fiveminutehours, &cfg.hourlydays, &cfg.dailydays, &cfg.monthlymonths, &cfg.yearlyyears, &cfg.topdayentries};
 	char *datadates[] = {"datetime(%1$s, ('-' || (strftime('%%M', %1$s)) || ' minutes'), ('-' || (strftime('%%S', %1$s)) || ' seconds'), ('+' || (round(strftime('%%M', %1$s)/5,0)*5) || ' minutes'), 'localtime')", \
 			"strftime('%%Y-%%m-%%d %%H:00:00', %s, 'localtime')", \
 			"date(%s, 'localtime')", \
 			"strftime('%%Y-%%m-01', %s, 'localtime')", \
-			"strftime('%%Y-01-01', %s, 'localtime')"};
+			"strftime('%%Y-01-01', %s, 'localtime')", \
+			"date(%s, 'localtime')"};
 
 	if (rx == 0 && tx == 0) {
 		return 1;
@@ -503,7 +504,7 @@ int db_addtraffic_dated(const char *iface, const uint64_t rx, const uint64_t tx,
 	}
 
 	/* time specific */
-	for (i=0; i<5; i++) {
+	for (i=0; i<6; i++) {
 		if (featurecfg[i] == 0) {
 			continue;
 		}
@@ -591,14 +592,18 @@ int db_removeoldentries(void)
 {
 	char sql[512];
 
+	if (debug) {
+		printf("db: removing old entries\n");
+	}
+
 	if (!db_begintransaction()) {
 		return 0;
 	}
 
-	/* TODO: actually use this function somewhere */
-	/* running this about once every hour during cache flush would keep the fiveminute table from accumulating too much excess data */
-
 	if (cfg.fiveminutehours > 0) {
+		if (debug) {
+			printf("db: fiveminute cleanup\n");
+		}
 		sqlite3_snprintf(512, sql, "delete from fiveminute where date < datetime('now', '-%d hours', 'localtime');", cfg.fiveminutehours);
 		if (!db_exec(sql)) {
 			db_rollbacktransaction();
@@ -607,6 +612,9 @@ int db_removeoldentries(void)
 	}
 
 	if (cfg.hourlydays > 0) {
+		if (debug) {
+			printf("db: hour cleanup\n");
+		}
 		sqlite3_snprintf(512, sql, "delete from hour where date < datetime('now', '-%d days', 'localtime');", cfg.hourlydays);
 		if (!db_exec(sql)) {
 			db_rollbacktransaction();
@@ -615,6 +623,9 @@ int db_removeoldentries(void)
 	}
 
 	if (cfg.dailydays > 0) {
+		if (debug) {
+			printf("db: day cleanup\n");
+		}
 		sqlite3_snprintf(512, sql, "delete from day where date < date('now', '-%d days', 'localtime');", cfg.dailydays);
 		if (!db_exec(sql)) {
 			db_rollbacktransaction();
@@ -623,6 +634,9 @@ int db_removeoldentries(void)
 	}
 
 	if (cfg.monthlymonths > 0) {
+		if (debug) {
+			printf("db: month cleanup\n");
+		}
 		sqlite3_snprintf(512, sql, "delete from month where date < date('now', '-%d months', 'localtime');", cfg.monthlymonths);
 		if (!db_exec(sql)) {
 			db_rollbacktransaction();
@@ -631,6 +645,9 @@ int db_removeoldentries(void)
 	}
 
 	if (cfg.yearlyyears > 0) {
+		if (debug) {
+			printf("db: year cleanup\n");
+		}
 		sqlite3_snprintf(512, sql, "delete from year where date < date('now', '-%d years', 'localtime');", cfg.yearlyyears);
 		if (!db_exec(sql)) {
 			db_rollbacktransaction();
@@ -641,9 +658,10 @@ int db_removeoldentries(void)
 	/* TODO: rewrite to handle entries per interface and use select for getting entry list */
 	/* as the syntax below works only when sqlite is compiled with SQLITE_ENABLE_UPDATE_DELETE_LIMIT */
 	/* causing failure in at least in Ubuntu <= 12.04, RHEL, Fedora and CentOS */
+	/* remember to ignore current day from cleanup as it will be updated on a frequent basis */
 	/*
 	if (cfg.topdayentries > 0) {
-		sqlite3_snprintf(512, sql, "delete from top order by rx+tx desc limit -1 offset %d;", cfg.topdayentries);
+		sqlite3_snprintf(512, sql, "delete from top where date != date('now', 'localtime') order by rx+tx desc limit -1 offset %d;", cfg.topdayentries);
 		if (!db_exec(sql)) {
 			db_rollbacktransaction();
 			return 0;
