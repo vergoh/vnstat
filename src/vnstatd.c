@@ -156,14 +156,15 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
+	detectboot(&s);
+	preparedatabases(&s);
+
 	if (!db_removeoldentries()) {
 		printf("Error: Database \"%s/%s\" cleanup failed: %s\n", s.dirname, DATABASEFILE, strerror(errno));
 		printf("Exiting...\n");
 		exit(EXIT_FAILURE);
 	}
 
-	detectboot(&s);
-	preparedatabases(&s);
 	setsignaltraps();
 
 	/* start as daemon if needed and debug isn't enabled */

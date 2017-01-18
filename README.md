@@ -28,7 +28,6 @@ configurable durations. Yearly and 5 minute resolution statistics are also plann
     * features can be disabled
   * old data cleanup
     * executed during startup and then once every hour
-    * top 10 cleanup is still missing
 
 ##### TODO
 
@@ -37,7 +36,6 @@ configurable durations. Yearly and 5 minute resolution statistics are also plann
   * add missing sanity checks to daemon
   * all outputs (text and image)
     * use of 5 minute resolution statistics
-  * top 10, included in database schema but not populated
   * feature configurability
   * freeze database structure
     * plan ahead and figure out how to migrate data to new structure if necessary?

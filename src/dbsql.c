@@ -596,6 +596,10 @@ int db_removeoldentries(void)
 		printf("db: removing old entries\n");
 	}
 
+	if (!db_removeoldentries_top()) {
+		return 0;
+	}
+
 	if (!db_begintransaction()) {
 		return 0;
 	}
@@ -655,21 +659,56 @@ int db_removeoldentries(void)
 		}
 	}
 
-	/* TODO: rewrite to handle entries per interface and use select for getting entry list */
-	/* as the syntax below works only when sqlite is compiled with SQLITE_ENABLE_UPDATE_DELETE_LIMIT */
-	/* causing failure in at least in Ubuntu <= 12.04, RHEL, Fedora and CentOS */
-	/* remember to ignore current day from cleanup as it will be updated on a frequent basis */
-	/*
-	if (cfg.topdayentries > 0) {
-		sqlite3_snprintf(512, sql, "delete from top where date != date('now', 'localtime') order by rx+tx desc limit -1 offset %d;", cfg.topdayentries);
-		if (!db_exec(sql)) {
-			db_rollbacktransaction();
-			return 0;
-		}
-	}
-	*/
-
 	return db_committransaction();
+}
+
+int db_removeoldentries_top(void)
+{
+	int errorcount = 0;
+	char sql[512];
+	dbiflist *dbifl = NULL, *dbifl_iterator = NULL;
+	sqlite3_int64 ifaceid = 0;
+
+	if (cfg.topdayentries <= 0) {
+		return 1;
+	}
+
+	if (db_getiflist(&dbifl) < 0) {
+		return 0;
+	}
+
+	dbifl_iterator = dbifl;
+
+	while (dbifl_iterator != NULL) {
+		if (debug) {
+			printf("db: top cleanup: %s\n", dbifl_iterator->interface);
+		}
+
+		ifaceid = db_getinterfaceid(dbifl_iterator->interface, 0);
+		if (ifaceid == 0) {
+			errorcount++;
+			dbifl_iterator = dbifl_iterator->next;
+			continue;
+		}
+
+		sqlite3_snprintf(512, sql, "delete from top where id in ( select id from top where interface=%"PRId64" and date!=date('now', 'localtime') order by rx+tx desc limit -1 offset %d );", (int64_t)ifaceid, cfg.topdayentries);
+
+		if (!db_exec(sql)) {
+			errorcount++;
+			dbifl_iterator = dbifl_iterator->next;
+			continue;
+		}
+
+		dbifl_iterator = dbifl_iterator->next;
+	}
+
+	dbiflistfree(&dbifl);
+
+	if (errorcount) {
+		return 0;
+	}
+
+	return 1;
 }
 
 int db_vacuum(void)

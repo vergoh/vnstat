@@ -38,6 +38,7 @@ int db_setcreation(const char *iface, const uint64_t timestamp);
 int db_settotal(const char *iface, const uint64_t rx, const uint64_t tx);
 int db_insertdata(const char *table, const char *iface, const uint64_t rx, const uint64_t tx, const uint64_t timestamp);
 int db_removeoldentries(void);
+int db_removeoldentries_top(void);
 int db_vacuum(void);
 int db_begintransaction(void);
 int db_committransaction(void);
