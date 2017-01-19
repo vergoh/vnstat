@@ -75,6 +75,9 @@ int db_open(const int createifnotfound)
 		}
 	}
 
+	/* set pragmas */
+	db_exec("PRAGMA foreign_keys = ON;");
+
 	return 1;
 }
 
@@ -163,7 +166,7 @@ int db_create(void)
 	for (i=0; i<6; i++) {
 		sqlite3_snprintf(512, sql, "CREATE TABLE %s(\n" \
 			"  id           INTEGER PRIMARY KEY,\n" \
-			"  interface    INTEGER REFERENCES interface ON DELETE CASCADE,\n" \
+			"  interface    INTEGER REFERENCES interface(id) ON DELETE CASCADE,\n" \
 			"  date         DATE NOT NULL,\n" \
 			"  rx           INTEGER NOT NULL,\n" \
 			"  tx           INTEGER NOT NULL,\n" \
@@ -195,6 +198,20 @@ int db_addinterface(const char *iface)
 	}
 
 	sqlite3_snprintf(1024, sql, "insert into interface (name, active, created, updated, rxcounter, txcounter, rxtotal, txtotal) values ('%q', 1, datetime('now', 'localtime'), datetime('now', 'localtime'), 0, 0, 0, 0);", iface);
+	return db_exec(sql);
+}
+
+int db_removeinterface(const char *iface)
+{
+	char sql[256];
+	sqlite3_int64 ifaceid = 0;
+
+	ifaceid = db_getinterfaceid(iface, 0);
+	if (ifaceid == 0) {
+		return 0;
+	}
+
+	sqlite3_snprintf(256, sql, "delete from interface where id=%"PRId64";", (int64_t)ifaceid);
 	return db_exec(sql);
 }
 

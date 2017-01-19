@@ -9,9 +9,14 @@ configurable durations. Yearly and 5 minute resolution statistics are also plann
 
 ##### Overall status
 
-  * only daemon is being compiled
   * alpha version with working daemon implementation
     * some sanity checks may be missing or disabled
+  * vnstat (console output) lacks most database features
+    * `-l` / `--live` and `-tr` / `--traffic` are available
+    * implemented database dependent features
+      * `--create`
+      * `--delete`
+  * vnstati (image output) is disabled
   * not ready to replace vnStat 1.x due to lack of outputs
 
 ##### Done

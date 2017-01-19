@@ -364,6 +364,67 @@ START_TEST(db_addinterface_can_not_add_same_interface_twice)
 }
 END_TEST
 
+START_TEST(db_removeinterface_knows_if_interface_exists)
+{
+	int ret;
+
+	defaultcfg();
+
+	ret = db_open(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_removeinterface("eth0");
+	ck_assert_int_eq(ret, 0);
+	ret = db_removeinterface("nothing");
+	ck_assert_int_eq(ret, 0);
+	ret = db_removeinterface("");
+	ck_assert_int_eq(ret, 0);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_removeinterface_can_remove_interfaces)
+{
+	int ret;
+
+	defaultcfg();
+
+	ret = db_open(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth2");
+	ck_assert_int_eq(ret, 1);
+
+	ck_assert_int_eq(db_getinterfacecount(), 3);
+	ck_assert_int_eq(db_getinterfacecountbyname("eth0"), 1);
+	ck_assert_int_eq(db_getinterfacecountbyname("eth1"), 1);
+	ck_assert_int_eq(db_getinterfacecountbyname("eth2"), 1);
+	ck_assert_int_eq(db_getinterfacecountbyname("eth3"), 0);
+
+	ret = db_removeinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+	ret = db_removeinterface("nothing");
+	ck_assert_int_eq(ret, 0);
+	ret = db_removeinterface("");
+	ck_assert_int_eq(ret, 0);
+
+	ck_assert_int_eq(db_getinterfacecount(), 2);
+	ck_assert_int_eq(db_getinterfacecountbyname("eth0"), 1);
+	ck_assert_int_eq(db_getinterfacecountbyname("eth1"), 0);
+	ck_assert_int_eq(db_getinterfacecountbyname("eth2"), 1);
+	ck_assert_int_eq(db_getinterfacecountbyname("eth3"), 0);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 START_TEST(db_getinterfacecount_counts_interfaces)
 {
 	uint64_t ret;
@@ -684,6 +745,8 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_addinterface_fails_with_no_open_db);
 	tcase_add_test(tc_dbsql, db_addinterface_can_add_interfaces);
 	tcase_add_test(tc_dbsql, db_addinterface_can_not_add_same_interface_twice);
+	tcase_add_test(tc_dbsql, db_removeinterface_knows_if_interface_exists);
+	tcase_add_test(tc_dbsql, db_removeinterface_can_remove_interfaces);
 	tcase_add_test(tc_dbsql, db_getcounters_with_no_interface);
 	tcase_add_test(tc_dbsql, db_setcounters_with_no_interface);
 	tcase_add_test(tc_dbsql, db_interface_info_manipulation);

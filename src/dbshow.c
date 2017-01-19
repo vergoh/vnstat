@@ -1,14 +1,15 @@
 #include "common.h"
+#include "dbsql.h"
 #include "misc.h"
 #include "dbshow.h"
 
 void showdb(int qmode)
 {
-	if (data.totalrx+data.totaltx==0 && data.totalrxk+data.totaltxk==0 && qmode!=4) {
+/*	if (data.totalrx+data.totaltx==0 && data.totalrxk+data.totaltxk==0 && qmode!=4) {
 		printf(" %s: Not enough data available yet.\n", data.interface);
 		return;
 	}
-
+*/
 	switch(qmode) {
 		case 0:
 			showsummary();
@@ -1009,6 +1010,7 @@ void showoneline(void)
 	printf("%s\n", getvalue(data.totalrx+data.totaltx, data.totalrxk+data.totaltxk, 1, 1));
 }
 
+/*
 void exportdb(void)
 {
 	int i;
@@ -1044,53 +1046,41 @@ void exportdb(void)
 		printf("h;%d;%u;%"PRIu64";%"PRIu64"\n", i, (unsigned int)data.hour[i].date, data.hour[i].rx, data.hour[i].tx);
 	}
 }
+*/
 
-int showbar(uint64_t rx, int rxk, uint64_t tx, int txk, uint64_t max, int len)
+int showbar(uint64_t rx, uint64_t tx, uint64_t max, int len)
 {
 	int i, l;
 
-	if (rxk>=1024) {
-		rx+=rxk/1024;
-		rxk-=(rxk/1024)*1024;
-	}
-
-	if (txk>=1024) {
-		tx+=txk/1024;
-		txk-=(txk/1024)*1024;
-	}
-
-	rx=(rx*1024)+rxk;
-	tx=(tx*1024)+txk;
-
-	if ((rx+tx)<max) {
-		len=((rx+tx)/(float)max)*len;
-	} else if ((rx+tx)>max) {
+	if ( (rx + tx) < max) {
+		len = ( (rx + tx) / (float)max ) * len;
+	} else if ((rx + tx) > max) {
 		return 0;
 	}
 
-	if (len>0) {
-		printf("  ");
+	if (len <= 0) {
+		return 0;
+	}
 
-		if (tx>rx) {
-			l=rintf((rx/(float)(rx+tx)*len));
+	printf("  ");
 
-			for (i=0;i<l;i++) {
-				printf("%c", cfg.rxchar[0]);
-			}
-			for (i=0;i<(len-l);i++) {
-				printf("%c", cfg.txchar[0]);
-			}
-		} else {
-			l=rintf((tx/(float)(rx+tx)*len));
+	if (tx > rx) {
+		l=rintf((rx/(float)(rx+tx)*len));
 
-			for (i=0;i<(len-l);i++) {
-				printf("%c", cfg.rxchar[0]);
-			}
-			for (i=0;i<l;i++) {
-				printf("%c", cfg.txchar[0]);
-			}
+		for (i=0; i<l; i++) {
+			printf("%c", cfg.rxchar[0]);
 		}
-
+		for (i=0; i<(len-l); i++) {
+			printf("%c", cfg.txchar[0]);
+		}
+	} else {
+		l=rintf((tx/(float)(rx+tx)*len));
+			for (i=0;i<(len-l);i++) {
+			printf("%c", cfg.rxchar[0]);
+		}
+		for (i=0; i<l; i++) {
+			printf("%c", cfg.txchar[0]);
+		}
 	}
 	return len;
 }

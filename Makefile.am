@@ -4,12 +4,23 @@ dist_man_MANS = man/vnstat.1 man/vnstat.conf.5 man/vnstatd.1 man/vnstati.1
 
 EXTRA_DIST = cfg examples UPGRADE CHANGES FAQ INSTALL_BSD INSTALL_OSX UNINSTALL
 
-#bin_PROGRAMS = vnstat
+bin_PROGRAMS = vnstat
 sbin_PROGRAMS = vnstatd
 #if HAVE_LIBGD
 #bin_PROGRAMS += vnstati
 #endif
 #vnstati_LDADD = $(IMAGELIBS)
+
+vnstat_SOURCES = src/vnstat.c src/vnstat.h \
+  src/ifinfo.c src/ifinfo.h \
+  src/dbsql.c src/dbsql.h \
+  src/common.c src/common.h \
+  src/misc.c src/misc.h \
+  src/cfg.c src/cfg.h \
+  src/ibw.c src/ibw.h \
+  src/fs.c src/fs.h \
+  src/id.c src/id.h \
+  src/traffic.c src/traffic.h
 
 #vnstat_SOURCES = src/vnstat.c src/vnstat.h \
 #  src/ifinfo.c src/ifinfo.h \
