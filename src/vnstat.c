@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
 	configlocale();
 	strncpy_nt(p.interface, "default", 32);
 	strncpy_nt(p.definterface, cfg.iface, 32);
-	strncpy_nt(p.nick, "none", 32);
+	strncpy_nt(p.alias, "none", 32);
 
 	/* init dirname */
 	strncpy_nt(p.dirname, cfg.dbdir, 512);
@@ -92,23 +92,23 @@ int main(int argc, char *argv[]) {
 				currentarg++;
 				continue;
 			} else {
-				printf("Error: Interface for -i missing.\n");
+				printf("Error: Interface for %s missing.\n", argv[currentarg]);
 				return 1;
 			}
 		} else if (strcmp(argv[currentarg],"--config")==0) {
 			/* config has already been parsed earlier so nothing to do here */
 			currentarg++;
 			continue;
-		} else if ((strcmp(argv[currentarg],"--nick"))==0) {
-			/* TODO: implementation for nick change missing */
+		} else if (strcmp(argv[currentarg],"--setalias")==0 || strcmp(argv[currentarg],"--nick")==0) {
 			if (currentarg+1<argc) {
-				strncpy_nt(p.nick, argv[currentarg+1], 32);
+				strncpy_nt(p.alias, argv[currentarg+1], 32);
 				if (debug)
-					printf("Used nick: %s\n", p.nick);
+					printf("Used alias: %s\n", p.alias);
+				p.setalias = 1;
 				currentarg++;
 				continue;
 			} else {
-				printf("Error: Nick for --nick missing.\n");
+				printf("Error: Alias for %s missing.\n", argv[currentarg]);
 				return 1;
 			}
 		} else if ((strcmp(argv[currentarg],"--style"))==0) {
@@ -146,7 +146,7 @@ int main(int argc, char *argv[]) {
 				currentarg++;
 				continue;
 			} else {
-				printf("Error: Directory for --dbdir missing.\n");
+				printf("Error: Directory for %s missing.\n", argv[currentarg]);
 				return 1;
 			}
 		} else if ((strcmp(argv[currentarg],"--locale"))==0) {
@@ -157,14 +157,12 @@ int main(int argc, char *argv[]) {
 				currentarg++;
 				continue;
 			} else {
-				printf("Error: Locale for --locale missing.\n");
+				printf("Error: Locale for %s missing.\n", argv[currentarg]);
 				return 1;
 			}
 		} else if (strcmp(argv[currentarg],"--create")==0) {
 			p.create=1;
 			p.query=0;
-			if (debug)
-				printf("Creating database...\n");
 		} else if ((strcmp(argv[currentarg],"-u")==0) || (strcmp(argv[currentarg],"--update")==0)) {
 			printf("Error: The \"%s\" parameter is not supported in this version.\n", argv[currentarg]);
 			exit(EXIT_FAILURE);
@@ -351,11 +349,12 @@ int main(int argc, char *argv[]) {
 	//handleimport(&p);
 	handledelete(&p);
 	handlecreate(&p);
+	handlesetalias(&p);
 	handleshowdatabases(&p);
 	handletrafficmeters(&p);
 
 	/* show something if nothing was shown previously */
-	if (!p.query && !p.create && p.active==-1 && !p.traffic && !p.livetraffic) {
+	if (!p.query && !p.traffic && !p.livetraffic) {
 
 		/* give more help if there's no database */
 		if (p.ifcount == 0) {
@@ -390,10 +389,10 @@ void initparams(PARAMS *p)
 
 	p->create = 0;
 	p->query = 1;
+	p->setalias = 0;
 	//p->merged = 0;
 	//p->savemerged = 0;
 	p->import = 0;
-	p->active = -1;
 	p->ifcount = 0;
 	p->force = 0;
 	p->traffic = 0;
@@ -454,14 +453,7 @@ void showlonghelp(PARAMS *p)
 	printf("   Modify:\n");
 	printf("         --create              create database\n");
 	printf("         --delete              delete database\n");
-	//printf("         -u, --update          update database\n");
-	//printf("         -r, --reset           reset interface counters\n");
-	//printf("         --sync                sync interface counters\n");
-	//printf("         --enable              enable interface\n");
-	//printf("         --disable             disable interface\n");
-	printf("         --nick                set a nickname for interface\n");
-	//printf("         --cleartop            clear the top 10\n");
-	//printf("         --rebuildtotal        rebuild total transfers from months\n");
+	printf("         --setalias            set alias for interface\n");
 
 	printf("   Misc:\n");
 	printf("         -i,  --iface          select interface (default: %s)\n", p->definterface);
@@ -583,7 +575,11 @@ void handlecreate(PARAMS *p)
 		/* database file doesn't exist so it can't be open either, try to create it */
 		printf("Database doesn't exist, creating...\n");
 		if (!db_open(1)) {
-			printf("Error: Unable to open database \"%s/%s\": %s\n", p->dirname, DATABASEFILE, strerror(errno));
+			if (errno == ENOENT) {
+				printf("Error: Unable to create database, verify existence and write access of \"%s\".\n", p->dirname);
+			} else {
+				printf("Error: Unable to create database \"%s/%s\": %s\n", p->dirname, DATABASEFILE, strerror(errno));
+			}
 			exit(EXIT_FAILURE);
 		}
 		/* do file ownwership fixing if possible and needed */
@@ -593,8 +589,35 @@ void handlecreate(PARAMS *p)
 	printf("Adding interface \"%s\" for monitoring to database...\n", p->interface);
 	if (db_addinterface(p->interface)) {
 		printf("\nRestart the vnStat daemon if it is currently running in order to start monitoring \"%s\".\n", p->interface);
+		exit(EXIT_SUCCESS);
 	} else {
 		printf("Error: Adding interface \"%s\" to database failed: %s\n", p->interface, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+}
+
+void handlesetalias(PARAMS *p)
+{
+	if (!p->setalias) {
+		return;
+	}
+
+	if (p->defaultiface) {
+		printf("Error: Use -i parameter to specify an interface.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (!db_getinterfacecountbyname(p->interface)) {
+		printf("Error: Interface \"%s\" not found in database.\n", p->interface);
+		exit(EXIT_FAILURE);
+	}
+
+	if (db_setalias(p->interface, p->alias)) {
+		printf("Alias of interface \"%s\" set to \"%s\".\n", p->interface, p->alias);
+		exit(EXIT_SUCCESS);
+	} else {
+		printf("Error: Changing interface \"%s\" alias failed: %s\n", p->interface, strerror(errno));
+		exit(EXIT_FAILURE);
 	}
 }
 
