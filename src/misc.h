@@ -8,6 +8,7 @@ int spacecheck(const char *path);
 void sighandler(int);
 uint64_t getbtime(void);
 char *getvalue(const uint64_t b, const int len, const int type);
+int getunitspacing(const int len, const int index);
 char *gettrafficrate(const uint64_t bytes, const uint32_t interval, const int len);
 uint64_t getscale(const uint64_t input);
 char *getunitprefix(const int index);

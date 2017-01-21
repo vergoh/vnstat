@@ -121,9 +121,9 @@ END_TEST
 START_TEST(getvalue_padding)
 {
 	cfg.unitmode = 0;
-	ck_assert_str_eq(getvalue(1024, 10, 1), "    1.00 KiB");
+	ck_assert_str_eq(getvalue(1024, 10, 1), "  1.00 KiB");
 	cfg.unitmode = 1;
-	ck_assert_str_eq(getvalue(1024, 10, 1), "    1.00 KB");
+	ck_assert_str_eq(getvalue(1024, 10, 1), "   1.00 KB");
 }
 END_TEST
 

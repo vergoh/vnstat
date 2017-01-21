@@ -195,40 +195,48 @@ uint64_t getbtime(void)
 char *getvalue(const uint64_t bytes, const int len, const int type)
 {
 	static char buffer[64];
-	int l = len, declen = 2;
+	int declen = 2;
 
 	/* request types: 1) normal  2) estimate  3) image scale */
 	if (type == 3) {
 		declen = 0;
 	}
 
-	/* tune spacing according to unit */
-	l -= strlen(getunitprefix(1)) + 1;
-	if (l < 0) {
-		l = 1;
-	}
-
 	if ( (type == 2) && (bytes == 0) ){
-		snprintf(buffer, 64, "%*s    ", l-cfg.unitmode, "--");
+		snprintf(buffer, 64, "%*s    ", len-2, "--");
 	} else {
 		/* try to figure out what unit to use */
 		if (bytes >= 1073741824000) { /* 1024*1024*1024*1000 - value >=1000 GiB -> show in TiB */
-			snprintf(buffer, 64, "%"DECCONV"*.*f %s", l, declen, bytes/(float)1099511627776, getunitprefix(5)); /* 1024*1024*1024*1024 */
+			snprintf(buffer, 64, "%"DECCONV"*.*f %s", getunitspacing(len, 5), declen, bytes/(float)1099511627776, getunitprefix(5)); /* 1024*1024*1024*1024 */
 		} else if (bytes >= 1048576000) { /* 1024*1024*1000 - value >=1000 MiB -> show in GiB */
-			snprintf(buffer, 64, "%"DECCONV"*.*f %s", l, declen, bytes/(float)1073741824, getunitprefix(4)); /* 1024*1024*1024 */
+			snprintf(buffer, 64, "%"DECCONV"*.*f %s", getunitspacing(len, 4), declen, bytes/(float)1073741824, getunitprefix(4)); /* 1024*1024*1024 */
 		} else if (bytes >= 1024000) { /* 1024*1000 - value >=1000 B -> show in MiB */
-			snprintf(buffer, 64, "%"DECCONV"*.*f %s", l, declen, bytes/(float)1048576, getunitprefix(3)); /* 1024*1024 */
+			snprintf(buffer, 64, "%"DECCONV"*.*f %s", getunitspacing(len, 3), declen, bytes/(float)1048576, getunitprefix(3)); /* 1024*1024 */
 		} else if (bytes >= 1000) { /* show in KiB */
 			if (type == 2) {
 				declen = 0;
 			}
-			snprintf(buffer, 64, "%"DECCONV"*.*f %s", l, declen, bytes/(float)1024, getunitprefix(2));
+			snprintf(buffer, 64, "%"DECCONV"*.*f %s", getunitspacing(len, 2), declen, bytes/(float)1024, getunitprefix(2));
 		} else {
-			snprintf(buffer, 64, "%"DECCONV"*"PRIu64" %s", l, bytes, getunitprefix(1));
+			snprintf(buffer, 64, "%"DECCONV"*"PRIu64" %s", getunitspacing(len, 1), bytes, getunitprefix(1));
 		}
 	}
 
 	return buffer;
+}
+
+int getunitspacing(const int len, const int index)
+{
+	int l = len;
+
+	/* tune spacing according to unit */
+	/* +1 for space between number and unit */
+	l -= strlen(getunitprefix(index)) + 1;
+	if (l < 0) {
+		l = 1;
+	}
+
+	return l;
 }
 
 char *gettrafficrate(const uint64_t bytes, const uint32_t interval, const int len)
