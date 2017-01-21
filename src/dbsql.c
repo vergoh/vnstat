@@ -100,7 +100,7 @@ int db_exec(const char *sql)
 	sqlite3_stmt *sqlstmt;
 
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
-	if (rc) {
+	if (rc != SQLITE_OK) {
 		if (debug)
 			printf("Error: Exec prepare \"%s\" failed (%d): %s\n", sql, rc, sqlite3_errmsg(db));
 		return 0;
@@ -233,7 +233,7 @@ uint64_t db_getinterfacecountbyname(const char *iface)
 		sqlite3_snprintf(512, sql, "select count(*) from interface");
 	}
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
-	if (rc) {
+	if (rc != SQLITE_OK) {
 		return 0;
 	}
 	if (sqlite3_column_count(sqlstmt) != 1) {
@@ -256,7 +256,7 @@ sqlite3_int64 db_getinterfaceid(const char *iface, const int createifnotfound)
 
 	sqlite3_snprintf(512, sql, "select id from interface where name='%q'", iface);
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
-	if (!rc) {
+	if (rc == SQLITE_OK) {
 		if (sqlite3_step(sqlstmt) == SQLITE_ROW) {
 			ifaceid = sqlite3_column_int64(sqlstmt, 0);
 		}
@@ -317,10 +317,11 @@ int db_getcounters(const char *iface, uint64_t *rxcounter, uint64_t *txcounter)
 
 	sqlite3_snprintf(512, sql, "select rxcounter, txcounter from interface where id=%"PRId64";", (int64_t)ifaceid);
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
-	if (rc) {
+	if (rc != SQLITE_OK) {
 		return 0;
 	}
 	if (sqlite3_column_count(sqlstmt) != 2) {
+		sqlite3_finalize(sqlstmt);
 		return 0;
 	}
 	if (sqlite3_step(sqlstmt) == SQLITE_ROW) {
@@ -346,7 +347,7 @@ int db_getinterfaceinfo(const char *iface, interfaceinfo *info)
 
 	sqlite3_snprintf(512, sql, "select name, alias, active, strftime('%%s', created, 'utc'), strftime('%%s', updated, 'utc'), rxcounter, txcounter, rxtotal, txtotal from interface where id=%"PRId64";", (int64_t)ifaceid);
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
-	if (rc) {
+	if (rc != SQLITE_OK) {
 		return 0;
 	}
 	if (sqlite3_column_count(sqlstmt) != 9) {
@@ -418,7 +419,7 @@ char *db_getinfo(const char *name)
 
 	sqlite3_snprintf(512, sql, "select value from info where name='%q';", name);
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
-	if (rc) {
+	if (rc != SQLITE_OK) {
 		return buffer;
 	}
 	if (sqlite3_step(sqlstmt) == SQLITE_ROW) {
@@ -435,12 +436,12 @@ int db_getiflist(dbiflist **dbifl)
 {
 	int rc;
 	char sql[512];
-	static sqlite3_stmt *sqlstmt;
+	sqlite3_stmt *sqlstmt;
 
 	sqlite3_snprintf(512, sql, "select name from interface order by name desc;");
 
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
-	if (rc) {
+	if (rc != SQLITE_OK ) {
 		return -1;
 	}
 
@@ -797,4 +798,126 @@ void dbiflistfree(dbiflist **dbifl)
 		*dbifl = (*dbifl)->next;
 		free(dbifl_prev);
 	}
+}
+
+int db_getdata(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface, const char *table, const uint32_t resultlimit, const int reverse)
+{
+	int ret = 1;
+	char sql[512], limit[64];
+	sqlite3_int64 ifaceid = 0;
+	sqlite3_stmt *sqlstmt;
+	time_t timestamp;
+	uint64_t rx, tx;
+
+	listinfo->count = 0;
+
+	ifaceid = db_getinterfaceid(iface, 0);
+	if (ifaceid == 0) {
+		return 0;
+	}
+
+	/* TODO: add table validation here */
+
+	if (resultlimit > 0) {
+		snprintf(limit, 64, "limit %"PRIu32"", resultlimit);
+	} else {
+		limit[0] = '\0';
+	}
+
+	/* note that using the linked list reverses the order */
+	/* most recent last in the linked list is considered the normal order */
+	if (reverse == 0) {
+		sqlite3_snprintf(512, sql, "select strftime('%%s', date, 'utc'), rx, tx from %s where interface=%"PRId64" order by date desc %s;", table, (int64_t)ifaceid, limit);
+	} else {
+		sqlite3_snprintf(512, sql, "select * from (select strftime('%%s', date, 'utc'), rx, tx from %s where interface=%"PRId64" order by date desc %s) order by date asc;", table, (int64_t)ifaceid, limit);
+	}
+
+	if (sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL) != SQLITE_OK) {
+		return 0;
+	}
+
+	if (sqlite3_column_count(sqlstmt) != 3) {
+		sqlite3_finalize(sqlstmt);
+		return 0;
+	}
+
+	while (sqlite3_step(sqlstmt) == SQLITE_ROW) {
+		timestamp = (time_t)sqlite3_column_int64(sqlstmt, 0);
+		rx = (uint64_t)sqlite3_column_int64(sqlstmt, 1);
+		tx = (uint64_t)sqlite3_column_int64(sqlstmt, 2);
+		if (!dbdatalistadd(dbdata, rx, tx, timestamp)) {
+			/* TODO: some info print may be needed here */
+			ret = 0;
+			break;
+		}
+		updatelistinfo(listinfo, rx, tx, timestamp);
+	}
+	sqlite3_finalize(sqlstmt);
+
+	/* TODO: should list be cleaned if it doesn't contain everything? */
+
+	return ret;
+}
+
+void updatelistinfo(dbdatalistinfo *listinfo, const uint64_t rx, const uint64_t tx, const time_t timestamp)
+{
+	if (listinfo->count == 0) {
+		listinfo->maxtime = timestamp;
+		listinfo->mintime = timestamp;
+		listinfo->maxrx = rx;
+		listinfo->minrx = rx;
+		listinfo->maxtx = tx;
+		listinfo->mintx = tx;
+	} else {
+		if (timestamp > listinfo->maxtime) {
+			listinfo->maxtime = timestamp;
+		}
+		if (timestamp < listinfo->mintime) {
+			listinfo->mintime = timestamp;
+		}
+		if (rx < listinfo->minrx) {
+			listinfo->minrx = rx;
+		}
+		if (tx < listinfo->mintx) {
+			listinfo->mintx = tx;
+		}
+		if (rx > listinfo->maxrx) {
+			listinfo->maxrx = rx;
+		}
+		if (tx > listinfo->maxtx) {
+			listinfo->maxtx = tx;
+		}
+	}
+	listinfo->count++;
+}
+
+int dbdatalistadd(dbdatalist **dbdata, const uint64_t rx, const uint64_t tx, const time_t timestamp)
+{
+	dbdatalist *newdata;
+
+	newdata = malloc(sizeof(dbdatalist));
+	if (newdata == NULL) {
+		return 0;
+	}
+
+	newdata->next = *dbdata;
+	*dbdata = newdata;
+
+	newdata->timestamp = timestamp;
+	newdata->rx = rx;
+	newdata->tx = tx;
+
+	return 1;
+}
+
+void dbdatalistfree(dbdatalist **dbdata)
+{
+	dbdatalist *dbdata_prev;
+
+	while (*dbdata != NULL) {
+		dbdata_prev = *dbdata;
+		*dbdata = (*dbdata)->next;
+		free(dbdata_prev);
+	}
+
 }

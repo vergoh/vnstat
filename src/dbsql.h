@@ -8,6 +8,19 @@ typedef struct dbiflist {
 	struct dbiflist *next;
 } dbiflist;
 
+typedef struct dbdatalist {
+	time_t timestamp;
+	uint64_t rx, tx;
+	struct dbdatalist *next;
+} dbdatalist;
+
+typedef struct dbdatalistinfo {
+	uint32_t count;
+	time_t maxtime, mintime;
+	uint64_t minrx, mintx;
+	uint64_t maxrx, maxtx;
+} dbdatalistinfo;
+
 typedef struct interfaceinfo {
 	char name[32], alias[32];
 	int active;
@@ -47,6 +60,11 @@ int db_rollbacktransaction(void);
 
 int dbiflistadd(dbiflist **dbifl, const char *iface);
 void dbiflistfree(dbiflist **dbifl);
+
+int db_getdata(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface, const char *table, const uint32_t limit, const int reverse);
+void updatelistinfo(dbdatalistinfo *listinfo, const uint64_t rx, const uint64_t tx, const time_t timestamp);
+int dbdatalistadd(dbdatalist **dbdata, const uint64_t rx, const uint64_t tx, const time_t timestamp);
+void dbdatalistfree(dbdatalist **dbdata);
 
 /* global db */
 sqlite3 *db;

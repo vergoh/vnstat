@@ -719,6 +719,56 @@ START_TEST(db_data_can_be_inserted)
 }
 END_TEST
 
+START_TEST(db_data_can_be_retrieved)
+{
+	int ret;;
+	dbdatalist *datalist = NULL, *datalist_iterator = NULL;
+	dbdatalistinfo datainfo;
+
+	defaultcfg();
+
+	ret = db_open(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_insertdata("hour", "eth0", 1, 2, 3);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_insertdata("hour", "eth0", 10, 20, 10000);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "hour", 2, 0);
+	ck_assert_int_eq(ret, 1);
+
+	ck_assert_int_eq(datainfo.count, 2);
+	ck_assert_int_eq(datainfo.minrx, 1);
+	ck_assert_int_eq(datainfo.maxrx, 10);
+	ck_assert_int_eq(datainfo.mintx, 2);
+	ck_assert_int_eq(datainfo.maxtx, 20);
+	/* db_insertdata rounds the timestamps to full hours */
+	ck_assert_int_eq((int)datainfo.maxtime, 7200);
+	ck_assert_int_eq((int)datainfo.mintime, 0);
+
+	datalist_iterator = datalist;
+
+	ck_assert_int_eq(datalist_iterator->rx, 1);
+	ck_assert_int_eq(datalist_iterator->tx, 2);
+	ck_assert_int_eq(datalist_iterator->timestamp, 0);
+
+	datalist_iterator = datalist_iterator->next;
+
+	ck_assert_int_eq(datalist_iterator->rx, 10);
+	ck_assert_int_eq(datalist_iterator->tx, 20);
+	ck_assert_int_eq(datalist_iterator->timestamp, 7200);
+
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 void add_dbsql_tests(Suite *s)
 {
 	TCase *tc_dbsql = tcase_create("DB SQL");
@@ -753,5 +803,6 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_getiflist_lists_interfaces);
 	tcase_add_test(tc_dbsql, db_maintenance_does_not_fault);
 	tcase_add_test(tc_dbsql, db_data_can_be_inserted);
+	tcase_add_test(tc_dbsql, db_data_can_be_retrieved);
 	suite_add_tcase(s, tc_dbsql);
 }
