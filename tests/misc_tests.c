@@ -42,7 +42,7 @@ START_TEST(getunitdivisor_returns_something_with_all_cfg_combinations)
 	for (j=1; j<=(UNITPREFIXCOUNT+1); j++) {
 		snprintf(div, 15, "%"PRIu64"", getunitdivisor(_i, j));
 		if (j>UNITPREFIXCOUNT) {
-			ck_assert_str_eq(div, "0");
+			ck_assert_str_eq(div, "1");
 		} else {
 			ck_assert_str_ne(div, "0");
 		}
@@ -76,162 +76,67 @@ END_TEST
 START_TEST(getvalue_normal)
 {
 	cfg.unitmode = 0;
-	ck_assert_str_eq(getvalue(0, 100, 0, 1), "100 KiB");
-	ck_assert_str_eq(getvalue(1, 0, 0, 1), "1.00 MiB");
-	ck_assert_str_eq(getvalue(1024, 0, 0, 1), "1.00 GiB");
-	ck_assert_str_eq(getvalue(1048576, 0, 0, 2), "1.00 TiB");
+	ck_assert_str_eq(getvalue(100, 0, 1), "100 B");
+	ck_assert_str_eq(getvalue(1024, 0, 1), "1.00 KiB");
+	ck_assert_str_eq(getvalue(1048576, 0, 1), "1.00 MiB");
+	ck_assert_str_eq(getvalue(1073741824, 0, 1), "1.00 GiB");
 	cfg.unitmode = 1;
-	ck_assert_str_eq(getvalue(0, 100, 0, 1), "100 KB");
-	ck_assert_str_eq(getvalue(1, 0, 0, 1), "1.00 MB");
-	ck_assert_str_eq(getvalue(1024, 0, 0, 1), "1.00 GB");
-	ck_assert_str_eq(getvalue(1048576, 0, 0, 2), "1.00 TB");
+	ck_assert_str_eq(getvalue(100, 0, 1), "100 B");
+	ck_assert_str_eq(getvalue(1024, 0, 1), "1.00 KB");
+	ck_assert_str_eq(getvalue(1048576, 0, 1), "1.00 MB");
+	ck_assert_str_eq(getvalue(1073741824, 0, 1), "1.00 GB");
 }
 END_TEST
 
 START_TEST(getvalue_estimate)
 {
 	cfg.unitmode = 0;
-	ck_assert_str_eq(getvalue(0, 100, 0, 2), "100 KiB");
-	ck_assert_str_eq(getvalue(1, 0, 0, 2), "1 MiB");
-	ck_assert_str_eq(getvalue(1024, 0, 0, 2), "1.00 GiB");
-	ck_assert_str_eq(getvalue(1048576, 0, 0, 2), "1.00 TiB");
+	ck_assert_str_eq(getvalue(100, 0, 2), "100 B");
+	ck_assert_str_eq(getvalue(1024, 0, 2), "1 KiB");
+	ck_assert_str_eq(getvalue(1048576, 0, 2), "1.00 MiB");
+	ck_assert_str_eq(getvalue(1073741824, 0, 2), "1.00 GiB");
 	cfg.unitmode = 1;
-	ck_assert_str_eq(getvalue(0, 100, 0, 2), "100 KB");
-	ck_assert_str_eq(getvalue(1, 0, 0, 2), "1 MB");
-	ck_assert_str_eq(getvalue(1024, 0, 0, 2), "1.00 GB");
-	ck_assert_str_eq(getvalue(1048576, 0, 0, 2), "1.00 TB");
+	ck_assert_str_eq(getvalue(100, 0, 2), "100 B");
+	ck_assert_str_eq(getvalue(1024, 0, 2), "1 KB");
+	ck_assert_str_eq(getvalue(1048576, 0, 2), "1.00 MB");
+	ck_assert_str_eq(getvalue(1073741824, 0, 2), "1.00 GB");
 }
 END_TEST
 
 START_TEST(getvalue_imagescale)
 {
 	cfg.unitmode = 0;
-	ck_assert_str_eq(getvalue(0, 100, 0, 3), "100 KiB");
-	ck_assert_str_eq(getvalue(1, 0, 0, 3), "1 MiB");
-	ck_assert_str_eq(getvalue(1024, 0, 0, 3), "1 GiB");
-	ck_assert_str_eq(getvalue(1048576, 0, 0, 3), "1 TiB");
+	ck_assert_str_eq(getvalue(100, 0, 3), "100 B");
+	ck_assert_str_eq(getvalue(1024, 0, 3), "1 KiB");
+	ck_assert_str_eq(getvalue(1048576, 0, 3), "1 MiB");
+	ck_assert_str_eq(getvalue(1073741824, 0, 3), "1 GiB");
 	cfg.unitmode = 1;
-	ck_assert_str_eq(getvalue(0, 100, 0, 3), "100 KB");
-	ck_assert_str_eq(getvalue(1, 0, 0, 3), "1 MB");
-	ck_assert_str_eq(getvalue(1024, 0, 0, 3), "1 GB");
-	ck_assert_str_eq(getvalue(1048576, 0, 0, 3), "1 TB");
+	ck_assert_str_eq(getvalue(100, 0, 3), "100 B");
+	ck_assert_str_eq(getvalue(1024, 0, 3), "1 KB");
+	ck_assert_str_eq(getvalue(1048576, 0, 3), "1 MB");
+	ck_assert_str_eq(getvalue(1073741824, 0, 3), "1 GB");
 }
 END_TEST
 
 START_TEST(getvalue_padding)
 {
 	cfg.unitmode = 0;
-	ck_assert_str_eq(getvalue(0, 100, 10, 1), "   100 KiB");
+	ck_assert_str_eq(getvalue(1024, 10, 1), "    1.00 KiB");
 	cfg.unitmode = 1;
-	ck_assert_str_eq(getvalue(0, 100, 10, 1), "    100 KB");
-}
-END_TEST
-
-START_TEST(getvalue_mb_kb_mixed)
-{
-	cfg.unitmode = 0;
-	ck_assert_str_eq(getvalue(1, 3210, 0, 1), "4.13 MiB");
-	cfg.unitmode = 1;
-	ck_assert_str_eq(getvalue(1, 3210, 0, 1), "4.13 MB");
+	ck_assert_str_eq(getvalue(1024, 10, 1), "    1.00 KB");
 }
 END_TEST
 
 START_TEST(getvalue_zero_values)
 {
 	cfg.unitmode = 0;
-	ck_assert_str_eq(getvalue(0, 0, 0, 1), "0 KiB");
-	ck_assert_str_eq(getvalue(0, 0, 0, 2), "--    ");
-	ck_assert_str_eq(getvalue(0, 0, 0, 3), "0 KiB");
+	ck_assert_str_eq(getvalue(0, 0, 1), "0 B");
+	ck_assert_str_eq(getvalue(0, 0, 2), "--    ");
+	ck_assert_str_eq(getvalue(0, 0, 3), "0 B");
 	cfg.unitmode = 1;
-	ck_assert_str_eq(getvalue(0, 0, 0, 1), "0 KB");
-	ck_assert_str_eq(getvalue(0, 0, 0, 2), "--    ");
-	ck_assert_str_eq(getvalue(0, 0, 0, 3), "0 KB");
-}
-END_TEST
-
-START_TEST(getrate_zero_interval)
-{
-	int i, j;
-
-	for (i=0; i<=1; i++) {
-		cfg.rateunit = i;
-		for (j=0; j<=2; j++) {
-			cfg.unitmode = j;
-			ck_assert_str_eq(getrate(1, 0, 0, 0), "n/a");
-		}
-	}
-}
-END_TEST
-
-START_TEST(getrate_bytes)
-{
-	cfg.rateunit = 0;
-	cfg.unitmode = 0;
-	ck_assert_str_eq(getrate(0, 100, 1, 0), "100.00 KiB/s");
-	ck_assert_str_eq(getrate(1, 3210, 1, 0), "4.13 MiB/s");
-	ck_assert_str_eq(getrate(1024, 0, 1, 0), "1.00 GiB/s");
-	ck_assert_str_eq(getrate(1048576, 0, 1, 0), "1.00 TiB/s");
-	cfg.unitmode = 1;
-	ck_assert_str_eq(getrate(0, 100, 1, 0), "100.00 KB/s");
-	ck_assert_str_eq(getrate(1, 3210, 1, 0), "4.13 MB/s");
-	ck_assert_str_eq(getrate(1024, 0, 1, 0), "1.00 GB/s");
-	ck_assert_str_eq(getrate(1048576, 0, 1, 0), "1.00 TB/s");
-}
-END_TEST
-
-START_TEST(getrate_bits)
-{
-	cfg.rateunit = 1;
-
-	cfg.rateunitmode = 1;
-	cfg.unitmode = 0;
-	ck_assert_str_eq(getrate(0, 100, 1, 0), "819 kbit/s");
-	ck_assert_str_eq(getrate(1, 3210, 1, 0), "34.68 Mbit/s");
-	ck_assert_str_eq(getrate(1024, 0, 1, 0), "8.59 Gbit/s");
-	ck_assert_str_eq(getrate(1048576, 0, 1, 0), "8.80 Tbit/s");
-	cfg.unitmode = 1;
-	ck_assert_str_eq(getrate(0, 100, 1, 0), "819 kbit/s");
-	ck_assert_str_eq(getrate(1, 3210, 1, 0), "34.68 Mbit/s");
-	ck_assert_str_eq(getrate(1024, 0, 1, 0), "8.59 Gbit/s");
-	ck_assert_str_eq(getrate(1048576, 0, 1, 0), "8.80 Tbit/s");
-
-	cfg.rateunitmode = 0;
-	cfg.unitmode = 0;
-	ck_assert_str_eq(getrate(0, 100, 1, 0), "800 Kibit/s");
-	ck_assert_str_eq(getrate(1, 3210, 1, 0), "33.08 Mibit/s");
-	ck_assert_str_eq(getrate(1024, 0, 1, 0), "8.00 Gibit/s");
-	ck_assert_str_eq(getrate(1048576, 0, 1, 0), "8.00 Tibit/s");
-	cfg.unitmode = 1;
-	ck_assert_str_eq(getrate(0, 100, 1, 0), "800 Kibit/s");
-	ck_assert_str_eq(getrate(1, 3210, 1, 0), "33.08 Mibit/s");
-	ck_assert_str_eq(getrate(1024, 0, 1, 0), "8.00 Gibit/s");
-	ck_assert_str_eq(getrate(1048576, 0, 1, 0), "8.00 Tibit/s");
-}
-END_TEST
-
-START_TEST(getrate_interval_divides)
-{
-	cfg.unitmode = 0;
-	cfg.rateunitmode = 1;
-	cfg.rateunit = 0;
-	ck_assert_str_eq(getrate(0, 100, 1, 0), "100.00 KiB/s");
-	ck_assert_str_eq(getrate(0, 100, 2, 0), "50.00 KiB/s");
-	ck_assert_str_eq(getrate(0, 100, 10, 0), "10.00 KiB/s");
-	cfg.rateunit = 1;
-	ck_assert_str_eq(getrate(0, 100, 1, 0), "819 kbit/s");
-	ck_assert_str_eq(getrate(0, 100, 2, 0), "410 kbit/s");
-	ck_assert_str_eq(getrate(0, 100, 10, 0), "81.92 kbit/s");
-}
-END_TEST
-
-START_TEST(getrate_padding)
-{
-	cfg.unitmode = 0;
-	cfg.rateunitmode = 1;
-	cfg.rateunit = 0;
-	ck_assert_str_eq(getrate(0, 100, 1, 0), "100.00 KiB/s");
-	ck_assert_str_eq(getrate(0, 100, 1, 12), "100.00 KiB/s");
-	ck_assert_str_eq(getrate(0, 100, 1, 14), "  100.00 KiB/s");
+	ck_assert_str_eq(getvalue(0, 0, 1), "0 B");
+	ck_assert_str_eq(getvalue(0, 0, 2), "--    ");
+	ck_assert_str_eq(getvalue(0, 0, 3), "0 B");
 }
 END_TEST
 
@@ -381,13 +286,7 @@ void add_misc_tests(Suite *s)
 	tcase_add_test(tc_misc, getvalue_estimate);
 	tcase_add_test(tc_misc, getvalue_imagescale);
 	tcase_add_test(tc_misc, getvalue_padding);
-	tcase_add_test(tc_misc, getvalue_mb_kb_mixed);
 	tcase_add_test(tc_misc, getvalue_zero_values);
-	tcase_add_test(tc_misc, getrate_zero_interval);
-	tcase_add_test(tc_misc, getrate_bytes);
-	tcase_add_test(tc_misc, getrate_bits);
-	tcase_add_test(tc_misc, getrate_interval_divides);
-	tcase_add_test(tc_misc, getrate_padding);
 	tcase_add_test(tc_misc, gettrafficrate_zero_interval);
 	tcase_add_test(tc_misc, gettrafficrate_bytes);
 	tcase_add_test(tc_misc, gettrafficrate_bits);
