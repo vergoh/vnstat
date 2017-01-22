@@ -261,18 +261,20 @@ void showsummary(const interfaceinfo *interface)
 
 void showlist(const interfaceinfo *interface, const char *listname)
 {
-	int limit;
+	int limit, listtype;
 	struct tm *d;
 	char datebuff[DATEBUFFLEN], titlename[8], stampformat[64];
-	uint64_t e_rx, e_tx;
+	uint64_t e_rx, e_tx, e_secs;
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
 
 	if (strcmp(listname, "day") == 0) {
+		listtype = 1;
 		snprintf(titlename, 8, "daily");
 		strncpy_nt(stampformat, cfg.dformat, 64);
 		limit = 30;
 	} else if (strcmp(listname, "month") == 0) {
+		listtype = 2;
 		snprintf(titlename, 8, "monthly");
 		strncpy_nt(stampformat, cfg.mformat, 64);
 		limit = 12;
@@ -280,7 +282,7 @@ void showlist(const interfaceinfo *interface, const char *listname)
 		return;
 	}
 
-	e_rx = e_tx = 0;
+	e_rx = e_tx = e_secs = 0;
 
 	printf("\n");
 	if (strcmp(interface->name, interface->alias) == 0 || strlen(interface->alias) == 0) {
@@ -328,11 +330,20 @@ void showlist(const interfaceinfo *interface, const char *listname)
 		printf(" | %s", getvalue(datalist_i->rx+datalist_i->tx, 11, 1));
 		if (cfg.ostyle == 3) {
 			if (datalist_i->next == NULL) {
-				d=localtime(&interface->updated);
-				printf(" | %s", gettrafficrate(datalist_i->rx+datalist_i->tx, d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600), 14));
+				d = localtime(&interface->updated);
+				if (listtype == 1) { // day
+					e_secs = d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600);
+				} else if (listtype == 2) { // month
+					e_secs = mosecs(datalist_i->timestamp, interface->updated);
+				}
 			} else {
-				printf(" | %s", gettrafficrate(datalist_i->rx+datalist_i->tx, 86400, 14));
+				if (listtype == 1) { // day
+					e_secs = 86400;
+				} else if (listtype == 2) { // month
+					e_secs = dmonth(d->tm_mon) * 86400;
+				}
 			}
+			printf(" | %s", gettrafficrate(datalist_i->rx+datalist_i->tx, e_secs, 14));
 		} else if (cfg.ostyle != 0) {
 			showbar(datalist_i->rx, datalist_i->tx, datainfo.max, 24);
 		}
@@ -359,8 +370,13 @@ void showlist(const interfaceinfo *interface, const char *listname)
 		if ( datalist_i->rx==0 || datalist_i->tx==0 || (d->tm_hour*60+d->tm_min)==0 ) {
 			e_rx = e_tx = 0;
 		} else {
-			e_rx = ((datalist_i->rx) / (float)(d->tm_hour*60+d->tm_min)) * 1440;
-			e_tx = ((datalist_i->tx) / (float)(d->tm_hour*60+d->tm_min)) * 1440;
+			if (listtype == 1) { // day
+				e_rx = ((datalist_i->rx) / (float)(d->tm_hour*60+d->tm_min)) * 1440;
+				e_tx = ((datalist_i->tx) / (float)(d->tm_hour*60+d->tm_min)) * 1440;
+			} else if (listtype == 2) { // month
+				e_rx = (datalist_i->rx / (float)(mosecs(datalist_i->timestamp, interface->updated))) * (dmonth(d->tm_mon) * 86400);
+				e_tx = (datalist_i->tx / (float)(mosecs(datalist_i->timestamp, interface->updated))) * (dmonth(d->tm_mon) * 86400);
+			}
 		}
 		if (cfg.ostyle == 3) {
 			printf("    ");
