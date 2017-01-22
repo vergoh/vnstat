@@ -44,10 +44,10 @@ void showdb(const char *interface, int qmode)
 			break;
 		case 7:
 			showhours();
-			break;
-		case 9:
-			showoneline();
 			break;*/
+		case 9:
+			showoneline(&info);
+			break;
 		default:
 			printf("Error: Not such query mode: %d\n", qmode);
 			break;
@@ -257,6 +257,69 @@ void showsummary(interfaceinfo *interface)
 	}
 
 	dbdatalistfree(&datalist);
+}
+
+void showoneline(interfaceinfo *interface)
+{
+	struct tm *d;
+	char daytemp[DATEBUFFLEN];
+	dbdatalist *datalist = NULL;
+	dbdatalistinfo datainfo;
+
+	/* version string */
+	printf("%d;", ONELINEVERSION);
+
+	/* interface name */
+	if (strcmp(interface->name, interface->alias) == 0 || strlen(interface->alias) == 0) {
+		printf("%s", interface->name);
+	} else {
+		printf("%s (%s)", interface->alias, interface->name);
+	}
+	if (interface->active == 0) {
+		printf(" [disabled]");
+	}
+	printf(";");
+
+	if (!db_getdata(&datalist, &datainfo, interface->name, "day", 1, 0)) {
+		/* TODO: match with other output style */
+		printf("\nError: failed to fetch daily data\n");
+		return;
+	}
+
+	d = localtime(&datalist->timestamp);
+	strftime(daytemp, DATEBUFFLEN, cfg.dformat, d);
+	printf("%s;", daytemp);
+
+	d = localtime(&interface->updated);
+
+	/* daily */
+	printf("%s;", getvalue(datalist->rx, 1, 1));
+	printf("%s;", getvalue(datalist->tx, 1, 1));
+	printf("%s;", getvalue(datalist->rx+datalist->tx, 1, 1));
+	printf("%s;", gettrafficrate(datalist->rx+datalist->tx, d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600), 1));
+	dbdatalistfree(&datalist);
+
+	if (!db_getdata(&datalist, &datainfo, interface->name, "month", 1, 0)) {
+		/* TODO: match with other output style */
+		printf("\nError: failed to fetch monthly data\n");
+		return;
+	}
+
+	d = localtime(&datalist->timestamp);
+	strftime(daytemp, DATEBUFFLEN, cfg.mformat, d);
+	printf("%s;", daytemp);
+
+	/* monthly */
+	printf("%s;", getvalue(datalist->rx, 1, 1));
+	printf("%s;", getvalue(datalist->tx, 1, 1));
+	printf("%s;", getvalue(datalist->rx+datalist->tx, 1, 1));
+	printf("%s;", gettrafficrate(datalist->rx+datalist->tx, mosecs(datalist->timestamp, interface->updated), 1));
+	dbdatalistfree(&datalist);
+
+	/* all time total */
+	printf("%s;", getvalue(interface->rxtotal, 1, 1));
+	printf("%s;", getvalue(interface->txtotal, 1, 1));
+	printf("%s\n", getvalue(interface->rxtotal+interface->txtotal, 1, 1));
 }
 
 int showbar(const uint64_t rx, const uint64_t tx, const uint64_t max, const int len)
