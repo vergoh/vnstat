@@ -16,8 +16,9 @@ configurable durations. Yearly and 5 minute resolution statistics are also plann
     * implemented database dependent features
       * `--create`
       * `--delete`
+      * summary output
   * vnstati (image output) is disabled
-  * not ready to replace vnStat 1.x due to lack of outputs
+  * not ready to replace vnStat 1.x due to lack of most outputs
 
 ##### Done
 
@@ -39,7 +40,7 @@ configurable durations. Yearly and 5 minute resolution statistics are also plann
   * `grep TODO src/* tests/*`
   * continue daemon refactoring
   * add missing sanity checks to daemon
-  * all outputs (text and image)
+  * most outputs (text and image)
     * use of 5 minute resolution statistics
   * feature configurability
   * freeze database structure

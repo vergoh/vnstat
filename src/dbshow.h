@@ -3,17 +3,9 @@
 
 #define DATEBUFFLEN 64
 
-void showdb(int qmode);
-void showsummary(void);
-void showshort(void);
-void showdays(void);
-void showmonths(void);
-void showtop(void);
-void showweeks(void);
-void showhours(void);
-void showoneline(void);
-void exportdb(void);
-int showbar(uint64_t rx, uint64_t tx, uint64_t max, int len);
+void showdb(const char *interface, int qmode);
+void showsummary(interfaceinfo *interface);
+int showbar(uint64_t rx, uint64_t tx, uint64_t max, const int len);
 void indent(int i);
 
 #endif

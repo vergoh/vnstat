@@ -14,6 +14,7 @@ sbin_PROGRAMS = vnstatd
 vnstat_SOURCES = src/vnstat.c src/vnstat.h \
   src/ifinfo.c src/ifinfo.h \
   src/dbsql.c src/dbsql.h \
+  src/dbshow.c src/dbshow.h \
   src/common.c src/common.h \
   src/misc.c src/misc.h \
   src/cfg.c src/cfg.h \

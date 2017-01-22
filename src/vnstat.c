@@ -21,7 +21,7 @@ vnStat - Copyright (c) 2002-2016 Teemu Toivola <tst@iki.fi>
 #include "dbsql.h"
 //#include "dbxml.h"
 //#include "dbjson.h"
-//#include "dbshow.h"
+#include "dbshow.h"
 //#include "dbmerge.h"
 #include "misc.h"
 #include "cfg.h"
@@ -34,6 +34,7 @@ int main(int argc, char *argv[]) {
 	int i, currentarg;
 	DIR *dir = NULL;
 	PARAMS p;
+	dbiflist *dbifl = NULL;
 
 	initparams(&p);
 
@@ -339,13 +340,23 @@ int main(int argc, char *argv[]) {
 	/* set used interface if none specified and make sure it's null terminated */
 	if (p.defaultiface) {
 		strncpy_nt(p.interface, p.definterface, 32);
+
+		/* ensure that some usable interface is default */
+		if (p.ifcount > 0 && !db_getinterfacecountbyname(p.interface)) {
+			if (db_getiflist(&dbifl)) {
+				strncpy_nt(p.interface, dbifl->interface, 32);
+				if (debug) {
+					printf("Using \"%s\" as interface, default \"%s\" not found in database.\n", p.interface, p.definterface);
+				}
+				dbiflistfree(&dbifl);
+			}
+		}
 	}
 	p.interface[31]='\0';
 
 	/* parameter handlers */
 	/* TODO: remove those that aren't needed */
 	//handledbmerge(&p);
-	//handlecounterreset(&p);
 	//handleimport(&p);
 	handledelete(&p);
 	handlecreate(&p);
@@ -654,6 +665,7 @@ void handleshowdatabases(PARAMS *p)
 		} else if (cfg.qmode==10) {
 			jsonheader();
 */		}
+		/* TODO: fetch the interface list from database */
 		if ((dir=opendir(p->dirname))==NULL) {
 			return;
 		}
@@ -669,7 +681,7 @@ void handleshowdatabases(PARAMS *p)
 				continue;
 			}*/
 			if (cfg.qmode==0) {
-				/* TODO */
+				/* TODO: most outputs missing */
 				printf(" == query not implemented ==\n");
 				//showdb(5);
 /*			} else if (cfg.qmode==8) {
@@ -688,7 +700,7 @@ void handleshowdatabases(PARAMS *p)
 */
 	/* show in qmode if there's only one file or qmode!=0 */
 	} else {
-		showoneinterface(p, p->definterface);
+		showoneinterface(p, p->interface);
 	}
 }
 
@@ -707,10 +719,8 @@ void showoneinterface(PARAMS *p, const char *interface)
 		}
 	}
 	if (cfg.qmode!=8 && cfg.qmode!=10) {
-		/* TODO */
-		printf(" == one query not implemented ==\n");
-		printf("input: %d - %d, %s\n", p->query, cfg.qmode, interface);
-		//showdb(cfg.qmode);
+		/* TODO: xml ja json missing */
+		showdb(interface, cfg.qmode);
 /*	} else if (cfg.qmode==8) {
 		xmlheader();
 		showxml(p->xmlmode);
