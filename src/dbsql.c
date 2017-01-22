@@ -868,6 +868,8 @@ void updatelistinfo(dbdatalistinfo *listinfo, const uint64_t rx, const uint64_t 
 		listinfo->minrx = rx;
 		listinfo->maxtx = tx;
 		listinfo->mintx = tx;
+		listinfo->min = rx + tx;
+		listinfo->max = rx + tx;
 	} else {
 		if (timestamp > listinfo->maxtime) {
 			listinfo->maxtime = timestamp;
@@ -886,6 +888,12 @@ void updatelistinfo(dbdatalistinfo *listinfo, const uint64_t rx, const uint64_t 
 		}
 		if (tx > listinfo->maxtx) {
 			listinfo->maxtx = tx;
+		}
+		if (rx + tx > listinfo->max) {
+			listinfo->max = rx + tx;
+		}
+		if (rx + tx < listinfo->min) {
+			listinfo->min = rx + tx;
 		}
 	}
 	listinfo->count++;

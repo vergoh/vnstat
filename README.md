@@ -16,7 +16,11 @@ configurable durations. Yearly and 5 minute resolution statistics are also plann
     * implemented database dependent features
       * `--create`
       * `--delete`
-      * summary output
+    * implemented console outputs
+      * summary
+      * one line
+      * daily
+      * monthly
   * vnstati (image output) is disabled
   * not ready to replace vnStat 1.x due to lack of most outputs
 

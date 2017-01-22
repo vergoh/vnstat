@@ -24,13 +24,13 @@ void showdb(const char *interface, int qmode)
 		case 0:
 			showsummary(&info);
 			break;
-/*		case 1:
-			showdays();
+		case 1:
+			showlist(&info, "day");
 			break;
 		case 2:
-			showmonths();
+			showlist(&info, "month");
 			break;
-		case 3:
+/*		case 3:
 			showtop();
 			break;
 		case 4:
@@ -54,7 +54,7 @@ void showdb(const char *interface, int qmode)
 	}
 }
 
-void showsummary(interfaceinfo *interface)
+void showsummary(const interfaceinfo *interface)
 {
 	struct tm *d;
 	char datebuff[DATEBUFFLEN];
@@ -259,7 +259,124 @@ void showsummary(interfaceinfo *interface)
 	dbdatalistfree(&datalist);
 }
 
-void showoneline(interfaceinfo *interface)
+void showlist(const interfaceinfo *interface, const char *listname)
+{
+	int limit;
+	struct tm *d;
+	char datebuff[DATEBUFFLEN], titlename[8], stampformat[64];
+	uint64_t e_rx, e_tx;
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+
+	if (strcmp(listname, "day") == 0) {
+		snprintf(titlename, 8, "daily");
+		strncpy_nt(stampformat, cfg.dformat, 64);
+		limit = 30;
+	} else if (strcmp(listname, "month") == 0) {
+		snprintf(titlename, 8, "monthly");
+		strncpy_nt(stampformat, cfg.mformat, 64);
+		limit = 12;
+	} else {
+		return;
+	}
+
+	e_rx = e_tx = 0;
+
+	printf("\n");
+	if (strcmp(interface->name, interface->alias) == 0 || strlen(interface->alias) == 0) {
+		printf(" %s", interface->name);
+	} else {
+		printf(" %s (%s)", interface->alias, interface->name);
+	}
+	if (interface->active == 0) {
+		printf(" [disabled]");
+	}
+	printf("  /  %s\n\n", titlename);
+
+	if (cfg.ostyle == 3) {
+		printf("     %8s        rx      |     tx      |    total    |   avg. rate\n", listname);
+		printf("     ------------------------+-------------+-------------+---------------\n");
+	} else {
+		printf(" %8s        rx      |     tx      |    total\n", listname);
+		if (cfg.ostyle != 0) {
+			printf("-------------------------+-------------+---------------------------------------\n");
+		} else {
+			printf("-------------------------+-------------+------------\n");
+		}
+	}
+
+	if (!db_getdata(&datalist, &datainfo, interface->name, listname, limit, 0)) {
+		/* TODO: match with other output style */
+		printf("Error: failed to fetch %s data\n", titlename);
+		return;
+	}
+
+	datalist_i = datalist;
+
+	while (datalist_i != NULL) {
+		d = localtime(&datalist_i->timestamp);
+		strftime(datebuff, DATEBUFFLEN, stampformat, d);
+		if (cfg.ostyle == 3) {
+			printf("    ");
+		}
+		if (strlen(datebuff)<=9) {
+			printf(" %*s   %s", getpadding(9, datebuff), datebuff, getvalue(datalist_i->rx, 11, 1));
+		} else {
+			printf(" %-*s %s", getpadding(11, datebuff), datebuff, getvalue(datalist_i->rx, 11, 1));
+		}
+		printf(" | %s", getvalue(datalist_i->tx, 11, 1));
+		printf(" | %s", getvalue(datalist_i->rx+datalist_i->tx, 11, 1));
+		if (cfg.ostyle == 3) {
+			if (datalist_i->next == NULL) {
+				d=localtime(&interface->updated);
+				printf(" | %s", gettrafficrate(datalist_i->rx+datalist_i->tx, d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600), 14));
+			} else {
+				printf(" | %s", gettrafficrate(datalist_i->rx+datalist_i->tx, 86400, 14));
+			}
+		} else if (cfg.ostyle != 0) {
+			showbar(datalist_i->rx, datalist_i->tx, datainfo.max, 24);
+		}
+		printf("\n");
+		if (datalist_i->next == NULL) {
+			break;
+		}
+		datalist_i = datalist_i->next;
+	}
+	if (datainfo.count == 0)
+		printf("                           no data available\n");
+	if (cfg.ostyle == 3) {
+		printf("     ------------------------+-------------+-------------+---------------\n");
+	} else {
+		if (cfg.ostyle != 0) {
+			printf("-------------------------+-------------+---------------------------------------\n");
+		} else {
+			printf("-------------------------+-------------+------------\n");
+		}
+	}
+	if (datainfo.count > 0) {
+		/* use database update time for estimates */
+		d = localtime(&interface->updated);
+		if ( datalist_i->rx==0 || datalist_i->tx==0 || (d->tm_hour*60+d->tm_min)==0 ) {
+			e_rx = e_tx = 0;
+		} else {
+			e_rx = ((datalist_i->rx) / (float)(d->tm_hour*60+d->tm_min)) * 1440;
+			e_tx = ((datalist_i->tx) / (float)(d->tm_hour*60+d->tm_min)) * 1440;
+		}
+		if (cfg.ostyle == 3) {
+			printf("    ");
+		}
+		printf(" estimated   %s", getvalue(e_rx, 11, 2));
+		printf(" | %s", getvalue(e_tx, 11, 2));
+		printf(" | %s", getvalue(e_rx + e_tx, 11, 2));
+		if (cfg.ostyle == 3) {
+			printf(" |");
+		}
+		printf("\n");
+	}
+	dbdatalistfree(&datalist);
+}
+
+void showoneline(const interfaceinfo *interface)
 {
 	struct tm *d;
 	char daytemp[DATEBUFFLEN];
@@ -324,7 +441,7 @@ void showoneline(interfaceinfo *interface)
 
 int showbar(const uint64_t rx, const uint64_t tx, const uint64_t max, const int len)
 {
-	int i, l, width;
+	int i, l, width = len;
 
 	if ( (rx + tx) < max) {
 		width = ( (rx + tx) / (float)max ) * len;
@@ -339,7 +456,7 @@ int showbar(const uint64_t rx, const uint64_t tx, const uint64_t max, const int 
 	printf("  ");
 
 	if (tx > rx) {
-		l=rintf((rx/(float)(rx+tx)*width));
+		l = rintf((rx/(float)(rx+tx)*width));
 
 		for (i=0; i<l; i++) {
 			printf("%c", cfg.rxchar[0]);
@@ -348,8 +465,9 @@ int showbar(const uint64_t rx, const uint64_t tx, const uint64_t max, const int 
 			printf("%c", cfg.txchar[0]);
 		}
 	} else {
-		l=rintf((tx/(float)(rx+tx)*width));
-			for (i=0;i<(width-l);i++) {
+		l = rintf((tx/(float)(rx+tx)*width));
+
+		for (i=0; i<(width-l); i++) {
 			printf("%c", cfg.rxchar[0]);
 		}
 		for (i=0; i<l; i++) {

@@ -19,6 +19,7 @@ typedef struct dbdatalistinfo {
 	time_t maxtime, mintime;
 	uint64_t minrx, mintx;
 	uint64_t maxrx, maxtx;
+	uint64_t min, max;
 } dbdatalistinfo;
 
 typedef struct interfaceinfo {
