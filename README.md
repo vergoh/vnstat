@@ -21,6 +21,7 @@ configurable durations. Yearly and 5 minute resolution statistics are now includ
       * one line
       * daily
       * monthly
+      * short / multiple interfaces at once
   * vnstati (image output) is disabled
   * not ready to replace vnStat 1.x due to lack of many outputs
 
@@ -55,9 +56,11 @@ configurable durations. Yearly and 5 minute resolution statistics are now includ
   * continue daemon refactoring
   * add missing sanity checks to daemon
   * console outputs
-    * short / multiple interface at once
     * hourly
     * top N
+    * json
+    * xml
+    * export?
   * image outputs
     * all
   * use of 5 minute resolution statistics

@@ -22,7 +22,7 @@ void showdb(const char *interface, int qmode)
 
 	switch(qmode) {
 		case 0:
-			showsummary(&info);
+			showsummary(&info, 0);
 			break;
 		case 1:
 			showlist(&info, "day");
@@ -35,11 +35,11 @@ void showdb(const char *interface, int qmode)
 			break;
 		case 4:
 			exportdb();
-			break;
+			break; */
 		case 5:
-			showshort();
+			showsummary(&info, 1);
 			break;
-		case 7:
+/*		case 7:
 			showhours();
 			break;*/
 		case 9:
@@ -51,11 +51,12 @@ void showdb(const char *interface, int qmode)
 	}
 }
 
-void showsummary(const interfaceinfo *interface)
+void showsummary(const interfaceinfo *interface, const int shortmode)
 {
 	struct tm *d;
 	char datebuff[DATEBUFFLEN];
 	char todaystr[DATEBUFFLEN], yesterdaystr[DATEBUFFLEN];
+	char fieldseparator[8];
 	uint64_t e_rx, e_tx;
 	time_t current, yesterday;
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
@@ -66,13 +67,19 @@ void showsummary(const interfaceinfo *interface)
 
 	e_rx=e_tx=0;
 
-	if (interface->updated) {
+	if (interface->updated && !shortmode) {
 		printf("Database updated: %s\n",(char*)asctime(localtime(&interface->updated)));
-	} else {
+	} else if (!shortmode) {
 		printf("\n");
 	}
 
-	indent(3);
+	if (!shortmode) {
+		snprintf(fieldseparator, 8, " | ");
+		indent(3);
+	} else {
+		snprintf(fieldseparator, 8, "  / ");
+		indent(1);
+	}
 	if (strcmp(interface->name, interface->alias) == 0 || strlen(interface->alias) == 0) {
 		printf("%s", interface->name);
 	} else {
@@ -81,33 +88,35 @@ void showsummary(const interfaceinfo *interface)
 	if (interface->active == 0) {
 		printf(" [disabled]");
 	}
-
-	/* get formatted date for creation date */
-	d=localtime(&interface->created);
-	strftime(datebuff, DATEBUFFLEN, cfg.tformat, d);
-	printf(" since %s\n\n", datebuff);
-
-	indent(10);
-	printf("rx:  %s", getvalue(interface->rxtotal, 1, 1));
-	indent(3);
-	printf("   tx:  %s", getvalue(interface->txtotal, 1, 1));
-	indent(3);
-	printf("   total:  %s\n\n", getvalue(interface->rxtotal+interface->txtotal, 1, 1));
-
-	indent(3);
-	printf("monthly\n");
-	indent(5);
-
-	if (cfg.ostyle >= 2) {
-		printf("                rx      |     tx      |    total    |   avg. rate\n");
-		indent(5);
-		printf("------------------------+-------------+-------------+---------------\n");
+	if (shortmode) {
+		printf(":\n");
 	} else {
-		printf("                rx      |     tx      |    total\n");
-		indent(5);
-		printf("------------------------+-------------+------------\n");
-	}
+		/* get formatted date for creation date */
+		d=localtime(&interface->created);
+		strftime(datebuff, DATEBUFFLEN, cfg.tformat, d);
+		printf(" since %s\n\n", datebuff);
 
+		indent(10);
+		printf("rx:  %s", getvalue(interface->rxtotal, 1, 1));
+		indent(3);
+		printf("   tx:  %s", getvalue(interface->txtotal, 1, 1));
+		indent(3);
+		printf("   total:  %s\n\n", getvalue(interface->rxtotal+interface->txtotal, 1, 1));
+
+		indent(3);
+		printf("monthly\n");
+		indent(5);
+
+		if (cfg.ostyle >= 2) {
+			printf("                rx      |     tx      |    total    |   avg. rate\n");
+			indent(5);
+			printf("------------------------+-------------+-------------+---------------\n");
+		} else {
+			printf("                rx      |     tx      |    total\n");
+			indent(5);
+			printf("------------------------+-------------+------------\n");
+		}
+	}
 
 	if (!db_getdata(&datalist, &datainfo, interface->name, "month", 2, 0)) {
 		/* TODO: match with other output style */
@@ -125,60 +134,63 @@ void showsummary(const interfaceinfo *interface)
 		} else {
 			printf("%-*s %s", getpadding(11, datebuff), datebuff, getvalue(datalist_i->rx, 11, 1));
 		}
-		printf(" | %s", getvalue(datalist_i->tx, 11, 1));
-		printf(" | %s", getvalue(datalist_i->rx+datalist_i->tx, 11, 1));
+		printf("%s%s", fieldseparator, getvalue(datalist_i->tx, 11, 1));
+		printf("%s%s", fieldseparator, getvalue(datalist_i->rx+datalist_i->tx, 11, 1));
 		if (cfg.ostyle >= 2) {
 			if (datalist_i->next == NULL) {
-				printf(" | %s", gettrafficrate(datalist_i->rx+datalist_i->tx, mosecs(datalist_i->timestamp, interface->updated), 14));
-			} else {
+				if ( datalist_i->rx == 0 || datalist_i->tx == 0 || (interface->updated-datalist_i->timestamp) == 0 ) {
+					e_rx = e_tx = 0;
+				} else {
+					e_rx = (datalist_i->rx/(float)(mosecs(datalist_i->timestamp, interface->updated)))*(dmonth(d->tm_mon)*86400);
+					e_tx = (datalist_i->tx/(float)(mosecs(datalist_i->timestamp, interface->updated)))*(dmonth(d->tm_mon)*86400);
+				}
+				if (shortmode && cfg.ostyle != 0) {
+					printf("%s%s", fieldseparator, getvalue(e_rx+e_tx, 11, 1));
+				} else if (!shortmode) {
+					printf("%s%s", fieldseparator, gettrafficrate(datalist_i->rx+datalist_i->tx, mosecs(datalist_i->timestamp, interface->updated), 14));
+				}
+			} else if (!shortmode) {
 				printf(" | %s", gettrafficrate(datalist_i->rx+datalist_i->tx, dmonth(d->tm_mon)*86400, 14));
 			}
 		}
 		printf("\n");
-		if (datalist_i->next == NULL) {
-			break;
-		}
 		datalist_i = datalist_i->next;
 	}
 
-	indent(5);
-	if (cfg.ostyle >= 2) {
-		printf("------------------------+-------------+-------------+---------------\n");
-	} else {
-		printf("------------------------+-------------+------------\n");
-	}
-
-	/* use database update time for estimates */
-	if ( datalist_i->rx == 0 || datalist_i->tx == 0 || (interface->updated-datalist_i->timestamp) == 0 ) {
-		e_rx = e_tx = 0;
-	} else {
-		e_rx = (datalist_i->rx/(float)(mosecs(datalist_i->timestamp, interface->updated)))*(dmonth(d->tm_mon)*86400);
-		e_tx = (datalist_i->tx/(float)(mosecs(datalist_i->timestamp, interface->updated)))*(dmonth(d->tm_mon)*86400);
-	}
-	indent(5);
-	printf("estimated   %s", getvalue(e_rx, 11, 2));
-	printf(" | %s", getvalue(e_tx, 11, 2));
-	printf(" | %s", getvalue(e_rx+e_tx, 11, 2));
-	if (cfg.ostyle >= 2) {
-		printf(" |\n\n");
-	} else {
-		printf("\n\n");
+	if (!shortmode) {
+		indent(5);
+		if (cfg.ostyle >= 2) {
+			printf("------------------------+-------------+-------------+---------------\n");
+		} else {
+			printf("------------------------+-------------+------------\n");
+		}
+		indent(5);
+		printf("estimated   %s", getvalue(e_rx, 11, 2));
+		printf(" | %s", getvalue(e_tx, 11, 2));
+		printf(" | %s", getvalue(e_rx+e_tx, 11, 2));
+		if (cfg.ostyle >= 2) {
+			printf(" |\n\n");
+		} else {
+			printf("\n\n");
+		}
 	}
 
 	dbdatalistfree(&datalist);
 
-	indent(3);
-	printf("daily\n");
-	indent(5);
+	if (!shortmode) {
+		indent(3);
+		printf("daily\n");
+		indent(5);
 
-	if (cfg.ostyle >= 2) {
-		printf("                rx      |     tx      |    total    |   avg. rate\n");
-		indent(5);
-		printf("------------------------+-------------+-------------+---------------\n");
-	} else {
-		printf("                rx      |     tx      |    total\n");
-		indent(5);
-		printf("------------------------+-------------+------------\n");
+		if (cfg.ostyle >= 2) {
+			printf("                rx      |     tx      |    total    |   avg. rate\n");
+			indent(5);
+			printf("------------------------+-------------+-------------+---------------\n");
+		} else {
+			printf("                rx      |     tx      |    total\n");
+			indent(5);
+			printf("------------------------+-------------+------------\n");
+		}
 	}
 
 	/* get formatted date for today and yesterday */
@@ -210,45 +222,46 @@ void showsummary(const interfaceinfo *interface)
 		} else {
 			printf("%-*s %s", getpadding(11, datebuff), datebuff, getvalue(datalist_i->rx, 11, 1));
 		}
-		printf(" | %s", getvalue(datalist_i->tx, 11, 1));
-		printf(" | %s", getvalue(datalist_i->rx+datalist_i->tx, 11, 1));
+		printf("%s%s", fieldseparator, getvalue(datalist_i->tx, 11, 1));
+		printf("%s%s", fieldseparator, getvalue(datalist_i->rx+datalist_i->tx, 11, 1));
 		if (cfg.ostyle >= 2) {
 			if (datalist_i->next == NULL) {
 				d = localtime(&interface->updated);
-				printf(" | %s", gettrafficrate(datalist_i->rx+datalist_i->tx, d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600), 14));
-			} else {
+				if ( datalist_i->rx == 0 || datalist_i->tx == 0 || (d->tm_hour*60+d->tm_min) == 0 ) {
+					e_rx = e_tx = 0;
+				} else {
+					e_rx = ((datalist_i->rx)/(float)(d->tm_hour*60+d->tm_min))*1440;
+					e_tx = ((datalist_i->tx)/(float)(d->tm_hour*60+d->tm_min))*1440;
+				}
+				if (shortmode && cfg.ostyle != 0) {
+					printf("%s%s", fieldseparator, getvalue(e_rx+e_tx, 11, 2));
+				} else if (!shortmode) {
+					printf("%s%s", fieldseparator, gettrafficrate(datalist_i->rx+datalist_i->tx, d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600), 14));
+				}
+			} else if (!shortmode) {
 				printf(" | %s", gettrafficrate(datalist_i->rx+datalist_i->tx, 86400, 14));
 			}
 		}
 		printf("\n");
-		if (datalist_i->next == NULL) {
-			break;
-		}
 		datalist_i = datalist_i->next;
 	}
 
-	indent(5);
-	if (cfg.ostyle >= 2) {
-		printf("------------------------+-------------+-------------+---------------\n");
-	} else {
-		printf("------------------------+-------------+------------\n");
-	}
-
-	/* use database update time for estimates */
-	d = localtime(&interface->updated);
-	if ( datalist_i->rx == 0 || datalist_i->tx == 0 || (d->tm_hour*60+d->tm_min) == 0 ) {
-		e_rx = e_tx = 0;
-	} else {
-		e_rx = ((datalist_i->rx)/(float)(d->tm_hour*60+d->tm_min))*1440;
-		e_tx = ((datalist_i->tx)/(float)(d->tm_hour*60+d->tm_min))*1440;
-	}
-
-	indent(5);
-	printf("estimated   %s", getvalue(e_rx, 11, 2));
-	printf(" | %s", getvalue(e_tx, 11, 2));
-	printf(" | %s", getvalue(e_rx+e_tx, 11, 2));
-	if (cfg.ostyle >= 2) {
-		printf(" |\n");
+	if (!shortmode) {
+		indent(5);
+		if (cfg.ostyle >= 2) {
+			printf("------------------------+-------------+-------------+---------------\n");
+		} else {
+			printf("------------------------+-------------+------------\n");
+		}
+		indent(5);
+		printf("estimated   %s", getvalue(e_rx, 11, 2));
+		printf(" | %s", getvalue(e_tx, 11, 2));
+		printf(" | %s", getvalue(e_rx+e_tx, 11, 2));
+		if (cfg.ostyle >= 2) {
+			printf(" |\n");
+		} else {
+			printf("\n");
+		}
 	} else {
 		printf("\n");
 	}

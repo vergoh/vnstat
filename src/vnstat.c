@@ -30,7 +30,7 @@ vnStat - Copyright (c) 2002-2016 Teemu Toivola <tst@iki.fi>
 
 int main(int argc, char *argv[]) {
 
-	int i, currentarg;
+	int currentarg;
 	DIR *dir = NULL;
 	PARAMS p;
 	dbiflist *dbifl = NULL;
@@ -567,9 +567,8 @@ void handlesetalias(PARAMS *p)
 
 void handleshowdatabases(PARAMS *p)
 {
-	DIR *dir = NULL;
-	struct dirent *di = NULL;
 	int dbcount = 0;
+	dbiflist *dbifl = NULL, *dbifl_i = NULL;
 
 	if (!p->query) {
 		return;
@@ -598,33 +597,29 @@ void handleshowdatabases(PARAMS *p)
 		} else if (cfg.qmode==10) {
 			jsonheader();
 */		}
-		/* TODO: fetch the interface list from database */
-		if ((dir=opendir(p->dirname))==NULL) {
+
+		if (!db_getiflist(&dbifl)) {
 			return;
 		}
-		while ((di=readdir(dir))) {
-			if ((di->d_name[0]=='.') || (strcmp(di->d_name, DATABASEFILE)==0)) {
-				continue;
-			}
-			strncpy_nt(p->interface, di->d_name, 32);
+
+		dbifl_i = dbifl;
+
+		while (dbifl_i != NULL) {
+			strncpy_nt(p->interface, dbifl_i->interface, 32);
 			if (debug)
-				printf("\nProcessing file \"%s/%s\"...\n", p->dirname, p->interface);
-/*			p->newdb=readdb(p->interface, p->dirname, p->force);
-			if (p->newdb) {
-				continue;
-			}*/
+				printf("\nProcessing interface \"%s\"...\n", p->interface);
 			if (cfg.qmode==0) {
-				/* TODO: most outputs missing */
-				printf(" == query not implemented ==\n");
-				//showdb(5);
+				showdb(p->interface, 5);
 /*			} else if (cfg.qmode==8) {
 				showxml(p->xmlmode);
 			} else if (cfg.qmode==10) {
 				showjson(dbcount, p->jsonmode);
 */			}
 			dbcount++;
+			dbifl_i = dbifl_i->next;
 		}
-		closedir(dir);
+		dbiflistfree(&dbifl);
+
 /*		if (cfg.qmode==8) {
 			xmlfooter();
 		} else if (cfg.qmode==10) {

@@ -606,7 +606,7 @@ END_TEST
 START_TEST(db_getiflist_lists_interfaces)
 {
 	int ret;
-	dbiflist *dbifl = NULL;
+	dbiflist *dbifl = NULL, *dbifl_i = NULL;;
 
 	defaultcfg();
 
@@ -624,23 +624,25 @@ START_TEST(db_getiflist_lists_interfaces)
 	ret = db_getiflist(&dbifl);
 	ck_assert_int_eq(ret, 4);
 
+	dbifl_i = dbifl;
+
 	ret = db_close();
 	ck_assert_int_eq(ret, 1);
 
-	ck_assert_str_eq(dbifl->interface, "a");
-	ck_assert_ptr_ne(dbifl->next, NULL);
-	dbifl = dbifl->next;
+	ck_assert_str_eq(dbifl_i->interface, "a");
+	ck_assert_ptr_ne(dbifl_i->next, NULL);
+	dbifl_i = dbifl_i->next;
 
-	ck_assert_str_eq(dbifl->interface, "b");
-	ck_assert_ptr_ne(dbifl->next, NULL);
-	dbifl = dbifl->next;
+	ck_assert_str_eq(dbifl_i->interface, "b");
+	ck_assert_ptr_ne(dbifl_i->next, NULL);
+	dbifl_i = dbifl_i->next;
 
-	ck_assert_str_eq(dbifl->interface, "eth0");
-	ck_assert_ptr_ne(dbifl->next, NULL);
-	dbifl = dbifl->next;
+	ck_assert_str_eq(dbifl_i->interface, "eth0");
+	ck_assert_ptr_ne(dbifl_i->next, NULL);
+	dbifl_i = dbifl_i->next;
 
-	ck_assert_str_eq(dbifl->interface, "eth1");
-	ck_assert_ptr_eq(dbifl->next, NULL);
+	ck_assert_str_eq(dbifl_i->interface, "eth1");
+	ck_assert_ptr_eq(dbifl_i->next, NULL);
 
 	dbiflistfree(&dbifl);
 	ck_assert_ptr_eq(dbifl, NULL);
