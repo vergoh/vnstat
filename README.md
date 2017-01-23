@@ -3,7 +3,7 @@
 This is the development branch for vnStat 2.0 that uses a sqlite database
 for storing data instead of a C structure dump in a file. A better database
 format is needed for enabling longer duration statistics with user
-configurable durations. Yearly and 5 minute resolution statistics are also planned.
+configurable durations. Yearly and 5 minute resolution statistics are now included.
 
 # Status
 
@@ -22,7 +22,7 @@ configurable durations. Yearly and 5 minute resolution statistics are also plann
       * daily
       * monthly
   * vnstati (image output) is disabled
-  * not ready to replace vnStat 1.x due to lack of most outputs
+  * not ready to replace vnStat 1.x due to lack of many outputs
 
 ##### Done
 
@@ -39,13 +39,28 @@ configurable durations. Yearly and 5 minute resolution statistics are also plann
   * old data cleanup
     * executed during startup and then once every hour
 
+##### Removed features
+
+  * database import
+    * most likely better to do directly via sqlite
+  * merge of data from multiple interfaces
+  * weekly ouput
+  * `MonthRotate`
+  * kernel test
+  * `--update` / `-u` using vnstat command
+
 ##### TODO
 
   * `grep TODO src/* tests/*`
   * continue daemon refactoring
   * add missing sanity checks to daemon
-  * most outputs (text and image)
-    * use of 5 minute resolution statistics
+  * console outputs
+    * short / multiple interface at once
+    * hourly
+    * top N
+  * image outputs
+    * all
+  * use of 5 minute resolution statistics
   * feature configurability
   * freeze database structure
     * plan ahead and figure out how to migrate data to new structure if necessary?

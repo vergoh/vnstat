@@ -2,7 +2,7 @@
 #define VNSTAT_H
 
 typedef struct {
-	int query, import, setalias;
+	int query, setalias;
 	int create, ifcount, force, traffic;
 	int livetraffic, defaultiface, delete, livemode;
 	char interface[32], dirname[512], alias[32], filename[512];
@@ -12,8 +12,6 @@ typedef struct {
 void initparams(PARAMS *p);
 void showhelp(PARAMS *p);
 void showlonghelp(PARAMS *p);
-//void handledbmerge(PARAMS *p);
-//void handleimport(PARAMS *p);
 void handledelete(PARAMS *p);
 void handlecreate(PARAMS *p);
 void handlesetalias(PARAMS *p);

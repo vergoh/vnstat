@@ -3,7 +3,6 @@
 
 #define UNITPREFIXCOUNT 5
 
-int kerneltest(void);
 int spacecheck(const char *path);
 void sighandler(int);
 uint64_t getbtime(void);

@@ -39,9 +39,6 @@ void showdb(const char *interface, int qmode)
 		case 5:
 			showshort();
 			break;
-		case 6:
-			showweeks();
-			break;
 		case 7:
 			showhours();
 			break;*/

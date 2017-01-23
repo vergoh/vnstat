@@ -5,64 +5,6 @@
 #include "misc.h"
 #include <wchar.h>
 
-int kerneltest(void)
-{
-	int i=0;
-	uint64_t bmax, bmin, btemp;
-
-	bmax=bmin=getbtime();
-
-	printf("This test will take about 60 seconds.\n");
-	printf("[                              ]");
-	for (i=0; i<=30; i++) {
-		printf("\b");
-	}
-	fflush(stdout);
-
-	for (i=0;i<30;i++) {
-		sleep(2);
-		fflush(stdout);
-
-		btemp=getbtime();
-
-		if (btemp > bmax) {
-			bmax = btemp;
-		}
-		if (btemp < bmin) {
-			bmin = btemp;
-		}
-
-		printf("=");
-		fflush(stdout);
-	}
-
-	printf("] done.\n\n");
-
-	printf("Detected boot time variation during test:  %2d\n", (int)(bmax-bmin));
-	printf("Maximum boot time variation set in config: %2d\n\n", cfg.bvar);
-
-	if ((bmax-bmin)>20) {
-		printf("The current kernel has a broken boot time information and\n");
-		printf("vnStat is likely not to work correctly. Upgrading the kernel\n");
-		printf("is likely to solve this problem.\n\n");
-		return 1;
-	} else if ((bmax-bmin)>(uint32_t)cfg.bvar) {
-		printf("The current kernel has a boot time variation greater than assumed\n");
-		printf("in the vnStat config. That it likely to cause errors in results.\n");
-		printf("Set \"BootVariation\" to something greater than \"%d\" and run this\n", (int)(bmax-bmin));
-		printf("test again.\n\n");
-		return 1;
-	} else if ((bmax-bmin)==0) {
-		printf("The current kernel doesn't seem to suffer from boot time variation problems.\n");
-		printf("Everything is ok.\n\n");
-		return 0;
-	} else {
-		printf("The current kernel is ok.\n\n");
-		return 0;
-	}
-
-}
-
 int spacecheck(const char *path)
 {
 	struct statvfs buf;

@@ -10,9 +10,9 @@ vnStat - Copyright (c) 2002-2016 Teemu Toivola <tst@iki.fi>
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program;  if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave., Cambridge, MA 02139, USA.
+   You should have received a copy of the GNU General Public License along
+   with this program; if not, write to the Free Software Foundation, Inc.,
+   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
 #include "common.h"
@@ -22,7 +22,6 @@ vnStat - Copyright (c) 2002-2016 Teemu Toivola <tst@iki.fi>
 //#include "dbxml.h"
 //#include "dbjson.h"
 #include "dbshow.h"
-//#include "dbmerge.h"
 #include "misc.h"
 #include "cfg.h"
 #include "ibw.h"
@@ -119,7 +118,7 @@ int main(int argc, char *argv[]) {
 					printf(" Valid parameters:\n");
 					printf("    0 - a more narrow output\n");
 					printf("    1 - enable bar column if available\n");
-					printf("    2 - average traffic rate in summary and weekly outputs\n");
+					printf("    2 - average traffic rate in summary output\n");
 					printf("    3 - average traffic rate in all outputs if available\n");
 					printf("    4 - disable terminal control characters in -l / --live\n");
 					return 1;
@@ -134,7 +133,7 @@ int main(int argc, char *argv[]) {
 				printf(" Valid parameters:\n");
 				printf("    0 - a more narrow output\n");
 				printf("    1 - enable bar column if available\n");
-				printf("    2 - average traffic rate in summary and weekly outputs\n");
+				printf("    2 - average traffic rate in summary output\n");
 				printf("    3 - average traffic rate in all outputs if available\n");
 				printf("    4 - disable terminal control characters in -l / --live\n");
 				return 1;
@@ -167,19 +166,7 @@ int main(int argc, char *argv[]) {
 		} else if ((strcmp(argv[currentarg],"-u")==0) || (strcmp(argv[currentarg],"--update")==0)) {
 			printf("Error: The \"%s\" parameter is not supported in this version.\n", argv[currentarg]);
 			exit(EXIT_FAILURE);
-/*		} else if (strcmp(argv[currentarg],"--importdb")==0) {
-			if (currentarg+1<argc) {
-				p.import=1;
-				strncpy_nt(p.filename, argv[currentarg+1], 512);
-				if (debug)
-					printf("Used import file: %s\n", p.filename);
-				currentarg++;
-				continue;
-			} else {
-				printf("Error: File parameter for --importdb missing.\n");
-				return 1;
-			}
-*/		} else if ((strcmp(argv[currentarg],"-q")==0) || (strcmp(argv[currentarg],"--query")==0)) {
+		} else if ((strcmp(argv[currentarg],"-q")==0) || (strcmp(argv[currentarg],"--query")==0)) {
 			p.query=1;
 		} else if ((strcmp(argv[currentarg],"-D")==0) || (strcmp(argv[currentarg],"--debug")==0)) {
 			debug=1;
@@ -191,12 +178,10 @@ int main(int argc, char *argv[]) {
 			cfg.qmode=3;
 		} else if ((strcmp(argv[currentarg],"-s")==0) || (strcmp(argv[currentarg],"--short")==0)) {
 			cfg.qmode=5;
-		} else if ((strcmp(argv[currentarg],"-w")==0) || (strcmp(argv[currentarg],"--weeks")==0)) {
-			cfg.qmode=6;
 		} else if ((strcmp(argv[currentarg],"-h")==0) || (strcmp(argv[currentarg],"--hours")==0)) {
 			cfg.qmode=7;
 /*		} else if ((strcmp(argv[currentarg],"--exportdb")==0) || (strcmp(argv[currentarg],"--dumpdb")==0)) {
-*/			cfg.qmode=4;
+			cfg.qmode=4; */
 		} else if (strcmp(argv[currentarg],"--oneline")==0) {
 			cfg.qmode=9;
 /*		} else if (strcmp(argv[currentarg],"--xml")==0) {
@@ -231,8 +216,6 @@ int main(int argc, char *argv[]) {
 				currentarg++;
 			}
 			cfg.qmode=10;
-		} else if (strcmp(argv[currentarg],"--savemerged")==0) {
-			p.savemerged=1;
 */		} else if ((strcmp(argv[currentarg],"-ru")==0) || (strcmp(argv[currentarg],"--rateunit"))==0) {
 			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
 				if (cfg.rateunit > 1 || cfg.rateunit < 0) {
@@ -278,9 +261,6 @@ int main(int argc, char *argv[]) {
 			p.query=0;
 		} else if (strcmp(argv[currentarg],"--force")==0) {
 			p.force=1;
-		} else if (strcmp(argv[currentarg],"--testkernel")==0) {
-			i=kerneltest();
-			return i;
 		} else if (strcmp(argv[currentarg],"--showconfig")==0) {
 			printcfgfile();
 			return 0;
@@ -355,9 +335,6 @@ int main(int argc, char *argv[]) {
 	p.interface[31]='\0';
 
 	/* parameter handlers */
-	/* TODO: remove those that aren't needed */
-	//handledbmerge(&p);
-	//handleimport(&p);
 	handledelete(&p);
 	handlecreate(&p);
 	handlesetalias(&p);
@@ -401,9 +378,6 @@ void initparams(PARAMS *p)
 	p->create = 0;
 	p->query = 1;
 	p->setalias = 0;
-	//p->merged = 0;
-	//p->savemerged = 0;
-	p->import = 0;
 	p->ifcount = 0;
 	p->force = 0;
 	p->traffic = 0;
@@ -425,7 +399,6 @@ void showhelp(PARAMS *p)
 	printf("         -h,  --hours          show hours\n");
 	printf("         -d,  --days           show days\n");
 	printf("         -m,  --months         show months\n");
-	printf("         -w,  --weeks          show weeks\n");
 	printf("         -t,  --top10          show top 10 days\n");
 	printf("         -s,  --short          use short output\n");
 	printf("         -i,  --iface          select interface (default: %s)\n", p->definterface);
@@ -451,13 +424,11 @@ void showlonghelp(PARAMS *p)
 	printf("         -h, --hours           show hours\n");
 	printf("         -d, --days            show days\n");
 	printf("         -m, --months          show months\n");
-	printf("         -w, --weeks           show weeks\n");
 	printf("         -t, --top10           show top 10 days\n");
 	printf("         -s, --short           use short output\n");
 	printf("         -ru, --rateunit       swap configured rate unit\n");
 	printf("         --oneline             show simple parseable format\n");
 	//printf("         --exportdb            dump database in text format\n");
-	//printf("         --importdb            import previously exported database\n");
 	//printf("         --json                show database in json format\n");
 	//printf("         --xml                 show database in xml format\n");
 
@@ -478,49 +449,11 @@ void showlonghelp(PARAMS *p)
 	printf("         --dbdir               select database directory\n");
 	printf("         --locale              set locale\n");
 	printf("         --config              select config file\n");
-	//printf("         --savemerged          save merged database to current directory\n");
 	printf("         --showconfig          dump config file with current settings\n");
-	printf("         --testkernel          check if the kernel is broken\n");
 	printf("         --longhelp            display this help\n\n");
 
 	printf("See also \"man vnstat\".\n");
 }
-
-/*void handleimport(PARAMS *p)
-{
-	if (!p->import) {
-		return;
-	}
-
-	if (p->defaultiface) {
-		printf("Error: Specify interface to be imported using the -i parameter.\n");
-		exit(EXIT_FAILURE);
-	}
-	if (!p->force && !spacecheck(p->dirname)) {
-		printf("Error: Not enough free diskspace available.\n");
-		exit(EXIT_FAILURE);
-	}
-	if (!p->force && checkdb(p->interface, p->dirname)) {
-		printf("Error: Database file for interface \"%s\" already exists.\n", p->interface);
-		printf("Add --force parameter to overwrite it.\n");
-		exit(EXIT_FAILURE);
-	}
-	initdb();
-	if (!importdb(p->filename)) {
-		exit(EXIT_FAILURE);
-	}
-	if (!validatedb()) {
-		printf("Error: validation of imported database failed.\n");
-		exit(EXIT_FAILURE);
-	}
-	// set boot time to zero in order to force counter sync
-	data.btime = 0;
-	strncpy_nt(data.interface, p->interface, 32);
-	if (writedb(p->interface, p->dirname, 1)) {
-		printf("Database import for \"%s\" completed.\n", data.interface);
-	}
-	exit(EXIT_SUCCESS);
-}*/
 
 void handledelete(PARAMS *p)
 {
