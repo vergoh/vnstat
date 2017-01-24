@@ -145,7 +145,11 @@ char *getvalue(const uint64_t bytes, const int len, const int type)
 	}
 
 	if ( (type == 2) && (bytes == 0) ){
-		snprintf(buffer, 64, "%*s    ", len-2, "--");
+		declen = len-(int)strlen(getunitprefix(2))-2;
+		if (declen < 2) {
+			declen = 2;
+		}
+		snprintf(buffer, 64, "%*s  %*s", declen, "--", (int)strlen(getunitprefix(2)), " ");
 	} else {
 		/* try to figure out what unit to use */
 		if (bytes >= 1073741824000) { /* 1024*1024*1024*1000 - value >=1000 GiB -> show in TiB */

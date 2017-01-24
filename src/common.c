@@ -155,8 +155,8 @@ int dmonth(int month)
 	/* handle leap years */
 	if (month==1) {
 		current = time(NULL);
-		year = localtime(&current)->tm_year;
-		if ( ((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0) ) {
+		year = localtime(&current)->tm_year + 1900;
+		if (isleapyear(year)) {
 			return 29;
 		} else {
 			return 28;
@@ -164,6 +164,18 @@ int dmonth(int month)
 	} else {
 		return dmon[month];
 	}
+}
+
+int isleapyear(int year)
+{
+	if (year % 4 != 0) {
+		return 0;
+	} else if (year % 100 != 0) {
+		return 1;
+	} else if (year % 400 != 0) {
+		return 0;
+	}
+	return 1;
 }
 
 uint32_t mosecs(time_t month, time_t updated)

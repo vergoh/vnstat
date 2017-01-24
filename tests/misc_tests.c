@@ -131,11 +131,15 @@ START_TEST(getvalue_zero_values)
 {
 	cfg.unitmode = 0;
 	ck_assert_str_eq(getvalue(0, 0, 1), "0 B");
-	ck_assert_str_eq(getvalue(0, 0, 2), "--    ");
+	ck_assert_str_eq(getvalue(0, 10, 2), "   --     ");
+	ck_assert_int_eq((int)strlen(getvalue(0, 10, 2)), 10);
+	ck_assert_int_eq((int)strlen(getvalue(0, 20, 2)), 20);
 	ck_assert_str_eq(getvalue(0, 0, 3), "0 B");
 	cfg.unitmode = 1;
 	ck_assert_str_eq(getvalue(0, 0, 1), "0 B");
-	ck_assert_str_eq(getvalue(0, 0, 2), "--    ");
+	ck_assert_str_eq(getvalue(0, 10, 2), "    --    ");
+	ck_assert_int_eq((int)strlen(getvalue(0, 10, 2)), 10);
+	ck_assert_int_eq((int)strlen(getvalue(0, 20, 2)), 20);
 	ck_assert_str_eq(getvalue(0, 0, 3), "0 B");
 }
 END_TEST

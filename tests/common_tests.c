@@ -51,6 +51,38 @@ START_TEST(dmonth_return_within_range)
 }
 END_TEST
 
+START_TEST(leapyears_are_known)
+{
+	ck_assert_int_eq(isleapyear(1995), 0);
+	ck_assert_int_eq(isleapyear(1996), 1);
+	ck_assert_int_eq(isleapyear(1997), 0);
+	ck_assert_int_eq(isleapyear(1998), 0);
+	ck_assert_int_eq(isleapyear(1999), 0);
+	ck_assert_int_eq(isleapyear(2000), 1);
+	ck_assert_int_eq(isleapyear(2001), 0);
+	ck_assert_int_eq(isleapyear(2002), 0);
+	ck_assert_int_eq(isleapyear(2003), 0);
+	ck_assert_int_eq(isleapyear(2004), 1);
+	ck_assert_int_eq(isleapyear(2005), 0);
+	ck_assert_int_eq(isleapyear(2006), 0);
+	ck_assert_int_eq(isleapyear(2007), 0);
+	ck_assert_int_eq(isleapyear(2008), 1);
+	ck_assert_int_eq(isleapyear(2009), 0);
+	ck_assert_int_eq(isleapyear(2010), 0);
+	ck_assert_int_eq(isleapyear(2011), 0);
+	ck_assert_int_eq(isleapyear(2012), 1);
+	ck_assert_int_eq(isleapyear(2013), 0);
+	ck_assert_int_eq(isleapyear(2014), 0);
+	ck_assert_int_eq(isleapyear(2015), 0);
+	ck_assert_int_eq(isleapyear(2016), 1);
+	ck_assert_int_eq(isleapyear(2017), 0);
+	ck_assert_int_eq(isleapyear(2018), 0);
+	ck_assert_int_eq(isleapyear(2019), 0);
+	ck_assert_int_eq(isleapyear(2020), 1);
+	ck_assert_int_eq(isleapyear(2021), 0);
+}
+END_TEST
+
 #if defined(_SVID_SOURCE) || defined(_XOPEN_SOURCE) || defined(__linux__)
 START_TEST(mosecs_return_values)
 {
@@ -398,6 +430,7 @@ void add_common_tests(Suite *s)
 	tcase_add_test(tc_common, printe_options);
 	tcase_add_test(tc_common, logprint_options);
 	tcase_add_loop_test(tc_common, dmonth_return_within_range, 0, 12);
+	tcase_add_test(tc_common, leapyears_are_known);
 #if defined(_SVID_SOURCE) || defined(_XOPEN_SOURCE) || defined(__linux__)
 	tcase_add_test(tc_common, mosecs_return_values);
 #else

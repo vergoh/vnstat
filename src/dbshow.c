@@ -39,6 +39,9 @@ void showdb(const char *interface, int qmode)
 		case 5:
 			showsummary(&info, 1);
 			break;
+		case 6:
+			showlist(&info, "year");
+			break;
 /*		case 7:
 			showhours();
 			break;*/
@@ -274,7 +277,7 @@ void showlist(const interfaceinfo *interface, const char *listname)
 	int limit, listtype;
 	struct tm *d;
 	char datebuff[DATEBUFFLEN], titlename[8], stampformat[64];
-	uint64_t e_rx, e_tx, e_secs;
+	uint64_t e_rx, e_tx, e_secs, div, mult;
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
 
@@ -288,6 +291,11 @@ void showlist(const interfaceinfo *interface, const char *listname)
 		snprintf(titlename, 8, "monthly");
 		strncpy_nt(stampformat, cfg.mformat, 64);
 		limit = 12;
+	} else if (strcmp(listname, "year") == 0) {
+		listtype = 3;
+		snprintf(titlename, 8, "yearly");
+		strncpy_nt(stampformat, "%Y", 64);
+		limit = -1;
 	} else {
 		return;
 	}
@@ -345,12 +353,16 @@ void showlist(const interfaceinfo *interface, const char *listname)
 					e_secs = d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600);
 				} else if (listtype == 2) { // month
 					e_secs = mosecs(datalist_i->timestamp, interface->updated);
+				} else if (listtype == 3) { // year
+					e_secs = d->tm_yday*86400+d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600);
 				}
 			} else {
 				if (listtype == 1) { // day
 					e_secs = 86400;
 				} else if (listtype == 2) { // month
 					e_secs = dmonth(d->tm_mon) * 86400;
+				} else if (listtype == 3) { // year
+					e_secs = (365 + isleapyear(d->tm_year+1900)) * 86400;
 				}
 			}
 			printf(" | %s", gettrafficrate(datalist_i->rx+datalist_i->tx, e_secs, 14));
@@ -377,15 +389,26 @@ void showlist(const interfaceinfo *interface, const char *listname)
 	if (datainfo.count > 0) {
 		/* use database update time for estimates */
 		d = localtime(&interface->updated);
-		if ( datalist_i->rx==0 || datalist_i->tx==0 || (d->tm_hour*60+d->tm_min)==0 ) {
+		if ( datalist_i->rx==0 || datalist_i->tx==0 ) {
 			e_rx = e_tx = 0;
 		} else {
+			div = 0;
+			mult = 0;
 			if (listtype == 1) { // day
-				e_rx = ((datalist_i->rx) / (float)(d->tm_hour*60+d->tm_min)) * 1440;
-				e_tx = ((datalist_i->tx) / (float)(d->tm_hour*60+d->tm_min)) * 1440;
+				div = d->tm_hour * 60 + d->tm_min;
+				mult = 1440;
 			} else if (listtype == 2) { // month
-				e_rx = (datalist_i->rx / (float)(mosecs(datalist_i->timestamp, interface->updated))) * (dmonth(d->tm_mon) * 86400);
-				e_tx = (datalist_i->tx / (float)(mosecs(datalist_i->timestamp, interface->updated))) * (dmonth(d->tm_mon) * 86400);
+				div = mosecs(datalist_i->timestamp, interface->updated);
+				mult = dmonth(d->tm_mon) * 86400;
+			} else if (listtype == 3) { // year
+				div = d->tm_yday * 1440 + d->tm_hour * 60 + d->tm_min;
+				mult = 1440 * (365 + isleapyear(d->tm_year + 1900));
+			}
+			if (div > 0) {
+				e_rx = ((datalist_i->rx) / (float)div) * mult;
+				e_tx = ((datalist_i->tx) / (float)div) * mult;
+			} else {
+				e_rx = e_tx = 0;
 			}
 		}
 		if (cfg.ostyle == 3) {

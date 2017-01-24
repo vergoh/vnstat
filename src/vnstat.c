@@ -178,6 +178,8 @@ int main(int argc, char *argv[]) {
 			cfg.qmode=3;
 		} else if ((strcmp(argv[currentarg],"-s")==0) || (strcmp(argv[currentarg],"--short")==0)) {
 			cfg.qmode=5;
+		} else if ((strcmp(argv[currentarg],"-y")==0) || (strcmp(argv[currentarg],"--years")==0)) {
+			cfg.qmode=6;
 		} else if ((strcmp(argv[currentarg],"-h")==0) || (strcmp(argv[currentarg],"--hours")==0)) {
 			cfg.qmode=7;
 /*		} else if ((strcmp(argv[currentarg],"--exportdb")==0) || (strcmp(argv[currentarg],"--dumpdb")==0)) {
@@ -399,6 +401,7 @@ void showhelp(PARAMS *p)
 	printf("         -h,  --hours          show hours\n");
 	printf("         -d,  --days           show days\n");
 	printf("         -m,  --months         show months\n");
+	printf("         -y,  --years          show years\n");
 	printf("         -t,  --top10          show top 10 days\n");
 	printf("         -s,  --short          use short output\n");
 	printf("         -i,  --iface          select interface (default: %s)\n", p->definterface);
@@ -424,6 +427,7 @@ void showlonghelp(PARAMS *p)
 	printf("         -h, --hours           show hours\n");
 	printf("         -d, --days            show days\n");
 	printf("         -m, --months          show months\n");
+	printf("         -y, --years           show years\n");
 	printf("         -t, --top10           show top 10 days\n");
 	printf("         -s, --short           use short output\n");
 	printf("         -ru, --rateunit       swap configured rate unit\n");
@@ -647,7 +651,7 @@ void showoneinterface(PARAMS *p, const char *interface)
 		}
 	}
 	if (cfg.qmode!=8 && cfg.qmode!=10) {
-		/* TODO: xml ja json missing */
+		/* TODO: xml and json missing */
 		showdb(interface, cfg.qmode);
 /*	} else if (cfg.qmode==8) {
 		xmlheader();
