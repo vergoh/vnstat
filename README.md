@@ -11,24 +11,9 @@ configurable durations. Yearly and 5 minute resolution statistics are now includ
 
   * alpha version with working daemon implementation
     * some sanity checks may be missing or disabled
-  * vnstat (console output) lacks most database features
-    * `-l` / `--live` and `-tr` / `--traffic` are available
-    * implemented database dependent features
-      * `--create`
-      * `--delete`
-    * implemented console outputs
-      * summary
-      * one line
-      * hourly
-      * daily
-      * monthly
-      * yearly
-      * top 10
-      * json
-      * xml
-      * short / multiple interfaces at once
+  * vnstat (console output) has most features implemented
   * vnstati (image output) is disabled
-  * not ready to replace vnStat 1.x due to lack of many outputs
+  * getting closer to replace vnStat 1.x
 
 ##### Done
 
@@ -44,6 +29,7 @@ configurable durations. Yearly and 5 minute resolution statistics are now includ
     * features can be disabled
   * old data cleanup
     * executed during startup and then once every hour
+  * most vnstat (console output) features
 
 ##### Removed features
 
