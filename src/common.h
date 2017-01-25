@@ -167,12 +167,12 @@ and most can be changed later from the config file.
 #define SQLDBVERSION "1"
 
 /* xml format version */
-/* 1 = 1.7- */
-#define XMLVERSION 1
+/* 1 = 1.7-1.16, 2 = 2.0 */
+#define XMLVERSION 2
 
 /* json format version */
-/* 1 = 1.13- */
-#define JSONVERSION 1
+/* 1 = 1.13-1.16, 2 = 2.0 */
+#define JSONVERSION 2
 
 /* --oneline format version */
 #define ONELINEVERSION 1

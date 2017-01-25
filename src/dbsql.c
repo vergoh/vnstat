@@ -807,6 +807,7 @@ int db_getdata(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface,
 	sqlite3_int64 ifaceid = 0;
 	sqlite3_stmt *sqlstmt;
 	time_t timestamp;
+	int64_t rowid;
 	uint64_t rx, tx;
 
 	listinfo->count = 0;
@@ -827,25 +828,26 @@ int db_getdata(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface,
 	/* note that using the linked list reverses the order */
 	/* most recent last in the linked list is considered the normal order */
 	if (strcmp(table, "top") == 0) {
-		sqlite3_snprintf(512, sql, "select * from (select strftime('%%s', date, 'utc'), rx, tx from %s where interface=%"PRId64" order by rx+tx desc %s) order by rx+tx asc;", table, (int64_t)ifaceid, limit);
+		sqlite3_snprintf(512, sql, "select * from (select id, strftime('%%s', date, 'utc'), rx, tx from %s where interface=%"PRId64" order by rx+tx desc %s) order by rx+tx asc;", table, (int64_t)ifaceid, limit);
 	} else {
-		sqlite3_snprintf(512, sql, "select strftime('%%s', date, 'utc'), rx, tx from %s where interface=%"PRId64" order by date desc %s;", table, (int64_t)ifaceid, limit);
+		sqlite3_snprintf(512, sql, "select id, strftime('%%s', date, 'utc'), rx, tx from %s where interface=%"PRId64" order by date desc %s;", table, (int64_t)ifaceid, limit);
 	}
 
 	if (sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL) != SQLITE_OK) {
 		return 0;
 	}
 
-	if (sqlite3_column_count(sqlstmt) != 3) {
+	if (sqlite3_column_count(sqlstmt) != 4) {
 		sqlite3_finalize(sqlstmt);
 		return 0;
 	}
 
 	while (sqlite3_step(sqlstmt) == SQLITE_ROW) {
-		timestamp = (time_t)sqlite3_column_int64(sqlstmt, 0);
-		rx = (uint64_t)sqlite3_column_int64(sqlstmt, 1);
-		tx = (uint64_t)sqlite3_column_int64(sqlstmt, 2);
-		if (!dbdatalistadd(dbdata, rx, tx, timestamp)) {
+		rowid = (int64_t)sqlite3_column_int64(sqlstmt, 0);
+		timestamp = (time_t)sqlite3_column_int64(sqlstmt, 1);
+		rx = (uint64_t)sqlite3_column_int64(sqlstmt, 2);
+		tx = (uint64_t)sqlite3_column_int64(sqlstmt, 3);
+		if (!dbdatalistadd(dbdata, rx, tx, timestamp, rowid)) {
 			/* TODO: some info print may be needed here */
 			ret = 0;
 			break;
@@ -899,7 +901,7 @@ void updatelistinfo(dbdatalistinfo *listinfo, const uint64_t rx, const uint64_t 
 	listinfo->count++;
 }
 
-int dbdatalistadd(dbdatalist **dbdata, const uint64_t rx, const uint64_t tx, const time_t timestamp)
+int dbdatalistadd(dbdatalist **dbdata, const uint64_t rx, const uint64_t tx, const time_t timestamp, const int64_t rowid)
 {
 	dbdatalist *newdata;
 
@@ -911,6 +913,7 @@ int dbdatalistadd(dbdatalist **dbdata, const uint64_t rx, const uint64_t tx, con
 	newdata->next = *dbdata;
 	*dbdata = newdata;
 
+	newdata->rowid = rowid;
 	newdata->timestamp = timestamp;
 	newdata->rx = rx;
 	newdata->tx = tx;

@@ -1,5 +1,5 @@
 /*
-vnStat - Copyright (c) 2002-2016 Teemu Toivola <tst@iki.fi>
+vnStat - Copyright (c) 2002-2017 Teemu Toivola <tst@iki.fi>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -19,8 +19,8 @@ vnStat - Copyright (c) 2002-2016 Teemu Toivola <tst@iki.fi>
 #include "ifinfo.h"
 #include "traffic.h"
 #include "dbsql.h"
-//#include "dbxml.h"
-//#include "dbjson.h"
+#include "dbxml.h"
+#include "dbjson.h"
 #include "dbshow.h"
 #include "misc.h"
 #include "cfg.h"
@@ -186,7 +186,7 @@ int main(int argc, char *argv[]) {
 			cfg.qmode=4; */
 		} else if (strcmp(argv[currentarg],"--oneline")==0) {
 			cfg.qmode=9;
-/*		} else if (strcmp(argv[currentarg],"--xml")==0) {
+		} else if (strcmp(argv[currentarg],"--xml")==0) {
 			if (currentarg+1<argc && argv[currentarg+1][0]!='-') {
 				p.xmlmode = argv[currentarg+1][0];
 				if (strlen(argv[currentarg+1])!=1 || strchr("ahdmt", p.xmlmode)==NULL) {
@@ -218,7 +218,7 @@ int main(int argc, char *argv[]) {
 				currentarg++;
 			}
 			cfg.qmode=10;
-*/		} else if ((strcmp(argv[currentarg],"-ru")==0) || (strcmp(argv[currentarg],"--rateunit"))==0) {
+		} else if ((strcmp(argv[currentarg],"-ru")==0) || (strcmp(argv[currentarg],"--rateunit"))==0) {
 			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
 				if (cfg.rateunit > 1 || cfg.rateunit < 0) {
 					printf("Error: Invalid parameter \"%d\" for --rateunit.\n", cfg.rateunit);
@@ -433,8 +433,8 @@ void showlonghelp(PARAMS *p)
 	printf("         -ru, --rateunit       swap configured rate unit\n");
 	printf("         --oneline             show simple parseable format\n");
 	//printf("         --exportdb            dump database in text format\n");
-	//printf("         --json                show database in json format\n");
-	//printf("         --xml                 show database in xml format\n");
+	printf("         --json                show database in json format\n");
+	printf("         --xml                 show database in xml format\n");
 
 	printf("   Modify:\n");
 	printf("         --create              create database\n");
@@ -596,11 +596,11 @@ void handleshowdatabases(PARAMS *p)
 			} else {
 				printf("\n                      rx      /      tx      /     total\n");
 			}
-/*		} else if (cfg.qmode==8) {
+		} else if (cfg.qmode==8) {
 			xmlheader();
 		} else if (cfg.qmode==10) {
 			jsonheader();
-*/		}
+		}
 
 		if (!db_getiflist(&dbifl)) {
 			return;
@@ -614,22 +614,22 @@ void handleshowdatabases(PARAMS *p)
 				printf("\nProcessing interface \"%s\"...\n", p->interface);
 			if (cfg.qmode==0) {
 				showdb(p->interface, 5);
-/*			} else if (cfg.qmode==8) {
-				showxml(p->xmlmode);
+			} else if (cfg.qmode==8) {
+				showxml(p->interface, p->xmlmode);
 			} else if (cfg.qmode==10) {
-				showjson(dbcount, p->jsonmode);
-*/			}
+				showjson(p->interface, dbcount, p->jsonmode);
+			}
 			dbcount++;
 			dbifl_i = dbifl_i->next;
 		}
 		dbiflistfree(&dbifl);
 
-/*		if (cfg.qmode==8) {
+		if (cfg.qmode==8) {
 			xmlfooter();
 		} else if (cfg.qmode==10) {
 			jsonfooter();
 		}
-*/
+
 	/* show in qmode if there's only one file or qmode!=0 */
 	} else {
 		showoneinterface(p, p->interface);
@@ -651,17 +651,16 @@ void showoneinterface(PARAMS *p, const char *interface)
 		}
 	}
 	if (cfg.qmode!=8 && cfg.qmode!=10) {
-		/* TODO: xml and json missing */
 		showdb(interface, cfg.qmode);
-/*	} else if (cfg.qmode==8) {
+	} else if (cfg.qmode==8) {
 		xmlheader();
-		showxml(p->xmlmode);
+		showxml(p->interface, p->xmlmode);
 		xmlfooter();
 	} else if (cfg.qmode==10) {
 		jsonheader();
-		showjson(0, p->jsonmode);
+		showjson(p->interface, 0, p->jsonmode);
 		jsonfooter();
-*/	}
+	}
 }
 
 void handletrafficmeters(PARAMS *p)

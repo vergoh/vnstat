@@ -1,134 +1,97 @@
 #include "common.h"
+#include "dbsql.h"
 #include "dbjson.h"
 
-void showjson(int dbcount, char mode)
+void showjson(const char *interface, const int dbcount, const char mode)
 {
+	interfaceinfo info;
+
+	if (!db_getinterfacecountbyname(interface)) {
+		return;
+	}
+
+	if (!db_getinterfaceinfo(interface, &info)) {
+		return;
+	}
+
 	if (dbcount) {
 		printf(",");
 	}
 	printf("{");
-	printf("\"id\":\"%s\",", data.interface);
-	printf("\"nick\":\"%s\",", data.nick);
+	printf("\"name\":\"%s\",", info.name);
+	printf("\"alias\":\"%s\",", info.alias);
 
 	printf("\"created\":{");
-	jsondate(&data.created, 1);
+	jsondate(&info.created, 1);
 	printf("},");
 	printf("\"updated\":{");
-	jsondate(&data.lastupdated, 2);
+	jsondate(&info.updated, 2);
 	printf("},");
 
 	printf("\"traffic\":");
-	printf("{\"total\":{\"rx\":%"PRIu64",\"tx\":%"PRIu64"},", (data.totalrx*1024)+data.totalrxk, (data.totaltx*1024)+data.totaltxk);
+	printf("{\"total\":{\"rx\":%"PRIu64",\"tx\":%"PRIu64"},", info.rxtotal, info.txtotal);
 
+	/* TODO: add years and 5 minutes */
 	switch (mode) {
 		case 'd':
-			jsondays();
+			jsondump(&info, "day", 1);
 			break;
 		case 'm':
-			jsonmonths();
+			jsondump(&info, "month", 3);
 			break;
 		case 't':
-			jsontops();
+			jsondump(&info, "top", 1);
 			break;
 		case 'h':
-			jsonhours();
+			jsondump(&info, "hour", 2);
 			break;
 		case 'a':
 		default:
-			jsondays();
+			jsondump(&info, "day", 1);
 			printf(",");
-			jsonmonths();
+			jsondump(&info, "month", 3);
 			printf(",");
-			jsontops();
+			jsondump(&info, "top", 1);
 			printf(",");
-			jsonhours();
+			jsondump(&info, "hour", 2);
 			break;
 	}
 
 	printf("}}");
 }
 
-void jsondays(void)
+void jsondump(const interfaceinfo *interface, const char *tablename, const int datetype)
 {
-	int i, first;
+	int first = 1;
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
 
-	printf("\"days\":[");
-	for (i=0,first=1;i<=29;i++) {
-		if (!data.day[i].used) {
-			continue;
-		}
+	/* TODO: add table check */
+
+	if (!db_getdata(&datalist, &datainfo, interface->name, tablename, -1)) {
+		/* TODO: match with other output style */
+		printf("Error: failed to fetch monthly data\n");
+		return;
+	}
+
+	printf("\"%s\":[", tablename);
+	datalist_i = datalist;
+	while (datalist_i != NULL) {
 		if (!first) {
 			printf(",");
+		} else {
+			first = 0;
 		}
-		printf("{\"id\":%d,", i);
-		jsondate(&data.day[i].date, 1);
-		printf(",\"rx\":%"PRIu64",\"tx\":%"PRIu64"}", (data.day[i].rx*1024)+data.day[i].rxk, (data.day[i].tx*1024)+data.day[i].txk);
-		first = 0;
+		printf("{\"id\":%"PRId64",", datalist_i->rowid);
+		jsondate(&datalist_i->timestamp, datetype);
+		printf(",\"rx\":%"PRIu64",\"tx\":%"PRIu64"}", datalist_i->rx, datalist_i->tx);
+		datalist_i = datalist_i->next;
 	}
+	dbdatalistfree(&datalist);
 	printf("]");
 }
 
-void jsonmonths(void)
-{
-	int i, first;
-
-	printf("\"months\":[");
-	for (i=0,first=1;i<=11;i++) {
-		if (!data.month[i].used) {
-			continue;
-		}
-		if (!first) {
-			printf(",");
-		}
-		printf("{\"id\":%d,", i);
-		jsondate(&data.month[i].month, 3);
-		printf(",\"rx\":%"PRIu64",\"tx\":%"PRIu64"}", (data.month[i].rx*1024)+data.month[i].rxk, (data.month[i].tx*1024)+data.month[i].txk);
-		first = 0;
-	}
-	printf("]");
-}
-
-void jsontops(void)
-{
-	int i, first;
-
-	printf("\"tops\":[");
-	for (i=0,first=1;i<=9;i++) {
-		if (!data.top10[i].used) {
-			continue;
-		}
-		if (!first) {
-			printf(",");
-		}
-		printf("{\"id\":%d,", i);
-		jsondate(&data.top10[i].date, 2);
-		printf(",\"rx\":%"PRIu64",\"tx\":%"PRIu64"}", (data.top10[i].rx*1024)+data.top10[i].rxk, (data.top10[i].tx*1024)+data.top10[i].txk);
-		first = 0;
-	}
-	printf("]");
-}
-
-void jsonhours(void)
-{
-	int i, first;
-
-	printf("\"hours\":[");
-	for (i=0,first=1;i<=23;i++) {
-		if (data.hour[i].date==0) {
-			continue;
-		}
-		if (!first) {
-			printf(",");
-		}
-		printf("{\"id\":%d,", i);
-		jsondate(&data.hour[i].date, 1);
-		printf(",\"rx\":%"PRIu64",\"tx\":%"PRIu64"}", data.hour[i].rx, data.hour[i].tx);
-		first = 0;
-	}
-	printf("]");
-}
-
-void jsondate(time_t *date, int type)
+void jsondate(const time_t *date, const int type)
 {
 	struct tm *d;
 	char *type1 = "\"date\":{\"year\":%d,\"month\":%d,\"day\":%d}";

@@ -10,6 +10,7 @@ typedef struct dbiflist {
 
 typedef struct dbdatalist {
 	time_t timestamp;
+	int64_t rowid;
 	uint64_t rx, tx;
 	struct dbdatalist *next;
 } dbdatalist;
@@ -64,7 +65,7 @@ void dbiflistfree(dbiflist **dbifl);
 
 int db_getdata(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface, const char *table, const uint32_t limit);
 void updatelistinfo(dbdatalistinfo *listinfo, const uint64_t rx, const uint64_t tx, const time_t timestamp);
-int dbdatalistadd(dbdatalist **dbdata, const uint64_t rx, const uint64_t tx, const time_t timestamp);
+int dbdatalistadd(dbdatalist **dbdata, const uint64_t rx, const uint64_t tx, const time_t timestamp, const int64_t rowid);
 void dbdatalistfree(dbdatalist **dbdata);
 
 /* global db */
