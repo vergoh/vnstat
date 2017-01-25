@@ -30,10 +30,10 @@ void showdb(const char *interface, int qmode)
 		case 2:
 			showlist(&info, "month");
 			break;
-/*		case 3:
-			showtop();
+		case 3:
+			showlist(&info, "top");
 			break;
-		case 4:
+/*		case 4:
 			exportdb();
 			break; */
 		case 5:
@@ -121,7 +121,7 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 		}
 	}
 
-	if (!db_getdata(&datalist, &datainfo, interface->name, "month", 2, 0)) {
+	if (!db_getdata(&datalist, &datainfo, interface->name, "month", 2)) {
 		/* TODO: match with other output style */
 		printf("Error: failed to fetch monthly data\n");
 		return;
@@ -202,7 +202,7 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 	d = localtime(&yesterday);
 	strftime(yesterdaystr, DATEBUFFLEN, cfg.dformat, d);
 
-	if (!db_getdata(&datalist, &datainfo, interface->name, "day", 2, 0)) {
+	if (!db_getdata(&datalist, &datainfo, interface->name, "day", 2)) {
 		/* TODO: match with other output style */
 		printf("Error: failed to fetch daily data\n");
 		return;
@@ -274,28 +274,38 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 
 void showlist(const interfaceinfo *interface, const char *listname)
 {
-	int limit, listtype;
+	int limit, listtype, offset = 0, i = 1;
 	struct tm *d;
-	char datebuff[DATEBUFFLEN], titlename[8], stampformat[64];
+	char datebuff[DATEBUFFLEN], titlename[8], colname[8], stampformat[64];
 	uint64_t e_rx, e_tx, e_secs, div, mult;
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
 
 	if (strcmp(listname, "day") == 0) {
 		listtype = 1;
+		strncpy_nt(colname, listname, 8);
 		snprintf(titlename, 8, "daily");
 		strncpy_nt(stampformat, cfg.dformat, 64);
 		limit = 30;
 	} else if (strcmp(listname, "month") == 0) {
 		listtype = 2;
+		strncpy_nt(colname, listname, 8);
 		snprintf(titlename, 8, "monthly");
 		strncpy_nt(stampformat, cfg.mformat, 64);
 		limit = 12;
 	} else if (strcmp(listname, "year") == 0) {
 		listtype = 3;
+		strncpy_nt(colname, listname, 8);
 		snprintf(titlename, 8, "yearly");
 		strncpy_nt(stampformat, "%Y", 64);
 		limit = -1;
+	} else if (strcmp(listname, "top") == 0) {
+		listtype = 4;
+		snprintf(colname, 8, "day");
+		snprintf(titlename, 8, "top 10");
+		strncpy_nt(stampformat, cfg.tformat, 64);
+		limit = 10;
+		offset = 6;
 	} else {
 		return;
 	}
@@ -314,18 +324,41 @@ void showlist(const interfaceinfo *interface, const char *listname)
 	printf("  /  %s\n\n", titlename);
 
 	if (cfg.ostyle == 3) {
-		printf("     %8s        rx      |     tx      |    total    |   avg. rate\n", listname);
-		printf("     ------------------------+-------------+-------------+---------------\n");
-	} else {
-		printf(" %8s        rx      |     tx      |    total\n", listname);
-		if (cfg.ostyle != 0) {
-			printf("-------------------------+-------------+---------------------------------------\n");
+		if (listtype == 4) {
+			printf("    # %8s  ", colname);
 		} else {
-			printf("-------------------------+-------------+------------\n");
+			indent(5);
+			printf("%8s", colname);
 		}
+		printf("        rx      |     tx      |    total    |   avg. rate\n");
+		if (listtype == 4) {
+			printf("   -----");
+		} else {
+			indent(5);
+		}
+		printf("------------------------+-------------+-------------+---------------\n");
+	} else {
+		if (listtype == 4) {
+			printf("   # %8s  ", colname);
+		} else {
+			printf(" %8s", colname);
+		}
+		printf("        rx      |     tx      |    total\n");
+		if (listtype == 4) {
+			printf("------");
+		}
+		if (cfg.ostyle != 0) {
+			printf("-------------------------+-------------+---------------------------------");
+			if (listtype != 4) {
+				printf("------");
+			}
+		} else {
+			printf("-------------------------+-------------+------------");
+		}
+		printf("\n");
 	}
 
-	if (!db_getdata(&datalist, &datainfo, interface->name, listname, limit, 0)) {
+	if (!db_getdata(&datalist, &datainfo, interface->name, listname, limit)) {
 		/* TODO: match with other output style */
 		printf("Error: failed to fetch %s data\n", titlename);
 		return;
@@ -337,9 +370,17 @@ void showlist(const interfaceinfo *interface, const char *listname)
 		d = localtime(&datalist_i->timestamp);
 		strftime(datebuff, DATEBUFFLEN, stampformat, d);
 		if (cfg.ostyle == 3) {
-			printf("    ");
+			indent(1);
+			if (listtype != 4) {
+				indent(3);
+			}
 		}
-		if (strlen(datebuff)<=9) {
+
+		if (listtype == 4) {
+			printf("  %2d  ", i);
+		}
+
+		if (strlen(datebuff)<=9 && listtype != 4) {
 			printf(" %*s   %s", getpadding(9, datebuff), datebuff, getvalue(datalist_i->rx, 11, 1));
 		} else {
 			printf(" %-*s %s", getpadding(11, datebuff), datebuff, getvalue(datalist_i->rx, 11, 1));
@@ -355,9 +396,11 @@ void showlist(const interfaceinfo *interface, const char *listname)
 					e_secs = mosecs(datalist_i->timestamp, interface->updated);
 				} else if (listtype == 3) { // year
 					e_secs = d->tm_yday*86400+d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600);
+				} else if (listtype == 4) { // top
+					e_secs = 86400;
 				}
 			} else {
-				if (listtype == 1) { // day
+				if (listtype == 1 || listtype == 4) { // day
 					e_secs = 86400;
 				} else if (listtype == 2) { // month
 					e_secs = dmonth(d->tm_mon) * 86400;
@@ -367,26 +410,39 @@ void showlist(const interfaceinfo *interface, const char *listname)
 			}
 			printf(" | %s", gettrafficrate(datalist_i->rx+datalist_i->tx, e_secs, 14));
 		} else if (cfg.ostyle != 0) {
-			showbar(datalist_i->rx, datalist_i->tx, datainfo.max, 24);
+			showbar(datalist_i->rx, datalist_i->tx, datainfo.max, 24-offset);
 		}
 		printf("\n");
 		if (datalist_i->next == NULL) {
 			break;
 		}
 		datalist_i = datalist_i->next;
+		i++;
 	}
 	if (datainfo.count == 0)
 		printf("                           no data available\n");
 	if (cfg.ostyle == 3) {
-		printf("     ------------------------+-------------+-------------+---------------\n");
-	} else {
-		if (cfg.ostyle != 0) {
-			printf("-------------------------+-------------+---------------------------------------\n");
+		if (listtype == 4) {
+			printf("   -----");
 		} else {
-			printf("-------------------------+-------------+------------\n");
+			indent(5);
 		}
+		printf("------------------------+-------------+-------------+---------------\n");
+	} else {
+		if (listtype == 4) {
+			printf("------");
+		}
+		if (cfg.ostyle != 0) {
+			printf("-------------------------+-------------+---------------------------------");
+			if (listtype != 4) {
+				printf("------");
+			}
+		} else {
+			printf("-------------------------+-------------+------------");
+		}
+		printf("\n");
 	}
-	if (datainfo.count > 0) {
+	if (datainfo.count > 0 && listtype != 4) {
 		/* use database update time for estimates */
 		d = localtime(&interface->updated);
 		if ( datalist_i->rx==0 || datalist_i->tx==0 ) {
@@ -446,7 +502,7 @@ void showoneline(const interfaceinfo *interface)
 	}
 	printf(";");
 
-	if (!db_getdata(&datalist, &datainfo, interface->name, "day", 1, 0)) {
+	if (!db_getdata(&datalist, &datainfo, interface->name, "day", 1)) {
 		/* TODO: match with other output style */
 		printf("\nError: failed to fetch daily data\n");
 		return;
@@ -465,7 +521,7 @@ void showoneline(const interfaceinfo *interface)
 	printf("%s;", gettrafficrate(datalist->rx+datalist->tx, d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600), 1));
 	dbdatalistfree(&datalist);
 
-	if (!db_getdata(&datalist, &datainfo, interface->name, "month", 1, 0)) {
+	if (!db_getdata(&datalist, &datainfo, interface->name, "month", 1)) {
 		/* TODO: match with other output style */
 		printf("\nError: failed to fetch monthly data\n");
 		return;
@@ -505,7 +561,7 @@ void showhours(const interfaceinfo *interface)
 		hourdata[i].date = 0;
 	}
 
-	if (!db_getdata(&datalist, &datainfo, interface->name, "hour", 24, 0)) {
+	if (!db_getdata(&datalist, &datainfo, interface->name, "hour", 24)) {
 		/* TODO: match with other output style */
 		printf("\nError: failed to fetch monthly data\n");
 		return;

@@ -800,7 +800,7 @@ void dbiflistfree(dbiflist **dbifl)
 	}
 }
 
-int db_getdata(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface, const char *table, const uint32_t resultlimit, const int reverse)
+int db_getdata(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface, const char *table, const uint32_t resultlimit)
 {
 	int ret = 1;
 	char sql[512], limit[64];
@@ -826,10 +826,10 @@ int db_getdata(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface,
 
 	/* note that using the linked list reverses the order */
 	/* most recent last in the linked list is considered the normal order */
-	if (reverse == 0) {
-		sqlite3_snprintf(512, sql, "select strftime('%%s', date, 'utc'), rx, tx from %s where interface=%"PRId64" order by date desc %s;", table, (int64_t)ifaceid, limit);
+	if (strcmp(table, "top") == 0) {
+		sqlite3_snprintf(512, sql, "select * from (select strftime('%%s', date, 'utc'), rx, tx from %s where interface=%"PRId64" order by rx+tx desc %s) order by rx+tx asc;", table, (int64_t)ifaceid, limit);
 	} else {
-		sqlite3_snprintf(512, sql, "select * from (select strftime('%%s', date, 'utc'), rx, tx from %s where interface=%"PRId64" order by date desc %s) order by date asc;", table, (int64_t)ifaceid, limit);
+		sqlite3_snprintf(512, sql, "select strftime('%%s', date, 'utc'), rx, tx from %s where interface=%"PRId64" order by date desc %s;", table, (int64_t)ifaceid, limit);
 	}
 
 	if (sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL) != SQLITE_OK) {

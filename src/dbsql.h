@@ -62,7 +62,7 @@ int db_rollbacktransaction(void);
 int dbiflistadd(dbiflist **dbifl, const char *iface);
 void dbiflistfree(dbiflist **dbifl);
 
-int db_getdata(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface, const char *table, const uint32_t limit, const int reverse);
+int db_getdata(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface, const char *table, const uint32_t limit);
 void updatelistinfo(dbdatalistinfo *listinfo, const uint64_t rx, const uint64_t tx, const time_t timestamp);
 int dbdatalistadd(dbdatalist **dbdata, const uint64_t rx, const uint64_t tx, const time_t timestamp);
 void dbdatalistfree(dbdatalist **dbdata);

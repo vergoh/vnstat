@@ -740,7 +740,7 @@ START_TEST(db_data_can_be_retrieved)
 	ret = db_insertdata("hour", "eth0", 10, 20, 10000);
 	ck_assert_int_eq(ret, 1);
 
-	ret = db_getdata(&datalist, &datainfo, "eth0", "hour", 2, 0);
+	ret = db_getdata(&datalist, &datainfo, "eth0", "hour", 2);
 	ck_assert_int_eq(ret, 1);
 
 	ck_assert_int_eq(datainfo.count, 2);
