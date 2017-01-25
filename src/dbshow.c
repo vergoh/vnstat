@@ -42,9 +42,9 @@ void showdb(const char *interface, int qmode)
 		case 6:
 			showlist(&info, "year");
 			break;
-/*		case 7:
-			showhours();
-			break;*/
+		case 7:
+			showhours(&info);
+			break;
 		case 9:
 			showoneline(&info);
 			break;
@@ -486,6 +486,155 @@ void showoneline(const interfaceinfo *interface)
 	printf("%s;", getvalue(interface->rxtotal, 1, 1));
 	printf("%s;", getvalue(interface->txtotal, 1, 1));
 	printf("%s\n", getvalue(interface->rxtotal+interface->txtotal, 1, 1));
+}
+
+void showhours(const interfaceinfo *interface)
+{
+	int i, k, s=0, hour, minute, declen=2, div=1;
+	unsigned int j, tmax=0, dots=0;
+	uint64_t max=0;
+	char matrix[24][81]; /* width is one over 80 so that snprintf can write the end char */
+	char unit[4];
+	struct tm *d;
+        dbdatalist *datalist = NULL, *datalist_i = NULL;
+        dbdatalistinfo datainfo;
+	HOURDATA hourdata[24];
+
+	for (i=0; i<24; i++) {
+		hourdata[i].rx = hourdata[i].tx = 0;
+		hourdata[i].date = 0;
+	}
+
+	if (!db_getdata(&datalist, &datainfo, interface->name, "hour", 24, 0)) {
+		/* TODO: match with other output style */
+		printf("\nError: failed to fetch monthly data\n");
+		return;
+	}
+
+	if (datainfo.count == 0) {
+		return;
+	}
+
+	datalist_i = datalist;
+
+	while (datalist_i != NULL) {
+		d = localtime(&datalist_i->timestamp);
+		if (hourdata[d->tm_hour].date != 0 || interface->updated-datalist_i->timestamp > 86400) {
+			datalist_i = datalist_i->next;
+			continue;
+		}
+		hourdata[d->tm_hour].rx = datalist_i->rx;
+		hourdata[d->tm_hour].tx = datalist_i->tx;
+		hourdata[d->tm_hour].date = datalist_i->timestamp;
+		datalist_i = datalist_i->next;
+	}
+	dbdatalistfree(&datalist);
+
+	/* tmax = time max = current hour */
+	/* max = transfer max */
+
+	d = localtime(&interface->updated);
+	hour = d->tm_hour;
+	minute = d->tm_min;
+
+	for (i=0; i<24; i++) {
+		if (hourdata[i].date >= hourdata[tmax].date) {
+			tmax = i;
+		}
+		if (hourdata[i].rx >= max) {
+			max = hourdata[i].rx;
+		}
+		if (hourdata[i].tx >= max) {
+			max = hourdata[i].tx;
+		}
+	}
+
+	/* mr. proper */
+	for (i=0; i<24; i++) {
+		for (j=0; j<81; j++) {
+			matrix[i][j] = ' ';
+		}
+	}
+
+	/* unit selection */
+	while (max/(pow(1024, div)) >= 100 && div < UNITPREFIXCOUNT) {
+		div++;
+	}
+	strncpy_nt(unit, getunitprefix(div), 4);
+	div = pow(1024, div-1);
+	if (div == 1) {
+		declen = 0;
+	}
+
+	/* structure */
+	snprintf(matrix[11], 81, " -+--------------------------------------------------------------------------->");
+	for (i=0; i<3; i++) {
+		snprintf(matrix[14]+(i*28), 25, " h %2$*1$srx (%3$s)  %2$*1$stx (%3$s)", 1+cfg.unitmode, " ", unit);
+	}
+
+	for (i=10;i>1;i--)
+		matrix[i][2]='|';
+
+	matrix[1][2]='^';
+	matrix[12][2]='|';
+
+	/* title */
+	if (strcmp(interface->name, interface->alias) == 0 || strlen(interface->alias) == 0) {
+		i = snprintf(matrix[0], 81, " %s", interface->name);
+	} else {
+		i = snprintf(matrix[0], 81, " %s (%s)", interface->alias, interface->name);
+	}
+	if (interface->active == 0) {
+		snprintf(matrix[0]+i+1, 81, " [disabled]");
+	}
+
+	/* time to the corner */
+	snprintf(matrix[0]+74, 7, "%02d:%02d", hour, minute);
+
+	/* numbers under x-axis and graphics :) */
+	k = 5;
+	for (i=23; i>=0; i--) {
+		s = tmax-i;
+		if (s < 0)
+			s += 24;
+
+		snprintf(matrix[12]+k, 81-k, "%02d ", s);
+
+		dots = 10 * (hourdata[s].rx / (float)max);
+		for (j=0; j<dots; j++)
+			matrix[10-j][k] = cfg.rxhourchar[0];
+
+		dots = 10 * (hourdata[s].tx / (float)max);
+		for (j=0; j<dots; j++)
+			matrix[10-j][k+1] = cfg.txhourchar[0];
+
+		k = k + 3;
+	}
+
+	/* hours and traffic */
+	for (i=0; i<=7; i++) {
+		s = tmax + i + 1;
+		for (j=0; j<3; j++) {
+			snprintf(matrix[15+i]+(j*28), 25, "%02d %"DECCONV"10.*f %"DECCONV"10.*f", (s+(j*8))%24, declen, hourdata[(s+(j*8))%24].rx/(float)div, declen, hourdata[(s+(j*8))%24].tx/(float)div);
+		}
+	}
+
+	/* clean \0 */
+	for (i=0; i<23; i++) {
+		for (j=0; j<80; j++) {
+			if (matrix[i][j] == '\0') {
+				matrix[i][j] = ' ';
+			}
+		}
+	}
+
+	/* show matrix (yes, the last line isn't shown) */
+	for (i=0; i<23; i++) {
+		for (j=0; j<80; j++) {
+			printf("%c",matrix[i][j]);
+		}
+		printf("\n");
+	}
 }
 
 int showbar(const uint64_t rx, const uint64_t tx, const uint64_t max, const int len)

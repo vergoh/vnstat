@@ -19,6 +19,7 @@ configurable durations. Yearly and 5 minute resolution statistics are now includ
     * implemented console outputs
       * summary
       * one line
+      * hourly
       * daily
       * monthly
       * yearly
@@ -57,7 +58,6 @@ configurable durations. Yearly and 5 minute resolution statistics are now includ
   * continue daemon refactoring
   * add missing sanity checks to daemon
   * console outputs
-    * hourly
     * top N
     * json
     * xml
