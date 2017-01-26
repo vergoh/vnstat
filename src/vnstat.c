@@ -184,8 +184,8 @@ int main(int argc, char *argv[]) {
 			cfg.qmode=6;
 		} else if ((strcmp(argv[currentarg],"-h")==0) || (strcmp(argv[currentarg],"--hours")==0)) {
 			cfg.qmode=7;
-/*		} else if ((strcmp(argv[currentarg],"--exportdb")==0) || (strcmp(argv[currentarg],"--dumpdb")==0)) {
-			cfg.qmode=4; */
+		} else if ((strcmp(argv[currentarg],"--exportdb")==0) || (strcmp(argv[currentarg],"--dumpdb")==0)) {
+			cfg.qmode=4;
 		} else if (strcmp(argv[currentarg],"--oneline")==0) {
 			cfg.qmode=9;
 			if (currentarg+1<argc && argv[currentarg+1][0]!='-') {
@@ -446,7 +446,7 @@ void showlonghelp(PARAMS *p)
 	printf("         -s, --short           use short output\n");
 	printf("         -ru, --rateunit       swap configured rate unit\n");
 	printf("         --oneline             show simple parseable format\n");
-	//printf("         --exportdb            dump database in text format\n");
+	printf("         --exportdb            dump database in text format\n");
 	printf("         --json                show database in json format\n");
 	printf("         --xml                 show database in xml format\n");
 

@@ -1,5 +1,5 @@
 /*
-vnStat image output - Copyright (c) 2007-2016 Teemu Toivola <tst@iki.fi>
+vnStat image output - Copyright (c) 2007-2017 Teemu Toivola <tst@iki.fi>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@ vnStat image output - Copyright (c) 2007-2016 Teemu Toivola <tst@iki.fi>
 #include "image.h"
 #include "cfg.h"
 #include "dbaccess.h"
-#include "dbmerge.h"
 #include "vnstati.h"
 
 int main(int argc, char *argv[])

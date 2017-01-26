@@ -61,11 +61,9 @@ void xmldump(const interfaceinfo *interface, const char *tablename, const int da
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
 
-	/* TODO: add table check */
-
 	if (!db_getdata(&datalist, &datainfo, interface->name, tablename, -1)) {
 		/* TODO: match with other output style */
-		printf("Error: failed to fetch monthly data\n");
+		printf("Error: failed to fetch %s data\n", tablename);
 		return;
 	}
 

@@ -33,9 +33,9 @@ void showdb(const char *interface, int qmode)
 		case 3:
 			showlist(&info, "top");
 			break;
-/*		case 4:
-			exportdb();
-			break; */
+		case 4:
+			exportdb(&info);
+			break;
 		case 5:
 			showsummary(&info, 1);
 			break;
@@ -572,8 +572,8 @@ void showhours(const interfaceinfo *interface)
 	char matrix[24][81]; /* width is one over 80 so that snprintf can write the end char */
 	char unit[4];
 	struct tm *d;
-        dbdatalist *datalist = NULL, *datalist_i = NULL;
-        dbdatalistinfo datainfo;
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
 	HOURDATA hourdata[24];
 
 	for (i=0; i<24; i++) {
@@ -583,7 +583,7 @@ void showhours(const interfaceinfo *interface)
 
 	if (!db_getdata(&datalist, &datainfo, interface->name, "hour", 24)) {
 		/* TODO: match with other output style */
-		printf("\nError: failed to fetch monthly data\n");
+		printf("\nError: failed to fetch hourly data\n");
 		return;
 	}
 
@@ -710,6 +710,42 @@ void showhours(const interfaceinfo *interface)
 			printf("%c",matrix[i][j]);
 		}
 		printf("\n");
+	}
+}
+
+void exportdb(const interfaceinfo *interface)
+{
+	int i;
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+	char *datatables[] = {"hour", "day", "month", "year", "top"};
+
+	printf("version;%s\n", db_getinfo("dbversion"));
+	printf("vnstat;%s\n", db_getinfo("vnstatversion"));
+	printf("active;%d\n", interface->active);
+	printf("interface;%s\n", interface->name);
+	printf("alias;%s\n", interface->alias);
+	printf("created;%"PRIu64"\n", (uint64_t)interface->created);
+	printf("updated;%"PRIu64"\n", (uint64_t)interface->updated);
+
+	printf("totalrx;%"PRIu64"\n", interface->rxtotal);
+	printf("totaltx;%"PRIu64"\n", interface->rxtotal);
+	printf("currx;%"PRIu64"\n", interface->rxcounter);
+	printf("curtx;%"PRIu64"\n", interface->txcounter);
+	printf("btime;%s\n", db_getinfo("btime"));
+
+	for (i=0; i<5; i++) {
+
+		if (!db_getdata(&datalist, &datainfo, interface->name, datatables[i], -1)) {
+			printf("\nError: failed to fetch %s data\n", datatables[i]);
+			return;
+		}
+		datalist_i = datalist;
+		while (datalist_i != NULL) {
+			printf("%c;%"PRId64";%"PRIu64";%"PRIu64";%"PRIu64"\n", datatables[i][0], datalist_i->rowid, (uint64_t)datalist_i->timestamp, datalist_i->rx, datalist_i->tx);
+			datalist_i = datalist_i->next;
+		}
+		dbdatalistfree(&datalist);
 	}
 }
 

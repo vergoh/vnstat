@@ -46,8 +46,6 @@ configurable durations. Yearly and 5 minute resolution statistics are now includ
   * `grep TODO src/* tests/*`
   * continue daemon refactoring
   * add missing sanity checks to daemon
-  * console outputs
-    * export?
   * image outputs
     * all
   * use of 5 minute resolution statistics

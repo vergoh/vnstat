@@ -3,9 +3,10 @@
 #include "common.h"
 #include "dbaccess.h"
 #include "ifinfo.h"
-//#include "dbshow.h"
-//#include "dbxml.h"
-//#include "dbjson.h"
+#include "dbsql.h"
+#include "dbshow.h"
+#include "dbxml.h"
+#include "dbjson.h"
 #include "cfg.h"
 #include "ibw.h"
 #include "fs.h"
@@ -216,76 +217,50 @@ START_TEST(validatedb_with_top10_use)
 	ck_assert_int_eq(validatedb(&data), 0);
 }
 END_TEST
-/*
+
 START_TEST(database_outputs_do_not_crash)
 {
-	int i;
+	int ret, i;
 
-	initdb();
 	defaultcfg();
-	strcpy(data.interface, "something");
-	strcpy(data.nick, "nothing");
-	data.totalrx = 1;
-	data.totaltx = 2;
-	data.currx = 3;
-	data.curtx = 4;
-	data.totalrxk = 5;
-	data.totaltxk = 6;
-	data.btime = 7;
 
-	for (i=0; i<30; i++) {
-		data.day[i].date = i+1;
-		data.day[i].rx = data.day[i].tx = i*100;
-		data.day[i].rxk = data.day[i].txk = i;
-		data.day[i].used = 1;
-	}
+	ret = db_open(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("something");
+	ck_assert_int_eq(ret, 1);
 
-	for (i=0; i<10; i++) {
-		data.top10[i].date = i+1;
-		data.top10[i].rx = data.top10[i].tx = i*100;
-		data.top10[i].rxk = data.top10[i].txk = i;
-		data.top10[i].used = 1;
-	}
-
-	for (i=0; i<12; i++) {
-		data.month[i].month = i+1;
-		data.month[i].rx = data.month[i].tx = i*100;
-		data.month[i].rxk = data.month[i].txk = i;
-		data.month[i].used = 1;
-	}
-
-	for (i=0; i<24; i++) {
-		data.hour[i].date = i+1;
-		data.hour[i].rx = data.hour[i].tx = i*100;
+	for (i=1; i<100; i++) {
+		ret = db_addtraffic_dated("something", i*1234, i*2345, i*85000);
+		ck_assert_int_eq(ret, 1);
 	}
 
 	suppress_output();
 
-	showdb(0);
-	showdb(1);
-	showdb(2);
-	showdb(3);
-	showdb(4);
-	showdb(5);
-	showdb(6);
-	showdb(7);
-	showdb(8);
-	showdb(9);
+	showdb("something", 0);
+	showdb("something", 1);
+	showdb("something", 2);
+	showdb("something", 3);
+	showdb("something", 4);
+	showdb("something", 5);
+	showdb("something", 6);
+	showdb("something", 7);
+	showdb("something", 8);
+	showdb("something", 9);
 
 	xmlheader();
-	showxml('d');
-	showxml('m');
-	showxml('t');
-	showxml('h');
-	showxml('a');
+	showxml("something", 'd');
+	showxml("something", 'm');
+	showxml("something", 't');
+	showxml("something", 'h');
+	showxml("something", 'a');
 	xmlfooter();
 
 	jsonheader();
-	showjson(0, 'd');
-	showjson(0, 'm');
-	showjson(0, 't');
-	showjson(0, 'h');
-	showjson(0, 'a');
+	showjson("something", 0, 'd');
+	showjson("something", 0, 'm');
+	showjson("something", 0, 't');
+	showjson("something", 0, 'h');
+	showjson("something", 0, 'a');
 	jsonfooter();
 }
 END_TEST
@@ -294,7 +269,7 @@ START_TEST(showbar_with_zero_len_is_nothing)
 {
 	int len;
 	suppress_output();
-	len = showbar(1, 0, 2, 0, 3, 0);
+	len = showbar(1, 2, 3, 0);
 	ck_assert_int_eq(len, 0);
 }
 END_TEST
@@ -303,7 +278,7 @@ START_TEST(showbar_with_big_max_and_small_numbers)
 {
 	int len;
 	suppress_output();
-	len = showbar(0, 1, 0, 2, 1000, 10);
+	len = showbar(1, 2, 1000, 10);
 	ck_assert_int_eq(len, 0);
 }
 END_TEST
@@ -318,7 +293,7 @@ START_TEST(showbar_with_all_rx)
 	cfg.rxchar[0] = 'r';
 	cfg.txchar[0] = 't';
 	pipe = pipe_output();
-	len = showbar(0, 1, 0, 0, 1, 10);
+	len = showbar(1, 0, 1, 10);
 	ck_assert_int_eq(len, 10);
 	fflush(stdout);
 
@@ -337,7 +312,7 @@ START_TEST(showbar_with_all_tx)
 	cfg.rxchar[0] = 'r';
 	cfg.txchar[0] = 't';
 	pipe = pipe_output();
-	len = showbar(0, 0, 0, 1, 1, 10);
+	len = showbar(0, 1, 1, 10);
 	ck_assert_int_eq(len, 10);
 	fflush(stdout);
 
@@ -356,7 +331,7 @@ START_TEST(showbar_with_half_and_half)
 	cfg.rxchar[0] = 'r';
 	cfg.txchar[0] = 't';
 	pipe = pipe_output();
-	len = showbar(0, 1, 0, 1, 2, 10);
+	len = showbar(1, 1, 2, 10);
 	ck_assert_int_eq(len, 10);
 	fflush(stdout);
 
@@ -375,7 +350,7 @@ START_TEST(showbar_with_one_tenth)
 	cfg.rxchar[0] = 'r';
 	cfg.txchar[0] = 't';
 	pipe = pipe_output();
-	len = showbar(0, 1, 0, 9, 10, 10);
+	len = showbar(1, 9, 10, 10);
 	ck_assert_int_eq(len, 10);
 	fflush(stdout);
 
@@ -394,7 +369,7 @@ START_TEST(showbar_with_small_rx_shows_all_tx)
 	cfg.rxchar[0] = 'r';
 	cfg.txchar[0] = 't';
 	pipe = pipe_output();
-	len = showbar(0, 1, 0, 1000, 1001, 10);
+	len = showbar(1, 1000, 1001, 10);
 	ck_assert_int_eq(len, 10);
 	fflush(stdout);
 
@@ -407,30 +382,11 @@ START_TEST(showbar_with_max_smaller_than_real_max)
 {
 	int len;
 	suppress_output();
-	len = showbar(0, 1, 0, 2, 1, 10);
+	len = showbar(1, 2, 1, 10);
 	ck_assert_int_eq(len, 0);
 }
 END_TEST
 
-START_TEST(showbar_can_also_do_mb_calculations)
-{
-	int pipe, len;
-	char buffer[512];
-	memset(&buffer, '\0', sizeof(buffer));
-
-	defaultcfg();
-	cfg.rxchar[0] = 'r';
-	cfg.txchar[0] = 't';
-	pipe = pipe_output();
-	len = showbar(0, 1024, 0, 1024, 2048, 2);
-	ck_assert_int_eq(len, 2);
-	fflush(stdout);
-
-	len = read(pipe, buffer, 512);
-	ck_assert_str_eq(buffer, "  rt");
-}
-END_TEST
-*/
 void add_database_tests(Suite *s)
 {
 	TCase *tc_db = tcase_create("Database");
@@ -449,7 +405,7 @@ void add_database_tests(Suite *s)
 	tcase_add_test(tc_db, validatedb_with_initdb);
 	tcase_add_test(tc_db, validatedb_with_invalid_totals);
 	tcase_add_test(tc_db, validatedb_with_top10_use);
-	/*tcase_add_test(tc_db, database_outputs_do_not_crash);
+	tcase_add_test(tc_db, database_outputs_do_not_crash);
 	tcase_add_test(tc_db, showbar_with_zero_len_is_nothing);
 	tcase_add_test(tc_db, showbar_with_big_max_and_small_numbers);
 	tcase_add_test(tc_db, showbar_with_all_rx);
@@ -458,7 +414,6 @@ void add_database_tests(Suite *s)
 	tcase_add_test(tc_db, showbar_with_one_tenth);
 	tcase_add_test(tc_db, showbar_with_small_rx_shows_all_tx);
 	tcase_add_test(tc_db, showbar_with_max_smaller_than_real_max);
-	tcase_add_test(tc_db, showbar_can_also_do_mb_calculations);*/
 	suite_add_tcase(s, tc_db);
 }
 
