@@ -230,29 +230,6 @@ uint64_t countercalc(const uint64_t *a, const uint64_t *b)
 	}
 }
 
-void addtraffic(uint64_t *destmb, int *destkb, const uint64_t srcmb, const int srckb)
-{
-        *destmb+=srcmb;
-        *destkb+=srckb;
-
-        if (*destkb>=1024) {
-                *destmb+=*destkb/1024;
-                *destkb-=(*destkb/1024)*1024;
-        }
-}
-
-uint64_t mbkbtokb(uint64_t mb, uint64_t kb)
-{
-	if (mb==0) {
-		return kb;
-	}
-	if (kb>=1024) {
-		mb+=kb/1024;
-		kb-=(kb/1024)*1024;
-	}
-	return (mb*1024)+kb;
-}
-
 /* strncpy with ensured null termination */
 char *strncpy_nt(char *dest, const char *src, size_t n)
 {

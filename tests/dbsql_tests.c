@@ -140,7 +140,7 @@ START_TEST(db_addtraffic_with_no_traffic_does_nothing)
 {
 	defaultcfg();
 
-	ck_assert_int_eq(db_addtraffic("eth0", 0, 0), 1);
+	ck_assert_int_eq(db_addtraffic("eth0", 0, 0), 0);
 }
 END_TEST
 
@@ -256,8 +256,8 @@ START_TEST(db_setactive_can_change_interface_activity_status)
 	ck_assert_int_eq(ret, 1);
 
 	ck_assert_int_eq(db_addtraffic("eth0", 0, 0), 1);
-	ck_assert_int_eq(db_setactive("eth0", 0), 0);
-	ck_assert_int_eq(db_setactive("eth0", 1), 0);
+	ck_assert_int_eq(db_setactive("eth0", 0), 1);
+	ck_assert_int_eq(db_setactive("eth0", 1), 1);
 
 	ck_assert_int_eq(db_addtraffic("eth0", 12, 34), 1);
 	ck_assert_int_eq(db_setactive("eth0", 0), 1);
@@ -301,10 +301,51 @@ START_TEST(db_setalias_can_change_interface_alias)
 	ck_assert_int_eq(ret, 1);
 
 	ck_assert_int_eq(db_addtraffic("eth0", 0, 0), 1);
-	ck_assert_int_eq(db_setalias("eth0", "The Internet"), 0);
+	ck_assert_int_eq(db_setalias("eth0", "The Internet"), 1);
 
 	ck_assert_int_eq(db_addtraffic("eth0", 12, 34), 1);
 	ck_assert_int_eq(db_setalias("eth0", "The Internet"), 1);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_setupdated_fails_with_no_open_db)
+{
+	defaultcfg();
+
+	ck_assert_int_eq(db_setupdated("eth0", 123456), 0);
+}
+END_TEST
+
+START_TEST(db_setupdated_fails_if_interface_does_not_exist_in_database)
+{
+	int ret;
+
+	defaultcfg();
+
+	ret = db_open(1);
+	ck_assert_int_eq(ret, 1);
+
+	ck_assert_int_eq(db_setupdated("eth0", 123456), 0);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_setupdated_can_change_updated)
+{
+	int ret;
+
+	defaultcfg();
+
+	ret = db_open(1);
+	ck_assert_int_eq(ret, 1);
+
+	ck_assert_int_eq(db_addtraffic("eth0", 12, 34), 1);
+	ck_assert_int_eq(db_setupdated("eth0", 123456), 1);
 
 	ret = db_close();
 	ck_assert_int_eq(ret, 1);
@@ -576,7 +617,7 @@ START_TEST(db_interface_info_manipulation)
 	ck_assert_int_eq(ret, 1);
 
 	c = (uint64_t)time(NULL) - 100;
-	ret = db_setcreation("eth1", c);
+	ret = db_setcreation("eth1", (time_t)c);
 
 	ret = db_getinterfaceinfo("eth0", &info);
 	ck_assert_int_eq(ret, 1);
@@ -588,6 +629,7 @@ START_TEST(db_interface_info_manipulation)
 	ck_assert_int_ne(info.created, 0);
 
 	ck_assert_int_eq(db_setactive("eth1", 0), 1);
+	ck_assert_int_eq(db_setupdated("eth1", 0), 1);
 
 	ret = db_getinterfaceinfo("eth1", &info);
 	ck_assert_int_eq(ret, 1);
@@ -597,6 +639,19 @@ START_TEST(db_interface_info_manipulation)
 	ck_assert_int_eq(info.rxtotal, 42);
 	ck_assert_int_eq(info.txtotal, 24);
 	ck_assert_int_eq((uint64_t)info.created, c);
+	ck_assert_int_eq((uint64_t)info.updated, 0);
+
+	ck_assert_int_eq(db_setupdated("eth1", 123456), 1);
+
+	ret = db_getinterfaceinfo("eth1", &info);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(info.active, 0);
+	ck_assert_int_eq(info.rxcounter, 0);
+	ck_assert_int_eq(info.txcounter, 0);
+	ck_assert_int_eq(info.rxtotal, 42);
+	ck_assert_int_eq(info.txtotal, 24);
+	ck_assert_int_eq((uint64_t)info.created, c);
+	ck_assert_int_eq((uint64_t)info.updated, 123456);
 
 	ret = db_close();
 	ck_assert_int_eq(ret, 1);
@@ -794,6 +849,9 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_setalias_fails_with_no_open_db);
 	tcase_add_test(tc_dbsql, db_setalias_fails_if_interface_does_not_exist_in_database);
 	tcase_add_test(tc_dbsql, db_setalias_can_change_interface_alias);
+	tcase_add_test(tc_dbsql, db_setupdated_fails_with_no_open_db);
+	tcase_add_test(tc_dbsql, db_setupdated_fails_if_interface_does_not_exist_in_database);
+	tcase_add_test(tc_dbsql, db_setupdated_can_change_updated);
 	tcase_add_test(tc_dbsql, db_addinterface_fails_with_no_open_db);
 	tcase_add_test(tc_dbsql, db_addinterface_can_add_interfaces);
 	tcase_add_test(tc_dbsql, db_addinterface_can_not_add_same_interface_twice);

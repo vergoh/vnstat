@@ -54,7 +54,7 @@ int insertlegacydata(DATA *data, const char *iface)
 		db_rollbacktransaction();
 		return 0;
 	}
-	if (!db_setcreation(iface, (uint64_t)data->created)) {
+	if (!db_setcreation(iface, data->created)) {
 		db_rollbacktransaction();
 		return 0;
 	}

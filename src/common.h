@@ -278,8 +278,6 @@ int dmonth(int month);
 int isleapyear(int year);
 uint32_t mosecs(time_t month, time_t updated);
 uint64_t countercalc(const uint64_t *a, const uint64_t *b);
-void addtraffic(uint64_t *destmb, int *destkb, const uint64_t srcmb, const int srckb);
-uint64_t mbkbtokb(uint64_t mb, uint64_t kb);
 char *strncpy_nt(char *dest, const char *src, size_t n);
 int isnumeric(const char *s);
 void panicexit(const char *sourcefile, const int sourceline);

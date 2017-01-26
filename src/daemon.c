@@ -528,7 +528,7 @@ int processifinfo(DSTATE *s, datacache **dc)
 			}
 		}
 
-		if (rxchange || txchange) {
+		if (rxchange || txchange || cfg.traflessday) {
 			xferlog_add(&(*dc)->log, ifinfo.timestamp - (ifinfo.timestamp % 300), rxchange, txchange);
 		}
 	}
@@ -541,6 +541,7 @@ int processifinfo(DSTATE *s, datacache **dc)
 
 void flushcachetodisk(DSTATE *s)
 {
+	uint32_t logcount = 0;
 	datacache *iterator = s->dcache;
 	xferlog *logiterator;
 
@@ -554,14 +555,19 @@ void flushcachetodisk(DSTATE *s)
 			continue;
 		}
 
+		logcount = 0;
 		logiterator = iterator->log;
 		while (logiterator != NULL) {
 			db_addtraffic_dated(iterator->interface, logiterator->rx, logiterator->tx, (uint64_t)logiterator->timestamp);
 			logiterator = logiterator->next;
+			logcount++;
 		}
 		xferlog_clear(&iterator->log);
-		db_setcounters(iterator->interface, iterator->currx, iterator->curtx);
-		if (!iterator->active) {
+		if (logcount) {
+			db_setcounters(iterator->interface, iterator->currx, iterator->curtx);
+		}
+		db_setupdated(iterator->interface, iterator->updated);
+		if (!iterator->active && !logcount) {
 			db_setactive(iterator->interface, iterator->active);
 		}
 

@@ -287,6 +287,20 @@ int db_setactive(const char *iface, const int active)
 	return db_exec(sql);
 }
 
+int db_setupdated(const char *iface, const time_t timestamp)
+{
+	char sql[512];
+	sqlite3_int64 ifaceid = 0;
+
+	ifaceid = db_getinterfaceid(iface, 0);
+	if (ifaceid == 0) {
+		return 0;
+	}
+
+	sqlite3_snprintf(512, sql, "update interface set updated=datetime(%"PRIu64", 'unixepoch', 'localtime') where id=%"PRId64";", (uint64_t)timestamp, (int64_t)ifaceid);
+	return db_exec(sql);
+}
+
 int db_setcounters(const char *iface, const uint64_t rxcounter, const uint64_t txcounter)
 {
 	char sql[512];
@@ -481,10 +495,6 @@ int db_addtraffic_dated(const char *iface, const uint64_t rx, const uint64_t tx,
 			"strftime('%%Y-01-01', %s, 'localtime')", \
 			"date(%s, 'localtime')"};
 
-	if (rx == 0 && tx == 0) {
-		return 1;
-	}
-
 	ifaceid = db_getinterfaceid(iface, 1);
 	if (ifaceid == 0) {
 		return 0;
@@ -505,9 +515,9 @@ int db_addtraffic_dated(const char *iface, const uint64_t rx, const uint64_t tx,
 
 	/* change updated only if more recent than previous when timestamp provided */
 	if (timestamp > 0) {
-		sqlite3_snprintf(1024, sql, "update interface set updated=datetime(%s, 'localtime') where id=%"PRId64" and updated < datetime(%s, 'localtime');", nowdate, (int64_t)ifaceid, nowdate);
+		sqlite3_snprintf(1024, sql, "update interface set active=1, updated=datetime(%s, 'localtime') where id=%"PRId64" and updated < datetime(%s, 'localtime');", nowdate, (int64_t)ifaceid, nowdate);
 	} else {
-		sqlite3_snprintf(1024, sql, "update interface set updated=datetime(%s, 'localtime') where id=%"PRId64";", nowdate, (int64_t)ifaceid);
+		sqlite3_snprintf(1024, sql, "update interface set active=1, updated=datetime(%s, 'localtime') where id=%"PRId64";", nowdate, (int64_t)ifaceid);
 	}
 	if (!db_exec(sql)) {
 		db_rollbacktransaction();
@@ -515,10 +525,12 @@ int db_addtraffic_dated(const char *iface, const uint64_t rx, const uint64_t tx,
 	}
 
 	/* total */
-	sqlite3_snprintf(1024, sql, "update interface set rxtotal=rxtotal+%"PRIu64", txtotal=txtotal+%"PRIu64", active=1 where id=%"PRId64";", rx, tx, (int64_t)ifaceid);
-	if (!db_exec(sql)) {
-		db_rollbacktransaction();
-		return 0;
+	if (rx > 0 || tx > 0) {
+		sqlite3_snprintf(1024, sql, "update interface set rxtotal=rxtotal+%"PRIu64", txtotal=txtotal+%"PRIu64" where id=%"PRId64";", rx, tx, (int64_t)ifaceid);
+		if (!db_exec(sql)) {
+			db_rollbacktransaction();
+			return 0;
+		}
 	}
 
 	/* time specific */
@@ -542,7 +554,7 @@ int db_addtraffic_dated(const char *iface, const uint64_t rx, const uint64_t tx,
 	return db_committransaction();
 }
 
-int db_setcreation(const char *iface, const uint64_t timestamp)
+int db_setcreation(const char *iface, const time_t timestamp)
 {
 	char sql[512];
 	sqlite3_int64 ifaceid = 0;
@@ -552,7 +564,7 @@ int db_setcreation(const char *iface, const uint64_t timestamp)
 		return 0;
 	}
 
-	sqlite3_snprintf(512, sql, "update interface set created=datetime(%"PRIu64", 'unixepoch', 'localtime') where id=%"PRId64";", timestamp, (int64_t)ifaceid);
+	sqlite3_snprintf(512, sql, "update interface set created=datetime(%"PRIu64", 'unixepoch', 'localtime') where id=%"PRId64";", (uint64_t)timestamp, (int64_t)ifaceid);
 	return db_exec(sql);
 }
 
