@@ -113,6 +113,7 @@ int main(int argc, char *argv[]) {
 			}
 		} else if ((strcmp(argv[currentarg],"--style"))==0) {
 			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
+				cfg.ostyle = atoi(argv[currentarg+1]);
 				if (cfg.ostyle > 4 || cfg.ostyle < 0) {
 					printf("Error: Invalid style parameter \"%d\" for --style.\n", cfg.ostyle);
 					printf(" Valid parameters:\n");
@@ -121,9 +122,9 @@ int main(int argc, char *argv[]) {
 					printf("    2 - average traffic rate in summary output\n");
 					printf("    3 - average traffic rate in all outputs if available\n");
 					printf("    4 - disable terminal control characters in -l / --live\n");
+					printf("        and show raw values in --oneline\n");
 					return 1;
 				}
-				cfg.ostyle = atoi(argv[currentarg+1]);
 				if (debug)
 					printf("Style changed: %d\n", cfg.ostyle);
 				currentarg++;
@@ -136,6 +137,7 @@ int main(int argc, char *argv[]) {
 				printf("    2 - average traffic rate in summary output\n");
 				printf("    3 - average traffic rate in all outputs if available\n");
 				printf("    4 - disable terminal control characters in -l / --live\n");
+				printf("        and show raw values in --oneline\n");
 				return 1;
 			}
 		} else if ((strcmp(argv[currentarg],"--dbdir"))==0) {
@@ -186,6 +188,18 @@ int main(int argc, char *argv[]) {
 			cfg.qmode=4; */
 		} else if (strcmp(argv[currentarg],"--oneline")==0) {
 			cfg.qmode=9;
+			if (currentarg+1<argc && argv[currentarg+1][0]!='-') {
+				if (argv[currentarg+1][0]=='b') {
+					cfg.ostyle = 4;
+					currentarg++;
+				} else {
+					printf("Error: Invalid mode parameter \"%s\" for --oneline.\n", argv[currentarg+1]);
+					printf(" Valid parameters:\n");
+					printf("    (none) - automatically scaled units visible\n");
+					printf("    b      - all values in bytes\n");
+					return 1;
+				}
+			}
 		} else if (strcmp(argv[currentarg],"--xml")==0) {
 			if (currentarg+1<argc && argv[currentarg+1][0]!='-') {
 				p.xmlmode = argv[currentarg+1][0];

@@ -515,10 +515,17 @@ void showoneline(const interfaceinfo *interface)
 	d = localtime(&interface->updated);
 
 	/* daily */
-	printf("%s;", getvalue(datalist->rx, 1, 1));
-	printf("%s;", getvalue(datalist->tx, 1, 1));
-	printf("%s;", getvalue(datalist->rx+datalist->tx, 1, 1));
-	printf("%s;", gettrafficrate(datalist->rx+datalist->tx, d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600), 1));
+	if (cfg.ostyle == 4) {
+		printf("%"PRIu64";", datalist->rx);
+		printf("%"PRIu64";", datalist->tx);
+		printf("%"PRIu64";", datalist->rx+datalist->tx);
+		printf("%"PRIu64";", (datalist->rx+datalist->tx)/(d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600)));
+	} else {
+		printf("%s;", getvalue(datalist->rx, 1, 1));
+		printf("%s;", getvalue(datalist->tx, 1, 1));
+		printf("%s;", getvalue(datalist->rx+datalist->tx, 1, 1));
+		printf("%s;", gettrafficrate(datalist->rx+datalist->tx, d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600), 1));
+	}
 	dbdatalistfree(&datalist);
 
 	if (!db_getdata(&datalist, &datainfo, interface->name, "month", 1)) {
@@ -532,16 +539,29 @@ void showoneline(const interfaceinfo *interface)
 	printf("%s;", daytemp);
 
 	/* monthly */
-	printf("%s;", getvalue(datalist->rx, 1, 1));
-	printf("%s;", getvalue(datalist->tx, 1, 1));
-	printf("%s;", getvalue(datalist->rx+datalist->tx, 1, 1));
-	printf("%s;", gettrafficrate(datalist->rx+datalist->tx, mosecs(datalist->timestamp, interface->updated), 1));
+	if (cfg.ostyle == 4) {
+		printf("%"PRIu64";", datalist->rx);
+		printf("%"PRIu64";", datalist->tx);
+		printf("%"PRIu64";", datalist->rx+datalist->tx);
+		printf("%"PRIu64";", (datalist->rx+datalist->tx)/(mosecs(datalist->timestamp, interface->updated)));
+	} else {
+		printf("%s;", getvalue(datalist->rx, 1, 1));
+		printf("%s;", getvalue(datalist->tx, 1, 1));
+		printf("%s;", getvalue(datalist->rx+datalist->tx, 1, 1));
+		printf("%s;", gettrafficrate(datalist->rx+datalist->tx, mosecs(datalist->timestamp, interface->updated), 1));
+	}
 	dbdatalistfree(&datalist);
 
 	/* all time total */
-	printf("%s;", getvalue(interface->rxtotal, 1, 1));
-	printf("%s;", getvalue(interface->txtotal, 1, 1));
-	printf("%s\n", getvalue(interface->rxtotal+interface->txtotal, 1, 1));
+	if (cfg.ostyle == 4) {
+		printf("%"PRIu64";", interface->rxtotal);
+		printf("%"PRIu64";", interface->txtotal);
+		printf("%"PRIu64"\n", interface->rxtotal+interface->txtotal);
+	} else {
+		printf("%s;", getvalue(interface->rxtotal, 1, 1));
+		printf("%s;", getvalue(interface->txtotal, 1, 1));
+		printf("%s\n", getvalue(interface->rxtotal+interface->txtotal, 1, 1));
+	}
 }
 
 void showhours(const interfaceinfo *interface)
