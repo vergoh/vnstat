@@ -78,8 +78,9 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = vnstat$(EXEEXT)
+bin_PROGRAMS = vnstat$(EXEEXT) $(am__EXEEXT_1)
 sbin_PROGRAMS = vnstatd$(EXEEXT)
+@HAVE_LIBGD_TRUE@am__append_1 = vnstati
 @HAVE_CHECK_TRUE@TESTS = check_vnstat$(EXEEXT)
 @HAVE_CHECK_TRUE@check_PROGRAMS = check_vnstat$(EXEEXT)
 subdir = .
@@ -98,6 +99,7 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/src/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
+@HAVE_LIBGD_TRUE@am__EXEEXT_1 = vnstati$(EXEEXT)
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(sbindir)" \
 	"$(DESTDIR)$(man1dir)" "$(DESTDIR)$(man5dir)"
 PROGRAMS = $(bin_PROGRAMS) $(sbin_PROGRAMS)
@@ -161,6 +163,12 @@ am_vnstatd_OBJECTS = src/vnstatd.$(OBJEXT) src/ifinfo.$(OBJEXT) \
 	src/fs.$(OBJEXT) src/id.$(OBJEXT) src/daemon.$(OBJEXT)
 vnstatd_OBJECTS = $(am_vnstatd_OBJECTS)
 vnstatd_LDADD = $(LDADD)
+am_vnstati_OBJECTS = src/vnstati.$(OBJEXT) src/image.$(OBJEXT) \
+	src/dbsql.$(OBJEXT) src/common.$(OBJEXT) src/misc.$(OBJEXT) \
+	src/fs.$(OBJEXT) src/id.$(OBJEXT) src/cfg.$(OBJEXT)
+vnstati_OBJECTS = $(am_vnstati_OBJECTS)
+am__DEPENDENCIES_1 =
+vnstati_DEPENDENCIES = $(am__DEPENDENCIES_1)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -193,9 +201,10 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(check_vnstat_SOURCES) $(vnstat_SOURCES) $(vnstatd_SOURCES)
+SOURCES = $(check_vnstat_SOURCES) $(vnstat_SOURCES) $(vnstatd_SOURCES) \
+	$(vnstati_SOURCES)
 DIST_SOURCES = $(am__check_vnstat_SOURCES_DIST) $(vnstat_SOURCES) \
-	$(vnstatd_SOURCES)
+	$(vnstatd_SOURCES) $(vnstati_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive cscopelist-recursive \
 	ctags-recursive dvi-recursive html-recursive info-recursive \
 	install-data-recursive install-dvi-recursive \
@@ -592,10 +601,7 @@ top_srcdir = @top_srcdir@
 SUBDIRS = .
 dist_man_MANS = man/vnstat.1 man/vnstat.conf.5 man/vnstatd.1 man/vnstati.1
 EXTRA_DIST = cfg examples UPGRADE CHANGES FAQ INSTALL_BSD INSTALL_OSX UNINSTALL
-#if HAVE_LIBGD
-#bin_PROGRAMS += vnstati
-#endif
-#vnstati_LDADD = $(IMAGELIBS)
+vnstati_LDADD = $(IMAGELIBS)
 vnstat_SOURCES = src/vnstat.c src/vnstat.h \
   src/ifinfo.c src/ifinfo.h \
   src/dbsql.c src/dbsql.h \
@@ -622,6 +628,15 @@ vnstatd_SOURCES = src/vnstatd.c src/vnstatd.h \
   src/fs.c src/fs.h \
   src/id.c src/id.h \
   src/daemon.c src/daemon.h
+
+vnstati_SOURCES = src/vnstati.c src/vnstati.h \
+  src/image.c src/image.h \
+  src/dbsql.c src/dbsql.h \
+  src/common.c src/common.h \
+  src/misc.c src/misc.h \
+  src/fs.c src/fs.h \
+  src/id.c src/id.h \
+  src/cfg.c src/cfg.h
 
 @HAVE_CHECK_TRUE@check_vnstat_CFLAGS = @CHECK_CFLAGS@ \
 @HAVE_CHECK_TRUE@  -DPROCNETDEV=\"testdir/proc/dev\" \
@@ -924,6 +939,13 @@ src/daemon.$(OBJEXT): src/$(am__dirstamp) \
 vnstatd$(EXEEXT): $(vnstatd_OBJECTS) $(vnstatd_DEPENDENCIES) $(EXTRA_vnstatd_DEPENDENCIES) 
 	@rm -f vnstatd$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(vnstatd_OBJECTS) $(vnstatd_LDADD) $(LIBS)
+src/vnstati.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/image.$(OBJEXT): src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
+
+vnstati$(EXEEXT): $(vnstati_OBJECTS) $(vnstati_DEPENDENCIES) $(EXTRA_vnstati_DEPENDENCIES) 
+	@rm -f vnstati$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(vnstati_OBJECTS) $(vnstati_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -960,10 +982,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/ibw.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/id.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/ifinfo.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/image.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/misc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/traffic.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/vnstat.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/vnstatd.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/vnstati.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/check_vnstat-common_tests.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/check_vnstat-config_tests.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/check_vnstat-daemon_tests.Po@am__quote@

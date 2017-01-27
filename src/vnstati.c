@@ -16,9 +16,9 @@ vnStat image output - Copyright (c) 2007-2017 Teemu Toivola <tst@iki.fi>
 */
 
 #include "common.h"
+#include "dbsql.h"
 #include "image.h"
 #include "cfg.h"
-#include "dbaccess.h"
 #include "vnstati.h"
 
 int main(int argc, char *argv[])
@@ -58,7 +58,6 @@ int main(int argc, char *argv[])
 
 	configlocale();
 	strncpy_nt(p.interface, cfg.iface, 32);
-	strncpy_nt(p.dirname, cfg.dbdir, 512);
 	ic.current = time(NULL);
 
 	/* parse parameters */
@@ -133,9 +132,9 @@ int main(int argc, char *argv[])
 			}
 		} else if ((strcmp(argv[currentarg],"--dbdir"))==0) {
 			if (currentarg+1<argc) {
-				strncpy_nt(p.dirname, argv[currentarg+1], 512);
+				strncpy_nt(cfg.dbdir, argv[currentarg+1], 512);
 				if (debug)
-					printf("DatabaseDir: \"%s\"\n", p.dirname);
+					printf("DatabaseDir: \"%s\"\n", cfg.dbdir);
 				currentarg++;
 				continue;
 			} else {
@@ -227,7 +226,7 @@ int main(int argc, char *argv[])
 
 	validateinput(&p);
 	handlecaching(&p, &ic);
-	handledatabase(&p);
+	handledatabase(&p, &ic);
 	openoutput(&p);
 
 	if (debug)
@@ -237,6 +236,7 @@ int main(int argc, char *argv[])
 	writeoutput(&p, &ic);
 
 	/* cleanup */
+	db_close();
 	if (debug)
 		printf("all done\n");
 
@@ -249,7 +249,6 @@ void initiparams(IPARAMS *p)
 	debug = 0;         /* debug disabled by default */
 	disableprints = 0; /* let prints be visible */
 	p->interface[0] = '\0';
-	p->dirname[0] = '\0';
 	p->filename[0] = '\0';
 	p->cfgfile[0] = '\0';
 	p->cache = 0;
@@ -318,16 +317,19 @@ void handlecaching(IPARAMS *p, IMAGECONTENT *ic)
 	}
 }
 
-void handledatabase(IPARAMS *p)
+void handledatabase(IPARAMS *p, IMAGECONTENT *ic)
 {
-	if (strstr(p->interface, "+")) {
-		if (!mergedb(p->interface, p->dirname)) {
-			exit(EXIT_FAILURE);
-		}
-	} else {
-		if (readdb(p->interface, p->dirname, 0)==1) {
-			exit(EXIT_FAILURE);
-		}
+	if (!db_open(0)) {
+		printf("Error: Unable to open database \"%s/%s\": %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+	if (!db_getinterfacecountbyname(p->interface)) {
+		printf("Error: Interface \"%s\" not found in database.\n", p->interface);
+		exit(EXIT_FAILURE);
+	}
+	if (!db_getinterfaceinfo(p->interface, &ic->interface)) {
+		printf("Error: Failed to fetch interface \"%s\" info from database.\n", p->interface);
+		exit(EXIT_FAILURE);
 	}
 }
 

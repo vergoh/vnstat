@@ -12,7 +12,7 @@ configurable durations. Yearly and 5 minute resolution statistics are now includ
   * alpha version with working daemon implementation
     * some sanity checks may be missing or disabled
   * vnstat (console output) has most features implemented
-  * vnstati (image output) is disabled
+  * vnstati (image output) lacks rewrite of most features
   * getting closer to replace vnStat 1.x
 
 ##### Done
@@ -47,7 +47,7 @@ configurable durations. Yearly and 5 minute resolution statistics are now includ
   * continue daemon refactoring
   * add missing sanity checks to daemon
   * image outputs
-    * all
+    * all but daily
   * use of 5 minute resolution statistics
   * feature configurability
   * freeze database structure

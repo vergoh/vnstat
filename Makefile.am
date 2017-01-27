@@ -6,10 +6,10 @@ EXTRA_DIST = cfg examples UPGRADE CHANGES FAQ INSTALL_BSD INSTALL_OSX UNINSTALL
 
 bin_PROGRAMS = vnstat
 sbin_PROGRAMS = vnstatd
-#if HAVE_LIBGD
-#bin_PROGRAMS += vnstati
-#endif
-#vnstati_LDADD = $(IMAGELIBS)
+if HAVE_LIBGD
+bin_PROGRAMS += vnstati
+endif
+vnstati_LDADD = $(IMAGELIBS)
 
 vnstat_SOURCES = src/vnstat.c src/vnstat.h \
   src/ifinfo.c src/ifinfo.h \
@@ -38,15 +38,14 @@ vnstatd_SOURCES = src/vnstatd.c src/vnstatd.h \
   src/id.c src/id.h \
   src/daemon.c src/daemon.h
 
-#vnstati_SOURCES = src/vnstati.c src/vnstati.h \
-#  src/image.c src/image.h \
-#  src/dbsql.c src/dbsql.h \
-#  src/dbaccess.c src/dbaccess.h \
-#  src/common.c src/common.h \
-#  src/misc.c src/misc.h \
-#  src/fs.c src/fs.h \
-#  src/id.c src/id.h \
-#  src/cfg.c src/cfg.h
+vnstati_SOURCES = src/vnstati.c src/vnstati.h \
+  src/image.c src/image.h \
+  src/dbsql.c src/dbsql.h \
+  src/common.c src/common.h \
+  src/misc.c src/misc.h \
+  src/fs.c src/fs.h \
+  src/id.c src/id.h \
+  src/cfg.c src/cfg.h
 
 if HAVE_CHECK
 TESTS = check_vnstat
