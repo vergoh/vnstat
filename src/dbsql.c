@@ -814,7 +814,8 @@ void dbiflistfree(dbiflist **dbifl)
 
 int db_getdata(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface, const char *table, const uint32_t resultlimit)
 {
-	int ret = 1;
+	int ret = 1, i;
+	char *datatables[] = {"fiveminute", "hour", "day", "month", "year", "top"};
 	char sql[512], limit[64];
 	sqlite3_int64 ifaceid = 0;
 	sqlite3_stmt *sqlstmt;
@@ -829,7 +830,16 @@ int db_getdata(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface,
 		return 0;
 	}
 
-	/* TODO: add table validation here */
+	ret = 0;
+	for (i=0; i<6; i++) {
+		if (strcmp(table, datatables[i]) == 0) {
+			ret = 1;
+			break;
+		}
+	}
+	if (!ret) {
+		return 0;
+	}
 
 	if (resultlimit > 0) {
 		snprintf(limit, 64, "limit %"PRIu32"", resultlimit);

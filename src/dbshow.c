@@ -122,8 +122,7 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 	}
 
 	if (!db_getdata(&datalist, &datainfo, interface->name, "month", 2)) {
-		/* TODO: match with other output style */
-		printf("Error: failed to fetch monthly data\n");
+		printf("Error: Failed to fetch month data.\n");
 		return;
 	}
 
@@ -203,8 +202,7 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 	strftime(yesterdaystr, DATEBUFFLEN, cfg.dformat, d);
 
 	if (!db_getdata(&datalist, &datainfo, interface->name, "day", 2)) {
-		/* TODO: match with other output style */
-		printf("Error: failed to fetch daily data\n");
+		printf("Error: Failed to fetch day data.\n");
 		return;
 	}
 
@@ -359,8 +357,7 @@ void showlist(const interfaceinfo *interface, const char *listname)
 	}
 
 	if (!db_getdata(&datalist, &datainfo, interface->name, listname, limit)) {
-		/* TODO: match with other output style */
-		printf("Error: failed to fetch %s data\n", titlename);
+		printf("Error: Failed to fetch %s data.\n", titlename);
 		return;
 	}
 
@@ -503,8 +500,7 @@ void showoneline(const interfaceinfo *interface)
 	printf(";");
 
 	if (!db_getdata(&datalist, &datainfo, interface->name, "day", 1)) {
-		/* TODO: match with other output style */
-		printf("\nError: failed to fetch daily data\n");
+		printf("\nError: Failed to fetch day data.\n");
 		return;
 	}
 
@@ -529,8 +525,7 @@ void showoneline(const interfaceinfo *interface)
 	dbdatalistfree(&datalist);
 
 	if (!db_getdata(&datalist, &datainfo, interface->name, "month", 1)) {
-		/* TODO: match with other output style */
-		printf("\nError: failed to fetch monthly data\n");
+		printf("\nError: Failed to fetch month data.\n");
 		return;
 	}
 
@@ -582,8 +577,7 @@ void showhours(const interfaceinfo *interface)
 	}
 
 	if (!db_getdata(&datalist, &datainfo, interface->name, "hour", 24)) {
-		/* TODO: match with other output style */
-		printf("\nError: failed to fetch hourly data\n");
+		printf("Error: Failed to fetch hour data.\n");
 		return;
 	}
 
@@ -737,7 +731,7 @@ void exportdb(const interfaceinfo *interface)
 	for (i=0; i<5; i++) {
 
 		if (!db_getdata(&datalist, &datainfo, interface->name, datatables[i], -1)) {
-			printf("\nError: failed to fetch %s data\n", datatables[i]);
+			printf("Error: Failed to fetch %s data.\n", datatables[i]);
 			return;
 		}
 		datalist_i = datalist;

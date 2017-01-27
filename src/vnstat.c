@@ -162,8 +162,8 @@ int main(int argc, char *argv[]) {
 				printf("Error: Locale for %s missing.\n", argv[currentarg]);
 				return 1;
 			}
-		} else if (strcmp(argv[currentarg],"--create")==0) {
-			p.create=1;
+		} else if (strcmp(argv[currentarg],"--add")==0) {
+			p.addiface=1;
 			p.query=0;
 		} else if ((strcmp(argv[currentarg],"-u")==0) || (strcmp(argv[currentarg],"--update")==0)) {
 			printf("Error: The \"%s\" parameter is not supported in this version.\n", argv[currentarg]);
@@ -280,8 +280,8 @@ int main(int argc, char *argv[]) {
 		} else if (strcmp(argv[currentarg],"--showconfig")==0) {
 			printcfgfile();
 			return 0;
-		} else if (strcmp(argv[currentarg],"--delete")==0) {
-			p.delete=1;
+		} else if (strcmp(argv[currentarg],"--remove")==0) {
+			p.removeiface=1;
 			p.query=0;
 		} else if (strcmp(argv[currentarg],"--iflist")==0) {
 			getiflist(&p.ifacelist, 1);
@@ -351,8 +351,8 @@ int main(int argc, char *argv[]) {
 	p.interface[31]='\0';
 
 	/* parameter handlers */
-	handledelete(&p);
-	handlecreate(&p);
+	handleremoveinterface(&p);
+	handleaddinterface(&p);
 	handlesetalias(&p);
 	handleshowdatabases(&p);
 	handletrafficmeters(&p);
@@ -363,9 +363,9 @@ int main(int argc, char *argv[]) {
 		/* give more help if there's no database */
 		if (p.ifcount == 0) {
 			getiflist(&p.ifacelist, 1);
-			printf("No database found, nothing to do. Use --help for help.\n\n");
-			printf("A new database can be created with the following command:\n");
-			printf("    %s --create -i eth0\n\n", argv[0]);
+			printf("No interfaces found in the database, nothing to do. Use --help for help.\n\n");
+			printf("Interfaces can be added to the database with the following command:\n");
+			printf("    %s --add -i eth0\n\n", argv[0]);
 			printf("Replace 'eth0' with the interface that should be monitored.\n\n");
 			if (strlen(cfg.cfgfile)) {
 				printf("The default interface can be changed by updating the \"Interface\" keyword\n");
@@ -391,7 +391,7 @@ void initparams(PARAMS *p)
 	debug = 0; /* debug disabled by default */
 	disableprints = 0; /* let prints be visible */
 
-	p->create = 0;
+	p->addiface = 0;
 	p->query = 1;
 	p->setalias = 0;
 	p->ifcount = 0;
@@ -399,7 +399,7 @@ void initparams(PARAMS *p)
 	p->traffic = 0;
 	p->livetraffic = 0;
 	p->defaultiface = 1;
-	p->delete=0;
+	p->removeiface=0;
 	p->livemode = 0;
 	p->ifacelist = NULL;
 	p->cfgfile[0] = '\0';
@@ -430,10 +430,6 @@ void showhelp(PARAMS *p)
 
 void showlonghelp(PARAMS *p)
 {
-	/* TODO: update */
-	/* --create could be replaced with --add as it adds the interface to the database */
-	/* --delete could be similarly replaced with --remove */
-
 	printf(" vnStat %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
 
 	printf("   Query:\n");
@@ -451,8 +447,8 @@ void showlonghelp(PARAMS *p)
 	printf("         --xml                 show database in xml format\n");
 
 	printf("   Modify:\n");
-	printf("         --create              create database\n");
-	printf("         --delete              delete database\n");
+	printf("         --add                 add interface to database\n");
+	printf("         --remove              remove interface from database\n");
 	printf("         --setalias            set alias for interface\n");
 
 	printf("   Misc:\n");
@@ -473,9 +469,9 @@ void showlonghelp(PARAMS *p)
 	printf("See also \"man vnstat\".\n");
 }
 
-void handledelete(PARAMS *p)
+void handleremoveinterface(PARAMS *p)
 {
-	if (!p->delete) {
+	if (!p->removeiface) {
 		return;
 	}
 
@@ -485,27 +481,27 @@ void handledelete(PARAMS *p)
 	}
 
 	if (!p->force) {
-		printf("Warning:\nThe current option would delete all data\nabout interface \"%s\" from the database.\n", p->interface);
+		printf("Warning:\nThe current option would remove all data\nabout interface \"%s\" from the database.\n", p->interface);
 		printf("Use --force in order to really do that.\n");
 		exit(EXIT_FAILURE);
 	}
 
 	if (db_removeinterface(p->interface)) {
-		printf("Interface \"%s\" deleted from database.\n", p->interface);
-		printf("The interface will no longer be monitored. Use --create\n");
+		printf("Interface \"%s\" removed from database.\n", p->interface);
+		printf("The interface will no longer be monitored. Use --add\n");
 		printf("if monitoring the interface is again needed.\n");
 		exit(EXIT_SUCCESS);
 	} else {
-		printf("Error: Deleting interface \"%s\" from database failed.\n", p->interface);
+		printf("Error: Removing interface \"%s\" from database failed.\n", p->interface);
 		exit(EXIT_FAILURE);
 	}
 }
 
-void handlecreate(PARAMS *p)
+void handleaddinterface(PARAMS *p)
 {
 	char dbfile[512];
 
-	if (!p->create) {
+	if (!p->addiface) {
 		return;
 	}
 

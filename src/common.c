@@ -44,7 +44,7 @@ int printe(PrintType type)
 				printf("%d: %s\n", type, errorstring);
 				break;
 		}
-
+		fflush(stdout);
 	}
 
 	return result;

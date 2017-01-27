@@ -62,8 +62,7 @@ void xmldump(const interfaceinfo *interface, const char *tablename, const int da
 	dbdatalistinfo datainfo;
 
 	if (!db_getdata(&datalist, &datainfo, interface->name, tablename, -1)) {
-		/* TODO: match with other output style */
-		printf("Error: failed to fetch %s data\n", tablename);
+		printf("Error: Failed to fetch %s data.\n", tablename);
 		return;
 	}
 
