@@ -31,7 +31,6 @@ void showjson(const char *interface, const int dbcount, const char mode)
 	printf("\"traffic\":");
 	printf("{\"total\":{\"rx\":%"PRIu64",\"tx\":%"PRIu64"},", info.rxtotal, info.txtotal);
 
-	/* TODO: add years and 5 minutes */
 	switch (mode) {
 		case 'd':
 			jsondump(&info, "day", 1);
@@ -45,15 +44,25 @@ void showjson(const char *interface, const int dbcount, const char mode)
 		case 'h':
 			jsondump(&info, "hour", 2);
 			break;
+		case 'y':
+			jsondump(&info, "year", 4);
+			break;
+		case '5':
+			jsondump(&info, "fiveminute", 2);
+			break;
 		case 'a':
 		default:
+			jsondump(&info, "fiveminute", 2);
+			printf(",");
+			jsondump(&info, "hour", 2);
+			printf(",");
 			jsondump(&info, "day", 1);
 			printf(",");
 			jsondump(&info, "month", 3);
 			printf(",");
-			jsondump(&info, "top", 1);
+			jsondump(&info, "year", 4);
 			printf(",");
-			jsondump(&info, "hour", 2);
+			jsondump(&info, "top", 1);
 			break;
 	}
 
@@ -92,8 +101,9 @@ void jsondate(const time_t *date, const int type)
 {
 	struct tm *d;
 	char *type1 = "\"date\":{\"year\":%d,\"month\":%d,\"day\":%d}";
-	char *type2 = "\"date\":{\"year\":%d,\"month\":%d,\"day\":%d},\"time\":{\"hour\":%d,\"minutes\":%d}";
+	char *type2 = "\"date\":{\"year\":%d,\"month\":%d,\"day\":%d},\"time\":{\"hour\":%d,\"minute\":%d}";
 	char *type3 = "\"date\":{\"year\":%d,\"month\":%d}";
+	char *type4 = "\"date\":{\"year\":%d}";
 
 	d = localtime(date);
 
@@ -103,6 +113,8 @@ void jsondate(const time_t *date, const int type)
 		printf(type2, 1900+d->tm_year, 1+d->tm_mon, d->tm_mday, d->tm_hour, d->tm_min);
 	} else if (type == 3) {
 		printf(type3, 1900+d->tm_year, 1+d->tm_mon);
+	} else if (type == 4) {
+		printf(type4, 1900+d->tm_year);
 	}
 }
 

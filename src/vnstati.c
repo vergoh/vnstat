@@ -177,6 +177,8 @@ int main(int argc, char *argv[])
 			cfg.qmode = 2;
 		} else if ((strcmp(argv[currentarg],"-t")==0) || (strcmp(argv[currentarg],"--top10"))==0) {
 			cfg.qmode = 3;
+		} else if ((strcmp(argv[currentarg],"-y")==0) || (strcmp(argv[currentarg],"--years"))==0) {
+			cfg.qmode = 4;
 		} else if ((strcmp(argv[currentarg],"-s")==0) || (strcmp(argv[currentarg],"--summary"))==0) {
 			cfg.qmode = 5;
 		} else if ((strcmp(argv[currentarg],"-h")==0) || (strcmp(argv[currentarg],"--hours"))==0) {

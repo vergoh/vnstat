@@ -345,13 +345,12 @@ void showlist(const interfaceinfo *interface, const char *listname)
 		if (listtype == 4) {
 			printf("------");
 		}
+		printf("-------------------------+-------------+------------");
 		if (cfg.ostyle != 0) {
-			printf("-------------------------+-------------+---------------------------------");
+			printf("---------------------");
 			if (listtype != 4) {
 				printf("------");
 			}
-		} else {
-			printf("-------------------------+-------------+------------");
 		}
 		printf("\n");
 	}
@@ -429,13 +428,12 @@ void showlist(const interfaceinfo *interface, const char *listname)
 		if (listtype == 4) {
 			printf("------");
 		}
+		printf("-------------------------+-------------+------------");
 		if (cfg.ostyle != 0) {
-			printf("-------------------------+-------------+---------------------------------");
+			printf("---------------------");
 			if (listtype != 4) {
 				printf("------");
 			}
-		} else {
-			printf("-------------------------+-------------+------------");
 		}
 		printf("\n");
 	}

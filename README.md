@@ -2,34 +2,38 @@
 
 This is the development branch for vnStat 2.0 that uses a sqlite database
 for storing data instead of a C structure dump in a file. A better database
-format is needed for enabling longer duration statistics with user
-configurable durations. Yearly and 5 minute resolution statistics are now included.
+format was needed for enabling longer duration statistics with user configurable
+durations. Yearly and 5 minute resolution statistics are now included.
 
 # Status
 
 ##### Overall status
 
-  * alpha version with working daemon implementation
+  * alpha version
+    * has been tested so far only in 24/7 running servers
+  * vnstatd (daemon) has all features implemented
     * some sanity checks may be missing or disabled
   * vnstat (console output) has most features implemented
-  * vnstati (image output) lacks rewrite of most features
+  * vnstati (image output) lacks rewrite of some features
   * getting closer to replace vnStat 1.x
 
 ##### Done
 
-  * database creation and handling
-  * support for multiple interfaces
-  * dynamic data buffering in daemon, SaveInterval is honored
-  * 5 minute, hourly, daily, monthly, yearly and total traffic recorded to database
-  * legacy database files are read only during first startup for data import
-    * write support is no longer included in code
-  * full data import from vnStat 1.x database format including reconstructed yearly data
-  * legacy database is not kept in memory for each interface during daemon runtime
-  * new configuration options for data retention durations
-    * features can be disabled
-  * old data cleanup
-    * executed during startup and then once every hour
+  * vnstatd (daemon)
+    * database creation and handling
+    * support for multiple interfaces
+    * dynamic data buffering, SaveInterval is honored
+    * 5 minute, hourly, daily, monthly, yearly and total traffic recorded to database
+    * legacy database files are read only during first startup for data import
+      * write support is no longer included in code
+    * full data import from vnStat 1.x database format including reconstructed yearly data
+    * legacy database is not kept in memory for each interface during daemon runtime
+    * new configuration options for data retention durations
+      * features can be disabled
+    * old data cleanup
+      * executed during startup and then once every hour
   * most vnstat (console output) features
+  * many vnstati (image output) features
 
 ##### Removed features
 
@@ -45,9 +49,10 @@ configurable durations. Yearly and 5 minute resolution statistics are now includ
 
   * `grep TODO src/* tests/*`
   * continue daemon refactoring
+  * testing in more diverse environments
   * add missing sanity checks to daemon
   * image outputs
-    * all but daily
+    * summary and hourly + combinations
   * use of 5 minute resolution statistics
   * feature configurability
   * freeze database structure

@@ -38,9 +38,7 @@ void drawdonut(IMAGECONTENT *ic, const int x, const int y, const float rxp, cons
 void drawsummary(IMAGECONTENT *ic, int type, int rate);
 void drawoldsummary(IMAGECONTENT *ic, int type, int rate);
 void drawhourly(IMAGECONTENT *ic, int rate); */
-void drawdaily(IMAGECONTENT *ic);
-/*void drawmonthly(IMAGECONTENT *ic);
-void drawtop(IMAGECONTENT *ic); */
+void drawlist(IMAGECONTENT *ic, const char *listname);
 void hextorgb(char *input, int *rgb);
 void modcolor(int *rgb, const int offset, const int force);
 char *getimagevalue(const uint64_t b, const int len, const int rate);

@@ -29,7 +29,6 @@ void showxml(const char *interface, const char mode)
 	printf("  <traffic>\n");
 	printf("   <total><rx>%"PRIu64"</rx><tx>%"PRIu64"</tx></total>\n", info.rxtotal, info.txtotal);
 
-	/* TODO: add years and 5 minutes */
 	switch (mode) {
 		case 'd':
 			xmldump(&info, "day", 1);
@@ -43,12 +42,20 @@ void showxml(const char *interface, const char mode)
 		case 'h':
 			xmldump(&info, "hour", 2);
 			break;
+		case 'y':
+			xmldump(&info, "year", 4);
+			break;
+		case '5':
+			xmldump(&info, "fiveminute", 2);
+			break;
 		case 'a':
 		default:
+			xmldump(&info, "fiveminute", 2);
+			xmldump(&info, "hour", 2);
 			xmldump(&info, "day", 1);
 			xmldump(&info, "month", 3);
+			xmldump(&info, "year", 2);
 			xmldump(&info, "top", 1);
-			xmldump(&info, "hour", 2);
 			break;
 	}
 
@@ -84,6 +91,7 @@ void xmldate(const time_t *date, const int type)
 	char *type1 = "<date><year>%d</year><month>%02d</month><day>%02d</day></date>";
 	char *type2 = "<date><year>%d</year><month>%02d</month><day>%02d</day></date><time><hour>%02d</hour><minute>%02d</minute></time>";
 	char *type3 = "<date><year>%d</year><month>%02d</month></date>";
+	char *type4 = "<date><year>%d</year></date>";
 
 	d = localtime(date);
 
@@ -93,6 +101,8 @@ void xmldate(const time_t *date, const int type)
 		printf(type2, 1900+d->tm_year, 1+d->tm_mon, d->tm_mday, d->tm_hour, d->tm_min);
 	} else if (type == 3) {
 		printf(type3, 1900+d->tm_year, 1+d->tm_mon);
+	} else if (type == 4) {
+		printf(type4, 1900+d->tm_year);
 	}
 }
 

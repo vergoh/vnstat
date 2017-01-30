@@ -878,7 +878,11 @@ int db_getdata(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface,
 	}
 	sqlite3_finalize(sqlstmt);
 
-	/* TODO: should list be cleaned if it doesn't contain everything? */
+	/* clean list on failure */
+	if (!ret) {
+		dbdatalistfree(dbdata);
+		listinfo->count = 0;
+	}
 
 	return ret;
 }
