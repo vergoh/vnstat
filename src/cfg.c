@@ -89,7 +89,15 @@ void printcfgfile(void)
 	printf("# log days without traffic to daily list (1 = enabled, 0 = disabled)\n");
 	printf("TrafficlessDays %d\n\n", cfg.traflessday);
 
-	printf("# data retention durations (-1 = unlimited, 0 = log disabled)\n");
+	printf("# default list output entry count (0 = all)\n");
+	printf("List5Mins      %2d\n", cfg.listfivemins);
+	printf("ListHours      %2d\n", cfg.listhours);
+	printf("ListDays       %2d\n", cfg.listdays);
+	printf("ListMonths     %2d\n", cfg.listmonths);
+	printf("ListYears      %2d\n", cfg.listyears);
+	printf("ListTop        %2d\n\n", cfg.listtop);
+
+	printf("# data retention durations (-1 = unlimited, 0 = feature disabled)\n");
 	printf("5MinuteHours   %2d\n", cfg.fiveminutehours);
 	printf("HourlyDays     %2d\n", cfg.hourlydays);
 	printf("DailyDays      %2d\n", cfg.dailydays);
@@ -208,6 +216,12 @@ int loadcfg(const char *cfgfile)
 		{ "UseFileLocking", 0, &cfg.flock, 0, 0 },
 		{ "BootVariation", 0, &cfg.bvar, 0, 0 },
 		{ "TrafficlessDays", 0, &cfg.traflessday, 0, 0 },
+		{ "List5Mins", 0, &cfg.listfivemins, 0, 0 },
+		{ "ListHours", 0, &cfg.listhours, 0, 0 },
+		{ "ListDays", 0, &cfg.listdays, 0, 0 },
+		{ "ListMonths", 0, &cfg.listmonths, 0, 0 },
+		{ "ListYears", 0, &cfg.listyears, 0, 0 },
+		{ "ListTop", 0, &cfg.listtop, 0, 0 },
 		{ "5MinuteHours", 0, &cfg.fiveminutehours, 0, 0 },
 		{ "HourlyDays", 0, &cfg.hourlydays, 0, 0 },
 		{ "DailyDays", 0, &cfg.dailydays, 0, 0 },
@@ -476,6 +490,42 @@ void validatecfg(void)
 		printe(PT_Config);
 	}
 
+	if (cfg.listfivemins<0) {
+		cfg.listfivemins = LISTFIVEMINS;
+		snprintf(errorstring, 512, "%s List5Mins, %s \"%d\".", invalidvalue, resettingto, cfg.listfivemins);
+		printe(PT_Config);
+	}
+
+	if (cfg.listhours<0) {
+		cfg.listhours = LISTHOURS;
+		snprintf(errorstring, 512, "%s ListHours, %s \"%d\".", invalidvalue, resettingto, cfg.listhours);
+		printe(PT_Config);
+	}
+
+	if (cfg.listdays<0) {
+		cfg.listdays = LISTDAYS;
+		snprintf(errorstring, 512, "%s ListDays, %s \"%d\".", invalidvalue, resettingto, cfg.listdays);
+		printe(PT_Config);
+	}
+
+	if (cfg.listmonths<0) {
+		cfg.listmonths = LISTMONTHS;
+		snprintf(errorstring, 512, "%s ListMonths, %s \"%d\".", invalidvalue, resettingto, cfg.listmonths);
+		printe(PT_Config);
+	}
+
+	if (cfg.listyears<0) {
+		cfg.listyears = LISTYEARS;
+		snprintf(errorstring, 512, "%s ListYears, %s \"%d\".", invalidvalue, resettingto, cfg.listyears);
+		printe(PT_Config);
+	}
+
+	if (cfg.listtop<0) {
+		cfg.listtop = LISTTOP;
+		snprintf(errorstring, 512, "%s ListTop, %s \"%d\".", invalidvalue, resettingto, cfg.listtop);
+		printe(PT_Config);
+	}
+
 	if (cfg.fiveminutehours<-1) {
 		cfg.fiveminutehours = FIVEMINUTEHOURS;
 		snprintf(errorstring, 512, "%s 5MinuteHours, %s \"%d\".", invalidvalue, resettingto, cfg.fiveminutehours);
@@ -547,6 +597,13 @@ void defaultcfg(void)
 	cfg.slayout = SUMMARYLAYOUT;
 	cfg.traflessday = TRAFLESSDAY;
 	cfg.utflocale = UTFLOCALE;
+
+	cfg.listfivemins = LISTFIVEMINS;
+	cfg.listhours = LISTHOURS;
+	cfg.listdays = LISTDAYS;
+	cfg.listmonths = LISTMONTHS;
+	cfg.listyears = LISTYEARS;
+	cfg.listtop = LISTTOP;
 
 	cfg.fiveminutehours = FIVEMINUTEHOURS;
 	cfg.hourlydays = HOURLYDAYS;

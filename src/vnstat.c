@@ -167,21 +167,53 @@ int main(int argc, char *argv[]) {
 			p.query=0;
 		} else if ((strcmp(argv[currentarg],"-u")==0) || (strcmp(argv[currentarg],"--update")==0)) {
 			printf("Error: The \"%s\" parameter is not supported in this version.\n", argv[currentarg]);
-			exit(EXIT_FAILURE);
+			return 1;
 		} else if ((strcmp(argv[currentarg],"-q")==0) || (strcmp(argv[currentarg],"--query")==0)) {
 			p.query=1;
 		} else if ((strcmp(argv[currentarg],"-D")==0) || (strcmp(argv[currentarg],"--debug")==0)) {
 			debug=1;
 		} else if ((strcmp(argv[currentarg],"-d")==0) || (strcmp(argv[currentarg],"--days")==0)) {
 			cfg.qmode=1;
+			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
+				cfg.listdays = atoi(argv[currentarg+1]);
+				if (cfg.listdays < 0) {
+					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg+1], argv[currentarg]);
+					return 1;
+				}
+				currentarg++;
+			}
 		} else if ((strcmp(argv[currentarg],"-m")==0) || (strcmp(argv[currentarg],"--months")==0)) {
 			cfg.qmode=2;
-		} else if ((strcmp(argv[currentarg],"-t")==0) || (strcmp(argv[currentarg],"--top10")==0)) {
+			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
+				cfg.listmonths = atoi(argv[currentarg+1]);
+				if (cfg.listmonths < 0) {
+					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg+1], argv[currentarg]);
+					return 1;
+				}
+				currentarg++;
+			}
+		} else if ((strcmp(argv[currentarg],"-t")==0) || (strcmp(argv[currentarg],"--top")==0)) {
 			cfg.qmode=3;
+			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
+				cfg.listtop = atoi(argv[currentarg+1]);
+				if (cfg.listtop < 0) {
+					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg+1], argv[currentarg]);
+					return 1;
+				}
+				currentarg++;
+			}
 		} else if ((strcmp(argv[currentarg],"-s")==0) || (strcmp(argv[currentarg],"--short")==0)) {
 			cfg.qmode=5;
 		} else if ((strcmp(argv[currentarg],"-y")==0) || (strcmp(argv[currentarg],"--years")==0)) {
 			cfg.qmode=6;
+			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
+				cfg.listyears = atoi(argv[currentarg+1]);
+				if (cfg.listyears < 0) {
+					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg+1], argv[currentarg]);
+					return 1;
+				}
+				currentarg++;
+			}
 		} else if ((strcmp(argv[currentarg],"-h")==0) || (strcmp(argv[currentarg],"--hours")==0)) {
 			cfg.qmode=7;
 		} else if ((strcmp(argv[currentarg],"--exportdb")==0) || (strcmp(argv[currentarg],"--dumpdb")==0)) {
@@ -420,7 +452,7 @@ void showhelp(PARAMS *p)
 	printf("         -d,  --days           show days\n");
 	printf("         -m,  --months         show months\n");
 	printf("         -y,  --years          show years\n");
-	printf("         -t,  --top10          show top 10 days\n");
+	printf("         -t,  --top            show top days\n");
 	printf("         -s,  --short          use short output\n");
 	printf("         -i,  --iface          select interface (default: %s)\n", p->definterface);
 	printf("         -?,  --help           short help\n");
@@ -442,7 +474,7 @@ void showlonghelp(PARAMS *p)
 	printf("         -d, --days            show days\n");
 	printf("         -m, --months          show months\n");
 	printf("         -y, --years           show years\n");
-	printf("         -t, --top10           show top 10 days\n");
+	printf("         -t, --top             show top days\n");
 	printf("         -s, --short           use short output\n");
 	printf("         -ru, --rateunit       swap configured rate unit\n");
 	printf("         --oneline             show simple parseable format\n");

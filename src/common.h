@@ -57,6 +57,8 @@ and most can be changed later from the config file.
 #define DATABASEDIR "/var/lib/vnstat"
 #endif
 #endif
+
+/* database file name */
 #define DATABASEFILE "vnstat.db"
 
 /* on which day should months change */
@@ -147,6 +149,14 @@ and most can be changed later from the config file.
 
 /* log trafficless days by default */
 #define TRAFLESSDAY 1
+
+/* list outputs */
+#define LISTFIVEMINS 24
+#define LISTHOURS 24
+#define LISTDAYS 30
+#define LISTMONTHS 12
+#define LISTYEARS 0
+#define LISTTOP 10
 
 /* data retention defaults */
 #define FIVEMINUTEHOURS 48
@@ -240,6 +250,7 @@ typedef struct {
 	int32_t updateinterval, pollinterval, saveinterval, offsaveinterval, savestatus, uselogging;
 	int32_t createdirs, updatefileowner, bwdetection, bwdetectioninterval, utflocale;
 	int32_t fiveminutehours, hourlydays, dailydays, monthlymonths, yearlyyears, topdayentries;
+	int32_t listfivemins, listhours, listdays, listmonths, listyears, listtop;
 } CFG;
 
 /* internal interface information structure */

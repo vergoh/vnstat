@@ -173,12 +173,44 @@ int main(int argc, char *argv[])
 			debug = 1;
 		} else if ((strcmp(argv[currentarg],"-d")==0) || (strcmp(argv[currentarg],"--days"))==0) {
 			cfg.qmode = 1;
+			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
+				cfg.listdays = atoi(argv[currentarg+1]);
+				if (cfg.listdays < 0) {
+					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg+1], argv[currentarg]);
+					return 1;
+				}
+				currentarg++;
+			}
 		} else if ((strcmp(argv[currentarg],"-m")==0) || (strcmp(argv[currentarg],"--months"))==0) {
 			cfg.qmode = 2;
-		} else if ((strcmp(argv[currentarg],"-t")==0) || (strcmp(argv[currentarg],"--top10"))==0) {
+			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
+				cfg.listmonths = atoi(argv[currentarg+1]);
+				if (cfg.listmonths < 0) {
+					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg+1], argv[currentarg]);
+					return 1;
+				}
+				currentarg++;
+			}
+		} else if ((strcmp(argv[currentarg],"-t")==0) || (strcmp(argv[currentarg],"--top"))==0) {
 			cfg.qmode = 3;
+			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
+				cfg.listtop = atoi(argv[currentarg+1]);
+				if (cfg.listtop < 0) {
+					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg+1], argv[currentarg]);
+					return 1;
+				}
+				currentarg++;
+			}
 		} else if ((strcmp(argv[currentarg],"-y")==0) || (strcmp(argv[currentarg],"--years"))==0) {
 			cfg.qmode = 4;
+			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
+				cfg.listyears = atoi(argv[currentarg+1]);
+				if (cfg.listyears < 0) {
+					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg+1], argv[currentarg]);
+					return 1;
+				}
+				currentarg++;
+			}
 		} else if ((strcmp(argv[currentarg],"-s")==0) || (strcmp(argv[currentarg],"--summary"))==0) {
 			cfg.qmode = 5;
 		} else if ((strcmp(argv[currentarg],"-h")==0) || (strcmp(argv[currentarg],"--hours"))==0) {

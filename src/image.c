@@ -284,34 +284,48 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		strncpy_nt(colname, listname, 8);
 		snprintf(titlename, 8, "daily");
 		strncpy_nt(stampformat, cfg.dformat, 64);
-		limit = 30;
+		limit = cfg.listdays;
 	} else if (strcmp(listname, "month") == 0) {
 		listtype = 2;
 		strncpy_nt(colname, listname, 8);
 		snprintf(titlename, 8, "monthly");
 		strncpy_nt(stampformat, cfg.mformat, 64);
-		limit = 12;
+		limit = cfg.listmonths;
 	} else if (strcmp(listname, "year") == 0) {
 		listtype = 3;
 		strncpy_nt(colname, listname, 8);
 		snprintf(titlename, 8, "yearly");
 		strncpy_nt(stampformat, "%Y", 64);
-		limit = -1;
+		limit = cfg.listyears;
 	} else if (strcmp(listname, "top") == 0) {
 		listtype = 4;
 		snprintf(colname, 8, "day");
-		snprintf(titlename, 8, "top 10");
 		strncpy_nt(stampformat, cfg.tformat, 64);
-		limit = 10;
+		limit = cfg.listtop;
 		offsetx = 30;
 		offsety = -16;
 	} else {
 		return;
 	}
 
+	if (limit == 0) {
+		limit = -1;
+	}
+
 	if (!db_getdata(&datalist, &datainfo, ic->interface.name, listname, limit)) {
 		printf("Error: Failed to fetch %s data.\n", "day");
 		return;
+	}
+
+	if (listtype == 4) {
+		if (limit > 0 && datainfo.count < (uint32_t)limit) {
+			limit = datainfo.count;
+		}
+		if (limit <= 0 || datainfo.count > 999) {
+			snprintf(titlename, 8, "top");
+		} else {
+			snprintf(titlename, 8, "top %d", limit);
+		}
 	}
 
 	datalist_i = datalist;
