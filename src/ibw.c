@@ -24,7 +24,7 @@ int ibwloadcfg(const char *cfgfile)
 	return 1;
 }
 
-int ibwadd(const char *iface, uint32_t limit)
+int ibwadd(const char *iface, const uint32_t limit)
 {
 	ibwnode *n, *p = ifacebw;
 
@@ -94,12 +94,13 @@ void ibwlist(void)
 	printf("\n");
 }
 
-int ibwget(const char *iface)
+int ibwget(const char *iface, uint32_t *limit)
 {
 	ibwnode *p = ifacebw;
 	time_t current;
 	uint32_t speed;
 
+	*limit = 0;
 	current = time(NULL);
 
 	/* search for interface specific limit */
@@ -113,16 +114,18 @@ int ibwget(const char *iface)
 						p->limit = speed;
 						p->retries = 0;
 						p->detected = current;
-						return speed;
+						*limit = speed;
+						return 1;
 					}
 					p->retries++;
 				}
 			}
 
 			if (p->limit>0) {
-				return p->limit;
+				*limit = p->limit;
+				return 1;
 			} else {
-				return -1;
+				return 0;
 			}
 		}
 		p = p->next;
@@ -136,17 +139,18 @@ int ibwget(const char *iface)
 			p->limit = speed;
 			p->retries = 0;
 			p->detected = current;
-			return speed;
+			*limit = speed;
+			return 1;
 		}
 		p->retries++;
 	}
 
 	/* return default limit if specified */
 	if (cfg.maxbw>0) {
-		return cfg.maxbw;
-	} else {
-		return -1;
+		*limit = cfg.maxbw;
+		return 1;
 	}
+	return 0;
 }
 
 ibwnode *ibwgetnode(const char *iface)

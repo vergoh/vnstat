@@ -312,8 +312,9 @@ void parseifinfo(int newdb)
 	uint64_t krxchange=0, ktxchange=0, maxtransfer;   /* krxchange = rx change in kB */
 	time_t current, interval;
 	struct tm *d;
-	int day, month, year, hour, min, shift, maxbw;
+	int day, month, year, hour, min, shift;
 	int rxkchange=0, txkchange=0;			          /* changes in the kB counters */
+	uint32_t maxbw;
 
 	ifinfo.rxp = ifinfo.txp = 0;
 	current=time(NULL);
@@ -348,7 +349,7 @@ void parseifinfo(int newdb)
 		}
 
 		/* get bandwidth limit for current interface */
-		maxbw = ibwget(data.interface);
+		ibwget(data.interface, &maxbw);
 
 		if (maxbw > 0) {
 
@@ -357,11 +358,11 @@ void parseifinfo(int newdb)
 			maxtransfer = ceil((maxbw/(float)8)*interval*(float)1.1);
 
 			if (debug)
-				printf("interval: %"PRIu64"  maxbw: %d  maxrate: %"PRIu64"  rxc: %"PRIu64"  txc: %"PRIu64"\n", (uint64_t)interval, maxbw, maxtransfer, rxchange, txchange);
+				printf("interval: %"PRIu64"  maxbw: %"PRIu32"  maxrate: %"PRIu64"  rxc: %"PRIu64"  txc: %"PRIu64"\n", (uint64_t)interval, maxbw, maxtransfer, rxchange, txchange);
 
 			/* sync counters if traffic is greater than set maximum */
 			if ( (rxchange > maxtransfer) || (txchange > maxtransfer) ) {
-				snprintf(errorstring, 512, "Traffic rate for \"%s\" higher than set maximum %d Mbit (%"PRIu64"->%"PRIu64", r%"PRIu64" t%"PRIu64"), syncing.", data.interface, maxbw, (uint64_t)interval, maxtransfer, rxchange, txchange);
+				snprintf(errorstring, 512, "Traffic rate for \"%s\" higher than set maximum %"PRIu32" Mbit (%"PRIu64"->%"PRIu64", r%"PRIu64" t%"PRIu64"), syncing.", data.interface, maxbw, (uint64_t)interval, maxtransfer, rxchange, txchange);
 				printe(PT_Info);
 				rxchange = krxchange = rxkchange = txchange = ktxchange = txkchange = 0;
 				ifinfo.rxp = ifinfo.txp = 0;

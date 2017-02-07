@@ -73,38 +73,55 @@ END_TEST
 
 START_TEST(ibwget_with_empty_list_and_no_maxbw)
 {
+	uint32_t limit;
 	cfg.maxbw = 0;
-	ck_assert_int_eq(ibwget("does_not_exist"), -1);
+	ck_assert_int_eq(ibwget("does_not_exist", &limit), 0);
 }
 END_TEST
 
 START_TEST(ibwget_with_empty_list_and_maxbw)
 {
+	int ret;
+	uint32_t limit;
 	cfg.maxbw = 10;
-	ck_assert_int_eq(ibwget("does_not_exist"), 10);
+	ret  = ibwget("does_not_exist", &limit);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(limit, 10);
 }
 END_TEST
 
 START_TEST(ibwget_from_config)
 {
+	int ret;
+	uint32_t limit;
 	ck_assert_int_eq(loadcfg(CFGFILE), 1);
 	ck_assert_int_eq(ibwloadcfg(CFGFILE), 1);
 	cfg.maxbw = 10;
-	ck_assert_int_eq(ibwget("ethnone"), 8);
+	ret  = ibwget("ethnone", &limit);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(limit, 8);
 }
 END_TEST
 
 START_TEST(ibwadd_single_success)
 {
+	int ret;
+	uint32_t limit;
 	cfg.maxbw = 0;
 	ck_assert_int_eq(ibwadd("newinterface", 1), 1);
-	ck_assert_int_eq(ibwget("does_not_exist"), -1);
-	ck_assert_int_eq(ibwget("newinterface"), 1);
+	ret = ibwget("does_not_exist", &limit);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(limit, 0);
+	ret = ibwget("newinterface", &limit);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(limit, 1);
 }
 END_TEST
 
 START_TEST(ibwadd_multi_success)
 {
+	int ret;
+	uint32_t limit;
 	cfg.maxbw = 0;
 	ck_assert_int_eq(ibwadd("name1", 1), 1);
 	ck_assert_int_eq(ibwadd("name2", 2), 1);
@@ -113,60 +130,114 @@ START_TEST(ibwadd_multi_success)
 	ck_assert_int_eq(ibwadd("name5", 1), 1);
 	ck_assert_int_eq(ibwadd("name6", 10), 1);
 
-	ck_assert_int_eq(ibwget("does_not_exist"), -1);
-	ck_assert_int_eq(ibwget("name1"), 1);
-	ck_assert_int_eq(ibwget("name3"), 3);
-	ck_assert_int_eq(ibwget("name4"), 2);
-	ck_assert_int_eq(ibwget("name6"), 10);
-	ck_assert_int_eq(ibwget("name2"), 2);
-	ck_assert_int_eq(ibwget("name5"), 1);
-	ck_assert_int_eq(ibwget("name1"), 1);
-	ck_assert_int_eq(ibwget("does_not_exist"), -1);
+	ret = ibwget("does_not_exist", &limit);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(limit, 0);
+	ret = ibwget("name1", &limit);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(limit, 1);
+	ret = ibwget("name3", &limit);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(limit, 3);
+	ret = ibwget("name4", &limit);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(limit, 2);
+	ret = ibwget("name6", &limit);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(limit, 10);
+	ret = ibwget("name2", &limit);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(limit, 2);
+	ret = ibwget("name5", &limit);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(limit, 1);
+	ret = ibwget("name1", &limit);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(limit, 1);
+	ret = ibwget("does_not_exist", &limit);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(limit, 0);
 }
 END_TEST
 
 START_TEST(ibwadd_update_success)
 {
+	int ret;
+	uint32_t limit;
 	cfg.maxbw = 0;
 	ck_assert_int_eq(ibwadd("name1", 1), 1);
 	ck_assert_int_eq(ibwadd("name2", 2), 1);
-	ck_assert_int_eq(ibwget("does_not_exist"), -1);
+	ret = ibwget("does_not_exist", &limit);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(limit, 0);
 
-	ck_assert_int_eq(ibwget("name1"), 1);
-	ck_assert_int_eq(ibwget("name2"), 2);
-	ck_assert_int_eq(ibwget("does_not_exist"), -1);
+	ret = ibwget("name1", &limit);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(limit, 1);
+	ret = ibwget("name2", &limit);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(limit, 2);
+	ret = ibwget("does_not_exist", &limit);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(limit, 0);
 
 	ck_assert_int_eq(ibwadd("name2", 5), 1);
 	ck_assert_int_eq(ibwadd("name1", 4), 1);
 
-	ck_assert_int_eq(ibwget("name1"), 4);
-	ck_assert_int_eq(ibwget("name2"), 5);
-	ck_assert_int_eq(ibwget("does_not_exist"), -1);
+	ret = ibwget("name1", &limit);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(limit, 4);
+	ret = ibwget("name2", &limit);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(limit, 5);
+	ret = ibwget("does_not_exist", &limit);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(limit, 0);
 }
 END_TEST
 
 START_TEST(ibwflush_success)
 {
+	int ret;
+	uint32_t limit;
 	cfg.maxbw = 0;
 	ck_assert_int_eq(ibwadd("name1", 1), 1);
 	ck_assert_int_eq(ibwadd("name2", 2), 1);
 
-	ck_assert_int_eq(ibwget("name1"), 1);
-	ck_assert_int_eq(ibwget("name2"), 2);
-	ck_assert_int_eq(ibwget("does_not_exist"), -1);
+	ret = ibwget("name1", &limit);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(limit, 1);
+	ret = ibwget("name2", &limit);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(limit, 2);
+	ret = ibwget("does_not_exist", &limit);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(limit, 0);
 
 	ibwflush();
 
-	ck_assert_int_eq(ibwget("name1"), -1);
-	ck_assert_int_eq(ibwget("name2"), -1);
-	ck_assert_int_eq(ibwget("does_not_exist"), -1);
+	ret = ibwget("name1", &limit);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(limit, 0);
+	ret = ibwget("name2", &limit);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(limit, 0);
+	ret = ibwget("does_not_exist", &limit);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(limit, 0);
 
 	ck_assert_int_eq(ibwadd("name1", 1), 1);
 	ck_assert_int_eq(ibwadd("name2", 2), 1);
 
-	ck_assert_int_eq(ibwget("name1"), 1);
-	ck_assert_int_eq(ibwget("name2"), 2);
-	ck_assert_int_eq(ibwget("does_not_exist"), -1);
+	ret = ibwget("name1", &limit);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(limit, 1);
+	ret = ibwget("name2", &limit);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(limit, 2);
+	ret = ibwget("does_not_exist", &limit);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(limit, 0);
 }
 END_TEST
 

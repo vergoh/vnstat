@@ -152,15 +152,15 @@ void cacheshow(void)
 void cachestatus(void)
 {
 	char buffer[512], bwtemp[16];
-	int b = 13, count = 0, bwlimit = 0;
+	int b = 13, count = 0;
+	uint32_t bwlimit = 0;
 	datanode *p = dataptr;
 
 	snprintf(buffer, b, "Monitoring: ");
 
 	while (p != NULL) {
 		if ((b+strlen(p->data.interface)+16) < 508) {
-			bwlimit = ibwget(p->data.interface);
-			if (bwlimit < 0) {
+			if (!ibwget(p->data.interface, &bwlimit) || bwlimit == 0) {
 				snprintf(bwtemp, 16, " (no limit) ");
 			} else {
 				snprintf(bwtemp, 16, " (%d Mbit) ", bwlimit);

@@ -113,7 +113,8 @@ void daemonize(void)
 int addinterfaces(const char *dirname, const int running)
 {
 	char *ifacelist, interface[32];
-	int index = 0, count = 0, bwlimit = 0;
+	int index = 0, count = 0;
+	uint32_t bwlimit = 0;
 
 	/* get list of currently visible interfaces */
 	if (getiflist(&ifacelist, 0)==0) {
@@ -163,16 +164,16 @@ int addinterfaces(const char *dirname, const int running)
 			continue;
 		}
 		count++;
-		bwlimit = ibwget(interface);
+		ibwget(interface, &bwlimit);
 		if (!running) {
 			if (bwlimit > 0) {
-				printf("\"%s\" added with %d Mbit bandwidth limit.\n", interface, bwlimit);
+				printf("\"%s\" added with %"PRIu32" Mbit bandwidth limit.\n", interface, bwlimit);
 			} else {
 				printf("\"%s\" added. Warning: no bandwidth limit has been set.\n", interface);
 			}
 		} else {
 			if (debug)
-				printf("\%s\" added with %d Mbit bandwidth limit to cache.\n", interface, bwlimit);
+				printf("\%s\" added with %"PRIu32" Mbit bandwidth limit to cache.\n", interface, bwlimit);
 			cacheadd(interface, 1);
 		}
 	}
