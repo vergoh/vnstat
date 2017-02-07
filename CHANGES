@@ -1,5 +1,11 @@
 1.17 / <not released yet>
 
+ - Fix: --importdb was creating invalid databases since version 1.15
+ - Fix: console output was being buffered which resulted in lack of output
+   in at least systemd log
+ - Add cross-compilation detection and improve install-data-hook to not
+   assume that the binaries can be executed in the host system
+
 
 1.16 / 24-Dec-2016
 
