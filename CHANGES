@@ -1,4 +1,4 @@
-1.17 / <not released yet>
+1.17 / 16-Feb-2017
 
  - Fix: --importdb was creating invalid databases since version 1.15
  - Fix: console output was being buffered which resulted in lack of output
