@@ -63,7 +63,7 @@ void printcfgfile(void)
 	printf("#MaxBWeth0 8\n");
 
 	while (p != NULL) {
-		printf("MaxBW%s %d\n", p->interface, p->limit);
+		printf("MaxBW%s %u\n", p->interface, p->limit);
 		p = p->next;
 	}
 
