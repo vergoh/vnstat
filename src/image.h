@@ -9,7 +9,7 @@
 #include <gdfontg.h>   /* gdFontGetGiant() */
 
 /* rectangle size */
-#define YBEGINOFFSET -1
+#define YBEGINOFFSET (-1)
 #define YENDOFFSET 6
 
 /* donut size */
