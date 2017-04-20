@@ -330,19 +330,19 @@ uint32_t dbcheck(uint32_t dbhash, int *forcesave)
 	return newhash;
 }
 
-uint32_t simplehash(const char *data, int len)
+uint32_t simplehash(const char *input, int len)
 {
 	uint32_t hash = len;
 
-	if (len <= 0 || data == NULL) {
+	if (len <= 0 || input == NULL) {
 		return 0;
 	}
 
 	for (len--; len >= 0; len--) {
 		if (len > 0) {
-			hash += (int)data[len] * len;
+			hash += (int)input[len] * len;
 		} else {
-			hash += (int)data[len];
+			hash += (int)input[len];
 		}
 	}
 
