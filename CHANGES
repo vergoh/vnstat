@@ -1,3 +1,6 @@
+1.18 / <not released yet>
+
+
 1.17 / 16-Feb-2017
 
  - Fix: --importdb was creating invalid databases since version 1.15
