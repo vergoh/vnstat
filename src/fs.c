@@ -84,25 +84,25 @@ int mkpath(const char *dir, const mode_t mode)
 	return ret;
 }
 
-void preparevnstatdir(const char *file, const char *user, const char *group)
+void preparevnstatdir(const char *dir, const char *user, const char *group)
 {
 	int len, i, lastslash=0;
 	char *path, *base;
 
-	if (file == NULL) {
+	if (dir == NULL) {
 		return;
 	}
 
-	len = strlen(file);
+	len = strlen(dir);
 	if (len<2) {
 		return;
 	}
 
-	if (file[len-1] == '/') {
+	if (dir[len-1] == '/') {
 		return;
 	}
 
-	path = strdup(file);
+	path = strdup(dir);
 	if (path == NULL) {
 		return;
 	}
@@ -115,7 +115,7 @@ void preparevnstatdir(const char *file, const char *user, const char *group)
 	}
 	free(path);
 
-	path = strdup(file);
+	path = strdup(dir);
 	if (path == NULL) {
 		return;
 	}

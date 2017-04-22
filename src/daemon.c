@@ -173,7 +173,7 @@ int addinterfaces(const char *dirname, const int running)
 			}
 		} else {
 			if (debug)
-				printf("\%s\" added with %"PRIu32" Mbit bandwidth limit to cache.\n", interface, bwlimit);
+				printf("\"%s\" added with %"PRIu32" Mbit bandwidth limit to cache.\n", interface, bwlimit);
 			cacheadd(interface, 1);
 		}
 	}
