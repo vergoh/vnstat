@@ -103,7 +103,7 @@ release: distcheck
 	rm -fr $(PACKAGE_NAME)-$(PACKAGE_VERSION)
 	ls -l $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.gz
 
-install-data-hook:
+install-data-hook: install-exec
 	$(MKDIR_P) $(DESTDIR)$(sysconfdir)
 if IS_CROSSCOMPILED
 	if [ ! -f $(DESTDIR)$(sysconfdir)/vnstat.conf ]; \
