@@ -304,9 +304,9 @@ uint64_t getscale(uint64_t kb)
 	return result;
 }
 
-char *getunitprefix(int index)
+const char *getunitprefix(int index)
 {
-	static char *unitprefix[] = { "na", "KiB", "MiB", "GiB", "TiB",
+	static const char *unitprefix[] = { "na", "KiB", "MiB", "GiB", "TiB",
                                    "KB",  "MB",  "GB",  "TB" };
 
 	if (index>UNITPREFIXCOUNT) {
@@ -316,9 +316,9 @@ char *getunitprefix(int index)
 	}
 }
 
-char *getrateunitprefix(int unitmode, int index)
+const char *getrateunitprefix(int unitmode, int index)
 {
-	static char *rateunitprefix[] = { "na", "KiB/s", "MiB/s", "GiB/s", "TiB/s",
+	static const char *rateunitprefix[] = { "na", "KiB/s", "MiB/s", "GiB/s", "TiB/s",
                                     "KB/s",  "MB/s",  "GB/s",  "TB/s",
                                     "Kibit/s",  "Mibit/s",  "Gibit/s",  "Tibit/s",
                                     "kbit/s",  "Mbit/s",  "Gbit/s",  "Tbit/s" };

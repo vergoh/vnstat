@@ -4,7 +4,7 @@
 typedef struct {
 	int update, query, newdb, reset, sync, merged, savemerged, import;
 	int create, active, files, force, cleartop, rebuildtotal, traffic;
-	int livetraffic, defaultiface, delete, livemode;
+	int livetraffic, defaultiface, del, livemode;
 	char interface[32], dirname[512], nick[32], filename[512];
 	char definterface[32], cfgfile[512], *ifacelist, jsonmode, xmlmode;
 } PARAMS;

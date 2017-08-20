@@ -297,7 +297,7 @@ int main(int argc, char *argv[]) {
 			printcfgfile();
 			return 0;
 		} else if (strcmp(argv[currentarg],"--delete")==0) {
-			p.delete=1;
+			p.del=1;
 			p.query=0;
 		} else if (strcmp(argv[currentarg],"--iflist")==0) {
 			getiflist(&p.ifacelist, 1);
@@ -421,7 +421,7 @@ void initparams(PARAMS *p)
 	p->traffic = 0;
 	p->livetraffic = 0;
 	p->defaultiface = 1;
-	p->delete=0;
+	p->del=0;
 	p->livemode = 0;
 	p->ifacelist = NULL;
 	p->cfgfile[0] = '\0';
@@ -612,7 +612,7 @@ void handlecountersync(PARAMS *p)
 
 void handledelete(PARAMS *p)
 {
-	if (!p->delete) {
+	if (!p->del) {
 		return;
 	}
 
