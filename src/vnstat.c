@@ -554,7 +554,7 @@ void handlecounterreset(PARAMS *p)
 	data.curtx=0;
 	writedb(p->interface, p->dirname, 0);
 	if (debug)
-		printf("Counters reseted for \"%s\"\n", data.interface);
+		printf("Counters reset for \"%s\"\n", data.interface);
 }
 
 void handleimport(PARAMS *p)
@@ -672,7 +672,7 @@ void handlerebuildtotal(PARAMS *p)
 		rebuilddbtotal(p->interface, p->dirname);
 		p->query=0;
 	} else {
-		printf("Warning:\nThe current option would rebuild total tranfers for \"%s\".\n", p->interface);
+		printf("Warning:\nThe current option would rebuild total transfers for \"%s\".\n", p->interface);
 		printf("Use --force in order to really do that.\n");
 		exit(EXIT_FAILURE);
 	}

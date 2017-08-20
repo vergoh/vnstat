@@ -185,7 +185,7 @@ to the up script. These two options aren't needed when the daemon is used.
 .TP
 .B "--exportdb"
 Instead of showing the database with a formatted output, this output will
-dump the whole database in a plain text based architeture independent format.
+dump the whole database in a plain text based architecture independent format.
 The output can be imported back using the
 .B "--importdb"
 option and can be used for moving a database from one host to another. See the
@@ -195,7 +195,7 @@ the outputs of
 .B "--xml"
 and
 .B "--json"
-are likely to be more suitable. The dump uses ; as field delimeter.
+are likely to be more suitable. The dump uses ; as field delimiter.
 .TS
 l l.
       active;1	activity status
@@ -241,7 +241,7 @@ Import a database from
 which was previously exported using the
 .B "--exportdb"
 option. This can be used to transfer a database between different architectures and
-hosts, as the database is architecture dependant and not compatible between
+hosts, as the database is architecture dependent and not compatible between
 different architectures. First dump the database on one host, e.g. with
 .B "vnstat -i ppp0 --exportdb >ppp0db.txt"
 and then import the text file on a different host using
@@ -308,7 +308,7 @@ the set operation.
 .TP
 .B "--oneline"
 Show traffic summary for selected interface using one line with a parseable
-format. The output contains 15 fields with ; used as field delimeter. The 1st
+format. The output contains 15 fields with ; used as field delimiter. The 1st
 field contains the version information of the output that will be changed
 in future versions of vnStat if the field structure changes. The following
 fields in order 2) interface name, 3) timestamp for today, 4) rx for today,
@@ -372,7 +372,7 @@ mode.
 .B "--sync"
 Synchronize internal counters in the database with interface
 counters for the selected interface. Use this if the system is
-rebooted but interface counters aren't reseted. Such can occur
+rebooted but interface counters aren't reset. Such can occur
 when suspend to ram/disk is used. Not needed when the daemon is used.
 
 .TP

@@ -107,7 +107,7 @@ Why is there problems with most 2.4.18 kernels?
 
   Every current kernel has a btime (boot time) value in /proc/stat that
   indicates when the system was booted. vnStat uses this to know when the
-  interface counters in the database should be reseted. Unfortunately, some
+  interface counters in the database should be reset. Unfortunately, some
   kernels don't keep the btime value static even when the system isn't
   rebooted.
 

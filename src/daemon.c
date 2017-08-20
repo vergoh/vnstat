@@ -562,7 +562,7 @@ void handleintsignals(DSTATE *s)
 			break;
 
 		default:
-			snprintf(errorstring, 512, "Unkown signal %d received, ignoring.", intsignal);
+			snprintf(errorstring, 512, "Unknown signal %d received, ignoring.", intsignal);
 			printe(PT_Info);
 			break;
 	}
