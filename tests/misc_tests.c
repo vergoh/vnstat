@@ -11,7 +11,7 @@ END_TEST
 
 START_TEST(getunitprefix_returns_something_with_all_cfg_combinations)
 {
-	char *string;
+	const char *string;
 	int j;
 
 	cfg.unitmode = _i;
@@ -24,7 +24,7 @@ END_TEST
 
 START_TEST(getrateunitprefix_returns_something_with_all_cfg_combinations)
 {
-	char *string;
+	const char *string;
 	int j;
 
 	for (j=1; j<=(UNITPREFIXCOUNT+1); j++) {

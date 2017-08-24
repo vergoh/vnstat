@@ -1,6 +1,10 @@
 #if !defined(__FreeBSD__) && !defined(__NetBSD__) && !defined(__OpenBSD__) && !defined(__APPLE__) && !defined(__FreeBSD_kernel__)
 #define _XOPEN_SOURCE 600
 #endif
+/* enable wcswidth on kFreeBSD */
+#if defined(__FreeBSD_kernel__) && defined(__GLIBC__)
+#define __USE_XOPEN
+#endif
 #include "common.h"
 #include "misc.h"
 #include <wchar.h>
