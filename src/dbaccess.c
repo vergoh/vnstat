@@ -27,7 +27,7 @@ int readdb(const char *iface, const char *dirname, const int force)
 		return -1;
 	}
 
-	if (fread(&data,sizeof(DATA),1,db)==0) {
+	if (fread(&data,sizeof(DATA),1,db)!=1 || ferror(db)) {
 		data.version=-1;
 		if (debug) {
 			printf("db: Database read failed for file \"%s\".\n", file);
@@ -77,7 +77,7 @@ int readdb(const char *iface, const char *dirname, const int force)
 				return -1;
 			}
 
-			if (fread(&data,sizeof(DATA),1,db)==0) {
+			if (fread(&data,sizeof(DATA),1,db)!=1 || ferror(db)) {
 				snprintf(errorstring, 512, "Database load failed even when using backup (%s). Aborting.", strerror(errno));
 				printe(PT_Error);
 				fclose(db);
