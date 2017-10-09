@@ -27,16 +27,19 @@ int readdb(const char *iface, const char *dirname, const int force)
 		return -1;
 	}
 
-	if (fread(&data,sizeof(DATA),1,db)==0) {
+	if (fread(&data,sizeof(DATA),1,db)!=1 || ferror(db)) {
 		data.version=-1;
 		if (debug) {
 			printf("db: Database read failed for file \"%s\".\n", file);
 		}
 	} else {
 		if (debug) {
+			data.interface[sizeof(data.interface) - 1] = 0;
 			printf("db: Database loaded for interface \"%s\"...\n", data.interface);
 		}
 	}
+	data.interface[sizeof(data.interface) - 1] = 0;
+	data.nick[sizeof(data.nick) - 1] = 0;
 
 	if (data.version == DBVERSION) {
 		if (!validatedb() && !force) {
@@ -74,7 +77,7 @@ int readdb(const char *iface, const char *dirname, const int force)
 				return -1;
 			}
 
-			if (fread(&data,sizeof(DATA),1,db)==0) {
+			if (fread(&data,sizeof(DATA),1,db)!=1 || ferror(db)) {
 				snprintf(errorstring, 512, "Database load failed even when using backup (%s). Aborting.", strerror(errno));
 				printe(PT_Error);
 				fclose(db);
@@ -86,9 +89,12 @@ int readdb(const char *iface, const char *dirname, const int force)
 				}
 			} else {
 				if (debug) {
+					data.interface[sizeof(data.interface) - 1] = 0;
 					printf("db: Backup database loaded for interface \"%s\"...\n", data.interface);
 				}
 			}
+			data.interface[sizeof(data.interface) - 1] = 0;
+			data.nick[sizeof(data.nick) - 1] = 0;
 
 			if (data.version == DBVERSION) {
 				if (!validatedb()) {

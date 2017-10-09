@@ -83,6 +83,8 @@ void daemonize(void)
 		exit(EXIT_FAILURE);
 	}
 
+	close(i);
+
 	umask(027); /* set newly created file permissions */
 
 	/* change running directory */
