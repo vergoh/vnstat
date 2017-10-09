@@ -32,7 +32,7 @@ Compiling the binaries
 Installing as root
 ::::::::::::::::::
 
- Login as root and run the following command:
+ Log in as root and run the following command:
 
      make install
 
@@ -99,7 +99,7 @@ Installing without root access
 
      vnstat --version
 
- If this gives an 'command not found' error or a different than expected
+ If this gives an 'command not found' error or an unexpected
  version then check then content of the PATH variable and try again.
 
  Next open the config file ~/.vnstatrc with your favorite text editor and
