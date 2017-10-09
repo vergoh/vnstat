@@ -1,25 +1,30 @@
 language: c
 
-os:
- - linux
- - osx
-
-compiler:
-  - gcc
-  - clang
-
 matrix:
-  exclude:
-    - os: osx
+  include:
+    - os: linux
+      dist: trusty
+      sudo: false
       compiler: gcc
+    - os: linux
+      dist: trusty
+      sudo: false
+      compiler: clang
+    - os: osx
+      compiler: clang
+
+addons:
+  apt:
+    packages:
+      - libgd3
+      - libgd-dev
+      - check
 
 before_install:
- - if [ "${TRAVIS_OS_NAME}" == "linux" ]; then sudo apt-get update -qq ; fi
- - if [ "${TRAVIS_OS_NAME}" == "linux" ]; then sudo apt-get install -qq libgd2-xpm libgd2-xpm-dev check ; fi
  - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then brew install gd check ; fi
 
 script:
- - CFLAGS='-Wall -Wextra -g' ./configure && make check && ./vnstat --version
+ - CFLAGS='-Wall -Wextra -g' ./configure && make check || ( cat test.log ; exit 1 ) && ./vnstat --version
 
 notifications:
   email:
