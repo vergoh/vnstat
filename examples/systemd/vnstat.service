@@ -9,3 +9,4 @@ ExecReload=/bin/kill -HUP $MAINPID
 
 [Install]
 WantedBy=multi-user.target
+Alias=vnstatd.service

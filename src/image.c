@@ -128,7 +128,7 @@ void colorinit(IMAGECONTENT *ic)
 	colorinitcheck("ctxd", ic->ctxd, cfg.ctxd, rgb);
 }
 
-void colorinitcheck(char *color, int value, char *cfgtext, int *rgb)
+void colorinitcheck(const char *color, int value, const char *cfgtext, const int *rgb)
 {
 	if (value==-1) {
 		printf("Error: ImageColorAllocate failed.\n");

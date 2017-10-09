@@ -40,13 +40,13 @@ void daemonize(void)
 	pidfile = open(cfg.pidfile, O_RDWR|O_CREAT, 0644);
 	if (pidfile<0) {
 		perror("Error: pidfile");
-		snprintf(errorstring, 512, "opening pidfile \"%s\" failed (%s), exiting.", cfg.pidfile, strerror(errno));
+		snprintf(errorstring, 512, "opening pidfile \"%.473s\" failed (%s), exiting.", cfg.pidfile, strerror(errno));
 		printe(PT_Error);
 		exit(EXIT_FAILURE); /* can't open */
 	}
 	if (lockf(pidfile,F_TLOCK,0)<0) {
 		perror("Error: pidfile lock");
-		snprintf(errorstring, 512, "pidfile \"%s\" lock failed (%s), exiting.", cfg.pidfile, strerror(errno));
+		snprintf(errorstring, 512, "pidfile \"%.476s\" lock failed (%s), exiting.", cfg.pidfile, strerror(errno));
 		printe(PT_Error);
 		exit(EXIT_FAILURE); /* can't lock */
 	}
@@ -99,7 +99,7 @@ void daemonize(void)
 	/* record pid to pidfile */
 	if (write(pidfile,str,strlen(str)) < 0) {
 		perror("Error: write(pidfile)");
-		snprintf(errorstring, 512, "writing to pidfile %s failed, exiting.", cfg.pidfile);
+		snprintf(errorstring, 512, "writing to pidfile %.475s failed, exiting.", cfg.pidfile);
 		printe(PT_Error);
 		exit(EXIT_FAILURE);
 	}
@@ -300,7 +300,7 @@ void filldatabaselist(DSTATE *s)
 	struct dirent *di;
 
 	if ((dir=opendir(s->dirname))==NULL) {
-		snprintf(errorstring, 512, "Unable to access database directory \"%s\" (%s), exiting.", s->dirname, strerror(errno));
+		snprintf(errorstring, 512, "Unable to access database directory \"%.460s\" (%s), exiting.", s->dirname, strerror(errno));
 		printe(PT_Error);
 
 		/* clean daemon stuff before exit */
@@ -562,7 +562,7 @@ void handleintsignals(DSTATE *s)
 			break;
 
 		default:
-			snprintf(errorstring, 512, "Unkown signal %d received, ignoring.", intsignal);
+			snprintf(errorstring, 512, "Unknown signal %d received, ignoring.", intsignal);
 			printe(PT_Info);
 			break;
 	}
