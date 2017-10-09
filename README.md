@@ -2,8 +2,8 @@
 
 This is the development branch for vnStat 2.0 that uses a sqlite database
 for storing data instead of a C structure dump in a file. A better database
-format was needed for enabling longer duration statistics with user configurable
-durations. Yearly and 5 minute resolution statistics are now included.
+format was needed for enabling longer-duration statistics with user-configurable
+durations. Yearly and five-minute resolution statistics are now included.
 
 # Status
 
