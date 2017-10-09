@@ -4,11 +4,11 @@ matrix:
   include:
     - os: linux
       dist: trusty
-      sudo: false
+      sudo: required
       compiler: gcc
     - os: linux
       dist: trusty
-      sudo: false
+      sudo: required
       compiler: clang
     - os: osx
       compiler: clang
