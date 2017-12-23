@@ -1,0 +1,14 @@
+_vnstat() 
+{
+    local cur prev opts
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    opts="-D -d -h -l -m -q -r -s -t -u -v -w -? --cleartop --config --create --days --delete --dbdir --debug --disable --enable --exportdb --help --hours --importdb -i --iface --iflist --json --live --locale --longhelp --months --nick --oneline --query --rateunit --rebuildtotal --reset -ru --savemerged --short --showconfig --style --sync --testkernel --top10 -tr --traffic --update --version --weeks --xml"
+
+    if [[ ${cur} == -* ]] ; then
+        COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+        return 0
+    fi
+}
+complete -F _vnstat vnstat
