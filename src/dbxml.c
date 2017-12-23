@@ -107,9 +107,9 @@ void xmlhours(void)
 void xmldate(time_t *date, int type)
 {
 	struct tm *d;
-	char *type1 = "<date><year>%d</year><month>%02d</month><day>%02d</day></date>";
-	char *type2 = "<date><year>%d</year><month>%02d</month><day>%02d</day></date><time><hour>%02d</hour><minute>%02d</minute></time>";
-	char *type3 = "<date><year>%d</year><month>%02d</month></date>";
+	const char *type1 = "<date><year>%d</year><month>%02d</month><day>%02d</day></date>";
+	const char *type2 = "<date><year>%d</year><month>%02d</month><day>%02d</day></date><time><hour>%02d</hour><minute>%02d</minute></time>";
+	const char *type3 = "<date><year>%d</year><month>%02d</month></date>";
 
 	d = localtime(date);
 

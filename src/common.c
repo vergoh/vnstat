@@ -170,7 +170,7 @@ uint32_t mosecs(void)
 {
 	struct tm d;
 #if defined(_SVID_SOURCE) || defined(_XOPEN_SOURCE) || defined(__linux__)
-	extern long timezone;
+	/* extern long timezone; */
 #else
 	int timezone = 0;
 #endif
@@ -267,6 +267,7 @@ int isnumeric(const char *s)
 	return 1;
 }
 
+__attribute__((noreturn))
 void panicexit(const char *sourcefile, const int sourceline)
 {
 	snprintf(errorstring, 512, "Unexpected error (%s), exiting. (%s:%d)\n", strerror(errno), sourcefile, sourceline);

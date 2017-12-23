@@ -1,6 +1,10 @@
 #if !defined(__FreeBSD__) && !defined(__NetBSD__) && !defined(__OpenBSD__) && !defined(__APPLE__) && !defined(__FreeBSD_kernel__)
 #define _XOPEN_SOURCE 600
 #endif
+/* enable wcswidth on kFreeBSD */
+#if defined(__FreeBSD_kernel__) && defined(__GLIBC__)
+#define __USE_XOPEN
+#endif
 #include "common.h"
 #include "misc.h"
 #include <wchar.h>
@@ -304,9 +308,9 @@ uint64_t getscale(uint64_t kb)
 	return result;
 }
 
-char *getunitprefix(int index)
+const char *getunitprefix(int index)
 {
-	static char *unitprefix[] = { "na", "KiB", "MiB", "GiB", "TiB",
+	static const char *unitprefix[] = { "na", "KiB", "MiB", "GiB", "TiB",
                                    "KB",  "MB",  "GB",  "TB" };
 
 	if (index>UNITPREFIXCOUNT) {
@@ -316,9 +320,9 @@ char *getunitprefix(int index)
 	}
 }
 
-char *getrateunitprefix(int unitmode, int index)
+const char *getrateunitprefix(int unitmode, int index)
 {
-	static char *rateunitprefix[] = { "na", "KiB/s", "MiB/s", "GiB/s", "TiB/s",
+	static const char *rateunitprefix[] = { "na", "KiB/s", "MiB/s", "GiB/s", "TiB/s",
                                     "KB/s",  "MB/s",  "GB/s",  "TB/s",
                                     "Kibit/s",  "Mibit/s",  "Gibit/s",  "Tibit/s",
                                     "kbit/s",  "Mbit/s",  "Gbit/s",  "Tbit/s" };

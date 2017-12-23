@@ -131,9 +131,9 @@ void jsonhours(void)
 void jsondate(time_t *date, int type)
 {
 	struct tm *d;
-	char *type1 = "\"date\":{\"year\":%d,\"month\":%d,\"day\":%d}";
-	char *type2 = "\"date\":{\"year\":%d,\"month\":%d,\"day\":%d},\"time\":{\"hour\":%d,\"minutes\":%d}";
-	char *type3 = "\"date\":{\"year\":%d,\"month\":%d}";
+	const char *type1 = "\"date\":{\"year\":%d,\"month\":%d,\"day\":%d}";
+	const char *type2 = "\"date\":{\"year\":%d,\"month\":%d,\"day\":%d},\"time\":{\"hour\":%d,\"minutes\":%d}";
+	const char *type3 = "\"date\":{\"year\":%d,\"month\":%d}";
 
 	d = localtime(date);
 
