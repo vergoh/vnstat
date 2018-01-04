@@ -167,10 +167,20 @@ int main(int argc, char *argv[])
 
 	setsignaltraps();
 
-	/* start as daemon if needed and debug isn't enabled */
+	/* start as daemon if requested, debug can't be enabled at the same time */
 	if (s.rundaemon && !debug) {
+		if (!db_close()) {
+			printf("Error: Failed to close database \"%s/%s\" before starting daemon: %s\n", s.dirname, DATABASEFILE, strerror(errno));
+			printf("Exiting...\n");
+			exit(EXIT_FAILURE);
+		}
 		noexit++;
 		daemonize();
+		if (!db_open(0)) {
+			snprintf(errorstring, 512, "Failed to reopen database \"%s/%s\": %s", s.dirname, DATABASEFILE, strerror(errno));
+			printe(PT_Error);
+			exit(EXIT_FAILURE);
+		}
 	}
 
 	s.running = 1;
