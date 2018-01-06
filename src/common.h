@@ -234,6 +234,9 @@ and most can be changed later from the config file.
 #define CTX "606060"
 #define CTXD "-"
 
+/* number of retries for non-fatal database errors */
+#define DBRETRYLIMIT 3
+
 /* internal config structure */
 typedef struct {
 	char dformat[64], mformat[64], tformat[64], hformat[64];

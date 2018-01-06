@@ -4,7 +4,7 @@
 typedef struct {
 	int running, updateinterval, dbcount, dodbsave, rundaemon;
 	int dbsaved, showhelp, sync, saveinterval, forcesave, noadd;
-	int alwaysadd, bootdetected, cleanuphour;
+	int alwaysadd, bootdetected, cleanuphour, dbretrycount;
 	uint32_t iflisthash;
 	char cfgfile[512], dirname[512];
 	char user[33], group[33];
@@ -32,6 +32,7 @@ void detectboot(DSTATE *s);
 int initcachevalues(DSTATE *s, datacache **dc);
 int processifinfo(DSTATE *s, datacache **dc);
 void flushcachetodisk(DSTATE *s);
+void handledatabaseerror(DSTATE *s);
 void cleanremovedinterfaces(DSTATE *s);
 
 void datacache_status(datacache **dc);
@@ -39,7 +40,7 @@ void datacache_status(datacache **dc);
 void interfacechangecheck(DSTATE *s);
 uint32_t simplehash(const char *data, int len);
 
-void errorexitdaemon(DSTATE *s);
+void errorexitdaemon(DSTATE *s, const int fataldberror);
 
 int getcurrenthour(void);
 

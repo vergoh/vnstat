@@ -375,7 +375,7 @@ int main(int argc, char *argv[]) {
 
 		/* ensure that some usable interface is default */
 		if (p.ifcount > 0 && !db_getinterfacecountbyname(p.interface)) {
-			if (db_getiflist(&dbifl)) {
+			if (db_getiflist(&dbifl) > 0) {
 				strncpy_nt(p.interface, dbifl->interface, 32);
 				if (debug) {
 					printf("Using \"%s\" as interface, default \"%s\" not found in database.\n", p.interface, p.definterface);
@@ -648,7 +648,7 @@ void handleshowdatabases(PARAMS *p)
 			jsonheader();
 		}
 
-		if (!db_getiflist(&dbifl)) {
+		if (db_getiflist(&dbifl) <= 0) {
 			return;
 		}
 

@@ -60,6 +60,7 @@ int db_vacuum(void);
 int db_begintransaction(void);
 int db_committransaction(void);
 int db_rollbacktransaction(void);
+int db_iserrcodefatal(int errcode);
 
 int dbiflistadd(dbiflist **dbifl, const char *iface);
 void dbiflistfree(dbiflist **dbifl);
@@ -71,5 +72,6 @@ void dbdatalistfree(dbdatalist **dbdata);
 
 /* global db */
 sqlite3 *db;
+int db_errcode;
 
 #endif

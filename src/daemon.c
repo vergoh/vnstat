@@ -254,6 +254,7 @@ void initdstate(DSTATE *s)
 	s->dodbsave = 0;
 	s->bootdetected = 0;
 	s->cleanuphour = getcurrenthour();
+	s->dbretrycount = 0;
 	s->dcache = NULL;
 }
 
@@ -347,9 +348,7 @@ void filldatabaselist(DSTATE *s)
 	dbiflist *dbifl = NULL, *dbifl_iterator = NULL;
 
 	if (db_getiflist(&dbifl) < 0) {
-		snprintf(errorstring, 512, "Unable to access database(%s), exiting.", strerror(errno));
-		printe(PT_Error);
-		errorexitdaemon(s);
+		errorexitdaemon(s, 1);
 	}
 
 	dbifl_iterator = dbifl;
@@ -359,9 +358,9 @@ void filldatabaselist(DSTATE *s)
 			printf("\nProcessing interface \"%s\"...\n", dbifl_iterator->interface);
 		}
 		if (!datacache_add(&s->dcache, dbifl_iterator->interface, s->sync)) {
-			snprintf(errorstring, 512, "Cache memory allocation failed, exiting.");
+			snprintf(errorstring, 512, "Cache memory allocation failed (%s), exiting.", strerror(errno));
 			printe(PT_Error);
-			errorexitdaemon(s);
+			errorexitdaemon(s, 1);
 		}
 		s->dbcount++;
 		dbifl_iterator = dbifl_iterator->next;
@@ -497,7 +496,7 @@ int processifinfo(DSTATE *s, datacache **dc)
 		if ((*dc)->updated > (ifinfo.timestamp+86400)) {
 			snprintf(errorstring, 512, "Interface \"%s\" has previous update date too much in the future, exiting. (%u / %u)", (*dc)->interface, (unsigned int)(*dc)->updated, (unsigned int)ifinfo.timestamp);
 			printe(PT_Error);
-			errorexitdaemon(s);
+			errorexitdaemon(s, 1);
 		}
 		return 0;
 	}
@@ -545,33 +544,80 @@ void flushcachetodisk(DSTATE *s)
 	datacache *iterator = s->dcache;
 	xferlog *logiterator;
 
+	db_errcode = 0;
 	while (iterator != NULL) {
-		/* TODO: error handling needed, if the disk is full then keep the cache up to some time limit */
-		/* some solution needed for detecting how fatal possible sqlite errors are */
-
 		/* ignore interface no longer in database */
 		if (!db_getinterfacecountbyname(iterator->interface)) {
-			iterator = iterator->next;
-			continue;
+			if (db_errcode) {
+				handledatabaseerror(s);
+				break;
+			} else {
+				iterator = iterator->next;
+				continue;
+			}
 		}
 
+		/* flush interface specific log to database */
 		logcount = 0;
 		logiterator = iterator->log;
 		while (logiterator != NULL) {
-			db_addtraffic_dated(iterator->interface, logiterator->rx, logiterator->tx, (uint64_t)logiterator->timestamp);
+			if (!db_addtraffic_dated(iterator->interface, logiterator->rx, logiterator->tx, (uint64_t)logiterator->timestamp)) {
+				handledatabaseerror(s);
+				break;
+			}
 			logiterator = logiterator->next;
 			logcount++;
 		}
-		xferlog_clear(&iterator->log);
-		if (logcount) {
-			db_setcounters(iterator->interface, iterator->currx, iterator->curtx);
+		if (db_errcode) {
+			break;
 		}
-		db_setupdated(iterator->interface, iterator->updated);
+
+		/* clear log */
+		xferlog_clear(&iterator->log);
+
+		/* update database counters if new data was inserted */
+		if (logcount) {
+			if (!db_setcounters(iterator->interface, iterator->currx, iterator->curtx)) {
+				handledatabaseerror(s);
+				break;
+			}
+		}
+
+		/* update interface timestamp in database */
+		if (!db_setupdated(iterator->interface, iterator->updated)) {
+			handledatabaseerror(s);
+			break;
+		}
+
+		/* update interface activity status in database if changed */
 		if (!iterator->active && !logcount) {
-			db_setactive(iterator->interface, iterator->active);
+			if (!db_setactive(iterator->interface, iterator->active)) {
+				handledatabaseerror(s);
+				break;
+			}
 		}
 
 		iterator = iterator->next;
+	}
+
+	if (!db_errcode) {
+		s->dbretrycount = 0;
+	}
+}
+
+void handledatabaseerror(DSTATE *s)
+{
+	if (db_iserrcodefatal(db_errcode)) {
+		snprintf(errorstring, 512, "Fatal database error detected, exiting.");
+		printe(PT_Error);
+		errorexitdaemon(s, 1);
+	} else {
+		s->dbretrycount++;
+		if (s->dbretrycount >= DBRETRYLIMIT) {
+			snprintf(errorstring, 512, "Database error retry limit %d reached, exiting.", DBRETRYLIMIT);
+			printe(PT_Error);
+			errorexitdaemon(s, 1);
+		}
 	}
 }
 
@@ -620,6 +666,10 @@ void handleintsignals(DSTATE *s)
 			if (!db_open(1)) {
 				snprintf(errorstring, 512, "Opening database after SIGHUP failed (%s), exiting.", strerror(errno));
 				printe(PT_Error);
+				if (s->rundaemon && !debug) {
+					close(pidfile);
+					unlink(cfg.pidfile);
+				}
 				exit(EXIT_FAILURE);
 			}
 			break;
@@ -795,9 +845,11 @@ uint32_t simplehash(const char *data, int len)
 	return hash;
 }
 
-void errorexitdaemon(DSTATE *s)
+void errorexitdaemon(DSTATE *s, const int fataldberror)
 {
-	flushcachetodisk(s);
+	if (!fataldberror) {
+		flushcachetodisk(s);
+	}
 	db_close();
 
 	datacache_clear(&s->dcache);

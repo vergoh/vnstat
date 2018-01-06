@@ -826,6 +826,23 @@ START_TEST(db_data_can_be_retrieved)
 }
 END_TEST
 
+START_TEST(db_fatal_errors_get_detected)
+{
+	ck_assert_int_eq(db_iserrcodefatal(SQLITE_OK), 0);
+	ck_assert_int_eq(db_iserrcodefatal(SQLITE_FULL), 0);
+	ck_assert_int_eq(db_iserrcodefatal(SQLITE_IOERR), 0);
+	ck_assert_int_eq(db_iserrcodefatal(SQLITE_LOCKED), 0);
+	ck_assert_int_eq(db_iserrcodefatal(SQLITE_BUSY), 0);
+	ck_assert_int_eq(db_iserrcodefatal(SQLITE_NOTICE), 0);
+	ck_assert_int_eq(db_iserrcodefatal(SQLITE_WARNING), 0);
+
+	ck_assert_int_eq(db_iserrcodefatal(SQLITE_ERROR), 1);
+	ck_assert_int_eq(db_iserrcodefatal(SQLITE_ABORT), 1);
+	ck_assert_int_eq(db_iserrcodefatal(SQLITE_EMPTY), 1);
+	ck_assert_int_eq(db_iserrcodefatal(SQLITE_READONLY), 1);
+}
+END_TEST
+
 void add_dbsql_tests(Suite *s)
 {
 	TCase *tc_dbsql = tcase_create("DB SQL");
@@ -864,5 +881,6 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_maintenance_does_not_fault);
 	tcase_add_test(tc_dbsql, db_data_can_be_inserted);
 	tcase_add_test(tc_dbsql, db_data_can_be_retrieved);
+	tcase_add_test(tc_dbsql, db_fatal_errors_get_detected);
 	suite_add_tcase(s, tc_dbsql);
 }

@@ -32,6 +32,8 @@ durations. Yearly and five-minute resolution statistics are now included.
       * features can be disabled
     * old data cleanup
       * executed during startup and then once every hour
+    * logging and handling of possible database access errors
+      * only fatal errors will cause the daemon to exit directly
   * most vnstat (console output) features
   * many vnstati (image output) features
 
