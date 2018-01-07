@@ -673,7 +673,7 @@ int opencfgfile(const char *cfgfile, FILE **fd)
 			if (debug)
 				printf("Config file: --config\n");
 		} else {
-			snprintf(errorstring, 1024, "Unable to open given config file \"%s\": %s\n", cfgfile, strerror(errno));
+			snprintf(errorstring, 1024, "Unable to open given config file \"%s\": %s", cfgfile, strerror(errno));
 			printe(PT_Error);
 			return 0;
 		}

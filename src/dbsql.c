@@ -103,7 +103,7 @@ int db_setpragmas(void)
 	rc = sqlite3_prepare_v2(db, "PRAGMA foreign_keys;", -1, &sqlstmt, NULL);
 	if (rc != SQLITE_OK) {
 		db_errcode = rc;
-		snprintf(errorstring, 1024, "Exec prepare \"PRAGMA foreign_keys;\" failed (%d): %s\n", rc, sqlite3_errmsg(db));
+		snprintf(errorstring, 1024, "Exec prepare \"PRAGMA foreign_keys;\" failed (%d): %s", rc, sqlite3_errmsg(db));
 		printe(PT_Error);
 		return 0;
 	}
@@ -112,7 +112,7 @@ int db_setpragmas(void)
 	rc = sqlite3_step(sqlstmt);
 	if (rc != SQLITE_ROW) {
 		db_errcode = rc;
-		snprintf(errorstring, 1024, "PRAGMA foreign_keys returned no row (%d): %s\n", rc, sqlite3_errmsg(db));
+		snprintf(errorstring, 1024, "PRAGMA foreign_keys returned no row (%d): %s", rc, sqlite3_errmsg(db));
 		printe(PT_Error);
 		sqlite3_finalize(sqlstmt);
 		return 0;
@@ -121,7 +121,7 @@ int db_setpragmas(void)
 	rc = sqlite3_finalize(sqlstmt);
 	if (rc) {
 		db_errcode = rc;
-		snprintf(errorstring, 1024, " Exec finalize \"PRAGMA foreign_keys;\" failed (%d): %s\n", rc, sqlite3_errmsg(db));
+		snprintf(errorstring, 1024, " Exec finalize \"PRAGMA foreign_keys;\" failed (%d): %s", rc, sqlite3_errmsg(db));
 		printe(PT_Error);
 		return 0;
 	}
@@ -902,7 +902,7 @@ void dbiflistfree(dbiflist **dbifl)
 
 int db_getdata(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface, const char *table, const uint32_t resultlimit)
 {
-	int ret = 1, i;
+	int ret = 1, i, rc;
 	char *datatables[] = {"fiveminute", "hour", "day", "month", "year", "top"};
 	char sql[512], limit[64];
 	sqlite3_int64 ifaceid = 0;
@@ -943,11 +943,18 @@ int db_getdata(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface,
 		sqlite3_snprintf(512, sql, "select id, strftime('%%s', date, 'utc'), rx, tx from %s where interface=%"PRId64" order by date desc %s;", table, (int64_t)ifaceid, limit);
 	}
 
-	if (sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL) != SQLITE_OK) {
+	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
+	if (rc != SQLITE_OK) {
+		db_errcode = rc;
+		snprintf(errorstring, 1024, "Get data prepare failed (%d: %s): \"%s\"", rc, sqlite3_errmsg(db), sql);
+		printe(PT_Error);
 		return 0;
 	}
 
-	if (sqlite3_column_count(sqlstmt) != 4) {
+	rc = sqlite3_column_count(sqlstmt);
+	if (rc != 4) {
+		snprintf(errorstring, 1024, "Get data returned unexpected column count %d instead of 4: \"%s\"", rc, sql);
+		printe(PT_Error);
 		sqlite3_finalize(sqlstmt);
 		return 0;
 	}
@@ -958,7 +965,8 @@ int db_getdata(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface,
 		rx = (uint64_t)sqlite3_column_int64(sqlstmt, 2);
 		tx = (uint64_t)sqlite3_column_int64(sqlstmt, 3);
 		if (!dbdatalistadd(dbdata, rx, tx, timestamp, rowid)) {
-			/* TODO: some info print may be needed here */
+			snprintf(errorstring, 1024, "Storing data for processing failed: %s", strerror(errno));
+			printe(PT_Error);
 			ret = 0;
 			break;
 		}

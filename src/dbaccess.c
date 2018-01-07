@@ -377,9 +377,9 @@ int lockdb(int fd, int dbwrite)
 		/* give up if lock can't be obtained */
 		if (locktry>=LOCKTRYLIMIT) {
 			if (dbwrite) {
-				snprintf(errorstring, 1024, "Locking database file for write failed for %d tries:\n%s (%d)", locktry, strerror(errno), errno);
+				snprintf(errorstring, 1024, "Locking database file for write failed for %d tries: %s", locktry, strerror(errno));
 			} else {
-				snprintf(errorstring, 1024, "Locking database file for read failed for %d tries:\n%s (%d)", locktry, strerror(errno), errno);
+				snprintf(errorstring, 1024, "Locking database file for read failed for %d tries: %s", locktry, strerror(errno));
 			}
 			printe(PT_Error);
 			return 0;
@@ -392,9 +392,9 @@ int lockdb(int fd, int dbwrite)
 		/* real error */
 		} else {
 			if (dbwrite) {
-				snprintf(errorstring, 1024, "Locking database file for write failed:\n%s (%d)", strerror(errno), errno);
+				snprintf(errorstring, 1024, "Locking database file for write failed: %s", strerror(errno));
 			} else {
-				snprintf(errorstring, 1024, "Locking database file for read failed:\n%s (%d)", strerror(errno), errno);
+				snprintf(errorstring, 1024, "Locking database file for read failed: %s", strerror(errno));
 			}
 			printe(PT_Error);
 			return 0;
