@@ -535,7 +535,7 @@ void handleremoveinterface(PARAMS *p)
 
 void handleaddinterface(PARAMS *p)
 {
-	char dbfile[512];
+	char dbfile[530];
 
 	if (!p->addiface) {
 		return;
@@ -564,7 +564,7 @@ void handleaddinterface(PARAMS *p)
 		exit(EXIT_FAILURE);
 	}
 
-	snprintf(dbfile, 512, "%s/%s", p->dirname, DATABASEFILE);
+	snprintf(dbfile, 530, "%s/%s", p->dirname, DATABASEFILE);
 	if (!fileexists(dbfile)) {
 		/* database file doesn't exist so it can't be open either, try to create it */
 		printf("Database doesn't exist, creating...\n");

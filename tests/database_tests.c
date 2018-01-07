@@ -427,7 +427,7 @@ int writedb(DATA *data, const char *iface, const char *dirname, int newdb)
 
 	/* try to make backup of old data if this isn't a new database */
 	if (!newdb && !backupdb(file, backup)) {
-		snprintf(errorstring, 512, "Unable to create database backup \"%s\".", backup);
+		snprintf(errorstring, 1024, "Unable to create database backup \"%s\".", backup);
 		printe(PT_Error);
 		return 0;
 	}
@@ -436,7 +436,7 @@ int writedb(DATA *data, const char *iface, const char *dirname, int newdb)
 	data->version=LEGACYDBVERSION;
 
 	if ((db=fopen(file,"w"))==NULL) {
-		snprintf(errorstring, 512, "Unable to open database \"%s\" for writing: %s", file, strerror(errno));
+		snprintf(errorstring, 1024, "Unable to open database \"%s\" for writing: %s", file, strerror(errno));
 		printe(PT_Error);
 		return 0;
 	}
@@ -453,7 +453,7 @@ int writedb(DATA *data, const char *iface, const char *dirname, int newdb)
 	}
 
 	if (fwrite(data,sizeof(DATA),1,db)==0) {
-		snprintf(errorstring, 512, "Unable to write database \"%s\": %s", file, strerror(errno));
+		snprintf(errorstring, 1024, "Unable to write database \"%s\": %s", file, strerror(errno));
 		printe(PT_Error);
 		fclose(db);
 		return 0;
@@ -463,7 +463,7 @@ int writedb(DATA *data, const char *iface, const char *dirname, int newdb)
 		}
 		fclose(db);
 		if ((newdb) && (noexit==0)) {
-			snprintf(errorstring, 512, "-> A new database has been created.");
+			snprintf(errorstring, 1024, "-> A new database has been created.");
 			printe(PT_Info);
 			matchdbownerwithdirowner(dirname);
 		}

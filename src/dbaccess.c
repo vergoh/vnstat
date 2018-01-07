@@ -7,7 +7,7 @@ int importlegacydb(const char *iface, const char *dirname)
 {
 	DATA data;
 
-	snprintf(errorstring, 512, "Importing data from legacy database \"%s\"...", iface);
+	snprintf(errorstring, 1024, "Importing data from legacy database \"%s\"...", iface);
 	printe(PT_Info);
 
 	if (db_getinterfacecountbyname(iface)) {
@@ -145,7 +145,7 @@ int readdb(DATA *data, const char *iface, const char *dirname, const int force)
 	snprintf(backup, 512, "%s/.%s", dirname, iface);
 
 	if ((db=fopen(file,"r"))==NULL) {
-		snprintf(errorstring, 512, "Unable to read database \"%s\": %s", file, strerror(errno));
+		snprintf(errorstring, 1024, "Unable to read database \"%s\": %s", file, strerror(errno));
 		printe(PT_Error);
 
 		/* create new database template */
@@ -188,7 +188,7 @@ int readdb(DATA *data, const char *iface, const char *dirname, const int force)
 			/* close current db and try using backup if database conversion failed */
 			fclose(db);
 			if ((db=fopen(backup,"r"))==NULL) {
-				snprintf(errorstring, 512, "Unable to open backup database \"%s\": %s", backup, strerror(errno));
+				snprintf(errorstring, 1024, "Unable to open backup database \"%s\": %s", backup, strerror(errno));
 				printe(PT_Error);
 				if (noexit) {
 					return -1;
@@ -204,7 +204,7 @@ int readdb(DATA *data, const char *iface, const char *dirname, const int force)
 			}
 
 			if (fread(data,sizeof(DATA),1,db)==0) {
-				snprintf(errorstring, 512, "Database load failed even when using backup (%s). Aborting.", strerror(errno));
+				snprintf(errorstring, 1024, "Database load failed even when using backup (%s). Aborting.", strerror(errno));
 				printe(PT_Error);
 				fclose(db);
 
@@ -230,7 +230,7 @@ int readdb(DATA *data, const char *iface, const char *dirname, const int force)
 
 			if (data->version!=LEGACYDBVERSION) {
 				if (data->version==-1) {
-					snprintf(errorstring, 512, "Unable to use database \"%s\" or backup database \"%s\".", file, backup);
+					snprintf(errorstring, 1024, "Unable to use database \"%s\" or backup database \"%s\".", file, backup);
 					printe(PT_Error);
 					fclose(db);
 
@@ -241,12 +241,12 @@ int readdb(DATA *data, const char *iface, const char *dirname, const int force)
 					}
 				}
 			}
-			snprintf(errorstring, 512, "Database possibly corrupted, using backup instead.");
+			snprintf(errorstring, 1024, "Database possibly corrupted, using backup instead.");
 			printe(PT_Info);
 		}
 
 	} else if (data->version>LEGACYDBVERSION) {
-		snprintf(errorstring, 512, "Downgrading database \"%s\" (v%d) is not supported.", file, data->version);
+		snprintf(errorstring, 1024, "Downgrading database \"%s\" (v%d) is not supported.", file, data->version);
 		printe(PT_Error);
 		fclose(db);
 
@@ -260,13 +260,13 @@ int readdb(DATA *data, const char *iface, const char *dirname, const int force)
 	fclose(db);
 
 	if (strcmp(data->interface,iface)) {
-		snprintf(errorstring, 512, "Warning:\nThe previous interface for this file was \"%s\".",data->interface);
+		snprintf(errorstring, 1024, "Warning:\nThe previous interface for this file was \"%s\".",data->interface);
 		printe(PT_Multiline);
-		snprintf(errorstring, 512, "It has now been replaced with \"%s\".",iface);
+		snprintf(errorstring, 1024, "It has now been replaced with \"%s\".",iface);
 		printe(PT_Multiline);
-		snprintf(errorstring, 512, "You can ignore this message if you renamed the filename.");
+		snprintf(errorstring, 1024, "You can ignore this message if you renamed the filename.");
 		printe(PT_Multiline);
-		snprintf(errorstring, 512, "Interface name mismatch, renamed \"%s\" -> \"%s\"", data->interface, iface);
+		snprintf(errorstring, 1024, "Interface name mismatch, renamed \"%s\" -> \"%s\"", data->interface, iface);
 		printe(PT_ShortMultiline);
 		if (strcmp(data->interface, data->nick)==0) {
 			strncpy_nt(data->nick, iface, 32);
@@ -377,9 +377,9 @@ int lockdb(int fd, int dbwrite)
 		/* give up if lock can't be obtained */
 		if (locktry>=LOCKTRYLIMIT) {
 			if (dbwrite) {
-				snprintf(errorstring, 512, "Locking database file for write failed for %d tries:\n%s (%d)", locktry, strerror(errno), errno);
+				snprintf(errorstring, 1024, "Locking database file for write failed for %d tries:\n%s (%d)", locktry, strerror(errno), errno);
 			} else {
-				snprintf(errorstring, 512, "Locking database file for read failed for %d tries:\n%s (%d)", locktry, strerror(errno), errno);
+				snprintf(errorstring, 1024, "Locking database file for read failed for %d tries:\n%s (%d)", locktry, strerror(errno), errno);
 			}
 			printe(PT_Error);
 			return 0;
@@ -392,9 +392,9 @@ int lockdb(int fd, int dbwrite)
 		/* real error */
 		} else {
 			if (dbwrite) {
-				snprintf(errorstring, 512, "Locking database file for write failed:\n%s (%d)", strerror(errno), errno);
+				snprintf(errorstring, 1024, "Locking database file for write failed:\n%s (%d)", strerror(errno), errno);
 			} else {
-				snprintf(errorstring, 512, "Locking database file for read failed:\n%s (%d)", strerror(errno), errno);
+				snprintf(errorstring, 1024, "Locking database file for read failed:\n%s (%d)", strerror(errno), errno);
 			}
 			printe(PT_Error);
 			return 0;
@@ -450,25 +450,25 @@ int validatedb(DATA *data)
 	data->nick[sizeof(data->nick)-1] = '\0';
 
 	if (data->version>LEGACYDBVERSION) {
-		snprintf(errorstring, 512, "%s: Invalid database version: %d", data->interface, data->version);
+		snprintf(errorstring, 1024, "%s: Invalid database version: %d", data->interface, data->version);
 		printe(PT_Error);
 		return 0;
 	}
 
 	if (data->active<0 || data->active>1) {
-		snprintf(errorstring, 512, "%s: Invalid database activity status: %d", data->interface, data->active);
+		snprintf(errorstring, 1024, "%s: Invalid database activity status: %d", data->interface, data->active);
 		printe(PT_Error);
 		return 0;
 	}
 
 	if (!strlen(data->interface)) {
-		snprintf(errorstring, 512, "Invalid database interface string: %s", data->interface);
+		snprintf(errorstring, 1024, "Invalid database interface string: %s", data->interface);
 		printe(PT_Error);
 		return 0;
 	}
 
 	if (!data->created || !data->lastupdated || !data->btime) {
-		snprintf(errorstring, 512, "%s: Invalid database timestamp.", data->interface);
+		snprintf(errorstring, 1024, "%s: Invalid database timestamp.", data->interface);
 		printe(PT_Error);
 		return 0;
 	}
@@ -477,17 +477,17 @@ int validatedb(DATA *data)
 	used = 1;
 	for (i=0; i<30; i++) {
 		if (data->day[i].used<0 || data->day[i].used>1) {
-			snprintf(errorstring, 512, "%s: Invalid database daily use information: %d %d", data->interface, i, data->day[i].used);
+			snprintf(errorstring, 1024, "%s: Invalid database daily use information: %d %d", data->interface, i, data->day[i].used);
 			printe(PT_Error);
 			return 0;
 		}
 		if (data->day[i].rxk<0 || data->day[i].txk<0) {
-			snprintf(errorstring, 512, "%s: Invalid database daily traffic: %d", data->interface, i);
+			snprintf(errorstring, 1024, "%s: Invalid database daily traffic: %d", data->interface, i);
 			printe(PT_Error);
 			return 0;
 		}
 		if (data->day[i].used && !used) {
-			snprintf(errorstring, 512, "%s: Invalid database daily use order: %d", data->interface, i);
+			snprintf(errorstring, 1024, "%s: Invalid database daily use order: %d", data->interface, i);
 			printe(PT_Error);
 			return 0;
 		} else if (!data->day[i].used) {
@@ -504,14 +504,14 @@ int validatedb(DATA *data)
 			break;
 		}
 		if (data->day[i-1].date < data->day[i].date) {
-			snprintf(errorstring, 512, "%s: Invalid database daily date order: %u (%d) < %u (%d)", data->interface, (unsigned int)data->day[i-1].date, i-1, (unsigned int)data->day[i].date, i);
+			snprintf(errorstring, 1024, "%s: Invalid database daily date order: %u (%d) < %u (%d)", data->interface, (unsigned int)data->day[i-1].date, i-1, (unsigned int)data->day[i].date, i);
 			printe(PT_Error);
 			return 0;
 		}
 	}
 
 	if (data->totalrx < rxsum || data->totaltx < txsum) {
-		snprintf(errorstring, 512, "%s: Invalid database total traffic compared to daily usage.", data->interface);
+		snprintf(errorstring, 1024, "%s: Invalid database total traffic compared to daily usage.", data->interface);
 		printe(PT_Error);
 		return 0;
 	}
@@ -520,17 +520,17 @@ int validatedb(DATA *data)
 	used = 1;
 	for (i=0; i<12; i++) {
 		if (data->month[i].used<0 || data->month[i].used>1) {
-			snprintf(errorstring, 512, "%s: Invalid database monthly use information: %d %d", data->interface, i, data->month[i].used);
+			snprintf(errorstring, 1024, "%s: Invalid database monthly use information: %d %d", data->interface, i, data->month[i].used);
 			printe(PT_Error);
 			return 0;
 		}
 		if (data->month[i].rxk<0 || data->month[i].txk<0) {
-			snprintf(errorstring, 512, "%s: Invalid database monthly traffic: %d", data->interface, i);
+			snprintf(errorstring, 1024, "%s: Invalid database monthly traffic: %d", data->interface, i);
 			printe(PT_Error);
 			return 0;
 		}
 		if (data->month[i].used && !used) {
-			snprintf(errorstring, 512, "%s: Invalid database monthly use order: %d", data->interface, i);
+			snprintf(errorstring, 1024, "%s: Invalid database monthly use order: %d", data->interface, i);
 			printe(PT_Error);
 			return 0;
 		} else if (!data->month[i].used) {
@@ -547,14 +547,14 @@ int validatedb(DATA *data)
 			break;
 		}
 		if (data->month[i-1].month < data->month[i].month) {
-			snprintf(errorstring, 512, "%s: Invalid database monthly date order: %u (%d) < %u (%d)", data->interface, (unsigned int)data->month[i-1].month, i-1, (unsigned int)data->month[i].month, i);
+			snprintf(errorstring, 1024, "%s: Invalid database monthly date order: %u (%d) < %u (%d)", data->interface, (unsigned int)data->month[i-1].month, i-1, (unsigned int)data->month[i].month, i);
 			printe(PT_Error);
 			return 0;
 		}
 	}
 
 	if (data->totalrx < rxsum || data->totaltx < txsum) {
-		snprintf(errorstring, 512, "%s: Invalid database total traffic compared to monthly usage.", data->interface);
+		snprintf(errorstring, 1024, "%s: Invalid database total traffic compared to monthly usage.", data->interface);
 		printe(PT_Error);
 		return 0;
 	}
@@ -562,17 +562,17 @@ int validatedb(DATA *data)
 	used = 1;
 	for (i=0; i<10; i++) {
 		if (data->top10[i].used<0 || data->top10[i].used>1) {
-			snprintf(errorstring, 512, "%s: Invalid database top10 use information: %d %d", data->interface, i, data->top10[i].used);
+			snprintf(errorstring, 1024, "%s: Invalid database top10 use information: %d %d", data->interface, i, data->top10[i].used);
 			printe(PT_Error);
 			return 0;
 		}
 		if (data->top10[i].rxk<0 || data->top10[i].txk<0) {
-			snprintf(errorstring, 512, "%s: Invalid database top10 traffic: %d", data->interface, i);
+			snprintf(errorstring, 1024, "%s: Invalid database top10 traffic: %d", data->interface, i);
 			printe(PT_Error);
 			return 0;
 		}
 		if (data->top10[i].used && !used) {
-			snprintf(errorstring, 512, "%s: Invalid database top10 use order: %d", data->interface, i);
+			snprintf(errorstring, 1024, "%s: Invalid database top10 use order: %d", data->interface, i);
 			printe(PT_Error);
 			return 0;
 		} else if (!data->top10[i].used) {

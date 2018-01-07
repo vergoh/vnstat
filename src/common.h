@@ -300,7 +300,7 @@ char *getversion(void);
 /* global variables */
 CFG cfg;
 IFINFO ifinfo;
-char errorstring[512];
+char errorstring[1024];
 ibwnode *ifacebw;
 int debug;
 int noexit;      /* = running as daemon if 2 */

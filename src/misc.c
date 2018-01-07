@@ -19,7 +19,7 @@ int spacecheck(const char *path)
 		if (noexit) {
 			return 0;
 		} else {
-			snprintf(errorstring, 512, "Free diskspace check failed: %s", strerror(errno));
+			snprintf(errorstring, 1024, "Free diskspace check failed: %s", strerror(errno));
 			printe(PT_Error);
 			exit(EXIT_FAILURE);
 		}
@@ -55,19 +55,19 @@ void sighandler(int sig)
 		switch (sig) {
 
 			case SIGHUP:
-				snprintf(errorstring, 512, "DEBUG: SIGHUP (%d)", sig);
+				snprintf(errorstring, 1024, "DEBUG: SIGHUP (%d)", sig);
 				break;
 
 			case SIGTERM:
-				snprintf(errorstring, 512, "DEBUG: SIGTERM (%d)", sig);
+				snprintf(errorstring, 1024, "DEBUG: SIGTERM (%d)", sig);
 				break;
 
 			case SIGINT:
-				snprintf(errorstring, 512, "DEBUG: SIGINT (%d)", sig);
+				snprintf(errorstring, 1024, "DEBUG: SIGINT (%d)", sig);
 				break;
 
 			default:
-				snprintf(errorstring, 512, "DEBUG: Unknown signal %d", sig);
+				snprintf(errorstring, 1024, "DEBUG: Unknown signal %d", sig);
 				break;
 
 		}
@@ -84,7 +84,7 @@ uint64_t getbtime(void)
 	char temp[64], statline[128];
 
 	if ((fp=fopen("/proc/stat","r"))==NULL) {
-		snprintf(errorstring, 512, "Unable to read /proc/stat: %s", strerror(errno));
+		snprintf(errorstring, 1024, "Unable to read /proc/stat: %s", strerror(errno));
 		printe(PT_Error);
 		if (noexit) {
 			return 0;
@@ -106,7 +106,7 @@ uint64_t getbtime(void)
 	fclose(fp);
 
 	if (check==0) {
-		snprintf(errorstring, 512, "btime missing from /proc/stat.");
+		snprintf(errorstring, 1024, "btime missing from /proc/stat.");
 		printe(PT_Error);
 		if (noexit) {
 			return 0;

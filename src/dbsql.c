@@ -5,16 +5,16 @@
 int db_open(const int createifnotfound)
 {
 	int rc, createdb = 0;
-	char dbfilename[512];
+	char dbfilename[530];
 
 #ifdef CHECK_VNSTAT
 	/* use ram based database when testing for shorter test execution times by reducing disk i/o */
-	snprintf(dbfilename, 512, ":memory:");
+	snprintf(dbfilename, 530, ":memory:");
 	createdb = 1;
 #else
 	struct stat filestat;
 
-	snprintf(dbfilename, 512, "%s/%s", cfg.dbdir, DATABASEFILE);
+	snprintf(dbfilename, 530, "%s/%s", cfg.dbdir, DATABASEFILE);
 
 	/* create database if file doesn't exist */
 	if (stat(dbfilename, &filestat) != 0) {
@@ -103,7 +103,7 @@ int db_setpragmas(void)
 	rc = sqlite3_prepare_v2(db, "PRAGMA foreign_keys;", -1, &sqlstmt, NULL);
 	if (rc != SQLITE_OK) {
 		db_errcode = rc;
-		snprintf(errorstring, 512, "Exec prepare \"PRAGMA foreign_keys;\" failed (%d): %s\n", rc, sqlite3_errmsg(db));
+		snprintf(errorstring, 1024, "Exec prepare \"PRAGMA foreign_keys;\" failed (%d): %s\n", rc, sqlite3_errmsg(db));
 		printe(PT_Error);
 		return 0;
 	}
@@ -112,7 +112,7 @@ int db_setpragmas(void)
 	rc = sqlite3_step(sqlstmt);
 	if (rc != SQLITE_ROW) {
 		db_errcode = rc;
-		snprintf(errorstring, 512, "PRAGMA foreign_keys returned no row (%d): %s\n", rc, sqlite3_errmsg(db));
+		snprintf(errorstring, 1024, "PRAGMA foreign_keys returned no row (%d): %s\n", rc, sqlite3_errmsg(db));
 		printe(PT_Error);
 		sqlite3_finalize(sqlstmt);
 		return 0;
@@ -121,7 +121,7 @@ int db_setpragmas(void)
 	rc = sqlite3_finalize(sqlstmt);
 	if (rc) {
 		db_errcode = rc;
-		snprintf(errorstring, 512, " Exec finalize \"PRAGMA foreign_keys;\" failed (%d): %s\n", rc, sqlite3_errmsg(db));
+		snprintf(errorstring, 1024, " Exec finalize \"PRAGMA foreign_keys;\" failed (%d): %s\n", rc, sqlite3_errmsg(db));
 		printe(PT_Error);
 		return 0;
 	}
@@ -151,7 +151,7 @@ int db_exec(const char *sql)
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
 	if (rc != SQLITE_OK) {
 		db_errcode = rc;
-		snprintf(errorstring, 512, "Exec prepare failed (%d: %s): \"%s\"", rc, sqlite3_errmsg(db), sql);
+		snprintf(errorstring, 1024, "Exec prepare failed (%d: %s): \"%s\"", rc, sqlite3_errmsg(db), sql);
 		printe(PT_Error);
 		return 0;
 	}
@@ -159,7 +159,7 @@ int db_exec(const char *sql)
 	rc = sqlite3_step(sqlstmt);
 	if (rc != SQLITE_DONE) {
 		db_errcode = rc;
-		snprintf(errorstring, 512, "Exec step failed (%d: %s): \"%s\"", rc, sqlite3_errmsg(db), sql);
+		snprintf(errorstring, 1024, "Exec step failed (%d: %s): \"%s\"", rc, sqlite3_errmsg(db), sql);
 		printe(PT_Error);
 		sqlite3_finalize(sqlstmt);
 		return 0;
@@ -168,7 +168,7 @@ int db_exec(const char *sql)
 	rc = sqlite3_finalize(sqlstmt);
 	if (rc) {
 		db_errcode = rc;
-		snprintf(errorstring, 512, "Exec finalize failed (%d: %s): \"%s\"", rc, sqlite3_errmsg(db), sql);
+		snprintf(errorstring, 1024, "Exec finalize failed (%d: %s): \"%s\"", rc, sqlite3_errmsg(db), sql);
 		printe(PT_Error);
 		return 0;
 	}
@@ -287,7 +287,7 @@ uint64_t db_getinterfacecountbyname(const char *iface)
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
 	if (rc != SQLITE_OK) {
 		db_errcode = rc;
-		snprintf(errorstring, 512, "Failed to get interface count from database (%d): %s", rc, sqlite3_errmsg(db));
+		snprintf(errorstring, 1024, "Failed to get interface count from database (%d): %s", rc, sqlite3_errmsg(db));
 		printe(PT_Error);
 		return 0;
 	}
@@ -318,7 +318,7 @@ sqlite3_int64 db_getinterfaceid(const char *iface, const int createifnotfound)
 		sqlite3_finalize(sqlstmt);
 	} else {
 		db_errcode = rc;
-		snprintf(errorstring, 512, "Failed to get interface id from database (%d): %s", rc, sqlite3_errmsg(db));
+		snprintf(errorstring, 1024, "Failed to get interface id from database (%d): %s", rc, sqlite3_errmsg(db));
 		printe(PT_Error);
 	}
 
@@ -392,7 +392,7 @@ int db_getcounters(const char *iface, uint64_t *rxcounter, uint64_t *txcounter)
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
 	if (rc != SQLITE_OK) {
 		db_errcode = rc;
-		snprintf(errorstring, 512, "Failed to get interface counters from database (%d): %s", rc, sqlite3_errmsg(db));
+		snprintf(errorstring, 1024, "Failed to get interface counters from database (%d): %s", rc, sqlite3_errmsg(db));
 		printe(PT_Error);
 		return 0;
 	}
@@ -425,7 +425,7 @@ int db_getinterfaceinfo(const char *iface, interfaceinfo *info)
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
 	if (rc != SQLITE_OK) {
 		db_errcode = rc;
-		snprintf(errorstring, 512, "Failed to get interface information from database (%d): %s", rc, sqlite3_errmsg(db));
+		snprintf(errorstring, 1024, "Failed to get interface information from database (%d): %s", rc, sqlite3_errmsg(db));
 		printe(PT_Error);
 		return 0;
 	}
@@ -500,7 +500,7 @@ char *db_getinfo(const char *name)
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
 	if (rc != SQLITE_OK) {
 		db_errcode = rc;
-		snprintf(errorstring, 512, "Failed to get info value for \"%s\" from database (%d): %s", name, rc, sqlite3_errmsg(db));
+		snprintf(errorstring, 1024, "Failed to get info value for \"%s\" from database (%d): %s", name, rc, sqlite3_errmsg(db));
 		printe(PT_Error);
 		return buffer;
 	}
@@ -525,7 +525,7 @@ int db_getiflist(dbiflist **dbifl)
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
 	if (rc != SQLITE_OK ) {
 		db_errcode = rc;
-		snprintf(errorstring, 512, "Failed to get interface list from database (%d): %s", rc, sqlite3_errmsg(db));
+		snprintf(errorstring, 1024, "Failed to get interface list from database (%d): %s", rc, sqlite3_errmsg(db));
 		printe(PT_Error);
 		return -1;
 	}
@@ -824,7 +824,7 @@ int db_begintransaction(void)
 	rc = sqlite3_exec(db, "BEGIN IMMEDIATE", 0, 0, 0);
 	if (rc) {
 		db_errcode = rc;
-		snprintf(errorstring, 512, "Begin transaction to database failed (%d): %s", rc, sqlite3_errmsg(db));
+		snprintf(errorstring, 1024, "Begin transaction to database failed (%d): %s", rc, sqlite3_errmsg(db));
 		printe(PT_Error);
 		return 0;
 	}
@@ -838,7 +838,7 @@ int db_committransaction(void)
 	rc = sqlite3_exec(db, "COMMIT", 0, 0, 0);
 	if (rc) {
 		db_errcode = rc;
-		snprintf(errorstring, 512, "Commit transaction to database failed (%d): %s", rc, sqlite3_errmsg(db));
+		snprintf(errorstring, 1024, "Commit transaction to database failed (%d): %s", rc, sqlite3_errmsg(db));
 		printe(PT_Error);
 		return 0;
 	}
@@ -852,7 +852,7 @@ int db_rollbacktransaction(void)
 	rc = sqlite3_exec(db, "ROLLBACK", 0, 0, 0);
 	if (rc) {
 		db_errcode = rc;
-		snprintf(errorstring, 512, "Transaction rollback failed (%d): %s", rc, sqlite3_errmsg(db));
+		snprintf(errorstring, 1024, "Transaction rollback failed (%d): %s", rc, sqlite3_errmsg(db));
 		printe(PT_Error);
 		return 0;
 	}

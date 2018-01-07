@@ -258,7 +258,7 @@ int isnumeric(const char *s)
 
 void panicexit(const char *sourcefile, const int sourceline)
 {
-	snprintf(errorstring, 512, "Unexpected error (%s), exiting. (%s:%d)\n", strerror(errno), sourcefile, sourceline);
+	snprintf(errorstring, 1024, "Unexpected error (%s), exiting. (%s:%d)\n", strerror(errno), sourcefile, sourceline);
 	fprintf(stderr, "%s\n", errorstring);
 	printe(PT_Error);
 	exit(EXIT_FAILURE);

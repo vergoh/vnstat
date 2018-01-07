@@ -27,14 +27,14 @@ int getifinfo(const char *iface)
 
 		/* try getting interface info from /sys */
 		if (readsysclassnet(inface)!=1) {
-			snprintf(errorstring, 512, "Unable to get interface \"%s\" statistics.", inface);
+			snprintf(errorstring, 1024, "Unable to get interface \"%s\" statistics.", inface);
 			printe(PT_Error);
 			return 0;
 		}
 	}
 #elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__)  || defined(__FreeBSD_kernel__)
 	if (readifaddrs(inface)!=1) {
-		snprintf(errorstring, 512, "Unable to get interface \"%s\" statistics.", inface);
+		snprintf(errorstring, 1024, "Unable to get interface \"%s\" statistics.", inface);
 		printe(PT_Error);
 		return 0;
 	}

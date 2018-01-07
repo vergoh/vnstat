@@ -41,13 +41,13 @@ void daemonize(void)
 	pidfile = open(cfg.pidfile, O_RDWR|O_CREAT, 0644);
 	if (pidfile<0) {
 		perror("Error: pidfile");
-		snprintf(errorstring, 512, "opening pidfile \"%s\" failed (%s), exiting.", cfg.pidfile, strerror(errno));
+		snprintf(errorstring, 1024, "opening pidfile \"%s\" failed (%s), exiting.", cfg.pidfile, strerror(errno));
 		printe(PT_Error);
 		exit(EXIT_FAILURE); /* can't open */
 	}
 	if (lockf(pidfile,F_TLOCK,0)<0) {
 		perror("Error: pidfile lock");
-		snprintf(errorstring, 512, "pidfile \"%s\" lock failed (%s), exiting.", cfg.pidfile, strerror(errno));
+		snprintf(errorstring, 1024, "pidfile \"%s\" lock failed (%s), exiting.", cfg.pidfile, strerror(errno));
 		printe(PT_Error);
 		exit(EXIT_FAILURE); /* can't lock */
 	}
@@ -64,7 +64,7 @@ void daemonize(void)
 
 	if (i < 0) {
 		perror("Error: open() /dev/null");
-		snprintf(errorstring, 512, "open() /dev/null failed, exiting.");
+		snprintf(errorstring, 1024, "open() /dev/null failed, exiting.");
 		printe(PT_Error);
 		exit(EXIT_FAILURE);
 	}
@@ -72,14 +72,14 @@ void daemonize(void)
 	/* stdout */
 	if (dup(i) < 0) {
 		perror("Error: dup(stdout)");
-		snprintf(errorstring, 512, "dup(stdout) failed, exiting.");
+		snprintf(errorstring, 1024, "dup(stdout) failed, exiting.");
 		printe(PT_Error);
 		exit(EXIT_FAILURE);
 	}
 	/* stderr */
 	if (dup(i) < 0) {
 		perror("Error: dup(stderr)");
-		snprintf(errorstring, 512, "dup(stderr) failed, exiting.");
+		snprintf(errorstring, 1024, "dup(stderr) failed, exiting.");
 		printe(PT_Error);
 		exit(EXIT_FAILURE);
 	}
@@ -89,7 +89,7 @@ void daemonize(void)
 	/* change running directory */
 	if (chdir("/") < 0) {
 		perror("Error: chdir(/)");
-		snprintf(errorstring, 512, "directory change to / failed, exiting.");
+		snprintf(errorstring, 1024, "directory change to / failed, exiting.");
 		printe(PT_Error);
 		exit(EXIT_FAILURE);
 	}
@@ -100,7 +100,7 @@ void daemonize(void)
 	/* record pid to pidfile */
 	if (write(pidfile,str,strlen(str)) < 0) {
 		perror("Error: write(pidfile)");
-		snprintf(errorstring, 512, "writing to pidfile %s failed, exiting.", cfg.pidfile);
+		snprintf(errorstring, 1024, "writing to pidfile \"%s\" failed (%s), exiting.", cfg.pidfile, strerror(errno));
 		printe(PT_Error);
 		exit(EXIT_FAILURE);
 	}
@@ -358,7 +358,7 @@ void filldatabaselist(DSTATE *s)
 			printf("\nProcessing interface \"%s\"...\n", dbifl_iterator->interface);
 		}
 		if (!datacache_add(&s->dcache, dbifl_iterator->interface, s->sync)) {
-			snprintf(errorstring, 512, "Cache memory allocation failed (%s), exiting.", strerror(errno));
+			snprintf(errorstring, 1024, "Cache memory allocation failed (%s), exiting.", strerror(errno));
 			printe(PT_Error);
 			errorexitdaemon(s, 1);
 		}
@@ -425,7 +425,7 @@ void processdatacache(DSTATE *s)
 			if (!getifinfo(iterator->interface)) {
 				/* disable interface since we can't access its data */
 				iterator->active = 0;
-				snprintf(errorstring, 512, "Interface \"%s\" not available, disabling.", iterator->interface);
+				snprintf(errorstring, 1024, "Interface \"%s\" not available, disabling.", iterator->interface);
 				printe(PT_Info);
 			} else {
 				if (!processifinfo(s, &iterator)) {
@@ -494,7 +494,7 @@ int processifinfo(DSTATE *s, datacache **dc)
 		/* skip update if previous update is less than a day in the future */
 		/* otherwise exit with error message since the clock is problably messed */
 		if ((*dc)->updated > (ifinfo.timestamp+86400)) {
-			snprintf(errorstring, 512, "Interface \"%s\" has previous update date too much in the future, exiting. (%u / %u)", (*dc)->interface, (unsigned int)(*dc)->updated, (unsigned int)ifinfo.timestamp);
+			snprintf(errorstring, 1024, "Interface \"%s\" has previous update date too much in the future, exiting. (%u / %u)", (*dc)->interface, (unsigned int)(*dc)->updated, (unsigned int)ifinfo.timestamp);
 			printe(PT_Error);
 			errorexitdaemon(s, 1);
 		}
@@ -521,7 +521,7 @@ int processifinfo(DSTATE *s, datacache **dc)
 
 			/* sync counters if traffic is greater than set maximum */
 			if ( (rxchange > maxtransfer) || (txchange > maxtransfer) ) {
-				snprintf(errorstring, 512, "Traffic rate for \"%s\" higher than set maximum %"PRIu32" Mbit (%"PRIu64"->%"PRIu64", r%"PRIu64" t%"PRIu64"), syncing.", (*dc)->interface, maxbw, (uint64_t)interval, maxtransfer, rxchange, txchange);
+				snprintf(errorstring, 1024, "Traffic rate for \"%s\" higher than set maximum %"PRIu32" Mbit (%"PRIu64"->%"PRIu64", r%"PRIu64" t%"PRIu64"), syncing.", (*dc)->interface, maxbw, (uint64_t)interval, maxtransfer, rxchange, txchange);
 				printe(PT_Info);
 				rxchange = txchange = 0;
 			}
@@ -608,13 +608,13 @@ void flushcachetodisk(DSTATE *s)
 void handledatabaseerror(DSTATE *s)
 {
 	if (db_iserrcodefatal(db_errcode)) {
-		snprintf(errorstring, 512, "Fatal database error detected, exiting.");
+		snprintf(errorstring, 1024, "Fatal database error detected, exiting.");
 		printe(PT_Error);
 		errorexitdaemon(s, 1);
 	} else {
 		s->dbretrycount++;
 		if (s->dbretrycount >= DBRETRYLIMIT) {
-			snprintf(errorstring, 512, "Database error retry limit %d reached, exiting.", DBRETRYLIMIT);
+			snprintf(errorstring, 1024, "Database error retry limit %d reached, exiting.", DBRETRYLIMIT);
 			printe(PT_Error);
 			errorexitdaemon(s, 1);
 		}
@@ -636,7 +636,7 @@ void cleanremovedinterfaces(DSTATE *s)
 	if (dbifl != NULL) {
 		dbifl_iterator = dbifl;
 		while (dbifl_iterator != NULL) {
-			snprintf(errorstring, 512, "Removing interface \"%s\" from update list.", dbifl_iterator->interface);
+			snprintf(errorstring, 1024, "Removing interface \"%s\" from update list.", dbifl_iterator->interface);
 			printe(PT_Info);
 			datacache_remove(&s->dcache, dbifl_iterator->interface);
 			s->dbcount--;
@@ -652,7 +652,7 @@ void handleintsignals(DSTATE *s)
 	switch (intsignal) {
 
 		case SIGHUP:
-			snprintf(errorstring, 512, "SIGHUP received, flushing data to disk and reloading config.");
+			snprintf(errorstring, 1024, "SIGHUP received, flushing data to disk and reloading config.");
 			printe(PT_Info);
 			flushcachetodisk(s);
 			datacache_clear(&s->dcache);
@@ -664,7 +664,7 @@ void handleintsignals(DSTATE *s)
 			}
 			ibwloadcfg(s->cfgfile);
 			if (!db_open(1)) {
-				snprintf(errorstring, 512, "Opening database after SIGHUP failed (%s), exiting.", strerror(errno));
+				snprintf(errorstring, 1024, "Opening database after SIGHUP failed (%s), exiting.", strerror(errno));
 				printe(PT_Error);
 				if (s->rundaemon && !debug) {
 					close(pidfile);
@@ -675,13 +675,13 @@ void handleintsignals(DSTATE *s)
 			break;
 
 		case SIGINT:
-			snprintf(errorstring, 512, "SIGINT received, exiting.");
+			snprintf(errorstring, 1024, "SIGINT received, exiting.");
 			printe(PT_Info);
 			s->running = 0;
 			break;
 
 		case SIGTERM:
-			snprintf(errorstring, 512, "SIGTERM received, exiting.");
+			snprintf(errorstring, 1024, "SIGTERM received, exiting.");
 			printe(PT_Info);
 			s->running = 0;
 			break;
@@ -693,7 +693,7 @@ void handleintsignals(DSTATE *s)
 			break;
 
 		default:
-			snprintf(errorstring, 512, "Unkown signal %d received, ignoring.", intsignal);
+			snprintf(errorstring, 1024, "Unkown signal %d received, ignoring.", intsignal);
 			printe(PT_Info);
 			break;
 	}
@@ -750,7 +750,7 @@ void datacache_status(datacache **dc)
 		strncpy_nt(errorstring, buffer, 512);
 		errorstring[511] = '\0';
 	} else {
-		snprintf(errorstring, 512, "Nothing to monitor");
+		snprintf(errorstring, 1024, "Nothing to monitor");
 	}
 	printe(PT_Info);
 }
@@ -806,7 +806,7 @@ void interfacechangecheck(DSTATE *s)
 			if (cfg.savestatus) {
 				s->forcesave = 1;
 			}
-			snprintf(errorstring, 512, "Interface \"%s\" disabled.", iterator->interface);
+			snprintf(errorstring, 1024, "Interface \"%s\" disabled.", iterator->interface);
 			printe(PT_Info);
 		} else if (iterator->active == 0 && found == 1) {
 			iterator->active = 1;
@@ -815,7 +815,7 @@ void interfacechangecheck(DSTATE *s)
 			if (cfg.savestatus) {
 				s->forcesave = 1;
 			}
-			snprintf(errorstring, 512, "Interface \"%s\" enabled.", iterator->interface);
+			snprintf(errorstring, 1024, "Interface \"%s\" enabled.", iterator->interface);
 			printe(PT_Info);
 		}
 

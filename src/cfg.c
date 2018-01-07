@@ -330,67 +330,67 @@ void validatecfg(void)
 
 	if (cfg.unitmode<0 || cfg.unitmode>1) {
 		cfg.unitmode = UNITMODE;
-		snprintf(errorstring, 512, "%s UnitMode, %s \"%d\".", invalidvalue, resettingto, cfg.unitmode);
+		snprintf(errorstring, 1024, "%s UnitMode, %s \"%d\".", invalidvalue, resettingto, cfg.unitmode);
 		printe(PT_Config);
 	}
 
 	if (cfg.rateunitmode<0 || cfg.rateunitmode>1) {
 		cfg.rateunitmode = RATEUNITMODE;
-		snprintf(errorstring, 512, "%s RateUnitMode, %s \"%d\".", invalidvalue, resettingto, cfg.rateunitmode);
+		snprintf(errorstring, 1024, "%s RateUnitMode, %s \"%d\".", invalidvalue, resettingto, cfg.rateunitmode);
 		printe(PT_Config);
 	}
 
 	if (cfg.ostyle<0 || cfg.ostyle>3) {
 		cfg.ostyle = OSTYLE;
-		snprintf(errorstring, 512, "%s OutputStyle, %s \"%d\".", invalidvalue, resettingto, cfg.ostyle);
+		snprintf(errorstring, 1024, "%s OutputStyle, %s \"%d\".", invalidvalue, resettingto, cfg.ostyle);
 		printe(PT_Config);
 	}
 
 	if (cfg.bvar<0 || cfg.bvar>300) {
 		cfg.bvar = BVAR;
-		snprintf(errorstring, 512, "%s BootVariation, %s \"%d\".", invalidvalue, resettingto, cfg.bvar);
+		snprintf(errorstring, 1024, "%s BootVariation, %s \"%d\".", invalidvalue, resettingto, cfg.bvar);
 		printe(PT_Config);
 	}
 
 	if (cfg.sampletime<2 || cfg.sampletime>600) {
 		cfg.sampletime = DEFSAMPTIME;
-		snprintf(errorstring, 512, "%s Sampletime, %s \"%d\".", invalidvalue, resettingto, cfg.sampletime);
+		snprintf(errorstring, 1024, "%s Sampletime, %s \"%d\".", invalidvalue, resettingto, cfg.sampletime);
 		printe(PT_Config);
 	}
 
 	if (cfg.monthrotate<1 || cfg.monthrotate>28) {
 		cfg.monthrotate = MONTHROTATE;
-		snprintf(errorstring, 512, "%s MonthRotate, %s \"%d\".", invalidvalue, resettingto, cfg.monthrotate);
+		snprintf(errorstring, 1024, "%s MonthRotate, %s \"%d\".", invalidvalue, resettingto, cfg.monthrotate);
 		printe(PT_Config);
 	}
 
 	if (cfg.maxbw<0 || cfg.maxbw>BWMAX) {
 		cfg.maxbw = DEFMAXBW;
-		snprintf(errorstring, 512, "%s MaxBandwidth, %s \"%d\".", invalidvalue, resettingto, cfg.maxbw);
+		snprintf(errorstring, 1024, "%s MaxBandwidth, %s \"%d\".", invalidvalue, resettingto, cfg.maxbw);
 		printe(PT_Config);
 	}
 
 	if (cfg.spacecheck<0 || cfg.spacecheck>1) {
 		cfg.spacecheck = USESPACECHECK;
-		snprintf(errorstring, 512, "%s CheckDiskSpace, %s \"%d\".", invalidvalue, resettingto, cfg.spacecheck);
+		snprintf(errorstring, 1024, "%s CheckDiskSpace, %s \"%d\".", invalidvalue, resettingto, cfg.spacecheck);
 		printe(PT_Config);
 	}
 
 	if (cfg.flock<0 || cfg.flock>1) {
 		cfg.flock = USEFLOCK;
-		snprintf(errorstring, 512, "%s UseFileLocking, %s \"%d\".", invalidvalue, resettingto, cfg.flock);
+		snprintf(errorstring, 1024, "%s UseFileLocking, %s \"%d\".", invalidvalue, resettingto, cfg.flock);
 		printe(PT_Config);
 	}
 
 	if (cfg.dbdir[0] != '/') {
 		strncpy_nt(cfg.dbdir, DATABASEDIR, 512);
-		snprintf(errorstring, 512, "DatabaseDir doesn't start with \"/\", %s default.", resettingto);
+		snprintf(errorstring, 1024, "DatabaseDir doesn't start with \"/\", %s default.", resettingto);
 		printe(PT_Config);
 	}
 
 	if (cfg.pollinterval<2 || cfg.pollinterval>60) {
 		cfg.pollinterval = POLLINTERVAL;
-		snprintf(errorstring, 512, "%s PollInterval, %s \"%d\".", invalidvalue, resettingto, cfg.pollinterval);
+		snprintf(errorstring, 1024, "%s PollInterval, %s \"%d\".", invalidvalue, resettingto, cfg.pollinterval);
 		printe(PT_Config);
 	}
 
@@ -400,7 +400,7 @@ void validatecfg(void)
 		} else {
 			cfg.updateinterval = UPDATEINTERVAL;
 		}
-		snprintf(errorstring, 512, "%s UpdateInterval, %s \"%d\".", invalidvalue, resettingto, cfg.updateinterval);
+		snprintf(errorstring, 1024, "%s UpdateInterval, %s \"%d\".", invalidvalue, resettingto, cfg.updateinterval);
 		printe(PT_Config);
 	}
 
@@ -410,7 +410,7 @@ void validatecfg(void)
 		} else {
 			cfg.saveinterval = SAVEINTERVAL;
 		}
-		snprintf(errorstring, 512, "%s SaveInterval, %s \"%d\".", invalidvalue, resettingto, cfg.saveinterval);
+		snprintf(errorstring, 1024, "%s SaveInterval, %s \"%d\".", invalidvalue, resettingto, cfg.saveinterval);
 		printe(PT_Config);
 	}
 
@@ -420,157 +420,157 @@ void validatecfg(void)
 		} else {
 			cfg.offsaveinterval = OFFSAVEINTERVAL;
 		}
-		snprintf(errorstring, 512, "%s OfflineSaveInterval, %s \"%d\".", invalidvalue, resettingto, cfg.offsaveinterval);
+		snprintf(errorstring, 1024, "%s OfflineSaveInterval, %s \"%d\".", invalidvalue, resettingto, cfg.offsaveinterval);
 		printe(PT_Config);
 	}
 
 	if (cfg.savestatus<0 || cfg.savestatus>1) {
 		cfg.savestatus = SAVESTATUS;
-		snprintf(errorstring, 512, "%s SaveOnStatusChange, %s \"%d\".", invalidvalue, resettingto, cfg.savestatus);
+		snprintf(errorstring, 1024, "%s SaveOnStatusChange, %s \"%d\".", invalidvalue, resettingto, cfg.savestatus);
 		printe(PT_Config);
 	}
 
 	if (cfg.uselogging<0 || cfg.uselogging>2) {
 		cfg.uselogging = USELOGGING;
-		snprintf(errorstring, 512, "%s UseLogging, %s \"%d\".", invalidvalue, resettingto, cfg.uselogging);
+		snprintf(errorstring, 1024, "%s UseLogging, %s \"%d\".", invalidvalue, resettingto, cfg.uselogging);
 		printe(PT_Config);
 	}
 
 	if (cfg.createdirs<0 || cfg.createdirs>2) {
 		cfg.createdirs = CREATEDIRS;
-		snprintf(errorstring, 512, "%s CreateDirs, %s \"%d\".", invalidvalue, resettingto, cfg.createdirs);
+		snprintf(errorstring, 1024, "%s CreateDirs, %s \"%d\".", invalidvalue, resettingto, cfg.createdirs);
 		printe(PT_Config);
 	}
 
 	if (cfg.updatefileowner<0 || cfg.updatefileowner>2) {
 		cfg.updatefileowner = UPDATEFILEOWNER;
-		snprintf(errorstring, 512, "%s UpdateFileOwner, %s \"%d\".", invalidvalue, resettingto, cfg.updatefileowner);
+		snprintf(errorstring, 1024, "%s UpdateFileOwner, %s \"%d\".", invalidvalue, resettingto, cfg.updatefileowner);
 		printe(PT_Config);
 	}
 
 	if (cfg.logfile[0] != '/') {
 		strncpy_nt(cfg.logfile, LOGFILE, 512);
-		snprintf(errorstring, 512, "LogFile doesn't start with \"/\", %s default.", resettingto);
+		snprintf(errorstring, 1024, "LogFile doesn't start with \"/\", %s default.", resettingto);
 		printe(PT_Config);
 	}
 
 	if (cfg.pidfile[0] != '/') {
 		strncpy_nt(cfg.pidfile, PIDFILE, 512);
-		snprintf(errorstring, 512, "PidFile doesn't start with \"/\", %s default.", resettingto);
+		snprintf(errorstring, 1024, "PidFile doesn't start with \"/\", %s default.", resettingto);
 		printe(PT_Config);
 	}
 
 	if (cfg.transbg<0 || cfg.transbg>1) {
 		cfg.transbg = TRANSBG;
-		snprintf(errorstring, 512, "%s TransparentBg, %s \"%d\".", invalidvalue, resettingto, cfg.transbg);
+		snprintf(errorstring, 1024, "%s TransparentBg, %s \"%d\".", invalidvalue, resettingto, cfg.transbg);
 		printe(PT_Config);
 	}
 
 	if (cfg.hourlyrate<0 || cfg.hourlyrate>1) {
 		cfg.hourlyrate = HOURLYRATE;
-		snprintf(errorstring, 512, "%s HourlyRate, %s \"%d\".", invalidvalue, resettingto, cfg.hourlyrate);
+		snprintf(errorstring, 1024, "%s HourlyRate, %s \"%d\".", invalidvalue, resettingto, cfg.hourlyrate);
 		printe(PT_Config);
 	}
 
 	if (cfg.summaryrate<0 || cfg.summaryrate>1) {
 		cfg.summaryrate = SUMMARYRATE;
-		snprintf(errorstring, 512, "%s SummaryRate, %s \"%d\".", invalidvalue, resettingto, cfg.summaryrate);
+		snprintf(errorstring, 1024, "%s SummaryRate, %s \"%d\".", invalidvalue, resettingto, cfg.summaryrate);
 		printe(PT_Config);
 	}
 
 	if (cfg.slayout<0 || cfg.slayout>1) {
 		cfg.slayout = SUMMARYLAYOUT;
-		snprintf(errorstring, 512, "%s SummaryLayout, %s \"%d\".", invalidvalue, resettingto, cfg.slayout);
+		snprintf(errorstring, 1024, "%s SummaryLayout, %s \"%d\".", invalidvalue, resettingto, cfg.slayout);
 		printe(PT_Config);
 	}
 
 	if (cfg.traflessday<0 || cfg.traflessday>1) {
 		cfg.traflessday = TRAFLESSDAY;
-		snprintf(errorstring, 512, "%s TrafficlessDays, %s \"%d\".", invalidvalue, resettingto, cfg.traflessday);
+		snprintf(errorstring, 1024, "%s TrafficlessDays, %s \"%d\".", invalidvalue, resettingto, cfg.traflessday);
 		printe(PT_Config);
 	}
 
 	if (cfg.listfivemins<0) {
 		cfg.listfivemins = LISTFIVEMINS;
-		snprintf(errorstring, 512, "%s List5Mins, %s \"%d\".", invalidvalue, resettingto, cfg.listfivemins);
+		snprintf(errorstring, 1024, "%s List5Mins, %s \"%d\".", invalidvalue, resettingto, cfg.listfivemins);
 		printe(PT_Config);
 	}
 
 	if (cfg.listhours<0) {
 		cfg.listhours = LISTHOURS;
-		snprintf(errorstring, 512, "%s ListHours, %s \"%d\".", invalidvalue, resettingto, cfg.listhours);
+		snprintf(errorstring, 1024, "%s ListHours, %s \"%d\".", invalidvalue, resettingto, cfg.listhours);
 		printe(PT_Config);
 	}
 
 	if (cfg.listdays<0) {
 		cfg.listdays = LISTDAYS;
-		snprintf(errorstring, 512, "%s ListDays, %s \"%d\".", invalidvalue, resettingto, cfg.listdays);
+		snprintf(errorstring, 1024, "%s ListDays, %s \"%d\".", invalidvalue, resettingto, cfg.listdays);
 		printe(PT_Config);
 	}
 
 	if (cfg.listmonths<0) {
 		cfg.listmonths = LISTMONTHS;
-		snprintf(errorstring, 512, "%s ListMonths, %s \"%d\".", invalidvalue, resettingto, cfg.listmonths);
+		snprintf(errorstring, 1024, "%s ListMonths, %s \"%d\".", invalidvalue, resettingto, cfg.listmonths);
 		printe(PT_Config);
 	}
 
 	if (cfg.listyears<0) {
 		cfg.listyears = LISTYEARS;
-		snprintf(errorstring, 512, "%s ListYears, %s \"%d\".", invalidvalue, resettingto, cfg.listyears);
+		snprintf(errorstring, 1024, "%s ListYears, %s \"%d\".", invalidvalue, resettingto, cfg.listyears);
 		printe(PT_Config);
 	}
 
 	if (cfg.listtop<0) {
 		cfg.listtop = LISTTOP;
-		snprintf(errorstring, 512, "%s ListTop, %s \"%d\".", invalidvalue, resettingto, cfg.listtop);
+		snprintf(errorstring, 1024, "%s ListTop, %s \"%d\".", invalidvalue, resettingto, cfg.listtop);
 		printe(PT_Config);
 	}
 
 	if (cfg.fiveminutehours<-1) {
 		cfg.fiveminutehours = FIVEMINUTEHOURS;
-		snprintf(errorstring, 512, "%s 5MinuteHours, %s \"%d\".", invalidvalue, resettingto, cfg.fiveminutehours);
+		snprintf(errorstring, 1024, "%s 5MinuteHours, %s \"%d\".", invalidvalue, resettingto, cfg.fiveminutehours);
 		printe(PT_Config);
 	}
 
 	if (cfg.hourlydays<-1) {
 		cfg.hourlydays = HOURLYDAYS;
-		snprintf(errorstring, 512, "%s HourlyDays, %s \"%d\".", invalidvalue, resettingto, cfg.hourlydays);
+		snprintf(errorstring, 1024, "%s HourlyDays, %s \"%d\".", invalidvalue, resettingto, cfg.hourlydays);
 		printe(PT_Config);
 	}
 
 	if (cfg.dailydays<-1) {
 		cfg.dailydays = DAILYDAYS;
-		snprintf(errorstring, 512, "%s DailyDays, %s \"%d\".", invalidvalue, resettingto, cfg.dailydays);
+		snprintf(errorstring, 1024, "%s DailyDays, %s \"%d\".", invalidvalue, resettingto, cfg.dailydays);
 		printe(PT_Config);
 	}
 
 	if (cfg.monthlymonths<-1) {
 		cfg.monthlymonths = MONTHLYMONTHS;
-		snprintf(errorstring, 512, "%s MonthlyMonths, %s \"%d\".", invalidvalue, resettingto, cfg.monthlymonths);
+		snprintf(errorstring, 1024, "%s MonthlyMonths, %s \"%d\".", invalidvalue, resettingto, cfg.monthlymonths);
 		printe(PT_Config);
 	}
 
 	if (cfg.yearlyyears<-1) {
 		cfg.yearlyyears = YEARLYYEARS;
-		snprintf(errorstring, 512, "%s YearlyYears, %s \"%d\".", invalidvalue, resettingto, cfg.yearlyyears);
+		snprintf(errorstring, 1024, "%s YearlyYears, %s \"%d\".", invalidvalue, resettingto, cfg.yearlyyears);
 		printe(PT_Config);
 	}
 
 	if (cfg.topdayentries<-1) {
 		cfg.topdayentries = TOPDAYENTRIES;
-		snprintf(errorstring, 512, "%s TopDayEntries, %s \"%d\".", invalidvalue, resettingto, cfg.topdayentries);
+		snprintf(errorstring, 1024, "%s TopDayEntries, %s \"%d\".", invalidvalue, resettingto, cfg.topdayentries);
 		printe(PT_Config);
 	}
 
 	if (cfg.bwdetection<0 || cfg.bwdetection>1) {
 		cfg.bwdetection = BWDETECT;
-		snprintf(errorstring, 512, "%s BandwidthDetection, %s \"%d\".", invalidvalue, resettingto, cfg.bwdetection);
+		snprintf(errorstring, 1024, "%s BandwidthDetection, %s \"%d\".", invalidvalue, resettingto, cfg.bwdetection);
 		printe(PT_Config);
 	}
 
 	if (cfg.bwdetectioninterval<0 || cfg.bwdetectioninterval>30) {
 		cfg.bwdetectioninterval = BWDETECTINTERVAL;
-		snprintf(errorstring, 512, "%s BandwidthDetectionInterval, %s \"%d\".", invalidvalue, resettingto, cfg.bwdetectioninterval);
+		snprintf(errorstring, 1024, "%s BandwidthDetectionInterval, %s \"%d\".", invalidvalue, resettingto, cfg.bwdetectioninterval);
 		printe(PT_Config);
 	}
 }
@@ -673,7 +673,7 @@ int opencfgfile(const char *cfgfile, FILE **fd)
 			if (debug)
 				printf("Config file: --config\n");
 		} else {
-			snprintf(errorstring, 512, "Unable to open given config file \"%s\": %s\n", cfgfile, strerror(errno));
+			snprintf(errorstring, 1024, "Unable to open given config file \"%s\": %s\n", cfgfile, strerror(errno));
 			printe(PT_Error);
 			return 0;
 		}

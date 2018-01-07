@@ -177,14 +177,14 @@ int main(int argc, char *argv[])
 		noexit++;
 		daemonize();
 		if (!db_open(0)) {
-			snprintf(errorstring, 512, "Failed to reopen database \"%s/%s\": %s", s.dirname, DATABASEFILE, strerror(errno));
+			snprintf(errorstring, 1024, "Failed to reopen database \"%s/%s\": %s", s.dirname, DATABASEFILE, strerror(errno));
 			printe(PT_Error);
 			exit(EXIT_FAILURE);
 		}
 	}
 
 	s.running = 1;
-	snprintf(errorstring, 512, "vnStat daemon %s started. (pid:%d uid:%d gid:%d)", getversion(), (int)getpid(), (int)getuid(), (int)getgid());
+	snprintf(errorstring, 1024, "vnStat daemon %s started. (pid:%d uid:%d gid:%d)", getversion(), (int)getpid(), (int)getuid(), (int)getgid());
 	printe(PT_Info);
 
 	/* main loop */
