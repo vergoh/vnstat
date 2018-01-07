@@ -40,11 +40,12 @@ durations. Yearly and five-minute resolution statistics are now included.
 ##### Removed features
 
   * database import
-    * most likely better to do directly via sqlite
+    * most likely better to do directly via sqlite cli
   * merge of data from multiple interfaces
   * weekly ouput
-  * `MonthRotate`
+  * `MonthRotate` configuration option
   * kernel test
+    * provided some use mostly with 2.0 and 2.2 kernels
   * `--update` / `-u` using vnstat command
 
 ##### TODO
@@ -52,10 +53,10 @@ durations. Yearly and five-minute resolution statistics are now included.
   * `grep TODO src/* tests/*`
   * continue daemon refactoring
   * testing in more diverse environments
-  * add missing sanity checks to daemon
+  * extend sanity checks in daemon
   * image outputs
     * summary and hourly + combinations
-  * use of 5 minute resolution statistics
+  * output of 5 minute resolution statistics
   * feature configurability
   * freeze database structure
     * plan ahead and figure out how to migrate data to new structure if necessary?
