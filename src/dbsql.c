@@ -867,8 +867,6 @@ int db_iserrcodefatal(int errcode)
 		case SQLITE_IOERR:
 		case SQLITE_LOCKED:
 		case SQLITE_BUSY:
-		case SQLITE_NOTICE:
-		case SQLITE_WARNING:
 			return 0;
 		default:
 			return 1;

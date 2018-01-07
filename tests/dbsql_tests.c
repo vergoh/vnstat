@@ -833,8 +833,6 @@ START_TEST(db_fatal_errors_get_detected)
 	ck_assert_int_eq(db_iserrcodefatal(SQLITE_IOERR), 0);
 	ck_assert_int_eq(db_iserrcodefatal(SQLITE_LOCKED), 0);
 	ck_assert_int_eq(db_iserrcodefatal(SQLITE_BUSY), 0);
-	ck_assert_int_eq(db_iserrcodefatal(SQLITE_NOTICE), 0);
-	ck_assert_int_eq(db_iserrcodefatal(SQLITE_WARNING), 0);
 
 	ck_assert_int_eq(db_iserrcodefatal(SQLITE_ERROR), 1);
 	ck_assert_int_eq(db_iserrcodefatal(SQLITE_ABORT), 1);
