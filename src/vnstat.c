@@ -342,12 +342,12 @@ int main(int argc, char *argv[]) {
 			closedir(dir);
 			strncpy_nt(cfg.dbdir, p.dirname, 512);
 			if (!db_open(0)) {
-				if (errno != ENOENT) {
-					printf("Error: Unable to open database \"%s/%s\": %s\n", p.dirname, DATABASEFILE, strerror(errno));
-					return 1;
-				} else {
-					p.query = 0;
+				printf("Error: Unable to open database \"%s/%s\": %s\n", p.dirname, DATABASEFILE, strerror(errno));
+				if (errno == ENOENT) {
+					printf("The vnStat daemon should have created the database when started.\n");
+					printf("Check that it is is configured and running. See also \"man vnstatd\".\n");
 				}
+				return 1;
 			}
 			p.ifcount = db_getinterfacecount();
 			if (debug)
@@ -535,8 +535,6 @@ void handleremoveinterface(PARAMS *p)
 
 void handleaddinterface(PARAMS *p)
 {
-	char dbfile[530];
-
 	if (!p->addiface) {
 		return;
 	}
@@ -546,8 +544,12 @@ void handleaddinterface(PARAMS *p)
 		exit(EXIT_FAILURE);
 	}
 
+	db_errcode = 0;
 	if (db_getinterfacecountbyname(p->interface)) {
 		printf("Error: Interface \"%s\" already exists in the database.\n", p->interface);
+		exit(EXIT_FAILURE);
+	}
+	if (db_errcode) {
 		exit(EXIT_FAILURE);
 	}
 
@@ -562,22 +564,6 @@ void handleaddinterface(PARAMS *p)
 	if (!p->force && !spacecheck(p->dirname)) {
 		printf("Error: Not enough free diskspace available.\n");
 		exit(EXIT_FAILURE);
-	}
-
-	snprintf(dbfile, 530, "%s/%s", p->dirname, DATABASEFILE);
-	if (!fileexists(dbfile)) {
-		/* database file doesn't exist so it can't be open either, try to create it */
-		printf("Database doesn't exist, creating...\n");
-		if (!db_open(1)) {
-			if (errno == ENOENT) {
-				printf("Error: Unable to create database, verify existence and write access of \"%s\".\n", p->dirname);
-			} else {
-				printf("Error: Unable to create database \"%s/%s\": %s\n", p->dirname, DATABASEFILE, strerror(errno));
-			}
-			exit(EXIT_FAILURE);
-		}
-		/* do file ownwership fixing if possible and needed */
-		matchdbownerwithdirowner(p->dirname);
 	}
 
 	printf("Adding interface \"%s\" for monitoring to database...\n", p->interface);
