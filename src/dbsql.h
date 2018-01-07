@@ -32,6 +32,7 @@ typedef struct interfaceinfo {
 } interfaceinfo;
 
 int db_open(int createifnotfound);
+int db_setpragmas(void);
 int db_close(void);
 int db_exec(const char *sql);
 int db_create(void);
