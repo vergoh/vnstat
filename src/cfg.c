@@ -707,6 +707,7 @@ int opencfgfile(const char *cfgfile, FILE **fd)
 	return 2;
 }
 
+/* TODO: function specific testcases missing */
 int extractcfgvalue(char *value, const char *cfgline, int cfglen) {
 
 	int i, j, linelen;
@@ -740,6 +741,7 @@ int extractcfgvalue(char *value, const char *cfgline, int cfglen) {
 	return (int)strlen(value);
 }
 
+/* TODO: function specific testcases missing */
 int setcfgvalue(struct cfgsetting *cset, const char *value, const char *cfgline)
 {
 	if (cset->namelen>0) {
@@ -747,7 +749,7 @@ int setcfgvalue(struct cfgsetting *cset, const char *value, const char *cfgline)
 		cset->locc[cset->namelen-1]='\0';
 		if (debug)
 			printf("  c: %s   -> \"%s\": \"%s\"\n", cfgline, cset->name, cset->locc);
-	} else if (isdigit(value[0])) {
+	} else if ( ( strlen(value)>1 && isdigit(value[1]) ) || isdigit(value[0]) ) {
 		*cset->loci = strtol(value, (char **)NULL, 0);
 		if (debug)
 			printf("  i: %s   -> \"%s\": %d\n", cfgline, cset->name, *cset->loci);
