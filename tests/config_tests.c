@@ -258,6 +258,208 @@ START_TEST(ibwlist_filled)
 }
 END_TEST
 
+START_TEST(extractcfgvalue_can_extract)
+{
+	int ret;
+	char value[32], cfgline[32];
+
+	snprintf(cfgline, 32, "one 1");
+	ret = extractcfgvalue(value, 32, cfgline, 3);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_str_eq(value, "1");
+}
+END_TEST
+
+START_TEST(extractcfgvalue_can_really_extract)
+{
+	int ret;
+	char value[32], cfgline[32];
+
+	snprintf(cfgline, 32, "one\t1");
+	ret = extractcfgvalue(value, 32, cfgline, 3);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_str_eq(value, "1");
+
+	snprintf(cfgline, 32, "one\t\t1");
+	ret = extractcfgvalue(value, 32, cfgline, 3);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_str_eq(value, "1");
+
+	snprintf(cfgline, 32, "one \t 1");
+	ret = extractcfgvalue(value, 32, cfgline, 3);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_str_eq(value, "1");
+
+	snprintf(cfgline, 32, "one \t 1 \t2");
+	ret = extractcfgvalue(value, 32, cfgline, 3);
+	ck_assert_int_eq(ret, 4);
+	ck_assert_str_eq(value, "1 \t2");
+
+	snprintf(cfgline, 32, "one \"1\"");
+	ret = extractcfgvalue(value, 32, cfgline, 3);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_str_eq(value, "1");
+
+	snprintf(cfgline, 32, "one\t\"1\"");
+	ret = extractcfgvalue(value, 32, cfgline, 3);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_str_eq(value, "1");
+
+	snprintf(cfgline, 32, "one \t \"1\"");
+	ret = extractcfgvalue(value, 32, cfgline, 3);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_str_eq(value, "1");
+
+	snprintf(cfgline, 32, "one \t \"1\" \t");
+	ret = extractcfgvalue(value, 32, cfgline, 3);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_str_eq(value, "1");
+
+	snprintf(cfgline, 32, "one \t \"1\" \t2");
+	ret = extractcfgvalue(value, 32, cfgline, 3);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_str_eq(value, "1");
+
+	snprintf(cfgline, 32, "one \t == \t \"1\" \t == well doh");
+	ret = extractcfgvalue(value, 32, cfgline, 3);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_str_eq(value, "1");
+}
+END_TEST
+
+START_TEST(extractcfgvalue_knows_when_not_to_extract)
+{
+	int ret;
+	char value[32], cfgline[32];
+
+	snprintf(cfgline, 32, "one");
+	ret = extractcfgvalue(value, 32, cfgline, 3);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_str_eq(value, "");
+}
+END_TEST
+
+START_TEST(extractcfgvalue_really_knows_when_not_to_extract)
+{
+	int ret;
+	char value[32], cfgline[32];
+
+	snprintf(cfgline, 32, "one   \t   ");
+	ret = extractcfgvalue(value, 32, cfgline, 3);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_str_eq(value, "");
+}
+END_TEST
+
+START_TEST(setcfgvalue_can_set_chars)
+{
+	int ret;
+	char target[32];
+	struct cfgsetting cset[] = {{ "unused", target, 0, 32, 0 }};
+
+	ret = setcfgvalue(&cset[0], "one", "unused");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_str_eq(target, "one");
+
+	ret = setcfgvalue(&cset[0], "1", "unused");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_str_eq(target, "1");
+
+	ret = setcfgvalue(&cset[0], "-", "unused");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_str_eq(target, "-");
+
+	ret = setcfgvalue(&cset[0], "qwe rty uio  ads", "unused");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_str_eq(target, "qwe rty uio  ads");
+}
+END_TEST
+
+START_TEST(setcfgvalue_can_set_ints)
+{
+	int ret, target;
+	struct cfgsetting cset[] = {{ "unused", 0, &target, 0, 0 }};
+
+	ret = setcfgvalue(&cset[0], "1", "unused");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(target, 1);
+
+	ret = setcfgvalue(&cset[0], "123", "unused");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(target, 123);
+
+	ret = setcfgvalue(&cset[0], "-1", "unused");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(target, -1);
+
+	ret = setcfgvalue(&cset[0], "-321", "unused");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(target, -321);
+
+	ret = setcfgvalue(&cset[0], "0", "unused");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(target, 0);
+}
+END_TEST
+
+START_TEST(setcfgvalue_does_not_exceed_char_limit)
+{
+	int ret;
+	char target[10];
+	struct cfgsetting cset[] = {{ "unused", target, 0, 5, 0 }};
+
+	ret = setcfgvalue(&cset[0], "one", "unused");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_str_eq(target, "one");
+
+	ret = setcfgvalue(&cset[0], "12345", "unused");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_str_eq(target, "1234");
+
+	ret = setcfgvalue(&cset[0], "12  5", "unused");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_str_eq(target, "12  ");
+}
+END_TEST
+
+START_TEST(setcfgvalue_can_do_nothing)
+{
+	int ret;
+	struct cfgsetting cset[] = {{ "unused", 0, 0, 0, 0 }};
+
+	ret = setcfgvalue(&cset[0], "nothing", "unused");
+	ck_assert_int_eq(ret, 0);
+}
+END_TEST
+
+START_TEST(configlocale_does_not_crash)
+{
+	defaultcfg();
+
+	unsetenv("LC_ALL");
+	snprintf(cfg.locale, 32, "en_US");
+	configlocale();
+	snprintf(cfg.locale, 32, "-");
+	configlocale();
+
+	setenv("LC_ALL", "en_US", 1);
+	snprintf(cfg.locale, 32, "en_US");
+	configlocale();
+	ck_assert_int_eq(cfg.utflocale, 0);
+	snprintf(cfg.locale, 32, "-");
+	configlocale();
+	ck_assert_int_eq(cfg.utflocale, 0);
+
+	setenv("LC_ALL", "en_US.UTF-8", 1);
+	snprintf(cfg.locale, 32, "en_US");
+	configlocale();
+	ck_assert_int_eq(cfg.utflocale, 1);
+	snprintf(cfg.locale, 32, "-");
+	configlocale();
+	ck_assert_int_eq(cfg.utflocale, 1);
+}
+END_TEST
+
 void add_config_tests(Suite *s)
 {
 	TCase *tc_config = tcase_create("Config");
@@ -280,5 +482,14 @@ void add_config_tests(Suite *s)
 	tcase_add_test(tc_config, ibwflush_success);
 	tcase_add_test(tc_config, ibwlist_empty);
 	tcase_add_test(tc_config, ibwlist_filled);
+	tcase_add_test(tc_config, extractcfgvalue_can_extract);
+	tcase_add_test(tc_config, extractcfgvalue_can_really_extract);
+	tcase_add_test(tc_config, extractcfgvalue_knows_when_not_to_extract);
+	tcase_add_test(tc_config, extractcfgvalue_really_knows_when_not_to_extract);
+	tcase_add_test(tc_config, setcfgvalue_can_set_chars);
+	tcase_add_test(tc_config, setcfgvalue_can_set_ints);
+	tcase_add_test(tc_config, setcfgvalue_does_not_exceed_char_limit);
+	tcase_add_test(tc_config, setcfgvalue_can_do_nothing);
+	tcase_add_test(tc_config, configlocale_does_not_crash);
 	suite_add_tcase(s, tc_config);
 }

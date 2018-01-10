@@ -294,7 +294,7 @@ int loadcfg(const char *cfgfile)
 				continue;
 			}
 
-			if (!extractcfgvalue(value, cfgline, cfglen)) {
+			if (!extractcfgvalue(value, 512, cfgline, cfglen)) {
 				if (debug)
 					printf("  c: %s   -> \"%s\" with no value, keeping default.\n", cfgline, cset[i].name);
 				cset[i].found = 1;
@@ -707,14 +707,13 @@ int opencfgfile(const char *cfgfile, FILE **fd)
 	return 2;
 }
 
-/* TODO: function specific testcases missing */
-int extractcfgvalue(char *value, const char *cfgline, int cfglen) {
+int extractcfgvalue(char *value, const int valuelen, const char *cfgline, const int cfglen) {
 
 	int i, j, linelen;
 
 	linelen = (int)strlen(cfgline);
 
-	for (i=0; i<512; i++) {
+	for (i=0; i<valuelen; i++) {
 		value[i]='\0';
 	}
 
@@ -741,12 +740,10 @@ int extractcfgvalue(char *value, const char *cfgline, int cfglen) {
 	return (int)strlen(value);
 }
 
-/* TODO: function specific testcases missing */
-int setcfgvalue(struct cfgsetting *cset, const char *value, const char *cfgline)
+int setcfgvalue(const struct cfgsetting *cset, const char *value, const char *cfgline)
 {
 	if (cset->namelen>0) {
 		strncpy_nt(cset->locc, value, cset->namelen);
-		cset->locc[cset->namelen-1]='\0';
 		if (debug)
 			printf("  c: %s   -> \"%s\": \"%s\"\n", cfgline, cset->name, cset->locc);
 	} else if ( ( strlen(value)>1 && isdigit(value[1]) ) || isdigit(value[0]) ) {
