@@ -84,6 +84,13 @@ check_vnstat_SOURCES += src/cfg.c src/cfg.h \
   src/misc.c src/misc.h \
   src/fs.c src/fs.h \
   src/id.c src/id.h
+
+if HAVE_LIBGD
+check_vnstat_CFLAGS += -DHAVE_IMAGE
+check_vnstat_LDADD += $(IMAGELIBS)
+check_vnstat_SOURCES += tests/image_tests.c tests/image_tests.h \
+  src/image.c src/image.h
+endif
 endif
 
 setdebug:
