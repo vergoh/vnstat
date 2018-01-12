@@ -31,6 +31,7 @@ END_TEST
 START_TEST(db_getinfo_fails_with_no_open_db)
 {
 	defaultcfg();
+	suppress_output();
 
 	ck_assert_int_eq(strlen(db_getinfo("foofoo")), 0);
 }
@@ -71,6 +72,7 @@ END_TEST
 START_TEST(db_setinfo_fails_with_no_open_db)
 {
 	defaultcfg();
+	suppress_output();
 
 	ck_assert_int_eq(db_setinfo("foo", "bar", 0), 0);
 	ck_assert_int_eq(db_setinfo("foo", "bar", 1), 0);
@@ -139,6 +141,7 @@ END_TEST
 START_TEST(db_addtraffic_with_no_traffic_does_nothing)
 {
 	defaultcfg();
+	suppress_output();
 
 	ck_assert_int_eq(db_addtraffic("eth0", 0, 0), 0);
 }
@@ -223,6 +226,7 @@ END_TEST
 START_TEST(db_setactive_fails_with_no_open_db)
 {
 	defaultcfg();
+	suppress_output();
 
 	ck_assert_int_eq(db_setactive("eth0", 0), 0);
 	ck_assert_int_eq(db_setactive("eth0", 1), 0);
@@ -271,6 +275,8 @@ END_TEST
 START_TEST(db_setalias_fails_with_no_open_db)
 {
 	defaultcfg();
+	suppress_output();
+
 	ck_assert_int_eq(db_setalias("eth0", "The Internet"), 0);
 }
 END_TEST
@@ -314,6 +320,7 @@ END_TEST
 START_TEST(db_setupdated_fails_with_no_open_db)
 {
 	defaultcfg();
+	suppress_output();
 
 	ck_assert_int_eq(db_setupdated("eth0", 123456), 0);
 }
@@ -357,6 +364,7 @@ START_TEST(db_addinterface_fails_with_no_open_db)
 	int ret;
 
 	defaultcfg();
+	suppress_output();
 
 	ret = db_addinterface("eth0");
 	ck_assert_int_eq(ret, 0);
@@ -387,6 +395,7 @@ START_TEST(db_addinterface_can_not_add_same_interface_twice)
 	int ret;
 
 	defaultcfg();
+	suppress_output();
 
 	ret = db_open(1);
 	ck_assert_int_eq(ret, 1);
@@ -471,6 +480,7 @@ START_TEST(db_getinterfacecount_counts_interfaces)
 	uint64_t ret;
 
 	defaultcfg();
+	suppress_output();
 
 	ret = db_open(1);
 	ck_assert_int_eq(ret, 1);
