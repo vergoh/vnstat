@@ -203,49 +203,18 @@ char *gettrafficrate(const uint64_t bytes, const uint32_t interval, const int le
 		if (cfg.rateunitmode == 0) {
 			unitmode = 2;
 		}
-		if (interval<5) {
+		if (interval < 5) {
 			declen = 0;
 		}
 	} else {
 		b = bytes;
 		unitmode = cfg.unitmode;
+		if (interval < 5 && ( b / interval ) < 1000) {
+			declen = 0;
+		}
 	}
 
 	return getratestring(b / interval, len, declen, unitmode);
-}
-
-uint64_t getscale(const uint64_t input)
-{
-	int i;
-	uint64_t result;
-
-	result = input;
-
-	/* get unit */
-	for (i=0; result>1024; i++) {
-		result = result / 1024;
-	}
-
-	/* round result depending of scale */
-	if (result>300) {
-		result = result/4 + (100 - ((result/4) % 100));
-	} else if (result>20) {
-		result = result/4 + (10 - ((result/4) % 10));
-	} else {
-		result = result/4;
-	}
-
-	/* put unit back */
-	if (i) {
-		result = result * pow(1024, i);
-	}
-
-	/* make sure result isn't zero */
-	if (!result) {
-		result = pow(1024, i);
-	}
-
-	return result;
 }
 
 char *getunitprefix(const int index)
@@ -262,62 +231,76 @@ char *getunitprefix(const int index)
 
 char *getrateunitprefix(const int unitmode, const int index)
 {
-	static char *rateunitprefix[] = { "na", "KiB/s",   "MiB/s",   "GiB/s",   "TiB/s",
-                                            "KB/s",    "MB/s",    "GB/s",    "TB/s",
-                                            "Kibit/s", "Mibit/s", "Gibit/s", "Tibit/s",
-                                            "kbit/s",  "Mbit/s",  "Gbit/s",  "Tbit/s" };
+	static char *rateunitprefix[] = { "na", "B/s",     "KiB/s",   "MiB/s",   "GiB/s",   "TiB/s",
+                                            "B/s",     "KB/s",    "MB/s",    "GB/s",    "TB/s",
+                                            "bit/s",   "Kibit/s", "Mibit/s", "Gibit/s", "Tibit/s",
+                                            "bit/s",   "kbit/s",  "Mbit/s",  "Gbit/s",  "Tbit/s" };
 
-	if (index>UNITPREFIXCOUNT-1) {
+	if (index>UNITPREFIXCOUNT) {
 		return rateunitprefix[0];
 	} else {
-		return rateunitprefix[(unitmode*(UNITPREFIXCOUNT-1))+index];
+		return rateunitprefix[(unitmode*UNITPREFIXCOUNT)+index];
 	}
 }
 
 uint64_t getunitdivisor(const int unitmode, const int index)
 {
-	uint64_t unitdiv[] = { 1, 1024, 1048576, 1073741824, 1099511627776,
-                              1024, 1048576, 1073741824, 1099511627776,
-                              1024, 1048576, 1073741824, 1099511627776,
-                              1000, 1000000, 1000000000, 1000000000000};
+	uint64_t unitdiv[] = { 1, 1, 1024, 1048576, 1073741824, 1099511627776,
+                              1, 1024, 1048576, 1073741824, 1099511627776,
+                              1, 1024, 1048576, 1073741824, 1099511627776,
+                              1, 1000, 1000000, 1000000000, 1000000000000 };
 
-	if (index>UNITPREFIXCOUNT-1) {
+	if (index>UNITPREFIXCOUNT) {
 		return unitdiv[0];
 	} else {
-		return unitdiv[(unitmode*(UNITPREFIXCOUNT-1))+index];
+		return unitdiv[(unitmode*UNITPREFIXCOUNT)+index];
 	}
 }
 
 char *getratestring(const uint64_t rate, const int len, const int declen, const int unitmode)
 {
-	int l = len;
+	int l;
 	static char buffer[64];
-	uint64_t limit[3] = { 1024000, 1048576000, 1073741824000 };
+	uint64_t limit[4] = { 1000, 1024000, 1048576000, 1073741824000 };
 
 	if (cfg.rateunit == 1 && cfg.rateunitmode == 1) {
-		limit[0] = 1000000;
-		limit[1] = 1000000000;
-		limit[2] = 1000000000000;
-	}
-
-	/* tune spacing according to unit */
-	l -= strlen(getrateunitprefix(unitmode, 1)) + 1;
-	if (l < 0) {
-		l = 1;
+		limit[0] = 1000;
+		limit[1] = 1000000;
+		limit[2] = 1000000000;
+		limit[3] = 1000000000000;
 	}
 
 	/* try to figure out what unit to use */
-	if (rate>=limit[2]) {
+	if (rate >= limit[3]) {
+		l = getratespacing(len, unitmode, 5);
+		snprintf(buffer, 64, "%"DECCONV"*.2f %s", l, rate/(float)getunitdivisor(unitmode, 5), getrateunitprefix(unitmode, 5));
+	} else if (rate >= limit[2]) {
+		l = getratespacing(len, unitmode, 4);
 		snprintf(buffer, 64, "%"DECCONV"*.2f %s", l, rate/(float)getunitdivisor(unitmode, 4), getrateunitprefix(unitmode, 4));
-	} else if (rate>=limit[1]) {
+	} else if (rate >= limit[1]) {
+		l = getratespacing(len, unitmode, 3);
 		snprintf(buffer, 64, "%"DECCONV"*.2f %s", l, rate/(float)getunitdivisor(unitmode, 3), getrateunitprefix(unitmode, 3));
-	} else if (rate>=limit[0]) {
+	} else if (rate >= limit[0]) {
+		l = getratespacing(len, unitmode, 2);
 		snprintf(buffer, 64, "%"DECCONV"*.2f %s", l, rate/(float)getunitdivisor(unitmode, 2), getrateunitprefix(unitmode, 2));
 	} else {
+		l = getratespacing(len, unitmode, 1);
 		snprintf(buffer, 64, "%"DECCONV"*.*f %s", l, declen, rate/(float)getunitdivisor(unitmode, 1), getrateunitprefix(unitmode, 1));
 	}
 
 	return buffer;
+}
+
+int getratespacing(const int len, const int unitmode, const int unitindex)
+{
+	int l = len;
+
+	l -= strlen(getrateunitprefix(unitmode, unitindex)) + 1;
+	if (l < 0) {
+		l = 1;
+	}
+
+	return l;
 }
 
 int getpadding(const int len, const char *str)

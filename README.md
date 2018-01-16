@@ -55,7 +55,7 @@ durations. Yearly and five-minute resolution statistics are now included.
   * testing in more diverse environments
   * extend sanity checks in daemon
   * image outputs
-    * summary and hourly + combinations
+    * summary
   * output of 5 minute resolution statistics
   * feature configurability
   * freeze database structure

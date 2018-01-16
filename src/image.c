@@ -48,12 +48,12 @@ void drawimage(IMAGECONTENT *ic)
 			} else {
 				drawoldsummary(ic, 2, cfg.hourlyrate);
 			}
-			break;
+			break;*/
 		case 7:
 			drawhourly(ic, cfg.hourlyrate);
-			break; */
+			break;
 		default:
-			printf("Error: Not such query mode: %d\n", cfg.qmode);
+			printf("Error: No such query mode: %d\n", cfg.qmode);
 			exit(EXIT_FAILURE);
 			break;
 	}
@@ -266,6 +266,178 @@ void drawdonut(IMAGECONTENT *ic, const int x, const int y, const float rxp, cons
 	}
 
 	gdImageFilledArc(ic->im, x, y, DINRAD-2, DINRAD-2, 0, 360, ic->cbackground, 0);
+}
+
+void drawhours(IMAGECONTENT *ic, const int x, const int y, const int rate)
+{
+	int i, tmax=0, s=0, step, prev=0, diff=0, chour;
+	float ratediv;
+	uint64_t max=1, scaleunit=0;
+	char buffer[32];
+	struct tm *d;
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+	HOURDATA hourdata[24];
+
+	for (i=0; i<24; i++) {
+		hourdata[i].rx = hourdata[i].tx = 0;
+		hourdata[i].date = 0;
+	}
+
+	if (!db_getdata(&datalist, &datainfo, ic->interface.name, "hour", 24)) {
+		printf("Error: Failed to fetch hour data.\n");
+		return;
+	}
+
+	if (datainfo.count == 0) {
+		return;
+	}
+
+	datalist_i = datalist;
+
+	while (datalist_i != NULL) {
+		d = localtime(&datalist_i->timestamp);
+		if (hourdata[d->tm_hour].date != 0 || ic->interface.updated-datalist_i->timestamp > 86400) {
+			datalist_i = datalist_i->next;
+			continue;
+		}
+		hourdata[d->tm_hour].rx = datalist_i->rx;
+		hourdata[d->tm_hour].tx = datalist_i->tx;
+		hourdata[d->tm_hour].date = datalist_i->timestamp;
+		datalist_i = datalist_i->next;
+	}
+	dbdatalistfree(&datalist);
+
+	ic->current = ic->interface.updated;
+	chour = localtime(&ic->current)->tm_hour;
+
+	if (cfg.rateunit) {
+		ratediv = 450;      /* x * 8 / 3600 */
+	} else {
+		ratediv = 3600;
+	}
+
+	/* tmax (time max) = current hour */
+	/* max = transfer max */
+
+	for (i = 0; i < 24; i++) {
+		/* convert hourly transfer to hourly rate if needed */
+		if (rate) {
+			if ((ic->current-hourdata[i].date) > 3600) {
+				hourdata[i].rx = hourdata[i].rx / ratediv;
+				hourdata[i].tx = hourdata[i].tx / ratediv;
+			} else {
+				/* scale ongoing hour properly */
+				if (chour != i) {
+					hourdata[i].rx = hourdata[i].rx / ratediv;
+					hourdata[i].tx = hourdata[i].tx / ratediv;
+				} else {
+					d = localtime(&ic->current);
+					diff = d->tm_min * 60;
+					if (!diff) {
+						diff = 60;
+					}
+					if (cfg.rateunit == 1) {
+						hourdata[i].rx = hourdata[i].rx * 8 / (float)diff;
+						hourdata[i].tx = hourdata[i].tx * 8 / (float)diff;
+					} else {
+						hourdata[i].rx = hourdata[i].rx / (float)diff;
+						hourdata[i].tx = hourdata[i].tx / (float)diff;
+					}
+				}
+			}
+		}
+
+		if (hourdata[i].date >= hourdata[tmax].date) {
+			tmax = i;
+		}
+		if (hourdata[i].rx >= max) {
+			max = hourdata[i].rx;
+		}
+		if (hourdata[i].tx >= max) {
+			max = hourdata[i].tx;
+		}
+	}
+
+	/* scale values */
+	scaleunit = getscale(max);
+	if (max / scaleunit > 4) {
+		step = 2;
+	} else {
+		step = 1;
+	}
+
+	for (i=step; (uint64_t)(scaleunit*i) <= max; i=i+step) {
+		s = 121 * ((scaleunit * i) / (float)max);
+		gdImageLine(ic->im, x+36, y+124-s, x+460, y+124-s, ic->cline);
+		gdImageLine(ic->im, x+36, y+124-((s+prev)/2), x+460, y+124-((s+prev)/2), ic->clinel);
+		gdImageString(ic->im, gdFontGetTiny(), x+16, y+121-s, (unsigned char*)getimagevalue(scaleunit*i, 3, rate), ic->ctext);
+		prev = s;
+	}
+	s = 121 * ((scaleunit * i) / (float)max);
+	if ( ((s+prev)/2) <= 128 ) {
+		gdImageLine(ic->im, x+36, y+124-((s+prev)/2), x+460, y+124-((s+prev)/2), ic->clinel);
+	}
+
+	/* scale text */
+	if (rate) {
+		gdImageStringUp(ic->im, gdFontGetTiny(), x-2, y+70, (unsigned char*)getimagescale(scaleunit * (i - step), 1), ic->ctext);
+	} else {
+		gdImageStringUp(ic->im, gdFontGetTiny(), x-2, y+60, (unsigned char*)getimagescale(scaleunit * (i - step), 0), ic->ctext);
+	}
+
+	/* x-axis values and poles */
+	for (i = 0; i < 24; i++) {
+		s = tmax-i;
+		if (s<0) {
+			s+=24;
+		}
+		snprintf(buffer, 32, "%02d ", s);
+		gdImageString(ic->im, gdFontGetTiny(), x+440-(i*17), y+128, (unsigned char*)buffer, ic->ctext);
+		drawpole(ic, x+438-(i*17), y, 124, hourdata[s].rx, hourdata[s].tx, max);
+	}
+
+	/* axis */
+	gdImageLine(ic->im, x+36-4, y+124, x+466, y+124, ic->ctext);
+	gdImageLine(ic->im, x+36, y-10, x+36, y+124+4, ic->ctext);
+
+	/* arrows */
+	gdImageLine(ic->im, x+465, y+124, x+462, y+122, ic->ctext);
+	gdImageLine(ic->im, x+465, y+124, x+462, y+126, ic->ctext);
+	gdImageLine(ic->im, x+462, y+122, x+462, y+126, ic->ctext);
+	gdImageLine(ic->im, x+36, y-9, x+38, y-6, ic->ctext);
+	gdImageLine(ic->im, x+36, y-9, x+34, y-6, ic->ctext);
+	gdImageLine(ic->im, x+34, y-6, x+38, y-6, ic->ctext);
+}
+
+void drawhourly(IMAGECONTENT *ic, const int rate)
+{
+	int width, height, headermod;
+	char buffer[512];
+
+	width = 500;
+	height = 200;
+
+	if (!ic->showheader) {
+		headermod = 26;
+		height -= 22;
+	} else {
+		headermod = 0;
+	}
+
+	ic->im = gdImageCreate(width, height);
+
+	colorinit(ic);
+
+	if (strcmp(ic->interface.name, ic->interface.alias) == 0 || strlen(ic->interface.alias) == 0) {
+		snprintf(buffer, 512, "%s / hourly", ic->interface.name);
+	} else {
+		snprintf(buffer, 512, "%s (%s) / hourly", ic->interface.alias, ic->interface.name);
+	}
+
+	layoutinit(ic, buffer, width, height);
+	drawlegend(ic, 242, 183-headermod);
+	drawhours(ic, 12, 46-headermod, rate);
 }
 
 void drawlist(IMAGECONTENT *ic, const char *listname)
@@ -576,7 +748,6 @@ void modcolor(int *rgb, const int offset, const int force)
 	}
 }
 
-/* TODO: needs updating */
 char *getimagevalue(const uint64_t b, const int len, const int rate)
 {
 	static char buffer[64];
@@ -587,23 +758,27 @@ char *getimagevalue(const uint64_t b, const int len, const int rate)
 	} else {
 		/* try to figure out what unit to use */
 		if (rate) {
-			if (b>=1000000000) { /* 1000*1000*1000 - value >=1000 Gbps -> show in Tbps */
+			if (b>=1000000000000) { /* 1000*1000*1000*1000 - value >=1000 Gbps -> show in Tbps */
+				snprintf(buffer, 64, "%*.*f", len, declen, b/(float)1000000000000); /* 1000*1000*1000*1000 */
+			} else if (b>=1000000000) { /* 1000*1000*1000 - value >=1000 Mbps -> show in Gbps */
 				snprintf(buffer, 64, "%*.*f", len, declen, b/(float)1000000000); /* 1000*1000*1000 */
-			} else if (b>=1000000) { /* 1000*1000 - value >=1000 Mbps -> show in Gbps */
+			} else if (b>=1000000) { /* 1000*1000 - value >=1000 Kbps -> show in Mbps */
 				snprintf(buffer, 64, "%*.*f", len, declen, b/(float)1000000); /* 1000*1000 */
-			} else if (b>=1000) {
+			} else if (b>=1000) { /* 1000 - value >=1000 bps -> show in Kbps */
 				snprintf(buffer, 64, "%*.*f", len, declen, b/(float)1000);
-			} else {
+			} else { /* bps by default */
 				snprintf(buffer, 64, "%*"PRIu64"", len, b);
 			}
 		} else {
-			if (b>=1048576000) { /* 1024*1024*1000 - value >=1000 GiB -> show in TiB */
+			if (b>=1073741824000) { /* 1024*1024*1024*1000 - value >=1000 GiB -> show in TiB */
+				snprintf(buffer, 64, "%*.*f", len, declen, b/(float)1099511627776); /* 1024*1024*1024*1024 */
+			} else if (b>=1048576000) { /* 1024*1024*1000 - value >=1000 MiB -> show in GiB */
 				snprintf(buffer, 64, "%*.*f", len, declen, b/(float)1073741824); /* 1024*1024*1024 */
-			} else if (b>=1024000) { /* 1024*1000 - value >=1000 MiB -> show in GiB */
+			} else if (b>=1024000) { /* 1024*1000 - value >=1000 KiB -> show in MiB */
 				snprintf(buffer, 64, "%*.*f", len, declen, b/(float)1048576); /* 1024*1024 */
-			} else if (b>=1000) {
+			} else if (b>=1000) { /* 1000 - value >=1000 B -> show in KiB */
 				snprintf(buffer, 64, "%*.*f", len, declen, b/(float)1024);
-			} else {
+			} else { /* B by default */
 				snprintf(buffer, 64, "%*"PRIu64"", len, b);
 			}
 		}
@@ -612,54 +787,67 @@ char *getimagevalue(const uint64_t b, const int len, const int rate)
 	return buffer;
 }
 
-/* TODO: needs updating */
 char *getimagescale(const uint64_t b, const int rate)
 {
 	static char buffer[8];
-	uint32_t limit[3];
-	int unit;
+	int unit = cfg.unitmode;
+	int div = 1, p = 1024;
 
 	if (b==0) {
 		snprintf(buffer, 8, "--");
 	} else {
-
 		if (rate) {
-
-			/* convert to proper unit */
 			if (cfg.rateunit) {
-				limit[0] = 1000;
-				limit[1] = 1000000;
-				limit[2] = 1000000000;
+				p = 1000;
 				unit = 2;
-			} else {
-				limit[0] = 1024;
-				limit[1] = 1024000;
-				limit[2] = 1048576000;
-				unit = cfg.unitmode;
 			}
-
-			if (b>=limit[2]) {
-				snprintf(buffer, 8, "%s", getrateunitprefix(unit, 4));
-			} else if (b>=limit[1]) {
-				snprintf(buffer, 8, "%s", getrateunitprefix(unit, 3));
-			} else if (b>=limit[0]) {
-				snprintf(buffer, 8, "%s", getrateunitprefix(unit, 2));
-			} else {
-				snprintf(buffer, 8, "%s", getrateunitprefix(unit, 1));
+			while (div < UNITPREFIXCOUNT && b >= (pow(p, div-1) * 1000)) {
+				div++;
 			}
+			snprintf(buffer, 8, "%s", getrateunitprefix(unit, div));
 		} else {
-			if (b>=1048576000) { /* 1024*1024*1000 - value >=1000 GiB -> show in TiB */
-				snprintf(buffer, 8, "%s", getunitprefix(4));
-			} else if (b>=1024000) { /* 1024*1000 - value >=1000 MiB -> show in GiB */
-				snprintf(buffer, 8, "%s", getunitprefix(3));
-			} else if (b>=1000) {
-				snprintf(buffer, 8, "%s", getunitprefix(2));
-			} else {
-				snprintf(buffer, 8, "%s", getunitprefix(1));
+			while (div < UNITPREFIXCOUNT && b >= (pow(p, div-1) * 1000)) {
+				div++;
 			}
+			snprintf(buffer, 8, "%s", getunitprefix(div));
 		}
+	}
+	return buffer;
+}
 
+uint64_t getscale(const uint64_t input)
+{
+	int i;
+	unsigned int div = 1024;
+	uint64_t result = input;
+
+	if (cfg.hourlyrate) {
+		div = 1000;
 	}
 
-	return buffer;
+	/* get unit */
+	for (i=0; result>div; i++) {
+		result = result / div;
+	}
+
+	/* round result depending of scale */
+	if (result>300) {
+		result = result/4 + (100 - ((result/4) % 100));
+	} else if (result>20) {
+		result = result/4 + (10 - ((result/4) % 10));
+	} else {
+		result = result/4;
+	}
+
+	/* put unit back */
+	if (i) {
+		result = result * pow(div, i);
+	}
+
+	/* make sure result isn't zero */
+	if (!result) {
+		result = pow(div, i);
+	}
+
+	return result;
 }
