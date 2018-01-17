@@ -6,6 +6,8 @@ After=network.target
 [Service]
 ExecStart=/usr/sbin/vnstatd -n
 ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target
