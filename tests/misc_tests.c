@@ -1,6 +1,6 @@
+#include "common.h"
 #include "vnstat_tests.h"
 #include "misc_tests.h"
-#include "common.h"
 #include "misc.h"
 
 START_TEST(getbtime_does_not_return_zero)

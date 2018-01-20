@@ -1,6 +1,6 @@
+#include "common.h"
 #include "vnstat_tests.h"
 #include "datacache_tests.h"
-#include "common.h"
 #include "datacache.h"
 
 START_TEST(datacache_can_clear_empty_cache)

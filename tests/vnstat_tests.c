@@ -1,3 +1,4 @@
+#include "common.h"
 #include "vnstat_tests.h"
 #include "common_tests.h"
 #include "dbsql_tests.h"
@@ -12,7 +13,6 @@
 #if defined(HAVE_IMAGE)
 #include "image_tests.h"
 #endif
-#include "common.h"
 
 int main(void)
 {

@@ -1,6 +1,6 @@
+#include "common.h"
 #include "vnstat_tests.h"
 #include "id_tests.h"
-#include "common.h"
 #include "id.h"
 
 START_TEST(getuser_root_string)

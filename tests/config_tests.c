@@ -1,6 +1,6 @@
+#include "common.h"
 #include "vnstat_tests.h"
 #include "config_tests.h"
-#include "common.h"
 #include "cfg.h"
 #include "ibw.h"
 

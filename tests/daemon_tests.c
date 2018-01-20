@@ -1,6 +1,6 @@
+#include "common.h"
 #include "vnstat_tests.h"
 #include "daemon_tests.h"
-#include "common.h"
 #include "dbaccess.h"
 #include "datacache.h"
 #include "dbsql.h"
