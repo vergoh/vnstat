@@ -28,6 +28,7 @@ void drawimage(IMAGECONTENT *ic)
 		case 4:
 			drawlist(ic, "year");
 			break;
+/* TODO: these are still missing */
 /*		case 5:
 			if (cfg.slayout) {
 				drawsummary(ic, 0, 0);
@@ -360,7 +361,7 @@ void drawhours(IMAGECONTENT *ic, const int x, const int y, const int rate)
 	}
 
 	/* scale values */
-	scaleunit = getscale(max);
+	scaleunit = getscale(max, rate);
 	if (max / scaleunit > 4) {
 		step = 2;
 	} else {
@@ -377,14 +378,12 @@ void drawhours(IMAGECONTENT *ic, const int x, const int y, const int rate)
 	s = 121 * ((scaleunit * i) / (float)max);
 	if ( ((s+prev)/2) <= 128 ) {
 		gdImageLine(ic->im, x+36, y+124-((s+prev)/2), x+460, y+124-((s+prev)/2), ic->clinel);
+	} else {
+		i = i - step;
 	}
 
 	/* scale text */
-	if (rate) {
-		gdImageStringUp(ic->im, gdFontGetTiny(), x-2, y+70, (unsigned char*)getimagescale(scaleunit * (i - step), 1), ic->ctext);
-	} else {
-		gdImageStringUp(ic->im, gdFontGetTiny(), x-2, y+60, (unsigned char*)getimagescale(scaleunit * (i - step), 0), ic->ctext);
-	}
+	gdImageStringUp(ic->im, gdFontGetTiny(), x-2, y+60+(rate*10), (unsigned char*)getimagescale(scaleunit * i, rate), ic->ctext);
 
 	/* x-axis values and poles */
 	for (i = 0; i < 24; i++) {
@@ -756,17 +755,18 @@ char *getimagevalue(const uint64_t b, const int len, const int rate)
 	if (b==0){
 		snprintf(buffer, 64, "%*s", len, "--");
 	} else {
+		/* TODO: remove hardcoded values */
 		/* try to figure out what unit to use */
-		if (rate) {
-			if (b>=1000000000000) { /* 1000*1000*1000*1000 - value >=1000 Gbps -> show in Tbps */
-				snprintf(buffer, 64, "%*.*f", len, declen, b/(float)1000000000000); /* 1000*1000*1000*1000 */
-			} else if (b>=1000000000) { /* 1000*1000*1000 - value >=1000 Mbps -> show in Gbps */
-				snprintf(buffer, 64, "%*.*f", len, declen, b/(float)1000000000); /* 1000*1000*1000 */
-			} else if (b>=1000000) { /* 1000*1000 - value >=1000 Kbps -> show in Mbps */
-				snprintf(buffer, 64, "%*.*f", len, declen, b/(float)1000000); /* 1000*1000 */
-			} else if (b>=1000) { /* 1000 - value >=1000 bps -> show in Kbps */
+		if (rate && getunit() == 3) {
+			if (b>=1000000000000) {
+				snprintf(buffer, 64, "%*.*f", len, declen, b/(float)1000000000000);
+			} else if (b>=1000000000) {
+				snprintf(buffer, 64, "%*.*f", len, declen, b/(float)1000000000);
+			} else if (b>=1000000) {
+				snprintf(buffer, 64, "%*.*f", len, declen, b/(float)1000000);
+			} else if (b>=1000) {
 				snprintf(buffer, 64, "%*.*f", len, declen, b/(float)1000);
-			} else { /* bps by default */
+			} else {
 				snprintf(buffer, 64, "%*"PRIu64"", len, b);
 			}
 		} else {
@@ -790,16 +790,16 @@ char *getimagevalue(const uint64_t b, const int len, const int rate)
 char *getimagescale(const uint64_t b, const int rate)
 {
 	static char buffer[8];
-	int unit = cfg.unitmode;
-	int div = 1, p = 1024;
+	int unit, div = 1, p = 1024;
+
+	unit = getunit();
 
 	if (b==0) {
 		snprintf(buffer, 8, "--");
 	} else {
 		if (rate) {
-			if (cfg.rateunit) {
+			if (unit == 3) {
 				p = 1000;
-				unit = 2;
 			}
 			while (div < UNITPREFIXCOUNT && b >= (pow(p, div-1) * 1000)) {
 				div++;
@@ -815,18 +815,18 @@ char *getimagescale(const uint64_t b, const int rate)
 	return buffer;
 }
 
-uint64_t getscale(const uint64_t input)
+uint64_t getscale(const uint64_t input, const int rate)
 {
 	int i;
 	unsigned int div = 1024;
 	uint64_t result = input;
 
-	if (cfg.hourlyrate) {
+	if (rate && getunit() == 3) {
 		div = 1000;
 	}
 
 	/* get unit */
-	for (i=0; result>div; i++) {
+	for (i=0; result>=div; i++) {
 		result = result / div;
 	}
 
@@ -841,12 +841,16 @@ uint64_t getscale(const uint64_t input)
 
 	/* put unit back */
 	if (i) {
-		result = result * pow(div, i);
+		result = result * pow(div, i-1) * 1000;
 	}
 
 	/* make sure result isn't zero */
 	if (!result) {
-		result = pow(div, i);
+		if (i) {
+			result = pow(div, i-1) * 1000;
+		} else {
+			result = 1;
+		}
 	}
 
 	return result;

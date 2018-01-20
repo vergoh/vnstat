@@ -64,8 +64,24 @@ START_TEST(getimagevalue_normal)
 }
 END_TEST
 
-START_TEST(getimagevalue_rate)
+START_TEST(getimagevalue_rate_1024)
 {
+	cfg.rateunit = 0;
+	cfg.rateunitmode = 0;
+	ck_assert_str_eq(getimagevalue(1, 0, 1), "1");
+	ck_assert_str_eq(getimagevalue(2, 0, 1), "2");
+	ck_assert_str_eq(getimagevalue(1000, 0, 1), "1");
+	ck_assert_str_eq(getimagevalue(2000, 0, 1), "2");
+	ck_assert_str_eq(getimagevalue(1024000, 0, 1), "1");
+	ck_assert_str_eq(getimagevalue(1048576000, 0, 1), "1");
+	ck_assert_str_eq(getimagevalue(1073741824000ULL, 0, 1), "1");
+}
+END_TEST
+
+START_TEST(getimagevalue_rate_1000)
+{
+	cfg.rateunit = 1;
+	cfg.rateunitmode = 1;
 	ck_assert_str_eq(getimagevalue(1, 0, 1), "1");
 	ck_assert_str_eq(getimagevalue(2, 0, 1), "2");
 	ck_assert_str_eq(getimagevalue(1000, 0, 1), "1");
@@ -115,28 +131,271 @@ END_TEST
 
 START_TEST(getscale_zero)
 {
-	ck_assert_int_eq(getscale(0), 1);
+	ck_assert_int_eq(getscale(0, 0), 1);
 }
 END_TEST
 
-START_TEST(getscale_nonzero)
+START_TEST(getscale_nonzero_1024)
 {
-	ck_assert_int_eq(getscale(1), 1);
-	ck_assert_int_eq(getscale(2), 1);
-	ck_assert_int_eq(getscale(10), 2);
-	ck_assert_int_eq(getscale(20), 5);
-	ck_assert_int_eq(getscale(50), 20);
-	ck_assert_int_eq(getscale(1023), 300);
-	ck_assert_int_eq(getscale(1024), 300);
-	ck_assert_int_eq(getscale(1025), 1024);
-	ck_assert_int_eq(getscale(1026), 1024);
-	ck_assert_int_eq(getscale(1500), 1024);
-	ck_assert_int_eq(getscale(2047), 1024);
-	ck_assert_int_eq(getscale(2048), 1024);
-	ck_assert_int_eq(getscale(2049), 1024);
-	ck_assert_int_eq(getscale(8191), 1024);
-	ck_assert_int_eq(getscale(8192), 2048);
-	ck_assert_int_eq(getscale(8193), 2048);
+	cfg.rateunit = 0;
+	cfg.rateunitmode = 0;
+	ck_assert_int_eq(getscale(1, 0), 1);
+	ck_assert_int_eq(getscale(2, 0), 1);
+	ck_assert_int_eq(getscale(10, 0), 2);
+	ck_assert_int_eq(getscale(20, 0), 5);
+	ck_assert_int_eq(getscale(50, 0), 20);
+	ck_assert_int_eq(getscale(1000, 0), 300);
+	ck_assert_int_eq(getscale(1023, 0), 300);
+	ck_assert_int_eq(getscale(1024, 0), 1000);
+	ck_assert_int_eq(getscale(1025, 0), 1000);
+	ck_assert_int_eq(getscale(1026, 0), 1000);
+	ck_assert_int_eq(getscale(1500, 0), 1000);
+	ck_assert_int_eq(getscale(2047, 0), 1000);
+	ck_assert_int_eq(getscale(2048, 0), 1000);
+	ck_assert_int_eq(getscale(2049, 0), 1000);
+	ck_assert_int_eq(getscale(8191, 0), 1000);
+	ck_assert_int_eq(getscale(8192, 0), 2000);
+	ck_assert_int_eq(getscale(8193, 0), 2000);
+	ck_assert_int_eq(getscale(20000, 0), 4000);
+
+	ck_assert_int_eq(getscale(1, 1), 1);
+	ck_assert_int_eq(getscale(2, 1), 1);
+	ck_assert_int_eq(getscale(10, 1), 2);
+	ck_assert_int_eq(getscale(20, 1), 5);
+	ck_assert_int_eq(getscale(50, 1), 20);
+	ck_assert_int_eq(getscale(1000, 1), 300);
+	ck_assert_int_eq(getscale(1023, 1), 300);
+	ck_assert_int_eq(getscale(1024, 1), 1000);
+	ck_assert_int_eq(getscale(1025, 1), 1000);
+	ck_assert_int_eq(getscale(1026, 1), 1000);
+	ck_assert_int_eq(getscale(1500, 1), 1000);
+	ck_assert_int_eq(getscale(2047, 1), 1000);
+	ck_assert_int_eq(getscale(2048, 1), 1000);
+	ck_assert_int_eq(getscale(2049, 1), 1000);
+	ck_assert_int_eq(getscale(8191, 1), 1000);
+	ck_assert_int_eq(getscale(8192, 1), 2000);
+	ck_assert_int_eq(getscale(8193, 1), 2000);
+	ck_assert_int_eq(getscale(20000, 1), 4000);
+}
+END_TEST
+
+START_TEST(getscale_nonzero_1000)
+{
+	cfg.rateunit = 1;
+	cfg.rateunitmode = 1;
+	ck_assert_int_eq(getscale(1, 0), 1);
+	ck_assert_int_eq(getscale(2, 0), 1);
+	ck_assert_int_eq(getscale(10, 0), 2);
+	ck_assert_int_eq(getscale(20, 0), 5);
+	ck_assert_int_eq(getscale(50, 0), 20);
+	ck_assert_int_eq(getscale(1000, 0), 300);
+	ck_assert_int_eq(getscale(1023, 0), 300);
+	ck_assert_int_eq(getscale(1024, 0), 1000);
+	ck_assert_int_eq(getscale(1025, 0), 1000);
+	ck_assert_int_eq(getscale(1026, 0), 1000);
+	ck_assert_int_eq(getscale(1500, 0), 1000);
+	ck_assert_int_eq(getscale(2047, 0), 1000);
+	ck_assert_int_eq(getscale(2048, 0), 1000);
+	ck_assert_int_eq(getscale(2049, 0), 1000);
+	ck_assert_int_eq(getscale(8191, 0), 1000);
+	ck_assert_int_eq(getscale(8192, 0), 2000);
+	ck_assert_int_eq(getscale(8193, 0), 2000);
+	ck_assert_int_eq(getscale(20000, 0), 4000);
+
+	ck_assert_int_eq(getscale(1, 1), 1);
+	ck_assert_int_eq(getscale(2, 1), 1);
+	ck_assert_int_eq(getscale(10, 1), 2);
+	ck_assert_int_eq(getscale(20, 1), 5);
+	ck_assert_int_eq(getscale(50, 1), 20);
+	ck_assert_int_eq(getscale(1000, 1), 1000);
+	ck_assert_int_eq(getscale(1023, 1), 1000);
+	ck_assert_int_eq(getscale(1024, 1), 1000);
+	ck_assert_int_eq(getscale(1025, 1), 1000);
+	ck_assert_int_eq(getscale(1026, 1), 1000);
+	ck_assert_int_eq(getscale(1500, 1), 1000);
+	ck_assert_int_eq(getscale(2047, 1), 1000);
+	ck_assert_int_eq(getscale(2048, 1), 1000);
+	ck_assert_int_eq(getscale(2049, 1), 1000);
+	ck_assert_int_eq(getscale(8191, 1), 2000);
+	ck_assert_int_eq(getscale(8192, 1), 2000);
+	ck_assert_int_eq(getscale(8193, 1), 2000);
+	ck_assert_int_eq(getscale(20000, 1), 5000);
+}
+END_TEST
+
+/* this function needs to match the logic used in image.c drawhours() */
+/* in order to test the right thing */
+char *hourly_imagescale_logic(const uint64_t max, const int rate)
+{
+	int i, step, s, prev;
+	uint64_t scaleunit;
+
+	scaleunit = getscale(max, rate);
+	if (max / scaleunit > 4) {
+		step = 2;
+	} else {
+		step = 1;
+	}
+
+	for (i=step; (uint64_t)(scaleunit * i) <= max; i=i+step) {
+		s = 121 * ((scaleunit * i) / (float)max);
+		prev = s;
+	}
+
+	s = 121 * ((scaleunit * i) / (float)max);
+	if ( ((s+prev)/2) <= 128 ) {
+		;
+	} else {
+		i = i - step;
+	}
+
+	/* debug for times when things don't appear to make sense */
+	/*printf("\nmax:        %"PRIu64"\n", max);
+	printf("scaleunit:  %"PRIu64"\n", scaleunit);
+	printf("old 2.0:    %"PRIu64" (i: %d, step: %d)\n", scaleunit * (i - step), i, step);
+	printf("now:        %"PRIu64" (i: %d, step: %d)\n", scaleunit * i, i, step);*/
+
+	return getimagescale(scaleunit * i, rate);
+}
+
+START_TEST(hourly_imagescaling_normal)
+{
+	char *unittext;
+
+	unittext = hourly_imagescale_logic(1, 0);
+	ck_assert_str_eq(unittext, "B");
+
+	unittext = hourly_imagescale_logic(100, 0);
+	ck_assert_str_eq(unittext, "B");
+
+	unittext = hourly_imagescale_logic(981, 0);
+	ck_assert_str_eq(unittext, "B");
+
+	unittext = hourly_imagescale_logic(1000, 0);
+	ck_assert_str_eq(unittext, "KiB");
+
+	unittext = hourly_imagescale_logic(1024, 0);
+	ck_assert_str_eq(unittext, "KiB");
+
+	unittext = hourly_imagescale_logic(2000, 0);
+	ck_assert_str_eq(unittext, "KiB");
+
+	unittext = hourly_imagescale_logic(1000000, 0);
+	ck_assert_str_eq(unittext, "MiB");
+
+	unittext = hourly_imagescale_logic(1024000, 0);
+	ck_assert_str_eq(unittext, "MiB");
+
+	unittext = hourly_imagescale_logic(1300000, 0);
+	ck_assert_str_eq(unittext, "MiB");
+
+	unittext = hourly_imagescale_logic(2000000, 0);
+	ck_assert_str_eq(unittext, "MiB");
+
+	unittext = hourly_imagescale_logic(1000000000, 0);
+	ck_assert_str_eq(unittext, "MiB");
+
+	unittext = hourly_imagescale_logic(2000000000, 0);
+	ck_assert_str_eq(unittext, "GiB");
+
+	unittext = hourly_imagescale_logic(2000000000000ULL, 0);
+	ck_assert_str_eq(unittext, "TiB");
+}
+END_TEST
+
+START_TEST(hourly_imagescaling_rate_1024)
+{
+	char *unittext;
+
+	cfg.rateunit = 0;
+	cfg.rateunitmode = 0;
+
+	unittext = hourly_imagescale_logic(1, 1);
+	ck_assert_str_eq(unittext, "B/s");
+
+	unittext = hourly_imagescale_logic(100, 1);
+	ck_assert_str_eq(unittext, "B/s");
+
+	unittext = hourly_imagescale_logic(981, 1);
+	ck_assert_str_eq(unittext, "B/s");
+
+	unittext = hourly_imagescale_logic(1000, 1);
+	ck_assert_str_eq(unittext, "KiB/s");
+
+	unittext = hourly_imagescale_logic(1024, 1);
+	ck_assert_str_eq(unittext, "KiB/s");
+
+	unittext = hourly_imagescale_logic(2000, 1);
+	ck_assert_str_eq(unittext, "KiB/s");
+
+	unittext = hourly_imagescale_logic(1000000, 1);
+	ck_assert_str_eq(unittext, "MiB/s");
+
+	unittext = hourly_imagescale_logic(1024000, 1);
+	ck_assert_str_eq(unittext, "MiB/s");
+
+	unittext = hourly_imagescale_logic(1300000, 1);
+	ck_assert_str_eq(unittext, "MiB/s");
+
+	unittext = hourly_imagescale_logic(2000000, 1);
+	ck_assert_str_eq(unittext, "MiB/s");
+
+	unittext = hourly_imagescale_logic(1000000000, 1);
+	ck_assert_str_eq(unittext, "MiB/s");
+
+	unittext = hourly_imagescale_logic(2000000000, 1);
+	ck_assert_str_eq(unittext, "GiB/s");
+
+	unittext = hourly_imagescale_logic(2000000000000ULL, 1);
+	ck_assert_str_eq(unittext, "TiB/s");
+}
+END_TEST
+
+START_TEST(hourly_imagescaling_rate_1000)
+{
+	char *unittext;
+
+	cfg.rateunit = 1;
+	cfg.rateunitmode = 1;
+
+	unittext = hourly_imagescale_logic(1, 1);
+	ck_assert_str_eq(unittext, "bit/s");
+
+	unittext = hourly_imagescale_logic(100, 1);
+	ck_assert_str_eq(unittext, "bit/s");
+
+	unittext = hourly_imagescale_logic(981, 1);
+	ck_assert_str_eq(unittext, "bit/s");
+
+	unittext = hourly_imagescale_logic(1000, 1);
+	ck_assert_str_eq(unittext, "kbit/s");
+
+	unittext = hourly_imagescale_logic(1024, 1);
+	ck_assert_str_eq(unittext, "kbit/s");
+
+	unittext = hourly_imagescale_logic(2000, 1);
+	ck_assert_str_eq(unittext, "kbit/s");
+
+	unittext = hourly_imagescale_logic(1000000, 1);
+	ck_assert_str_eq(unittext, "Mbit/s");
+
+	unittext = hourly_imagescale_logic(1024000, 1);
+	ck_assert_str_eq(unittext, "Mbit/s");
+
+	unittext = hourly_imagescale_logic(1300000, 1);
+	ck_assert_str_eq(unittext, "Mbit/s");
+
+	unittext = hourly_imagescale_logic(2000000, 1);
+	ck_assert_str_eq(unittext, "Mbit/s");
+
+	unittext = hourly_imagescale_logic(1000000000, 1);
+	ck_assert_str_eq(unittext, "Gbit/s");
+
+	unittext = hourly_imagescale_logic(2000000000, 1);
+	ck_assert_str_eq(unittext, "Gbit/s");
+
+	unittext = hourly_imagescale_logic(2000000000000ULL, 1);
+	ck_assert_str_eq(unittext, "Tbit/s");
 }
 END_TEST
 
@@ -148,11 +407,16 @@ void add_image_tests(Suite *s)
 	tcase_add_test(tc_image, layoutinit_does_not_crash);
 	tcase_add_test(tc_image, getimagevalue_zeropadding);
 	tcase_add_test(tc_image, getimagevalue_normal);
-	tcase_add_test(tc_image, getimagevalue_rate);
+	tcase_add_test(tc_image, getimagevalue_rate_1024);
+	tcase_add_test(tc_image, getimagevalue_rate_1000);
 	tcase_add_test(tc_image, getimagescale_zero);
 	tcase_add_test(tc_image, getimagescale_normal);
 	tcase_add_test(tc_image, getimagescale_rate);
 	tcase_add_test(tc_image, getscale_zero);
-	tcase_add_test(tc_image, getscale_nonzero);
+	tcase_add_test(tc_image, getscale_nonzero_1024);
+	tcase_add_test(tc_image, getscale_nonzero_1000);
+	tcase_add_test(tc_image, hourly_imagescaling_normal);
+	tcase_add_test(tc_image, hourly_imagescaling_rate_1024);
+	tcase_add_test(tc_image, hourly_imagescaling_rate_1000);
 	suite_add_tcase(s, tc_image);
 }
