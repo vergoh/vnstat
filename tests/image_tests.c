@@ -146,17 +146,17 @@ START_TEST(getscale_nonzero_1024)
 	ck_assert_int_eq(getscale(50, 0), 20);
 	ck_assert_int_eq(getscale(1000, 0), 300);
 	ck_assert_int_eq(getscale(1023, 0), 300);
-	ck_assert_int_eq(getscale(1024, 0), 1000);
-	ck_assert_int_eq(getscale(1025, 0), 1000);
-	ck_assert_int_eq(getscale(1026, 0), 1000);
-	ck_assert_int_eq(getscale(1500, 0), 1000);
-	ck_assert_int_eq(getscale(2047, 0), 1000);
-	ck_assert_int_eq(getscale(2048, 0), 1000);
-	ck_assert_int_eq(getscale(2049, 0), 1000);
-	ck_assert_int_eq(getscale(8191, 0), 1000);
-	ck_assert_int_eq(getscale(8192, 0), 2000);
-	ck_assert_int_eq(getscale(8193, 0), 2000);
-	ck_assert_int_eq(getscale(20000, 0), 4000);
+	ck_assert_int_eq(getscale(1024, 0), 1024);
+	ck_assert_int_eq(getscale(1025, 0), 1024);
+	ck_assert_int_eq(getscale(1026, 0), 1024);
+	ck_assert_int_eq(getscale(1500, 0), 1024);
+	ck_assert_int_eq(getscale(2047, 0), 1024);
+	ck_assert_int_eq(getscale(2048, 0), 1024);
+	ck_assert_int_eq(getscale(2049, 0), 1024);
+	ck_assert_int_eq(getscale(8191, 0), 1024);
+	ck_assert_int_eq(getscale(8192, 0), 2048);
+	ck_assert_int_eq(getscale(8193, 0), 2048);
+	ck_assert_int_eq(getscale(20000, 0), 4096);
 
 	ck_assert_int_eq(getscale(1, 1), 1);
 	ck_assert_int_eq(getscale(2, 1), 1);
@@ -165,17 +165,18 @@ START_TEST(getscale_nonzero_1024)
 	ck_assert_int_eq(getscale(50, 1), 20);
 	ck_assert_int_eq(getscale(1000, 1), 300);
 	ck_assert_int_eq(getscale(1023, 1), 300);
-	ck_assert_int_eq(getscale(1024, 1), 1000);
-	ck_assert_int_eq(getscale(1025, 1), 1000);
-	ck_assert_int_eq(getscale(1026, 1), 1000);
-	ck_assert_int_eq(getscale(1500, 1), 1000);
-	ck_assert_int_eq(getscale(2047, 1), 1000);
-	ck_assert_int_eq(getscale(2048, 1), 1000);
-	ck_assert_int_eq(getscale(2049, 1), 1000);
-	ck_assert_int_eq(getscale(8191, 1), 1000);
-	ck_assert_int_eq(getscale(8192, 1), 2000);
-	ck_assert_int_eq(getscale(8193, 1), 2000);
-	ck_assert_int_eq(getscale(20000, 1), 4000);
+	ck_assert_int_eq(getscale(1024, 1), 1024);
+	ck_assert_int_eq(getscale(1025, 1), 1024);
+	ck_assert_int_eq(getscale(1026, 1), 1024);
+	ck_assert_int_eq(getscale(1500, 1), 1024);
+	ck_assert_int_eq(getscale(2047, 1), 1024);
+	ck_assert_int_eq(getscale(2048, 1), 1024);
+	ck_assert_int_eq(getscale(2049, 1), 1024);
+	ck_assert_int_eq(getscale(8191, 1), 1024);
+	ck_assert_int_eq(getscale(8192, 1), 2048);
+	ck_assert_int_eq(getscale(8193, 1), 2048);
+	ck_assert_int_eq(getscale(20000, 1), 4096);
+	ck_assert_int_eq(getscale(720000, 1), 204800);
 }
 END_TEST
 
@@ -190,17 +191,17 @@ START_TEST(getscale_nonzero_1000)
 	ck_assert_int_eq(getscale(50, 0), 20);
 	ck_assert_int_eq(getscale(1000, 0), 300);
 	ck_assert_int_eq(getscale(1023, 0), 300);
-	ck_assert_int_eq(getscale(1024, 0), 1000);
-	ck_assert_int_eq(getscale(1025, 0), 1000);
-	ck_assert_int_eq(getscale(1026, 0), 1000);
-	ck_assert_int_eq(getscale(1500, 0), 1000);
-	ck_assert_int_eq(getscale(2047, 0), 1000);
-	ck_assert_int_eq(getscale(2048, 0), 1000);
-	ck_assert_int_eq(getscale(2049, 0), 1000);
-	ck_assert_int_eq(getscale(8191, 0), 1000);
-	ck_assert_int_eq(getscale(8192, 0), 2000);
-	ck_assert_int_eq(getscale(8193, 0), 2000);
-	ck_assert_int_eq(getscale(20000, 0), 4000);
+	ck_assert_int_eq(getscale(1024, 0), 1024);
+	ck_assert_int_eq(getscale(1025, 0), 1024);
+	ck_assert_int_eq(getscale(1026, 0), 1024);
+	ck_assert_int_eq(getscale(1500, 0), 1024);
+	ck_assert_int_eq(getscale(2047, 0), 1024);
+	ck_assert_int_eq(getscale(2048, 0), 1024);
+	ck_assert_int_eq(getscale(2049, 0), 1024);
+	ck_assert_int_eq(getscale(8191, 0), 1024);
+	ck_assert_int_eq(getscale(8192, 0), 2048);
+	ck_assert_int_eq(getscale(8193, 0), 2048);
+	ck_assert_int_eq(getscale(20000, 0), 4096);
 
 	ck_assert_int_eq(getscale(1, 1), 1);
 	ck_assert_int_eq(getscale(2, 1), 1);
@@ -281,7 +282,7 @@ START_TEST(hourly_imagescaling_normal)
 	ck_assert_str_eq(unittext, "KiB");
 
 	unittext = hourly_imagescale_logic(1000000, 0);
-	ck_assert_str_eq(unittext, "MiB");
+	ck_assert_str_eq(unittext, "KiB");
 
 	unittext = hourly_imagescale_logic(1024000, 0);
 	ck_assert_str_eq(unittext, "MiB");
@@ -329,7 +330,7 @@ START_TEST(hourly_imagescaling_rate_1024)
 	ck_assert_str_eq(unittext, "KiB/s");
 
 	unittext = hourly_imagescale_logic(1000000, 1);
-	ck_assert_str_eq(unittext, "MiB/s");
+	ck_assert_str_eq(unittext, "KiB/s");
 
 	unittext = hourly_imagescale_logic(1024000, 1);
 	ck_assert_str_eq(unittext, "MiB/s");

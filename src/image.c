@@ -831,7 +831,7 @@ uint64_t getscale(const uint64_t input, const int rate)
 	}
 
 	/* round result depending of scale */
-	if (result>300) {
+	if (result>=300) {
 		result = result/4 + (100 - ((result/4) % 100));
 	} else if (result>20) {
 		result = result/4 + (10 - ((result/4) % 10));
@@ -841,13 +841,13 @@ uint64_t getscale(const uint64_t input, const int rate)
 
 	/* put unit back */
 	if (i) {
-		result = result * pow(div, i-1) * 1000;
+		result = result * pow(div, i);
 	}
 
 	/* make sure result isn't zero */
 	if (!result) {
 		if (i) {
-			result = pow(div, i-1) * 1000;
+			result = pow(div, i);
 		} else {
 			result = 1;
 		}
