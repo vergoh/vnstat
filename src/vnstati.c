@@ -295,7 +295,8 @@ void showihelp(IPARAMS *p)
 	printf("         -h,  --hours          output hours\n");
 	printf("         -d,  --days           output days\n");
 	printf("         -m,  --months         output months\n");
-	printf("         -t,  --top10          output top10\n");
+	printf("         -y,  --years          output years\n");
+	printf("         -t,  --top            output top days\n");
 	printf("         -s,  --summary        output summary\n");
 	printf("         -hs, --hsummary       output horizontal summary with hours\n");
 	printf("         -vs, --vsummary       output vertical summary with hours\n");
