@@ -40,6 +40,7 @@ data retention durations. Yearly and five-minute resolution statistics are now i
       * only fatal errors will cause the daemon to exit directly
   * most vnstat (console output) features
   * all vnstati (image output) features
+  * pebibyte support
 
 ##### Removed features
 

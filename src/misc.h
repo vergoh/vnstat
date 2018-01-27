@@ -1,7 +1,7 @@
 #ifndef MISC_H
 #define MISC_H
 
-#define UNITPREFIXCOUNT 5
+#define UNITPREFIXCOUNT 6
 
 int spacecheck(const char *path);
 void sighandler(int);

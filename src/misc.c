@@ -213,11 +213,10 @@ char *gettrafficrate(const uint64_t bytes, const uint32_t interval, const int le
 	return getratestring(b / interval, len, declen);
 }
 
-/* TODO: add pebibyte support, most likely needed for yearly data for some */
 char *getunitprefix(const int index)
 {
-	static char *unitprefix[] = { "na", "B", "KiB", "MiB", "GiB", "TiB",  /* IEC   - 1024^n */
-                                        "B", "KB",  "MB",  "GB",  "TB" }; /* JEDEC - 1024^n */
+	static char *unitprefix[] = { "na", "B", "KiB", "MiB", "GiB", "TiB", "PiB",  /* IEC   - 1024^n */
+                                        "B", "KB",  "MB",  "GB",  "TB",  "PB" }; /* JEDEC - 1024^n */
 
 	if (index>UNITPREFIXCOUNT) {
 		return unitprefix[0];
@@ -226,13 +225,12 @@ char *getunitprefix(const int index)
 	}
 }
 
-/* TODO: add pebibyte support */
 char *getrateunitprefix(const int unitmode, const int index)
 {
-	static char *rateunitprefix[] = { "na", "B/s",     "KiB/s",   "MiB/s",   "GiB/s",   "TiB/s",    /* IEC   - 1024^n */
-                                            "B/s",     "KB/s",    "MB/s",    "GB/s",    "TB/s",     /* JEDEC - 1024^n */
-                                            "bit/s",   "Kibit/s", "Mibit/s", "Gibit/s", "Tibit/s",  /* IEC   - 1024^n */
-                                            "bit/s",   "kbit/s",  "Mbit/s",  "Gbit/s",  "Tbit/s" }; /* SI    - 1000^n */
+	static char *rateunitprefix[] = { "na", "B/s",     "KiB/s",   "MiB/s",   "GiB/s",   "TiB/s",   "PiB/s",    /* IEC   - 1024^n */
+                                            "B/s",     "KB/s",    "MB/s",    "GB/s",    "TB/s",    "PB/s",     /* JEDEC - 1024^n */
+                                            "bit/s",   "Kibit/s", "Mibit/s", "Gibit/s", "Tibit/s", "Pibit/s",  /* IEC   - 1024^n */
+                                            "bit/s",   "kbit/s",  "Mbit/s",  "Gbit/s",  "Tbit/s",  "Pbit/s" }; /* SI    - 1000^n */
 
 	if (index>UNITPREFIXCOUNT) {
 		return rateunitprefix[0];
