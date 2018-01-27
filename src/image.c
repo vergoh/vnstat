@@ -1066,38 +1066,24 @@ void modcolor(int *rgb, const int offset, const int force)
 char *getimagevalue(const uint64_t b, const int len, const int rate)
 {
 	static char buffer[64];
-	int declen=0;
+	int i, declen = 0, unit = 0, p = 1024;
+	uint64_t limit;
 
 	if (b==0){
 		snprintf(buffer, 64, "%*s", len, "--");
 	} else {
-		/* TODO: remove hardcoded values */
-		/* try to figure out what unit to use */
 		if (rate && getunit() == 3) {
-			if (b>=1000000000000) {
-				snprintf(buffer, 64, "%*.*f", len, declen, b/(float)1000000000000);
-			} else if (b>=1000000000) {
-				snprintf(buffer, 64, "%*.*f", len, declen, b/(float)1000000000);
-			} else if (b>=1000000) {
-				snprintf(buffer, 64, "%*.*f", len, declen, b/(float)1000000);
-			} else if (b>=1000) {
-				snprintf(buffer, 64, "%*.*f", len, declen, b/(float)1000);
-			} else {
-				snprintf(buffer, 64, "%*"PRIu64"", len, b);
-			}
-		} else {
-			if (b>=1073741824000) { /* 1024*1024*1024*1000 - value >=1000 GiB -> show in TiB */
-				snprintf(buffer, 64, "%*.*f", len, declen, b/(float)1099511627776); /* 1024*1024*1024*1024 */
-			} else if (b>=1048576000) { /* 1024*1024*1000 - value >=1000 MiB -> show in GiB */
-				snprintf(buffer, 64, "%*.*f", len, declen, b/(float)1073741824); /* 1024*1024*1024 */
-			} else if (b>=1024000) { /* 1024*1000 - value >=1000 KiB -> show in MiB */
-				snprintf(buffer, 64, "%*.*f", len, declen, b/(float)1048576); /* 1024*1024 */
-			} else if (b>=1000) { /* 1000 - value >=1000 B -> show in KiB */
-				snprintf(buffer, 64, "%*.*f", len, declen, b/(float)1024);
-			} else { /* B by default */
-				snprintf(buffer, 64, "%*"PRIu64"", len, b);
+			p = 1000;
+			unit = 3;
+		}
+		for (i=UNITPREFIXCOUNT-1; i>0; i--) {
+			limit = pow(p, i-1) * 1000;
+			if (b >= limit) {
+				snprintf(buffer, 64, "%*.*f", len, declen, b/(float)getunitdivisor(unit, i+1));
+				return buffer;
 			}
 		}
+		snprintf(buffer, 64, "%*"PRIu64"", len, b);
 	}
 
 	return buffer;
