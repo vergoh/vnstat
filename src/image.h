@@ -40,11 +40,9 @@ void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const ui
 void drawpole(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max);
 void drawdonut(IMAGECONTENT *ic, const int x, const int y, const float rxp, const float txp);
 void drawhours(IMAGECONTENT *ic, int x, int y, int rate);
-/* TODO: these are still missing */
-/*void drawsummary(IMAGECONTENT *ic, int type, int rate);
-void drawoldsummary(IMAGECONTENT *ic, int type, int rate);*/
 void drawhourly(IMAGECONTENT *ic, int rate);
 void drawlist(IMAGECONTENT *ic, const char *listname);
+void drawsummary(IMAGECONTENT *ic, int type, int rate);
 void hextorgb(char *input, int *rgb);
 void modcolor(int *rgb, const int offset, const int force);
 char *getimagevalue(const uint64_t b, const int len, const int rate);

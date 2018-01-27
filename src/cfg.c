@@ -162,9 +162,6 @@ void printcfgfile(void)
 	printf("# show rate in summary (1 = enabled, 0 = disabled)\n");
 	printf("SummaryRate %d\n\n", cfg.summaryrate);
 
-	printf("# layout of summary (1 = with monthly, 0 = without monthly)\n");
-	printf("SummaryLayout %d\n\n", cfg.slayout);
-
 	printf("# transparent background (1 = enabled, 0 = disabled)\n");
 	printf("TransparentBg %d\n\n", cfg.transbg);
 
@@ -244,7 +241,6 @@ int loadcfg(const char *cfgfile)
 		{ "HeaderFormat", cfg.hformat, 0, 64, 0 },
 		{ "HourlyRate", 0, &cfg.hourlyrate, 0, 0 },
 		{ "SummaryRate", 0, &cfg.summaryrate, 0, 0 },
-		{ "SummaryLayout", 0, &cfg.slayout, 0, 0 },
 		{ "TransparentBg", 0, &cfg.transbg, 0, 0 },
 		{ "CBackground", cfg.cbg, 0, 8, 0 },
 		{ "CEdge", cfg.cedge, 0, 8, 0 },
@@ -478,12 +474,6 @@ void validatecfg(void)
 		printe(PT_Config);
 	}
 
-	if (cfg.slayout<0 || cfg.slayout>1) {
-		cfg.slayout = SUMMARYLAYOUT;
-		snprintf(errorstring, 1024, "%s SummaryLayout, %s \"%d\".", invalidvalue, resettingto, cfg.slayout);
-		printe(PT_Config);
-	}
-
 	if (cfg.traflessday<0 || cfg.traflessday>1) {
 		cfg.traflessday = TRAFLESSDAY;
 		snprintf(errorstring, 1024, "%s TrafficlessDays, %s \"%d\".", invalidvalue, resettingto, cfg.traflessday);
@@ -594,7 +584,6 @@ void defaultcfg(void)
 	cfg.flock = USEFLOCK;
 	cfg.hourlyrate = HOURLYRATE;
 	cfg.summaryrate = SUMMARYRATE;
-	cfg.slayout = SUMMARYLAYOUT;
 	cfg.traflessday = TRAFLESSDAY;
 	cfg.utflocale = UTFLOCALE;
 

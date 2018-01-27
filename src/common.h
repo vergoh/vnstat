@@ -94,9 +94,6 @@ and most can be changed later from the config file.
 /* rate in vnstati summary output */
 #define SUMMARYRATE 1
 
-/* layout of summary output in vnstati */
-#define SUMMARYLAYOUT 1
-
 /* rate in vnstati hourly output */
 #define HOURLYRATE 1
 
@@ -247,7 +244,7 @@ typedef struct {
 	char cbg[8], cedge[8], cheader[8], cheadertitle[8], cheaderdate[8], ctext[8];
 	char cline[8], clinel[8], cvnstat[8], crx[8], crxd[8], ctx[8], ctxd[8];
 	int32_t unitmode, rateunitmode, rateunit, bvar, qmode, sampletime, hourlyrate, summaryrate;
-	int32_t monthrotate, maxbw, flock, spacecheck, traflessday, transbg, slayout, ostyle;
+	int32_t monthrotate, maxbw, flock, spacecheck, traflessday, transbg, ostyle;
 	char cfgfile[512], logfile[512], pidfile[512];
 	char daemonuser[33], daemongroup[33];
 	int32_t updateinterval, pollinterval, saveinterval, offsaveinterval, savestatus, uselogging;

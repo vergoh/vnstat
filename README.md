@@ -35,7 +35,7 @@ durations. Yearly and five-minute resolution statistics are now included.
     * logging and handling of possible database access errors
       * only fatal errors will cause the daemon to exit directly
   * most vnstat (console output) features
-  * many vnstati (image output) features
+  * all vnstati (image output) features
 
 ##### Removed features
 
@@ -47,6 +47,7 @@ durations. Yearly and five-minute resolution statistics are now included.
   * kernel test
     * provided some use mostly with 2.0 and 2.2 kernels
   * `--update` / `-u` using vnstat command
+  * old style (default in versions up to 1.7) summary layout in image output
 
 ##### TODO
 
