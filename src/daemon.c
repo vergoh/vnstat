@@ -169,9 +169,9 @@ int addinterfaces(DSTATE *s)
 		ibwget(interface, &bwlimit);
 		if (!s->running) {
 			if (bwlimit > 0) {
-				snprintf(errorstring, 1024, "Interface \"%s\" added with %"PRIu32" Mbit bandwidth limit.\n", interface, bwlimit);
+				snprintf(errorstring, 1024, "Interface \"%s\" added with %"PRIu32" Mbit bandwidth limit.", interface, bwlimit);
 			} else {
-				snprintf(errorstring, 1024, "Interface \"%s\" added. Warning: no bandwidth limit has been set.\n", interface);
+				snprintf(errorstring, 1024, "Interface \"%s\" added. Warning: no bandwidth limit has been set.", interface);
 			}
 			printe(PT_Infoless);
 		} else {
