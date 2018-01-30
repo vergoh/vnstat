@@ -160,6 +160,8 @@ int addinterfaces(DSTATE *s)
 		if (!getifinfo(interface)) {
 			if (debug)
 				printf("getifinfo failed, skip\n");
+			/* remove empty entry from database since the interface can't provide data */
+			db_removeinterface(interface);
 			continue;
 		}
 
@@ -167,16 +169,13 @@ int addinterfaces(DSTATE *s)
 
 		count++;
 		ibwget(interface, &bwlimit);
-		if (!s->running) {
-			if (bwlimit > 0) {
-				snprintf(errorstring, 1024, "Interface \"%s\" added with %"PRIu32" Mbit bandwidth limit.", interface, bwlimit);
-			} else {
-				snprintf(errorstring, 1024, "Interface \"%s\" added. Warning: no bandwidth limit has been set.", interface);
-			}
-			printe(PT_Infoless);
+		if (bwlimit > 0) {
+			snprintf(errorstring, 1024, "Interface \"%s\" added with %"PRIu32" Mbit bandwidth limit.", interface, bwlimit);
 		} else {
-			if (debug)
-				printf("Interface \%s\" added with %"PRIu32" Mbit bandwidth limit to cache.\n", interface, bwlimit);
+			snprintf(errorstring, 1024, "Interface \"%s\" added. Warning: no bandwidth limit has been set.", interface);
+		}
+		printe(PT_Infoless);
+		if (s->running) {
 			datacache_add(&s->dcache, interface, 1);
 		}
 	}
@@ -541,9 +540,11 @@ int processifinfo(DSTATE *s, datacache **dc)
 
 void flushcachetodisk(DSTATE *s)
 {
+	int ret;
 	uint32_t logcount = 0;
 	datacache *iterator = s->dcache;
 	xferlog *logiterator;
+	interfaceinfo info;
 
 	db_errcode = 0;
 	while (iterator != NULL) {
@@ -590,8 +591,23 @@ void flushcachetodisk(DSTATE *s)
 			break;
 		}
 
-		/* update interface activity status in database if changed */
 		if (!iterator->active && !logcount) {
+			/* throw away if interface hasn't seen any data and is disabled */
+			if (!iterator->currx && !iterator->curtx) {
+				ret = db_getinterfaceinfo(iterator->interface, &info);
+				if (!ret || (!info.rxtotal && !info.txtotal)) {
+					snprintf(errorstring, 1024, "Removing interface \"%s\" from database as it is disabled and has seen no data.", iterator->interface);
+					printe(PT_Info);
+					if (!db_removeinterface(iterator->interface)) {
+						if (db_errcode) {
+							handledatabaseerror(s);
+						}
+					}
+					break;
+				}
+			}
+
+			/* update interface activity status in database if changed */
 			if (!db_setactive(iterator->interface, iterator->active)) {
 				handledatabaseerror(s);
 				break;
