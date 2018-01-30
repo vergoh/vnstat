@@ -29,6 +29,9 @@ int printe(PrintType type)
 			case PT_Info:
 				printf("Info: %s\n", errorstring);
 				break;
+			case PT_Infoless:
+				printf("%s\n", errorstring);
+				break;
 			case PT_Error:
 				printf("Error: %s\n", errorstring);
 				break;
@@ -52,7 +55,7 @@ int printe(PrintType type)
 
 int logprint(PrintType type)
 {
-	char timestamp[22], buffer[512];
+	char timestamp[22], buffer[1024];
 	time_t current;
 	FILE *logfile;
 
@@ -74,19 +77,20 @@ int logprint(PrintType type)
 
 		switch (type) {
 			case PT_Info:
-				snprintf(buffer, 512, "[%s] %s\n", timestamp, errorstring);
+			case PT_Infoless:
+				snprintf(buffer, 1024, "[%s] %s\n", timestamp, errorstring);
 				break;
 			case PT_Error:
-				snprintf(buffer, 512, "[%s] Error: %s\n", timestamp, errorstring);
+				snprintf(buffer, 1024, "[%s] Error: %s\n", timestamp, errorstring);
 				break;
 			case PT_Config:
-				snprintf(buffer, 512, "[%s] Config: %s\n", timestamp, errorstring);
+				snprintf(buffer, 1024, "[%s] Config: %s\n", timestamp, errorstring);
 				break;
 			case PT_ShortMultiline:
-				snprintf(buffer, 512, "[%s] %s\n", timestamp, errorstring);
+				snprintf(buffer, 1024, "[%s] %s\n", timestamp, errorstring);
 				break;
 			default:
-				snprintf(buffer, 512, "[%s] (%d): %s\n", timestamp, type, errorstring);
+				snprintf(buffer, 1024, "[%s] (%d): %s\n", timestamp, type, errorstring);
 				break;
 		}
 
@@ -115,6 +119,7 @@ int logprint(PrintType type)
 				syslog(LOG_ERR, "%s", buffer);
 				break;
 			case PT_Info:
+			case PT_Infoless:
 			case PT_ShortMultiline:
 				snprintf(buffer, 512, "%s", errorstring);
 				syslog(LOG_NOTICE, "%s", buffer);

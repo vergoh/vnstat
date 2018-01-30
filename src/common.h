@@ -275,6 +275,7 @@ typedef struct ibwnode {
 
 typedef enum PrintType {
 	PT_Info = 0,
+	PT_Infoless,
 	PT_Error,
 	PT_Config,
 	PT_Multiline,

@@ -26,7 +26,7 @@ vnStat daemon - Copyright (c) 2008-2018 Teemu Toivola <tst@iki.fi>
 
 int main(int argc, char *argv[])
 {
-	int currentarg;
+	int currentarg, temp;
 	uint32_t previflisthash;
 	DSTATE s;
 
@@ -197,7 +197,11 @@ int main(int argc, char *argv[])
 			previflisthash = s.iflisthash;
 			interfacechangecheck(&s);
 			if (s.alwaysadd && s.iflisthash != previflisthash && previflisthash != 0) {
+				temp = s.dbcount;
 				s.dbcount += addinterfaces(&s);
+				if (temp != s.dbcount) {
+					datacache_status(&s.dcache);
+				}
 			}
 		}
 

@@ -169,22 +169,23 @@ int addinterfaces(DSTATE *s)
 		ibwget(interface, &bwlimit);
 		if (!s->running) {
 			if (bwlimit > 0) {
-				printf("\"%s\" added with %"PRIu32" Mbit bandwidth limit.\n", interface, bwlimit);
+				snprintf(errorstring, 1024, "Interface \"%s\" added with %"PRIu32" Mbit bandwidth limit.\n", interface, bwlimit);
 			} else {
-				printf("\"%s\" added. Warning: no bandwidth limit has been set.\n", interface);
+				snprintf(errorstring, 1024, "Interface \"%s\" added. Warning: no bandwidth limit has been set.\n", interface);
 			}
+			printe(PT_Infoless);
 		} else {
 			if (debug)
-				printf("\%s\" added with %"PRIu32" Mbit bandwidth limit to cache.\n", interface, bwlimit);
+				printf("Interface \%s\" added with %"PRIu32" Mbit bandwidth limit to cache.\n", interface, bwlimit);
 			datacache_add(&s->dcache, interface, 1);
 		}
 	}
 
 	if (count && !s->running) {
-		if (count==1) {
-			printf("-> %d interface added.\n", count);
+		if (count == 1) {
+			printf("-> %d new interface found.\n", count);
 		} else {
-			printf("-> %d interfaces added.\n", count);
+			printf("-> %d new interfaces found.\n", count);
 		}
 
 		printf("Limits can be modified using the configuration file. See \"man vnstat.conf\".\n");
@@ -721,7 +722,7 @@ void preparedirs(DSTATE *s)
 
 void datacache_status(datacache **dc)
 {
-	char buffer[512], bwtemp[16];
+	char buffer[1024], bwtemp[16];
 	int b = 13, count = 0;
 	uint32_t bwlimit = 0;
 	datacache *iterator = *dc;
@@ -729,7 +730,7 @@ void datacache_status(datacache **dc)
 	snprintf(buffer, b, "Monitoring: ");
 
 	while (iterator != NULL) {
-		if ((b+strlen(iterator->interface)+16) < 508) {
+		if ((b+strlen(iterator->interface)+16) < 1020) {
 			if (!ibwget(iterator->interface, &bwlimit) || bwlimit == 0) {
 				snprintf(bwtemp, 16, " (no limit) ");
 			} else {
@@ -747,8 +748,7 @@ void datacache_status(datacache **dc)
 	}
 
 	if (count) {
-		strncpy_nt(errorstring, buffer, 512);
-		errorstring[511] = '\0';
+		strncpy_nt(errorstring, buffer, 1024);
 	} else {
 		snprintf(errorstring, 1024, "Nothing to monitor");
 	}
