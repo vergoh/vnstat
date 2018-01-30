@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
 			currentarg++;
 			continue;
 		} else if ((strcmp(argv[currentarg],"-D")==0) || (strcmp(argv[currentarg],"--debug")==0)) {
-			debug=1;
+			debug = 1;
 		} else if ((strcmp(argv[currentarg],"-d")==0) || (strcmp(argv[currentarg],"--daemon")==0)) {
 			s.rundaemon = 1;
 			s.showhelp = 0;
@@ -135,6 +135,11 @@ int main(int argc, char *argv[])
 
 	if (s.noadd && s.alwaysadd) {
 		printf("Error: --noadd and --alwaysadd can't both be used at the same time.\n");
+		return 1;
+	}
+
+	if (s.rundaemon && debug) {
+		printf("Error: --daemon and --debug can't both be used at the same time.\n");
 		return 1;
 	}
 
