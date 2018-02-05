@@ -552,9 +552,10 @@ void flushcachetodisk(DSTATE *s)
 	xferlog *logiterator;
 	interfaceinfo info;
 
-	/* TODO: refactor to process data with one transaction per interface or even with one transaction regardless of interface count */
-	/*       as the current solution may cause needless i/o when dozens of interfaces are tracked */
-	/*       the later option is likely to require buffering the status of each interface beforehand */
+	if (!db_begintransaction()) {
+		handledatabaseerror(s);
+		return;
+	}
 
 	db_errcode = 0;
 	while (iterator != NULL) {
@@ -583,9 +584,6 @@ void flushcachetodisk(DSTATE *s)
 		if (db_errcode) {
 			break;
 		}
-
-		/* clear log */
-		xferlog_clear(&iterator->log);
 
 		/* update database counters if new data was inserted */
 		if (logcount) {
@@ -627,8 +625,21 @@ void flushcachetodisk(DSTATE *s)
 		iterator = iterator->next;
 	}
 
-	if (!db_errcode) {
-		s->dbretrycount = 0;
+	if (db_intransaction && !db_errcode) {
+		if (!db_committransaction()) {
+			handledatabaseerror(s);
+			db_rollbacktransaction();
+		} else {
+			/* clear xferlog now that everything is in database */
+			iterator = s->dcache;
+			while (iterator != NULL) {
+				xferlog_clear(&iterator->log);
+				iterator = iterator->next;
+			}
+			s->dbretrycount = 0;
+		}
+	} else {
+		db_rollbacktransaction();
 	}
 }
 
