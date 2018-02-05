@@ -46,7 +46,7 @@ START_TEST(addinterfaces_adds_interfaces)
 	fake_proc_net_dev("a", "lo0", 0, 0, 0, 0);
 	fake_proc_net_dev("a", "ethtwo", 5, 6, 7, 8);
 	fake_proc_net_dev("a", "sit0", 0, 0, 0, 0);
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
 	ret = addinterfaces(&s);
@@ -80,7 +80,7 @@ START_TEST(addinterfaces_adds_only_new_interfaces)
 	fake_proc_net_dev("a", "lo0", 0, 0, 0, 0);
 	fake_proc_net_dev("a", "ethtwo", 5, 6, 7, 8);
 	fake_proc_net_dev("a", "sit0", 0, 0, 0, 0);
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
 	ret = addinterfaces(&s);
@@ -138,7 +138,7 @@ START_TEST(addinterfaces_adds_to_cache_when_running)
 	ck_assert_int_eq(clean_testdbdir(), 1);
 	fake_proc_net_dev("w", "ethone", 1, 2, 3, 4);
 	fake_proc_net_dev("a", "ethtwo", 5, 6, 7, 8);
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
 	ck_assert_int_eq(datacache_count(&s.dcache), 0);
@@ -260,7 +260,7 @@ START_TEST(preparedatabases_with_no_databases_creates_databases)
 	fake_proc_net_dev("a", "lo0", 0, 0, 0, 0);
 	fake_proc_net_dev("a", "ethtwo", 5, 6, 7, 8);
 	fake_proc_net_dev("a", "sit0", 0, 0, 0, 0);
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
 	preparedatabases(&s);
@@ -307,7 +307,7 @@ START_TEST(filldatabaselist_does_not_exit_with_empty_database_dir)
 	initdstate(&s);
 	disable_logprints();
 	s.sync = 1;
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
 	filldatabaselist(&s);
@@ -338,7 +338,7 @@ START_TEST(filldatabaselist_adds_databases)
 	ck_assert_int_eq(check_dbfile_exists(".name1", 0), 0);
 	ck_assert_int_eq(check_dbfile_exists("name2", 0), 1);
 	ck_assert_int_eq(check_dbfile_exists(".name2", 0), 0);
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 	ret = db_addinterface("eth0");
 	ck_assert_int_eq(ret, 1);
@@ -698,7 +698,7 @@ START_TEST(initcachevalues_does_init)
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	ck_assert_int_eq(clean_testdbdir(), 1);
 	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
 	ret = db_addinterface("eth0");

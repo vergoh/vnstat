@@ -31,7 +31,9 @@ typedef struct interfaceinfo {
 	uint64_t rxtotal, txtotal;
 } interfaceinfo;
 
-int db_open(int createifnotfound);
+int db_open_ro(void);
+int db_open_rw(const int createifnotfound);
+int db_open(const int createifnotfound, const int readonly);
 int db_setpragmas(void);
 int db_close(void);
 int db_exec(const char *sql);
@@ -74,5 +76,6 @@ void dbdatalistfree(dbdatalist **dbdata);
 /* global db */
 sqlite3 *db;
 int db_errcode;
+int db_intransaction;
 
 #endif

@@ -341,7 +341,7 @@ int main(int argc, char *argv[]) {
 				printf("Dir OK\n");
 			closedir(dir);
 			strncpy_nt(cfg.dbdir, p.dirname, 512);
-			if (!db_open(0)) {
+			if (!db_open_ro()) {
 				printf("Error: Unable to open database \"%s/%s\": %s\n", p.dirname, DATABASEFILE, strerror(errno));
 				if (errno == ENOENT) {
 					printf("The vnStat daemon should have created the database when started.\n");
@@ -522,6 +522,11 @@ void handleremoveinterface(PARAMS *p)
 		exit(EXIT_FAILURE);
 	}
 
+	if (!db_close() || !db_open_rw(0)) {
+		printf("Error: Handling database \"%s/%s\" failing: %s\n", p->dirname, DATABASEFILE, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
 	if (db_removeinterface(p->interface)) {
 		printf("Interface \"%s\" removed from database.\n", p->interface);
 		printf("The interface will no longer be monitored. Use --add\n");
@@ -566,6 +571,11 @@ void handleaddinterface(PARAMS *p)
 		exit(EXIT_FAILURE);
 	}
 
+	if (!db_close() || !db_open_rw(0)) {
+		printf("Error: Handling database \"%s/%s\" failing: %s\n", p->dirname, DATABASEFILE, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
 	printf("Adding interface \"%s\" for monitoring to database...\n", p->interface);
 	if (db_addinterface(p->interface)) {
 		printf("\nRestart the vnStat daemon if it is currently running in order to start monitoring \"%s\".\n", p->interface);
@@ -589,6 +599,11 @@ void handlesetalias(PARAMS *p)
 
 	if (!db_getinterfacecountbyname(p->interface)) {
 		printf("Error: Interface \"%s\" not found in database.\n", p->interface);
+		exit(EXIT_FAILURE);
+	}
+
+	if (!db_close() || !db_open_rw(0)) {
+		printf("Error: Handling database \"%s/%s\" failing: %s\n", p->dirname, DATABASEFILE, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 

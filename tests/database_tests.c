@@ -224,7 +224,7 @@ START_TEST(database_outputs_do_not_crash)
 
 	defaultcfg();
 
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 	ret = db_addinterface("something");
 	ck_assert_int_eq(ret, 1);

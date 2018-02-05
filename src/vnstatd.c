@@ -155,7 +155,7 @@ int main(int argc, char *argv[])
 	setgroup(s.group);
 	setuser(s.user);
 
-	if (!db_open(1)) {
+	if (!db_open_rw(1)) {
 		printf("Error: Unable to open database \"%s/%s\": %s\n", s.dirname, DATABASEFILE, strerror(errno));
 		printf("Exiting...\n");
 		exit(EXIT_FAILURE);
@@ -181,7 +181,7 @@ int main(int argc, char *argv[])
 		}
 		noexit++;
 		daemonize();
-		if (!db_open(0)) {
+		if (!db_open_rw(0)) {
 			snprintf(errorstring, 1024, "Failed to reopen database \"%s/%s\": %s", s.dirname, DATABASEFILE, strerror(errno));
 			printe(PT_Error);
 			exit(EXIT_FAILURE);

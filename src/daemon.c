@@ -267,6 +267,10 @@ void preparedatabases(DSTATE *s)
 		return;
 	}
 
+	if (debug) {
+		printf("db count: %d\n", s->dbcount);
+	}
+
 	if (s->noadd) {
 		printf("Zero database found, exiting.\n");
 		exit(EXIT_FAILURE);
@@ -277,9 +281,11 @@ void preparedatabases(DSTATE *s)
 		exit(EXIT_FAILURE);
 	}
 
-	if (importlegacydbs(s) && !s->alwaysadd) {
-		s->dbcount = 0;
-		return;
+	if (s->dbcount == 0) {
+		if (importlegacydbs(s) && !s->alwaysadd) {
+			s->dbcount = 0;
+			return;
+		}
 	}
 
 	if (s->dbcount == 0) {
@@ -546,6 +552,10 @@ void flushcachetodisk(DSTATE *s)
 	xferlog *logiterator;
 	interfaceinfo info;
 
+	/* TODO: refactor to process data with one transaction per interface or even with one transaction regardless of interface count */
+	/*       as the current solution may cause needless i/o when dozens of interfaces are tracked */
+	/*       the later option is likely to require buffering the status of each interface beforehand */
+
 	db_errcode = 0;
 	while (iterator != NULL) {
 		/* ignore interface no longer in database */
@@ -680,7 +690,7 @@ void handleintsignals(DSTATE *s)
 				strncpy_nt(s->dirname, cfg.dbdir, 512);
 			}
 			ibwloadcfg(s->cfgfile);
-			if (!db_open(1)) {
+			if (!db_open_rw(1)) {
 				snprintf(errorstring, 1024, "Opening database after SIGHUP failed (%s), exiting.", strerror(errno));
 				printe(PT_Error);
 				if (s->rundaemon && !debug) {
@@ -739,11 +749,12 @@ void preparedirs(DSTATE *s)
 void datacache_status(datacache **dc)
 {
 	char buffer[1024], bwtemp[16];
-	int b = 13, count = 0;
+	int b = 0, count = 0;
 	uint32_t bwlimit = 0;
 	datacache *iterator = *dc;
 
-	snprintf(buffer, b, "Monitoring: ");
+	snprintf(buffer, 1024, "Monitoring (%d): ", datacache_count(dc));
+	b = strlen(buffer) + 1;
 
 	while (iterator != NULL) {
 		if ((b+strlen(iterator->interface)+16) < 1020) {

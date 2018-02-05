@@ -15,16 +15,28 @@ START_TEST(db_close_does_no_harm_when_db_is_already_closed)
 }
 END_TEST
 
-START_TEST(db_open_can_create_database_if_file_does_not_exist)
+START_TEST(db_open_rw_can_create_database_if_file_does_not_exist)
 {
 	int ret;
 
 	defaultcfg();
 
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 	ret = db_close();
 	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_open_ro_cannot_create_a_database)
+{
+	int ret;
+
+	defaultcfg();
+	suppress_output();
+
+	ret = db_open_ro();
+	ck_assert_int_eq(ret, 0);
 }
 END_TEST
 
@@ -43,7 +55,7 @@ START_TEST(db_getinfo_fails_with_nonexisting_name)
 
 	defaultcfg();
 
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
 	ck_assert_str_eq(db_getinfo("broken_name"), "");
@@ -59,7 +71,7 @@ START_TEST(db_getinfo_can_get_dbversion)
 
 	defaultcfg();
 
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
 	ck_assert_str_eq(db_getinfo("dbversion"), SQLDBVERSION);
@@ -85,7 +97,7 @@ START_TEST(db_setinfo_can_set_infos)
 
 	defaultcfg();
 
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
 	ck_assert_int_eq(db_setinfo("foo", "bar", 1), 1);
@@ -102,7 +114,7 @@ START_TEST(db_setinfo_can_update_infos)
 
 	defaultcfg();
 
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
 	ck_assert_int_eq(db_setinfo("foo", "bar", 1), 1);
@@ -125,7 +137,7 @@ START_TEST(db_setinfo_can_not_update_nonexisting_name)
 
 	defaultcfg();
 
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
 	ck_assert_int_eq(db_setinfo("foo", "bar", 1), 1);
@@ -153,7 +165,7 @@ START_TEST(db_addtraffic_can_add_traffic_and_interfaces)
 
 	defaultcfg();
 
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
 	ck_assert_int_eq(db_addtraffic("eth0", 0, 0), 1);
@@ -172,7 +184,7 @@ START_TEST(db_addtraffic_dated_does_not_turn_back_time)
 
 	defaultcfg();
 
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
 	ret = db_addtraffic("eth0", 1, 1);
@@ -239,7 +251,7 @@ START_TEST(db_setactive_fails_if_interface_does_not_exist_in_database)
 
 	defaultcfg();
 
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
 	ck_assert_int_eq(db_setactive("eth0", 0), 0);
@@ -256,7 +268,7 @@ START_TEST(db_setactive_can_change_interface_activity_status)
 
 	defaultcfg();
 
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
 	ck_assert_int_eq(db_addtraffic("eth0", 0, 0), 1);
@@ -287,7 +299,7 @@ START_TEST(db_setalias_fails_if_interface_does_not_exist_in_database)
 
 	defaultcfg();
 
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
 	ck_assert_int_eq(db_setalias("eth0", "The Internet"), 0);
@@ -303,7 +315,7 @@ START_TEST(db_setalias_can_change_interface_alias)
 
 	defaultcfg();
 
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
 	ck_assert_int_eq(db_addtraffic("eth0", 0, 0), 1);
@@ -332,7 +344,7 @@ START_TEST(db_setupdated_fails_if_interface_does_not_exist_in_database)
 
 	defaultcfg();
 
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
 	ck_assert_int_eq(db_setupdated("eth0", 123456), 0);
@@ -348,7 +360,7 @@ START_TEST(db_setupdated_can_change_updated)
 
 	defaultcfg();
 
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
 	ck_assert_int_eq(db_addtraffic("eth0", 12, 34), 1);
@@ -377,7 +389,7 @@ START_TEST(db_addinterface_can_add_interfaces)
 
 	defaultcfg();
 
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
 	ret = db_addinterface("eth0");
@@ -397,7 +409,7 @@ START_TEST(db_addinterface_can_not_add_same_interface_twice)
 	defaultcfg();
 	suppress_output();
 
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
 	ret = db_addinterface("eth0");
@@ -420,7 +432,7 @@ START_TEST(db_removeinterface_knows_if_interface_exists)
 
 	defaultcfg();
 
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
 	ret = db_removeinterface("eth0");
@@ -441,7 +453,7 @@ START_TEST(db_removeinterface_can_remove_interfaces)
 
 	defaultcfg();
 
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
 	ret = db_addinterface("eth0");
@@ -482,7 +494,7 @@ START_TEST(db_getinterfacecount_counts_interfaces)
 	defaultcfg();
 	suppress_output();
 
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
 	ret = db_getinterfacecount();
@@ -517,7 +529,7 @@ START_TEST(db_getinterfacecountbyname_counts_interfaces)
 
 	defaultcfg();
 
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
 	ret = db_addinterface("eth0");
@@ -555,7 +567,7 @@ START_TEST(db_getcounters_with_no_interface)
 
 	rx = tx = 1;
 
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
 	ret = db_getcounters("eth0", &rx, &tx);
@@ -577,7 +589,7 @@ START_TEST(db_setcounters_with_no_interface)
 
 	rx = tx = 1;
 
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
 	ret = db_setcounters("eth0", 2, 2);
@@ -603,7 +615,7 @@ START_TEST(db_interface_info_manipulation)
 
 	rx = tx = 1;
 
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 	ret = db_addinterface("eth0");
 	ck_assert_int_eq(ret, 1);
@@ -675,7 +687,7 @@ START_TEST(db_getiflist_lists_interfaces)
 
 	defaultcfg();
 
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 	ret = db_addinterface("a");
 	ck_assert_int_eq(ret, 1);
@@ -720,7 +732,7 @@ START_TEST(db_maintenance_does_not_fault)
 
 	defaultcfg();
 
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 	ret = db_addinterface("eth0");
 	ck_assert_int_eq(ret, 1);
@@ -745,7 +757,7 @@ START_TEST(db_data_can_be_inserted)
 
 	defaultcfg();
 
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 	ret = db_addinterface("eth0");
 	ck_assert_int_eq(ret, 1);
@@ -794,7 +806,7 @@ START_TEST(db_data_can_be_retrieved)
 
 	defaultcfg();
 
-	ret = db_open(1);
+	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 	ret = db_addinterface("eth0");
 	ck_assert_int_eq(ret, 1);
@@ -855,7 +867,8 @@ void add_dbsql_tests(Suite *s)
 {
 	TCase *tc_dbsql = tcase_create("DB SQL");
 	tcase_add_test(tc_dbsql, db_close_does_no_harm_when_db_is_already_closed);
-	tcase_add_test(tc_dbsql, db_open_can_create_database_if_file_does_not_exist);
+	tcase_add_test(tc_dbsql, db_open_rw_can_create_database_if_file_does_not_exist);
+	tcase_add_test(tc_dbsql, db_open_ro_cannot_create_a_database);
 	tcase_add_test(tc_dbsql, db_getinfo_fails_with_no_open_db);
 	tcase_add_test(tc_dbsql, db_getinfo_fails_with_nonexisting_name);
 	tcase_add_test(tc_dbsql, db_getinfo_can_get_dbversion);

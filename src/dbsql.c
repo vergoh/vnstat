@@ -2,7 +2,17 @@
 #include "misc.h"
 #include "dbsql.h"
 
-int db_open(const int createifnotfound)
+int db_open_ro(void)
+{
+	return db_open(0, 1);
+}
+
+int db_open_rw(const int createifnotfound)
+{
+	return db_open(createifnotfound, 0);
+}
+
+int db_open(const int createifnotfound, const int readonly)
 {
 	int rc, createdb = 0;
 	char dbfilename[530];
@@ -37,7 +47,12 @@ int db_open(const int createifnotfound)
 	}
 #endif
 	db_errcode = 0;
-	rc = sqlite3_open(dbfilename, &db);
+	db_intransaction = 0;
+	if (readonly) {
+		rc = sqlite3_open_v2(dbfilename, &db, SQLITE_OPEN_READONLY, NULL);
+	} else {
+		rc = sqlite3_open_v2(dbfilename, &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+	}
 
 	if (rc) {
 		db_errcode = rc;
@@ -553,7 +568,7 @@ int db_addtraffic(const char *iface, const uint64_t rx, const uint64_t tx)
 
 int db_addtraffic_dated(const char *iface, const uint64_t rx, const uint64_t tx, const uint64_t timestamp)
 {
-	int i;
+	int i, intransaction = db_intransaction;
 	char sql[1024], datebuffer[512], nowdate[64];
 	sqlite3_int64 ifaceid = 0;
 
@@ -580,8 +595,10 @@ int db_addtraffic_dated(const char *iface, const uint64_t rx, const uint64_t tx,
 	if (debug)
 		printf("db add %s (%"PRId64") %"PRIu64": rx %"PRIu64" - tx %"PRIu64"\n", iface, (int64_t)ifaceid, timestamp, rx, tx);
 
-	if (!db_begintransaction()) {
-		return 0;
+	if (!intransaction) {
+		if (!db_begintransaction()) {
+			return 0;
+		}
 	}
 
 	/* change updated only if more recent than previous when timestamp provided */
@@ -622,7 +639,10 @@ int db_addtraffic_dated(const char *iface, const uint64_t rx, const uint64_t tx,
 		}
 	}
 
-	return db_committransaction();
+	if (!intransaction) {
+		return db_committransaction();
+	}
+	return 1;
 }
 
 int db_setcreation(const char *iface, const time_t timestamp)
@@ -828,6 +848,7 @@ int db_begintransaction(void)
 		printe(PT_Error);
 		return 0;
 	}
+	db_intransaction = 1;
 	return 1;
 }
 
@@ -840,8 +861,10 @@ int db_committransaction(void)
 		db_errcode = rc;
 		snprintf(errorstring, 1024, "Commit transaction to database failed (%d): %s", rc, sqlite3_errmsg(db));
 		printe(PT_Error);
+		db_intransaction = 0;
 		return 0;
 	}
+	db_intransaction = 0;
 	return 1;
 }
 
@@ -854,8 +877,10 @@ int db_rollbacktransaction(void)
 		db_errcode = rc;
 		snprintf(errorstring, 1024, "Transaction rollback failed (%d): %s", rc, sqlite3_errmsg(db));
 		printe(PT_Error);
+		db_intransaction = 0;
 		return 0;
 	}
+	db_intransaction = 0;
 	return 1;
 }
 

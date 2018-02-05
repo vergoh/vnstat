@@ -55,7 +55,8 @@ int printe(PrintType type)
 
 int logprint(PrintType type)
 {
-	char timestamp[22], buffer[1024];
+	/* buffer needs some extra space for timestamp + infor compared to errorstring */
+	char timestamp[22], buffer[1060];
 	time_t current;
 	FILE *logfile;
 
@@ -78,19 +79,19 @@ int logprint(PrintType type)
 		switch (type) {
 			case PT_Info:
 			case PT_Infoless:
-				snprintf(buffer, 1024, "[%s] %s\n", timestamp, errorstring);
+				snprintf(buffer, 1060, "[%s] %s\n", timestamp, errorstring);
 				break;
 			case PT_Error:
-				snprintf(buffer, 1024, "[%s] Error: %s\n", timestamp, errorstring);
+				snprintf(buffer, 1060, "[%s] Error: %s\n", timestamp, errorstring);
 				break;
 			case PT_Config:
-				snprintf(buffer, 1024, "[%s] Config: %s\n", timestamp, errorstring);
+				snprintf(buffer, 1060, "[%s] Config: %s\n", timestamp, errorstring);
 				break;
 			case PT_ShortMultiline:
-				snprintf(buffer, 1024, "[%s] %s\n", timestamp, errorstring);
+				snprintf(buffer, 1060, "[%s] %s\n", timestamp, errorstring);
 				break;
 			default:
-				snprintf(buffer, 1024, "[%s] (%d): %s\n", timestamp, type, errorstring);
+				snprintf(buffer, 1060, "[%s] (%d): %s\n", timestamp, type, errorstring);
 				break;
 		}
 
@@ -111,22 +112,18 @@ int logprint(PrintType type)
 			case PT_Multiline:
 				break;
 			case PT_Error:
-				snprintf(buffer, 512, "Error: %s", errorstring);
-				syslog(LOG_ERR, "%s", buffer);
+				syslog(LOG_ERR, "Error: %s", errorstring);
 				break;
 			case PT_Config:
-				snprintf(buffer, 512, "Config: %s", errorstring);
-				syslog(LOG_ERR, "%s", buffer);
+				syslog(LOG_ERR, "Config: %s", errorstring);
 				break;
 			case PT_Info:
 			case PT_Infoless:
 			case PT_ShortMultiline:
-				snprintf(buffer, 512, "%s", errorstring);
-				syslog(LOG_NOTICE, "%s", buffer);
+				syslog(LOG_NOTICE, "%s", errorstring);
 				break;
 			default:
-				snprintf(buffer, 512, "(%d): %s", type, errorstring);
-				syslog(LOG_NOTICE, "%s", buffer);
+				syslog(LOG_NOTICE, "(%d): %s", type, errorstring);
 				break;
 		}
 

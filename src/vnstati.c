@@ -354,7 +354,7 @@ void handlecaching(IPARAMS *p, IMAGECONTENT *ic)
 
 void handledatabase(IPARAMS *p, IMAGECONTENT *ic)
 {
-	if (!db_open(0)) {
+	if (!db_open_ro()) {
 		printf("Error: Unable to open database \"%s/%s\": %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
