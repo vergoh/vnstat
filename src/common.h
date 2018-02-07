@@ -24,13 +24,13 @@
 #include <grp.h>
 #include <libgen.h>
 #include <fcntl.h>
+#include <sys/time.h>
 
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__FreeBSD_kernel__)
 #include <sys/param.h>
 #include <sys/mount.h>
 #include <sys/socket.h>
 #include <sys/sysctl.h>
-#include <sys/time.h>
 #include <net/if.h>
 #include <ifaddrs.h>
 #endif
@@ -40,6 +40,15 @@
 #define DECCONV "'"
 #else
 #define DECCONV
+#endif
+
+/* used in debug to get function name */
+#if __STDC_VERSION__ < 199901L
+#if __GNUC__ >= 2
+#define __func__ __FUNCTION__
+#else
+#define __func__ "function"
+#endif
 #endif
 
 /*
@@ -294,6 +303,7 @@ char *strncpy_nt(char *dest, const char *src, size_t n);
 int isnumeric(const char *s);
 void panicexit(const char *sourcefile, const int sourceline);
 char *getversion(void);
+void timeused(const char *func, const int reset);
 
 /* global variables */
 CFG cfg;

@@ -251,6 +251,24 @@ START_TEST(getversion_returns_a_version)
 }
 END_TEST
 
+START_TEST(timeused_outputs_something_expected)
+{
+	int pipe;
+	char buffer[512];
+	memset(&buffer, '\0', sizeof(buffer));
+
+	defaultcfg();
+	debug = 1;
+	pipe = pipe_output();
+	timeused("nothing", 1);
+	timeused("something", 0);
+	fflush(stdout);
+
+	read(pipe, buffer, 512);
+	ck_assert_ptr_ne(strstr(buffer, "something() in 0"), NULL);
+}
+END_TEST
+
 START_TEST(can_panic)
 {
 	suppress_output();
@@ -284,6 +302,7 @@ void add_common_tests(Suite *s)
 	tcase_add_test(tc_common, isnumeric_it_is);
 	tcase_add_test(tc_common, isnumeric_it_is_not);
 	tcase_add_test(tc_common, getversion_returns_a_version);
+	tcase_add_test(tc_common, timeused_outputs_something_expected);
 	tcase_add_exit_test(tc_common, can_panic, 1);
 	suite_add_tcase(s, tc_common);
 }

@@ -65,6 +65,8 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
 
+	timeused(__func__, 1);
+
 	current=time(NULL);
 	yesterday=current-86400;
 
@@ -268,6 +270,7 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 	}
 
 	dbdatalistfree(&datalist);
+	timeused(__func__, 0);
 }
 
 void showlist(const interfaceinfo *interface, const char *listname)
@@ -278,6 +281,8 @@ void showlist(const interfaceinfo *interface, const char *listname)
 	uint64_t e_rx, e_tx, e_secs, div, mult;
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
+
+	timeused(__func__, 1);
 
 	if (strcmp(listname, "day") == 0) {
 		listtype = 1;
@@ -488,6 +493,7 @@ void showlist(const interfaceinfo *interface, const char *listname)
 		printf("\n");
 	}
 	dbdatalistfree(&datalist);
+	timeused(__func__, 0);
 }
 
 void showoneline(const interfaceinfo *interface)
@@ -496,6 +502,8 @@ void showoneline(const interfaceinfo *interface)
 	char daytemp[DATEBUFFLEN];
 	dbdatalist *datalist = NULL;
 	dbdatalistinfo datainfo;
+
+	timeused(__func__, 1);
 
 	/* version string */
 	printf("%d;", ONELINEVERSION);
@@ -569,6 +577,7 @@ void showoneline(const interfaceinfo *interface)
 		printf("%s;", getvalue(interface->txtotal, 1, 1));
 		printf("%s\n", getvalue(interface->rxtotal+interface->txtotal, 1, 1));
 	}
+	timeused(__func__, 0);
 }
 
 void showhours(const interfaceinfo *interface)
@@ -582,6 +591,8 @@ void showhours(const interfaceinfo *interface)
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
 	HOURDATA hourdata[24];
+
+	timeused(__func__, 1);
 
 	for (i=0; i<24; i++) {
 		hourdata[i].rx = hourdata[i].tx = 0;
@@ -717,6 +728,7 @@ void showhours(const interfaceinfo *interface)
 		}
 		printf("\n");
 	}
+	timeused(__func__, 0);
 }
 
 void exportdb(const interfaceinfo *interface)
@@ -725,6 +737,8 @@ void exportdb(const interfaceinfo *interface)
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
 	char *datatables[] = {"hour", "day", "month", "year", "top"};
+
+	timeused(__func__, 1);
 
 	printf("version;%s\n", db_getinfo("dbversion"));
 	printf("vnstat;%s\n", db_getinfo("vnstatversion"));
@@ -753,6 +767,7 @@ void exportdb(const interfaceinfo *interface)
 		}
 		dbdatalistfree(&datalist);
 	}
+	timeused(__func__, 0);
 }
 
 int showbar(const uint64_t rx, const uint64_t tx, const uint64_t max, const int len)

@@ -278,3 +278,23 @@ char *getversion(void)
 	}
 	return versionbuffer;
 }
+
+void timeused(const char *func, const int reset)
+{
+	static struct timeval starttime;
+	struct timeval endtime;
+
+	if (!debug) {
+		return;
+	}
+
+	if (reset) {
+		gettimeofday(&starttime, NULL);
+		return;
+	}
+
+	if (gettimeofday(&endtime, NULL) != 0) {
+		return;
+	}
+	printf("%s() in %f s\n", func, (double)(endtime.tv_usec - starttime.tv_usec) / 1000000 + (double)(endtime.tv_sec - starttime.tv_sec));
+}
