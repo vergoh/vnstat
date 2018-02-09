@@ -500,6 +500,7 @@ void showoneline(const interfaceinfo *interface)
 {
 	struct tm *d;
 	char daytemp[DATEBUFFLEN];
+	uint64_t div;
 	dbdatalist *datalist = NULL;
 	dbdatalistinfo datainfo;
 
@@ -535,7 +536,11 @@ void showoneline(const interfaceinfo *interface)
 		printf("%"PRIu64";", datalist->rx);
 		printf("%"PRIu64";", datalist->tx);
 		printf("%"PRIu64";", datalist->rx+datalist->tx);
-		printf("%"PRIu64";", (datalist->rx+datalist->tx)/(d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600)));
+		div = d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600);
+		if (!div) {
+			div = 1;
+		}
+		printf("%"PRIu64";", (datalist->rx+datalist->tx)/div);
 	} else {
 		printf("%s;", getvalue(datalist->rx, 1, 1));
 		printf("%s;", getvalue(datalist->tx, 1, 1));
@@ -558,7 +563,11 @@ void showoneline(const interfaceinfo *interface)
 		printf("%"PRIu64";", datalist->rx);
 		printf("%"PRIu64";", datalist->tx);
 		printf("%"PRIu64";", datalist->rx+datalist->tx);
-		printf("%"PRIu64";", (datalist->rx+datalist->tx)/(mosecs(datalist->timestamp, interface->updated)));
+		div = mosecs(datalist->timestamp, interface->updated);
+		if (!div) {
+			div = 1;
+		}
+		printf("%"PRIu64";", (datalist->rx+datalist->tx)/div);
 	} else {
 		printf("%s;", getvalue(datalist->rx, 1, 1));
 		printf("%s;", getvalue(datalist->tx, 1, 1));
