@@ -963,6 +963,7 @@ void showhours(void)
 void showoneline(void)
 {
 	struct tm *d;
+	uint64_t div;
 	char daytemp[DATEBUFFLEN];
 
 	/* version string */
@@ -988,25 +989,53 @@ void showoneline(void)
 	d=localtime(&data.lastupdated);
 
 	/* daily */
-	printf("%s;", getvalue(data.day[0].rx, data.day[0].rxk, 1, 1));
-	printf("%s;", getvalue(data.day[0].tx, data.day[0].txk, 1, 1));
-	printf("%s;", getvalue(data.day[0].rx+data.day[0].tx, data.day[0].rxk+data.day[0].txk, 1, 1));
-	printf("%s;", getrate(data.day[0].rx+data.day[0].tx, data.day[0].rxk+data.day[0].txk, d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600), 1));
+	if (cfg.ostyle == 4) {
+		printf("%"PRIu64";", data.day[0].rx*1024*1024+data.day[0].rxk*1024);
+		printf("%"PRIu64";", data.day[0].tx*1024*1024+data.day[0].txk*1024);
+		printf("%"PRIu64";", data.day[0].rx*1024*1024+data.day[0].rxk*1024+data.day[0].tx*1024*1024+data.day[0].txk*1024);
+		div = d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600);
+		if (!div) {
+			div = 1;
+		}
+		printf("%"PRIu64";", (data.day[0].rx*1024*1024+data.day[0].rxk*1024+data.day[0].tx*1024*1024+data.day[0].txk*1024)/div);
+	} else {
+		printf("%s;", getvalue(data.day[0].rx, data.day[0].rxk, 1, 1));
+		printf("%s;", getvalue(data.day[0].tx, data.day[0].txk, 1, 1));
+		printf("%s;", getvalue(data.day[0].rx+data.day[0].tx, data.day[0].rxk+data.day[0].txk, 1, 1));
+		printf("%s;", getrate(data.day[0].rx+data.day[0].tx, data.day[0].rxk+data.day[0].txk, d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600), 1));
+	}
 
 	d=localtime(&data.month[0].month);
 	strftime(daytemp, DATEBUFFLEN, cfg.mformat, d);
 	printf("%s;", daytemp);
 
 	/* monthly */
-	printf("%s;", getvalue(data.month[0].rx, data.month[0].rxk, 1, 1));
-	printf("%s;", getvalue(data.month[0].tx, data.month[0].txk, 1, 1));
-	printf("%s;", getvalue(data.month[0].rx+data.month[0].tx, data.month[0].rxk+data.month[0].txk, 1, 1));
-	printf("%s;", getrate(data.month[0].rx+data.month[0].tx, data.month[0].rxk+data.month[0].txk, mosecs(), 1));
+	if (cfg.ostyle == 4) {
+		printf("%"PRIu64";", data.month[0].rx*1024*1024+data.month[0].rxk*1024);
+		printf("%"PRIu64";", data.month[0].tx*1024*1024+data.month[0].txk*1024);
+		printf("%"PRIu64";", data.month[0].rx*1024*1024+data.month[0].rxk*1024+data.month[0].tx*1024*1024+data.month[0].txk*1024);
+		div = mosecs();
+		if (!div) {
+			div = 1;
+		}
+		printf("%"PRIu64";", (data.month[0].rx*1024*1024+data.month[0].rxk*1024+data.month[0].tx*1024*1024+data.month[0].txk*1024)/div);
+	} else {
+		printf("%s;", getvalue(data.month[0].rx, data.month[0].rxk, 1, 1));
+		printf("%s;", getvalue(data.month[0].tx, data.month[0].txk, 1, 1));
+		printf("%s;", getvalue(data.month[0].rx+data.month[0].tx, data.month[0].rxk+data.month[0].txk, 1, 1));
+		printf("%s;", getrate(data.month[0].rx+data.month[0].tx, data.month[0].rxk+data.month[0].txk, mosecs(), 1));
+	}
 
 	/* all time total */
-	printf("%s;", getvalue(data.totalrx, data.totalrxk, 1, 1));
-	printf("%s;", getvalue(data.totaltx, data.totaltxk, 1, 1));
-	printf("%s\n", getvalue(data.totalrx+data.totaltx, data.totalrxk+data.totaltxk, 1, 1));
+	if (cfg.ostyle == 4) {
+		printf("%"PRIu64";", data.totalrx*1024*1024+data.totalrxk*1024);
+		printf("%"PRIu64";", data.totaltx*1024*1024+data.totaltxk*1024);
+		printf("%"PRIu64"\n", data.totalrx*1024*1024+data.totalrxk*1024+data.totaltx*1024*1024+data.totaltxk*1024);
+	} else {
+		printf("%s;", getvalue(data.totalrx, data.totalrxk, 1, 1));
+		printf("%s;", getvalue(data.totaltx, data.totaltxk, 1, 1));
+		printf("%s\n", getvalue(data.totalrx+data.totaltx, data.totalrxk+data.totaltxk, 1, 1));
+	}
 }
 
 void exportdb(void)

@@ -201,6 +201,18 @@ int main(int argc, char *argv[]) {
 			cfg.qmode=4;
 		} else if (strcmp(argv[currentarg],"--oneline")==0) {
 			cfg.qmode=9;
+			if (currentarg+1<argc && argv[currentarg+1][0]!='-') {
+				if (argv[currentarg+1][0]=='b') {
+					cfg.ostyle = 4;
+					currentarg++;
+				} else {
+					printf("Error: Invalid mode parameter \"%s\" for --oneline.\n", argv[currentarg+1]);
+					printf(" Valid parameters:\n");
+					printf("    (none) - automatically scaled units visible\n");
+					printf("    b      - all values in bytes\n");
+					return 1;
+				}
+			}
 		} else if (strcmp(argv[currentarg],"--xml")==0) {
 			if (currentarg+1<argc && argv[currentarg+1][0]!='-') {
 				p.xmlmode = argv[currentarg+1][0];

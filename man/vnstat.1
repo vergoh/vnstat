@@ -63,6 +63,7 @@ vnstat \- a console-based network traffic monitor
 .I nickname
 ] [
 .B \-\-oneline
+.I mode
 ] [
 .B \-\-query
 ] [
@@ -316,6 +317,10 @@ fields in order 2) interface name, 3) timestamp for today, 4) rx for today,
 8) timestamp for current month, 9) rx for current month, 10) tx for current
 month, 11) total for current month, 12) average traffic rate for today,
 13) all time total rx, 14) all time total tx, 15) all time total traffic.
+An optional
+.I mode
+parameter can be used to force all fields to output in bytes without the
+unit itself shown.
 
 .TP
 .B "-q, --query"
