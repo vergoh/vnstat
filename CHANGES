@@ -1,5 +1,12 @@
 1.18 / <not released yet>
 
+ - Fix: Misspellings, compiler warnings and possible error situations
+   (pull requests by Christian Göttsche)
+ - Add RTC sanity check and sync wait to daemon startup, the possible wait
+   duration can be configured using the TimeSyncWait keyword
+ - Add optional parameter to --oneline output for forcing fields to output
+   in bytes
+
 
 1.17 / 16-Feb-2017
 

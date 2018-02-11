@@ -31,7 +31,7 @@ int ibwadd(const char *iface, const uint32_t limit)
 	/* add new node if list is empty */
 	if (p == NULL) {
 
-		n = (ibwnode *) malloc(sizeof(ibwnode));
+		n = (ibwnode *)malloc(sizeof(ibwnode));
 
 		if (n == NULL) {
 			return 0;
@@ -57,7 +57,7 @@ int ibwadd(const char *iface, const uint32_t limit)
 		}
 
 		/* add new node if not found */
-		n =  (ibwnode *) malloc(sizeof(ibwnode));
+		n =  (ibwnode *)malloc(sizeof(ibwnode));
 
 		if (n == NULL) {
 			return 0;

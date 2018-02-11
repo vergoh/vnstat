@@ -23,7 +23,7 @@ int cacheadd(const char *iface, int sync)
 	}
 
 	/* add new node if not in list */
-	n = (datanode *)  malloc(sizeof(datanode));
+	n = (datanode *)malloc(sizeof(datanode));
 
 	if (n == NULL) {
 		return 0;
@@ -109,7 +109,7 @@ int cacheupdate(void)
 	}
 
 	/* add new node if not in list */
-	n = (datanode *) malloc(sizeof(datanode));
+	n = (datanode *)malloc(sizeof(datanode));
 
 	if (n == NULL) {
 		return 0;

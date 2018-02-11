@@ -58,7 +58,7 @@ int getiflist(char **ifacelist, int showspeed)
 #endif
 
 	/* initialize list */
-	*ifacelist = (char *) malloc(sizeof(char));
+	*ifacelist = (char *)malloc(sizeof(char));
 	if (*ifacelist == NULL) {
 		panicexit(__FILE__, __LINE__);
 	}
@@ -72,7 +72,7 @@ int getiflist(char **ifacelist, int showspeed)
 			sscanf(procline, "%63s", temp);
 			if (strlen(temp)>0 && (isdigit(temp[(strlen(temp)-1)]) || temp[(strlen(temp)-1)]==':')) {
 				sscanf(temp, "%31[^':']s", interface);
-				*ifacelist = (char *) realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(interface) + 2 ) * sizeof(char)) );
+				*ifacelist = (char *)realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(interface) + 2 ) * sizeof(char)) );
 				if (*ifacelist == NULL) {
 					panicexit(__FILE__, __LINE__);
 				}
@@ -84,7 +84,7 @@ int getiflist(char **ifacelist, int showspeed)
 				speed = getifspeed(interface);
 				if (speed > 0) {
 					snprintf(temp, 64, "(%u Mbit) ", speed);
-					*ifacelist = (char *) realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(temp) + 1 ) * sizeof(char)) );
+					*ifacelist = (char *)realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(temp) + 1 ) * sizeof(char)) );
 					if (*ifacelist == NULL) {
 						panicexit(__FILE__, __LINE__);
 					}
@@ -105,7 +105,7 @@ int getiflist(char **ifacelist, int showspeed)
 				if (di->d_name[0] == '.' || strlen(di->d_name) > 31) {
 					continue;
 				}
-				*ifacelist = (char *) realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(di->d_name) + 2 ) * sizeof(char)) );
+				*ifacelist = (char *)realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(di->d_name) + 2 ) * sizeof(char)) );
 				if (*ifacelist == NULL) {
 					panicexit(__FILE__, __LINE__);
 				}
@@ -117,7 +117,7 @@ int getiflist(char **ifacelist, int showspeed)
 				speed = getifspeed(di->d_name);
 				if (speed > 0) {
 					snprintf(temp, 64, "(%u Mbit) ", speed);
-					*ifacelist = (char *) realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(temp) + 1 ) * sizeof(char)) );
+					*ifacelist = (char *)realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(temp) + 1 ) * sizeof(char)) );
 					if (*ifacelist == NULL) {
 						panicexit(__FILE__, __LINE__);
 					}

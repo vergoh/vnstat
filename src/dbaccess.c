@@ -34,12 +34,12 @@ int readdb(const char *iface, const char *dirname, const int force)
 		}
 	} else {
 		if (debug) {
-			data.interface[sizeof(data.interface) - 1] = 0;
+			data.interface[sizeof(data.interface) - 1] = '\0';
 			printf("db: Database loaded for interface \"%s\"...\n", data.interface);
 		}
 	}
-	data.interface[sizeof(data.interface) - 1] = 0;
-	data.nick[sizeof(data.nick) - 1] = 0;
+	data.interface[sizeof(data.interface) - 1] = '\0';
+	data.nick[sizeof(data.nick) - 1] = '\0';
 
 	if (data.version == DBVERSION) {
 		if (!validatedb() && !force) {
@@ -89,12 +89,12 @@ int readdb(const char *iface, const char *dirname, const int force)
 				}
 			} else {
 				if (debug) {
-					data.interface[sizeof(data.interface) - 1] = 0;
+					data.interface[sizeof(data.interface) - 1] = '\0';
 					printf("db: Backup database loaded for interface \"%s\"...\n", data.interface);
 				}
 			}
-			data.interface[sizeof(data.interface) - 1] = 0;
-			data.nick[sizeof(data.nick) - 1] = 0;
+			data.interface[sizeof(data.interface) - 1] = '\0';
+			data.nick[sizeof(data.nick) - 1] = '\0';
 
 			if (data.version == DBVERSION) {
 				if (!validatedb()) {
