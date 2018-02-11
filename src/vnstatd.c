@@ -162,6 +162,18 @@ int main(int argc, char *argv[])
 	snprintf(errorstring, 512, "vnStat daemon %s started. (pid:%d uid:%d gid:%d)", getversion(), (int)getpid(), (int)getuid(), (int)getgid());
 	printe(PT_Info);
 
+	/* warmup */
+	if (s.dbcount == 0) {
+		filldatabaselist(&s);
+	}
+	while (s.running && s.dbcount && waittimesync(&s)) {
+		if (intsignal) {
+			handleintsignals(&s);
+		} else {
+			sleep(2);
+		}
+	}
+
 	/* main loop */
 	while (s.running) {
 

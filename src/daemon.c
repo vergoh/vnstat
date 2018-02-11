@@ -589,3 +589,73 @@ void preparedirs(DSTATE *s)
 		preparevnstatdir(cfg.logfile, s->user, s->group);
 	}
 }
+
+int waittimesync(DSTATE *s)
+{
+	char timestamp[22], timestamp2[22];
+
+	if (cfg.timesyncwait == 0) {
+		return 0;
+	}
+
+	if (s->prevdbupdate == 0 && s->prevdbsave == 0) {
+		s->datalist = dataptr;
+		while (s->datalist!=NULL) {
+			if (debug) {
+				printf("w: processing %s...\n", s->datalist->data.interface);
+			}
+
+			/* get data from cache if available */
+			if (!datalist_cacheget(s)) {
+				s->datalist = s->datalist->next;
+				continue;
+			}
+			cacheupdate();
+			if (data.lastupdated > s->prevdbsave) {
+				s->prevdbsave = data.lastupdated;
+			}
+			s->datalist = s->datalist->next;
+		}
+	}
+
+	s->current = time(NULL);
+
+	if (debug) {
+		strftime(timestamp, 22, "%Y-%m-%d %H:%M:%S", localtime(&s->current));
+		printf("current time:     %s\n", timestamp);
+		strftime(timestamp2, 22, "%Y-%m-%d %H:%M:%S", localtime(&s->prevdbsave));
+		printf("latest db update: %s\n", timestamp2);
+	}
+
+	if (s->current <= s->prevdbsave) {
+		if (s->prevdbupdate == 0) {
+			s->prevdbupdate = s->current;
+			strftime(timestamp, 22, "%Y-%m-%d %H:%M:%S", localtime(&s->current));
+			strftime(timestamp2, 22, "%Y-%m-%d %H:%M:%S", localtime(&s->prevdbsave));
+			snprintf(errorstring, 512, "Latest database update is in the future (db: %s > now: %s). Giving the system clock up to %d minutes to sync before continuing.", timestamp2, timestamp, cfg.timesyncwait);
+			printe(PT_Info);
+		}
+		if (s->current - s->prevdbupdate >= cfg.timesyncwait*60) {
+			strftime(timestamp, 22, "%Y-%m-%d %H:%M:%S", localtime(&s->current));
+			strftime(timestamp2, 22, "%Y-%m-%d %H:%M:%S", localtime(&s->prevdbsave));
+			snprintf(errorstring, 512, "Latest database update is still in the future (db: %s > now: %s), continuing. Some errors may follow.", timestamp2, timestamp);
+			printe(PT_Info);
+			return 0;
+		}
+	} else {
+		if (s->prevdbupdate != 0) {
+			strftime(timestamp, 22, "%Y-%m-%d %H:%M:%S", localtime(&s->current));
+			strftime(timestamp2, 22, "%Y-%m-%d %H:%M:%S", localtime(&s->prevdbsave));
+			snprintf(errorstring, 512, "Latest database update is no longer in the future (db: %s <= now: %s), continuing.", timestamp2, timestamp);
+			printe(PT_Info);
+		}
+		s->prevdbsave = 0;
+		s->prevdbupdate = 0;
+		if (debug) {
+			printf("time sync ok\n");
+		}
+		return 0;
+	}
+
+	return 1;
+}

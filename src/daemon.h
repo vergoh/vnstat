@@ -29,5 +29,6 @@ int datalist_timevalidation(DSTATE *s);
 int datalist_writedb(DSTATE *s);
 void handleintsignals(DSTATE *s);
 void preparedirs(DSTATE *s);
+int waittimesync(DSTATE *s);
 
 #endif

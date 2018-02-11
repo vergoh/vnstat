@@ -190,6 +190,7 @@ and most can be changed later from the config file.
 
 /* daemon defaults */
 #define UPDATEINTERVAL 30
+#define TIMESYNCWAIT 5
 #define POLLINTERVAL 5
 #define SAVEINTERVAL 5
 #define OFFSAVEINTERVAL 30
@@ -230,8 +231,8 @@ typedef struct {
 	int32_t monthrotate, maxbw, flock, spacecheck, traflessday, transbg, slayout, ostyle;
 	char cfgfile[512], logfile[512], pidfile[512];
 	char daemonuser[33], daemongroup[33];
-	int32_t updateinterval, pollinterval, saveinterval, offsaveinterval, savestatus, uselogging;
-	int32_t createdirs, updatefileowner, bwdetection, bwdetectioninterval, utflocale;
+	int32_t timesyncwait, updateinterval, pollinterval, saveinterval, offsaveinterval, savestatus;
+	int32_t uselogging, createdirs, updatefileowner, bwdetection, bwdetectioninterval, utflocale;
 } CFG;
 
 /* internal interface information structure */

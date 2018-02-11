@@ -99,6 +99,10 @@ void printcfgfile(void)
 	printf("# switch to given user when started as root (leave empty to disable)\n");
 	printf("DaemonGroup \"%s\"\n\n", cfg.daemongroup);
 
+	printf("# how many minutes to wait during daemon startup for system clock to\n");
+	printf("# sync time if most recent database update appears to be in the future\n");
+	printf("TimeSyncWait %d\n\n", cfg.timesyncwait);
+
 	printf("# how often (in seconds) interface data is updated\n");
 	printf("UpdateInterval %d\n\n", cfg.updateinterval);
 
@@ -202,6 +206,7 @@ int loadcfg(const char *cfgfile)
 		{ "TrafficlessDays", 0, &cfg.traflessday, 0, 0 },
 		{ "DaemonUser", cfg.daemonuser, 0, 33, 0 },
 		{ "DaemonGroup", cfg.daemongroup, 0, 33, 0 },
+		{ "TimeSyncWait", 0, &cfg.timesyncwait, 0, 0 },
 		{ "UpdateInterval", 0, &cfg.updateinterval, 0, 0 },
 		{ "PollInterval", 0, &cfg.pollinterval, 0, 0 },
 		{ "SaveInterval", 0, &cfg.saveinterval, 0, 0 },
@@ -357,6 +362,12 @@ void validatecfg(void)
 		printe(PT_Config);
 	}
 
+	if (cfg.timesyncwait<0 || cfg.timesyncwait>60) {
+		cfg.timesyncwait = TIMESYNCWAIT;
+		snprintf(errorstring, 512, "Invalid value for TimeSyncWait, resetting to \"%d\".", cfg.timesyncwait);
+		printe(PT_Config);
+	}
+
 	if (cfg.pollinterval<2 || cfg.pollinterval>60) {
 		cfg.pollinterval = POLLINTERVAL;
 		snprintf(errorstring, 512, "Invalid value for PollInterval, resetting to \"%d\".", cfg.pollinterval);
@@ -508,6 +519,7 @@ void defaultcfg(void)
 
 	cfg.daemonuser[0] = '\0';
 	cfg.daemongroup[0] = '\0';
+	cfg.timesyncwait = TIMESYNCWAIT;
 	cfg.updateinterval = UPDATEINTERVAL;
 	cfg.pollinterval = POLLINTERVAL;
 	cfg.saveinterval = SAVEINTERVAL;

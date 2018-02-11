@@ -227,6 +227,14 @@ when the availability of an interface changes, i.e., when an interface goes
 offline or comes online. 1 = enabled, 0 = disabled.
 
 .TP
+.B TimeSyncWait
+How many minutes to wait during daemon startup for system clock to sync if
+most recent database update appears to be in the future. This may be needed
+in systems without a real-time clock (RTC) which require some time after boot
+to query and set the correct time. 0 = wait disabled.
+Value range: 0..60
+
+.TP
 .B UpdateFileOwner
 Enable or disable the update of file ownership during daemon process startup
 or during manual creation of new databases. During daemon startup, only database,
