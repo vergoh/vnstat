@@ -228,7 +228,7 @@ END_TEST
 /* in order to test the right thing */
 char *hourly_imagescale_logic(const uint64_t max, const int rate)
 {
-	int i, step, s, prev;
+	int i, step, s, prev = 0;
 	uint64_t scaleunit;
 
 	scaleunit = getscale(max, rate);

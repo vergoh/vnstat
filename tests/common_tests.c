@@ -253,18 +253,22 @@ END_TEST
 
 START_TEST(timeused_outputs_something_expected)
 {
-	int pipe;
+	int pipe, len;
 	char buffer[512];
 	memset(&buffer, '\0', sizeof(buffer));
 
 	defaultcfg();
 	debug = 1;
 	pipe = pipe_output();
+	/* the assumption here is that the next two steps
+	   can always execute in less than one second resulting
+	   in a duration that starts with a zero */
 	timeused("nothing", 1);
 	timeused("something", 0);
 	fflush(stdout);
 
-	read(pipe, buffer, 512);
+	len = read(pipe, buffer, 512);
+	ck_assert_int_gt(len, 0);
 	ck_assert_ptr_ne(strstr(buffer, "something() in 0"), NULL);
 }
 END_TEST
