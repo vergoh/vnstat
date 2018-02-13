@@ -2,6 +2,8 @@
 
  - Fix: Misspellings, compiler warnings and possible error situations
    (pull requests by Christian Göttsche)
+ - Hardening added to examples/systemd/vnstat.service
+   (pull request by Christian Göttsche)
  - Add RTC sanity check and sync wait to daemon startup, the possible wait
    duration can be configured using the TimeSyncWait keyword
  - Add optional parameter to --oneline output for forcing fields to output
