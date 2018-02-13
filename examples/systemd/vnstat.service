@@ -6,6 +6,22 @@ After=network.target
 [Service]
 ExecStart=/usr/sbin/vnstatd -n
 ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+
+# Hardening
+#  (all but PrivateNetwork)
+ProtectSystem=strict
+StateDirectory=vnstat
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+ProtectHome=yes
+ProtectKernelModules=yes
+PrivateTmp=yes
+MemoryDenyWriteExecute=yes
+RestrictRealtime=yes
+RestrictNamespaces=yes
+
 
 [Install]
 WantedBy=multi-user.target
