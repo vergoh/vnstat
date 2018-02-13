@@ -36,6 +36,7 @@ int main(int argc, char *argv[])
 		for (currentarg=1; currentarg<argc; currentarg++) {
 			if ((strcmp(argv[currentarg],"-D")==0) || (strcmp(argv[currentarg],"--debug")==0)) {
 				debug = 1;
+				printf("Debug enabled, vnstatd %s\n", VERSION);
 			} else if (strcmp(argv[currentarg],"--config")==0) {
 				if (currentarg+1<argc) {
 					strncpy_nt(s.cfgfile, argv[currentarg+1], 512);
