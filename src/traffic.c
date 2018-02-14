@@ -5,11 +5,14 @@
 
 void trafficmeter(char iface[], int sampletime)
 {
-	/* received bytes packets errs drop fifo frame compressed multicast */
-	/* transmitted bytes packets errs drop fifo colls carrier compressed */
 	uint64_t rx, tx, rxp, txp;
+	int json = 0;
 	IFINFO firstinfo;
 	char buffer[256];
+
+	if (cfg.qmode == 10) {
+		json = 1;
+	}
 
 	/* less than 2 seconds doesn't produce good results */
 	if (sampletime<2) {
@@ -29,24 +32,28 @@ void trafficmeter(char iface[], int sampletime)
 
 	/* wait sampletime and print some nice dots so that the user thinks
 	something is done :) */
-	snprintf(buffer, 256, "Sampling %s (%d seconds average)", iface,sampletime);
-	printf("%s", buffer);
-	fflush(stdout);
-	sleep(sampletime/3);
-	printf(".");
-	fflush(stdout);
-	sleep(sampletime/3);
-	printf(".");
-	fflush(stdout);
-	sleep(sampletime/3);
-	printf(".");
-	fflush(stdout);
-	if ((sampletime/3)*3!=sampletime) {
-		sleep(sampletime-((sampletime/3)*3));
-	}
+	if (!json) {
+		snprintf(buffer, 256, "Sampling %s (%d seconds average)", iface,sampletime);
+		printf("%s", buffer);
+		fflush(stdout);
+		sleep(sampletime/3);
+		printf(".");
+		fflush(stdout);
+		sleep(sampletime/3);
+		printf(".");
+		fflush(stdout);
+		sleep(sampletime/3);
+		printf(".");
+		fflush(stdout);
+		if ((sampletime/3)*3!=sampletime) {
+			sleep(sampletime-((sampletime/3)*3));
+		}
 
-	cursortocolumn(1);
-	eraseline();
+		cursortocolumn(1);
+		eraseline();
+	} else {
+		sleep(sampletime);
+	}
 
 	/* read those values again... */
 	if (!getifinfo(iface)) {
@@ -60,11 +67,32 @@ void trafficmeter(char iface[], int sampletime)
 	rxp = countercalc(&firstinfo.rxp, &ifinfo.rxp);
 	txp = countercalc(&firstinfo.txp, &ifinfo.txp);
 
-	/* show the difference in a readable format */
-	printf("%"PRIu64" packets sampled in %d seconds\n", rxp+txp, sampletime);
-	printf("Traffic average for %s\n", iface);
-	printf("\n      rx     %s         %5"PRIu64" packets/s\n", gettrafficrate(rx, sampletime, 15), (uint64_t)(rxp/sampletime));
-	printf("      tx     %s         %5"PRIu64" packets/s\n\n", gettrafficrate(tx, sampletime, 15), (uint64_t)(txp/sampletime));
+	/* show the difference in a readable format or json */
+	if (!json) {
+		printf("%"PRIu64" packets sampled in %d seconds\n", rxp+txp, sampletime);
+		printf("Traffic average for %s\n", iface);
+		printf("\n      rx     %s         %5"PRIu64" packets/s\n", gettrafficrate(rx, sampletime, 15), (uint64_t)(rxp/sampletime));
+		printf("      tx     %s         %5"PRIu64" packets/s\n\n", gettrafficrate(tx, sampletime, 15), (uint64_t)(txp/sampletime));
+	} else {
+		printf("{\"jsonversion\":\"%d\",", JSONVERSION_TR);
+		printf("\"vnstatversion\":\"%s\",", getversion());
+		printf("\"interface\":\"%s\",", iface);
+		printf("\"sampletime\":%d,", sampletime);
+		printf("\"rx\":{");
+		printf("\"ratestring\":\"%s\",", gettrafficrate(rx, sampletime, 0));
+		printf("\"bytespersecond\":%"PRIu64",", (uint64_t)(rx/sampletime));
+		printf("\"packetspersecond\":%"PRIu64",", (uint64_t)(rxp/sampletime));
+		printf("\"bytes\":%"PRIu64",", rx);
+		printf("\"packets\":%"PRIu64"", rxp);
+		printf("},");
+		printf("\"tx\":{");
+		printf("\"ratestring\":\"%s\",", gettrafficrate(tx, sampletime, 0));
+		printf("\"bytespersecond\":%"PRIu64",", (uint64_t)(tx/sampletime));
+		printf("\"packetspersecond\":%"PRIu64",", (uint64_t)(txp/sampletime));
+		printf("\"bytes\":%"PRIu64",", tx);
+		printf("\"packets\":%"PRIu64"", txp);
+		printf("}}\n");
+	}
 }
 
 void livetrafficmeter(char iface[32], int mode)

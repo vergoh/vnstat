@@ -270,6 +270,9 @@ parameter can be used for limiting the output to only selected information.
 Everything is shown by default. Setting
 .I mode
 to 'h' will output only hours, 'd' days, 'm' months and 't' the top 10.
+This option can also be used in combination with the
+.B "-tr"
+option.
 
 .TP
 .BI "-l, --live " mode
@@ -396,7 +399,10 @@ the given
 .I time
 seconds. The
 .I time
-will be 5 seconds if a number parameter isn't specified.
+will be 5 seconds if a number parameter isn't specified. The output will
+be in json format if used in combination with
+.B "--json"
+option. However, in that case, the countdown before results isn't shown.
 
 .TP
 .B "-u, --update"
