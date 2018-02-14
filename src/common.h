@@ -171,6 +171,10 @@ and most can be changed later from the config file.
 /* 1 = 1.18- */
 #define JSONVERSION_TR 1
 
+/* json format version, --live */
+/* 1 = 1.18- */
+#define JSONVERSION_LIVE 1
+
 /* --oneline format version */
 #define ONELINEVERSION 1
 

@@ -8,6 +8,7 @@
    duration can be configured using the TimeSyncWait keyword
  - Add optional parameter to --oneline output for forcing fields to output
    in bytes
+ - Add --json support for -l / --live and -tr outputs
 
 
 1.17 / 16-Feb-2017

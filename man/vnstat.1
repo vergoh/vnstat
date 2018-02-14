@@ -270,9 +270,13 @@ parameter can be used for limiting the output to only selected information.
 Everything is shown by default. Setting
 .I mode
 to 'h' will output only hours, 'd' days, 'm' months and 't' the top 10.
-This option can also be used in combination with the
+This option can also be used in combination with
+.B "-l, --live"
+and
 .B "-tr"
-option.
+options without
+.I mode
+having any effect to the output.
 
 .TP
 .BI "-l, --live " mode
@@ -283,7 +287,10 @@ was more than 10 seconds. An optional
 parameter can be used to select between the displaying of packets per
 second (mode 0) and transfer counters (mode 1) during execution.
 .B "--style"
-can also be used to affect the layout of the output.
+can also be used to affect the layout of the output. The output will be in json
+format if used in combination with
+.B "--json"
+option.
 
 .TP
 .BI "--locale " locale
