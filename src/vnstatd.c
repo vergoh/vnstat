@@ -166,12 +166,13 @@ int main(int argc, char *argv[])
 	/* warmup */
 	if (s.dbcount == 0) {
 		filldatabaselist(&s);
+		s.prevdbsave = 0;
 	}
 	while (s.running && s.dbcount && waittimesync(&s)) {
 		if (intsignal) {
 			handleintsignals(&s);
 		} else {
-			sleep(2);
+			sleep(5);
 		}
 	}
 

@@ -611,6 +611,10 @@ int waittimesync(DSTATE *s)
 				continue;
 			}
 			cacheupdate();
+			if (debug) {
+				strftime(timestamp, 22, "%Y-%m-%d %H:%M:%S", localtime(&data.lastupdated));
+				printf("w: has %s\n", timestamp);
+			}
 			if (data.lastupdated > s->prevdbsave) {
 				s->prevdbsave = data.lastupdated;
 			}
@@ -649,7 +653,7 @@ int waittimesync(DSTATE *s)
 			snprintf(errorstring, 512, "Latest database update is no longer in the future (db: %s <= now: %s), continuing.", timestamp2, timestamp);
 			printe(PT_Info);
 		}
-		s->prevdbsave = 0;
+		s->prevdbsave = s->current;
 		s->prevdbupdate = 0;
 		if (debug) {
 			printf("time sync ok\n");
