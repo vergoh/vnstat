@@ -24,7 +24,7 @@ before_install:
  - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then brew install gd check ; fi
 
 script:
- - CFLAGS='-Wall -Wextra -g' ./configure && make check || ( cat test.log ; exit 1 ) && ./vnstat --version
+ - CFLAGS='-Wall -Wextra -g' ./configure && make check || ( cat test.log ; exit 1 ) && egrep '^[0-9]+%' test.log && ./vnstat --version
 
 notifications:
   email:
