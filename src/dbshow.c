@@ -593,7 +593,7 @@ void showhours(const interfaceinfo *interface)
 {
 	int i, k, s=0, hour, minute, declen=2, div=1;
 	unsigned int j, tmax=0, dots=0;
-	uint64_t max=0;
+	uint64_t max=1;
 	char matrix[24][81]; /* width is one over 80 so that snprintf can write the end char */
 	char unit[4];
 	struct tm *d;
