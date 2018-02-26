@@ -55,6 +55,9 @@ void printcfgfile(void)
 	printf("DefaultDecimals %d\n", cfg.defaultdecimals);
 	printf("HourlyDecimals %d\n\n", cfg.hourlydecimals);
 
+	printf("# spacer for separating hourly sections (0 = none, 1 = '|', 2 = '][', 3 = '[ ]')\n");
+	printf("HourlySectionStyle %d\n\n", cfg.hourlystyle);
+
 	printf("# try to detect interface maximum bandwidth, 0 = disable feature\n");
 	printf("# MaxBandwidth will be used as fallback value when enabled\n");
 	printf("BandwidthDetection %d\n\n", cfg.bwdetection);
@@ -202,6 +205,7 @@ int loadcfg(const char *cfgfile)
 		{ "RateUnit", 0, &cfg.rateunit, 0, 0 },
 		{ "DefaultDecimals", 0, &cfg.defaultdecimals, 0, 0 },
 		{ "HourlyDecimals", 0, &cfg.hourlydecimals, 0, 0 },
+		{ "HourlySectionStyle", 0, &cfg.hourlystyle, 0, 0 },
 		{ "BandwidthDetection", 0, &cfg.bwdetection, 0, 0 },
 		{ "MaxBandwidth", 0, &cfg.maxbw, 0, 0 },
 		{ "Sampletime", 0, &cfg.sampletime, 0, 0 },
@@ -335,6 +339,12 @@ void validatecfg(void)
 	if (cfg.hourlydecimals<0 || cfg.hourlydecimals>2) {
 		cfg.hourlydecimals = HOURLYDECIMALS;
 		snprintf(errorstring, 512, "Invalid value for HourlyDecimals, resetting to \"%d\".", cfg.hourlydecimals);
+		printe(PT_Config);
+	}
+
+	if (cfg.hourlystyle<0 || cfg.hourlystyle>3) {
+		cfg.hourlystyle = HOURLYSTYLE;
+		snprintf(errorstring, 512, "Invalid value for HourlySectionStyle, resetting to \"%d\".", cfg.hourlystyle);
 		printe(PT_Config);
 	}
 
@@ -515,6 +525,7 @@ void defaultcfg(void)
 	cfg.rateunit = RATEUNIT;
 	cfg.defaultdecimals = DEFAULTDECIMALS;
 	cfg.hourlydecimals = HOURLYDECIMALS;
+	cfg.hourlystyle = HOURLYSTYLE;
 	cfg.bwdetection = BWDETECT;
 	cfg.bwdetectioninterval = BWDETECTINTERVAL;
 	cfg.maxbw = DEFMAXBW;

@@ -941,6 +941,24 @@ void showhours(void)
 		}
 	}
 
+	/* section separators */
+	if (cfg.hourlystyle) {
+		for (i=0;i<9;i++) {
+			if (cfg.hourlystyle == 1) {
+				matrix[14+i][26]='|';
+				matrix[14+i][54]='|';
+			} else if (cfg.hourlystyle == 2) {
+				matrix[14+i][25]=']';
+				matrix[14+i][26]='[';
+				matrix[14+i][53]=']';
+				matrix[14+i][54]='[';
+			} else if (cfg.hourlystyle == 3) {
+				matrix[14+i][26]='[';
+				matrix[14+i][53]=']';
+			}
+		}
+	}
+
 	/* clean \0 */
 	for (i=0;i<23;i++) {
 		for (j=0;j<80;j++) {

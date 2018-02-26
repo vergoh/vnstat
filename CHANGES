@@ -9,6 +9,10 @@
  - Add optional parameter to --oneline output for forcing fields to output
    in bytes
  - Add --json support for -l / --live and -tr outputs
+ - Number of decimals used in outputs can be configured using DefaultDecimals
+   and HourlyDecimals
+ - Add section separators for improving readabilty of the vnstat -h output,
+   configurable using HourlySectionStyle
 
 
 1.17 / 16-Feb-2017
