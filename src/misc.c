@@ -336,10 +336,10 @@ const char *getrateunitprefix(int unitmode, int index)
 
 uint64_t getunitdivisor(int unitmode, int index)
 {
-	uint64_t unitdiv[] = { 0, 1024, 1048576, 1073741824, 1099511627776,
-                              1024, 1048576, 1073741824, 1099511627776,
-                              1024, 1048576, 1073741824, 1099511627776,
-                              1000, 1000000, 1000000000, 1000000000000};
+	uint64_t unitdiv[] = { 0, 1024, 1048576, 1073741824, 1099511627776ULL,
+                              1024, 1048576, 1073741824, 1099511627776ULL,
+                              1024, 1048576, 1073741824, 1099511627776ULL,
+                              1000, 1000000, 1000000000, 1000000000000ULL};
 
 	if (index>UNITPREFIXCOUNT) {
 		return unitdiv[0];
@@ -351,12 +351,12 @@ uint64_t getunitdivisor(int unitmode, int index)
 char *getratestring(uint64_t rate, int len, int declen, int unitmode)
 {
 	static char buffer[64];
-	uint64_t limit[3] = { 1024000, 1048576000, 1073741824000 };
+	uint64_t limit[3] = { 1024000, 1048576000, 1073741824000ULL };
 
 	if (cfg.rateunit == 1 && cfg.rateunitmode == 1) {
 		limit[0] = 1000000;
 		limit[1] = 1000000000;
-		limit[2] = 1000000000000;
+		limit[2] = 1000000000000ULL;
 	}
 
 	/* tune spacing according to unit */
