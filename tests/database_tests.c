@@ -955,6 +955,117 @@ START_TEST(database_outputs_do_not_crash)
 }
 END_TEST
 
+START_TEST(database_outputs_do_not_crash_without_data)
+{
+	int i;
+
+	initdb();
+	defaultcfg();
+	strcpy(data.interface, "something");
+	strcpy(data.nick, "nothing");
+	data.totalrx = 1;
+	data.totaltx = 2;
+	data.currx = 3;
+	data.curtx = 4;
+	data.totalrxk = 5;
+	data.totaltxk = 6;
+	data.btime = 7;
+
+	for (i=0; i<30; i++) {
+		data.day[i].date = i+1;
+		data.day[i].used = 1;
+	}
+
+	for (i=0; i<10; i++) {
+		data.top10[i].date = i+1;
+		data.top10[i].used = 1;
+	}
+
+	for (i=0; i<12; i++) {
+		data.month[i].month = i+1;
+		data.month[i].used = 1;
+	}
+
+	for (i=0; i<24; i++) {
+		data.hour[i].date = i+1;
+	}
+
+	suppress_output();
+
+	showdb(0);
+	showdb(1);
+	showdb(2);
+	showdb(3);
+	showdb(4);
+	showdb(5);
+	showdb(6);
+	showdb(7);
+	showdb(8);
+	showdb(9);
+
+	xmlheader();
+	showxml('d');
+	showxml('m');
+	showxml('t');
+	showxml('h');
+	showxml('a');
+	xmlfooter();
+
+	jsonheader();
+	showjson(0, 'd');
+	showjson(0, 'm');
+	showjson(0, 't');
+	showjson(0, 'h');
+	showjson(0, 'a');
+	jsonfooter();
+}
+END_TEST
+
+START_TEST(database_outputs_do_not_crash_with_near_empty_database)
+{
+	initdb();
+	defaultcfg();
+	strcpy(data.interface, "something");
+	strcpy(data.nick, "nothing");
+	data.totalrx = 1;
+	data.totaltx = 2;
+	data.currx = 3;
+	data.curtx = 4;
+	data.totalrxk = 5;
+	data.totaltxk = 6;
+	data.btime = 7;
+
+	suppress_output();
+
+	showdb(0);
+	showdb(1);
+	showdb(2);
+	showdb(3);
+	showdb(4);
+	showdb(5);
+	showdb(6);
+	showdb(7);
+	showdb(8);
+	showdb(9);
+
+	xmlheader();
+	showxml('d');
+	showxml('m');
+	showxml('t');
+	showxml('h');
+	showxml('a');
+	xmlfooter();
+
+	jsonheader();
+	showjson(0, 'd');
+	showjson(0, 'm');
+	showjson(0, 't');
+	showjson(0, 'h');
+	showjson(0, 'a');
+	jsonfooter();
+}
+END_TEST
+
 START_TEST(showbar_with_zero_len_is_nothing)
 {
 	int len;
@@ -1146,6 +1257,8 @@ void add_database_tests(Suite *s)
 	tcase_add_test(tc_db, dbcheck_with_filled_cache);
 	tcase_add_test(tc_db, importdb_can_parse_exported_database);
 	tcase_add_test(tc_db, database_outputs_do_not_crash);
+	tcase_add_test(tc_db, database_outputs_do_not_crash_without_data);
+	tcase_add_test(tc_db, database_outputs_do_not_crash_with_near_empty_database);
 	tcase_add_test(tc_db, showbar_with_zero_len_is_nothing);
 	tcase_add_test(tc_db, showbar_with_big_max_and_small_numbers);
 	tcase_add_test(tc_db, showbar_with_all_rx);
