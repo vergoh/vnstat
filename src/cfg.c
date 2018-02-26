@@ -51,6 +51,10 @@ void printcfgfile(void)
 	printf("# used rate unit (0 = bytes, 1 = bits)\n");
 	printf("RateUnit %d\n\n", cfg.rateunit);
 
+	printf("# number of decimals to use in outputs\n");
+	printf("DefaultDecimals %d\n", cfg.defaultdecimals);
+	printf("HourlyDecimals %d\n\n", cfg.hourlydecimals);
+
 	printf("# try to detect interface maximum bandwidth, 0 = disable feature\n");
 	printf("# MaxBandwidth will be used as fallback value when enabled\n");
 	printf("BandwidthDetection %d\n\n", cfg.bwdetection);
@@ -196,6 +200,8 @@ int loadcfg(const char *cfgfile)
 		{ "RateUnitMode", 0, &cfg.rateunitmode, 0, 0 },
 		{ "OutputStyle", 0, &cfg.ostyle, 0, 0 },
 		{ "RateUnit", 0, &cfg.rateunit, 0, 0 },
+		{ "DefaultDecimals", 0, &cfg.defaultdecimals, 0, 0 },
+		{ "HourlyDecimals", 0, &cfg.hourlydecimals, 0, 0 },
 		{ "BandwidthDetection", 0, &cfg.bwdetection, 0, 0 },
 		{ "MaxBandwidth", 0, &cfg.maxbw, 0, 0 },
 		{ "Sampletime", 0, &cfg.sampletime, 0, 0 },
@@ -317,6 +323,18 @@ void validatecfg(void)
 	if (cfg.ostyle<0 || cfg.ostyle>3) {
 		cfg.ostyle = OSTYLE;
 		snprintf(errorstring, 512, "Invalid value for OutputStyle, resetting to \"%d\".", cfg.ostyle);
+		printe(PT_Config);
+	}
+
+	if (cfg.defaultdecimals<0 || cfg.defaultdecimals>2) {
+		cfg.defaultdecimals = DEFAULTDECIMALS;
+		snprintf(errorstring, 512, "Invalid value for DefaultDecimals, resetting to \"%d\".", cfg.defaultdecimals);
+		printe(PT_Config);
+	}
+
+	if (cfg.hourlydecimals<0 || cfg.hourlydecimals>2) {
+		cfg.hourlydecimals = HOURLYDECIMALS;
+		snprintf(errorstring, 512, "Invalid value for HourlyDecimals, resetting to \"%d\".", cfg.hourlydecimals);
 		printe(PT_Config);
 	}
 
@@ -495,6 +513,8 @@ void defaultcfg(void)
 	cfg.rateunitmode = RATEUNITMODE;
 	cfg.ostyle = OSTYLE;
 	cfg.rateunit = RATEUNIT;
+	cfg.defaultdecimals = DEFAULTDECIMALS;
+	cfg.hourlydecimals = HOURLYDECIMALS;
 	cfg.bwdetection = BWDETECT;
 	cfg.bwdetectioninterval = BWDETECTINTERVAL;
 	cfg.maxbw = DEFMAXBW;

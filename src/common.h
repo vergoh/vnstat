@@ -102,6 +102,10 @@ and most can be changed later from the config file.
 /* 0 = bytes, 1 = bits */
 #define RATEUNIT 1
 
+/* number of decimals */
+#define DEFAULTDECIMALS 2
+#define HOURLYDECIMALS 1
+
 /* default interface */
 #ifndef DEFIFACE
 #define DEFIFACE "eth0"
@@ -237,6 +241,7 @@ typedef struct {
 	char cline[8], clinel[8], cvnstat[8], crx[8], crxd[8], ctx[8], ctxd[8];
 	int32_t unitmode, rateunitmode, rateunit, bvar, qmode, sampletime, hourlyrate, summaryrate;
 	int32_t monthrotate, maxbw, flock, spacecheck, traflessday, transbg, slayout, ostyle;
+	int32_t defaultdecimals, hourlydecimals;
 	char cfgfile[512], logfile[512], pidfile[512];
 	char daemonuser[33], daemongroup[33];
 	int32_t timesyncwait, updateinterval, pollinterval, saveinterval, offsaveinterval, savestatus;

@@ -75,6 +75,7 @@ END_TEST
 
 START_TEST(getvalue_normal)
 {
+	cfg.defaultdecimals = 2;
 	cfg.unitmode = 0;
 	ck_assert_str_eq(getvalue(0, 100, 0, 1), "100 KiB");
 	ck_assert_str_eq(getvalue(1, 0, 0, 1), "1.00 MiB");
@@ -90,6 +91,7 @@ END_TEST
 
 START_TEST(getvalue_estimate)
 {
+	cfg.defaultdecimals = 2;
 	cfg.unitmode = 0;
 	ck_assert_str_eq(getvalue(0, 100, 0, 2), "100 KiB");
 	ck_assert_str_eq(getvalue(1, 0, 0, 2), "1 MiB");
@@ -105,6 +107,7 @@ END_TEST
 
 START_TEST(getvalue_imagescale)
 {
+	cfg.defaultdecimals = 2;
 	cfg.unitmode = 0;
 	ck_assert_str_eq(getvalue(0, 100, 0, 3), "100 KiB");
 	ck_assert_str_eq(getvalue(1, 0, 0, 3), "1 MiB");
@@ -129,6 +132,7 @@ END_TEST
 
 START_TEST(getvalue_mb_kb_mixed)
 {
+	cfg.defaultdecimals = 2;
 	cfg.unitmode = 0;
 	ck_assert_str_eq(getvalue(1, 3210, 0, 1), "4.13 MiB");
 	cfg.unitmode = 1;
@@ -165,6 +169,7 @@ END_TEST
 
 START_TEST(getrate_bytes)
 {
+	cfg.defaultdecimals = 2;
 	cfg.rateunit = 0;
 	cfg.unitmode = 0;
 	ck_assert_str_eq(getrate(0, 100, 1, 0), "100.00 KiB/s");
@@ -181,6 +186,7 @@ END_TEST
 
 START_TEST(getrate_bits)
 {
+	cfg.defaultdecimals = 2;
 	cfg.rateunit = 1;
 
 	cfg.rateunitmode = 1;
@@ -211,6 +217,7 @@ END_TEST
 
 START_TEST(getrate_interval_divides)
 {
+	cfg.defaultdecimals = 2;
 	cfg.unitmode = 0;
 	cfg.rateunitmode = 1;
 	cfg.rateunit = 0;
@@ -226,6 +233,7 @@ END_TEST
 
 START_TEST(getrate_padding)
 {
+	cfg.defaultdecimals = 2;
 	cfg.unitmode = 0;
 	cfg.rateunitmode = 1;
 	cfg.rateunit = 0;
@@ -251,6 +259,7 @@ END_TEST
 
 START_TEST(gettrafficrate_bytes)
 {
+	cfg.defaultdecimals = 2;
 	cfg.rateunit = 0;
 	cfg.unitmode = 0;
 	ck_assert_str_eq(gettrafficrate(102400, 1, 0), "100.00 KiB/s");
@@ -267,6 +276,7 @@ END_TEST
 
 START_TEST(gettrafficrate_bits)
 {
+	cfg.defaultdecimals = 2;
 	cfg.rateunit = 1;
 
 	cfg.rateunitmode = 1;
@@ -297,6 +307,7 @@ END_TEST
 
 START_TEST(gettrafficrate_interval_divides)
 {
+	cfg.defaultdecimals = 2;
 	cfg.unitmode = 0;
 	cfg.rateunitmode = 1;
 	cfg.rateunit = 0;
@@ -312,6 +323,7 @@ END_TEST
 
 START_TEST(gettrafficrate_padding)
 {
+	cfg.defaultdecimals = 2;
 	cfg.unitmode = 0;
 	cfg.rateunit = 0;
 	ck_assert_str_eq(gettrafficrate(102400, 1, 0), "100.00 KiB/s");

@@ -199,7 +199,7 @@ uint64_t getbtime(void)
 char *getvalue(uint64_t mb, uint64_t kb, int len, int type)
 {
 	static char buffer[64];
-	int declen=2;
+	int declen = cfg.defaultdecimals;
 	uint64_t kB;
 
 	/* request types: 1) normal  2) estimate  3) image scale */
@@ -248,7 +248,7 @@ char *getrate(uint64_t mb, uint64_t kb, uint32_t interval, int len)
 char *gettrafficrate(uint64_t bytes, uint32_t interval, int len)
 {
 	static char buffer[64];
-	int unitmode, declen = 2;
+	int unitmode, declen = cfg.defaultdecimals;
 	uint64_t b;
 
 	if (interval==0) {
