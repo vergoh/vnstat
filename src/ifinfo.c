@@ -355,7 +355,7 @@ void parseifinfo(int newdb)
 
 			/* calculate maximum possible transfer since last update based on set maximum rate */
 			/* and add 10% in order to be on the safe side */
-			maxtransfer = ceilf((maxbw/8.0f)*interval*1.1f);
+			maxtransfer = (uint64_t)(ceilf((maxbw/8.0f)*interval*1.1f));
 
 			if (debug)
 				printf("interval: %"PRIu64"  maxbw: %"PRIu32"  maxrate: %"PRIu64"  rxc: %"PRIu64"  txc: %"PRIu64"\n", (uint64_t)interval, maxbw, maxtransfer, rxchange, txchange);
