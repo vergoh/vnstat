@@ -240,12 +240,12 @@ char *getvalue(uint64_t mb, uint64_t kb, int len, int type)
 	return buffer;
 }
 
-char *getrate(uint64_t mb, uint64_t kb, uint32_t interval, int len)
+char *getrate(uint64_t mb, uint64_t kb, time_t interval, int len)
 {
 	return gettrafficrate(mbkbtokb(mb, kb) * 1024, interval, len);
 }
 
-char *gettrafficrate(uint64_t bytes, uint32_t interval, int len)
+char *gettrafficrate(uint64_t bytes, time_t interval, int len)
 {
 	static char buffer[64];
 	int unitmode, declen = cfg.defaultdecimals;

@@ -23,7 +23,8 @@ int fileexists(const char *file)
 
 int mkpath(const char *dir, const mode_t mode)
 {
-	int i = 0, len = 0, ret = 1;
+	int ret = 1;
+	size_t i = 0, len = 0;
 	char *tmp = NULL;
 
 	if (!strlen(dir)) {
@@ -86,7 +87,7 @@ int mkpath(const char *dir, const mode_t mode)
 
 void preparevnstatdir(const char *dir, const char *user, const char *group)
 {
-	int len, i, lastslash=0;
+	size_t i, len, lastslash=0;
 	char *path, *base;
 
 	if (dir == NULL) {

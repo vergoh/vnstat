@@ -318,7 +318,7 @@ int printe(PrintType type);
 int logprint(PrintType type);
 int verifylogaccess(void);
 int dmonth(int month);
-uint32_t mosecs(void);
+time_t mosecs(void);
 uint64_t countercalc(const uint64_t *a, const uint64_t *b);
 void addtraffic(uint64_t *destmb, int *destkb, const uint64_t srcmb, const int srckb);
 uint64_t mbkbtokb(uint64_t mb, uint64_t kb);
