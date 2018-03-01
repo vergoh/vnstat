@@ -328,15 +328,15 @@ void panicexit(const char *sourcefile, const int sourceline) __attribute__((nore
 char *getversion(void);
 
 /* global variables */
-DATA data;
-CFG cfg;
-IFINFO ifinfo;
-char errorstring[512];
-ibwnode *ifacebw;
-int debug;
-int noexit;      /* = running as daemon if 2 */
-int intsignal;
-int pidfile;
-int disableprints;
+extern DATA data;
+extern CFG cfg;
+extern IFINFO ifinfo;
+extern char errorstring[512];
+extern ibwnode *ifacebw;
+extern int debug;
+extern int noexit;      /* = running as daemon if 2 */
+extern int intsignal;
+extern int pidfile;
+extern int disableprints;
 
 #endif

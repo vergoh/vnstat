@@ -21,6 +21,6 @@ uint32_t dbcheck(uint32_t dbhash, int *forcesave);
 uint32_t simplehash(const char *input, int len);
 
 /* global variables */
-datanode *dataptr;
+extern datanode *dataptr;
 
 #endif

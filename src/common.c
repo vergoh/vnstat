@@ -1,5 +1,18 @@
 #include "common.h"
 
+/* global variables */
+DATA data;
+CFG cfg;
+IFINFO ifinfo;
+char errorstring[512];
+ibwnode *ifacebw;
+int debug;
+int noexit;      /* = running as daemon if 2 */
+int intsignal;
+int pidfile;
+int disableprints;
+
+
 int printe(PrintType type)
 {
 	int result = 1;
