@@ -326,7 +326,7 @@ void parseifinfo(int newdb)
 
 		/* btime in /proc/stat seems to vary ±1 second so we use btime-BVAR just to be safe */
 		/* the variation is also slightly different between various kernels... */
-		if (data.btime < (btime-cfg.bvar)) {
+		if (data.btime < (btime-(unsigned)cfg.bvar)) {
 			data.currx=0;
 			data.curtx=0;
 			if (debug)
