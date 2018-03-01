@@ -8,7 +8,7 @@ typedef struct datanode {
 	struct datanode *next;
 } datanode;
 
-int cacheadd(const char *iface, int sync);
+int cacheadd(const char *iface, short sync);
 datanode *cacheremove(const char *iface);
 int cacheupdate(void);
 void cacheshow(void);
