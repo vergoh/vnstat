@@ -1,4 +1,16 @@
 
+Prerequisites
+:::::::::::::
+
+ - make or gmake
+ - C compiler
+ - user with access to kernel interface statistics
+   - usually available by default but may be restricted by security settings
+ - graphics/gd (optional, image output)
+ - devel/check (optional, test suite)
+ - autotools (optional, for recreating configure and makefiles)
+
+
 Compiling the binaries
 ::::::::::::::::::::::
 
