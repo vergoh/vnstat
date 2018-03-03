@@ -23,10 +23,13 @@ Compiling the binaries
      libgd2-noxpm
      libgd2-noxpm-dev
 
- An example cgi ('vnstat.cgi') to be used with http server with the image
+ An example cgi ('vnstat.cgi') to be used with a http server with the image
  output support has been provided in the 'examples' directory. Configuration
  options for the cgi are in the beginning of the file. Additional examples
  for using the json output are also available in the same directory.
+
+ For executing the optional test suite, see the appendix at the end of this
+ file.
 
 
 Installing as root
@@ -36,9 +39,9 @@ Installing as root
 
      make install
 
- If there were no errors, vnStat binaries, man pages and a config file
- should now be installed. The configuration file will be upgraded
- using previously configured values if it is found already to exist.
+ If there were no errors, vnStat binaries, man pages and a configuration
+ file should now be installed. The configuration file will be upgraded using
+ previously configured values if it is found already to exist.
 
  The configuration file /etc/vnstat.conf should be checked at this point.
  See the vnstat.conf man page for documentation about available options.
@@ -49,7 +52,8 @@ Installing as root
      vnstatd -d
 
  The 'examples' directory contains suitable files for most commonly used
- service managers:
+ service managers. Refer to your operating system / distribution
+ documentation if unsure which service manager is being used.
 
    systemd:
      cp -v examples/systemd/vnstat.service /etc/systemd/system/
@@ -88,7 +92,7 @@ Installing without root access
 ::::::::::::::::::::::::::::::
 
  Copy all needed binaries to some directory included in your PATH
- (~/bin/ is an example) and create the database directory.
+ (~/bin/ is used here as an example) and create the database directory.
 
      cp -v vnstat vnstatd vnstati ~/bin/
      cp -v cfg/vnstat.conf ~/.vnstatrc
@@ -102,8 +106,8 @@ Installing without root access
  If this gives an 'command not found' error or a different than expected
  version then check then content of the PATH variable and try again.
 
- Next open the config file ~/.vnstatrc with your favorite text editor and
- locate the following line:
+ Next open the configuration file ~/.vnstatrc with your favorite text editor
+ and locate the following line:
 
      DatabaseDir "/var/lib/vnstat"
 
@@ -157,4 +161,5 @@ Appendix: Running the test suite
      make check
 
  The output should show a non-zero number of tests executed if all the
- necessary packages were available.
+ necessary packages were available. A more detailed list of executed tests
+ can be seen from the check_vnstat.log file after execution.

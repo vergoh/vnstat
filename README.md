@@ -33,4 +33,4 @@ In both cases, continue with instructions from the INSTALL or INSTALL_BSD file d
 **irc:** Vergo (IRCNet)
 **git:** https://github.com/vergoh/vnstat
 
-Bug reports, improvement ideas, feature requests and pull requests should be done using the matching features on GitHub as those are harder to miss or forget.
+Bug reports, improvement ideas, feature requests and pull requests should be sent using the matching features on GitHub as those are harder to miss or forget.

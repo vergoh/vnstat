@@ -42,22 +42,6 @@ Available options and documentation
     vnstat.conf     configuration file
 
 
-Usage tips
-::::::::::
-
- Most vnStat settings can be changed from the config file. The config
- file is either ~/.vnstatrc or /etc/vnstat.conf depending which one is
- found first. A new config file can be generated using current settings
- with the following command:
-
-    vnstat --showconfig >newconfig
-
- The config file contains comments before any settings describing with
- the purpose and usage of each setting is. More detailed descriptions
- about each setting and suggested usage can be found from the vnstat.conf
- man page.
-
-
 Contacting the author
 :::::::::::::::::::::
 
@@ -68,3 +52,7 @@ Contacting the author
 
  The current version of vnStat is always available from
  http://humdi.net/vnstat/
+
+ Bug reports, improvement ideas, feature requests and pull requests should
+ be sent using the matching features on GitHub as those are harder to miss
+ or forget.
