@@ -24,13 +24,13 @@
 #include <grp.h>
 #include <libgen.h>
 #include <fcntl.h>
+#include <sys/time.h>
 
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__FreeBSD_kernel__)
 #include <sys/param.h>
 #include <sys/mount.h>
 #include <sys/socket.h>
 #include <sys/sysctl.h>
-#include <sys/time.h>
 #include <net/if.h>
 #include <ifaddrs.h>
 #endif
@@ -40,6 +40,15 @@
 #define DECCONV "'"
 #else
 #define DECCONV
+#endif
+
+/* used in debug to get function name */
+#if __STDC_VERSION__ < 199901L
+#if __GNUC__ >= 2
+#define __func__ __FUNCTION__
+#else
+#define __func__ "function"
+#endif
 #endif
 
 /*
@@ -57,6 +66,8 @@ and most can be changed later from the config file.
 #define DATABASEDIR "/var/lib/vnstat"
 #endif
 #endif
+
+/* database file name */
 #define DATABASEFILE "vnstat.db"
 
 /* on which day should months change */
@@ -91,9 +102,6 @@ and most can be changed later from the config file.
 
 /* rate in vnstati summary output */
 #define SUMMARYRATE 1
-
-/* layout of summary output in vnstati */
-#define SUMMARYLAYOUT 1
 
 /* rate in vnstati hourly output */
 #define HOURLYRATE 1
@@ -155,6 +163,22 @@ and most can be changed later from the config file.
 /* log trafficless days by default */
 #define TRAFLESSDAY 1
 
+/* list outputs */
+#define LISTFIVEMINS 24
+#define LISTHOURS 24
+#define LISTDAYS 30
+#define LISTMONTHS 12
+#define LISTYEARS 0
+#define LISTTOP 10
+
+/* data retention defaults */
+#define FIVEMINUTEHOURS 48
+#define HOURLYDAYS 2
+#define DAILYDAYS 30
+#define MONTHLYMONTHS 12
+#define YEARLYYEARS -1
+#define TOPDAYENTRIES 10
+
 /* assume that locale can be UTF-n when enabled */
 #define UTFLOCALE 1
 
@@ -162,17 +186,16 @@ and most can be changed later from the config file.
 /* each try takes about a second */
 #define LOCKTRYLIMIT 5
 
-/* database version */
-/* 1 = 1.0, 2 = 1.1-1.2, 3 = 1.3- */
-#define DBVERSION 3
+/* 1 = 2.0 */
+#define SQLDBVERSION "1"
 
 /* xml format version */
-/* 1 = 1.7- */
-#define XMLVERSION 1
+/* 1 = 1.7-1.16, 2 = 2.0 */
+#define XMLVERSION 2
 
 /* json format version */
-/* 1 = 1.13- */
-#define JSONVERSION 1
+/* 1 = 1.13-1.16, 2 = 2.0 */
+#define JSONVERSION 2
 
 /* json format version, -tr */
 /* 1 = 1.18- */
@@ -233,6 +256,9 @@ and most can be changed later from the config file.
 #define CTX "606060"
 #define CTXD "-"
 
+/* number of retries for non-fatal database errors */
+#define DBRETRYLIMIT 3
+
 /* internal config structure */
 typedef struct {
 	char dformat[64], mformat[64], tformat[64], hformat[64];
@@ -243,12 +269,14 @@ typedef struct {
 	char cbg[8], cedge[8], cheader[8], cheadertitle[8], cheaderdate[8], ctext[8];
 	char cline[8], clinel[8], cvnstat[8], crx[8], crxd[8], ctx[8], ctxd[8];
 	int32_t unitmode, rateunitmode, rateunit, bvar, qmode, sampletime, hourlyrate, summaryrate;
-	int32_t monthrotate, maxbw, flock, spacecheck, traflessday, transbg, slayout, ostyle;
+	int32_t monthrotate, maxbw, flock, spacecheck, traflessday, transbg, ostyle;
 	int32_t defaultdecimals, hourlydecimals, hourlystyle;
 	char cfgfile[512], logfile[512], pidfile[512];
 	char daemonuser[33], daemongroup[33];
 	int32_t timesyncwait, updateinterval, pollinterval, saveinterval, offsaveinterval, savestatus;
 	int32_t uselogging, createdirs, updatefileowner, bwdetection, bwdetectioninterval, utflocale;
+	int32_t fiveminutehours, hourlydays, dailydays, monthlymonths, yearlyyears, topdayentries;
+	int32_t listfivemins, listhours, listdays, listmonths, listyears, listtop;
 } CFG;
 
 /* internal interface information structure */
@@ -259,42 +287,8 @@ typedef struct {
 	uint64_t tx;
 	uint64_t rxp;
 	uint64_t txp;
+	time_t timestamp;
 } IFINFO;
-
-typedef struct {
-	time_t date;
-	uint64_t rx, tx;
-} HOUR;
-
-typedef struct {
-	time_t date;
-	uint64_t rx, tx;
-	int rxk, txk;
-	int used;
-} DAY;
-
-typedef struct {
-	time_t month;
-	uint64_t rx, tx;
-	int rxk, txk;
-	int used;
-} MONTH;
-
-/* db structure */
-typedef struct {
-	int version;
-	char interface[32];
-	char nick[32];
-	int active;
-	uint64_t totalrx, totaltx, currx, curtx;
-	int totalrxk, totaltxk;
-	time_t lastupdated, created;
-	DAY day[30];
-	MONTH month[12];
-	DAY top10[10];
-	HOUR hour[24];
-	uint64_t btime;
-} DATA;
 
 typedef struct ibwnode {
 	char interface[32];
@@ -307,6 +301,7 @@ typedef struct ibwnode {
 
 typedef enum PrintType {
 	PT_Info = 0,
+	PT_Infoless,
 	PT_Error,
 	PT_Config,
 	PT_Multiline,
@@ -318,20 +313,19 @@ int printe(PrintType type);
 int logprint(PrintType type);
 int verifylogaccess(void);
 int dmonth(int month);
-time_t mosecs(void);
+int isleapyear(int year);
+time_t mosecs(time_t month, time_t updated);
 uint64_t countercalc(const uint64_t *a, const uint64_t *b);
-void addtraffic(uint64_t *destmb, int *destkb, const uint64_t srcmb, const int srckb);
-uint64_t mbkbtokb(uint64_t mb, uint64_t kb);
 char *strncpy_nt(char *dest, const char *src, size_t n);
 int isnumeric(const char *s);
 void panicexit(const char *sourcefile, const int sourceline) __attribute__((noreturn));
 char *getversion(void);
+void timeused(const char *func, const int reset);
 
 /* global variables */
-extern DATA data;
 extern CFG cfg;
 extern IFINFO ifinfo;
-extern char errorstring[512];
+extern char errorstring[1024];
 extern ibwnode *ifacebw;
 extern int debug;
 extern int noexit;      /* = running as daemon if 2 */

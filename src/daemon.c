@@ -1,7 +1,8 @@
 #include "common.h"
 #include "ifinfo.h"
+#include "dbsql.h"
 #include "dbaccess.h"
-#include "dbcache.h"
+#include "datacache.h"
 #include "misc.h"
 #include "cfg.h"
 #include "ibw.h"
@@ -40,13 +41,13 @@ void daemonize(void)
 	pidfile = open(cfg.pidfile, O_RDWR|O_CREAT, 0644);
 	if (pidfile<0) {
 		perror("Error: pidfile");
-		snprintf(errorstring, 512, "opening pidfile \"%.473s\" failed (%s), exiting.", cfg.pidfile, strerror(errno));
+		snprintf(errorstring, 1024, "opening pidfile \"%s\" failed (%s), exiting.", cfg.pidfile, strerror(errno));
 		printe(PT_Error);
 		exit(EXIT_FAILURE); /* can't open */
 	}
 	if (lockf(pidfile,F_TLOCK,0)<0) {
 		perror("Error: pidfile lock");
-		snprintf(errorstring, 512, "pidfile \"%.476s\" lock failed (%s), exiting.", cfg.pidfile, strerror(errno));
+		snprintf(errorstring, 1024, "pidfile \"%s\" lock failed (%s), exiting.", cfg.pidfile, strerror(errno));
 		printe(PT_Error);
 		exit(EXIT_FAILURE); /* can't lock */
 	}
@@ -63,7 +64,7 @@ void daemonize(void)
 
 	if (i < 0) {
 		perror("Error: open() /dev/null");
-		snprintf(errorstring, 512, "open() /dev/null failed, exiting.");
+		snprintf(errorstring, 1024, "open() /dev/null failed, exiting.");
 		printe(PT_Error);
 		exit(EXIT_FAILURE);
 	}
@@ -71,14 +72,14 @@ void daemonize(void)
 	/* stdout */
 	if (dup(i) < 0) {
 		perror("Error: dup(stdout)");
-		snprintf(errorstring, 512, "dup(stdout) failed, exiting.");
+		snprintf(errorstring, 1024, "dup(stdout) failed, exiting.");
 		printe(PT_Error);
 		exit(EXIT_FAILURE);
 	}
 	/* stderr */
 	if (dup(i) < 0) {
 		perror("Error: dup(stderr)");
-		snprintf(errorstring, 512, "dup(stderr) failed, exiting.");
+		snprintf(errorstring, 1024, "dup(stderr) failed, exiting.");
 		printe(PT_Error);
 		exit(EXIT_FAILURE);
 	}
@@ -90,7 +91,7 @@ void daemonize(void)
 	/* change running directory */
 	if (chdir("/") < 0) {
 		perror("Error: chdir(/)");
-		snprintf(errorstring, 512, "directory change to / failed, exiting.");
+		snprintf(errorstring, 1024, "directory change to / failed, exiting.");
 		printe(PT_Error);
 		exit(EXIT_FAILURE);
 	}
@@ -101,7 +102,7 @@ void daemonize(void)
 	/* record pid to pidfile */
 	if (write(pidfile,str,strlen(str)) < 0) {
 		perror("Error: write(pidfile)");
-		snprintf(errorstring, 512, "writing to pidfile %.475s failed, exiting.", cfg.pidfile);
+		snprintf(errorstring, 1024, "writing to pidfile \"%s\" failed (%s), exiting.", cfg.pidfile, strerror(errno));
 		printe(PT_Error);
 		exit(EXIT_FAILURE);
 	}
@@ -112,11 +113,13 @@ void daemonize(void)
 	signal(SIGTTIN,SIG_IGN);
 }
 
-int addinterfaces(const char *dirname, const int running)
+int addinterfaces(DSTATE *s)
 {
 	char *ifacelist, interface[32];
 	int index = 0, count = 0;
 	uint32_t bwlimit = 0;
+
+	timeused(__func__, 1);
 
 	/* get list of currently visible interfaces */
 	if (getiflist(&ifacelist, 0)==0) {
@@ -146,45 +149,46 @@ int addinterfaces(const char *dirname, const int running)
 		}
 
 		/* skip already known interfaces */
-		if (checkdb(interface, dirname)) {
+		if (db_getinterfacecountbyname(interface)) {
 			if (debug)
 				printf("already known\n");
 			continue;
 		}
 
 		/* create database for interface */
-		initdb();
-		strncpy_nt(data.interface, interface, 32);
-		strncpy_nt(data.nick, data.interface, 32);
+		if (!db_addinterface(interface)) {
+			if (debug)
+				printf("add failed, skip\n");
+		}
+
 		if (!getifinfo(interface)) {
 			if (debug)
 				printf("getifinfo failed, skip\n");
+			/* remove empty entry from database since the interface can't provide data */
+			db_removeinterface(interface);
 			continue;
 		}
-		parseifinfo(1);
-		if (!writedb(interface, dirname, 1)) {
-			continue;
-		}
+
+		db_setcounters(interface, ifinfo.rx, ifinfo.tx);
+
 		count++;
 		ibwget(interface, &bwlimit);
-		if (!running) {
-			if (bwlimit > 0) {
-				printf("\"%s\" added with %"PRIu32" Mbit bandwidth limit.\n", interface, bwlimit);
-			} else {
-				printf("\"%s\" added. Warning: no bandwidth limit has been set.\n", interface);
-			}
+		if (bwlimit > 0) {
+			snprintf(errorstring, 1024, "Interface \"%s\" added with %"PRIu32" Mbit bandwidth limit.", interface, bwlimit);
 		} else {
-			if (debug)
-				printf("\"%s\" added with %"PRIu32" Mbit bandwidth limit to cache.\n", interface, bwlimit);
-			cacheadd(interface, 1);
+			snprintf(errorstring, 1024, "Interface \"%s\" added. Warning: no bandwidth limit has been set.", interface);
+		}
+		printe(PT_Infoless);
+		if (s->running) {
+			datacache_add(&s->dcache, interface, 1);
 		}
 	}
 
-	if (count && !running) {
-		if (count==1) {
-			printf("-> %d interface added.\n", count);
+	if (count && !s->running) {
+		if (count == 1) {
+			printf("-> %d new interface found.\n", count);
 		} else {
-			printf("-> %d interfaces added.\n", count);
+			printf("-> %d new interfaces found.\n", count);
 		}
 
 		printf("Limits can be modified using the configuration file. See \"man vnstat.conf\".\n");
@@ -192,7 +196,32 @@ int addinterfaces(const char *dirname, const int running)
 	}
 
 	free(ifacelist);
+	timeused(__func__, 0);
 	return count;
+}
+
+void detectboot(DSTATE *s)
+{
+	char buffer[32];
+	char *btime_buffer;
+	uint64_t current_btime, db_btime;
+
+	current_btime = getbtime();
+	btime_buffer = db_getinfo("btime");
+
+	if (current_btime == 0 || strlen(btime_buffer) == 0) {
+		return;
+	}
+	db_btime = strtoull(btime_buffer, (char **)NULL, 0);
+
+	if (db_btime < (current_btime-cfg.bvar)) {
+		s->bootdetected = 1;
+		if (debug)
+			printf("System has been booted, %"PRIu64" < %"PRIu64" - %d\n", db_btime, current_btime, cfg.bvar);
+	}
+
+	snprintf(buffer, 32, "%"PRIu64"", (uint64_t)current_btime);
+	db_setinfo("btime", buffer, 1);
 }
 
 void debugtimestamp(void)
@@ -219,7 +248,7 @@ void initdstate(DSTATE *s)
 	s->forcesave = 0;
 	s->noadd = 0;
 	s->alwaysadd = 0;
-	s->dbhash = 0;
+	s->iflisthash = 0;
 	s->cfgfile[0] = '\0';
 	s->dirname[0] = '\0';
 	s->user[0] = '\0';
@@ -228,15 +257,61 @@ void initdstate(DSTATE *s)
 	s->prevdbsave = 0;
 	s->dbcount = 0;
 	s->dodbsave = 0;
-	s->datalist = NULL;
+	s->bootdetected = 0;
+	s->cleanuphour = getcurrenthour();
+	s->dbretrycount = 0;
+	s->dcache = NULL;
 }
 
 void preparedatabases(DSTATE *s)
 {
+	s->dbcount = db_getinterfacecount();
+
+	if (s->dbcount > 0 && !s->alwaysadd) {
+		s->dbcount = 0;
+		return;
+	}
+
+	if (debug) {
+		printf("db count: %d\n", s->dbcount);
+	}
+
+	if (s->noadd) {
+		printf("Zero database found, exiting.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (!spacecheck(s->dirname)) {
+		printf("Error: Not enough free diskspace available, exiting.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (s->dbcount == 0) {
+		if (importlegacydbs(s) && !s->alwaysadd) {
+			s->dbcount = 0;
+			return;
+		}
+	}
+
+	if (s->dbcount == 0) {
+		printf("Zero database found, adding available interfaces...\n");
+	}
+
+	if (!addinterfaces(s) && s->dbcount == 0) {
+		printf("Nothing to do, exiting.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	/* set counter back to zero so that dbs will be cached later */
+	s->dbcount = 0;
+}
+
+int importlegacydbs(DSTATE *s)
+{
 	DIR *dir;
 	struct dirent *di;
+	int importcount = 0;
 
-	/* check that directory is ok */
 	if ((dir=opendir(s->dirname))==NULL) {
 		printf("Error: Unable to open database directory \"%s\": %s\n", s->dirname, strerror(errno));
 		printf("Make sure it exists and is at least read enabled for current user.\n");
@@ -244,39 +319,22 @@ void preparedatabases(DSTATE *s)
 		exit(EXIT_FAILURE);
 	}
 
-	/* check if there's something to work with */
 	s->dbcount = 0;
 	while ((di=readdir(dir))) {
 		if ((di->d_name[0]!='.') && (strcmp(di->d_name, DATABASEFILE)!=0)) {
-			s->dbcount++;
+			/* ignore already known interfaces */
+			if (db_getinterfacecountbyname(di->d_name)) {
+				continue;
+			}
+			if (importlegacydb(di->d_name, s->dirname)) {
+				importcount++;
+			}
 		}
 	}
 	closedir(dir);
 
-	if (s->dbcount > 0 && !s->alwaysadd) {
-		s->dbcount = 0;
-		return;
-	}
-
-	if (s->noadd) {
-		printf("Zero database found, exiting.\n");
-		exit(EXIT_FAILURE);
-	}
-	if (!spacecheck(s->dirname)) {
-		printf("Error: Not enough free diskspace available, exiting.\n");
-		exit(EXIT_FAILURE);
-	}
-	if (s->dbcount == 0) {
-		printf("Zero database found, adding available interfaces...\n");
-	}
-
-	if (!addinterfaces(s->dirname, s->running) && s->dbcount == 0) {
-		printf("Nothing to do, exiting.\n");
-		exit(EXIT_FAILURE);
-	}
-
-	/* set counter back to zero so that dbs will be cached later */
-	s->dbcount = 0;
+	s->dbcount += importcount;
+	return importcount;
 }
 
 void setsignaltraps(void)
@@ -298,47 +356,30 @@ void setsignaltraps(void)
 
 void filldatabaselist(DSTATE *s)
 {
-	DIR *dir;
-	struct dirent *di;
+	dbiflist *dbifl = NULL, *dbifl_iterator = NULL;
 
-	if ((dir=opendir(s->dirname))==NULL) {
-		snprintf(errorstring, 512, "Unable to access database directory \"%.460s\" (%s), exiting.", s->dirname, strerror(errno));
-		printe(PT_Error);
+	timeused(__func__, 1);
 
-		/* clean daemon stuff before exit */
-		if (s->rundaemon && !debug) {
-			close(pidfile);
-			unlink(cfg.pidfile);
-		}
-		ibwflush();
-		exit(EXIT_FAILURE);
+	if (db_getiflist(&dbifl) < 0) {
+		errorexitdaemon(s, 1);
 	}
 
-	while ((di=readdir(dir))) {
-		if ((di->d_name[0]=='.') || (strcmp(di->d_name, DATABASEFILE)==0)) {
-			continue;
-		}
+	dbifl_iterator = dbifl;
 
+	while (dbifl_iterator != NULL) {
 		if (debug) {
-			printf("\nProcessing file \"%s/%s\"...\n", s->dirname, di->d_name);
+			printf("\nProcessing interface \"%s\"...\n", dbifl_iterator->interface);
 		}
-
-		if (!cacheadd(di->d_name, s->sync)) {
-			snprintf(errorstring, 512, "Cache memory allocation failed, exiting.");
+		if (!datacache_add(&s->dcache, dbifl_iterator->interface, s->sync)) {
+			snprintf(errorstring, 1024, "Cache memory allocation failed (%s), exiting.", strerror(errno));
 			printe(PT_Error);
-
-			/* clean daemon stuff before exit */
-			if (s->rundaemon && !debug) {
-				close(pidfile);
-				unlink(cfg.pidfile);
-			}
-			ibwflush();
-			exit(EXIT_FAILURE);
+			errorexitdaemon(s, 1);
 		}
 		s->dbcount++;
+		dbifl_iterator = dbifl_iterator->next;
 	}
 
-	closedir(dir);
+	dbiflistfree(&dbifl);
 	s->sync = 0;
 
 	/* disable update interval check for one loop if database list was refreshed */
@@ -348,16 +389,17 @@ void filldatabaselist(DSTATE *s)
 		intsignal = 42;
 		s->prevdbsave = s->current;
 		/* list monitored interfaces to log */
-		cachestatus();
+		datacache_status(&s->dcache);
 	} else {
 		s->updateinterval = 120;
 	}
+	timeused(__func__, 0);
 }
 
 void adjustsaveinterval(DSTATE *s)
 {
 	/* modify active save interval if all interfaces are unavailable */
-	if (cacheactivecount() > 0) {
+	if (datacache_activecount(&s->dcache) > 0) {
 		s->saveinterval = cfg.saveinterval * 60;
 	} else {
 		s->saveinterval = cfg.offsaveinterval * 60;
@@ -375,158 +417,289 @@ void checkdbsaveneed(DSTATE *s)
 	}
 }
 
-void processdatalist(DSTATE *s)
+void processdatacache(DSTATE *s)
 {
-	while (s->datalist!=NULL) {
+	datacache *iterator = s->dcache;
+
+	timeused(__func__, 1);
+
+	while (iterator != NULL) {
 
 		if (debug) {
-			printf("d: processing %s (%d)...\n", s->datalist->data.interface, s->dodbsave);
+			printf("dc: processing %s (%d)...\n", iterator->interface, s->dodbsave);
 		}
 
-		/* get data from cache if available */
-		if (!datalist_cacheget(s)) {
-			s->datalist = s->datalist->next;
-			continue;
+		if (!iterator->filled) {
+			if (!initcachevalues(s, &iterator)) {
+				iterator = iterator->next;
+				continue;
+			}
+			s->iflisthash = 0;
 		}
 
-		/* get info if interface has been marked as active */
-		datalist_getifinfo(s);
-
-		/* check that the time is correct and update cached data */
-		if (!datalist_timevalidation(s)) {
-			s->datalist = s->datalist->next;
-			continue;
-		}
-
-		/* write data to file if now is the time for it */
-		if (!datalist_writedb(s)) {
-			/* remove interface from update list since the database file doesn't exist anymore */
-			snprintf(errorstring, 512, "Removing interface \"%s\" from update list.", s->datalist->data.interface);
-			printe(PT_Info);
-			s->datalist = cacheremove(s->datalist->data.interface);
-			s->dbcount--;
-			cachestatus();
-			continue;
-		}
-
-		s->datalist = s->datalist->next;
-	}
-}
-
-int datalist_cacheget(DSTATE *s)
-{
-	if (cacheget(s->datalist)==0) {
-
-		/* try to read data from file if not cached */
-		if (readdb(s->datalist->data.interface, s->dirname, 0)==0) {
-			/* mark cache as filled on read success and force interface status update */
-			s->datalist->filled = 1;
-			s->dbhash = 0;
-		} else {
-			return 0;
-		}
-	}
-	return 1;
-}
-
-void datalist_getifinfo(DSTATE *s)
-{
-	if (!data.active) {
-		if (debug)
-			printf("d: interface is disabled\n");
-		return;
-	}
-
-	if (!getifinfo(data.interface)) {
-		/* disable interface since we can't access its data */
-		data.active = 0;
-		snprintf(errorstring, 512, "Interface \"%s\" not available, disabling.", data.interface);
-		printe(PT_Info);
-		return;
-	}
-
-	if (s->datalist->sync) { /* if --sync was used during startup */
-		data.currx = ifinfo.rx;
-		data.curtx = ifinfo.tx;
-		s->datalist->sync = 0;
-	} else {
-		parseifinfo(0);
-	}
-}
-
-int datalist_timevalidation(DSTATE *s)
-{
-	if (s->current >= data.lastupdated) {
-		data.lastupdated = s->current;
-		cacheupdate();
-		return 1;
-	}
-
-	/* skip update if previous update is less than a day in the future */
-	/* otherwise exit with error message since the clock is problably messed */
-	if (data.lastupdated > (s->current+86400)) {
-		snprintf(errorstring, 512, "Interface \"%s\" has previous update date too much in the future, exiting. (%u / %u)", data.interface, (unsigned int)data.lastupdated, (unsigned int)s->current);
-		printe(PT_Error);
-
-		/* clean daemon stuff before exit */
-		if (s->rundaemon && !debug) {
-			close(pidfile);
-			unlink(cfg.pidfile);
-		}
-		ibwflush();
-		exit(EXIT_FAILURE);
-	}
-
-	return 0;
-}
-
-int datalist_writedb(DSTATE *s)
-{
-	if (!s->dodbsave) {
-		return 1;
-	}
-
-	if (!checkdb(s->datalist->data.interface, s->dirname)) {
-		snprintf(errorstring, 512, "Database for interface \"%s\" no longer exists.", s->datalist->data.interface);
-		printe(PT_Info);
-		return 0;
-	}
-
-	if (!validatedb()) {
-		snprintf(errorstring, 512, "Cached data for interface \"%s\" failed validation. Reloading data from file.", s->datalist->data.interface);
-		printe(PT_Error);
-		if (readdb(s->datalist->data.interface, s->dirname, 0)==0) {
-			cacheupdate();
-			return 1;
-		}
-		/* remove interface from update list if reload failed */
-		return 0;
-	}
-
-	if (spacecheck(s->dirname)) {
-		if (writedb(s->datalist->data.interface, s->dirname, 0)) {
-			if (!s->dbsaved) {
-				snprintf(errorstring, 512, "Database write possible again.");
+		if (iterator->active) {
+			if (!getifinfo(iterator->interface)) {
+				/* disable interface since we can't access its data */
+				iterator->active = 0;
+				snprintf(errorstring, 1024, "Interface \"%s\" not available, disabling.", iterator->interface);
 				printe(PT_Info);
-				s->dbsaved = 1;
+			} else {
+				if (!processifinfo(s, &iterator)) {
+					iterator = iterator->next;
+					continue;
+				}
 			}
 		} else {
-			if (s->dbsaved) {
-				snprintf(errorstring, 512, "Unable to write database, continuing with cached data.");
-				printe(PT_Error);
-				s->dbsaved = 0;
-			}
+			if (debug)
+				printf("dc: interface is disabled\n");
 		}
-	} else {
-		/* show freespace error only once */
-		if (s->dbsaved) {
-			snprintf(errorstring, 512, "Free diskspace check failed, unable to write database, continuing with cached data.");
-			printe(PT_Error);
-			s->dbsaved = 0;
-		}
+
+		iterator = iterator->next;
 	}
 
+	if (s->bootdetected) {
+		s->bootdetected = 0;
+	}
+	timeused(__func__, 0);
+
+	if (s->dodbsave) {
+		flushcachetodisk(s);
+		cleanremovedinterfaces(s);
+		if (s->cleanuphour != getcurrenthour()) {
+			db_removeoldentries();
+			s->cleanuphour = getcurrenthour();
+		}
+	}
+}
+
+int initcachevalues(DSTATE *s, datacache **dc)
+{
+	interfaceinfo info;
+
+	if (!db_getinterfaceinfo((*dc)->interface, &info)) {
+		return 0;
+	}
+
+	if (s->bootdetected) {
+		(*dc)->currx = 0;
+		(*dc)->curtx = 0;
+	} else {
+		(*dc)->currx = info.rxcounter;
+		(*dc)->curtx = info.txcounter;
+	}
+	(*dc)->updated = info.updated;
+	(*dc)->filled = 1;
+
 	return 1;
+}
+
+int processifinfo(DSTATE *s, datacache **dc)
+{
+	uint64_t rxchange, txchange;
+	uint64_t maxtransfer;
+	uint32_t maxbw;
+	time_t interval;
+
+	if ((*dc)->syncneeded) { /* if --sync was used during startup */
+		(*dc)->currx = ifinfo.rx;
+		(*dc)->curtx = ifinfo.tx;
+		(*dc)->syncneeded = 0;
+		return 1;
+	}
+
+	if ((*dc)->updated > ifinfo.timestamp) {
+		/* skip update if previous update is less than a day in the future */
+		/* otherwise exit with error message since the clock is problably messed */
+		if ((*dc)->updated > (ifinfo.timestamp+86400)) {
+			snprintf(errorstring, 1024, "Interface \"%s\" has previous update date too much in the future, exiting. (%u / %u)", (*dc)->interface, (unsigned int)(*dc)->updated, (unsigned int)ifinfo.timestamp);
+			printe(PT_Error);
+			errorexitdaemon(s, 1);
+		}
+		return 0;
+	}
+
+	interval = ifinfo.timestamp -(*dc)->updated;
+	if ( (interval >= 1) && (interval <= (60*MAXUPDATEINTERVAL)) ) {
+
+		rxchange = countercalc(&(*dc)->currx, &ifinfo.rx);
+		txchange = countercalc(&(*dc)->curtx, &ifinfo.tx);
+
+		/* get bandwidth limit for current interface */
+		ibwget((*dc)->interface, &maxbw);
+
+		if (maxbw > 0) {
+
+			/* calculate maximum possible transfer since last update based on set maximum rate */
+			/* and add 10% in order to be on the safe side */
+			maxtransfer = ceil((maxbw/(float)8)*interval*(float)1.1) * 1024 * 1024;
+
+			if (debug)
+				printf("interval: %"PRIu64"  maxbw: %"PRIu32"  maxrate: %"PRIu64"  rxc: %"PRIu64"  txc: %"PRIu64"\n", (uint64_t)interval, maxbw, maxtransfer, rxchange, txchange);
+
+			/* sync counters if traffic is greater than set maximum */
+			if ( (rxchange > maxtransfer) || (txchange > maxtransfer) ) {
+				snprintf(errorstring, 1024, "Traffic rate for \"%s\" higher than set maximum %"PRIu32" Mbit (%"PRIu64"->%"PRIu64", r%"PRIu64" t%"PRIu64"), syncing.", (*dc)->interface, maxbw, (uint64_t)interval, maxtransfer, rxchange, txchange);
+				printe(PT_Info);
+				rxchange = txchange = 0;
+			}
+		}
+
+		if (rxchange || txchange || cfg.traflessday) {
+			xferlog_add(&(*dc)->log, ifinfo.timestamp - (ifinfo.timestamp % 300), rxchange, txchange);
+		}
+	}
+	(*dc)->currx = ifinfo.rx;
+	(*dc)->curtx = ifinfo.tx;
+	(*dc)->updated = ifinfo.timestamp;
+
+	return 1;
+}
+
+void flushcachetodisk(DSTATE *s)
+{
+	int ret;
+	uint32_t logcount = 0;
+	datacache *iterator = s->dcache;
+	xferlog *logiterator;
+	interfaceinfo info;
+
+	timeused(__func__, 1);
+
+	if (!db_begintransaction()) {
+		handledatabaseerror(s);
+		return;
+	}
+
+	db_errcode = 0;
+	while (iterator != NULL) {
+		/* ignore interface no longer in database */
+		if (!db_getinterfacecountbyname(iterator->interface)) {
+			if (db_errcode) {
+				handledatabaseerror(s);
+				break;
+			} else {
+				iterator = iterator->next;
+				continue;
+			}
+		}
+
+		/* flush interface specific log to database */
+		logcount = 0;
+		logiterator = iterator->log;
+		while (logiterator != NULL) {
+			if (!db_addtraffic_dated(iterator->interface, logiterator->rx, logiterator->tx, (uint64_t)logiterator->timestamp)) {
+				handledatabaseerror(s);
+				break;
+			}
+			logiterator = logiterator->next;
+			logcount++;
+		}
+		if (db_errcode) {
+			break;
+		}
+
+		/* update database counters if new data was inserted */
+		if (logcount) {
+			if (!db_setcounters(iterator->interface, iterator->currx, iterator->curtx)) {
+				handledatabaseerror(s);
+				break;
+			}
+		}
+
+		/* update interface timestamp in database */
+		if (!db_setupdated(iterator->interface, iterator->updated)) {
+			handledatabaseerror(s);
+			break;
+		}
+
+		if (!iterator->active && !logcount) {
+			/* throw away if interface hasn't seen any data and is disabled */
+			if (!iterator->currx && !iterator->curtx) {
+				ret = db_getinterfaceinfo(iterator->interface, &info);
+				if (!ret || (!info.rxtotal && !info.txtotal)) {
+					snprintf(errorstring, 1024, "Removing interface \"%s\" from database as it is disabled and has seen no data.", iterator->interface);
+					printe(PT_Info);
+					if (!db_removeinterface(iterator->interface)) {
+						if (db_errcode) {
+							handledatabaseerror(s);
+						}
+					}
+					break;
+				}
+			}
+
+			/* update interface activity status in database if changed */
+			if (!db_setactive(iterator->interface, iterator->active)) {
+				handledatabaseerror(s);
+				break;
+			}
+		}
+
+		iterator = iterator->next;
+	}
+
+	if (db_intransaction && !db_errcode) {
+		if (!db_committransaction()) {
+			handledatabaseerror(s);
+			db_rollbacktransaction();
+		} else {
+			/* clear xferlog now that everything is in database */
+			iterator = s->dcache;
+			while (iterator != NULL) {
+				xferlog_clear(&iterator->log);
+				iterator = iterator->next;
+			}
+			s->dbretrycount = 0;
+		}
+	} else {
+		db_rollbacktransaction();
+	}
+	timeused(__func__, 0);
+}
+
+void handledatabaseerror(DSTATE *s)
+{
+	if (db_iserrcodefatal(db_errcode)) {
+		snprintf(errorstring, 1024, "Fatal database error detected, exiting.");
+		printe(PT_Error);
+		errorexitdaemon(s, 1);
+	} else {
+		s->dbretrycount++;
+		if (s->dbretrycount >= DBRETRYLIMIT) {
+			snprintf(errorstring, 1024, "Database error retry limit %d reached, exiting.", DBRETRYLIMIT);
+			printe(PT_Error);
+			errorexitdaemon(s, 1);
+		}
+	}
+}
+
+void cleanremovedinterfaces(DSTATE *s)
+{
+	datacache *iterator = s->dcache;
+	dbiflist *dbifl = NULL, *dbifl_iterator = NULL;
+
+	timeused(__func__, 1);
+
+	while (iterator != NULL) {
+		if (!db_getinterfacecountbyname(iterator->interface)) {
+			dbiflistadd(&dbifl, iterator->interface);
+		}
+		iterator = iterator->next;
+	}
+
+	if (dbifl != NULL) {
+		dbifl_iterator = dbifl;
+		while (dbifl_iterator != NULL) {
+			snprintf(errorstring, 1024, "Removing interface \"%s\" from update list.", dbifl_iterator->interface);
+			printe(PT_Info);
+			datacache_remove(&s->dcache, dbifl_iterator->interface);
+			s->dbcount--;
+			dbifl_iterator = dbifl_iterator->next;
+		}
+		datacache_status(&s->dcache);
+		dbiflistfree(&dbifl);
+	}
+	timeused(__func__, 0);
 }
 
 void handleintsignals(DSTATE *s)
@@ -534,25 +707,36 @@ void handleintsignals(DSTATE *s)
 	switch (intsignal) {
 
 		case SIGHUP:
-			snprintf(errorstring, 512, "SIGHUP received, flushing data to disk and reloading config.");
+			snprintf(errorstring, 1024, "SIGHUP received, flushing data to disk and reloading config.");
 			printe(PT_Info);
-			cacheflush(s->dirname);
+			flushcachetodisk(s);
+			datacache_clear(&s->dcache);
 			s->dbcount = 0;
 			ibwflush();
+			db_close();
 			if (loadcfg(s->cfgfile)) {
 				strncpy_nt(s->dirname, cfg.dbdir, 512);
 			}
 			ibwloadcfg(s->cfgfile);
+			if (!db_open_rw(1)) {
+				snprintf(errorstring, 1024, "Opening database after SIGHUP failed (%s), exiting.", strerror(errno));
+				printe(PT_Error);
+				if (s->rundaemon && !debug) {
+					close(pidfile);
+					unlink(cfg.pidfile);
+				}
+				exit(EXIT_FAILURE);
+			}
 			break;
 
 		case SIGINT:
-			snprintf(errorstring, 512, "SIGINT received, exiting.");
+			snprintf(errorstring, 1024, "SIGINT received, exiting.");
 			printe(PT_Info);
 			s->running = 0;
 			break;
 
 		case SIGTERM:
-			snprintf(errorstring, 512, "SIGTERM received, exiting.");
+			snprintf(errorstring, 1024, "SIGTERM received, exiting.");
 			printe(PT_Info);
 			s->running = 0;
 			break;
@@ -564,7 +748,7 @@ void handleintsignals(DSTATE *s)
 			break;
 
 		default:
-			snprintf(errorstring, 512, "Unknown signal %d received, ignoring.", intsignal);
+			snprintf(errorstring, 1024, "Unkown signal %d received, ignoring.", intsignal);
 			printe(PT_Info);
 			break;
 	}
@@ -590,8 +774,189 @@ void preparedirs(DSTATE *s)
 	}
 }
 
+void datacache_status(datacache **dc)
+{
+	char buffer[1024], bwtemp[16];
+	int b = 0, count = 0;
+	uint32_t bwlimit = 0;
+	datacache *iterator = *dc;
+
+	timeused(__func__, 1);
+
+	snprintf(buffer, 1024, "Monitoring (%d): ", datacache_count(dc));
+	b = strlen(buffer) + 1;
+
+	while (iterator != NULL) {
+		if ((b+strlen(iterator->interface)+16) < 1020) {
+			if (!ibwget(iterator->interface, &bwlimit) || bwlimit == 0) {
+				snprintf(bwtemp, 16, " (no limit) ");
+			} else {
+				snprintf(bwtemp, 16, " (%"PRIu32" Mbit) ", bwlimit);
+			}
+			strncat(buffer, iterator->interface, strlen(iterator->interface));
+			strncat(buffer, bwtemp, strlen(bwtemp));
+			b += strlen(iterator->interface) + strlen(bwtemp);
+		} else {
+			strcat(buffer, "...");
+			break;
+		}
+		count++;
+		iterator = iterator->next;
+	}
+
+	if (count) {
+		strncpy_nt(errorstring, buffer, 1024);
+	} else {
+		snprintf(errorstring, 1024, "Nothing to monitor");
+	}
+	printe(PT_Info);
+	timeused(__func__, 0);
+}
+
+void interfacechangecheck(DSTATE *s)
+{
+	char *ifacelist, interface[32];
+	datacache *iterator = s->dcache;
+	uint32_t newhash;
+	int offset, found;
+
+	timeused(__func__, 1);
+
+	/* get list of currently visible interfaces */
+	if (getiflist(&ifacelist, 0)==0) {
+		free(ifacelist);
+		s->iflisthash = 0;
+		return;
+	}
+
+	newhash = simplehash(ifacelist, (int)strlen(ifacelist));
+
+	if (s->iflisthash == newhash) {
+		free(ifacelist);
+		return;
+	}
+
+	/* search for changes if hash doesn't match */
+	if (debug) {
+		printf("ifacelist changed: '%s'    %u <> %u\n", ifacelist, s->iflisthash, newhash);
+	}
+
+	while (iterator != NULL) {
+
+		if (!iterator->filled) {
+			iterator = iterator->next;
+			continue;
+		}
+
+		found = offset = 0;
+
+		while (offset <= (int)strlen(ifacelist)) {
+			sscanf(ifacelist+offset, "%31s", interface);
+			if (strcmp(iterator->interface, interface) == 0) {
+				found = 1;
+				break;
+			}
+			offset += (int)strlen(interface) + 1;
+		}
+
+		if (iterator->active == 1 && found == 0) {
+			iterator->active = 0;
+			iterator->currx = 0;
+			iterator->curtx = 0;
+			if (cfg.savestatus) {
+				s->forcesave = 1;
+			}
+			snprintf(errorstring, 1024, "Interface \"%s\" disabled.", iterator->interface);
+			printe(PT_Info);
+		} else if (iterator->active == 0 && found == 1) {
+			iterator->active = 1;
+			iterator->currx = 0;
+			iterator->curtx = 0;
+			if (cfg.savestatus) {
+				s->forcesave = 1;
+			}
+			snprintf(errorstring, 1024, "Interface \"%s\" enabled.", iterator->interface);
+			printe(PT_Info);
+		}
+
+		iterator = iterator->next;
+	}
+	free(ifacelist);
+
+	s->iflisthash = newhash;
+	timeused(__func__, 0);
+}
+
+uint32_t simplehash(const char *data, int len)
+{
+	uint32_t hash = len;
+
+	if (len <= 0 || data == NULL) {
+		return 0;
+	}
+
+	for (len--; len >= 0; len--) {
+		if (len > 0) {
+			hash += (int)data[len] * len;
+		} else {
+			hash += (int)data[len];
+		}
+	}
+
+	return hash;
+}
+
+void errorexitdaemon(DSTATE *s, const int fataldberror)
+{
+	if (!fataldberror) {
+		flushcachetodisk(s);
+	}
+	db_close();
+
+	datacache_clear(&s->dcache);
+	ibwflush();
+
+	if (s->rundaemon && !debug) {
+		close(pidfile);
+		unlink(cfg.pidfile);
+	}
+
+	exit(EXIT_FAILURE);
+}
+
+int getcurrenthour(void)
+{
+	int ret = 0;
+	time_t current;
+	struct tm *stm;
+	char buffer[4];
+
+	current = time(NULL);
+	stm = localtime(&current);
+	if (stm == NULL) {
+		return 0;
+	}
+
+	if (!strftime(buffer, sizeof(buffer), "%H", stm)) {
+		return 0;
+	}
+
+	ret = atoi(buffer);
+	if (ret > 23 || ret < 0) {
+		ret = 0;
+	}
+
+	return ret;
+}
+
 int waittimesync(DSTATE *s)
 {
+	if (s->prevdbupdate) {
+		/* just for unused parameter warning handling */
+	}
+	return 0;
+
+	/* TODO: refactor to support new database format
 	char timestamp[22], timestamp2[22];
 
 	if (cfg.timesyncwait == 0) {
@@ -605,7 +970,7 @@ int waittimesync(DSTATE *s)
 				printf("w: processing %s...\n", s->datalist->data.interface);
 			}
 
-			/* get data from cache if available */
+			// get data from cache if available
 			if (!datalist_cacheget(s)) {
 				s->datalist = s->datalist->next;
 				continue;
@@ -662,4 +1027,5 @@ int waittimesync(DSTATE *s)
 	}
 
 	return 1;
+	*/
 }

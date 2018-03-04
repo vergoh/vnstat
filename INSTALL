@@ -48,7 +48,7 @@ Compiling the binaries
 Installing as root
 ::::::::::::::::::
 
- Login as root and run the following command:
+ Log in as root and run the following command:
 
      make install
 
@@ -116,8 +116,8 @@ Installing without root access
 
      vnstat --version
 
- If this gives an 'command not found' error or a different than expected
- version then check then content of the PATH variable and try again.
+ If this gives a 'command not found' error or a different than expected
+ version then check the content of the PATH variable and try again.
 
  Next open the configuration file ~/.vnstatrc with your favorite text editor
  and locate the following line:

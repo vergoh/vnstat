@@ -1,10 +1,9 @@
 #include "common.h"
 
 /* global variables */
-DATA data;
 CFG cfg;
 IFINFO ifinfo;
-char errorstring[512];
+char errorstring[1024];
 ibwnode *ifacebw;
 int debug;
 int noexit;      /* = running as daemon if 2 */
@@ -42,6 +41,9 @@ int printe(PrintType type)
 			case PT_Info:
 				printf("Info: %s\n", errorstring);
 				break;
+			case PT_Infoless:
+				printf("%s\n", errorstring);
+				break;
 			case PT_Error:
 				printf("Error: %s\n", errorstring);
 				break;
@@ -65,7 +67,8 @@ int printe(PrintType type)
 
 int logprint(PrintType type)
 {
-	char timestamp[22], buffer[512];
+	/* buffer needs some extra space for timestamp + infor compared to errorstring */
+	char timestamp[22], buffer[1060];
 	time_t current;
 	FILE *logfile;
 
@@ -87,19 +90,20 @@ int logprint(PrintType type)
 
 		switch (type) {
 			case PT_Info:
-				snprintf(buffer, 512, "[%s] %s\n", timestamp, errorstring);
+			case PT_Infoless:
+				snprintf(buffer, 1060, "[%s] %s\n", timestamp, errorstring);
 				break;
 			case PT_Error:
-				snprintf(buffer, 512, "[%s] Error: %s\n", timestamp, errorstring);
+				snprintf(buffer, 1060, "[%s] Error: %s\n", timestamp, errorstring);
 				break;
 			case PT_Config:
-				snprintf(buffer, 512, "[%s] Config: %s\n", timestamp, errorstring);
+				snprintf(buffer, 1060, "[%s] Config: %s\n", timestamp, errorstring);
 				break;
 			case PT_ShortMultiline:
-				snprintf(buffer, 512, "[%s] %s\n", timestamp, errorstring);
+				snprintf(buffer, 1060, "[%s] %s\n", timestamp, errorstring);
 				break;
 			default:
-				snprintf(buffer, 512, "[%s] (%d): %s\n", timestamp, type, errorstring);
+				snprintf(buffer, 1060, "[%s] (%d): %s\n", timestamp, type, errorstring);
 				break;
 		}
 
@@ -120,21 +124,18 @@ int logprint(PrintType type)
 			case PT_Multiline:
 				break;
 			case PT_Error:
-				snprintf(buffer, 512, "Error: %s", errorstring);
-				syslog(LOG_ERR, "%s", buffer);
+				syslog(LOG_ERR, "Error: %s", errorstring);
 				break;
 			case PT_Config:
-				snprintf(buffer, 512, "Config: %s", errorstring);
-				syslog(LOG_ERR, "%s", buffer);
+				syslog(LOG_ERR, "Config: %s", errorstring);
 				break;
 			case PT_Info:
+			case PT_Infoless:
 			case PT_ShortMultiline:
-				snprintf(buffer, 512, "%s", errorstring);
-				syslog(LOG_NOTICE, "%s", buffer);
+				syslog(LOG_NOTICE, "%s", errorstring);
 				break;
 			default:
-				snprintf(buffer, 512, "(%d): %s", type, errorstring);
-				syslog(LOG_NOTICE, "%s", buffer);
+				syslog(LOG_NOTICE, "(%d): %s", type, errorstring);
 				break;
 		}
 
@@ -168,8 +169,8 @@ int dmonth(int month)
 	/* handle leap years */
 	if (month==1) {
 		current = time(NULL);
-		year = localtime(&current)->tm_year;
-		if ( ((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0) ) {
+		year = localtime(&current)->tm_year + 1900;
+		if (isleapyear(year)) {
 			return 29;
 		} else {
 			return 28;
@@ -179,7 +180,19 @@ int dmonth(int month)
 	}
 }
 
-time_t mosecs(void)
+int isleapyear(int year)
+{
+	if (year % 4 != 0) {
+		return 0;
+	} else if (year % 100 != 0) {
+		return 1;
+	} else if (year % 400 != 0) {
+		return 0;
+	}
+	return 1;
+}
+
+time_t mosecs(time_t month, time_t updated)
 {
 	struct tm d;
 #if defined(_SVID_SOURCE) || defined(_XOPEN_SOURCE) || defined(__linux__)
@@ -188,7 +201,7 @@ time_t mosecs(void)
 	int timezone = 0;
 #endif
 
-	if (localtime_r(&data.month[0].month, &d) == NULL) {
+	if (localtime_r(&month, &d) == NULL) {
 		return 1;
 	}
 
@@ -199,8 +212,8 @@ time_t mosecs(void)
 	d.tm_mday = cfg.monthrotate;
 	d.tm_hour = d.tm_min = d.tm_sec = 0;
 
-	if ((data.lastupdated-data.month[0].month)>0) {
-		return data.lastupdated-mktime(&d)+timezone;
+	if ((updated-month)>0) {
+		return updated-mktime(&d)+timezone;
 	} else {
 		return 1;
 	}
@@ -231,29 +244,6 @@ uint64_t countercalc(const uint64_t *a, const uint64_t *b)
 	}
 }
 
-void addtraffic(uint64_t *destmb, int *destkb, const uint64_t srcmb, const int srckb)
-{
-        *destmb+=srcmb;
-        *destkb+=srckb;
-
-        if (*destkb>=1024) {
-                *destmb+=*destkb/1024;
-                *destkb-=(*destkb/1024)*1024;
-        }
-}
-
-uint64_t mbkbtokb(uint64_t mb, uint64_t kb)
-{
-	if (mb==0) {
-		return kb;
-	}
-	if (kb>=1024) {
-		mb+=kb/1024;
-		kb-=(kb/1024)*1024;
-	}
-	return (mb*1024)+kb;
-}
-
 /* strncpy with ensured null termination */
 char *strncpy_nt(char *dest, const char *src, size_t n)
 {
@@ -282,7 +272,7 @@ int isnumeric(const char *s)
 __attribute__((noreturn))
 void panicexit(const char *sourcefile, const int sourceline)
 {
-	snprintf(errorstring, 512, "Unexpected error (%s), exiting. (%s:%d)\n", strerror(errno), sourcefile, sourceline);
+	snprintf(errorstring, 1024, "Unexpected error (%s), exiting. (%s:%d)", strerror(errno), sourcefile, sourceline);
 	fprintf(stderr, "%s\n", errorstring);
 	printe(PT_Error);
 	exit(EXIT_FAILURE);
@@ -299,4 +289,24 @@ char *getversion(void)
 		}
 	}
 	return versionbuffer;
+}
+
+void timeused(const char *func, const int reset)
+{
+	static struct timeval starttime;
+	struct timeval endtime;
+
+	if (!debug) {
+		return;
+	}
+
+	if (reset) {
+		gettimeofday(&starttime, NULL);
+		return;
+	}
+
+	if (gettimeofday(&endtime, NULL) != 0) {
+		return;
+	}
+	printf("%s() in %f s\n", func, (double)(endtime.tv_usec - starttime.tv_usec) / 1000000 + (double)(endtime.tv_sec - starttime.tv_sec));
 }

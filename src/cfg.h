@@ -14,8 +14,8 @@ int loadcfg(const char *cfgfile);
 void validatecfg(void);
 void defaultcfg(void);
 int opencfgfile(const char *cfgfile, FILE **fd);
-int extractcfgvalue(char *value, const char *cfgline, int cfglen);
-int setcfgvalue(struct cfgsetting *cset, const char *value, const char *cfgline);
+int extractcfgvalue(char *value, const int valuelen, const char *cfgline, const int cfglen);
+int setcfgvalue(const struct cfgsetting *cset, const char *value, const char *cfgline);
 void configlocale(void);
 
 #endif

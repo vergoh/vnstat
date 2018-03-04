@@ -1,12 +1,9 @@
 #ifndef DBXML_H
 #define DBXML_H
 
-void showxml(char mode);
-void xmldays(void);
-void xmlmonths(void);
-void xmltops(void);
-void xmlhours(void);
-void xmldate(time_t *date, int type);
+void showxml(const char *interface, const char mode);
+void xmldump(const interfaceinfo *interface, const char *tablename, const int datetype);
+void xmldate(const time_t *date, const int type);
 void xmlheader(void);
 void xmlfooter(void);
 

@@ -16,10 +16,9 @@ vnStat image output - Copyright (c) 2007-2018 Teemu Toivola <tst@iki.fi>
 */
 
 #include "common.h"
+#include "dbsql.h"
 #include "image.h"
 #include "cfg.h"
-#include "dbaccess.h"
-#include "dbmerge.h"
 #include "vnstati.h"
 
 int main(int argc, char *argv[])
@@ -60,7 +59,6 @@ int main(int argc, char *argv[])
 
 	configlocale();
 	strncpy_nt(p.interface, cfg.iface, 32);
-	strncpy_nt(p.dirname, cfg.dbdir, 512);
 	ic.current = time(NULL);
 
 	/* parse parameters */
@@ -135,9 +133,9 @@ int main(int argc, char *argv[])
 			}
 		} else if ((strcmp(argv[currentarg],"--dbdir"))==0) {
 			if (currentarg+1<argc) {
-				strncpy_nt(p.dirname, argv[currentarg+1], 512);
+				strncpy_nt(cfg.dbdir, argv[currentarg+1], 512);
 				if (debug)
-					printf("DatabaseDir: \"%s\"\n", p.dirname);
+					printf("DatabaseDir: \"%s\"\n", cfg.dbdir);
 				currentarg++;
 				continue;
 			} else {
@@ -176,10 +174,44 @@ int main(int argc, char *argv[])
 			debug = 1;
 		} else if ((strcmp(argv[currentarg],"-d")==0) || (strcmp(argv[currentarg],"--days"))==0) {
 			cfg.qmode = 1;
+			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
+				cfg.listdays = atoi(argv[currentarg+1]);
+				if (cfg.listdays < 0) {
+					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg+1], argv[currentarg]);
+					return 1;
+				}
+				currentarg++;
+			}
 		} else if ((strcmp(argv[currentarg],"-m")==0) || (strcmp(argv[currentarg],"--months"))==0) {
 			cfg.qmode = 2;
-		} else if ((strcmp(argv[currentarg],"-t")==0) || (strcmp(argv[currentarg],"--top10"))==0) {
+			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
+				cfg.listmonths = atoi(argv[currentarg+1]);
+				if (cfg.listmonths < 0) {
+					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg+1], argv[currentarg]);
+					return 1;
+				}
+				currentarg++;
+			}
+		} else if ((strcmp(argv[currentarg],"-t")==0) || (strcmp(argv[currentarg],"--top"))==0) {
 			cfg.qmode = 3;
+			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
+				cfg.listtop = atoi(argv[currentarg+1]);
+				if (cfg.listtop < 0) {
+					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg+1], argv[currentarg]);
+					return 1;
+				}
+				currentarg++;
+			}
+		} else if ((strcmp(argv[currentarg],"-y")==0) || (strcmp(argv[currentarg],"--years"))==0) {
+			cfg.qmode = 4;
+			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
+				cfg.listyears = atoi(argv[currentarg+1]);
+				if (cfg.listyears < 0) {
+					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg+1], argv[currentarg]);
+					return 1;
+				}
+				currentarg++;
+			}
 		} else if ((strcmp(argv[currentarg],"-s")==0) || (strcmp(argv[currentarg],"--summary"))==0) {
 			cfg.qmode = 5;
 		} else if ((strcmp(argv[currentarg],"-h")==0) || (strcmp(argv[currentarg],"--hours"))==0) {
@@ -229,7 +261,7 @@ int main(int argc, char *argv[])
 
 	validateinput(&p);
 	handlecaching(&p, &ic);
-	handledatabase(&p);
+	handledatabase(&p, &ic);
 	openoutput(&p);
 
 	if (debug)
@@ -239,6 +271,7 @@ int main(int argc, char *argv[])
 	writeoutput(&p, &ic);
 
 	/* cleanup */
+	db_close();
 	if (debug)
 		printf("all done\n");
 
@@ -251,7 +284,6 @@ void initiparams(IPARAMS *p)
 	debug = 0;         /* debug disabled by default */
 	disableprints = 0; /* let prints be visible */
 	p->interface[0] = '\0';
-	p->dirname[0] = '\0';
 	p->filename[0] = '\0';
 	p->cfgfile[0] = '\0';
 	p->cache = 0;
@@ -264,7 +296,8 @@ void showihelp(IPARAMS *p)
 	printf("         -h,  --hours          output hours\n");
 	printf("         -d,  --days           output days\n");
 	printf("         -m,  --months         output months\n");
-	printf("         -t,  --top10          output top10\n");
+	printf("         -y,  --years          output years\n");
+	printf("         -t,  --top            output top days\n");
 	printf("         -s,  --summary        output summary\n");
 	printf("         -hs, --hsummary       output horizontal summary with hours\n");
 	printf("         -vs, --vsummary       output vertical summary with hours\n");
@@ -320,16 +353,19 @@ void handlecaching(IPARAMS *p, IMAGECONTENT *ic)
 	}
 }
 
-void handledatabase(IPARAMS *p)
+void handledatabase(IPARAMS *p, IMAGECONTENT *ic)
 {
-	if (strstr(p->interface, "+")) {
-		if (!mergedb(p->interface, p->dirname)) {
-			exit(EXIT_FAILURE);
-		}
-	} else {
-		if (readdb(p->interface, p->dirname, 0)==1) {
-			exit(EXIT_FAILURE);
-		}
+	if (!db_open_ro()) {
+		printf("Error: Unable to open database \"%s/%s\": %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+	if (!db_getinterfacecountbyname(p->interface)) {
+		printf("Error: Interface \"%s\" not found in database.\n", p->interface);
+		exit(EXIT_FAILURE);
+	}
+	if (!db_getinterfaceinfo(p->interface, &ic->interface)) {
+		printf("Error: Failed to fetch interface \"%s\" info from database.\n", p->interface);
+		exit(EXIT_FAILURE);
 	}
 }
 

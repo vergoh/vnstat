@@ -16,12 +16,14 @@ matrix:
 addons:
   apt:
     packages:
+      - libsqlite3-0
+      - libsqlite3-dev
       - libgd3
       - libgd-dev
       - check
 
 before_install:
- - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then brew install gd check ; fi
+ - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then brew install gd sqlite check ; fi
 
 script:
  - CFLAGS='-Wall -Wextra -g' ./configure && make check || ( cat test.log ; exit 1 ) && egrep '^[0-9]+%' test.log && ./vnstat --version

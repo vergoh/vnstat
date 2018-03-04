@@ -16,7 +16,8 @@ vnStat daemon - Copyright (c) 2008-2018 Teemu Toivola <tst@iki.fi>
 */
 
 #include "common.h"
-#include "dbcache.h"
+#include "datacache.h"
+#include "dbsql.h"
 #include "cfg.h"
 #include "ibw.h"
 #include "id.h"
@@ -25,8 +26,8 @@ vnStat daemon - Copyright (c) 2008-2018 Teemu Toivola <tst@iki.fi>
 
 int main(int argc, char *argv[])
 {
-	int currentarg;
-	uint32_t prevdbhash;
+	int currentarg, temp;
+	uint32_t previflisthash;
 	DSTATE s;
 
 	initdstate(&s);
@@ -78,7 +79,7 @@ int main(int argc, char *argv[])
 			currentarg++;
 			continue;
 		} else if ((strcmp(argv[currentarg],"-D")==0) || (strcmp(argv[currentarg],"--debug")==0)) {
-			debug=1;
+			debug = 1;
 		} else if ((strcmp(argv[currentarg],"-d")==0) || (strcmp(argv[currentarg],"--daemon")==0)) {
 			s.rundaemon = 1;
 			s.showhelp = 0;
@@ -138,6 +139,11 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
+	if (s.rundaemon && debug) {
+		printf("Error: --daemon and --debug can't both be used at the same time.\n");
+		return 1;
+	}
+
 	/* show help if nothing else was asked to be done */
 	if (s.showhelp) {
 		showhelp();
@@ -150,17 +156,41 @@ int main(int argc, char *argv[])
 	setgroup(s.group);
 	setuser(s.user);
 
+	if (!db_open_rw(1)) {
+		printf("Error: Unable to open database \"%s/%s\": %s\n", s.dirname, DATABASEFILE, strerror(errno));
+		printf("Exiting...\n");
+		exit(EXIT_FAILURE);
+	}
+
+	detectboot(&s);
 	preparedatabases(&s);
+
+	if (!db_removeoldentries()) {
+		printf("Error: Database \"%s/%s\" cleanup failed: %s\n", s.dirname, DATABASEFILE, strerror(errno));
+		printf("Exiting...\n");
+		exit(EXIT_FAILURE);
+	}
+
 	setsignaltraps();
 
-	/* start as daemon if needed and debug isn't enabled */
+	/* start as daemon if requested, debug can't be enabled at the same time */
 	if (s.rundaemon && !debug) {
+		if (!db_close()) {
+			printf("Error: Failed to close database \"%s/%s\" before starting daemon: %s\n", s.dirname, DATABASEFILE, strerror(errno));
+			printf("Exiting...\n");
+			exit(EXIT_FAILURE);
+		}
 		noexit++;
 		daemonize();
+		if (!db_open_rw(0)) {
+			snprintf(errorstring, 1024, "Failed to reopen database \"%s/%s\": %s", s.dirname, DATABASEFILE, strerror(errno));
+			printe(PT_Error);
+			exit(EXIT_FAILURE);
+		}
 	}
 
 	s.running = 1;
-	snprintf(errorstring, 512, "vnStat daemon %s started. (pid:%d uid:%d gid:%d)", getversion(), (int)getpid(), (int)getuid(), (int)getgid());
+	snprintf(errorstring, 1024, "vnStat daemon %s started. (pid:%d uid:%d gid:%d)", getversion(), (int)getpid(), (int)getuid(), (int)getgid());
 	printe(PT_Info);
 
 	/* warmup */
@@ -183,10 +213,14 @@ int main(int argc, char *argv[])
 
 		/* track interface status only if at least one database exists */
 		if (s.dbcount != 0) {
-			prevdbhash = s.dbhash;
-			s.dbhash = dbcheck(s.dbhash, &s.forcesave);
-			if (s.alwaysadd && s.dbhash != prevdbhash && prevdbhash != 0) {
-				s.dbcount += addinterfaces(s.dirname, s.running);
+			previflisthash = s.iflisthash;
+			interfacechangecheck(&s);
+			if (s.alwaysadd && s.iflisthash != previflisthash && previflisthash != 0) {
+				temp = s.dbcount;
+				s.dbcount += addinterfaces(&s);
+				if (temp != s.dbcount) {
+					datacache_status(&s.dcache);
+				}
 			}
 		}
 
@@ -197,7 +231,7 @@ int main(int argc, char *argv[])
 
 			if (debug) {
 				debugtimestamp();
-				cacheshow();
+				datacache_debug(&s.dcache);
 				ibwlist();
 			}
 
@@ -208,12 +242,11 @@ int main(int argc, char *argv[])
 			/* update data cache */
 			} else {
 				s.prevdbupdate = s.current;
-				s.datalist = dataptr;
 
 				adjustsaveinterval(&s);
 				checkdbsaveneed(&s);
 
-				processdatalist(&s);
+				processdatacache(&s);
 
 				if (debug) {
 					printf("\n");
@@ -230,7 +263,10 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	cacheflush(s.dirname);
+	flushcachetodisk(&s);
+	db_close();
+
+	datacache_clear(&s.dcache);
 	ibwflush();
 
 	if (s.rundaemon && !debug) {

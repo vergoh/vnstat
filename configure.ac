@@ -1,10 +1,10 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
-AC_INIT([vnstat], [1.19 beta])
+AC_INIT([vnstat], [2.0_beta2])
 AM_INIT_AUTOMAKE([foreign subdir-objects std-options -Wall -Werror])
 AM_MAINTAINER_MODE
 
-AC_CONFIG_SRCDIR([src/vnstat.c])
+AC_CONFIG_SRCDIR([src/vnstatd.c])
 AC_CONFIG_HEADERS([src/config.h])
 
 # Checks for programs.
@@ -17,7 +17,8 @@ AC_ARG_ENABLE([image-output], [
 AS_HELP_STRING([--disable-image-output], [disable PNG image output])])
 
 # Checks for libraries.
-AC_CHECK_LIB([m], [pow])
+AC_CHECK_LIB([m], [pow], [], [AC_MSG_ERROR([could not find required math library])])
+AC_CHECK_LIB([sqlite3], [sqlite3_prepare_v2], [], [AC_MSG_ERROR([could not find required sqlite3 library])])
 
 AS_IF([test "x$enable_image_output" != "xno"], [
 AC_CHECK_LIB([gd], [gdImagePng], [IMAGELIBS=-lgd])

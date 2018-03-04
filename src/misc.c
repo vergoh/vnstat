@@ -9,65 +9,7 @@
 #include "misc.h"
 #include <wchar.h>
 
-int kerneltest(void)
-{
-	int i=0;
-	uint64_t bmax, bmin, btemp;
-
-	bmax=bmin=getbtime();
-
-	printf("This test will take about 60 seconds.\n");
-	printf("[                              ]");
-	for (i=0; i<=30; i++) {
-		printf("\b");
-	}
-	fflush(stdout);
-
-	for (i=0;i<30;i++) {
-		sleep(2);
-		fflush(stdout);
-
-		btemp=getbtime();
-
-		if (btemp > bmax) {
-			bmax = btemp;
-		}
-		if (btemp < bmin) {
-			bmin = btemp;
-		}
-
-		printf("=");
-		fflush(stdout);
-	}
-
-	printf("] done.\n\n");
-
-	printf("Detected boot time variation during test:  %2d\n", (int)(bmax-bmin));
-	printf("Maximum boot time variation set in config: %2d\n\n", cfg.bvar);
-
-	if ((bmax-bmin)>20) {
-		printf("The current kernel has a broken boot time information and\n");
-		printf("vnStat is likely not to work correctly. Upgrading the kernel\n");
-		printf("is likely to solve this problem.\n\n");
-		return 1;
-	} else if ((bmax-bmin)>(uint32_t)cfg.bvar) {
-		printf("The current kernel has a boot time variation greater than assumed\n");
-		printf("in the vnStat config. That it likely to cause errors in results.\n");
-		printf("Set \"BootVariation\" to something greater than \"%d\" and run this\n", (int)(bmax-bmin));
-		printf("test again.\n\n");
-		return 1;
-	} else if ((bmax-bmin)==0) {
-		printf("The current kernel doesn't seem to suffer from boot time variation problems.\n");
-		printf("Everything is ok.\n\n");
-		return 0;
-	} else {
-		printf("The current kernel is ok.\n\n");
-		return 0;
-	}
-
-}
-
-int spacecheck(char *path)
+int spacecheck(const char *path)
 {
 	struct statvfs buf;
 	uint64_t free;
@@ -81,7 +23,7 @@ int spacecheck(char *path)
 		if (noexit) {
 			return 0;
 		} else {
-			snprintf(errorstring, 512, "Free diskspace check failed: %s", strerror(errno));
+			snprintf(errorstring, 1024, "Free diskspace check failed: %s", strerror(errno));
 			printe(PT_Error);
 			exit(EXIT_FAILURE);
 		}
@@ -117,19 +59,19 @@ void sighandler(int sig)
 		switch (sig) {
 
 			case SIGHUP:
-				snprintf(errorstring, 512, "DEBUG: SIGHUP (%d)", sig);
+				snprintf(errorstring, 1024, "DEBUG: SIGHUP (%d)", sig);
 				break;
 
 			case SIGTERM:
-				snprintf(errorstring, 512, "DEBUG: SIGTERM (%d)", sig);
+				snprintf(errorstring, 1024, "DEBUG: SIGTERM (%d)", sig);
 				break;
 
 			case SIGINT:
-				snprintf(errorstring, 512, "DEBUG: SIGINT (%d)", sig);
+				snprintf(errorstring, 1024, "DEBUG: SIGINT (%d)", sig);
 				break;
 
 			default:
-				snprintf(errorstring, 512, "DEBUG: Unknown signal %d", sig);
+				snprintf(errorstring, 1024, "DEBUG: Unknown signal %d", sig);
 				break;
 
 		}
@@ -146,7 +88,7 @@ uint64_t getbtime(void)
 	char temp[64], statline[128];
 
 	if ((fp=fopen("/proc/stat","r"))==NULL) {
-		snprintf(errorstring, 512, "Unable to read /proc/stat: %s", strerror(errno));
+		snprintf(errorstring, 1024, "Unable to read /proc/stat: %s", strerror(errno));
 		printe(PT_Error);
 		if (noexit) {
 			return 0;
@@ -168,7 +110,7 @@ uint64_t getbtime(void)
 	fclose(fp);
 
 	if (check==0) {
-		snprintf(errorstring, 512, "btime missing from /proc/stat.");
+		snprintf(errorstring, 1024, "btime missing from /proc/stat.");
 		printe(PT_Error);
 		if (noexit) {
 			return 0;
@@ -196,59 +138,62 @@ uint64_t getbtime(void)
 	return result;
 }
 
-char *getvalue(uint64_t mb, uint64_t kb, int len, int type)
+char *getvalue(const uint64_t bytes, const int len, const int type)
 {
 	static char buffer[64];
-	int declen = cfg.defaultdecimals;
-	uint64_t kB;
+	int i, declen = cfg.defaultdecimals;
+	uint64_t limit;
 
 	/* request types: 1) normal  2) estimate  3) image scale */
-	if (type==3) {
-		declen=0;
+	if (type == 3) {
+		declen = 0;
 	}
 
-	if (mb!=0) {
-		kB=mbkbtokb(mb, kb);
-	} else {
-		kB=kb;
-	}
-
-	/* tune spacing according to unit */
-	len -= strlen(getunitprefix(1)) + 1;
-	if (len<0) {
-		len = 1;
-	}
-
-	if ( (type==2) && (kB==0) ){
-		snprintf(buffer, 64, "%*s    ", len-cfg.unitmode, "--");
-	} else {
-		/* try to figure out what unit to use */
-		if (kB>=1048576000) { /* 1024*1024*1000 - value >=1000 GiB -> show in TiB */
-			snprintf(buffer, 64, "%"DECCONV"*.*f %s", len, declen, kB/(float)1073741824, getunitprefix(4)); /* 1024*1024*1024 */
-		} else if (kB>=1024000) { /* 1024*1000 - value >=1000 MiB -> show in GiB */
-			snprintf(buffer, 64, "%"DECCONV"*.*f %s", len, declen, kB/(float)1048576, getunitprefix(3)); /* 1024*1024 */
-		} else if (kB>=1000) {
-			if (type==2) {
-				declen=0;
-			}
-			snprintf(buffer, 64, "%"DECCONV"*.*f %s", len, declen, kB/(float)1024, getunitprefix(2));
-		} else {
-			snprintf(buffer, 64, "%"DECCONV"*"PRIu64" %s", len, kB, getunitprefix(1));
+	if ( (type == 2) && (bytes == 0) ){
+		declen = len-(int)strlen(getunitprefix(2))-2;
+		if (declen < 2) {
+			declen = 2;
 		}
+		snprintf(buffer, 64, "%*s  %*s", declen, "--", (int)strlen(getunitprefix(2)), " ");
+	} else {
+		for (i=UNITPREFIXCOUNT-1; i>0; i--) {
+			limit = pow(1024, i-1) * 1000;
+			if (bytes >= limit) {
+				if (i>1) {
+					snprintf(buffer, 64, "%"DECCONV"*.*f %s", getunitspacing(len, 5), declen, bytes/(float)getunitdivisor(0, i+1), getunitprefix(i+1));
+				} else {
+					if (type == 2) {
+						declen = 0;
+					}
+					snprintf(buffer, 64, "%"DECCONV"*.*f %s", getunitspacing(len, 2), declen, bytes/(float)getunitdivisor(0, i+1), getunitprefix(i+1));
+				}
+				return buffer;
+			}
+		}
+		snprintf(buffer, 64, "%"DECCONV"*"PRIu64" %s", getunitspacing(len, 1), bytes, getunitprefix(1));
 	}
 
 	return buffer;
 }
 
-char *getrate(uint64_t mb, uint64_t kb, time_t interval, int len)
+int getunitspacing(const int len, const int index)
 {
-	return gettrafficrate(mbkbtokb(mb, kb) * 1024, interval, len);
+	int l = len;
+
+	/* tune spacing according to unit */
+	/* +1 for space between number and unit */
+	l -= strlen(getunitprefix(index)) + 1;
+	if (l < 0) {
+		l = 1;
+	}
+
+	return l;
 }
 
-char *gettrafficrate(uint64_t bytes, time_t interval, int len)
+char *gettrafficrate(const uint64_t bytes, const time_t interval, const int len)
 {
 	static char buffer[64];
-	int unitmode, declen = cfg.defaultdecimals;
+	int declen = cfg.defaultdecimals;
 	uint64_t b;
 
 	if (interval==0) {
@@ -259,59 +204,23 @@ char *gettrafficrate(uint64_t bytes, time_t interval, int len)
 	/* convert to proper unit */
 	if (cfg.rateunit == 1) {
 		b = bytes * 8;
-		unitmode = 3;
-		if (cfg.rateunitmode == 0) {
-			unitmode = 2;
-		}
-		if (interval<5) {
+		if (interval < 5) {
 			declen = 0;
 		}
 	} else {
 		b = bytes;
-		unitmode = cfg.unitmode;
+		if (interval < 5 && ( b / interval ) < 1000) {
+			declen = 0;
+		}
 	}
 
-	return getratestring(b / interval, len, declen, unitmode);
+	return getratestring(b / interval, len, declen);
 }
 
-uint64_t getscale(uint64_t kb)
+char *getunitprefix(const int index)
 {
-	int i;
-	uint64_t result;
-
-	result = kb;
-
-	/* get unit */
-	for (i=0; result>1024; i++) {
-		result = result / 1024;
-	}
-
-	/* round result depending of scale */
-	if (result>300) {
-		result = result/4 + (100 - ((result/4) % 100));
-	} else if (result>20) {
-		result = result/4 + (10 - ((result/4) % 10));
-	} else {
-		result = result/4;
-	}
-
-	/* put unit back */
-	if (i) {
-		result = result * pow(1024, i);
-	}
-
-	/* make sure result isn't zero */
-	if (!result) {
-		result = pow(1024, i);
-	}
-
-	return result;
-}
-
-const char *getunitprefix(int index)
-{
-	static const char *unitprefix[] = { "na", "KiB", "MiB", "GiB", "TiB",
-                                   "KB",  "MB",  "GB",  "TB" };
+	static char *unitprefix[] = { "na", "B", "KiB", "MiB", "GiB", "TiB", "PiB",  /* IEC   - 1024^n */
+                                        "B", "KB",  "MB",  "GB",  "TB",  "PB" }; /* JEDEC - 1024^n */
 
 	if (index>UNITPREFIXCOUNT) {
 		return unitprefix[0];
@@ -320,12 +229,12 @@ const char *getunitprefix(int index)
 	}
 }
 
-const char *getrateunitprefix(int unitmode, int index)
+char *getrateunitprefix(const int unitmode, const int index)
 {
-	static const char *rateunitprefix[] = { "na", "KiB/s", "MiB/s", "GiB/s", "TiB/s",
-                                    "KB/s",  "MB/s",  "GB/s",  "TB/s",
-                                    "Kibit/s",  "Mibit/s",  "Gibit/s",  "Tibit/s",
-                                    "kbit/s",  "Mbit/s",  "Gbit/s",  "Tbit/s" };
+	static char *rateunitprefix[] = { "na", "B/s",     "KiB/s",   "MiB/s",   "GiB/s",   "TiB/s",   "PiB/s",    /* IEC   - 1024^n */
+                                            "B/s",     "KB/s",    "MB/s",    "GB/s",    "TB/s",    "PB/s",     /* JEDEC - 1024^n */
+                                            "bit/s",   "Kibit/s", "Mibit/s", "Gibit/s", "Tibit/s", "Pibit/s",  /* IEC   - 1024^n */
+                                            "bit/s",   "kbit/s",  "Mbit/s",  "Gbit/s",  "Tbit/s",  "Pbit/s" }; /* SI    - 1000^n */
 
 	if (index>UNITPREFIXCOUNT) {
 		return rateunitprefix[0];
@@ -334,52 +243,72 @@ const char *getrateunitprefix(int unitmode, int index)
 	}
 }
 
-uint64_t getunitdivisor(int unitmode, int index)
+uint64_t getunitdivisor(const int unitmode, const int index)
 {
-	uint64_t unitdiv[] = { 0, 1024, 1048576, 1073741824, 1099511627776ULL,
-                              1024, 1048576, 1073741824, 1099511627776ULL,
-                              1024, 1048576, 1073741824, 1099511627776ULL,
-                              1000, 1000000, 1000000000, 1000000000000ULL};
-
 	if (index>UNITPREFIXCOUNT) {
-		return unitdiv[0];
+		return 1;
 	} else {
-		return unitdiv[(unitmode*UNITPREFIXCOUNT)+index];
+		if (unitmode == 3) {
+			return pow(1000, index-1);
+		} else {
+			return pow(1024, index-1);
+		}
 	}
 }
 
-char *getratestring(uint64_t rate, int len, int declen, int unitmode)
+int getunit(void)
 {
-	static char buffer[64];
-	uint64_t limit[3] = { 1024000, 1048576000, 1073741824000ULL };
+	int unit;
 
-	if (cfg.rateunit == 1 && cfg.rateunitmode == 1) {
-		limit[0] = 1000000;
-		limit[1] = 1000000000;
-		limit[2] = 1000000000000ULL;
-	}
-
-	/* tune spacing according to unit */
-	len -= strlen(getrateunitprefix(unitmode, 1)) + 1;
-	if (len<0) {
-		len = 1;
-	}
-
-	/* try to figure out what unit to use */
-	if (rate>=limit[2]) {
-		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)(getunitdivisor(unitmode, 4)), getrateunitprefix(unitmode, 4));
-	} else if (rate>=limit[1]) {
-		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)(getunitdivisor(unitmode, 3)), getrateunitprefix(unitmode, 3));
-	} else if (rate>=limit[0]) {
-		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)(getunitdivisor(unitmode, 2)), getrateunitprefix(unitmode, 2));
+	if (cfg.rateunit == 0) {
+		unit = cfg.unitmode;
 	} else {
-		snprintf(buffer, 64, "%"DECCONV"*.*f %s", len, declen, rate/(float)(getunitdivisor(unitmode, 1)), getrateunitprefix(unitmode, 1));
+		unit = 2 + cfg.rateunitmode;
 	}
 
+	return unit;
+}
+
+char *getratestring(const uint64_t rate, const int len, const int declen)
+{
+	int l, i, unit, p = 1024;
+	static char buffer[64];
+	uint64_t limit;
+
+	unit = getunit();
+
+	if (unit == 3) {
+		p = 1000;
+	}
+
+	for (i=UNITPREFIXCOUNT-1; i>0; i--)
+	{
+		limit = pow(p, i-1) * 1000;
+		if (rate >= limit) {
+			l = getratespacing(len, unit, i+1);
+			snprintf(buffer, 64, "%"DECCONV"*.2f %s", l, rate/(float)getunitdivisor(unit, i+1), getrateunitprefix(unit, i+1));
+			return buffer;
+		}
+	}
+
+	l = getratespacing(len, unit, 1);
+	snprintf(buffer, 64, "%"DECCONV"*.*f %s", l, declen, rate/(float)getunitdivisor(unit, 1), getrateunitprefix(unit, 1));
 	return buffer;
 }
 
-int getpadding(int len, char *str)
+int getratespacing(const int len, const int unitmode, const int unitindex)
+{
+	int l = len;
+
+	l -= strlen(getrateunitprefix(unitmode, unitindex)) + 1;
+	if (l < 0) {
+		l = 1;
+	}
+
+	return l;
+}
+
+int getpadding(const int len, const char *str)
 {
 #if defined(HAVE_MBSTOWCS) && defined(HAVE_WCSWIDTH)
 	wchar_t wbuffer[64];
@@ -395,7 +324,7 @@ int getpadding(int len, char *str)
 #endif
 }
 
-void cursortocolumn(int column)
+void cursortocolumn(const int column)
 {
 	printf("\033[%dG", column);
 }

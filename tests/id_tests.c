@@ -1,6 +1,6 @@
+#include "common.h"
 #include "vnstat_tests.h"
 #include "id_tests.h"
-#include "common.h"
 #include "id.h"
 
 START_TEST(getuser_root_string)
@@ -59,6 +59,20 @@ START_TEST(getgroup_no_such_user_numeric)
 }
 END_TEST
 
+START_TEST(setuser_with_empty_user)
+{
+	suppress_output();
+	setuser("");
+}
+END_TEST
+
+START_TEST(setgroup_with_empty_group)
+{
+	suppress_output();
+	setgroup("");
+}
+END_TEST
+
 void add_id_tests(Suite *s)
 {
 	TCase *tc_id = tcase_create("ID");
@@ -70,5 +84,7 @@ void add_id_tests(Suite *s)
 	tcase_add_test(tc_id, getgroup_root_numeric);
 	tcase_add_exit_test(tc_id, getgroup_no_such_user_string, 1);
 	tcase_add_exit_test(tc_id, getgroup_no_such_user_numeric, 1);
+	tcase_add_test(tc_id, setuser_with_empty_user);
+	tcase_add_test(tc_id, setgroup_with_empty_group);
 	suite_add_tcase(s, tc_id);
 }

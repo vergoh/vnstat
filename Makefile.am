@@ -13,11 +13,10 @@ vnstati_LDADD = $(IMAGELIBS)
 
 vnstat_SOURCES = src/vnstat.c src/vnstat.h \
   src/ifinfo.c src/ifinfo.h \
+  src/dbsql.c src/dbsql.h \
   src/dbxml.c src/dbxml.h \
   src/dbjson.c src/dbjson.h \
   src/dbshow.c src/dbshow.h \
-  src/dbaccess.c src/dbaccess.h \
-  src/dbmerge.c src/dbmerge.h \
   src/common.c src/common.h \
   src/misc.c src/misc.h \
   src/cfg.c src/cfg.h \
@@ -28,8 +27,9 @@ vnstat_SOURCES = src/vnstat.c src/vnstat.h \
 
 vnstatd_SOURCES = src/vnstatd.c src/vnstatd.h \
   src/ifinfo.c src/ifinfo.h \
+  src/dbsql.c src/dbsql.h \
   src/dbaccess.c src/dbaccess.h \
-  src/dbcache.c src/dbcache.h \
+  src/datacache.c src/datacache.h \
   src/common.c src/common.h \
   src/misc.c src/misc.h \
   src/cfg.c src/cfg.h \
@@ -40,8 +40,7 @@ vnstatd_SOURCES = src/vnstatd.c src/vnstatd.h \
 
 vnstati_SOURCES = src/vnstati.c src/vnstati.h \
   src/image.c src/image.h \
-  src/dbaccess.c src/dbaccess.h \
-  src/dbmerge.c src/dbmerge.h \
+  src/dbsql.c src/dbsql.h \
   src/common.c src/common.h \
   src/misc.c src/misc.h \
   src/fs.c src/fs.h \
@@ -55,12 +54,15 @@ check_vnstat_CFLAGS = @CHECK_CFLAGS@ \
   -DPROCNETDEV=\"testdir/proc/dev\" \
   -DSYSCLASSNET=\"testdir/sysclassnet\" \
   -DCFGFILE=\"$(top_srcdir)/cfg/vnstat.conf\" \
+  -DCHECK_VNSTAT \
   -I$(top_srcdir)/src
 check_vnstat_LDADD = @CHECK_LIBS@
 
 check_vnstat_SOURCES = tests/vnstat_tests.c tests/vnstat_tests.h \
   tests/common_tests.c tests/common_tests.h \
   tests/database_tests.c tests/database_tests.h \
+  tests/dbsql_tests.c tests/dbsql_tests.h \
+  tests/datacache_tests.c tests/datacache_tests.h \
   tests/config_tests.c tests/config_tests.h \
   tests/ifinfo_tests.c tests/ifinfo_tests.h \
   tests/misc_tests.c tests/misc_tests.h \
@@ -71,18 +73,24 @@ check_vnstat_SOURCES = tests/vnstat_tests.c tests/vnstat_tests.h \
 check_vnstat_SOURCES += src/cfg.c src/cfg.h \
   src/common.c src/common.h \
   src/daemon.c src/daemon.h \
+  src/dbsql.c src/dbsql.h \
   src/dbaccess.c src/dbaccess.h \
-  src/dbcache.c src/dbcache.h \
-  src/dbjson.c src/dbjson.h \
-  src/dbmerge.c src/dbmerge.h \
+  src/datacache.c src/datacache.h \
   src/dbshow.c src/dbshow.h \
+  src/dbjson.c src/dbjson.h \
   src/dbxml.c src/dbxml.h \
   src/ibw.c src/ibw.h \
   src/ifinfo.c src/ifinfo.h \
   src/misc.c src/misc.h \
   src/fs.c src/fs.h \
-  src/id.c src/id.h \
-  src/traffic.c src/traffic.h
+  src/id.c src/id.h
+
+if HAVE_LIBGD
+check_vnstat_CFLAGS += -DHAVE_IMAGE
+check_vnstat_LDADD += $(IMAGELIBS)
+check_vnstat_SOURCES += tests/image_tests.c tests/image_tests.h \
+  src/image.c src/image.h
+endif
 endif
 
 setdebug:
@@ -143,3 +151,6 @@ uninstall-hook:
 
 clean-local:
 	-rm -fr coverage *.lcov *.gz test*.log test*.xml src/*.gc* tests/*.gc* *.old *.new
+
+check-local:
+	-tail -n 2 test.log

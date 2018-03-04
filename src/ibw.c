@@ -258,7 +258,7 @@ int ibwcfgread(FILE *fd)
 		/* add interface and limit to list if value is within limits */
 		ivalue = strtol(value, (char **)NULL, 0);
 		if (ivalue<0 || ivalue>BWMAX) {
-			snprintf(errorstring, 512, "Invalid value \"%ld\" for MaxBW%s, ignoring parameter.", ivalue, name);
+			snprintf(errorstring, 1024, "Invalid value \"%ld\" for MaxBW%s, ignoring parameter.", ivalue, name);
 			printe(PT_Config);
 		} else {
 			ibwadd(name, (uint32_t)ivalue);

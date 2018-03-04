@@ -1,6 +1,6 @@
+#include "common.h"
 #include "vnstat_tests.h"
 #include "fs_tests.h"
-#include "common.h"
 #include "cfg.h"
 #include "fs.h"
 
