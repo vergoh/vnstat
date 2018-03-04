@@ -631,7 +631,7 @@ int waittimesync(DSTATE *s)
 		printf("latest db update: %s\n", timestamp2);
 	}
 
-	if (s->current <= s->prevdbsave) {
+	if (s->current < s->prevdbsave) {
 		if (s->prevdbupdate == 0) {
 			s->prevdbupdate = s->current;
 			strftime(timestamp, 22, "%Y-%m-%d %H:%M:%S", localtime(&s->current));
