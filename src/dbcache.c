@@ -5,7 +5,11 @@
 #include "cfg.h"
 #include "ibw.h"
 
-int cacheadd(const char *iface, int sync)
+/* global variables */
+datanode *dataptr;
+
+
+int cacheadd(const char *iface, short sync)
 {
 	datanode *p, *n;
 

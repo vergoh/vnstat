@@ -673,7 +673,7 @@ int setcfgvalue(struct cfgsetting *cset, const char *value, const char *cfgline)
 		if (debug)
 			printf("  c: %s   -> \"%s\": \"%s\"\n", cfgline, cset->name, cset->locc);
 	} else if (isdigit(value[0])) {
-		*cset->loci = strtol(value, (char **)NULL, 0);
+		*cset->loci = (int32_t) strtol(value, (char **)NULL, 0);
 		if (debug)
 			printf("  i: %s   -> \"%s\": %d\n", cfgline, cset->name, *cset->loci);
 	} else {

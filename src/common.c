@@ -1,5 +1,18 @@
 #include "common.h"
 
+/* global variables */
+DATA data;
+CFG cfg;
+IFINFO ifinfo;
+char errorstring[512];
+ibwnode *ifacebw;
+int debug;
+int noexit;      /* = running as daemon if 2 */
+int intsignal;
+int pidfile;
+int disableprints;
+
+
 int printe(PrintType type)
 {
 	int result = 1;
@@ -166,7 +179,7 @@ int dmonth(int month)
 	}
 }
 
-uint32_t mosecs(void)
+time_t mosecs(void)
 {
 	struct tm d;
 #if defined(_SVID_SOURCE) || defined(_XOPEN_SOURCE) || defined(__linux__)
@@ -251,8 +264,7 @@ char *strncpy_nt(char *dest, const char *src, size_t n)
 
 int isnumeric(const char *s)
 {
-	int i, len;
-	len = strlen(s);
+	size_t i, len = strlen(s);
 
 	if (!len) {
 		return 0;

@@ -162,7 +162,7 @@ void layoutinit(IMAGECONTENT *ic, char *title, int width, int height)
 	if (!ic->showheader || ic->altdate) {
 		gdImageString(ic->im, gdFontGetTiny(), 5+ic->showedge, height-12-ic->showedge, (unsigned char*)datestring, ic->cvnstat);
 	} else {
-		gdImageString(ic->im, gdFontGetTiny(), width-(strlen(datestring)*gdFontGetTiny()->w+12), 9+ic->showedge, (unsigned char*)datestring, ic->cheaderdate);
+		gdImageString(ic->im, gdFontGetTiny(), width-(((int)strlen(datestring))*gdFontGetTiny()->w+12), 9+ic->showedge, (unsigned char*)datestring, ic->cheaderdate);
 	}
 
 	/* generator */

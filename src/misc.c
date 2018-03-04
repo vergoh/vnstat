@@ -240,12 +240,12 @@ char *getvalue(uint64_t mb, uint64_t kb, int len, int type)
 	return buffer;
 }
 
-char *getrate(uint64_t mb, uint64_t kb, uint32_t interval, int len)
+char *getrate(uint64_t mb, uint64_t kb, time_t interval, int len)
 {
 	return gettrafficrate(mbkbtokb(mb, kb) * 1024, interval, len);
 }
 
-char *gettrafficrate(uint64_t bytes, uint32_t interval, int len)
+char *gettrafficrate(uint64_t bytes, time_t interval, int len)
 {
 	static char buffer[64];
 	int unitmode, declen = cfg.defaultdecimals;
@@ -367,13 +367,13 @@ char *getratestring(uint64_t rate, int len, int declen, int unitmode)
 
 	/* try to figure out what unit to use */
 	if (rate>=limit[2]) {
-		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)getunitdivisor(unitmode, 4), getrateunitprefix(unitmode, 4));
+		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)(getunitdivisor(unitmode, 4)), getrateunitprefix(unitmode, 4));
 	} else if (rate>=limit[1]) {
-		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)getunitdivisor(unitmode, 3), getrateunitprefix(unitmode, 3));
+		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)(getunitdivisor(unitmode, 3)), getrateunitprefix(unitmode, 3));
 	} else if (rate>=limit[0]) {
-		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)getunitdivisor(unitmode, 2), getrateunitprefix(unitmode, 2));
+		snprintf(buffer, 64, "%"DECCONV"*.2f %s", len, rate/(float)(getunitdivisor(unitmode, 2)), getrateunitprefix(unitmode, 2));
 	} else {
-		snprintf(buffer, 64, "%"DECCONV"*.*f %s", len, declen, rate/(float)getunitdivisor(unitmode, 1), getrateunitprefix(unitmode, 1));
+		snprintf(buffer, 64, "%"DECCONV"*.*f %s", len, declen, rate/(float)(getunitdivisor(unitmode, 1)), getrateunitprefix(unitmode, 1));
 	}
 
 	return buffer;

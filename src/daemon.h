@@ -3,12 +3,13 @@
 
 typedef struct {
 	int running, updateinterval, dbcount, dodbsave, rundaemon;
-	int dbsaved, showhelp, sync, saveinterval, forcesave, noadd;
+	int dbsaved, showhelp, saveinterval, forcesave, noadd;
 	int alwaysadd;
 	uint32_t dbhash;
 	char cfgfile[512], dirname[512];
 	char user[33], group[33];
 	time_t current, prevdbupdate, prevdbsave;
+	short sync;
 	datanode *datalist;
 } DSTATE;
 

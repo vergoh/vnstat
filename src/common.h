@@ -318,7 +318,7 @@ int printe(PrintType type);
 int logprint(PrintType type);
 int verifylogaccess(void);
 int dmonth(int month);
-uint32_t mosecs(void);
+time_t mosecs(void);
 uint64_t countercalc(const uint64_t *a, const uint64_t *b);
 void addtraffic(uint64_t *destmb, int *destkb, const uint64_t srcmb, const int srckb);
 uint64_t mbkbtokb(uint64_t mb, uint64_t kb);
@@ -328,15 +328,15 @@ void panicexit(const char *sourcefile, const int sourceline) __attribute__((nore
 char *getversion(void);
 
 /* global variables */
-DATA data;
-CFG cfg;
-IFINFO ifinfo;
-char errorstring[512];
-ibwnode *ifacebw;
-int debug;
-int noexit;      /* = running as daemon if 2 */
-int intsignal;
-int pidfile;
-int disableprints;
+extern DATA data;
+extern CFG cfg;
+extern IFINFO ifinfo;
+extern char errorstring[512];
+extern ibwnode *ifacebw;
+extern int debug;
+extern int noexit;      /* = running as daemon if 2 */
+extern int intsignal;
+extern int pidfile;
+extern int disableprints;
 
 #endif
