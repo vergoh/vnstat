@@ -167,7 +167,7 @@ void cachestatus(void)
 			if (!ibwget(p->data.interface, &bwlimit) || bwlimit == 0) {
 				snprintf(bwtemp, 16, " (no limit) ");
 			} else {
-				snprintf(bwtemp, 16, " (%d Mbit) ", bwlimit);
+				snprintf(bwtemp, 16, " (%u Mbit) ", bwlimit);
 			}
 			strncat(buffer, p->data.interface, strlen(p->data.interface));
 			strncat(buffer, bwtemp, strlen(bwtemp));
