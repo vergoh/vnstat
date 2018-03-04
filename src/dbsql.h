@@ -68,14 +68,14 @@ int db_iserrcodefatal(int errcode);
 int dbiflistadd(dbiflist **dbifl, const char *iface);
 void dbiflistfree(dbiflist **dbifl);
 
-int db_getdata(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface, const char *table, const uint32_t limit);
+int db_getdata(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface, const char *table, const uint32_t resultlimit);
 void updatelistinfo(dbdatalistinfo *listinfo, const uint64_t rx, const uint64_t tx, const time_t timestamp);
 int dbdatalistadd(dbdatalist **dbdata, const uint64_t rx, const uint64_t tx, const time_t timestamp, const int64_t rowid);
 void dbdatalistfree(dbdatalist **dbdata);
 
 /* global db */
-sqlite3 *db;
-int db_errcode;
-int db_intransaction;
+extern sqlite3 *db;
+extern int db_errcode;
+extern int db_intransaction;
 
 #endif

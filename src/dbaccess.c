@@ -412,20 +412,6 @@ int lockdb(int fd, int dbwrite)
 	return 1;
 }
 
-int checkdb(const char *iface, const char *dirname)
-{
-	char file[512];
-	struct statvfs buf;
-
-	snprintf(file, 512, "%s/%s", dirname, iface);
-
-	if (statvfs(file, &buf)==0) {
-		return 1; /* file exists */
-	} else {
-		return 0; /* no file or some other error */
-	}
-}
-
 int removedb(const char *iface, const char *dirname)
 {
 	char file[512];

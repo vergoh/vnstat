@@ -2,6 +2,11 @@
 #include "misc.h"
 #include "dbsql.h"
 
+/* global db */
+sqlite3 *db;
+int db_errcode;
+int db_intransaction;
+
 int db_open_ro(void)
 {
 	return db_open(0, 1);

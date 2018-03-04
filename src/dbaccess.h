@@ -46,7 +46,6 @@ int insertlegacydata(DATA *data, const char *iface);
 int readdb(DATA *data, const char *iface, const char *dirname, const int force);
 void initdb(DATA *data);
 int lockdb(int fd, int dbwrite);
-int checkdb(const char *iface, const char *dirname);
 int removedb(const char *iface, const char *dirname);
 int validatedb(DATA *data);
 

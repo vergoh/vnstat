@@ -59,21 +59,6 @@ START_TEST(removedb_with_nonexisting_file)
 }
 END_TEST
 
-START_TEST(checkdb_finds_existing_file)
-{
-	ck_assert_int_eq(clean_testdbdir(), 1);
-	ck_assert_int_eq(create_zerosize_dbfile("existingdb"), 1);
-	ck_assert_int_eq(checkdb("existingdb", TESTDBDIR), 1);
-}
-END_TEST
-
-START_TEST(checkdb_does_not_find_nonexisting_file)
-{
-	ck_assert_int_eq(clean_testdbdir(), 1);
-	ck_assert_int_eq(checkdb("nonexistingdb", TESTDBDIR), 0);
-}
-END_TEST
-
 START_TEST(readdb_with_empty_file)
 {
 	DATA data;
@@ -505,8 +490,6 @@ void add_database_tests(Suite *s)
 	tcase_add_test(tc_db, initdb_activates_database);
 	tcase_add_test(tc_db, removedb_with_existing_files);
 	tcase_add_test(tc_db, removedb_with_nonexisting_file);
-	tcase_add_test(tc_db, checkdb_finds_existing_file);
-	tcase_add_test(tc_db, checkdb_does_not_find_nonexisting_file);
 	tcase_add_test(tc_db, readdb_with_empty_file);
 	tcase_add_test(tc_db, readdb_with_empty_file_and_backup);
 	tcase_add_test(tc_db, readdb_with_nonexisting_file);
