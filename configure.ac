@@ -1,6 +1,6 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
-AC_INIT([vnstat], [1.18_beta])
+AC_INIT([vnstat], [1.18])
 AM_INIT_AUTOMAKE([foreign subdir-objects std-options -Wall -Werror])
 AM_MAINTAINER_MODE
 
