@@ -42,8 +42,10 @@ START_TEST(logprint_options)
 }
 END_TEST
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wused-but-marked-unused"
+#if defined(__clang__)
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wused-but-marked-unused"
+#endif
 START_TEST(dmonth_return_within_range)
 {
 	int m;
@@ -52,7 +54,9 @@ START_TEST(dmonth_return_within_range)
 	ck_assert_int_le(m, 31);
 }
 END_TEST
-#pragma clang diagnostic pop
+#if defined(__clang__)
+  #pragma clang diagnostic pop
+#endif
 
 START_TEST(leapyears_are_known)
 {

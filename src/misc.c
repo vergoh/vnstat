@@ -1,12 +1,16 @@
 #if !defined(__FreeBSD__) && !defined(__NetBSD__) && !defined(__OpenBSD__) && !defined(__APPLE__) && !defined(__FreeBSD_kernel__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wreserved-id-macro"
-#define _XOPEN_SOURCE 600
-#pragma clang diagnostic pop
+  #if defined(__clang__)
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wreserved-id-macro"
+  #endif
+  #define _XOPEN_SOURCE 600
+  #if defined(__clang__)
+    #pragma clang diagnostic pop
+  #endif
 #endif
 /* enable wcswidth on kFreeBSD */
 #if defined(__FreeBSD_kernel__) && defined(__GLIBC__)
-#define __USE_XOPEN
+  #define __USE_XOPEN
 #endif
 #include "common.h"
 #include "misc.h"
