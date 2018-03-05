@@ -250,117 +250,50 @@ START_TEST(database_outputs_do_not_crash)
 }
 END_TEST
 
-/* TODO: rewrite */
-/*
 START_TEST(database_outputs_do_not_crash_without_data)
 {
-	int i;
+	int ret;
 
 	defaultcfg();
-	strcpy(data.interface, "something");
-	strcpy(data.nick, "nothing");
-	data.totalrx = 1;
-	data.totaltx = 2;
-	data.currx = 3;
-	data.curtx = 4;
-	data.totalrxk = 5;
-	data.totaltxk = 6;
-	data.btime = 7;
 
-	for (i=0; i<30; i++) {
-		data.day[i].date = i+1;
-		data.day[i].used = 1;
-	}
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("something");
+	ck_assert_int_eq(ret, 1);
 
-	for (i=0; i<10; i++) {
-		data.top10[i].date = i+1;
-		data.top10[i].used = 1;
-	}
-
-	for (i=0; i<12; i++) {
-		data.month[i].month = i+1;
-		data.month[i].used = 1;
-	}
-
-	for (i=0; i<24; i++) {
-		data.hour[i].date = i+1;
-	}
+	ret = db_addtraffic_dated("something", 0, 0, 85000);
+	ck_assert_int_eq(ret, 1);
 
 	suppress_output();
 
-	showdb(0);
-	showdb(1);
-	showdb(2);
-	showdb(3);
-	showdb(4);
-	showdb(5);
-	showdb(6);
-	showdb(7);
-	showdb(8);
-	showdb(9);
+	showdb("something", 0);
+	showdb("something", 1);
+	showdb("something", 2);
+	showdb("something", 3);
+	showdb("something", 4);
+	showdb("something", 5);
+	showdb("something", 6);
+	showdb("something", 7);
+	showdb("something", 8);
+	showdb("something", 9);
 
 	xmlheader();
-	showxml('d');
-	showxml('m');
-	showxml('t');
-	showxml('h');
-	showxml('a');
+	showxml("something", 'd');
+	showxml("something", 'm');
+	showxml("something", 't');
+	showxml("something", 'h');
+	showxml("something", 'a');
 	xmlfooter();
 
 	jsonheader();
-	showjson(0, 'd');
-	showjson(0, 'm');
-	showjson(0, 't');
-	showjson(0, 'h');
-	showjson(0, 'a');
+	showjson("something", 0, 'd');
+	showjson("something", 0, 'm');
+	showjson("something", 0, 't');
+	showjson("something", 0, 'h');
+	showjson("something", 0, 'a');
 	jsonfooter();
 }
 END_TEST
-
-START_TEST(database_outputs_do_not_crash_with_near_empty_database)
-{
-	defaultcfg();
-	strcpy(data.interface, "something");
-	strcpy(data.nick, "nothing");
-	data.totalrx = 1;
-	data.totaltx = 2;
-	data.currx = 3;
-	data.curtx = 4;
-	data.totalrxk = 5;
-	data.totaltxk = 6;
-	data.btime = 7;
-
-	suppress_output();
-
-	showdb(0);
-	showdb(1);
-	showdb(2);
-	showdb(3);
-	showdb(4);
-	showdb(5);
-	showdb(6);
-	showdb(7);
-	showdb(8);
-	showdb(9);
-
-	xmlheader();
-	showxml('d');
-	showxml('m');
-	showxml('t');
-	showxml('h');
-	showxml('a');
-	xmlfooter();
-
-	jsonheader();
-	showjson(0, 'd');
-	showjson(0, 'm');
-	showjson(0, 't');
-	showjson(0, 'h');
-	showjson(0, 'a');
-	jsonfooter();
-}
-END_TEST
-*/
 
 START_TEST(showbar_with_zero_len_is_nothing)
 {
@@ -501,9 +434,7 @@ void add_database_tests(Suite *s)
 	tcase_add_test(tc_db, validatedb_with_invalid_totals);
 	tcase_add_test(tc_db, validatedb_with_top10_use);
 	tcase_add_test(tc_db, database_outputs_do_not_crash);
-	/* TODO: rewrite */
-	/*tcase_add_test(tc_db, database_outputs_do_not_crash_without_data);
-	tcase_add_test(tc_db, database_outputs_do_not_crash_with_near_empty_database);*/
+	tcase_add_test(tc_db, database_outputs_do_not_crash_without_data);
 	tcase_add_test(tc_db, showbar_with_zero_len_is_nothing);
 	tcase_add_test(tc_db, showbar_with_big_max_and_small_numbers);
 	tcase_add_test(tc_db, showbar_with_all_rx);
