@@ -113,10 +113,10 @@ void daemonize(void)
 	signal(SIGTTIN,SIG_IGN);
 }
 
-int addinterfaces(DSTATE *s)
+unsigned int addinterfaces(DSTATE *s)
 {
 	char *ifacelist, interface[32];
-	int index = 0, count = 0;
+	unsigned int index = 0, count = 0;
 	uint32_t bwlimit = 0;
 
 	timeused(__func__, 1);
@@ -214,13 +214,13 @@ void detectboot(DSTATE *s)
 	}
 	db_btime = strtoull(btime_buffer, (char **)NULL, 0);
 
-	if (db_btime < (current_btime-cfg.bvar)) {
+	if (db_btime < (current_btime-(uint32_t)cfg.bvar)) {
 		s->bootdetected = 1;
 		if (debug)
 			printf("System has been booted, %"PRIu64" < %"PRIu64" - %d\n", db_btime, current_btime, cfg.bvar);
 	}
 
-	snprintf(buffer, 32, "%"PRIu64"", (uint64_t)current_btime);
+	snprintf(buffer, 32, "%"PRIu64"", current_btime);
 	db_setinfo("btime", buffer, 1);
 }
 
@@ -273,7 +273,7 @@ void preparedatabases(DSTATE *s)
 	}
 
 	if (debug) {
-		printf("db count: %d\n", s->dbcount);
+		printf("db count: %"PRIu64"\n", s->dbcount);
 	}
 
 	if (s->noadd) {
@@ -306,11 +306,11 @@ void preparedatabases(DSTATE *s)
 	s->dbcount = 0;
 }
 
-int importlegacydbs(DSTATE *s)
+unsigned int importlegacydbs(DSTATE *s)
 {
 	DIR *dir;
 	struct dirent *di;
-	int importcount = 0;
+	unsigned int importcount = 0;
 
 	if ((dir=opendir(s->dirname))==NULL) {
 		printf("Error: Unable to open database directory \"%s\": %s\n", s->dirname, strerror(errno));
@@ -531,7 +531,7 @@ int processifinfo(DSTATE *s, datacache **dc)
 
 			/* calculate maximum possible transfer since last update based on set maximum rate */
 			/* and add 10% in order to be on the safe side */
-			maxtransfer = ceil((maxbw/(float)8)*interval*(float)1.1) * 1024 * 1024;
+			maxtransfer = (uint64_t)(ceilf((maxbw/(float)8)*interval*(float)1.1)) * 1024 * 1024;
 
 			if (debug)
 				printf("interval: %"PRIu64"  maxbw: %"PRIu32"  maxrate: %"PRIu64"  rxc: %"PRIu64"  txc: %"PRIu64"\n", (uint64_t)interval, maxbw, maxtransfer, rxchange, txchange);
@@ -777,14 +777,14 @@ void preparedirs(DSTATE *s)
 void datacache_status(datacache **dc)
 {
 	char buffer[1024], bwtemp[16];
-	int b = 0, count = 0;
+	unsigned int b = 0, count = 0;
 	uint32_t bwlimit = 0;
 	datacache *iterator = *dc;
 
 	timeused(__func__, 1);
 
 	snprintf(buffer, 1024, "Monitoring (%d): ", datacache_count(dc));
-	b = strlen(buffer) + 1;
+	b = (unsigned int)strlen(buffer) + 1;
 
 	while (iterator != NULL) {
 		if ((b+strlen(iterator->interface)+16) < 1020) {
@@ -889,23 +889,26 @@ void interfacechangecheck(DSTATE *s)
 
 uint32_t simplehash(const char *data, int len)
 {
-	uint32_t hash = len;
+	uint32_t hash;
 
 	if (len <= 0 || data == NULL) {
 		return 0;
 	}
 
+	hash = (uint32_t)len;
+
 	for (len--; len >= 0; len--) {
 		if (len > 0) {
-			hash += (int)data[len] * len;
+			hash += (uint32_t)data[len] * (uint32_t)len;
 		} else {
-			hash += (int)data[len];
+			hash += (uint32_t)data[len];
 		}
 	}
 
 	return hash;
 }
 
+__attribute__((noreturn))
 void errorexitdaemon(DSTATE *s, const int fataldberror)
 {
 	if (!fataldberror) {

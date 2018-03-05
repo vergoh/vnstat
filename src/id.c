@@ -11,7 +11,7 @@ uid_t getuser(const char *user)
 	}
 
 	if (isnumeric(user)) {
-		uid = atoi(user);
+		uid = (uid_t)atoi(user);
 		pw = getpwuid(uid);
 	} else {
 		pw = getpwnam(user);
@@ -40,7 +40,7 @@ gid_t getgroup(const char *group)
 	}
 
 	if (isnumeric(group)) {
-		gid = atoi(group);
+		gid = (gid_t)atoi(group);
 		gr = getgrgid(gid);
 	} else {
 		gr = getgrnam(group);

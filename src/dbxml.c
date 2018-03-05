@@ -68,7 +68,7 @@ void xmldump(const interfaceinfo *interface, const char *tablename, const int da
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
 
-	if (!db_getdata(&datalist, &datainfo, interface->name, tablename, -1)) {
+	if (!db_getdata(&datalist, &datainfo, interface->name, tablename, 0)) {
 		printf("Error: Failed to fetch %s data.\n", tablename);
 		return;
 	}
@@ -88,21 +88,28 @@ void xmldump(const interfaceinfo *interface, const char *tablename, const int da
 void xmldate(const time_t *date, const int type)
 {
 	struct tm *d;
-	const char *type1 = "<date><year>%d</year><month>%02d</month><day>%02d</day></date>";
-	const char *type2 = "<date><year>%d</year><month>%02d</month><day>%02d</day></date><time><hour>%02d</hour><minute>%02d</minute></time>";
-	const char *type3 = "<date><year>%d</year><month>%02d</month></date>";
-	const char *type4 = "<date><year>%d</year></date>";
 
 	d = localtime(date);
 
-	if (type == 1) {
-		printf(type1, 1900+d->tm_year, 1+d->tm_mon, d->tm_mday);
-	} else if (type == 2) {
-		printf(type2, 1900+d->tm_year, 1+d->tm_mon, d->tm_mday, d->tm_hour, d->tm_min);
-	} else if (type == 3) {
-		printf(type3, 1900+d->tm_year, 1+d->tm_mon);
-	} else if (type == 4) {
-		printf(type4, 1900+d->tm_year);
+	switch (type) {
+		case 1:
+			printf("<date><year>%d</year><month>%02d</month><day>%02d</day></date>", \
+					1900+d->tm_year, 1+d->tm_mon, d->tm_mday);
+			break;
+		case 2:
+			printf("<date><year>%d</year><month>%02d</month><day>%02d</day></date><time><hour>%02d</hour><minute>%02d</minute></time>", \
+					1900+d->tm_year, 1+d->tm_mon, d->tm_mday, d->tm_hour, d->tm_min);
+			break;
+		case 3:
+			printf("<date><year>%d</year><month>%02d</month></date>", \
+					1900+d->tm_year, 1+d->tm_mon);
+			break;
+		case 4:
+			printf("<date><year>%d</year></date>", \
+					1900+d->tm_year);
+			break;
+		default:
+			break;
 	}
 }
 

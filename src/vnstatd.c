@@ -26,8 +26,9 @@ vnStat daemon - Copyright (c) 2008-2018 Teemu Toivola <tst@iki.fi>
 
 int main(int argc, char *argv[])
 {
-	int currentarg, temp;
+	int currentarg;
 	uint32_t previflisthash;
+	uint64_t temp;
 	DSTATE s;
 
 	initdstate(&s);
@@ -255,7 +256,7 @@ int main(int argc, char *argv[])
 		}
 
 		if (s.running && intsignal == 0) {
-			sleep(cfg.pollinterval);
+			sleep((unsigned int)cfg.pollinterval);
 		}
 
 		if (intsignal) {

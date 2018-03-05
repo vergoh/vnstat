@@ -43,7 +43,6 @@ void drawimage(IMAGECONTENT *ic)
 		default:
 			printf("Error: No such query mode: %d\n", cfg.qmode);
 			exit(EXIT_FAILURE);
-			break;
 	}
 
 	/* enable background transparency if needed */
@@ -131,7 +130,7 @@ void colorinitcheck(const char *color, const int value, const char *cfgtext, con
 	}
 }
 
-void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int height)
+void layoutinit(IMAGECONTENT *ic, char *title, const int width, const int height)
 {
 	struct tm *d;
 	char datestring[64];
@@ -182,13 +181,13 @@ void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const ui
 	int l, width = len;
 
 	if ((rx+tx)!=max) {
-		width=((rx+tx)/(float)max)*len;
+		width=(int)(((rx+tx)/(float)max)*len);
 	}
 
 	if (width!=0) {
 
 		if (tx>rx) {
-			l=rintf((rx/(float)(rx+tx)*width));
+			l=(int)(rintf((rx/(float)(rx+tx)*width)));
 
 			gdImageFilledRectangle(ic->im, x, y+YBEGINOFFSET, x+l, y+YENDOFFSET, ic->crx);
 			gdImageRectangle(ic->im, x, y+YBEGINOFFSET, x+l, y+YENDOFFSET, ic->crxd);
@@ -197,7 +196,7 @@ void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const ui
 			gdImageRectangle(ic->im, x+l, y+YBEGINOFFSET, x+width, y+YENDOFFSET, ic->ctxd);
 
 		} else {
-			l=rintf((tx/(float)(rx+tx)*width));
+			l=(int)(rintf((tx/(float)(rx+tx)*width)));
 
 			gdImageFilledRectangle(ic->im, x, y+YBEGINOFFSET, x+(width-l), y+YENDOFFSET, ic->crx);
 			gdImageRectangle(ic->im, x, y+YBEGINOFFSET, x+(width-l), y+YENDOFFSET, ic->crxd);
@@ -212,10 +211,10 @@ void drawpole(IMAGECONTENT *ic, const int x, const int y, const int len, const u
 {
 	int l;
 
-	l = (rx/(float)max)*len;
+	l = (int)((rx/(float)max)*len);
 	gdImageFilledRectangle(ic->im, x, y+(len-l), x+7, y+len, ic->crx);
 
-	l = (tx/(float)max)*len;
+	l = (int)((tx/(float)max)*len);
 	gdImageFilledRectangle(ic->im, x+5, y+(len-l), x+12, y+len, ic->ctx);
 }
 
@@ -224,11 +223,11 @@ void drawdonut(IMAGECONTENT *ic, const int x, const int y, const float rxp, cons
 	int rxarc = 0, txarc = 0;
 
 	if ( (int)(rxp + txp) > 0 ) {
-		rxarc = 360 * (rxp / (float)100);
+		rxarc = (int)(360 * (rxp / (float)100));
 		if ( (int)(rxp + txp) == 100 ) {
 			txarc = 360 - rxarc;
 		} else {
-			txarc = 360 * (txp / (float)100);
+			txarc = (int)(360 * (txp / (float)100));
 		}
 
 		/* fix possible graphical glitch */
@@ -312,13 +311,13 @@ void drawhours(IMAGECONTENT *ic, const int x, const int y, const int rate)
 		/* convert hourly transfer to hourly rate if needed */
 		if (rate) {
 			if ((ic->current-hourdata[i].date) > 3600) {
-				hourdata[i].rx = hourdata[i].rx / ratediv;
-				hourdata[i].tx = hourdata[i].tx / ratediv;
+				hourdata[i].rx = (uint64_t)(hourdata[i].rx / ratediv);
+				hourdata[i].tx = (uint64_t)(hourdata[i].tx / ratediv);
 			} else {
 				/* scale ongoing hour properly */
 				if (chour != i) {
-					hourdata[i].rx = hourdata[i].rx / ratediv;
-					hourdata[i].tx = hourdata[i].tx / ratediv;
+					hourdata[i].rx = (uint64_t)(hourdata[i].rx / ratediv);
+					hourdata[i].tx = (uint64_t)(hourdata[i].tx / ratediv);
 				} else {
 					d = localtime(&ic->current);
 					diff = d->tm_min * 60;
@@ -326,11 +325,11 @@ void drawhours(IMAGECONTENT *ic, const int x, const int y, const int rate)
 						diff = 60;
 					}
 					if (cfg.rateunit == 1) {
-						hourdata[i].rx = hourdata[i].rx * 8 / (float)diff;
-						hourdata[i].tx = hourdata[i].tx * 8 / (float)diff;
+						hourdata[i].rx = (uint64_t)(hourdata[i].rx * 8 / (float)diff);
+						hourdata[i].tx = (uint64_t)(hourdata[i].tx * 8 / (float)diff);
 					} else {
-						hourdata[i].rx = hourdata[i].rx / (float)diff;
-						hourdata[i].tx = hourdata[i].tx / (float)diff;
+						hourdata[i].rx = (uint64_t)(hourdata[i].rx / (float)diff);
+						hourdata[i].tx = (uint64_t)(hourdata[i].tx / (float)diff);
 					}
 				}
 			}
@@ -356,13 +355,13 @@ void drawhours(IMAGECONTENT *ic, const int x, const int y, const int rate)
 	}
 
 	for (i=step; (uint64_t)(scaleunit*i) <= max; i=i+step) {
-		s = 121 * ((scaleunit * i) / (float)max);
+		s = (int)(121 * ((scaleunit * i) / (float)max));
 		gdImageLine(ic->im, x+36, y+124-s, x+460, y+124-s, ic->cline);
 		gdImageLine(ic->im, x+36, y+124-((s+prev)/2), x+460, y+124-((s+prev)/2), ic->clinel);
 		gdImageString(ic->im, gdFontGetTiny(), x+16, y+121-s, (unsigned char*)getimagevalue(scaleunit*i, 3, rate), ic->ctext);
 		prev = s;
 	}
-	s = 121 * ((scaleunit * i) / (float)max);
+	s = (int)(121 * ((scaleunit * i) / (float)max));
 	if ( ((s+prev)/2) <= 128 ) {
 		gdImageLine(ic->im, x+36, y+124-((s+prev)/2), x+460, y+124-((s+prev)/2), ic->clinel);
 	} else {
@@ -430,7 +429,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 {
 	int limit, listtype, textx, texty, offsetx = 0, offsety = 0;
 	int width, height, headermod, i = 1;
-	uint64_t e_rx, e_tx, e_secs, div, mult;
+	uint64_t e_rx, e_tx, e_secs = 86400, div, mult;
 	char buffer[512], datebuff[16], stampformat[64];
 	char titlename[8], colname[8];
 	struct tm *d;
@@ -648,8 +647,8 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 				mult = 1440 * (365 + isleapyear(d->tm_year + 1900));
 			}
 			if (div > 0) {
-				e_rx = ((datalist_i->rx) / (float)div) * mult;
-				e_tx = ((datalist_i->tx) / (float)div) * mult;
+				e_rx = (uint64_t)((datalist_i->rx) / (float)div) * mult;
+				e_tx = (uint64_t)((datalist_i->tx) / (float)div) * mult;
 			} else {
 				e_rx = e_tx = 0;
 			}
@@ -1077,9 +1076,9 @@ char *getimagevalue(const uint64_t b, const int len, const int rate)
 			unit = 3;
 		}
 		for (i=UNITPREFIXCOUNT-1; i>0; i--) {
-			limit = pow(p, i-1) * 1000;
+			limit = (uint64_t)(pow(p, i-1)) * 1000;
 			if (b >= limit) {
-				snprintf(buffer, 64, "%*.*f", len, declen, b/(float)getunitdivisor(unit, i+1));
+				snprintf(buffer, 64, "%*.*f", len, declen, b/(double)(getunitdivisor(unit, i+1)));
 				return buffer;
 			}
 		}
@@ -1143,13 +1142,13 @@ uint64_t getscale(const uint64_t input, const int rate)
 
 	/* put unit back */
 	if (i) {
-		result = result * pow(div, i);
+		result = result * (uint64_t)(pow(div, i));
 	}
 
 	/* make sure result isn't zero */
 	if (!result) {
 		if (i) {
-			result = pow(div, i);
+			result = (uint64_t)(pow(div, i));
 		} else {
 			result = 1;
 		}

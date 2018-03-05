@@ -352,7 +352,7 @@ int main(int argc, char *argv[]) {
 			}
 			p.ifcount = db_getinterfacecount();
 			if (debug)
-				printf("%d interface(s) found\n", p.ifcount);
+				printf("%"PRIu64" interface(s) found\n", p.ifcount);
 
 			if (p.ifcount > 1) {
 				strncpy_nt(p.definterface, cfg.iface, 32);

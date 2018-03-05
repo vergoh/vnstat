@@ -29,7 +29,7 @@ int spacecheck(const char *path)
 		}
 	}
 
-	free=(buf.f_bavail/(float)1024)*buf.f_bsize;
+	free = (uint64_t)(buf.f_bavail/(float)1024) * buf.f_bsize;
 
 	if (debug) {
 		printf("bsize %d\n", (int)buf.f_bsize);
@@ -157,15 +157,15 @@ char *getvalue(const uint64_t bytes, const int len, const int type)
 		snprintf(buffer, 64, "%*s  %*s", declen, "--", (int)strlen(getunitprefix(2)), " ");
 	} else {
 		for (i=UNITPREFIXCOUNT-1; i>0; i--) {
-			limit = pow(1024, i-1) * 1000;
+			limit = (uint64_t)(pow(1024, i-1)) * 1000;
 			if (bytes >= limit) {
 				if (i>1) {
-					snprintf(buffer, 64, "%"DECCONV"*.*f %s", getunitspacing(len, 5), declen, bytes/(float)getunitdivisor(0, i+1), getunitprefix(i+1));
+					snprintf(buffer, 64, "%"DECCONV"*.*f %s", getunitspacing(len, 5), declen, bytes/(double)(getunitdivisor(0, i+1)), getunitprefix(i+1));
 				} else {
 					if (type == 2) {
 						declen = 0;
 					}
-					snprintf(buffer, 64, "%"DECCONV"*.*f %s", getunitspacing(len, 2), declen, bytes/(float)getunitdivisor(0, i+1), getunitprefix(i+1));
+					snprintf(buffer, 64, "%"DECCONV"*.*f %s", getunitspacing(len, 2), declen, bytes/(double)(getunitdivisor(0, i+1)), getunitprefix(i+1));
 				}
 				return buffer;
 			}
@@ -209,12 +209,12 @@ char *gettrafficrate(const uint64_t bytes, const time_t interval, const int len)
 		}
 	} else {
 		b = bytes;
-		if (interval < 5 && ( b / interval ) < 1000) {
+		if (interval < 5 && ( b / (uint64_t)interval ) < 1000) {
 			declen = 0;
 		}
 	}
 
-	return getratestring(b / interval, len, declen);
+	return getratestring(b / (uint64_t)interval, len, declen);
 }
 
 char *getunitprefix(const int index)
@@ -249,9 +249,9 @@ uint64_t getunitdivisor(const int unitmode, const int index)
 		return 1;
 	} else {
 		if (unitmode == 3) {
-			return pow(1000, index-1);
+			return (uint64_t)(pow(1000, index-1));
 		} else {
-			return pow(1024, index-1);
+			return (uint64_t)(pow(1024, index-1));
 		}
 	}
 }
@@ -283,16 +283,16 @@ char *getratestring(const uint64_t rate, const int len, const int declen)
 
 	for (i=UNITPREFIXCOUNT-1; i>0; i--)
 	{
-		limit = pow(p, i-1) * 1000;
+		limit = (uint64_t)(pow(p, i-1)) * 1000;
 		if (rate >= limit) {
 			l = getratespacing(len, unit, i+1);
-			snprintf(buffer, 64, "%"DECCONV"*.2f %s", l, rate/(float)getunitdivisor(unit, i+1), getrateunitprefix(unit, i+1));
+			snprintf(buffer, 64, "%"DECCONV"*.2f %s", l, rate/(double)(getunitdivisor(unit, i+1)), getrateunitprefix(unit, i+1));
 			return buffer;
 		}
 	}
 
 	l = getratespacing(len, unit, 1);
-	snprintf(buffer, 64, "%"DECCONV"*.*f %s", l, declen, rate/(float)getunitdivisor(unit, 1), getrateunitprefix(unit, 1));
+	snprintf(buffer, 64, "%"DECCONV"*.*f %s", l, declen, rate/(double)(getunitdivisor(unit, 1)), getrateunitprefix(unit, 1));
 	return buffer;
 }
 

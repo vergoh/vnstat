@@ -577,9 +577,9 @@ int db_addtraffic_dated(const char *iface, const uint64_t rx, const uint64_t tx,
 	char sql[1024], datebuffer[512], nowdate[64];
 	sqlite3_int64 ifaceid = 0;
 
-	char *datatables[] = {"fiveminute", "hour", "day", "month", "year", "top"};
+	const char *datatables[] = {"fiveminute", "hour", "day", "month", "year", "top"};
 	int32_t *featurecfg[] = {&cfg.fiveminutehours, &cfg.hourlydays, &cfg.dailydays, &cfg.monthlymonths, &cfg.yearlyyears, &cfg.topdayentries};
-	char *datadates[] = {"datetime(%1$s, ('-' || (strftime('%%M', %1$s)) || ' minutes'), ('-' || (strftime('%%S', %1$s)) || ' seconds'), ('+' || (round(strftime('%%M', %1$s)/5,0)*5) || ' minutes'), 'localtime')", \
+	const char *datadates[] = {"datetime(%1$s, ('-' || (strftime('%%M', %1$s)) || ' minutes'), ('-' || (strftime('%%S', %1$s)) || ' seconds'), ('+' || (round(strftime('%%M', %1$s)/5,0)*5) || ' minutes'), 'localtime')", \
 			"strftime('%%Y-%%m-%%d %%H:00:00', %s, 'localtime')", \
 			"date(%s, 'localtime')", \
 			"strftime('%%Y-%%m-01', %s, 'localtime')", \
@@ -684,8 +684,8 @@ int db_insertdata(const char *table, const char *iface, const uint64_t rx, const
 	char sql[1024], datebuffer[512], nowdate[64];
 	sqlite3_int64 ifaceid = 0;
 
-	char *datatables[] = {"hour", "day", "month", "year", "top"};
-	char *datadates[] = {"strftime('%%Y-%%m-%%d %%H:00:00', %s, 'localtime')", \
+	const char *datatables[] = {"hour", "day", "month", "year", "top"};
+	const char *datadates[] = {"strftime('%%Y-%%m-%%d %%H:00:00', %s, 'localtime')", \
 			"date(%s, 'localtime')", \
 			"strftime('%%Y-%%m-01', %s, 'localtime')", \
 			"strftime('%%Y-01-01', %s, 'localtime')", \

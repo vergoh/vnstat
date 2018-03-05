@@ -138,13 +138,13 @@ int insertlegacydata(DATA *data, const char *iface)
 
 int readdb(DATA *data, const char *iface, const char *dirname, const int force)
 {
-	FILE *db;
+	FILE *legacydb;
 	char file[512], backup[512];
 
 	snprintf(file, 512, "%s/%s", dirname, iface);
 	snprintf(backup, 512, "%s/.%s", dirname, iface);
 
-	if ((db=fopen(file,"r"))==NULL) {
+	if ((legacydb=fopen(file,"r"))==NULL) {
 		snprintf(errorstring, 1024, "Unable to read database \"%s\": %s", file, strerror(errno));
 		printe(PT_Error);
 
@@ -156,12 +156,12 @@ int readdb(DATA *data, const char *iface, const char *dirname, const int force)
 	}
 
 	/* lock file */
-	if (!lockdb(fileno(db), 0)) {
-		fclose(db);
+	if (!lockdb(fileno(legacydb), 0)) {
+		fclose(legacydb);
 		return -1;
 	}
 
-	if (fread(data,sizeof(DATA),1,db)!=1 || ferror(db)) {
+	if (fread(data,sizeof(DATA),1,legacydb)!=1 || ferror(legacydb)) {
 		data->version=-1;
 		if (debug) {
 			printf("db: Database read failed for file \"%s\".\n", file);
@@ -189,8 +189,8 @@ int readdb(DATA *data, const char *iface, const char *dirname, const int force)
 		if (data->version==-1) {
 
 			/* close current db and try using backup if database conversion failed */
-			fclose(db);
-			if ((db=fopen(backup,"r"))==NULL) {
+			fclose(legacydb);
+			if ((legacydb=fopen(backup,"r"))==NULL) {
 				snprintf(errorstring, 1024, "Unable to open backup database \"%s\": %s", backup, strerror(errno));
 				printe(PT_Error);
 				if (noexit) {
@@ -201,15 +201,15 @@ int readdb(DATA *data, const char *iface, const char *dirname, const int force)
 			}
 
 			/* lock file */
-			if (!lockdb(fileno(db), 0)) {
-				fclose(db);
+			if (!lockdb(fileno(legacydb), 0)) {
+				fclose(legacydb);
 				return -1;
 			}
 
-			if (fread(data,sizeof(DATA),1,db)!=1 || ferror(db)) {
+			if (fread(data,sizeof(DATA),1,legacydb)!=1 || ferror(legacydb)) {
 				snprintf(errorstring, 1024, "Database load failed even when using backup (%s). Aborting.", strerror(errno));
 				printe(PT_Error);
-				fclose(db);
+				fclose(legacydb);
 
 				if (noexit) {
 					return -1;
@@ -238,7 +238,7 @@ int readdb(DATA *data, const char *iface, const char *dirname, const int force)
 				if (data->version==-1) {
 					snprintf(errorstring, 1024, "Unable to use database \"%s\" or backup database \"%s\".", file, backup);
 					printe(PT_Error);
-					fclose(db);
+					fclose(legacydb);
 
 					if (noexit) {
 						return -1;
@@ -254,7 +254,7 @@ int readdb(DATA *data, const char *iface, const char *dirname, const int force)
 	} else if (data->version>LEGACYDBVERSION) {
 		snprintf(errorstring, 1024, "Downgrading database \"%s\" (v%d) is not supported.", file, data->version);
 		printe(PT_Error);
-		fclose(db);
+		fclose(legacydb);
 
 		if (noexit) {
 			return -1;
@@ -263,7 +263,7 @@ int readdb(DATA *data, const char *iface, const char *dirname, const int force)
 		}
 	}
 
-	fclose(db);
+	fclose(legacydb);
 
 	if (strcmp(data->interface,iface)) {
 		snprintf(errorstring, 1024, "Warning:\nThe previous interface for this file was \"%s\".",data->interface);

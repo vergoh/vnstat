@@ -132,7 +132,7 @@ int ibwget(const char *iface, uint32_t *limit)
 	}
 
 	if (cfg.bwdetection) {
-		ibwadd(iface, cfg.maxbw);
+		ibwadd(iface, (uint32_t)cfg.maxbw);
 		p = ibwgetnode(iface);
 		speed = getifspeed(iface);
 		if (speed > 0) {
@@ -147,7 +147,7 @@ int ibwget(const char *iface, uint32_t *limit)
 
 	/* return default limit if specified */
 	if (cfg.maxbw>0) {
-		*limit = cfg.maxbw;
+		*limit = (uint32_t)cfg.maxbw;
 		return 1;
 	}
 	return 0;

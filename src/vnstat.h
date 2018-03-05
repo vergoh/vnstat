@@ -3,8 +3,9 @@
 
 typedef struct {
 	int query, setalias;
-	int addiface, ifcount, force, traffic;
+	int addiface, force, traffic;
 	int livetraffic, defaultiface, removeiface, livemode;
+	uint64_t ifcount;
 	char interface[32], dirname[512], alias[32], filename[512];
 	char definterface[32], cfgfile[512], *ifacelist, jsonmode, xmlmode;
 } PARAMS;

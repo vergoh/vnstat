@@ -34,7 +34,7 @@ void initimagecontent(IMAGECONTENT *ic);
 void drawimage(IMAGECONTENT *ic);
 void colorinit(IMAGECONTENT *ic);
 void colorinitcheck(const char *color, const int value, const char *cfgtext, const int *rgb);
-void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int height);
+void layoutinit(IMAGECONTENT *ic, char *title, const int width, const int height);
 void drawlegend(IMAGECONTENT *ic, const int x, const int y);
 void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max);
 void drawpole(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max);

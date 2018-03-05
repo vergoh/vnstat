@@ -195,7 +195,8 @@ void printcfgfile(void)
 int loadcfg(const char *cfgfile)
 {
 	FILE *fd;
-	int i, linelen, cfglen;
+	int i;
+	unsigned int linelen, cfglen;
 
 	char value[512], cfgline[512];
 
@@ -289,7 +290,7 @@ int loadcfg(const char *cfgfile)
 			break;
 		}
 
-		linelen = (int)strlen(cfgline);
+		linelen = (unsigned int)strlen(cfgline);
 		if (linelen<=2 || cfgline[0]=='#') {
 			continue;
 		}
@@ -300,7 +301,7 @@ int loadcfg(const char *cfgfile)
 				continue;
 			}
 
-			cfglen = (int)strlen(cset[i].name);
+			cfglen = (unsigned int)strlen(cset[i].name);
 			if ( (linelen<(cfglen+2)) || (strncasecmp(cfgline, cset[i].name, cfglen)!=0) ) {
 				continue;
 			}
@@ -741,11 +742,11 @@ int opencfgfile(const char *cfgfile, FILE **fd)
 	return 2;
 }
 
-int extractcfgvalue(char *value, const int valuelen, const char *cfgline, const int cfglen) {
+int extractcfgvalue(char *value, const unsigned int valuelen, const char *cfgline, const unsigned int cfglen) {
 
-	int i, j, linelen;
+	unsigned int i, j, linelen;
 
-	linelen = (int)strlen(cfgline);
+	linelen = (unsigned int)strlen(cfgline);
 
 	for (i=0; i<valuelen; i++) {
 		value[i]='\0';
@@ -777,7 +778,7 @@ int extractcfgvalue(char *value, const int valuelen, const char *cfgline, const 
 int setcfgvalue(const struct cfgsetting *cset, const char *value, const char *cfgline)
 {
 	if (cset->namelen>0) {
-		strncpy_nt(cset->locc, value, cset->namelen);
+		strncpy_nt(cset->locc, value, (size_t)cset->namelen);
 		if (debug)
 			printf("  c: %s   -> \"%s\": \"%s\"\n", cfgline, cset->name, cset->locc);
 	} else if ( ( strlen(value)>1 && isdigit(value[1]) ) || isdigit(value[0]) ) {

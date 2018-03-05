@@ -29,7 +29,11 @@ int printe(PrintType type)
 		switch (type) {
 			case PT_Multiline:
 				break;
-			default:
+			case PT_Info:
+			case PT_Infoless:
+			case PT_Error:
+			case PT_Config:
+			case PT_ShortMultiline:
 				result = logprint(type);
 				break;
 		}
@@ -54,9 +58,6 @@ int printe(PrintType type)
 				printf("%s\n", errorstring);
 				break;
 			case PT_ShortMultiline:
-				break;
-			default:
-				printf("%d: %s\n", type, errorstring);
 				break;
 		}
 		fflush(stdout);
@@ -99,11 +100,10 @@ int logprint(PrintType type)
 			case PT_Config:
 				snprintf(buffer, 1060, "[%s] Config: %s\n", timestamp, errorstring);
 				break;
+			case PT_Multiline:
+				break;
 			case PT_ShortMultiline:
 				snprintf(buffer, 1060, "[%s] %s\n", timestamp, errorstring);
-				break;
-			default:
-				snprintf(buffer, 1060, "[%s] (%d): %s\n", timestamp, type, errorstring);
 				break;
 		}
 
@@ -133,9 +133,6 @@ int logprint(PrintType type)
 			case PT_Infoless:
 			case PT_ShortMultiline:
 				syslog(LOG_NOTICE, "%s", errorstring);
-				break;
-			default:
-				syslog(LOG_NOTICE, "(%d): %s", type, errorstring);
 				break;
 		}
 

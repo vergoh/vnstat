@@ -2,10 +2,11 @@
 #define DAEMON_H
 
 typedef struct {
-	int running, updateinterval, dbcount, dodbsave, rundaemon;
+	int running, updateinterval, dodbsave, rundaemon;
 	int dbsaved, showhelp, sync, saveinterval, forcesave, noadd;
 	int alwaysadd, bootdetected, cleanuphour, dbretrycount;
 	uint32_t iflisthash;
+	uint64_t dbcount;
 	char cfgfile[512], dirname[512];
 	char user[33], group[33];
 	time_t current, prevdbupdate, prevdbsave;
@@ -15,10 +16,10 @@ typedef struct {
 void daemonize(void);
 void debugtimestamp(void);
 
-int addinterfaces(DSTATE *s);
+unsigned int addinterfaces(DSTATE *s);
 void initdstate(DSTATE *s);
 void preparedatabases(DSTATE *s);
-int importlegacydbs(DSTATE *s);
+unsigned int importlegacydbs(DSTATE *s);
 void setsignaltraps(void);
 void filldatabaselist(DSTATE *s);
 void adjustsaveinterval(DSTATE *s);
@@ -40,7 +41,7 @@ void datacache_status(datacache **dc);
 void interfacechangecheck(DSTATE *s);
 uint32_t simplehash(const char *data, int len);
 
-void errorexitdaemon(DSTATE *s, const int fataldberror);
+void errorexitdaemon(DSTATE *s, const int fataldberror) __attribute__((noreturn));
 
 int getcurrenthour(void);
 int waittimesync(DSTATE *s);
