@@ -3,7 +3,7 @@
 #include "misc.h"
 #include "traffic.h"
 
-void trafficmeter(char iface[], int sampletime)
+void trafficmeter(char iface[], unsigned int sampletime)
 {
 	/* received bytes packets errs drop fifo frame compressed multicast */
 	/* transmitted bytes packets errs drop fifo colls carrier compressed */
@@ -284,8 +284,8 @@ void livetrafficmeter(char iface[32], int mode)
 		printf("--------------------------------------+------------------\n");
 		printf("          max        %s", gettrafficrate(rxmax, LIVETIME, 15));
 		printf("  | %s\n", gettrafficrate(txmax, LIVETIME, 15));
-		printf("      average        %s", gettrafficrate(rxtotal, timespent, 15));
-		printf("  | %s\n", gettrafficrate(txtotal, timespent, 15));
+		printf("      average        %s", gettrafficrate(rxtotal, (time_t)timespent, 15));
+		printf("  | %s\n", gettrafficrate(txtotal, (time_t)timespent, 15));
 		printf("          min        %s", gettrafficrate(rxmin, LIVETIME, 15));
 		printf("  | %s\n", gettrafficrate(txmin, LIVETIME, 15));
 		printf("--------------------------------------+------------------\n");
@@ -307,7 +307,7 @@ void livetrafficmeter(char iface[32], int mode)
 			printf("{\"seconds\":%"PRIu64",", timespent);
 			printf("\"rx\":{");
 			printf("\"maxratestring\":\"%s\",", gettrafficrate(rxmax, LIVETIME, 0));
-			printf("\"averageratestring\":\"%s\",", gettrafficrate(rxtotal, timespent, 0));
+			printf("\"averageratestring\":\"%s\",", gettrafficrate(rxtotal, (time_t)timespent, 0));
 			printf("\"minratestring\":\"%s\",", gettrafficrate(rxmin, LIVETIME, 0));
 			printf("\"totalbytes\":%"PRIu64",", rxtotal);
 			printf("\"maxbytes\":%"PRIu64",", rxmax);
@@ -318,7 +318,7 @@ void livetrafficmeter(char iface[32], int mode)
 			printf("},");
 			printf("\"tx\":{");
 			printf("\"maxratestring\":\"%s\",", gettrafficrate(txmax, LIVETIME, 0));
-			printf("\"averageratestring\":\"%s\",", gettrafficrate(txtotal, timespent, 0));
+			printf("\"averageratestring\":\"%s\",", gettrafficrate(txtotal, (time_t)timespent, 0));
 			printf("\"minratestring\":\"%s\",", gettrafficrate(txmin, LIVETIME, 0));
 			printf("\"totalbytes\":%"PRIu64",", txtotal);
 			printf("\"maxbytes\":%"PRIu64",", txmax);

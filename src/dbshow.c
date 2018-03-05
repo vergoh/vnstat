@@ -145,8 +145,8 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 				if ( datalist_i->rx == 0 || datalist_i->tx == 0 || (interface->updated-datalist_i->timestamp) == 0 ) {
 					e_rx = e_tx = 0;
 				} else {
-					e_rx = (uint64_t)(datalist_i->rx/(float)(mosecs(datalist_i->timestamp, interface->updated)))*(dmonth(d->tm_mon)*86400);
-					e_tx = (uint64_t)(datalist_i->tx/(float)(mosecs(datalist_i->timestamp, interface->updated)))*(dmonth(d->tm_mon)*86400);
+					e_rx = (uint64_t)(datalist_i->rx/(float)(mosecs(datalist_i->timestamp, interface->updated)))*(uint64_t)(dmonth(d->tm_mon)*86400);
+					e_tx = (uint64_t)(datalist_i->tx/(float)(mosecs(datalist_i->timestamp, interface->updated)))*(uint64_t)(dmonth(d->tm_mon)*86400);
 				}
 				if (shortmode && cfg.ostyle != 0) {
 					printf("%s%s", fieldseparator, getvalue(e_rx+e_tx, 11, 1));
@@ -407,11 +407,11 @@ void showlist(const interfaceinfo *interface, const char *listname)
 			if (datalist_i->next == NULL) {
 				d = localtime(&interface->updated);
 				if (listtype == 1) { // day
-					e_secs = d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600);
+					e_secs = (uint64_t)(d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600));
 				} else if (listtype == 2) { // month
-					e_secs = mosecs(datalist_i->timestamp, interface->updated);
+					e_secs = (uint64_t)mosecs(datalist_i->timestamp, interface->updated);
 				} else if (listtype == 3) { // year
-					e_secs = d->tm_yday*86400+d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600);
+					e_secs = (uint64_t)(d->tm_yday*86400+d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600));
 				} else if (listtype == 4) { // top
 					e_secs = 86400;
 				}
@@ -419,12 +419,12 @@ void showlist(const interfaceinfo *interface, const char *listname)
 				if (listtype == 1 || listtype == 4) { // day
 					e_secs = 86400;
 				} else if (listtype == 2) { // month
-					e_secs = dmonth(d->tm_mon) * 86400;
+					e_secs = (uint64_t)(dmonth(d->tm_mon) * 86400);
 				} else if (listtype == 3) { // year
-					e_secs = (365 + isleapyear(d->tm_year+1900)) * 86400;
+					e_secs = (uint64_t)((365 + isleapyear(d->tm_year+1900)) * 86400);
 				}
 			}
-			printf(" | %s", gettrafficrate(datalist_i->rx+datalist_i->tx, e_secs, 14));
+			printf(" | %s", gettrafficrate(datalist_i->rx+datalist_i->tx, (time_t)e_secs, 14));
 		} else if (cfg.ostyle != 0) {
 			showbar(datalist_i->rx, datalist_i->tx, datainfo.max, 24-offset);
 		}
@@ -466,14 +466,14 @@ void showlist(const interfaceinfo *interface, const char *listname)
 			div = 0;
 			mult = 0;
 			if (listtype == 1) { // day
-				div = d->tm_hour * 60 + d->tm_min;
+				div = (uint64_t)(d->tm_hour * 60 + d->tm_min);
 				mult = 1440;
 			} else if (listtype == 2) { // month
-				div = mosecs(datalist_i->timestamp, interface->updated);
-				mult = dmonth(d->tm_mon) * 86400;
+				div = (uint64_t)mosecs(datalist_i->timestamp, interface->updated);
+				mult = (uint64_t)(dmonth(d->tm_mon) * 86400);
 			} else if (listtype == 3) { // year
-				div = d->tm_yday * 1440 + d->tm_hour * 60 + d->tm_min;
-				mult = 1440 * (365 + isleapyear(d->tm_year + 1900));
+				div = (uint64_t)(d->tm_yday * 1440 + d->tm_hour * 60 + d->tm_min);
+				mult = (uint64_t)(1440 * (365 + isleapyear(d->tm_year + 1900)));
 			}
 			if (div > 0) {
 				e_rx = (uint64_t)((datalist_i->rx) / (float)div) * mult;
@@ -538,7 +538,7 @@ void showoneline(const interfaceinfo *interface)
 		printf("%"PRIu64";", datalist->rx);
 		printf("%"PRIu64";", datalist->tx);
 		printf("%"PRIu64";", datalist->rx+datalist->tx);
-		div = d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600);
+		div = (uint64_t)(d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600));
 		if (!div) {
 			div = 1;
 		}
@@ -547,7 +547,7 @@ void showoneline(const interfaceinfo *interface)
 		printf("%s;", getvalue(datalist->rx, 1, 1));
 		printf("%s;", getvalue(datalist->tx, 1, 1));
 		printf("%s;", getvalue(datalist->rx+datalist->tx, 1, 1));
-		printf("%s;", gettrafficrate(datalist->rx+datalist->tx, d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600), 1));
+		printf("%s;", gettrafficrate(datalist->rx+datalist->tx, (time_t)(d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600)), 1));
 	}
 	dbdatalistfree(&datalist);
 
@@ -565,7 +565,7 @@ void showoneline(const interfaceinfo *interface)
 		printf("%"PRIu64";", datalist->rx);
 		printf("%"PRIu64";", datalist->tx);
 		printf("%"PRIu64";", datalist->rx+datalist->tx);
-		div = mosecs(datalist->timestamp, interface->updated);
+		div = (uint64_t)(mosecs(datalist->timestamp, interface->updated));
 		if (!div) {
 			div = 1;
 		}
@@ -593,8 +593,8 @@ void showoneline(const interfaceinfo *interface)
 
 void showhours(const interfaceinfo *interface)
 {
-	int i, k, s=0, hour, minute, declen=2, div=1;
-	unsigned int j, tmax=0, dots=0;
+	int i, s=0, hour, minute, declen=cfg.hourlydecimals, div=1;
+	unsigned int j, k, tmax=0, dots=0;
 	uint64_t max=1;
 	char matrix[24][81]; /* width is one over 80 so that snprintf can write the end char */
 	char unit[4];
@@ -643,7 +643,7 @@ void showhours(const interfaceinfo *interface)
 
 	for (i=0; i<24; i++) {
 		if (hourdata[i].date >= hourdata[tmax].date) {
-			tmax = i;
+			tmax = (unsigned int)i;
 		}
 		if (hourdata[i].rx >= max) {
 			max = hourdata[i].rx;
@@ -673,6 +673,7 @@ void showhours(const interfaceinfo *interface)
 	/* structure */
 	snprintf(matrix[11], 81, " -+--------------------------------------------------------------------------->");
 	for (i=0; i<3; i++) {
+		/* TODO: rewrite to improve readability and compatibility (-Wformat-non-iso) */
 		snprintf(matrix[14]+(i*28), 25, " h %2$*1$srx (%3$s)  %2$*1$stx (%3$s)", 1+cfg.unitmode, " ", unit);
 	}
 
@@ -698,7 +699,7 @@ void showhours(const interfaceinfo *interface)
 	/* numbers under x-axis and graphics :) */
 	k = 5;
 	for (i=23; i>=0; i--) {
-		s = tmax-i;
+		s = (int)tmax - i;
 		if (s < 0)
 			s += 24;
 
@@ -717,9 +718,11 @@ void showhours(const interfaceinfo *interface)
 
 	/* hours and traffic */
 	for (i=0; i<=7; i++) {
-		s = tmax + i + 1;
+		s = (int)tmax + i + 1;
 		for (j=0; j<3; j++) {
-			snprintf(matrix[15+i]+(j*28), 25, "%02d %"DECCONV"10.*f %"DECCONV"10.*f", (s+(j*8))%24, declen, hourdata[(s+(j*8))%24].rx/(double)div, declen, hourdata[(s+(j*8))%24].tx/(double)div);
+			snprintf(matrix[15+i]+(j*28), 25, "%02d %"DECCONV"10.*f %"DECCONV"10.*f", \
+			((unsigned int)s+(j*8))%24, declen, hourdata[((unsigned int)s+(j*8))%24].rx/(double)div, \
+										declen, hourdata[((unsigned int)s+(j*8))%24].tx/(double)div);
 		}
 	}
 

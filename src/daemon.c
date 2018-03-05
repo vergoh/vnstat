@@ -186,9 +186,9 @@ unsigned int addinterfaces(DSTATE *s)
 
 	if (count && !s->running) {
 		if (count == 1) {
-			printf("-> %d new interface found.\n", count);
+			printf("-> %u new interface found.\n", count);
 		} else {
-			printf("-> %d new interfaces found.\n", count);
+			printf("-> %u new interfaces found.\n", count);
 		}
 
 		printf("Limits can be modified using the configuration file. See \"man vnstat.conf\".\n");
@@ -927,7 +927,7 @@ void errorexitdaemon(DSTATE *s, const int fataldberror)
 	exit(EXIT_FAILURE);
 }
 
-int getcurrenthour(void)
+short getcurrenthour(void)
 {
 	int ret = 0;
 	time_t current;
@@ -949,7 +949,7 @@ int getcurrenthour(void)
 		ret = 0;
 	}
 
-	return ret;
+	return (short)ret;
 }
 
 int waittimesync(DSTATE *s)

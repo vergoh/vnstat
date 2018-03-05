@@ -238,12 +238,12 @@ char *hourly_imagescale_logic(const uint64_t max, const int rate)
 		step = 1;
 	}
 
-	for (i=step; (uint64_t)(scaleunit * i) <= max; i=i+step) {
-		s = (int)(121 * ((scaleunit * i) / (float)max));
+	for (i=step; (uint64_t)(scaleunit * (unsigned int)i) <= max; i=i+step) {
+		s = (int)(121 * ((scaleunit * (unsigned int)i) / (float)max));
 		prev = s;
 	}
 
-	s = (int)(121 * ((scaleunit * i) / (float)max));
+	s = (int)(121 * ((scaleunit * (unsigned int)i) / (float)max));
 	if ( ((s+prev)/2) <= 128 ) {
 		;
 	} else {
@@ -256,7 +256,7 @@ char *hourly_imagescale_logic(const uint64_t max, const int rate)
 	printf("old 2.0:    %"PRIu64" (i: %d, step: %d)\n", scaleunit * (i - step), i, step);
 	printf("now:        %"PRIu64" (i: %d, step: %d)\n", scaleunit * i, i, step);*/
 
-	return getimagescale(scaleunit * i, rate);
+	return getimagescale(scaleunit * (unsigned int)i, rate);
 }
 
 START_TEST(hourly_imagescaling_normal)

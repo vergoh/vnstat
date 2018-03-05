@@ -354,14 +354,14 @@ void drawhours(IMAGECONTENT *ic, const int x, const int y, const int rate)
 		step = 1;
 	}
 
-	for (i=step; (uint64_t)(scaleunit*i) <= max; i=i+step) {
-		s = (int)(121 * ((scaleunit * i) / (float)max));
+	for (i=step; (uint64_t)(scaleunit*(unsigned int)i) <= max; i=i+step) {
+		s = (int)(121 * ((scaleunit * (unsigned int)i) / (float)max));
 		gdImageLine(ic->im, x+36, y+124-s, x+460, y+124-s, ic->cline);
 		gdImageLine(ic->im, x+36, y+124-((s+prev)/2), x+460, y+124-((s+prev)/2), ic->clinel);
-		gdImageString(ic->im, gdFontGetTiny(), x+16, y+121-s, (unsigned char*)getimagevalue(scaleunit*i, 3, rate), ic->ctext);
+		gdImageString(ic->im, gdFontGetTiny(), x+16, y+121-s, (unsigned char*)getimagevalue(scaleunit*(unsigned int)i, 3, rate), ic->ctext);
 		prev = s;
 	}
-	s = (int)(121 * ((scaleunit * i) / (float)max));
+	s = (int)(121 * ((scaleunit * (unsigned int)i) / (float)max));
 	if ( ((s+prev)/2) <= 128 ) {
 		gdImageLine(ic->im, x+36, y+124-((s+prev)/2), x+460, y+124-((s+prev)/2), ic->clinel);
 	} else {
@@ -369,7 +369,7 @@ void drawhours(IMAGECONTENT *ic, const int x, const int y, const int rate)
 	}
 
 	/* scale text */
-	gdImageStringUp(ic->im, gdFontGetTiny(), x-2, y+60+(rate*10), (unsigned char*)getimagescale(scaleunit * i, rate), ic->ctext);
+	gdImageStringUp(ic->im, gdFontGetTiny(), x-2, y+60+(rate*10), (unsigned char*)getimagescale(scaleunit * (unsigned int)i, rate), ic->ctext);
 
 	/* x-axis values and poles */
 	for (i = 0; i < 24; i++) {
@@ -427,11 +427,12 @@ void drawhourly(IMAGECONTENT *ic, const int rate)
 
 void drawlist(IMAGECONTENT *ic, const char *listname)
 {
-	int limit, listtype, textx, texty, offsetx = 0, offsety = 0;
+	int listtype, textx, texty, offsetx = 0, offsety = 0;
 	int width, height, headermod, i = 1;
+	int32_t limit;
 	uint64_t e_rx, e_tx, e_secs = 86400, div, mult;
 	char buffer[512], datebuff[16], stampformat[64];
-	char titlename[8], colname[8];
+	char titlename[16], colname[8];
 	struct tm *d;
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
@@ -439,19 +440,19 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	if (strcmp(listname, "day") == 0) {
 		listtype = 1;
 		strncpy_nt(colname, listname, 8);
-		snprintf(titlename, 8, "daily");
+		snprintf(titlename, 16, "daily");
 		strncpy_nt(stampformat, cfg.dformat, 64);
 		limit = cfg.listdays;
 	} else if (strcmp(listname, "month") == 0) {
 		listtype = 2;
 		strncpy_nt(colname, listname, 8);
-		snprintf(titlename, 8, "monthly");
+		snprintf(titlename, 16, "monthly");
 		strncpy_nt(stampformat, cfg.mformat, 64);
 		limit = cfg.listmonths;
 	} else if (strcmp(listname, "year") == 0) {
 		listtype = 3;
 		strncpy_nt(colname, listname, 8);
-		snprintf(titlename, 8, "yearly");
+		snprintf(titlename, 16, "yearly");
 		strncpy_nt(stampformat, "%Y", 64);
 		limit = cfg.listyears;
 	} else if (strcmp(listname, "top") == 0) {
@@ -469,19 +470,19 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		limit = -1;
 	}
 
-	if (!db_getdata(&datalist, &datainfo, ic->interface.name, listname, limit)) {
+	if (!db_getdata(&datalist, &datainfo, ic->interface.name, listname, (uint32_t)limit)) {
 		printf("Error: Failed to fetch %s data.\n", "day");
 		return;
 	}
 
 	if (listtype == 4) {
 		if (limit > 0 && datainfo.count < (uint32_t)limit) {
-			limit = datainfo.count;
+			limit = (int32_t)datainfo.count;
 		}
 		if (limit <= 0 || datainfo.count > 999) {
-			snprintf(titlename, 8, "top");
+			snprintf(titlename, 16, "top");
 		} else {
-			snprintf(titlename, 8, "top %d", limit);
+			snprintf(titlename, 16, "top %d", limit);
 		}
 	}
 
@@ -540,13 +541,13 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		strcat(buffer, "       avg. rate");
 		gdImageString(ic->im, gdFontGetSmall(), textx, texty, (unsigned char*)buffer, ic->ctext);
 		gdImageLine(ic->im, textx+2, texty+16, textx+392+offsetx, texty+16, ic->cline);
-		gdImageLine(ic->im, textx+300+offsetx, texty+2, textx+300+offsetx, texty+40+offsety+(12*datainfo.count), ic->cline);
+		gdImageLine(ic->im, textx+300+offsetx, texty+2, textx+300+offsetx, texty+40+offsety+(12*(int)datainfo.count), ic->cline);
 	} else {
 		gdImageString(ic->im, gdFontGetSmall(), textx, texty, (unsigned char*)buffer, ic->ctext);
 		gdImageLine(ic->im, textx+2, texty+16, textx+296+offsetx, texty+16, ic->cline);
 	}
-	gdImageLine(ic->im, textx+144+offsetx, texty+2, textx+144+offsetx, texty+40+offsety+(12*datainfo.count), ic->cline);
-	gdImageLine(ic->im, textx+222+offsetx, texty+2, textx+222+offsetx, texty+40+offsety+(12*datainfo.count), ic->cline);
+	gdImageLine(ic->im, textx+144+offsetx, texty+2, textx+144+offsetx, texty+40+offsety+(12*(int)datainfo.count), ic->cline);
+	gdImageLine(ic->im, textx+222+offsetx, texty+2, textx+222+offsetx, texty+40+offsety+(12*(int)datainfo.count), ic->cline);
 
 	texty += 20;
 
@@ -576,11 +577,11 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 			if (datalist_i->next == NULL) {
 				d = localtime(&ic->interface.updated);
 				if (listtype == 1) { // day
-					e_secs = d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600);
+					e_secs = (uint64_t)(d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600));
 				} else if (listtype == 2) { // month
-					e_secs = mosecs(datalist_i->timestamp, ic->interface.updated);
+					e_secs = (uint64_t)mosecs(datalist_i->timestamp, ic->interface.updated);
 				} else if (listtype == 3) { // year
-					e_secs = d->tm_yday*86400+d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600);
+					e_secs = (uint64_t)(d->tm_yday*86400+d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600));
 				} else if (listtype == 4) { // top
 					e_secs = 86400;
 				}
@@ -588,12 +589,12 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 				if (listtype == 1 || listtype == 4) { // day
 					e_secs = 86400;
 				} else if (listtype == 2) { // month
-					e_secs = dmonth(d->tm_mon) * 86400;
+					e_secs = (uint64_t)(dmonth(d->tm_mon) * 86400);
 				} else if (listtype == 3) { // year
-					e_secs = (365 + isleapyear(d->tm_year+1900)) * 86400;
+					e_secs = (uint64_t)((365 + isleapyear(d->tm_year+1900)) * 86400);
 				}
 			}
-			strncat(buffer, gettrafficrate(datalist_i->rx+datalist_i->tx, e_secs, 14), 32);
+			strncat(buffer, gettrafficrate(datalist_i->rx+datalist_i->tx, (time_t)e_secs, 14), 32);
 		}
 		gdImageString(ic->im, gdFontGetSmall(), textx, texty, (unsigned char*)buffer, ic->ctext);
 		if (listtype == 4) { // top
@@ -637,14 +638,14 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 			div = 0;
 			mult = 0;
 			if (listtype == 1) { // day
-				div = d->tm_hour * 60 + d->tm_min;
+				div = (uint64_t)(d->tm_hour * 60 + d->tm_min);
 				mult = 1440;
 			} else if (listtype == 2) { // month
-				div = mosecs(datalist_i->timestamp, ic->interface.updated);
-				mult = dmonth(d->tm_mon) * 86400;
+				div = (uint64_t)mosecs(datalist_i->timestamp, ic->interface.updated);
+				mult = (uint64_t)(dmonth(d->tm_mon) * 86400);
 			} else if (listtype == 3) { // year
-				div = d->tm_yday * 1440 + d->tm_hour * 60 + d->tm_min;
-				mult = 1440 * (365 + isleapyear(d->tm_year + 1900));
+				div = (uint64_t)(d->tm_yday * 1440 + d->tm_hour * 60 + d->tm_min);
+				mult = (uint64_t)(1440 * (365 + isleapyear(d->tm_year + 1900)));
 			}
 			if (div > 0) {
 				e_rx = (uint64_t)((datalist_i->rx) / (float)div) * mult;

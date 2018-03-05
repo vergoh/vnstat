@@ -69,7 +69,7 @@ int insertlegacydata(DATA *data, const char *iface)
 	}
 	for (i = 29; i >= 0; i--) {
 		if (data->day[i].used) {
-			if (!db_insertdata("day", iface, data->day[i].rx*1024*1024+data->day[i].rxk*1024, data->day[i].tx*1024*1024+data->day[i].txk*1024, (uint64_t)data->day[i].date)) {
+			if (!db_insertdata("day", iface, data->day[i].rx*1024*1024+(uint64_t)data->day[i].rxk*1024, data->day[i].tx*1024*1024+(uint64_t)data->day[i].txk*1024, (uint64_t)data->day[i].date)) {
 				db_rollbacktransaction();
 				return 0;
 			}
@@ -77,7 +77,7 @@ int insertlegacydata(DATA *data, const char *iface)
 	}
 	for (i = 11; i >= 0; i--) {
 		if (data->month[i].used) {
-			if (!db_insertdata("month", iface, data->month[i].rx*1024*1024+data->month[i].rxk*1024, data->month[i].tx*1024*1024+data->month[i].txk*1024, (uint64_t)data->month[i].month)) {
+			if (!db_insertdata("month", iface, data->month[i].rx*1024*1024+(uint64_t)data->month[i].rxk*1024, data->month[i].tx*1024*1024+(uint64_t)data->month[i].txk*1024, (uint64_t)data->month[i].month)) {
 				db_rollbacktransaction();
 				return 0;
 			}
@@ -85,7 +85,7 @@ int insertlegacydata(DATA *data, const char *iface)
 	}
 	for (i = 9; i >= 0; i--) {
 		if (data->top10[i].used) {
-			if (!db_insertdata("top", iface, data->top10[i].rx*1024*1024+data->top10[i].rxk*1024, data->top10[i].tx*1024*1024+data->top10[i].txk*1024, (uint64_t)data->top10[i].date)) {
+			if (!db_insertdata("top", iface, data->top10[i].rx*1024*1024+(uint64_t)data->top10[i].rxk*1024, data->top10[i].tx*1024*1024+(uint64_t)data->top10[i].txk*1024, (uint64_t)data->top10[i].date)) {
 				db_rollbacktransaction();
 				return 0;
 			}
@@ -118,8 +118,8 @@ int insertlegacydata(DATA *data, const char *iface)
 			rx = 0;
 			tx = 0;
 		}
-		rx += data->month[i].rx*1024*1024+data->month[i].rxk*1024;
-		tx += data->month[i].tx*1024*1024+data->month[i].txk*1024;
+		rx += data->month[i].rx*1024*1024+(uint64_t)data->month[i].rxk*1024;
+		tx += data->month[i].tx*1024*1024+(uint64_t)data->month[i].txk*1024;
 	}
 	if (year != 0 && ( rx > 0 || tx > 0 )) {
 		if (!db_insertdata("year", iface, rx, tx, (uint64_t)yeartime)) {
@@ -128,7 +128,7 @@ int insertlegacydata(DATA *data, const char *iface)
 		}
 	}
 
-	if (!db_settotal(iface, data->totalrx*1024*1024+data->totalrxk*1024, data->totaltx*1024*1024+data->totaltxk*1024)) {
+	if (!db_settotal(iface, data->totalrx*1024*1024+(uint64_t)data->totalrxk*1024, data->totaltx*1024*1024+(uint64_t)data->totaltxk*1024)) {
 		db_rollbacktransaction();
 		return 0;
 	}

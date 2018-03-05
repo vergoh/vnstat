@@ -739,7 +739,7 @@ void handletrafficmeters(PARAMS *p)
 
 	/* calculate traffic */
 	if (p->traffic) {
-		trafficmeter(p->interface, cfg.sampletime);
+		trafficmeter(p->interface, (unsigned int)cfg.sampletime);
 	}
 
 	/* live traffic */

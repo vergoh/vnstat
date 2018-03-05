@@ -2,9 +2,10 @@
 #define DAEMON_H
 
 typedef struct {
-	int running, updateinterval, dodbsave, rundaemon;
-	int dbsaved, showhelp, sync, saveinterval, forcesave, noadd;
-	int alwaysadd, bootdetected, cleanuphour, dbretrycount;
+	int updateinterval, saveinterval;
+	short running, dodbsave, rundaemon;
+	short dbsaved, showhelp, sync, forcesave, noadd;
+	short alwaysadd, bootdetected, cleanuphour, dbretrycount;
 	uint32_t iflisthash;
 	uint64_t dbcount;
 	char cfgfile[512], dirname[512];
@@ -43,7 +44,7 @@ uint32_t simplehash(const char *data, int len);
 
 void errorexitdaemon(DSTATE *s, const int fataldberror) __attribute__((noreturn));
 
-int getcurrenthour(void);
+short getcurrenthour(void);
 int waittimesync(DSTATE *s);
 
 #endif
