@@ -35,7 +35,7 @@ void trafficmeter(char iface[], unsigned int sampletime)
 	/* wait sampletime and print some nice dots so that the user thinks
 	something is done :) */
 	if (!json) {
-		snprintf(buffer, 256, "Sampling %s (%d seconds average)", iface,sampletime);
+		snprintf(buffer, 256, "Sampling %s (%u seconds average)", iface, sampletime);
 		printf("%s", buffer);
 		fflush(stdout);
 		sleep(sampletime/3);
@@ -82,7 +82,7 @@ void trafficmeter(char iface[], unsigned int sampletime)
 		printf("{\"jsonversion\":\"%d\",", JSONVERSION_TR);
 		printf("\"vnstatversion\":\"%s\",", getversion());
 		printf("\"interface\":\"%s\",", iface);
-		printf("\"sampletime\":%d,", sampletime);
+		printf("\"sampletime\":%u,", sampletime);
 		printf("\"rx\":{");
 		printf("\"ratestring\":\"%s\",", gettrafficrate(rx, sampletime, 0));
 		printf("\"bytespersecond\":%"PRIu64",", (uint64_t)(rx/sampletime));
