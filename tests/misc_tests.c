@@ -9,6 +9,8 @@ START_TEST(getbtime_does_not_return_zero)
 }
 END_TEST
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wused-but-marked-unused"
 START_TEST(getunitprefix_returns_something_with_all_cfg_combinations)
 {
 	const char *string;
@@ -49,6 +51,7 @@ START_TEST(getunitdivisor_returns_something_with_all_cfg_combinations)
 	}
 }
 END_TEST
+#pragma clang diagnostic pop
 
 START_TEST(spacecheck_does_not_check_when_not_configured)
 {

@@ -489,7 +489,7 @@ END_TEST
 
 START_TEST(db_getinterfacecount_counts_interfaces)
 {
-	uint64_t ret;
+	int ret;
 
 	defaultcfg();
 	suppress_output();
@@ -497,25 +497,25 @@ START_TEST(db_getinterfacecount_counts_interfaces)
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
-	ret = db_getinterfacecount();
+	ret = (int)db_getinterfacecount();
 	ck_assert_int_eq(ret, 0);
 
 	ret = db_addinterface("eth0");
 	ck_assert_int_eq(ret, 1);
 
-	ret = db_getinterfacecount();
+	ret = (int)db_getinterfacecount();
 	ck_assert_int_eq(ret, 1);
 
 	ret = db_addinterface("eth0");
 	ck_assert_int_eq(ret, 0);
 
-	ret = db_getinterfacecount();
+	ret = (int)db_getinterfacecount();
 	ck_assert_int_eq(ret, 1);
 
 	ret = db_addinterface("eth1");
 	ck_assert_int_eq(ret, 1);
 
-	ret = db_getinterfacecount();
+	ret = (int)db_getinterfacecount();
 	ck_assert_int_eq(ret, 2);
 
 	ret = db_close();
@@ -525,7 +525,7 @@ END_TEST
 
 START_TEST(db_getinterfacecountbyname_counts_interfaces)
 {
-	uint64_t ret;
+	int ret;
 
 	defaultcfg();
 
@@ -538,19 +538,19 @@ START_TEST(db_getinterfacecountbyname_counts_interfaces)
 	ret = db_addinterface("eth1");
 	ck_assert_int_eq(ret, 1);
 
-	ret = db_getinterfacecountbyname("foo");
+	ret = (int)db_getinterfacecountbyname("foo");
 	ck_assert_int_eq(ret, 0);
 
-	ret = db_getinterfacecountbyname("eth0");
+	ret = (int)db_getinterfacecountbyname("eth0");
 	ck_assert_int_eq(ret, 1);
 
-	ret = db_getinterfacecountbyname("eth1");
+	ret = (int)db_getinterfacecountbyname("eth1");
 	ck_assert_int_eq(ret, 1);
 
-	ret = db_getinterfacecountbyname("eth2");
+	ret = (int)db_getinterfacecountbyname("eth2");
 	ck_assert_int_eq(ret, 0);
 
-	ret = db_getinterfacecountbyname("");
+	ret = (int)db_getinterfacecountbyname("");
 	ck_assert_int_eq(ret, 2);
 
 	ret = db_close();

@@ -42,6 +42,8 @@ START_TEST(logprint_options)
 }
 END_TEST
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wused-but-marked-unused"
 START_TEST(dmonth_return_within_range)
 {
 	int m;
@@ -50,6 +52,7 @@ START_TEST(dmonth_return_within_range)
 	ck_assert_int_le(m, 31);
 }
 END_TEST
+#pragma clang diagnostic pop
 
 START_TEST(leapyears_are_known)
 {
@@ -267,12 +270,13 @@ START_TEST(timeused_outputs_something_expected)
 	timeused("something", 0);
 	fflush(stdout);
 
-	len = read(pipe, buffer, 512);
+	len = (int)read(pipe, buffer, 512);
 	ck_assert_int_gt(len, 0);
 	ck_assert_ptr_ne(strstr(buffer, "something() in 0"), NULL);
 }
 END_TEST
 
+__attribute__((noreturn))
 START_TEST(can_panic)
 {
 	suppress_output();

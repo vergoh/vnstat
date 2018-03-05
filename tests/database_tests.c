@@ -215,7 +215,7 @@ START_TEST(database_outputs_do_not_crash)
 	ck_assert_int_eq(ret, 1);
 
 	for (i=1; i<100; i++) {
-		ret = db_addtraffic_dated("something", i*1234, i*2345, i*85000);
+		ret = db_addtraffic_dated("something", (uint64_t)i*1234, (uint64_t)i*2345, (uint64_t)i*85000);
 		ck_assert_int_eq(ret, 1);
 	}
 
@@ -327,7 +327,7 @@ START_TEST(showbar_with_all_rx)
 	ck_assert_int_eq(len, 10);
 	fflush(stdout);
 
-	len = read(pipe, buffer, 512);
+	len = (int)read(pipe, buffer, 512);
 	ck_assert_str_eq(buffer, "  rrrrrrrrrr");
 }
 END_TEST
@@ -346,7 +346,7 @@ START_TEST(showbar_with_all_tx)
 	ck_assert_int_eq(len, 10);
 	fflush(stdout);
 
-	len = read(pipe, buffer, 512);
+	len = (int)read(pipe, buffer, 512);
 	ck_assert_str_eq(buffer, "  tttttttttt");
 }
 END_TEST
@@ -365,7 +365,7 @@ START_TEST(showbar_with_half_and_half)
 	ck_assert_int_eq(len, 10);
 	fflush(stdout);
 
-	len = read(pipe, buffer, 512);
+	len = (int)read(pipe, buffer, 512);
 	ck_assert_str_eq(buffer, "  rrrrrttttt");
 }
 END_TEST
@@ -384,7 +384,7 @@ START_TEST(showbar_with_one_tenth)
 	ck_assert_int_eq(len, 10);
 	fflush(stdout);
 
-	len = read(pipe, buffer, 512);
+	len = (int)read(pipe, buffer, 512);
 	ck_assert_str_eq(buffer, "  rttttttttt");
 }
 END_TEST
@@ -403,7 +403,7 @@ START_TEST(showbar_with_small_rx_shows_all_tx)
 	ck_assert_int_eq(len, 10);
 	fflush(stdout);
 
-	len = read(pipe, buffer, 512);
+	len = (int)read(pipe, buffer, 512);
 	ck_assert_str_eq(buffer, "  tttttttttt");
 }
 END_TEST
@@ -448,7 +448,7 @@ void add_database_tests(Suite *s)
 
 int writedb(DATA *data, const char *iface, const char *dirname, int newdb)
 {
-	FILE *db;
+	FILE *testdb;
 	char file[512], backup[512];
 
 	snprintf(file, 512, "%s/%s", dirname, iface);
@@ -464,15 +464,15 @@ int writedb(DATA *data, const char *iface, const char *dirname, int newdb)
 	/* make sure version stays correct */
 	data->version=LEGACYDBVERSION;
 
-	if ((db=fopen(file,"w"))==NULL) {
+	if ((testdb=fopen(file,"w"))==NULL) {
 		snprintf(errorstring, 1024, "Unable to open database \"%s\" for writing: %s", file, strerror(errno));
 		printe(PT_Error);
 		return 0;
 	}
 
 	/* lock file */
-	if (!lockdb(fileno(db), 1)) {
-		fclose(db);
+	if (!lockdb(fileno(testdb), 1)) {
+		fclose(testdb);
 		return 0;
 	}
 
@@ -481,16 +481,16 @@ int writedb(DATA *data, const char *iface, const char *dirname, int newdb)
 		data->lastupdated=time(NULL);
 	}
 
-	if (fwrite(data,sizeof(DATA),1,db)==0) {
+	if (fwrite(data,sizeof(DATA),1,testdb)==0) {
 		snprintf(errorstring, 1024, "Unable to write database \"%s\": %s", file, strerror(errno));
 		printe(PT_Error);
-		fclose(db);
+		fclose(testdb);
 		return 0;
 	} else {
 		if (debug) {
 			printf("db: Database \"%s\" saved.\n", file);
 		}
-		fclose(db);
+		fclose(testdb);
 		if ((newdb) && (noexit==0)) {
 			snprintf(errorstring, 1024, "-> A new database has been created.");
 			printe(PT_Info);
@@ -521,7 +521,7 @@ int backupdb(const char *current, const char *backup)
 
 	/* copy data */
 	while((bytes = (int)read(c, buffer, sizeof(buffer))) > 0) {
-		if (write(b, buffer, bytes) < 0) {
+		if (write(b, buffer, (size_t)bytes) < 0) {
 			close(c);
 			fclose(bf);
 			return 0;

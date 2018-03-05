@@ -49,7 +49,7 @@ START_TEST(addinterfaces_adds_interfaces)
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
-	ret = addinterfaces(&s);
+	ret = (int)addinterfaces(&s);
 	ck_assert_int_eq(ret, 2);
 
 	ck_assert_int_eq(db_getinterfacecountbyname("ethone"), 1);
@@ -83,7 +83,7 @@ START_TEST(addinterfaces_adds_only_new_interfaces)
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
-	ret = addinterfaces(&s);
+	ret = (int)addinterfaces(&s);
 	ck_assert_int_eq(ret, 2);
 
 	ck_assert_int_eq(db_getinterfacecountbyname("ethone"), 1);
@@ -102,7 +102,7 @@ START_TEST(addinterfaces_adds_only_new_interfaces)
 
 	fake_proc_net_dev("a", "eththree", 9, 10, 11, 12);
 
-	ret = addinterfaces(&s);
+	ret = (int)addinterfaces(&s);
 	ck_assert_int_eq(ret, 1);
 
 	ck_assert_int_eq(db_getinterfacecountbyname("ethone"), 1);
@@ -144,7 +144,7 @@ START_TEST(addinterfaces_adds_to_cache_when_running)
 	ck_assert_int_eq(datacache_count(&s.dcache), 0);
 
 	s.running = 1;
-	ret = addinterfaces(&s);
+	ret = (int)addinterfaces(&s);
 	ck_assert_int_eq(ret, 2);
 	ck_assert_int_eq(datacache_count(&s.dcache), 2);
 
@@ -163,7 +163,7 @@ START_TEST(addinterfaces_adds_to_cache_when_running)
 
 	fake_proc_net_dev("a", "eththree", 9, 10, 11, 12);
 
-	ret = addinterfaces(&s);
+	ret = (int)addinterfaces(&s);
 	ck_assert_int_eq(ret, 1);
 	ck_assert_int_eq(datacache_count(&s.dcache), 3);
 
