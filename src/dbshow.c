@@ -275,9 +275,10 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 
 void showlist(const interfaceinfo *interface, const char *listname)
 {
-	int limit, listtype, offset = 0, i = 1;
+	int32_t limit;
+	int listtype, offset = 0, i = 1;
 	struct tm *d;
-	char datebuff[DATEBUFFLEN], titlename[8], colname[8], stampformat[64];
+	char datebuff[DATEBUFFLEN], titlename[16], colname[8], stampformat[64];
 	uint64_t e_rx, e_tx, e_secs, div, mult;
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
@@ -287,19 +288,19 @@ void showlist(const interfaceinfo *interface, const char *listname)
 	if (strcmp(listname, "day") == 0) {
 		listtype = 1;
 		strncpy_nt(colname, listname, 8);
-		snprintf(titlename, 8, "daily");
+		snprintf(titlename, 16, "daily");
 		strncpy_nt(stampformat, cfg.dformat, 64);
 		limit = cfg.listdays;
 	} else if (strcmp(listname, "month") == 0) {
 		listtype = 2;
 		strncpy_nt(colname, listname, 8);
-		snprintf(titlename, 8, "monthly");
+		snprintf(titlename, 16, "monthly");
 		strncpy_nt(stampformat, cfg.mformat, 64);
 		limit = cfg.listmonths;
 	} else if (strcmp(listname, "year") == 0) {
 		listtype = 3;
 		strncpy_nt(colname, listname, 8);
-		snprintf(titlename, 8, "yearly");
+		snprintf(titlename, 16, "yearly");
 		strncpy_nt(stampformat, "%Y", 64);
 		limit = cfg.listyears;
 	} else if (strcmp(listname, "top") == 0) {
@@ -318,19 +319,19 @@ void showlist(const interfaceinfo *interface, const char *listname)
 
 	e_rx = e_tx = e_secs = 0;
 
-	if (!db_getdata(&datalist, &datainfo, interface->name, listname, limit)) {
+	if (!db_getdata(&datalist, &datainfo, interface->name, listname, (uint32_t)limit)) {
 		printf("Error: Failed to fetch %s data.\n", titlename);
 		return;
 	}
 
 	if (listtype == 4) {
 		if (limit > 0 && datainfo.count < (uint32_t)limit) {
-			limit = datainfo.count;
+			limit = (int32_t)datainfo.count;
 		}
 		if (limit <= 0 || datainfo.count > 999) {
-			snprintf(titlename, 8, "top");
+			snprintf(titlename, 16, "top");
 		} else {
-			snprintf(titlename, 8, "top %d", limit);
+			snprintf(titlename, 16, "top %d", limit);
 		}
 	}
 
