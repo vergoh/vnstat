@@ -6,6 +6,13 @@
 /* 1 = 1.0, 2 = 1.1-1.2, 3 = 1.3- */
 #define LEGACYDBVERSION 3
 
+/* all structs below are used for supporting data import */
+/* from the legacy database format => don't modify  */
+
+#if defined(__clang__)
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wpadded"
+#endif
 typedef struct {
 	time_t date;
 	uint64_t rx, tx;
@@ -40,6 +47,9 @@ typedef struct {
 	HOUR hour[24];
 	uint64_t btime;
 } DATA;
+#if defined(__clang__)
+  #pragma clang diagnostic pop
+#endif
 
 int importlegacydb(const char *iface, const char *dirname);
 int insertlegacydata(DATA *data, const char *iface);
