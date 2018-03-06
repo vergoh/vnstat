@@ -952,14 +952,10 @@ short getcurrenthour(void)
 	return (short)ret;
 }
 
+/* TODO: figure out how to write a test for this */
 int waittimesync(DSTATE *s)
 {
-	if (s->prevdbupdate) {
-		/* just for unused parameter warning handling */
-	}
-	return 0;
-
-	/* TODO: refactor to support new database format
+	datacache *iterator = s->dcache;
 	char timestamp[22], timestamp2[22];
 
 	if (cfg.timesyncwait == 0) {
@@ -967,26 +963,32 @@ int waittimesync(DSTATE *s)
 	}
 
 	if (s->prevdbupdate == 0 && s->prevdbsave == 0) {
-		s->datalist = dataptr;
-		while (s->datalist!=NULL) {
+		while (iterator != NULL) {
 			if (debug) {
-				printf("w: processing %s...\n", s->datalist->data.interface);
+				printf("w: processing %s...\n", iterator->interface);
 			}
 
-			// get data from cache if available
-			if (!datalist_cacheget(s)) {
-				s->datalist = s->datalist->next;
-				continue;
+			if (!iterator->filled) {
+				if (!initcachevalues(s, &iterator)) {
+					iterator = iterator->next;
+					continue;
+				}
+				s->iflisthash = 0;
 			}
-			cacheupdate();
+
 			if (debug) {
-				strftime(timestamp, 22, "%Y-%m-%d %H:%M:%S", localtime(&data.lastupdated));
+				strftime(timestamp, 22, "%Y-%m-%d %H:%M:%S", localtime(&iterator->updated));
 				printf("w: has %s\n", timestamp);
 			}
-			if (data.lastupdated > s->prevdbsave) {
-				s->prevdbsave = data.lastupdated;
+			if (iterator->updated > s->prevdbsave) {
+				s->prevdbsave = iterator->updated;
 			}
-			s->datalist = s->datalist->next;
+			iterator = iterator->next;
+		}
+		if (s->prevdbsave == 0) {
+			snprintf(errorstring, 1024, "Couldn't define when database was last updated. Continuing, some errors may follow.");
+			printe(PT_Info);
+			return 0;
 		}
 	}
 
@@ -1004,13 +1006,13 @@ int waittimesync(DSTATE *s)
 			s->prevdbupdate = s->current;
 			strftime(timestamp, 22, "%Y-%m-%d %H:%M:%S", localtime(&s->current));
 			strftime(timestamp2, 22, "%Y-%m-%d %H:%M:%S", localtime(&s->prevdbsave));
-			snprintf(errorstring, 512, "Latest database update is in the future (db: %s > now: %s). Giving the system clock up to %d minutes to sync before continuing.", timestamp2, timestamp, cfg.timesyncwait);
+			snprintf(errorstring, 1024, "Latest database update is in the future (db: %s > now: %s). Giving the system clock up to %d minutes to sync before continuing.", timestamp2, timestamp, cfg.timesyncwait);
 			printe(PT_Info);
 		}
 		if (s->current - s->prevdbupdate >= cfg.timesyncwait*60) {
 			strftime(timestamp, 22, "%Y-%m-%d %H:%M:%S", localtime(&s->current));
 			strftime(timestamp2, 22, "%Y-%m-%d %H:%M:%S", localtime(&s->prevdbsave));
-			snprintf(errorstring, 512, "Latest database update is still in the future (db: %s > now: %s), continuing. Some errors may follow.", timestamp2, timestamp);
+			snprintf(errorstring, 1024, "Latest database update is still in the future (db: %s > now: %s), continuing. Some errors may follow.", timestamp2, timestamp);
 			printe(PT_Info);
 			return 0;
 		}
@@ -1018,17 +1020,16 @@ int waittimesync(DSTATE *s)
 		if (s->prevdbupdate != 0) {
 			strftime(timestamp, 22, "%Y-%m-%d %H:%M:%S", localtime(&s->current));
 			strftime(timestamp2, 22, "%Y-%m-%d %H:%M:%S", localtime(&s->prevdbsave));
-			snprintf(errorstring, 512, "Latest database update is no longer in the future (db: %s <= now: %s), continuing.", timestamp2, timestamp);
+			snprintf(errorstring, 1024, "Latest database update is no longer in the future (db: %s <= now: %s), continuing.", timestamp2, timestamp);
 			printe(PT_Info);
 		}
 		s->prevdbsave = s->current;
 		s->prevdbupdate = 0;
 		if (debug) {
-			printf("time sync ok\n");
+			printf("time sync ok\n\n");
 		}
 		return 0;
 	}
 
 	return 1;
-	*/
 }

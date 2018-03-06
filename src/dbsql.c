@@ -94,6 +94,9 @@ int db_open(const int createifnotfound, const int readonly)
 		}
 	}
 
+	/* TODO: add db version check to validate that version doesn't come from the future */
+	/*       and to do possible upgrade actions is current version is older than latest */
+
 	if (createifnotfound) {
 		if (!db_setinfo("vnstatversion", getversion(), 1)) {
 			db_close();
