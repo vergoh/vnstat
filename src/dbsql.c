@@ -735,7 +735,7 @@ int db_removeoldentries(void)
 
 	if (cfg.fiveminutehours > 0) {
 		if (debug) {
-			printf("db: fiveminute cleanup\n");
+			printf("db: fiveminute cleanup (%dh)\n", cfg.fiveminutehours);
 		}
 		sqlite3_snprintf(512, sql, "delete from fiveminute where date < datetime('now', '-%d hours', 'localtime');", cfg.fiveminutehours);
 		if (!db_exec(sql)) {
@@ -746,7 +746,7 @@ int db_removeoldentries(void)
 
 	if (cfg.hourlydays > 0) {
 		if (debug) {
-			printf("db: hour cleanup\n");
+			printf("db: hour cleanup (%dd)\n", cfg.hourlydays);
 		}
 		sqlite3_snprintf(512, sql, "delete from hour where date < datetime('now', '-%d days', 'localtime');", cfg.hourlydays);
 		if (!db_exec(sql)) {
@@ -757,7 +757,7 @@ int db_removeoldentries(void)
 
 	if (cfg.dailydays > 0) {
 		if (debug) {
-			printf("db: day cleanup\n");
+			printf("db: day cleanup (%dd)\n", cfg.dailydays);
 		}
 		sqlite3_snprintf(512, sql, "delete from day where date < date('now', '-%d days', 'localtime');", cfg.dailydays);
 		if (!db_exec(sql)) {
@@ -768,7 +768,7 @@ int db_removeoldentries(void)
 
 	if (cfg.monthlymonths > 0) {
 		if (debug) {
-			printf("db: month cleanup\n");
+			printf("db: month cleanup (%dm)\n", cfg.monthlymonths);
 		}
 		sqlite3_snprintf(512, sql, "delete from month where date < date('now', '-%d months', 'localtime');", cfg.monthlymonths);
 		if (!db_exec(sql)) {
@@ -779,7 +779,7 @@ int db_removeoldentries(void)
 
 	if (cfg.yearlyyears > 0) {
 		if (debug) {
-			printf("db: year cleanup\n");
+			printf("db: year cleanup (%dy)\n", cfg.yearlyyears);
 		}
 		sqlite3_snprintf(512, sql, "delete from year where date < date('now', '-%d years', 'localtime');", cfg.yearlyyears);
 		if (!db_exec(sql)) {
@@ -810,7 +810,7 @@ int db_removeoldentries_top(void)
 
 	while (dbifl_iterator != NULL) {
 		if (debug) {
-			printf("db: top cleanup: %s\n", dbifl_iterator->interface);
+			printf("db: top cleanup: %s (%d)\n", dbifl_iterator->interface, cfg.topdayentries);
 		}
 
 		ifaceid = db_getinterfaceid(dbifl_iterator->interface, 0);
