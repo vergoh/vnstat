@@ -339,6 +339,7 @@ void validatecfg(void)
 {
 	const char *invalidvalue = "Invalid value for";
 	const char *resettingto = "resetting to";
+	const char *noslashstart = "doesn't start with \"/\", resetting to default.";
 
 	if (cfg.unitmode<0 || cfg.unitmode>1) {
 		cfg.unitmode = UNITMODE;
@@ -358,22 +359,21 @@ void validatecfg(void)
 		printe(PT_Config);
 	}
 
-	/* TODO: fix syntax */
 	if (cfg.defaultdecimals<0 || cfg.defaultdecimals>2) {
 		cfg.defaultdecimals = DEFAULTDECIMALS;
-		snprintf(errorstring, 1024, "Invalid value for DefaultDecimals, resetting to \"%d\".", cfg.defaultdecimals);
+		snprintf(errorstring, 1024, "%s DefaultDecimals, %s \"%d\".", invalidvalue, resettingto, cfg.defaultdecimals);
 		printe(PT_Config);
 	}
 
 	if (cfg.hourlydecimals<0 || cfg.hourlydecimals>2) {
 		cfg.hourlydecimals = HOURLYDECIMALS;
-		snprintf(errorstring, 1024, "Invalid value for HourlyDecimals, resetting to \"%d\".", cfg.hourlydecimals);
+		snprintf(errorstring, 1024, "%s HourlyDecimals, %s \"%d\".", invalidvalue, resettingto, cfg.hourlydecimals);
 		printe(PT_Config);
 	}
 
 	if (cfg.hourlystyle<0 || cfg.hourlystyle>3) {
 		cfg.hourlystyle = HOURLYSTYLE;
-		snprintf(errorstring, 1024, "Invalid value for HourlySectionStyle, resetting to \"%d\".", cfg.hourlystyle);
+		snprintf(errorstring, 1024, "%s HourlySectionStyle, %s \"%d\".", invalidvalue, resettingto, cfg.hourlystyle);
 		printe(PT_Config);
 	}
 
@@ -415,14 +415,13 @@ void validatecfg(void)
 
 	if (cfg.dbdir[0] != '/') {
 		strncpy_nt(cfg.dbdir, DATABASEDIR, 512);
-		snprintf(errorstring, 1024, "DatabaseDir doesn't start with \"/\", %s default.", resettingto);
+		snprintf(errorstring, 1024, "DatabaseDir %s", noslashstart);
 		printe(PT_Config);
 	}
 
-	/* TODO: fix syntax */
 	if (cfg.timesyncwait<0 || cfg.timesyncwait>60) {
 		cfg.timesyncwait = TIMESYNCWAIT;
-		snprintf(errorstring, 1024, "Invalid value for TimeSyncWait, resetting to \"%d\".", cfg.timesyncwait);
+		snprintf(errorstring, 1024, "%s TimeSyncWait, %s \"%d\".", invalidvalue, resettingto, cfg.timesyncwait);
 		printe(PT_Config);
 	}
 
@@ -488,13 +487,13 @@ void validatecfg(void)
 
 	if (cfg.logfile[0] != '/') {
 		strncpy_nt(cfg.logfile, LOGFILE, 512);
-		snprintf(errorstring, 1024, "LogFile doesn't start with \"/\", %s default.", resettingto);
+		snprintf(errorstring, 1024, "LogFile %s", noslashstart);
 		printe(PT_Config);
 	}
 
 	if (cfg.pidfile[0] != '/') {
 		strncpy_nt(cfg.pidfile, PIDFILE, 512);
-		snprintf(errorstring, 1024, "PidFile doesn't start with \"/\", %s default.", resettingto);
+		snprintf(errorstring, 1024, "PidFile %s", noslashstart);
 		printe(PT_Config);
 	}
 
