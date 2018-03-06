@@ -673,8 +673,8 @@ void showhours(const interfaceinfo *interface)
 	/* structure */
 	snprintf(matrix[11], 81, " -+--------------------------------------------------------------------------->");
 	for (i=0; i<3; i++) {
-		/* TODO: rewrite to improve readability and compatibility (-Wformat-non-iso) */
-		snprintf(matrix[14]+(i*28), 25, " h %2$*1$srx (%3$s)  %2$*1$stx (%3$s)", 1+cfg.unitmode, " ", unit);
+		snprintf(matrix[14]+(i*28), 14, " h %*srx (%s)", 1+cfg.unitmode, " ", unit);
+		snprintf(matrix[14]+(i*28)+15+cfg.unitmode, 10, "tx (%s)", unit);
 	}
 
 	for (i=10;i>1;i--)
