@@ -52,6 +52,7 @@ int db_setalias(const char *iface, const char *alias);
 int db_setinfo(const char *name, const char *value, const int createifnotfound);
 char *db_getinfo(const char *name);
 int db_getiflist(dbiflist **dbifl);
+char *db_get_date_generator(const int range, const char *nowdate);
 int db_addtraffic(const char *iface, const uint64_t rx, const uint64_t tx);
 int db_addtraffic_dated(const char *iface, const uint64_t rx, const uint64_t tx, const uint64_t timestamp);
 int db_setcreation(const char *iface, const time_t timestamp);

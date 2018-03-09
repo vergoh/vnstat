@@ -569,6 +569,34 @@ int db_getiflist(dbiflist **dbifl)
 	return rc;
 }
 
+char *db_get_date_generator(const int range, const char *nowdate)
+{
+	static char dgen[512];
+	dgen[0] = '\0';
+
+	switch (range) {
+		case 0: /* 5min */
+			snprintf(dgen, 512, "datetime(%s, ('-' || (strftime('%%M', %s)) || ' minutes'), ('-' || (strftime('%%S', %s)) || ' seconds'), ('+' || (round(strftime('%%M', %s)/5,0)*5) || ' minutes'), 'localtime')", nowdate, nowdate, nowdate, nowdate);
+			break;
+		case 1: /* hour */
+			snprintf(dgen, 512, "strftime('%%Y-%%m-%%d %%H:00:00', %s, 'localtime')", nowdate);
+			break;
+		case 2: /* day */
+		case 5: /* top */
+			snprintf(dgen, 512, "date(%s, 'localtime')", nowdate);
+			break;
+		case 3: /* month */
+			snprintf(dgen, 512, "strftime('%%Y-%%m-01', %s, 'localtime')", nowdate);
+			break;
+		case 4: /* year */
+			snprintf(dgen, 512, "strftime('%%Y-01-01', %s, 'localtime')", nowdate);
+			break;
+		default:
+			break;
+	}
+	return dgen;
+}
+
 int db_addtraffic(const char *iface, const uint64_t rx, const uint64_t tx)
 {
 	return db_addtraffic_dated(iface, rx, tx, 0);
@@ -577,17 +605,11 @@ int db_addtraffic(const char *iface, const uint64_t rx, const uint64_t tx)
 int db_addtraffic_dated(const char *iface, const uint64_t rx, const uint64_t tx, const uint64_t timestamp)
 {
 	int i, intransaction = db_intransaction;
-	char sql[1024], datebuffer[512], nowdate[64];
+	char sql[1024], nowdate[64];
 	sqlite3_int64 ifaceid = 0;
 
 	const char *datatables[] = {"fiveminute", "hour", "day", "month", "year", "top"};
 	int32_t *featurecfg[] = {&cfg.fiveminutehours, &cfg.hourlydays, &cfg.dailydays, &cfg.monthlymonths, &cfg.yearlyyears, &cfg.topdayentries};
-	const char *datadates[] = {"datetime(%1$s, ('-' || (strftime('%%M', %1$s)) || ' minutes'), ('-' || (strftime('%%S', %1$s)) || ' seconds'), ('+' || (round(strftime('%%M', %1$s)/5,0)*5) || ' minutes'), 'localtime')", \
-			"strftime('%%Y-%%m-%%d %%H:00:00', %s, 'localtime')", \
-			"date(%s, 'localtime')", \
-			"strftime('%%Y-%%m-01', %s, 'localtime')", \
-			"strftime('%%Y-01-01', %s, 'localtime')", \
-			"date(%s, 'localtime')"};
 
 	ifaceid = db_getinterfaceid(iface, 1);
 	if (ifaceid == 0) {
@@ -634,13 +656,12 @@ int db_addtraffic_dated(const char *iface, const uint64_t rx, const uint64_t tx,
 		if (featurecfg[i] == 0) {
 			continue;
 		}
-		snprintf(datebuffer, 512, datadates[i], nowdate);
-		sqlite3_snprintf(1024, sql, "insert or ignore into %s (interface, date, rx, tx) values (%"PRId64", %s, 0, 0);", datatables[i], (int64_t)ifaceid, datebuffer);
+		sqlite3_snprintf(1024, sql, "insert or ignore into %s (interface, date, rx, tx) values (%"PRId64", %s, 0, 0);", datatables[i], (int64_t)ifaceid, db_get_date_generator(i, nowdate));
 		if (!db_exec(sql)) {
 			db_rollbacktransaction();
 			return 0;
 		}
-		sqlite3_snprintf(1024, sql, "update %s set rx=rx+%"PRIu64", tx=tx+%"PRIu64" where interface=%"PRId64" and date=%s;", datatables[i], rx, tx, (int64_t)ifaceid, datebuffer);
+		sqlite3_snprintf(1024, sql, "update %s set rx=rx+%"PRIu64", tx=tx+%"PRIu64" where interface=%"PRId64" and date=%s;", datatables[i], rx, tx, (int64_t)ifaceid, db_get_date_generator(i, nowdate));
 		if (!db_exec(sql)) {
 			db_rollbacktransaction();
 			return 0;
@@ -684,15 +705,10 @@ int db_settotal(const char *iface, const uint64_t rx, const uint64_t tx)
 int db_insertdata(const char *table, const char *iface, const uint64_t rx, const uint64_t tx, const uint64_t timestamp)
 {
 	int i, index = -1;
-	char sql[1024], datebuffer[512], nowdate[64];
+	char sql[1024], nowdate[64];
 	sqlite3_int64 ifaceid = 0;
 
 	const char *datatables[] = {"hour", "day", "month", "year", "top"};
-	const char *datadates[] = {"strftime('%%Y-%%m-%%d %%H:00:00', %s, 'localtime')", \
-			"date(%s, 'localtime')", \
-			"strftime('%%Y-%%m-01', %s, 'localtime')", \
-			"strftime('%%Y-01-01', %s, 'localtime')", \
-			"date(%s, 'localtime')"};
 
 	for (i=0; i<5; i++) {
 		if (strcmp(table, datatables[i]) == 0) {
@@ -711,9 +727,8 @@ int db_insertdata(const char *table, const char *iface, const uint64_t rx, const
 	}
 
 	snprintf(nowdate, 64, "datetime(%"PRIu64", 'unixepoch')", timestamp);
-	snprintf(datebuffer, 512, datadates[index], nowdate);
 
-	sqlite3_snprintf(1024, sql, "insert or ignore into %s (interface, date, rx, tx) values (%"PRId64", %s, %"PRIu64", %"PRIu64");", table, (int64_t)ifaceid, datebuffer, rx, tx);
+	sqlite3_snprintf(1024, sql, "insert or ignore into %s (interface, date, rx, tx) values (%"PRId64", %s, %"PRIu64", %"PRIu64");", table, (int64_t)ifaceid, db_get_date_generator(index+1, nowdate), rx, tx);
 	return db_exec(sql);
 }
 
