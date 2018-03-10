@@ -6,15 +6,20 @@ matrix:
       dist: trusty
       sudo: required
       compiler: gcc
-      env: CFLAGS='-Wall -Wextra'
+      env:
+        - CFLAGS='-Wall -Wextra'
+        - CPARAMS='--enable-werror'
     - os: linux
       dist: trusty
       sudo: required
       compiler: clang
-      env: CFLAGS='-Weverything -Wno-padded'
+      env:
+        - CFLAGS='-Weverything -Wno-padded'
+        - CPARAMS='--enable-werror'
     - os: osx
       compiler: clang
-      env: CFLAGS='-Weverything -Wno-padded'
+      env:
+        - CFLAGS='-Weverything -Wno-padded'
 
 addons:
   apt:
@@ -29,7 +34,7 @@ before_install:
  - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then brew install gd sqlite check ; fi
 
 script:
- - ./configure --enable-werror && make check || ( cat test.log ; exit 1 ) && egrep '^[0-9]+%' test.log && ./vnstat --version
+ - ./configure ${CPARAMS} && make check || ( cat test.log ; exit 1 ) && egrep '^[0-9]+%' test.log && ./vnstat --version
 
 notifications:
   email:
