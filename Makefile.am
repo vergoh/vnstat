@@ -1,4 +1,5 @@
 SUBDIRS = .
+AM_CFLAGS = @CFLAG_EXTRAS@
 
 dist_man_MANS = man/vnstat.1 man/vnstat.conf.5 man/vnstatd.1 man/vnstati.1
 
@@ -9,7 +10,7 @@ sbin_PROGRAMS = vnstatd
 if HAVE_LIBGD
 bin_PROGRAMS += vnstati
 endif
-vnstati_LDADD = $(IMAGELIBS)
+vnstati_LDADD = @IMAGELIBS@
 
 vnstat_SOURCES = src/vnstat.c src/vnstat.h \
   src/ifinfo.c src/ifinfo.h \
@@ -50,7 +51,7 @@ vnstati_SOURCES = src/vnstati.c src/vnstati.h \
 if HAVE_CHECK
 TESTS = check_vnstat
 check_PROGRAMS = check_vnstat
-check_vnstat_CFLAGS = @CHECK_CFLAGS@ \
+check_vnstat_CFLAGS = @CFLAG_EXTRAS@ @CHECK_CFLAGS@ \
   -DPROCNETDEV=\"testdir/proc/dev\" \
   -DSYSCLASSNET=\"testdir/sysclassnet\" \
   -DCFGFILE=\"$(top_srcdir)/cfg/vnstat.conf\" \
@@ -87,7 +88,7 @@ check_vnstat_SOURCES += src/cfg.c src/cfg.h \
 
 if HAVE_LIBGD
 check_vnstat_CFLAGS += -DHAVE_IMAGE
-check_vnstat_LDADD += $(IMAGELIBS)
+check_vnstat_LDADD += @IMAGELIBS@
 check_vnstat_SOURCES += tests/image_tests.c tests/image_tests.h \
   src/image.c src/image.h
 endif

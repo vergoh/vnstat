@@ -648,6 +648,7 @@ PKG_CONFIG
 HAVE_LIBGD_FALSE
 HAVE_LIBGD_TRUE
 IMAGELIBS
+CFLAG_EXTRAS
 am__fastdepCC_FALSE
 am__fastdepCC_TRUE
 CCDEPMODE
@@ -740,6 +741,7 @@ enable_silent_rules
 enable_maintainer_mode
 enable_dependency_tracking
 enable_image_output
+enable_werror
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1384,6 +1386,8 @@ Optional Features:
                           speeds up one-time build
 
   --disable-image-output  disable PNG image output
+
+  --enable-werror         add -Werror to CFLAGS
 
 Some influential environment variables:
   CC          C compiler command
@@ -4078,10 +4082,19 @@ fi
 
 
 
+# Extra options
 # Check whether --enable-image-output was given.
 if test "${enable_image_output+set}" = set; then :
   enableval=$enable_image_output;
 fi
+
+
+CFLAG_EXTRAS=""
+# Check whether --enable-werror was given.
+if test "${enable_werror+set}" = set; then :
+  enableval=$enable_werror; CFLAG_EXTRAS="-Werror"
+fi
+
 
 
 # Checks for libraries.

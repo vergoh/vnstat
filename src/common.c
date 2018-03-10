@@ -192,8 +192,8 @@ int isleapyear(int year)
 time_t mosecs(time_t month, time_t updated)
 {
 	struct tm d;
-#if defined(_SVID_SOURCE) || defined(_XOPEN_SOURCE) || defined(__linux__)
-	/* extern long timezone; */
+#if defined(_SVID_SOURCE) || defined(_XOPEN_SOURCE) || defined(__APPLE__) || defined(__linux__)
+	/* extern long timezone; from time.h */
 #else
 	int timezone = 0;
 #endif
