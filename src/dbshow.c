@@ -498,7 +498,6 @@ void showlist(const interfaceinfo *interface, const char *listname)
 	timeused(__func__, 0);
 }
 
-/* TODO: rewrite output changes introduced in 1.18 */
 void showoneline(const interfaceinfo *interface)
 {
 	struct tm *d;
