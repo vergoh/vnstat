@@ -6,6 +6,8 @@ void showjson(const char *interface, const int dbcount, const char mode)
 {
 	interfaceinfo info;
 
+	timeused(__func__, 1);
+
 	if (!db_getinterfacecountbyname(interface)) {
 		return;
 	}
@@ -67,6 +69,8 @@ void showjson(const char *interface, const int dbcount, const char mode)
 	}
 
 	printf("}}");
+
+	timeused(__func__, 0);
 }
 
 void jsondump(const interfaceinfo *interface, const char *tablename, const int datetype)
