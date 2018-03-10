@@ -74,11 +74,11 @@ and most can be changed later from the config file.
 #define MONTHROTATE 1
 
 /* date output formats for -d, -m, -t and image header*/
-/* see 'man date' for control codes       <1.8 values */
-#define DFORMAT "%x"                    /* "%d.%m." */
-#define MFORMAT "%b '%y"                /* "%b '%y" */
-#define TFORMAT "%x"                    /* "%d.%m.%y" */
-#define HFORMAT "%x %H:%M"              /* "%d.%m.%Y %H:%M" */
+/* see 'man date' for control codes      1.x values     <1.8 values */
+#define DFORMAT "%Y-%m-%d"             /* "%x"         "%d.%m." */
+#define MFORMAT "%Y-%m"                /* "%b '%y"     "%b '%y" */
+#define TFORMAT "%Y-%m-%d"             /* "%x"         "%d.%m.%y" */
+#define HFORMAT "%Y-%m-%d %H:%M"       /* "%x %H:%M"   "%d.%m.%Y %H:%M" */
 
 /* characters used for visuals */
 #define RXCHAR "%"
