@@ -952,7 +952,6 @@ short getcurrenthour(void)
 	return (short)ret;
 }
 
-/* TODO: figure out how to write a test for this */
 int waittimesync(DSTATE *s)
 {
 	datacache *iterator = s->dcache;

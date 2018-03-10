@@ -735,6 +735,127 @@ START_TEST(getcurrenthour_returns_something_realistic)
 }
 END_TEST
 
+START_TEST(waittimesync_does_not_wait_unless_configured_to_do_so)
+{
+	int ret;
+	DSTATE s;
+
+	defaultcfg();
+	initdstate(&s);
+	disable_logprints();
+	cfg.timesyncwait = 0;
+
+	ret = waittimesync(&s);
+	ck_assert_int_eq(ret, 0);
+}
+END_TEST
+
+START_TEST(waittimesync_does_not_wait_with_no_interfaces)
+{
+	int ret;
+	DSTATE s;
+
+	defaultcfg();
+	initdstate(&s);
+	suppress_output();
+	debug = 1;
+
+	ret = waittimesync(&s);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(s.prevdbsave, 0);
+}
+END_TEST
+
+START_TEST(waittimesync_does_not_wait_with_new_interfaces)
+{
+	int ret;
+	DSTATE s;
+
+	defaultcfg();
+	initdstate(&s);
+	suppress_output();
+	debug = 1;
+	cfg.timesyncwait = 60;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+
+	filldatabaselist(&s);
+
+	ret = waittimesync(&s);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_ne(s.prevdbsave, 0);
+}
+END_TEST
+
+START_TEST(waittimesync_knows_when_to_wait)
+{
+	int ret;
+	DSTATE s;
+
+	defaultcfg();
+	initdstate(&s);
+	suppress_output();
+	debug = 1;
+	cfg.timesyncwait = 60;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+
+	filldatabaselist(&s);
+
+	ret = waittimesync(&s);
+	ck_assert_int_eq(ret, 0);
+
+	s.prevdbsave = time(NULL) + 100;
+
+	ret = waittimesync(&s);
+	ck_assert_int_eq(ret, 1);
+
+	s.prevdbsave = time(NULL) - 100;
+
+	ret = waittimesync(&s);
+	ck_assert_int_eq(ret, 0);
+}
+END_TEST
+
+START_TEST(waittimesync_knows_when_to_give_up)
+{
+	int ret;
+	DSTATE s;
+
+	defaultcfg();
+	initdstate(&s);
+	suppress_output();
+	debug = 1;
+	cfg.timesyncwait = 60;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+
+	filldatabaselist(&s);
+
+	ret = waittimesync(&s);
+	ck_assert_int_eq(ret, 0);
+
+	s.prevdbsave = time(NULL) + 100;
+
+	ret = waittimesync(&s);
+	ck_assert_int_eq(ret, 1);
+
+	s.prevdbupdate -= 5000;
+
+	ret = waittimesync(&s);
+	ck_assert_int_eq(ret, 0);
+}
+END_TEST
+
 void add_daemon_tests(Suite *s)
 {
 	TCase *tc_daemon = tcase_create("Daemon");
@@ -770,5 +891,10 @@ void add_daemon_tests(Suite *s)
 	tcase_add_test(tc_daemon, initcachevalues_does_not_init_without_database);
 	tcase_add_test(tc_daemon, initcachevalues_does_init);
 	tcase_add_test(tc_daemon, getcurrenthour_returns_something_realistic);
+	tcase_add_test(tc_daemon, waittimesync_does_not_wait_unless_configured_to_do_so);
+	tcase_add_test(tc_daemon, waittimesync_does_not_wait_with_no_interfaces);
+	tcase_add_test(tc_daemon, waittimesync_does_not_wait_with_new_interfaces);
+	tcase_add_test(tc_daemon, waittimesync_knows_when_to_wait);
+	tcase_add_test(tc_daemon, waittimesync_knows_when_to_give_up);
 	suite_add_tcase(s, tc_daemon);
 }
