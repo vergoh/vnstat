@@ -84,7 +84,7 @@ sbin_PROGRAMS = vnstatd$(EXEEXT)
 @HAVE_CHECK_TRUE@TESTS = check_vnstat$(EXEEXT)
 @HAVE_CHECK_TRUE@check_PROGRAMS = check_vnstat$(EXEEXT)
 @HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@am__append_2 = -DHAVE_IMAGE
-@HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@am__append_3 = $(IMAGELIBS)
+@HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@am__append_3 = @IMAGELIBS@
 @HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@am__append_4 = tests/image_tests.c tests/image_tests.h \
 @HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@  src/image.c src/image.h
 
@@ -157,9 +157,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @HAVE_CHECK_TRUE@	$(am__objects_1)
 check_vnstat_OBJECTS = $(am_check_vnstat_OBJECTS)
 am__DEPENDENCIES_1 =
-@HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@am__DEPENDENCIES_2 =  \
-@HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@	$(am__DEPENDENCIES_1)
-@HAVE_CHECK_TRUE@check_vnstat_DEPENDENCIES = $(am__DEPENDENCIES_2)
+@HAVE_CHECK_TRUE@check_vnstat_DEPENDENCIES = $(am__DEPENDENCIES_1)
 check_vnstat_LINK = $(CCLD) $(check_vnstat_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 am_vnstat_OBJECTS = src/vnstat.$(OBJEXT) src/ifinfo.$(OBJEXT) \
@@ -180,7 +178,7 @@ am_vnstati_OBJECTS = src/vnstati.$(OBJEXT) src/image.$(OBJEXT) \
 	src/dbsql.$(OBJEXT) src/common.$(OBJEXT) src/misc.$(OBJEXT) \
 	src/fs.$(OBJEXT) src/id.$(OBJEXT) src/cfg.$(OBJEXT)
 vnstati_OBJECTS = $(am_vnstati_OBJECTS)
-vnstati_DEPENDENCIES = $(am__DEPENDENCIES_1)
+vnstati_DEPENDENCIES =
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -518,6 +516,7 @@ AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CFLAG_EXTRAS = @CFLAG_EXTRAS@
 CHECK_CFLAGS = @CHECK_CFLAGS@
 CHECK_LIBS = @CHECK_LIBS@
 CPP = @CPP@
@@ -611,9 +610,10 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUBDIRS = .
+AM_CFLAGS = @CFLAG_EXTRAS@
 dist_man_MANS = man/vnstat.1 man/vnstat.conf.5 man/vnstatd.1 man/vnstati.1
 EXTRA_DIST = cfg examples UPGRADE CHANGES FAQ INSTALL_BSD INSTALL_OSX UNINSTALL
-vnstati_LDADD = $(IMAGELIBS)
+vnstati_LDADD = @IMAGELIBS@
 vnstat_SOURCES = src/vnstat.c src/vnstat.h \
   src/ifinfo.c src/ifinfo.h \
   src/dbsql.c src/dbsql.h \
@@ -650,7 +650,7 @@ vnstati_SOURCES = src/vnstati.c src/vnstati.h \
   src/id.c src/id.h \
   src/cfg.c src/cfg.h
 
-@HAVE_CHECK_TRUE@check_vnstat_CFLAGS = @CHECK_CFLAGS@ \
+@HAVE_CHECK_TRUE@check_vnstat_CFLAGS = @CFLAG_EXTRAS@ @CHECK_CFLAGS@ \
 @HAVE_CHECK_TRUE@	-DPROCNETDEV=\"testdir/proc/dev\" \
 @HAVE_CHECK_TRUE@	-DSYSCLASSNET=\"testdir/sysclassnet\" \
 @HAVE_CHECK_TRUE@	-DCFGFILE=\"$(top_srcdir)/cfg/vnstat.conf\" \

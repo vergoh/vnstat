@@ -13,8 +13,14 @@ AM_PROG_CC_C_O
 AC_PROG_MAKE_SET
 AC_PROG_MKDIR_P
 
+# Extra options
 AC_ARG_ENABLE([image-output], [
 AS_HELP_STRING([--disable-image-output], [disable PNG image output])])
+
+CFLAG_EXTRAS=""
+AC_ARG_ENABLE([werror], [
+AS_HELP_STRING([--enable-werror], [add -Werror to CFLAGS])], [CFLAG_EXTRAS="-Werror"])
+AC_SUBST([CFLAG_EXTRAS])
 
 # Checks for libraries.
 AC_CHECK_LIB([m], [pow], [], [AC_MSG_ERROR([could not find required math library])])
