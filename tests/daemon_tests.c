@@ -783,10 +783,14 @@ START_TEST(waittimesync_does_not_wait_with_new_interfaces)
 	ck_assert_int_eq(ret, 1);
 
 	filldatabaselist(&s);
+	s.prevdbsave = 0;
 
 	ret = waittimesync(&s);
 	ck_assert_int_eq(ret, 0);
 	ck_assert_int_ne(s.prevdbsave, 0);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
 }
 END_TEST
 
@@ -807,6 +811,7 @@ START_TEST(waittimesync_knows_when_to_wait)
 	ck_assert_int_eq(ret, 1);
 
 	filldatabaselist(&s);
+	s.prevdbsave = 0;
 
 	ret = waittimesync(&s);
 	ck_assert_int_eq(ret, 0);
@@ -820,6 +825,9 @@ START_TEST(waittimesync_knows_when_to_wait)
 
 	ret = waittimesync(&s);
 	ck_assert_int_eq(ret, 0);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
 }
 END_TEST
 
@@ -840,6 +848,7 @@ START_TEST(waittimesync_knows_when_to_give_up)
 	ck_assert_int_eq(ret, 1);
 
 	filldatabaselist(&s);
+	s.prevdbsave = 0;
 
 	ret = waittimesync(&s);
 	ck_assert_int_eq(ret, 0);
@@ -853,6 +862,9 @@ START_TEST(waittimesync_knows_when_to_give_up)
 
 	ret = waittimesync(&s);
 	ck_assert_int_eq(ret, 0);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
 }
 END_TEST
 
