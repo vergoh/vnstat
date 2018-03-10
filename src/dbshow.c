@@ -73,7 +73,8 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 	e_rx=e_tx=0;
 
 	if (interface->updated && !shortmode) {
-		printf("Database updated: %s\n",(char*)asctime(localtime(&interface->updated)));
+		strftime(datebuff, DATEBUFFLEN, "%Y-%m-%d %H:%M:%S", localtime(&interface->updated));
+		printf("Database updated: %s\n\n", datebuff);
 	} else if (!shortmode) {
 		printf("\n");
 	}
