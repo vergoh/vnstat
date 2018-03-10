@@ -19,7 +19,7 @@ matrix:
     - os: osx
       compiler: clang
       env:
-        - CFLAGS='-Weverything -Wno-padded -Wno-reserved-id-macro -Wno-gnu-zero-variadic-macro-arguments -Wsign-conversion -Wunreachable-code -Wmissing-noreturn'
+        - CFLAGS='-Weverything -Wno-padded -Wno-reserved-id-macro -Wno-gnu-zero-variadic-macro-arguments -Wno-sign-conversion -Wno-unreachable-code -Wno-missing-noreturn'
 
 addons:
   apt:
