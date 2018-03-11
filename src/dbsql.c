@@ -33,7 +33,7 @@ int db_open(const int createifnotfound, const int readonly)
 
 	/* create database if file doesn't exist */
 	if (stat(dbfilename, &filestat) != 0) {
-		if (errno == ENOENT && createifnotfound) {
+		if (errno == ENOENT && createifnotfound && !readonly) {
 			createdb = 1;
 		} else {
 			if (debug)
@@ -92,16 +92,7 @@ int db_open(const int createifnotfound, const int readonly)
 				return 0;
 			}
 		}
-	}
 
-	/* TODO: add db version check to validate that version doesn't come from the future */
-	/*       and to do possible upgrade actions is current version is older than latest */
-
-	if (createifnotfound) {
-		if (!db_setinfo("vnstatversion", getversion(), 1)) {
-			db_close();
-			return 0;
-		}
 	}
 
 	/* set pragmas */
@@ -110,7 +101,57 @@ int db_open(const int createifnotfound, const int readonly)
 		return 0;
 	}
 
+	if (!createdb) {
+		if (!db_validate(readonly)) {
+			db_close();
+			return 0;
+		}
+	}
+
+	if (createifnotfound && !readonly) {
+		if (!db_setinfo("vnstatversion", getversion(), 1)) {
+			db_close();
+			return 0;
+		}
+	}
+
 	return 1;
+}
+
+/* TODO: error situation prints may be needed */
+int db_validate(const int readonly)
+{
+	int dbversion, currentversion;
+
+	db_errcode = 0;
+	dbversion = atoi(db_getinfo("dbversion"));
+	if (db_errcode) {
+		return 0;
+	}
+
+	currentversion = atoi(SQLDBVERSION);
+
+	if (debug) {
+		printf("Database version \"%d\", current version \"%d\"\n", dbversion, currentversion);
+	}
+
+	if (dbversion == currentversion) {
+		return 1;
+
+	} else if (dbversion == 0) {
+		return 0;
+
+	} else if (dbversion > currentversion) {
+		return 0;
+
+	} else if (dbversion < currentversion) {
+		if (!readonly) {
+			/* database upgrade actions should be performed here once needed */
+		}
+		return 0;
+	}
+
+	return 0;
 }
 
 int db_setpragmas(void)
@@ -144,7 +185,7 @@ int db_setpragmas(void)
 	rc = sqlite3_finalize(sqlstmt);
 	if (rc) {
 		db_errcode = rc;
-		snprintf(errorstring, 1024, " Exec finalize \"PRAGMA foreign_keys;\" failed (%d): %s", rc, sqlite3_errmsg(db));
+		snprintf(errorstring, 1024, "Exec finalize \"PRAGMA foreign_keys;\" failed (%d): %s", rc, sqlite3_errmsg(db));
 		printe(PT_Error);
 		return 0;
 	}
