@@ -29,12 +29,6 @@ Compiling the binaries
  options for the cgi are in the beginning of the file. Additional examples
  for using the json output are also available in the same directory.
 
- Some BSD users may need to provide correct CFLAGS and LDFLAGS paths to the
- configure script if the image output is wanted but the location of libgd2
- isn't automatically detected. For example (using bash as shell):
-
-     CFLAGS="-I/usr/local/include" LDFLAGS="-L/usr/local/lib" ./configure
-
  For executing the optional test suite, see the appendix at the end of this
  file.
 

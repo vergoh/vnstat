@@ -22,6 +22,10 @@ AC_ARG_ENABLE([werror], [
 AS_HELP_STRING([--enable-werror], [add -Werror to CFLAGS])], [CFLAG_EXTRAS="-Werror"])
 AC_SUBST([CFLAG_EXTRAS])
 
+AC_ARG_ENABLE([extra-paths], [
+AS_HELP_STRING([--disable-extra-paths], [do not add extra paths to CFLAGS and LDFLAGS])], [], [
+CFLAGS="$CFLAGS -I/usr/local/include" LDFLAGS="$LDFLAGS -L/usr/local/lib"])
+
 # Checks for libraries.
 AC_CHECK_LIB([m], [pow], [], [AC_MSG_ERROR([could not find required math library])])
 AC_CHECK_LIB([sqlite3], [sqlite3_prepare_v2], [], [AC_MSG_ERROR([could not find required sqlite3 library])])

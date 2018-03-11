@@ -742,6 +742,7 @@ enable_maintainer_mode
 enable_dependency_tracking
 enable_image_output
 enable_werror
+enable_extra_paths
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1388,6 +1389,8 @@ Optional Features:
   --disable-image-output  disable PNG image output
 
   --enable-werror         add -Werror to CFLAGS
+
+  --disable-extra-paths   do not add extra paths to CFLAGS and LDFLAGS
 
 Some influential environment variables:
   CC          C compiler command
@@ -4095,6 +4098,15 @@ if test "${enable_werror+set}" = set; then :
   enableval=$enable_werror; CFLAG_EXTRAS="-Werror"
 fi
 
+
+
+# Check whether --enable-extra-paths was given.
+if test "${enable_extra_paths+set}" = set; then :
+  enableval=$enable_extra_paths;
+else
+
+CFLAGS="$CFLAGS -I/usr/local/include" LDFLAGS="$LDFLAGS -L/usr/local/lib"
+fi
 
 
 # Checks for libraries.
