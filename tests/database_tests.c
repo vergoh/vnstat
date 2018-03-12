@@ -231,6 +231,9 @@ START_TEST(database_outputs_do_not_crash)
 	showdb("something", 7);
 	showdb("something", 8);
 	showdb("something", 9);
+	showdb("something", 10);
+	showdb("something", 11);
+	showdb("something", 12);
 
 	xmlheader();
 	showxml("something", 'd');
@@ -276,6 +279,9 @@ START_TEST(database_outputs_do_not_crash_without_data)
 	showdb("something", 7);
 	showdb("something", 8);
 	showdb("something", 9);
+	showdb("something", 10);
+	showdb("something", 11);
+	showdb("something", 12);
 
 	xmlheader();
 	showxml("something", 'd');
@@ -417,6 +423,25 @@ START_TEST(showbar_with_max_smaller_than_real_max)
 }
 END_TEST
 
+START_TEST(showbar_with_half_and_half_of_half)
+{
+	int pipe, len;
+	char buffer[512];
+	memset(&buffer, '\0', sizeof(buffer));
+
+	defaultcfg();
+	cfg.rxchar[0] = 'r';
+	cfg.txchar[0] = 't';
+	pipe = pipe_output();
+	len = showbar(1, 1, 4, 12);
+	ck_assert_int_eq(len, 6);
+	fflush(stdout);
+
+	len = (int)read(pipe, buffer, 512);
+	ck_assert_str_eq(buffer, "  rrrttt");
+}
+END_TEST
+
 void add_database_tests(Suite *s)
 {
 	TCase *tc_db = tcase_create("Database");
@@ -443,6 +468,7 @@ void add_database_tests(Suite *s)
 	tcase_add_test(tc_db, showbar_with_one_tenth);
 	tcase_add_test(tc_db, showbar_with_small_rx_shows_all_tx);
 	tcase_add_test(tc_db, showbar_with_max_smaller_than_real_max);
+	tcase_add_test(tc_db, showbar_with_half_and_half_of_half);
 	suite_add_tcase(s, tc_db);
 }
 

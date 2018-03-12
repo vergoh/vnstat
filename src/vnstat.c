@@ -217,6 +217,26 @@ int main(int argc, char *argv[]) {
 			}
 		} else if ((strcmp(argv[currentarg],"-h")==0) || (strcmp(argv[currentarg],"--hours")==0)) {
 			cfg.qmode=7;
+		} else if ((strcmp(argv[currentarg],"-hl")==0) || (strcmp(argv[currentarg],"--hourslist")==0)) {
+			cfg.qmode=11;
+			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
+				cfg.listhours = atoi(argv[currentarg+1]);
+				if (cfg.listhours < 0) {
+					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg+1], argv[currentarg]);
+					return 1;
+				}
+				currentarg++;
+			}
+		} else if ((strcmp(argv[currentarg],"-5")==0) || (strcmp(argv[currentarg],"--fiveminutes")==0)) {
+			cfg.qmode=12;
+			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
+				cfg.listfivemins = atoi(argv[currentarg+1]);
+				if (cfg.listfivemins < 0) {
+					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg+1], argv[currentarg]);
+					return 1;
+				}
+				currentarg++;
+			}
 		} else if ((strcmp(argv[currentarg],"--exportdb")==0) || (strcmp(argv[currentarg],"--dumpdb")==0)) {
 			cfg.qmode=4;
 		} else if (strcmp(argv[currentarg],"--oneline")==0) {
@@ -449,7 +469,9 @@ void showhelp(PARAMS *p)
 	printf(" vnStat %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
 
 	printf("         -q,  --query          query database\n");
+	printf("         -5,  --fiveminutes    show 5 minutes\n");
 	printf("         -h,  --hours          show hours\n");
+	printf("         -hl, --hourslist      show hours list\n");
 	printf("         -d,  --days           show days\n");
 	printf("         -m,  --months         show months\n");
 	printf("         -y,  --years          show years\n");
@@ -471,7 +493,9 @@ void showlonghelp(PARAMS *p)
 
 	printf("   Query:\n");
 	printf("         -q, --query           query database\n");
-	printf("         -h, --hours           show hours\n");
+	printf("         -5,  --fiveminutes    show 5 minutes\n");
+	printf("         -h,  --hours          show hours\n");
+	printf("         -hl, --hourslist      show hours list\n");
 	printf("         -d, --days            show days\n");
 	printf("         -m, --months          show months\n");
 	printf("         -y, --years           show years\n");

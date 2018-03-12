@@ -94,13 +94,11 @@ durations. Yearly and five-minute resolution statistics are now included.
 ##### TODO
 
   * `grep TODO src/* tests/*`
-  * rewrite version 1.18 feature which didn't merge properly
-  * output of 5 minute resolution statistics (vnstat and vnstati)
+  * output of 5 minute resolution statistics (vnstati)
     * possibly not included in first 2.x release
   * query of specific time range date
     * most likely not included in first 2.x release
     * extending the length of the current outputs is however already supported
-      * hourly output is the only exception
   * feature configurability
   * freeze database structure
     * plan ahead and figure out how to migrate data to new structure if necessary?

@@ -48,6 +48,12 @@ void showdb(const char *interface, int qmode)
 		case 9:
 			showoneline(&info);
 			break;
+		case 11:
+			showlist(&info, "hour");
+			break;
+		case 12:
+			showlist(&info, "fiveminute");
+			break;
 		default:
 			printf("Error: Not such query mode: %d\n", qmode);
 			break;
@@ -279,7 +285,8 @@ void showlist(const interfaceinfo *interface, const char *listname)
 	int32_t limit;
 	int listtype, offset = 0, i = 1;
 	struct tm *d;
-	char datebuff[DATEBUFFLEN], titlename[16], colname[8], stampformat[64];
+	char datebuff[DATEBUFFLEN], daybuff[DATEBUFFLEN];
+	char titlename[16], colname[8], stampformat[64];
 	uint64_t e_rx, e_tx, e_secs, div, mult;
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
@@ -310,6 +317,18 @@ void showlist(const interfaceinfo *interface, const char *listname)
 		strncpy_nt(stampformat, cfg.tformat, 64);
 		limit = cfg.listtop;
 		offset = 6;
+	} else if (strcmp(listname, "hour") == 0) {
+		listtype = 5;
+		strncpy_nt(colname, listname, 8);
+		snprintf(titlename, 16, "hourly");
+		strncpy_nt(stampformat, "%H:%M", 64);
+		limit = cfg.listhours;
+	} else if (strcmp(listname, "fiveminute") == 0) {
+		listtype = 6;
+		strncpy_nt(colname, "time", 8);
+		snprintf(titlename, 16, "5 minute");
+		strncpy_nt(stampformat, "%H:%M", 64);
+		limit = cfg.listfivemins;
 	} else {
 		return;
 	}
@@ -318,6 +337,7 @@ void showlist(const interfaceinfo *interface, const char *listname)
 		limit = 0;
 	}
 
+	daybuff[0] = '\0';
 	e_rx = e_tx = e_secs = 0;
 
 	if (!db_getdata(&datalist, &datainfo, interface->name, listname, (uint32_t)limit)) {
@@ -385,6 +405,18 @@ void showlist(const interfaceinfo *interface, const char *listname)
 
 	while (datalist_i != NULL) {
 		d = localtime(&datalist_i->timestamp);
+
+		if (listtype == 5 || listtype == 6) {
+			strftime(datebuff, DATEBUFFLEN, cfg.dformat, d);
+			if (strcmp(daybuff, datebuff) != 0) {
+				if (cfg.ostyle == 3) {
+					indent(4);
+				}
+				printf(" %s\n", datebuff);
+				strcpy(daybuff, datebuff);
+			}
+		}
+
 		strftime(datebuff, DATEBUFFLEN, stampformat, d);
 		if (cfg.ostyle == 3) {
 			indent(1);
@@ -415,6 +447,10 @@ void showlist(const interfaceinfo *interface, const char *listname)
 					e_secs = (uint64_t)(d->tm_yday*86400+d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600));
 				} else if (listtype == 4) { // top
 					e_secs = 86400;
+				} else if (listtype == 5) { // hour
+					e_secs = (uint64_t)(d->tm_sec+(d->tm_min*60));
+				} else if (listtype == 6) { // 5min
+					e_secs = 300;
 				}
 			} else {
 				if (listtype == 1 || listtype == 4) { // day
@@ -423,6 +459,10 @@ void showlist(const interfaceinfo *interface, const char *listname)
 					e_secs = (uint64_t)(dmonth(d->tm_mon) * 86400);
 				} else if (listtype == 3) { // year
 					e_secs = (uint64_t)((365 + isleapyear(d->tm_year+1900)) * 86400);
+				} else if (listtype == 5) { // hour
+					e_secs = 3600;
+				} else if (listtype == 6) { // 5min
+					e_secs = 300;
 				}
 			}
 			printf(" | %s", gettrafficrate(datalist_i->rx+datalist_i->tx, (time_t)e_secs, 14));
@@ -458,7 +498,7 @@ void showlist(const interfaceinfo *interface, const char *listname)
 		}
 		printf("\n");
 	}
-	if (datainfo.count > 0 && listtype != 4) {
+	if (datainfo.count > 0 && listtype < 4) {
 		/* use database update time for estimates */
 		d = localtime(&interface->updated);
 		if ( datalist_i->rx==0 || datalist_i->tx==0 ) {
@@ -807,7 +847,7 @@ int showbar(const uint64_t rx, const uint64_t tx, const uint64_t max, const int 
 	int i, l, width = len;
 
 	if ( (rx + tx) < max) {
-		width = (int)( (rx + tx) / (float)max ) * len;
+		width = (int)( ((rx + tx) / (float)max) * len );
 	} else if ((rx + tx) > max) {
 		return 0;
 	}
