@@ -54,6 +54,8 @@ durations. Yearly and five-minute resolution statistics are now included.
     * some sanity checks may be missing or disabled
   * vnstat (console output) has most features implemented
   * vnstati (image output) has all intended original features implemented
+  * 5 minute resolution outputs available in both text and image formats
+  * data migration verified to work automatically from 1.x version databases
   * test coverage is better than with 1.x releases
     * some unit conversion issues have been found and fixed
 
@@ -94,17 +96,19 @@ durations. Yearly and five-minute resolution statistics are now included.
 ##### TODO
 
   * `grep TODO src/* tests/*`
-  * output of 5 minute resolution statistics (vnstati)
-    * possibly not included in first 2.x release
   * query of specific time range date
-    * most likely not included in first 2.x release
+    * possibly not included in first 2.x release
     * extending the length of the current outputs is however already supported
   * feature configurability
+    * is something still missing?
   * freeze database structure
     * plan ahead and figure out how to migrate data to new structure if necessary?
+  * decide if output type parameters should be renamed
+    * currently -h results in a graph style output when everything else gives a list
+    * -h to output list and have -hg (or similar) for the hourly graph?
   * documentation
-    * will be updated once merged to master from branch
-    * especially feature comparison with 1.x versions is needed as some features may be left out
+    * needs to be updated to match 2.0 feature set and dependency requirements
+    * especially feature comparison with 1.x versions is needed as some features have been left out
   * remember what else has been forgotten from this list
 
 ## Contacting the author
