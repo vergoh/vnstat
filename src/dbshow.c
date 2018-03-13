@@ -745,11 +745,11 @@ void showhours(const interfaceinfo *interface)
 
 		snprintf(matrix[12]+k, 81-k, "%02d ", s);
 
-		dots = 10 * (unsigned int)(hourdata[s].rx / (float)max);
+		dots = (unsigned int)(10 * (hourdata[s].rx / (float)max));
 		for (j=0; j<dots; j++)
 			matrix[10-j][k] = cfg.rxhourchar[0];
 
-		dots = 10 * (unsigned int)(hourdata[s].tx / (float)max);
+		dots = (unsigned int)(10 * (hourdata[s].tx / (float)max));
 		for (j=0; j<dots; j++)
 			matrix[10-j][k+1] = cfg.txhourchar[0];
 
