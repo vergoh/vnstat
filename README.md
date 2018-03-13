@@ -34,8 +34,7 @@ Development version (not recommended currently, documentation not up to date)
   2. ``cd vnstat``
 
 In both cases, continue with instructions from the INSTALL or INSTALL_BSD file
-depending on used operating system. Experimental instructions for OS X are
-available in the INSTALL_OSX file. Instructions for upgrading from a previous
+depending on used operating system. Instructions for upgrading from a previous
 version are included in the UPGRADE file.
 
 ## Current development status

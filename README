@@ -22,8 +22,7 @@ Getting started
 :::::::::::::::
 
  vnStat works best when installed. See the INSTALL or INSTALL_BSD file
- depending on used operating system. Experimental instructions for OS X
- are available in the INSTALL_OSX file. These files contain all needed
+ depending on used operating system. These files contain all needed
  information for the installing process. Instructions for upgrading from
  a previous version are included in the UPGRADE file.
 
