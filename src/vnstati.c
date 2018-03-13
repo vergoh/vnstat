@@ -212,6 +212,26 @@ int main(int argc, char *argv[])
 				}
 				currentarg++;
 			}
+		} else if ((strcmp(argv[currentarg],"-hl")==0) || (strcmp(argv[currentarg],"--hourslist"))==0) {
+			cfg.qmode = 8;
+			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
+				cfg.listhours = atoi(argv[currentarg+1]);
+				if (cfg.listhours < 0) {
+					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg+1], argv[currentarg]);
+					return 1;
+				}
+				currentarg++;
+			}
+		} else if ((strcmp(argv[currentarg],"-5")==0) || (strcmp(argv[currentarg],"--fiveminutes"))==0) {
+			cfg.qmode = 9;
+			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
+				cfg.listfivemins = atoi(argv[currentarg+1]);
+				if (cfg.listfivemins < 0) {
+					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg+1], argv[currentarg]);
+					return 1;
+				}
+				currentarg++;
+			}
 		} else if ((strcmp(argv[currentarg],"-s")==0) || (strcmp(argv[currentarg],"--summary"))==0) {
 			cfg.qmode = 5;
 		} else if ((strcmp(argv[currentarg],"-h")==0) || (strcmp(argv[currentarg],"--hours"))==0) {
@@ -293,7 +313,9 @@ void initiparams(IPARAMS *p)
 void showihelp(IPARAMS *p)
 {
 	printf(" vnStat image output %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
+	printf("         -5,  --fiveminutes    output 5 minutes\n");
 	printf("         -h,  --hours          output hours\n");
+	printf("         -hl, --hourslist      output hours list\n");
 	printf("         -d,  --days           output days\n");
 	printf("         -m,  --months         output months\n");
 	printf("         -y,  --years          output years\n");

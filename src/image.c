@@ -40,6 +40,12 @@ void drawimage(IMAGECONTENT *ic)
 		case 7:
 			drawhourly(ic, cfg.hourlyrate);
 			break;
+		case 8:
+			drawlist(ic, "hour");
+			break;
+		case 9:
+			drawlist(ic, "fiveminute");
+			break;
 		default:
 			printf("Error: No such query mode: %d\n", cfg.qmode);
 			exit(EXIT_FAILURE);
@@ -428,11 +434,11 @@ void drawhourly(IMAGECONTENT *ic, const int rate)
 void drawlist(IMAGECONTENT *ic, const char *listname)
 {
 	int listtype, textx, texty, offsetx = 0, offsety = 0;
-	int width, height, headermod, i = 1;
+	int width, height, headermod, i = 1, rowcount = 0;
 	int32_t limit;
 	uint64_t e_rx, e_tx, e_secs = 86400, div, mult;
-	char buffer[512], datebuff[16], stampformat[64];
-	char titlename[16], colname[8];
+	char buffer[512], datebuff[16], daybuff[16];
+	char stampformat[64], titlename[16], colname[8];
 	struct tm *d;
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
@@ -461,19 +467,35 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		strncpy_nt(stampformat, cfg.tformat, 64);
 		limit = cfg.listtop;
 		offsetx = 30;
-		offsety = -16;
+	} else if (strcmp(listname, "hour") == 0) {
+		listtype = 5;
+		strncpy_nt(colname, listname, 8);
+		snprintf(titlename, 16, "hourly");
+		strncpy_nt(stampformat, "%H:%M", 64);
+		limit = cfg.listhours;
+	} else if (strcmp(listname, "fiveminute") == 0) {
+		listtype = 6;
+		strncpy_nt(colname, "time", 8);
+		snprintf(titlename, 16, "5 minute");
+		strncpy_nt(stampformat, "%H:%M", 64);
+		limit = cfg.listfivemins;
 	} else {
 		return;
 	}
 
-	if (limit == 0) {
-		limit = -1;
+	if (limit < 0) {
+		limit = 0;
 	}
+
+	daybuff[0] = '\0';
+	e_rx = e_tx = 0;
 
 	if (!db_getdata(&datalist, &datainfo, ic->interface.name, listname, (uint32_t)limit)) {
 		printf("Error: Failed to fetch %s data.\n", "day");
 		return;
 	}
+
+	datalist_i = datalist;
 
 	if (listtype == 4) {
 		if (limit > 0 && datainfo.count < (uint32_t)limit) {
@@ -486,15 +508,29 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		}
 	}
 
-	datalist_i = datalist;
+	if (listtype == 5 || listtype == 6) {
+		while (datalist_i != NULL) {
+			d = localtime(&datalist_i->timestamp);
+			strftime(datebuff, 16, cfg.dformat, d);
+			if (strcmp(daybuff, datebuff) != 0) {
+				rowcount += 1;
+				strcpy(daybuff, datebuff);
+			}
+			datalist_i = datalist_i->next;
+		}
+		datalist_i = datalist;
+		daybuff[0] = '\0';
+	}
+	rowcount += datainfo.count;
 
 	width = 500;
-	if (listtype == 4) {
+	if (listtype >= 4) { // less space needed when no estimate is shown
 		height = 86;
+		offsety = -16;
 	} else {
 		height = 98;
 	}
-	height += 12 * datainfo.count;
+	height += 12 * rowcount;
 
 	if (!ic->showheader) {
 		headermod = 26;
@@ -541,19 +577,29 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		strcat(buffer, "       avg. rate");
 		gdImageString(ic->im, gdFontGetSmall(), textx, texty, (unsigned char*)buffer, ic->ctext);
 		gdImageLine(ic->im, textx+2, texty+16, textx+392+offsetx, texty+16, ic->cline);
-		gdImageLine(ic->im, textx+300+offsetx, texty+2, textx+300+offsetx, texty+40+offsety+(12*(int)datainfo.count), ic->cline);
+		gdImageLine(ic->im, textx+300+offsetx, texty+2, textx+300+offsetx, texty+40+offsety+(12*rowcount), ic->cline);
 	} else {
 		gdImageString(ic->im, gdFontGetSmall(), textx, texty, (unsigned char*)buffer, ic->ctext);
 		gdImageLine(ic->im, textx+2, texty+16, textx+296+offsetx, texty+16, ic->cline);
 	}
-	gdImageLine(ic->im, textx+144+offsetx, texty+2, textx+144+offsetx, texty+40+offsety+(12*(int)datainfo.count), ic->cline);
-	gdImageLine(ic->im, textx+222+offsetx, texty+2, textx+222+offsetx, texty+40+offsety+(12*(int)datainfo.count), ic->cline);
+	gdImageLine(ic->im, textx+144+offsetx, texty+2, textx+144+offsetx, texty+40+offsety+(12*rowcount), ic->cline);
+	gdImageLine(ic->im, textx+222+offsetx, texty+2, textx+222+offsetx, texty+40+offsety+(12*rowcount), ic->cline);
 
 	texty += 20;
 
 	while (datalist_i != NULL) {
-
 		d = localtime(&datalist_i->timestamp);
+
+		if (listtype == 5 || listtype == 6) {
+			strftime(datebuff, 16, cfg.dformat, d);
+			if (strcmp(daybuff, datebuff) != 0) {
+				snprintf(buffer, 32, " %s", datebuff);
+				gdImageString(ic->im, gdFontGetSmall(), textx, texty, (unsigned char*)buffer, ic->ctext);
+				texty += 12;
+				strcpy(daybuff, datebuff);
+			}
+		}
+
 		if (listtype == 4) {
 			if (strftime(datebuff, 16, stampformat, d)<=8) {
 				snprintf(buffer, 32, "  %2d   %*s   ", i, getpadding(8, datebuff), datebuff);
@@ -584,6 +630,10 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 					e_secs = (uint64_t)(d->tm_yday*86400+d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600));
 				} else if (listtype == 4) { // top
 					e_secs = 86400;
+				} else if (listtype == 5) { // hour
+					e_secs = (uint64_t)(d->tm_sec+(d->tm_min*60));
+				} else if (listtype == 6) { // 5min
+					e_secs = 300;
 				}
 			} else {
 				if (listtype == 1 || listtype == 4) { // day
@@ -592,6 +642,10 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 					e_secs = (uint64_t)(dmonth(d->tm_mon) * 86400);
 				} else if (listtype == 3) { // year
 					e_secs = (uint64_t)((365 + isleapyear(d->tm_year+1900)) * 86400);
+				} else if (listtype == 5) { // hour
+					e_secs = 3600;
+				} else if (listtype == 6) { // 5min
+					e_secs = 300;
 				}
 			}
 			strncat(buffer, gettrafficrate(datalist_i->rx+datalist_i->tx, (time_t)e_secs, 14), 32);
@@ -629,7 +683,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		gdImageLine(ic->im, textx+2, texty+5, textx+296+offsetx, texty+5, ic->cline);
 	}
 
-	if (datainfo.count > 0 && listtype != 4) {
+	if (datainfo.count > 0 && listtype < 4) {
 
 		d = localtime(&ic->interface.updated);
 		if ( datalist_i->rx==0 || datalist_i->tx==0 ) {
