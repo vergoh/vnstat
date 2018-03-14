@@ -1,4 +1,4 @@
-.TH VNSTATI 1 "MARCH 2018" "version 1.18" "User Manuals"
+.TH VNSTATI 1 "MARCH 2018" "version 2.0" "User Manuals"
 .SH NAME
 
 vnstati \- png image output support for vnStat
@@ -7,7 +7,7 @@ vnstati \- png image output support for vnStat
 
 .B vnstati
 [
-.B \-cdhimostv?
+.B \-5cdhimostv?
 ] [
 .B \-\-altdate
 ] [
@@ -18,9 +18,13 @@ vnstati \- png image output support for vnStat
 .I file
 ] [
 .B \-\-days
+.I count
 ] [
 .B \-\-dbdir
 .I directory
+] [
+.B \-\-fiveminutes
+.I count
 ] [
 .B \-\-headertext
 .I text
@@ -43,6 +47,7 @@ vnstati \- png image output support for vnStat
 .I locale
 ] [
 .B \-\-months
+.I count
 ] [
 .B \-ne
 ] [
@@ -68,7 +73,8 @@ vnstati \- png image output support for vnStat
 ] [
 .B \-\-summary
 ] [
-.B \-\-top10
+.B \-\-top
+.I count
 ] [
 .B \-\-transparent
 ] [
@@ -114,8 +120,13 @@ as configuration file instead of using normal configuration file search
 functionality.
 
 .TP
-.B "-d, --days"
-Output traffic statistics on a daily basis for the last 30 days.
+.BI "-d, --days " count
+Output traffic statistics on a daily basis for the last days. The length of the list
+will default to 30 entries unless configured otherwise or unless the optional
+.I count
+parameter is used. All entries stored in the database will be shown if
+.I count
+is set to 0.
 
 .TP
 .BI "--dbdir " directory
@@ -123,6 +134,15 @@ Use
 .I directory
 as database directory instead of using the directory specified in the configuration
 file or the hardcoded default if no configuration file is available.
+
+.TP
+.BI "-5, --fiveminutes " count
+Output traffic statistics on a 5 minutes resolution for the last hours.  The length of the list
+will default to 24 entries unless configured otherwise or unless the optional
+.I count
+parameter is used. All entries stored in the database will be shown if
+.I count
+is set to 0.
 
 .TP
 .BI "--headertext " text
@@ -159,8 +179,13 @@ instead of using the locale setting specified in the configuration file or the s
 default if no configuration file is available.
 
 .TP
-.B "-m, --months"
-Output traffic statistics on a monthly basis for the last 12 months.
+.BI "-m, --months " count
+Output traffic statistics on a monthly basis for the last months. The length of the list
+will default to 12 entries unless configured otherwise or unless the optional
+.I count
+parameter is used. All entries stored in the database will be shown if
+.I count
+is set to 0.
 
 .TP
 .B "-ne, --noedge"
@@ -202,8 +227,13 @@ Other values will show bar graphics instead.
 Output traffic statistics summary.
 
 .TP
-.B "-t, --top10"
-Output all time top 10 traffic days.
+.BI "-t, --top " count
+Output all time top traffic days. The length of the list
+will default to 10 entries unless configured otherwise or unless the optional
+.I count
+parameter is used. All entries stored in the database will be shown if
+.I count
+is set to 0.
 
 .TP
 .B "--transparent"
@@ -241,11 +271,6 @@ for more information.
 .TP
 .B "vnstati -s -i eth0 -o /tmp/vnstat.png"
 Output traffic summary for interface eth0 to file /tmp/vnstat.png.
-
-.TP
-.B "vnstati -vs -i eth0+eth1+eth2 -o /tmp/vnstat.png"
-Output traffic summary with hourly data under the normal summary for a merge of
-interfaces eth0, eth1 and eth2 to file /tmp/vnstat.png.
 
 .TP
 .B "vnstati -h -c 15 -o /tmp/vnstat_h.png"

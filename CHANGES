@@ -1,6 +1,21 @@
 2.0 / <not released yet>
 
- - database format and many other changes, to be listed and documented
+ - Fix: Data rate calculations when using SI decimal prefixes
+ - C struct dump database has been replaced with sqlite database
+ - User configurable data retention durations for all resolutions
+ - Full data import from 1.x version database format including reconstructed
+   yearly data
+ - Add yearly and 5 minute resolution statistics
+ - Add pebibyte support
+ - Add options the configure the length of each list output
+ - Add hourly list output as alternative
+ - Remove weekly output
+ - Remove merge of data from multiple interfaces to one output
+ - Remove --testkernel
+ - Remove --importdb, -u / --update and related options using vnstat command
+ - Remove old style (default in versions up to 1.7) summary layout in
+   image output
+
  - see "Current development status" section in README.md
 
 

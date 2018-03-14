@@ -1,4 +1,4 @@
-.TH VNSTAT 1 "MARCH 2018" "version 1.18" "User Manuals"
+.TH VNSTAT 1 "MARCH 2018" "version 2.0" "User Manuals"
 .SH NAME
 
 vnstat \- a console-based network traffic monitor
@@ -7,9 +7,9 @@ vnstat \- a console-based network traffic monitor
 
 .B vnstat
 [
-.B \-Ddhlmqrstuvw?
+.B \-5Ddhlmqrstvw?
 ] [
-.B \-\-cleartop
+.B \-\-add
 ] [
 .B \-\-config
 .I file
@@ -17,6 +17,7 @@ vnstat \- a console-based network traffic monitor
 .B \-\-create
 ] [
 .B \-\-days
+.I count
 ] [
 .B \-\-delete
 ] [
@@ -25,18 +26,16 @@ vnstat \- a console-based network traffic monitor
 ] [
 .B \-\-debug
 ] [
-.B \-\-disable
-] [
-.B \-\-enable
-] [
 .B \-\-exportdb
 ] [
+.B \-\-fiveminutes
+.I count
 .B \-\-help
 ] [
 .B \-\-hours
 ] [
-.B \-\-importdb
-.I file
+.B \-\-hourslist
+.I count
 ] [
 .B \-i
 .I interface
@@ -58,9 +57,7 @@ vnstat \- a console-based network traffic monitor
 .B \-\-longhelp
 ] [
 .B \-\-months
-] [
-.B \-\-nick
-.I nickname
+.I count
 ] [
 .B \-\-oneline
 .I mode
@@ -69,13 +66,12 @@ vnstat \- a console-based network traffic monitor
 ] [
 .B \-\-rateunit
 ] [
-.B \-\-rebuildtotal
-] [
-.B \-\-reset
+.B \-\-remove
 ] [
 .B \-ru
 ] [
-.B \-\-savemerged
+.B \-\-setalias
+.I alias
 ] [
 .B \-\-short
 ] [
@@ -84,11 +80,8 @@ vnstat \- a console-based network traffic monitor
 .B \-\-style
 .I number
 ] [
-.B \-\-sync
-] [
-.B \-\-testkernel
-] [
-.B \-\-top10
+.B \-\-top
+.I count
 ] [
 .B \-tr
 .I time
@@ -96,11 +89,7 @@ vnstat \- a console-based network traffic monitor
 .B \-\-traffic
 .I time
 ] [
-.B \-\-update
-] [
 .B \-\-version
-] [
-.B \-\-weeks
 ] [
 .B \-\-xml
 .I mode
@@ -130,8 +119,12 @@ time sleeping between data updates.
 .SH OPTIONS
 
 .TP
-.B "--cleartop"
-Remove all top 10 entries.
+.B "--add"
+Create database entry for interface specified with
+.B \-i
+or
+.B \-\-iface
+option.
 
 .TP
 .BI "--config " file
@@ -141,16 +134,13 @@ as configuration file instead of using normal configuration file search
 functionality.
 
 .TP
-.B "--create"
-Create database for interface specified with
-.B \-i
-or
-.B \-\-iface
-option.
-
-.TP
-.B "-d, --days"
-Show traffic statistics on a daily basis for the last 30 days.
+.BI "-d, --days " count
+Show traffic statistics on a daily basis for the last days. The length of the list
+will default to 30 entries unless configured otherwise or unless the optional
+.I count
+parameter is used. All entries stored in the database will be shown if
+.I count
+is set to 0.
 
 .TP
 .BI "--dbdir " directory
@@ -164,35 +154,10 @@ file or the hardcoded default if no configuration file is available.
 Show additional debug output.
 
 .TP
-.B "--delete"
-Delete the database for the interface specified with
-.B \-i
-or
-.B \-\-iface
-and stop monitoring it.
-
-.TP
-.B "--enable, --disable"
-Enable or disable updates for selected interface. Useful for
-interfaces that aren't always available, like ppp0. If the interface
-goes down it should be disabled in order to avoid errors. Add something
-like
-.B "vnstat -r --disable -i ppp0"
-to the script that's executed when
-the interface goes down and
-.B "vnstat --enable -i ppp0"
-to the up script. These two options aren't needed when the daemon is used.
-
-.TP
 .B "--exportdb"
 Instead of showing the database with a formatted output, this output will
 dump the whole database in a plain text based architecture independent format.
-The output can be imported back using the
-.B "--importdb"
-option and can be used for moving a database from one host to another. See the
-.B "--importdb"
-documentation below for an example. Using the output for scripting is possible but
-the outputs of
+Using the output for scripting is possible but the outputs of
 .B "--xml"
 and
 .B "--json"
@@ -201,52 +166,44 @@ are likely to be more suitable. The dump uses ; as field delimiter.
 l l.
       active;1	activity status
       interface;eth0	name for the interface
-      nick;inet	nick (if given)
+      alias;localnet	alias (if given)
       created;1023895272	creation date in Unix time
       updated;1065467100	when the database was updated
-      totalrx;569605	all time total received MiB
-      totaltx;2023708	all time total transmitted MiB
-      currx;621673719	latest rx value in /proc
-      curtx;981730184	latest tx value in /proc
-      totalrxk;644	total rx KiB counter
-      totaltxk;494	total tx KiB counter
+      totalrx;569605	all time total received bytes
+      totaltx;2023708	all time total transmitted bytes
+      currx;621673719	latest interface counter rx value
+      curtx;981730184	latest interface counter tx value
       btime;1059414541	system boot time in Unix time
 .TE
 
-Then follows 30 lines like the following
+Then follows lines like the following
 
-      d;0;1078696800;559;7433;68;557;1
+      d;1;1078696800;559;7433
 
-where d = days, 0 = day number in database (0 is today), 1077314401 date in
-Unix time, 559 = rx MiB, 7433 = tx MiB, 68 = rx KiB, 557 = tx KiB and 1 tells that
-vnStat has filled this value and it is in use.
+where d = days, 1 = day index number in database, 1077314401 date in
+Unix time, 559 = rx bytes, 7433 = tx bytes.
 .TS
 l l.
-      m;0;1078092000;48649;139704;527;252;1	(x12)
-      t;0;1078351200;5979;47155;362;525;1	(x10)
-      h;0;1078699800;118265;516545	(x24)
+      m;1;1078092000;48649;139704
+      t;1;1078351200;5979;47155
+      h;1;1078699800;118265;516545
+      y;1;1483221600;4647879954;389902437
 .TE
 
-m = months, t = top 10 and h = hours, all other fields are in the same order as in days
-except hours that doesn't have a separate KiB value. For hours the forth and fifth fields
-have values in KiB.
+m = months, t = top, h = hours and y = years, all other fields are in the same order as in days.
+
+.TP
+.BI "-5, --fiveminutes " count
+Show traffic statistics on a 5 minutes resolution for the last hours.  The length of the list
+will default to 24 entries unless configured otherwise or unless the optional
+.I count
+parameter is used. All entries stored in the database will be shown if
+.I count
+is set to 0.
 
 .TP
 .B "-h, --hours"
 Show traffic statistics on a hourly basis for the last 24 hours.
-
-.TP
-.BI "--importdb " file
-Import a database from
-.I file
-which was previously exported using the
-.B "--exportdb"
-option. This can be used to transfer a database between different architectures and
-hosts, as the database is architecture dependent and not compatible between
-different architectures. First dump the database on one host, e.g. with
-.B "vnstat -i ppp0 --exportdb >ppp0db.txt"
-and then import the text file on a different host using
-.B "vnstat -i ppp0 --importdb ppp0db.txt"
 
 .TP
 .BI "-i, --iface " interface
@@ -264,13 +221,13 @@ Show list of currently available interfaces.
 .TP
 .BI "--json " mode
 Show database content for selected interface or all interfaces in json format. All
-traffic values in the output are in KiB. An optional
+traffic values in the output are in bytes. An optional
 .I mode
 parameter can be used for limiting the output to only selected information.
 Everything is shown by default. Setting
 .I mode
-to 'h' will output only hours, 'd' days, 'm' months and 't' the top 10.
-This option can also be used in combination with
+to '5' will output only 5 minute resolution entries, 'h' hours, 'd' days, 'm' months,
+'y' years and 't' the top days. This option can also be used in combination with
 .B "-l, --live"
 and
 .B "-tr"
@@ -304,20 +261,16 @@ default if no configuration file is available.
 Show complete options list.
 
 .TP
-.B "-m, --months"
-Show traffic statistics on a monthly basis for the last 12 months.
+.BI "-m, --months " count
+Show traffic statistics on a monthly basis for the last months. The length of the list
+will default to 12 entries unless configured otherwise or unless the optional
+.I count
+parameter is used. All entries stored in the database will be shown if
+.I count
+is set to 0.
 
 .TP
-.BI "--nick " nickname
-Set the selected interfaces
-.I nickname
-as an alias the will be displayed in queries. Usage of
-.B \-u
-is required to save the change and the daemon may not be running during
-the set operation.
-
-.TP
-.B "--oneline"
+.BI "--oneline " mode
 Show traffic summary for selected interface using one line with a parseable
 format. The output contains 15 fields with ; used as field delimiter. The 1st
 field contains the version information of the output that will be changed
@@ -337,15 +290,12 @@ unit itself shown.
 Force database query mode.
 
 .TP
-.B "-r, --reset"
-Reset the internal counters in the database for the selected
-interface. Use this if the interface goes down and back up,
-otherwise that interface will get some extra traffic to its database.
-Not needed when the daemon is used.
-
-.TP
-.B "--rebuildtotal"
-Reset the total traffic counters and recount those using recorded months.
+.B "--remove"
+Delete the database entry for the interface specified with
+.B \-i
+or
+.B \-\-iface
+and stop monitoring it.
 
 .TP
 .B "-ru, --rateunit"
@@ -357,14 +307,10 @@ parameter for this option in order to select between bytes (0) and bits
 (1) regardless of the configuration file setting.
 
 .TP
-.B "--savemerged"
-Write the end result of a database merge to the file
-.I mergeddb
-that can then be used as a new database if renamed. Top 10 traffic days
-isn't included in the merge and will start empty in the new database.
-The merge interface syntax is documented in
-.B "-i, --iface"
-option.
+.BI "--setalias " alias
+Set the selected interface
+.I alias
+as an alias that will be displayed in queries.
 
 .TP
 .B "-s, --short"
@@ -384,20 +330,13 @@ characters in
 mode.
 
 .TP
-.B "--sync"
-Synchronize internal counters in the database with interface
-counters for the selected interface. Use this if the system is
-rebooted but interface counters aren't reset. Such can occur
-when suspend to ram/disk is used. Not needed when the daemon is used.
-
-.TP
-.B "--testkernel"
-Test if the kernel boot time information always stays the same like it should or
-if it's shifting.
-
-.TP
-.B "-t, --top10"
-Show all time top 10 traffic days.
+.BI "-t, --top " count
+Show all time top traffic days.   The length of the list
+will default to 10 entries unless configured otherwise or unless the optional
+.I count
+parameter is used. All entries stored in the database will be shown if
+.I count
+is set to 0.
 
 .TP
 .BI "-tr " time
@@ -412,28 +351,19 @@ be in json format if used in combination with
 option. However, in that case, the countdown before results isn't shown.
 
 .TP
-.B "-u, --update"
-Update all enabled databases or only the one specified with
-.B \-i
-parameter. Not supported when the daemon is running.
-
-.TP
 .B "-v, --version"
 Show current version.
 
 .TP
-.B "-w, --weeks"
-Show traffic for 7 days, current and previous week.
-
-.TP
 .BI "--xml " mode
 Show database content for selected interface or all interfaces in xml format. All
-traffic values in the output are in KiB. An optional
+traffic values in the output are in bytes. An optional
 .I mode
 parameter can be used for limiting the output to only selected information.
 Everything is shown by default. Setting
 .I mode
-to 'h' will output only hours, 'd' days, 'm' months and 't' the top 10.
+to '5' will output only 5 minute resolution entries, 'h' hours, 'd' days, 'm' months,
+'y' years and 't' the top days.
 
 .TP
 .B "-?, --help"
@@ -464,10 +394,6 @@ Display traffic summary for the default interface or multiple interfaces
 when more than one is monitored.
 
 .TP
-.B "vnstat -i eth0+eth1+eth3"
-Display traffic summary for a merge of interfaces eth0, eth1 and eth3.
-
-.TP
 .B "vnstat -i eth2 --xml"
 Output all information about interface eth2 in xml format.
 
@@ -476,19 +402,12 @@ Output all information about interface eth2 in xml format.
 Output all information of all monitored interfaces in json format.
 
 .TP
-.B "vnstat -u -i eth0"
-Force a database update for interface eth0 or create the database if it doesn't
-exist. This is usually the first command used after a fresh install if the
-daemon isn't used.
+.B "vnstat -i eth0 --setalias local"
+Give interface eth0 the alias "local". That information will be later
+later visible as a label when eth0 is queried.
 
 .TP
-.B "vnstat -u -i eth0 --nick local"
-Give interface eth0 the nickname "local". That information will be later
-later visible as a label when eth0 is queried. The database will also be updated
-when this command is executed or created if the database doesn't exist.
-
-.TP
-.B "vnstat -i eth2 --delete"
+.B "vnstat -i eth2 --remove"
 Delete database of interface eth2 and stop monitoring it.
 
 .SH RESTRICTIONS
@@ -510,10 +429,6 @@ l l.
 
 However, for 1000 Mbit interfaces updating once every minute is usually a
 usable solution if faster updates can't be used.
-.PP
-Estimated traffic values are likely to be somewhat inaccurate if daily
-traffic is low because only the MiB counter is used to calculate the
-estimate.
 .PP
 Virtual and aliased interfaces cannot be monitored because the kernel doesn't
 provide traffic information for that type of interfaces. Such interfaces are

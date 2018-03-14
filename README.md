@@ -103,8 +103,10 @@ durations. Yearly and five-minute resolution statistics are now included.
   * freeze database structure
     * plan ahead and figure out how to migrate data to new structure if necessary?
   * decide if output type parameters should be renamed
-    * currently -h results in a graph style output when everything else gives a list
-    * -h to output list and have -hg (or similar) for the hourly graph?
+    * currently `-h` results in a graph style output when everything else gives a list
+    * `-h` to output list and have `-hg` (or similar) for the hourly graph?
+  * decide if some outputs should be removed
+    * `--exportdb` has now a different format which already breaks compatibility, `--json` and `--xml` still available
   * documentation
     * needs to be updated to match 2.0 feature set and dependency requirements
     * especially feature comparison with 1.x versions is needed as some features have been left out

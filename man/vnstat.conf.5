@@ -1,4 +1,4 @@
-.TH VNSTAT.CONF 5 "MARCH 2018" "version 1.18" "User Manuals"
+.TH VNSTAT.CONF 5 "MARCH 2018" "version 2.0" "User Manuals"
 .SH NAME
 
 vnstat.conf \- vnStat configuration file
@@ -20,7 +20,8 @@ lines starting with\ '#\' are interpreted as comments and not processed.
 Arguments may optionally be enclosed in double quotes (") in order
 to represent arguments containing spaces. Arguments can be padded
 with spaces or tabulator characters. A hardcoded default value
-will be used if a keyword can't be found from the configuration file.
+will be used if a keyword can't be found from the configuration file or
+if the configured value is outside accepted limits.
 .PP
 The configuration file is divided into three sections based on the
 usage of each keyword. The first section contains keywords that are
@@ -28,6 +29,13 @@ considered generic for all commands, the second section is for
 daemon related keywords and the last section is for image output.
 
 .SH COMMON KEYWORDS
+
+.TP
+.B 5MinuteHours
+Data retention duration for the 5 minute resolution entries. The configuration
+defines for how many past hours entries will be stored. Set to -1 for
+unlimited entries or to 0 to disable the data collection of this
+resolution.
 
 .TP
 .B BandwidthDetection
@@ -63,9 +71,23 @@ Formatting of date in available outputs. Uses the same format as
 (vnstat and vnstati only)
 
 .TP
+.B DailyDays
+Data retention duration for the one day resolution entries. The configuration
+defines for how many past days entries will be stored. Set to -1 for
+unlimited entries or to 0 to disable the data collection of this
+resolution.
+
+.TP
 .B DefaultDecimals
 Number of decimals to use in outputs. Value range: 0..2
 (vnstat and vnstati only)
+
+.TP
+.B HourlyDays
+Data retention duration for the one hour resolution entries. The configuration
+defines for how many past days entries will be stored. Set to -1 for
+unlimited entries or to 0 to disable the data collection of this
+resolution.
 
 .TP
 .B HourlyDecimals
@@ -82,6 +104,12 @@ hourly output. 0 = none, 1 = '|', 2 = '][', 3 = '[ ]'.
 .B Interface
 Default interface used when no other interface is specified on
 the command line. (vnstat and vnstati only)
+
+.TP
+.B "List5Mins, ListHours, ListDays, ListMonths, ListYears, ListTop"
+Number of entries to show in list outputs unless overridden from the command line.
+Set to 0 to show all entries available in the database.
+(vnstat and vnstati)
 
 .TP
 .B Locale
@@ -102,6 +130,13 @@ Same as MaxBandwidth but can be used for setting individual limits
 for selected interfaces. The name of the interface is specified directly
 after the MaxBW keyword without spaces. For example MaxBWeth0 for eth0
 and MaxBWppp0 for ppp0. Value range: 0..50000 (vnstat and vnstatd only)
+
+.TP
+.B MonthlyMonths
+Data retention duration for the one month resolution entries. The configuration
+defines for how many past months entries will be stored. Set to -1 for
+unlimited entries or to 0 to disable the data collection of this
+resolution.
 
 .TP
 .B MonthRotate
@@ -131,7 +166,9 @@ Select which unit is used when traffic rate is visible. 0 = bytes, 1 = bits.
 
 .TP
 .B RateUnitMode
-Select used prefix when traffic rate is visible in bits per second.
+Select used prefix when traffic rate is shown in bits per second.
+IEC binary prefixes are calculated with powers of 1024. SI decimal
+prefixes are calculated with powers of 1000.
 0 = IEC binary prefixes (Kibit/s...), 1 = SI decimal prefixes (kbit/s...).
 (vnstat and vnstati only)
 
@@ -151,22 +188,36 @@ Defines how many seconds the \-tr option will sample traffic.
 Value range: 2..600 (vnstat only)
 
 .TP
+.B TopDayEntries
+Data retention duration for the top day entries. The configuration
+defines how many of the past top day entries will be stored. Set to -1 for
+unlimited entries or to 0 to disable the data collection of this
+resolution.
+
+.TP
 .B TrafficlessDays
 Log days without any traffic to daily list. 1 = enabled, 0 = disabled.
 (vnstat and vnstatd only)
 
 .TP
 .B UnitMode
-Select how units are prefixed. This will option changes only the prefix,
-not how traffic is calculated. 0 = IEC standard prefixes
-(KiB/MiB/GiB/TiB), 1 = old style binary prefixes (KB/MB/GB/TB).
-(vnstat and vnstati only)
+Select how units are prefixed. This option changes only the prefix.
+Both options result in calculation being made using powers of 1024.
+0 = IEC standard prefixes (B/KiB/MiB/GiB/TiB), 1 = old style (JEDEC)
+binary prefixes (B/KB/MB/GB/TB). (vnstat and vnstati only)
 
 .TP
 .B UseFileLocking
 Enable or disable the use of file locking during database access. Disabling
 file locking may cause database corruption if several processes are trying
 to write to the file at the same time.
+
+.TP
+.B YearlyYears
+Data retention duration for the one year resolution entries. The configuration
+defines for how many past years entries will be stored. Set to -1 for
+unlimited entries or to 0 to disable the data collection of this
+resolution.
 
 .SH DAEMON RELATED KEYWORDS
 
@@ -333,12 +384,6 @@ Formatting of date in header. Uses the same format as
 .TP
 .B HourlyRate
 Show hours with rate instead of transferred amount. 1 = enabled, 0 = disabled.
-
-.TP
-.B SummaryLayout
-Select the used layout of the summary output. 1 = layout introduced in version
-1.8 with monthly traffic included, 0 = layout used before version 1.8, doesn't
-contain monthly traffic and doesn't support average rate.
 
 .TP
 .B SummaryRate

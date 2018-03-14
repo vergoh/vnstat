@@ -1,4 +1,4 @@
-.TH VNSTATD 1 "MARCH 2018" "version 1.18" "User Manuals"
+.TH VNSTATD 1 "MARCH 2018" "version 2.0" "User Manuals"
 .SH NAME
 
 vnstatd \- daemon based database updating for vnStat
@@ -50,8 +50,8 @@ The purpose of
 .B vnstatd
 is to provide a more flexible and robust way for updating
 .BR vnstat (1)
-databases than what using cron for updating can provide. The daemon makes
-possible updating databases more often but at the same time causes
+the database than what using cron for updating can provide. The daemon makes
+possible updating the database more often but at the same time causes
 less disk access since data can be cached and written only later to disk
 at a user configurable interval. The availability of each interface is
 automatically tracked which removes the need for additional scripts to be
@@ -64,21 +64,20 @@ It supports logging to a user selectable file or using syslog.
 .PP
 Once started, the daemon will read
 .BR vnstat.conf (5)
-if available and then check if there are any databases present
+if available and then check if there is a database present
 in the database directory that has been specified in the configuration
-file. By default, if no databases are found, new databases will be created
-during startup for all available interfaces excluding pseudo interfaces lo,
-lo0 and sit0. This automatic database addition behaviour can be disabled
-using the
+file. By default, if no database is found, a database will be created
+during startup with entries for all available interfaces excluding pseudo
+interfaces lo, lo0 and sit0. This automatic database entry creation behaviour
+can be disabled using the
 .B --noadd
 option. Alternatively, it is possible to allow the daemon to create new
-databases whenever previously unseen interfaces become visible using the
+database entries whenever previously unseen interfaces become visible using the
 .B --alwaysadd
 option.
 .PP
-The daemon will
-proceed to track the availability of monitored interfaces, process the
-interface traffic statistics and write new values to databases
+The daemon will proceed to track the availability of monitored interfaces,
+process the interface traffic statistics and write new values to the database
 at a configured interval. As a result, the daemon ends up spending most
 of the time sleeping between updates.
 
@@ -86,9 +85,9 @@ of the time sleeping between updates.
 
 .TP
 .B "--alwaysadd"
-Enable automatic creation of new databases for previously unseen interfaces
-even if the database directory already contains databases when the daemon
-is started. New databases will also get created for new interfaces seen while
+Enable automatic creation of new database entries for previously unseen interfaces
+even if the database directory already contains a database when the daemon
+is started. New database entries will also get created for new interfaces seen while
 the daemon is running. Pseudo interfaces lo, lo0 and sit0 are excluded from
 getting added.
 
@@ -119,8 +118,8 @@ can only be used when the process is started as root.
 
 .TP
 .B "--noadd"
-Disable automatic creation of new databases for all available interfaces
-if the daemon is started with zero database found. Pseudo interfaces
+Disable automatic creation of new database entries for all available interfaces
+if the daemon is started with no database found. Pseudo interfaces
 lo, lo0 and sit0 are excluded from getting added.
 
 .TP
