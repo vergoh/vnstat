@@ -1,7 +1,6 @@
 
-If the daemon is running then stop it first and remove any manually
-installed service files or file entries used to start the daemon process.
-
-Run 'make uninstall' and follow the instructions. This step will not
-automatically remove any possible databases that have been created. Such
-files will need to be removed manually if no longer needed.
+ 1. Stop the daemon (vnstatd) if still running
+ 2. Remove any manually installed service files or file entries
+    used to start the daemon
+ 3. Run 'make uninstall' and follow the instructions
+ 4. Remove possible database directory if no longer needed
