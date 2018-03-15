@@ -20,18 +20,18 @@ vnStat works best when installed. It's possible to either use the latest
 stable release or get the current development version from git.
 
 Stable version
-  1. ``wget http://humdi.net/vnstat/vnstat-latest.tar.gz``
+  1. `wget http://humdi.net/vnstat/vnstat-latest.tar.gz`
   2. optional steps for verifying the file signature
-     1. ``wget http://humdi.net/vnstat/vnstat-latest.tar.gz.asc``
-     2. ``gpg --keyserver pgp.mit.edu --recv-key 0xDAFE84E63D140114``
-     3. ``gpg --verify vnstat-latest.tar.gz.asc vnstat-latest.tar.gz``
+     1. `wget http://humdi.net/vnstat/vnstat-latest.tar.gz.asc`
+     2. `gpg --keyserver pgp.mit.edu --recv-key 0xDAFE84E63D140114`
+     3. `gpg --verify vnstat-latest.tar.gz.asc vnstat-latest.tar.gz`
      4. the signature is correct if the output shows "Good signature from Teemu Toivola"
-  3. ``tar zxvf vnstat-latest.tar.gz``
-  4. ``cd vnstat-*``
+  3. `tar zxvf vnstat-latest.tar.gz`
+  4. `cd vnstat-*`
 
-Development version (not recommended currently, documentation not up to date)
-  1. ``git clone https://github.com/vergoh/vnstat``
-  2. ``cd vnstat``
+Development version
+  1. `git clone https://github.com/vergoh/vnstat`
+  2. `cd vnstat`
 
 In both cases, continue with instructions from the INSTALL or INSTALL_BSD file
 depending on used operating system. Instructions for upgrading from a previous
@@ -108,7 +108,6 @@ durations. Yearly and five-minute resolution statistics are now included.
   * decide if some outputs should be removed
     * `--exportdb` has now a different format which already breaks compatibility, `--json` and `--xml` still available
   * documentation
-    * needs to be updated to match 2.0 feature set and dependency requirements
     * especially feature comparison with 1.x versions is needed as some features have been left out
   * remember what else has been forgotten from this list
 

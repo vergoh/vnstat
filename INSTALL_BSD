@@ -1,4 +1,7 @@
 
+tl;dr: ./configure && make && make install
+
+
 Prerequisites
 :::::::::::::
 
@@ -6,9 +9,11 @@ Prerequisites
  - C compiler
  - user with access to kernel interface statistics
    - usually available by default but may be restricted by security settings
- - graphics/gd (optional, image output)
- - devel/check (optional, test suite)
- - autotools (optional, for recreating configure and makefiles)
+ - databases/sqlite3
+ - graphics/gd       (optional, image output)
+ - devel/check       (optional, test suite)
+ - devel/pkg-config  (optional, for check detection)
+ - devel/autotools   (optional, for recreating configure and makefiles)
 
 
 Compiling the binaries
@@ -21,8 +26,7 @@ Compiling the binaries
 
  will compile 'vnstat' and 'vnstatd' without requiring additional libraries.
  The optional image output capable binary 'vnstati' will also be compiled if
- the required additional libgd2 library is found to be available. In
- BSD ports libgd2 is usually 'graphics/gd'.
+ the required additional libgd2 library is found to be available.
 
  An example cgi ('vnstat.cgi') to be used with a http server with the image
  output support has been provided in the 'examples' directory. Configuration
@@ -63,7 +67,7 @@ Installing as root
  command to begin showing results. Monitoring of unwanted interfaces
  can be stopped with:
 
-     vnstat --delete -i ethunwanted
+     vnstat --remove -i ethunwanted
 
 
 Installing without root access

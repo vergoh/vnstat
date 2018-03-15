@@ -492,15 +492,15 @@ void showlonghelp(PARAMS *p)
 	printf(" vnStat %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
 
 	printf("   Query:\n");
-	printf("         -q, --query           query database\n");
+	printf("         -q,  --query           query database\n");
 	printf("         -5,  --fiveminutes    show 5 minutes\n");
 	printf("         -h,  --hours          show hours\n");
 	printf("         -hl, --hourslist      show hours list\n");
-	printf("         -d, --days            show days\n");
-	printf("         -m, --months          show months\n");
-	printf("         -y, --years           show years\n");
-	printf("         -t, --top             show top days\n");
-	printf("         -s, --short           use short output\n");
+	printf("         -d,  --days            show days\n");
+	printf("         -m,  --months          show months\n");
+	printf("         -y,  --years           show years\n");
+	printf("         -t,  --top             show top days\n");
+	printf("         -s,  --short           use short output\n");
 	printf("         -ru, --rateunit       swap configured rate unit\n");
 	printf("         --oneline             show simple parseable format\n");
 	printf("         --exportdb            dump database in text format\n");
