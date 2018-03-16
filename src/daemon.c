@@ -192,7 +192,7 @@ unsigned int addinterfaces(DSTATE *s)
 		}
 
 		printf("Limits can be modified using the configuration file. See \"man vnstat.conf\".\n");
-		printf("Unwanted interfaces can be removed from monitoring with \"vnstat --delete\".\n");
+		printf("Unwanted interfaces can be removed from monitoring with \"vnstat --remove\".\n");
 	}
 
 	free(ifacelist);
