@@ -928,6 +928,109 @@ START_TEST(waittimesync_knows_when_to_give_up)
 }
 END_TEST
 
+START_TEST(detectboot_sets_btime_if_missing_from_database)
+{
+	int ret;
+	DSTATE s;
+	char *buffer;
+
+	defaultcfg();
+	initdstate(&s);
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_exec("delete from info where name='btime';");
+	ck_assert_int_eq(ret, 1);
+
+	buffer = db_getinfo("btime");
+	ck_assert_int_eq((int)strlen(buffer), 0);
+
+	ck_assert_int_eq(s.bootdetected, 0);
+
+	detectboot(&s);
+
+	ck_assert_int_eq(s.bootdetected, 0);
+
+	buffer = db_getinfo("btime");
+	ck_assert_int_ne((int)strlen(buffer), 0);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(detectboot_sets_btime_for_new_database)
+{
+	int ret;
+	DSTATE s;
+	char *buffer;
+	char temp[64];
+
+	defaultcfg();
+	initdstate(&s);
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	buffer = db_getinfo("btime");
+	ck_assert_int_ne((int)strlen(buffer), 0);
+
+	strncpy_nt(temp, buffer, 64);
+	ck_assert_str_eq(buffer, temp);
+
+	ck_assert_int_eq(s.bootdetected, 0);
+
+	detectboot(&s);
+
+	ck_assert_int_eq(s.bootdetected, 0);
+
+	buffer = db_getinfo("btime");
+	ck_assert_int_ne((int)strlen(buffer), 0);
+
+	ck_assert_str_ne(buffer, temp);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(detectboot_can_detect_boot)
+{
+	int ret;
+	DSTATE s;
+	char *buffer;
+	char temp[64];
+
+	defaultcfg();
+	initdstate(&s);
+	suppress_output();
+	debug = 1;
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	db_setinfo("btime", "1", 1);
+
+	buffer = db_getinfo("btime");
+	ck_assert_int_ne((int)strlen(buffer), 0);
+
+	strncpy_nt(temp, buffer, 64);
+	ck_assert_str_eq(buffer, temp);
+
+	ck_assert_int_eq(s.bootdetected, 0);
+
+	detectboot(&s);
+
+	ck_assert_int_eq(s.bootdetected, 1);
+
+	buffer = db_getinfo("btime");
+	ck_assert_int_ne((int)strlen(buffer), 0);
+
+	ck_assert_str_ne(buffer, temp);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 void add_daemon_tests(Suite *s)
 {
 	TCase *tc_daemon = tcase_create("Daemon");
@@ -973,5 +1076,8 @@ void add_daemon_tests(Suite *s)
 	tcase_add_test(tc_daemon, waittimesync_does_not_wait_with_new_interfaces);
 	tcase_add_test(tc_daemon, waittimesync_knows_when_to_wait);
 	tcase_add_test(tc_daemon, waittimesync_knows_when_to_give_up);
+	tcase_add_test(tc_daemon, detectboot_sets_btime_if_missing_from_database);
+	tcase_add_test(tc_daemon, detectboot_sets_btime_for_new_database);
+	tcase_add_test(tc_daemon, detectboot_can_detect_boot);
 	suite_add_tcase(s, tc_daemon);
 }

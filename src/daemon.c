@@ -200,7 +200,6 @@ unsigned int addinterfaces(DSTATE *s)
 	return count;
 }
 
-/* TODO: tests */
 void detectboot(DSTATE *s)
 {
 	char buffer[32];
@@ -210,7 +209,11 @@ void detectboot(DSTATE *s)
 	current_btime = getbtime();
 	btime_buffer = db_getinfo("btime");
 
-	if (current_btime == 0 || strlen(btime_buffer) == 0) {
+	if (current_btime == 0) {
+		return;
+	} else if (strlen(btime_buffer) == 0) {
+		snprintf(buffer, 32, "%"PRIu64"", current_btime);
+		db_setinfo("btime", buffer, 1);
 		return;
 	}
 	db_btime = strtoull(btime_buffer, (char **)NULL, 0);
@@ -660,6 +663,7 @@ void flushcachetodisk(DSTATE *s)
 	timeused(__func__, 0);
 }
 
+/* TODO: tests */
 void handledatabaseerror(DSTATE *s)
 {
 	if (db_iserrcodefatal(db_errcode)) {
