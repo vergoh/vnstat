@@ -457,7 +457,7 @@ START_TEST(processdatacache_empty_does_nothing)
 }
 END_TEST
 
-START_TEST(handleintsignals_handles_signals)
+START_TEST(handleintsignals_handles_no_signal)
 {
 	DSTATE s;
 	defaultcfg();
@@ -470,12 +470,32 @@ START_TEST(handleintsignals_handles_signals)
 	ck_assert_int_eq(intsignal, 0);
 	ck_assert_int_eq(s.running, 1);
 	ck_assert_int_eq(s.dbcount, 1);
+}
+END_TEST
+
+START_TEST(handleintsignals_handles_42)
+{
+	DSTATE s;
+	defaultcfg();
+	initdstate(&s);
+	s.running = 1;
+	s.dbcount = 1;
 
 	intsignal = 42;
 	handleintsignals(&s);
 	ck_assert_int_eq(intsignal, 0);
 	ck_assert_int_eq(s.running, 1);
 	ck_assert_int_eq(s.dbcount, 1);
+}
+END_TEST
+
+START_TEST(handleintsignals_handles_unknown_signal)
+{
+	DSTATE s;
+	defaultcfg();
+	initdstate(&s);
+	s.running = 1;
+	s.dbcount = 1;
 
 	disable_logprints();
 
@@ -484,12 +504,36 @@ START_TEST(handleintsignals_handles_signals)
 	ck_assert_int_eq(intsignal, 0);
 	ck_assert_int_eq(s.running, 1);
 	ck_assert_int_eq(s.dbcount, 1);
+}
+END_TEST
+
+START_TEST(handleintsignals_handles_sigterm)
+{
+	DSTATE s;
+	defaultcfg();
+	initdstate(&s);
+	s.running = 1;
+	s.dbcount = 1;
+
+	disable_logprints();
 
 	intsignal = SIGTERM;
 	handleintsignals(&s);
 	ck_assert_int_eq(intsignal, 0);
 	ck_assert_int_eq(s.running, 0);
 	ck_assert_int_eq(s.dbcount, 1);
+}
+END_TEST
+
+START_TEST(handleintsignals_handles_sigint)
+{
+	DSTATE s;
+	defaultcfg();
+	initdstate(&s);
+	s.running = 1;
+	s.dbcount = 1;
+
+	disable_logprints();
 
 	s.running = 1;
 	intsignal = SIGINT;
@@ -497,9 +541,21 @@ START_TEST(handleintsignals_handles_signals)
 	ck_assert_int_eq(intsignal, 0);
 	ck_assert_int_eq(s.running, 0);
 	ck_assert_int_eq(s.dbcount, 1);
+}
+END_TEST
 
-	/* TODO: refactor test, database setup required due to data flush */
-	/*
+/* TODO: refactor test, database setup required due to data flush */
+/*
+START_TEST(handleintsignals_handles_sighup)
+{
+	DSTATE s;
+	defaultcfg();
+	initdstate(&s);
+	s.running = 1;
+	s.dbcount = 1;
+
+	disable_logprints();
+
 	s.running = 1;
 	intsignal = SIGHUP;
 	strncpy_nt(s.dirname, TESTDBDIR, 512);
@@ -507,9 +563,9 @@ START_TEST(handleintsignals_handles_signals)
 	ck_assert_int_eq(intsignal, 0);
 	ck_assert_int_eq(s.running, 1);
 	ck_assert_int_eq(s.dbcount, 0);
-	*/
 }
 END_TEST
+*/
 
 START_TEST(preparedirs_with_no_dir)
 {
@@ -888,7 +944,12 @@ void add_daemon_tests(Suite *s)
 	tcase_add_test(tc_daemon, checkdbsaveneed_is_forced);
 	tcase_add_test(tc_daemon, checkdbsaveneed_needs);
 	tcase_add_test(tc_daemon, processdatacache_empty_does_nothing);
-	tcase_add_test(tc_daemon, handleintsignals_handles_signals);
+	tcase_add_test(tc_daemon, handleintsignals_handles_no_signal);
+	tcase_add_test(tc_daemon, handleintsignals_handles_42);
+	tcase_add_test(tc_daemon, handleintsignals_handles_unknown_signal);
+	tcase_add_test(tc_daemon, handleintsignals_handles_sigterm);
+	tcase_add_test(tc_daemon, handleintsignals_handles_sigint);
+	//tcase_add_test(tc_daemon, handleintsignals_handles_sighup);
 	tcase_add_test(tc_daemon, preparedirs_with_no_dir);
 	tcase_add_test(tc_daemon, preparedirs_with_dir);
 	tcase_add_test(tc_daemon, interfacechangecheck_with_no_interfaces);

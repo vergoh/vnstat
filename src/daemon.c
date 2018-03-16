@@ -741,6 +741,7 @@ void handleintsignals(DSTATE *s)
 			s->running = 0;
 			break;
 
+		/* from filldatabaselist() */
 		case 42:
 			break;
 
