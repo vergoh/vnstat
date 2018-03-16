@@ -200,6 +200,7 @@ unsigned int addinterfaces(DSTATE *s)
 	return count;
 }
 
+/* TODO: tests */
 void detectboot(DSTATE *s)
 {
 	char buffer[32];
@@ -417,6 +418,7 @@ void checkdbsaveneed(DSTATE *s)
 	}
 }
 
+/* TODO: tests */
 void processdatacache(DSTATE *s)
 {
 	datacache *iterator = s->dcache;
@@ -493,6 +495,7 @@ int initcachevalues(DSTATE *s, datacache **dc)
 	return 1;
 }
 
+/* TODO: tests */
 int processifinfo(DSTATE *s, datacache **dc)
 {
 	uint64_t rxchange, txchange;
@@ -673,6 +676,7 @@ void handledatabaseerror(DSTATE *s)
 	}
 }
 
+/* TODO: tests */
 void cleanremovedinterfaces(DSTATE *s)
 {
 	datacache *iterator = s->dcache;

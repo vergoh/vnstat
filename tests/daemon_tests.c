@@ -544,15 +544,20 @@ START_TEST(handleintsignals_handles_sigint)
 }
 END_TEST
 
-/* TODO: refactor test, database setup required due to data flush */
-/*
 START_TEST(handleintsignals_handles_sighup)
 {
+	int ret;
 	DSTATE s;
 	defaultcfg();
 	initdstate(&s);
 	s.running = 1;
 	s.dbcount = 1;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+	filldatabaselist(&s);
 
 	disable_logprints();
 
@@ -563,9 +568,11 @@ START_TEST(handleintsignals_handles_sighup)
 	ck_assert_int_eq(intsignal, 0);
 	ck_assert_int_eq(s.running, 1);
 	ck_assert_int_eq(s.dbcount, 0);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
 }
 END_TEST
-*/
 
 START_TEST(preparedirs_with_no_dir)
 {
@@ -949,7 +956,7 @@ void add_daemon_tests(Suite *s)
 	tcase_add_test(tc_daemon, handleintsignals_handles_unknown_signal);
 	tcase_add_test(tc_daemon, handleintsignals_handles_sigterm);
 	tcase_add_test(tc_daemon, handleintsignals_handles_sigint);
-	//tcase_add_test(tc_daemon, handleintsignals_handles_sighup);
+	tcase_add_test(tc_daemon, handleintsignals_handles_sighup);
 	tcase_add_test(tc_daemon, preparedirs_with_no_dir);
 	tcase_add_test(tc_daemon, preparedirs_with_dir);
 	tcase_add_test(tc_daemon, interfacechangecheck_with_no_interfaces);
