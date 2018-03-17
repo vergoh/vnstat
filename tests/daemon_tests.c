@@ -457,6 +457,56 @@ START_TEST(processdatacache_empty_does_nothing)
 }
 END_TEST
 
+START_TEST(processdatacache_can_process_things)
+{
+	/* ifinfo needs to be faked and that's currently
+	   supported only in Linux */
+	linuxonly;
+
+	int ret;
+	DSTATE s;
+	defaultcfg();
+	initdstate(&s);
+	suppress_output();
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	debug = 1;
+
+	s.iflisthash = 42;
+	s.bootdetected = 1;
+	s.dodbsave = 1;
+	s.cleanuphour = getcurrenthour() + 1;
+
+	ck_assert_int_eq(datacache_count(&s.dcache), 0);
+	ret = datacache_add(&s.dcache, "ethnotindb", 0);
+	ck_assert_int_eq(ret, 1);
+	ret = datacache_add(&s.dcache, "ethonlyindb", 0);
+	ck_assert_int_eq(ret, 1);
+	ret = datacache_add(&s.dcache, "ethexisting", 0);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datacache_count(&s.dcache), 3);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("ethonlyindb");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("ethexisting");
+	ck_assert_int_eq(ret, 1);
+
+	fake_proc_net_dev("w", "ethexisting", 10, 20, 30, 40);
+
+	processdatacache(&s);
+
+	ck_assert_int_eq(s.iflisthash, 0);
+	ck_assert_int_eq(s.bootdetected, 0);
+	ck_assert_int_eq(s.dodbsave, 0);
+	ck_assert_int_eq(datacache_count(&s.dcache), 1);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 START_TEST(handleintsignals_handles_no_signal)
 {
 	DSTATE s;
@@ -1112,6 +1162,7 @@ void add_daemon_tests(Suite *s)
 	tcase_add_test(tc_daemon, checkdbsaveneed_is_forced);
 	tcase_add_test(tc_daemon, checkdbsaveneed_needs);
 	tcase_add_test(tc_daemon, processdatacache_empty_does_nothing);
+	tcase_add_test(tc_daemon, processdatacache_can_process_things);
 	tcase_add_test(tc_daemon, handleintsignals_handles_no_signal);
 	tcase_add_test(tc_daemon, handleintsignals_handles_42);
 	tcase_add_test(tc_daemon, handleintsignals_handles_unknown_signal);

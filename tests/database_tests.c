@@ -250,6 +250,9 @@ START_TEST(database_outputs_do_not_crash)
 	showjson("something", 0, 'h');
 	showjson("something", 0, 'a');
 	jsonfooter();
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
 }
 END_TEST
 
@@ -298,6 +301,9 @@ START_TEST(database_outputs_do_not_crash_without_data)
 	showjson("something", 0, 'h');
 	showjson("something", 0, 'a');
 	jsonfooter();
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
 }
 END_TEST
 

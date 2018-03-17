@@ -421,7 +421,6 @@ void checkdbsaveneed(DSTATE *s)
 	}
 }
 
-/* TODO: tests */
 void processdatacache(DSTATE *s)
 {
 	datacache *iterator = s->dcache;
@@ -474,6 +473,7 @@ void processdatacache(DSTATE *s)
 			db_removeoldentries();
 			s->cleanuphour = getcurrenthour();
 		}
+		s->dodbsave = 0;
 	}
 }
 
