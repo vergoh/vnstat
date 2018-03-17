@@ -808,7 +808,7 @@ void exportdb(const interfaceinfo *interface)
 	int i;
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
-	char *datatables[] = {"hour", "day", "month", "year", "top"};
+	const char *datatables[] = {"hour", "day", "month", "year", "top"};
 
 	timeused(__func__, 1);
 
