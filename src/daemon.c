@@ -663,7 +663,6 @@ void flushcachetodisk(DSTATE *s)
 	timeused(__func__, 0);
 }
 
-/* TODO: tests */
 void handledatabaseerror(DSTATE *s)
 {
 	if (db_iserrcodefatal(db_errcode)) {

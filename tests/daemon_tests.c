@@ -553,6 +553,8 @@ START_TEST(handleintsignals_handles_sighup)
 	s.running = 1;
 	s.dbcount = 1;
 
+	disable_logprints();
+
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 	ret = db_addinterface("eth0");
@@ -1031,6 +1033,62 @@ START_TEST(detectboot_can_detect_boot)
 }
 END_TEST
 
+START_TEST(handledatabaseerror_exits_on_fatal_error)
+{
+	DSTATE s;
+	defaultcfg();
+	initdstate(&s);
+	disable_logprints();
+
+	db_errcode = SQLITE_ERROR;
+	handledatabaseerror(&s);
+}
+END_TEST
+
+START_TEST(handledatabaseerror_does_not_exit_if_limit_is_not_reached)
+{
+	int i;
+	DSTATE s;
+	defaultcfg();
+	initdstate(&s);
+	disable_logprints();
+
+	ck_assert_int_eq(s.dbretrycount, 0);
+
+	db_errcode = SQLITE_BUSY;
+	handledatabaseerror(&s);
+
+	ck_assert_int_eq(s.dbretrycount, 1);
+
+	for (i=1; i<DBRETRYLIMIT-1; i++) {
+		handledatabaseerror(&s);
+	}
+
+	ck_assert_int_eq(s.dbretrycount, DBRETRYLIMIT-1);
+}
+END_TEST
+
+START_TEST(handledatabaseerror_exits_if_limit_is_reached)
+{
+	int i;
+	DSTATE s;
+	defaultcfg();
+	initdstate(&s);
+	disable_logprints();
+
+	ck_assert_int_eq(s.dbretrycount, 0);
+
+	db_errcode = SQLITE_BUSY;
+	handledatabaseerror(&s);
+
+	ck_assert_int_eq(s.dbretrycount, 1);
+
+	for (i=1; i<DBRETRYLIMIT; i++) {
+		handledatabaseerror(&s);
+	}
+}
+END_TEST
+
 void add_daemon_tests(Suite *s)
 {
 	TCase *tc_daemon = tcase_create("Daemon");
@@ -1079,5 +1137,8 @@ void add_daemon_tests(Suite *s)
 	tcase_add_test(tc_daemon, detectboot_sets_btime_if_missing_from_database);
 	tcase_add_test(tc_daemon, detectboot_sets_btime_for_new_database);
 	tcase_add_test(tc_daemon, detectboot_can_detect_boot);
+	tcase_add_exit_test(tc_daemon, handledatabaseerror_exits_on_fatal_error, 1);
+	tcase_add_test(tc_daemon, handledatabaseerror_does_not_exit_if_limit_is_not_reached);
+	tcase_add_exit_test(tc_daemon, handledatabaseerror_exits_if_limit_is_reached, 1);
 	suite_add_tcase(s, tc_daemon);
 }
