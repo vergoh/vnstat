@@ -1139,6 +1139,51 @@ START_TEST(handledatabaseerror_exits_if_limit_is_reached)
 }
 END_TEST
 
+START_TEST(cleanremovedinterfaces_allows_interfaces_to_be_removed)
+{
+	int ret;
+	DSTATE s;
+	defaultcfg();
+	initdstate(&s);
+	disable_logprints();
+
+	ck_assert_int_eq(datacache_count(&s.dcache), 0);
+	ret = datacache_add(&s.dcache, "ethnotindb1", 0);
+	ck_assert_int_eq(ret, 1);
+	ret = datacache_add(&s.dcache, "ethindb1", 0);
+	ck_assert_int_eq(ret, 1);
+	ret = datacache_add(&s.dcache, "ethnotindb2", 0);
+	ck_assert_int_eq(ret, 1);
+	ret = datacache_add(&s.dcache, "ethindb2", 0);
+	ck_assert_int_eq(ret, 1);
+	ret = datacache_add(&s.dcache, "ethindb3", 0);
+	ck_assert_int_eq(ret, 1);
+	ret = datacache_add(&s.dcache, "ethnotindb3", 0);
+	ck_assert_int_eq(ret, 1);
+	ret = datacache_add(&s.dcache, "ethnotindb4", 0);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datacache_count(&s.dcache), 7);
+	s.dbcount = 7;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("ethindb1");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("ethindb2");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("ethindb3");
+	ck_assert_int_eq(ret, 1);
+
+	cleanremovedinterfaces(&s);
+
+	ck_assert_int_eq(s.dbcount, 3);
+	ck_assert_int_eq(datacache_count(&s.dcache), 3);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 void add_daemon_tests(Suite *s)
 {
 	TCase *tc_daemon = tcase_create("Daemon");
@@ -1191,5 +1236,6 @@ void add_daemon_tests(Suite *s)
 	tcase_add_exit_test(tc_daemon, handledatabaseerror_exits_on_fatal_error, 1);
 	tcase_add_test(tc_daemon, handledatabaseerror_does_not_exit_if_limit_is_not_reached);
 	tcase_add_exit_test(tc_daemon, handledatabaseerror_exits_if_limit_is_reached, 1);
+	tcase_add_test(tc_daemon, cleanremovedinterfaces_allows_interfaces_to_be_removed);
 	suite_add_tcase(s, tc_daemon);
 }

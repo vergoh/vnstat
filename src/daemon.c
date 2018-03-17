@@ -679,7 +679,6 @@ void handledatabaseerror(DSTATE *s)
 	}
 }
 
-/* TODO: tests */
 void cleanremovedinterfaces(DSTATE *s)
 {
 	datacache *iterator = s->dcache;
