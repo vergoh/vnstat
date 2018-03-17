@@ -155,3 +155,6 @@ clean-local:
 
 check-local:
 	-tail -n 2 test.log
+
+maintainer-clean-local:
+	-rm -fr aclocal.m4 compile config.guess config.sub configure depcomp install-sh Makefile.in missing test-driver src/config.h src/config.h.in

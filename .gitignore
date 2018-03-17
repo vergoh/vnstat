@@ -23,3 +23,16 @@ src/stamp-h1
 tests/.deps
 tests/.dirstamp
 *~
+
+# autoconf generated files
+aclocal.m4
+compile
+config.guess
+config.sub
+configure
+depcomp
+install-sh
+Makefile.in
+missing
+test-driver
+src/config.h.in
