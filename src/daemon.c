@@ -498,7 +498,6 @@ int initcachevalues(DSTATE *s, datacache **dc)
 	return 1;
 }
 
-/* TODO: tests */
 int processifinfo(DSTATE *s, datacache **dc)
 {
 	uint64_t rxchange, txchange;
@@ -524,7 +523,7 @@ int processifinfo(DSTATE *s, datacache **dc)
 		return 0;
 	}
 
-	interval = ifinfo.timestamp -(*dc)->updated;
+	interval = ifinfo.timestamp - (*dc)->updated;
 	if ( (interval >= 1) && (interval <= (60*MAXUPDATEINTERVAL)) ) {
 
 		rxchange = countercalc(&(*dc)->currx, &ifinfo.rx);

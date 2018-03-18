@@ -6,6 +6,7 @@
 #include "dbsql.h"
 #include "ifinfo.h"
 #include "cfg.h"
+#include "ibw.h"
 #include "fs.h"
 #include "daemon.h"
 
@@ -1184,6 +1185,219 @@ START_TEST(cleanremovedinterfaces_allows_interfaces_to_be_removed)
 }
 END_TEST
 
+START_TEST(processifinfo_syncs_when_needed)
+{
+	int ret;
+	DSTATE s;
+	defaultcfg();
+	initdstate(&s);
+
+	ifinfo.rx = 11;
+	ifinfo.tx = 22;
+
+	ck_assert_int_eq(datacache_count(&s.dcache), 0);
+	ret = datacache_add(&s.dcache, "ethsomething", 1);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(s.dcache->syncneeded, 1);
+	ck_assert_int_eq(s.dcache->currx, 0);
+	ck_assert_int_eq(s.dcache->curtx, 0);
+
+	ret = processifinfo(&s, &s.dcache);
+	ck_assert_int_eq(ret, 1);
+
+	ck_assert_int_eq(s.dcache->syncneeded, 0);
+	ck_assert_int_eq(s.dcache->currx, 11);
+	ck_assert_int_eq(s.dcache->curtx, 22);
+}
+END_TEST
+
+START_TEST(processifinfo_skips_update_if_timestamps_make_no_sense)
+{
+	int ret;
+	DSTATE s;
+	defaultcfg();
+	initdstate(&s);
+
+	ifinfo.rx = 11;
+	ifinfo.tx = 22;
+	ifinfo.timestamp = 250;
+
+	ck_assert_int_eq(datacache_count(&s.dcache), 0);
+	ret = datacache_add(&s.dcache, "ethsomething", 0);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(s.dcache->syncneeded, 0);
+	ck_assert_int_eq(s.dcache->currx, 0);
+	ck_assert_int_eq(s.dcache->curtx, 0);
+	s.dcache->updated = 300;
+
+	ret = processifinfo(&s, &s.dcache);
+	ck_assert_int_eq(ret, 0);
+
+	ck_assert_int_eq(s.dcache->syncneeded, 0);
+	ck_assert_int_eq(s.dcache->currx, 0);
+	ck_assert_int_eq(s.dcache->curtx, 0);
+}
+END_TEST
+
+START_TEST(processifinfo_exits_if_timestamps_really_make_no_sense)
+{
+	int ret;
+	DSTATE s;
+	defaultcfg();
+	initdstate(&s);
+	disable_logprints();
+
+	ifinfo.rx = 11;
+	ifinfo.tx = 22;
+	ifinfo.timestamp = 250;
+
+	ck_assert_int_eq(datacache_count(&s.dcache), 0);
+	ret = datacache_add(&s.dcache, "ethsomething", 0);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(s.dcache->syncneeded, 0);
+	ck_assert_int_eq(s.dcache->currx, 0);
+	ck_assert_int_eq(s.dcache->curtx, 0);
+	s.dcache->updated = 100000;
+
+	processifinfo(&s, &s.dcache);
+}
+END_TEST
+
+START_TEST(processifinfo_syncs_if_timestamps_match)
+{
+	int ret;
+	DSTATE s;
+	defaultcfg();
+	initdstate(&s);
+
+	ifinfo.rx = 11;
+	ifinfo.tx = 22;
+	ifinfo.timestamp = 250;
+
+	ck_assert_int_eq(datacache_count(&s.dcache), 0);
+	ret = datacache_add(&s.dcache, "ethsomething", 0);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(s.dcache->syncneeded, 0);
+	ck_assert_int_eq(s.dcache->currx, 0);
+	ck_assert_int_eq(s.dcache->curtx, 0);
+	s.dcache->updated = 250;
+
+	ret = processifinfo(&s, &s.dcache);
+	ck_assert_int_eq(ret, 1);
+
+	ck_assert_int_eq(s.dcache->syncneeded, 0);
+	ck_assert_int_eq(s.dcache->currx, 11);
+	ck_assert_int_eq(s.dcache->curtx, 22);
+	ck_assert_ptr_eq(s.dcache->log, NULL);
+}
+END_TEST
+
+START_TEST(processifinfo_adds_traffic)
+{
+	int ret;
+	DSTATE s;
+	defaultcfg();
+	initdstate(&s);
+	suppress_output();
+	debug = 1;
+
+	ifinfo.rx = 11;
+	ifinfo.tx = 22;
+	ifinfo.timestamp = 250;
+
+	ck_assert_int_eq(datacache_count(&s.dcache), 0);
+	ret = datacache_add(&s.dcache, "ethsomething", 0);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(s.dcache->syncneeded, 0);
+	ck_assert_int_eq(s.dcache->currx, 0);
+	ck_assert_int_eq(s.dcache->curtx, 0);
+	s.dcache->updated = 200;
+
+	ret = ibwadd("ethsomething", 1000);
+	ck_assert_int_eq(ret, 1);
+
+	ret = processifinfo(&s, &s.dcache);
+	ck_assert_int_eq(ret, 1);
+
+	ck_assert_int_eq(s.dcache->syncneeded, 0);
+	ck_assert_int_eq(s.dcache->currx, 11);
+	ck_assert_int_eq(s.dcache->curtx, 22);
+	ck_assert_ptr_ne(s.dcache->log, NULL);
+}
+END_TEST
+
+START_TEST(processifinfo_does_not_add_traffic_when_over_limit)
+{
+	int ret;
+	DSTATE s;
+	defaultcfg();
+	initdstate(&s);
+	suppress_output();
+	debug = 1;
+
+	ifinfo.rx = 1111111;
+	ifinfo.tx = 2222222;
+	ifinfo.timestamp = 250;
+	cfg.traflessday = 0;
+
+	ck_assert_int_eq(datacache_count(&s.dcache), 0);
+	ret = datacache_add(&s.dcache, "ethsomething", 0);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(s.dcache->syncneeded, 0);
+	ck_assert_int_eq(s.dcache->currx, 0);
+	ck_assert_int_eq(s.dcache->curtx, 0);
+	s.dcache->updated = 249;
+
+	ret = ibwadd("ethsomething", 1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = processifinfo(&s, &s.dcache);
+	ck_assert_int_eq(ret, 1);
+
+	ck_assert_int_eq(s.dcache->syncneeded, 0);
+	ck_assert_int_eq(s.dcache->currx, 1111111);
+	ck_assert_int_eq(s.dcache->curtx, 2222222);
+	ck_assert_ptr_eq(s.dcache->log, NULL);
+}
+END_TEST
+
+START_TEST(processifinfo_adds_zero_traffic_when_over_limit)
+{
+	int ret;
+	DSTATE s;
+	defaultcfg();
+	initdstate(&s);
+	suppress_output();
+	debug = 1;
+
+	ifinfo.rx = 1111111;
+	ifinfo.tx = 2222222;
+	ifinfo.timestamp = 250;
+	cfg.traflessday = 1;
+
+	ck_assert_int_eq(datacache_count(&s.dcache), 0);
+	ret = datacache_add(&s.dcache, "ethsomething", 0);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(s.dcache->syncneeded, 0);
+	ck_assert_int_eq(s.dcache->currx, 0);
+	ck_assert_int_eq(s.dcache->curtx, 0);
+	s.dcache->updated = 249;
+
+	ret = ibwadd("ethsomething", 1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = processifinfo(&s, &s.dcache);
+	ck_assert_int_eq(ret, 1);
+
+	ck_assert_int_eq(s.dcache->syncneeded, 0);
+	ck_assert_int_eq(s.dcache->currx, 1111111);
+	ck_assert_int_eq(s.dcache->curtx, 2222222);
+	ck_assert_ptr_ne(s.dcache->log, NULL);
+	ck_assert_int_eq(s.dcache->log->rx, 0);
+	ck_assert_int_eq(s.dcache->log->tx, 0);
+}
+END_TEST
+
 void add_daemon_tests(Suite *s)
 {
 	TCase *tc_daemon = tcase_create("Daemon");
@@ -1237,5 +1451,12 @@ void add_daemon_tests(Suite *s)
 	tcase_add_test(tc_daemon, handledatabaseerror_does_not_exit_if_limit_is_not_reached);
 	tcase_add_exit_test(tc_daemon, handledatabaseerror_exits_if_limit_is_reached, 1);
 	tcase_add_test(tc_daemon, cleanremovedinterfaces_allows_interfaces_to_be_removed);
+	tcase_add_test(tc_daemon, processifinfo_syncs_when_needed);
+	tcase_add_test(tc_daemon, processifinfo_skips_update_if_timestamps_make_no_sense);
+	tcase_add_exit_test(tc_daemon, processifinfo_exits_if_timestamps_really_make_no_sense, 1);
+	tcase_add_test(tc_daemon, processifinfo_syncs_if_timestamps_match);
+	tcase_add_test(tc_daemon, processifinfo_adds_traffic);
+	tcase_add_test(tc_daemon, processifinfo_does_not_add_traffic_when_over_limit);
+	tcase_add_test(tc_daemon, processifinfo_adds_zero_traffic_when_over_limit);
 	suite_add_tcase(s, tc_daemon);
 }
