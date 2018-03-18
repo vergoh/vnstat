@@ -1398,6 +1398,65 @@ START_TEST(processifinfo_adds_zero_traffic_when_over_limit)
 }
 END_TEST
 
+START_TEST(datacache_status_can_handle_nothing)
+{
+	datacache *dcache;
+	disable_logprints();
+	dcache = NULL;
+
+	datacache_status(&dcache);
+}
+END_TEST
+
+START_TEST(datacache_status_can_show_limits)
+{
+	int ret;
+	datacache *dcache;
+	defaultcfg();
+	disable_logprints();
+	dcache = NULL;
+
+	ret = datacache_add(&dcache, "ethdefault", 0);
+	ck_assert_int_eq(ret, 1);
+	ret = datacache_add(&dcache, "ethslow", 0);
+	ck_assert_int_eq(ret, 1);
+	ret = datacache_add(&dcache, "ethfast", 0);
+	ck_assert_int_eq(ret, 1);
+	ret = datacache_add(&dcache, "ethnolimit", 0);
+	ck_assert_int_eq(ret, 1);
+
+	ret = ibwadd("ethslow", 1);
+	ck_assert_int_eq(ret, 1);
+	ret = ibwadd("ethfast", 1000);
+	ck_assert_int_eq(ret, 1);
+	ret = ibwadd("ethnolimit", 0);
+	ck_assert_int_eq(ret, 1);
+
+	datacache_status(&dcache);
+}
+END_TEST
+
+START_TEST(datacache_status_has_no_issues_with_large_number_of_interfaces)
+{
+	int i, ret;
+	char buffer[8];
+	datacache *dcache;
+	defaultcfg();
+	disable_logprints();
+	dcache = NULL;
+
+	for (i=0; i<100; i++) {
+		snprintf(buffer, 8, "eth%d", i);
+		ret = datacache_add(&dcache, buffer, 0);
+		ck_assert_int_eq(ret, 1);
+		ret = ibwadd(buffer, (uint32_t)i);
+		ck_assert_int_eq(ret, 1);
+	}
+
+	datacache_status(&dcache);
+}
+END_TEST
+
 void add_daemon_tests(Suite *s)
 {
 	TCase *tc_daemon = tcase_create("Daemon");
@@ -1458,5 +1517,8 @@ void add_daemon_tests(Suite *s)
 	tcase_add_test(tc_daemon, processifinfo_adds_traffic);
 	tcase_add_test(tc_daemon, processifinfo_does_not_add_traffic_when_over_limit);
 	tcase_add_test(tc_daemon, processifinfo_adds_zero_traffic_when_over_limit);
+	tcase_add_test(tc_daemon, datacache_status_can_handle_nothing);
+	tcase_add_test(tc_daemon, datacache_status_can_show_limits);
+	tcase_add_test(tc_daemon, datacache_status_has_no_issues_with_large_number_of_interfaces);
 	suite_add_tcase(s, tc_daemon);
 }
