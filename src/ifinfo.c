@@ -19,37 +19,39 @@ int getifinfo(const char *iface)
 		strncpy_nt(inface, iface, 32);
 	}
 
-#if defined(__linux__)
+#if defined(__linux__) || defined(CHECK_VNSTAT)
 	/* try getting interface info from /proc */
-	if (readproc(inface)!=1) {
+	if (readproc(inface)==1) {
+		ifinfo.timestamp = time(NULL);
+		return 1;
+	} else {
 		if (debug)
 			printf("Failed to use %s as source.\n", PROCNETDEV);
+	}
 
-		/* try getting interface info from /sys */
-		if (readsysclassnet(inface)!=1) {
-			snprintf(errorstring, 1024, "Unable to get interface \"%s\" statistics.", inface);
-			printe(PT_Error);
-			return 0;
-		}
+	/* try getting interface info from /sys */
+	if (readsysclassnet(inface)==1) {
+		ifinfo.timestamp = time(NULL);
+		return 1;
 	}
+
 #elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__)  || defined(__FreeBSD_kernel__)
-	if (readifaddrs(inface)!=1) {
-		snprintf(errorstring, 1024, "Unable to get interface \"%s\" statistics.", inface);
-		printe(PT_Error);
-		return 0;
+	if (readifaddrs(inface)==1) {
+		ifinfo.timestamp = time(NULL);
+		return 1;
 	}
-#else
-	return 0;
 #endif
-	ifinfo.timestamp = time(NULL);
-	return 1;
+
+	snprintf(errorstring, 1024, "Unable to get interface \"%s\" statistics.", inface);
+	printe(PT_Error);
+	return 0;
 }
 
 int getiflist(char **ifacelist, int showspeed)
 {
 	uint32_t speed;
 	char temp[64];
-#if defined(__linux__)
+#if defined(__linux__) || defined(CHECK_VNSTAT)
 	char interface[32];
 	FILE *fp;
 	DIR *dp;
@@ -66,7 +68,7 @@ int getiflist(char **ifacelist, int showspeed)
 	}
 	*ifacelist[0] = '\0';
 
-#if defined(__linux__)
+#if defined(__linux__) || defined(CHECK_VNSTAT)
 	if ((fp=fopen(PROCNETDEV, "r"))!=NULL) {
 
 		/* make list of interfaces */

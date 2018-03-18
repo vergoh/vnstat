@@ -3,6 +3,7 @@
 #include "fs.h"
 #include "dbaccess.h"
 
+/* TODO: tests */
 int importlegacydb(const char *iface, const char *dirname)
 {
 	DATA data;
@@ -29,6 +30,7 @@ int importlegacydb(const char *iface, const char *dirname)
 	return 1;
 }
 
+/* TODO: tests */
 int insertlegacydata(DATA *data, const char *iface)
 {
 	int i, year;

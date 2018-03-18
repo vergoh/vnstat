@@ -20,7 +20,6 @@ END_TEST
 START_TEST(addinterfaces_does_nothing_with_no_files)
 {
 	DSTATE s;
-	linuxonly;
 
 	defaultcfg();
 	initdstate(&s);
@@ -36,7 +35,6 @@ START_TEST(addinterfaces_adds_interfaces)
 {
 	int ret;
 	DSTATE s;
-	linuxonly;
 
 	defaultcfg();
 	initdstate(&s);
@@ -70,7 +68,6 @@ START_TEST(addinterfaces_adds_only_new_interfaces)
 {
 	int ret;
 	DSTATE s;
-	linuxonly;
 
 	defaultcfg();
 	initdstate(&s);
@@ -130,7 +127,6 @@ START_TEST(addinterfaces_adds_to_cache_when_running)
 {
 	int ret;
 	DSTATE s;
-	linuxonly;
 
 	defaultcfg();
 	initdstate(&s);
@@ -198,8 +194,6 @@ START_TEST(preparedatabases_exits_with_no_database_dir)
 {
 	DSTATE s;
 
-	linuxonly_exit;
-
 	defaultcfg();
 	initdstate(&s);
 	suppress_output();
@@ -212,8 +206,6 @@ END_TEST
 START_TEST(preparedatabases_exits_with_no_databases)
 {
 	DSTATE s;
-
-	linuxonly_exit;
 
 	defaultcfg();
 	initdstate(&s);
@@ -229,8 +221,6 @@ END_TEST
 START_TEST(preparedatabases_exits_with_no_databases_and_noadd)
 {
 	DSTATE s;
-
-	linuxonly_exit;
 
 	defaultcfg();
 	initdstate(&s);
@@ -248,8 +238,6 @@ START_TEST(preparedatabases_with_no_databases_creates_databases)
 {
 	int ret;
 	DSTATE s;
-
-	linuxonly;
 
 	defaultcfg();
 	initdstate(&s);
@@ -460,10 +448,6 @@ END_TEST
 
 START_TEST(processdatacache_can_process_things)
 {
-	/* ifinfo needs to be faked and that's currently
-	   supported only in Linux */
-	linuxonly;
-
 	int ret;
 	DSTATE s;
 	defaultcfg();
@@ -685,8 +669,6 @@ START_TEST(interfacechangecheck_with_no_interfaces)
 {
 	DSTATE s;
 
-	linuxonly;
-
 	initdstate(&s);
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	interfacechangecheck(&s);
@@ -698,8 +680,6 @@ END_TEST
 START_TEST(interfacechangecheck_with_empty_cache)
 {
 	DSTATE s;
-
-	linuxonly;
 
 	initdstate(&s);
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
@@ -718,8 +698,6 @@ START_TEST(interfacechangecheck_with_no_changes_in_iflist)
 	uint32_t ifhash;
 	char *ifacelist;
 
-	linuxonly;
-
 	initdstate(&s);
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	fake_proc_net_dev("w", "ethsomething", 1, 2, 3, 4);
@@ -736,8 +714,6 @@ END_TEST
 
 START_TEST(interfacechangecheck_with_filled_cache)
 {
-	linuxonly;
-
 	int ret;
 	DSTATE s;
 	datacache *iterator;
