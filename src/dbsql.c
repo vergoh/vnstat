@@ -118,8 +118,6 @@ int db_open(const int createifnotfound, const int readonly)
 	return 1;
 }
 
-/* TODO: error situation prints may be needed */
-/* TODO: tests */
 int db_validate(const int readonly)
 {
 	int dbversion, currentversion;
@@ -140,16 +138,21 @@ int db_validate(const int readonly)
 		return 1;
 
 	} else if (dbversion == 0) {
+		printf("Error: Database version \"%d\" suggests error situation in database, exiting.\n", dbversion);
 		return 0;
 
 	} else if (dbversion > currentversion) {
+		printf("Error: Database version \"%d\" is not supported with support up to version \"%d\", exiting.\n", dbversion, currentversion);
 		return 0;
 
 	} else if (dbversion < currentversion) {
-		if (!readonly) {
+		if (readonly) {
 			/* database upgrade actions should be performed here once needed */
+			printf("Error: Unable to upgrade read-only database from version \"%d\" to \"%d\", exiting.\n", dbversion, currentversion);
+			return 0;
 		}
-		return 0;
+		/* database upgrade actions should be performed here once needed, then return 1 */
+		/* however, since there aren't other versions supported, always return 0 */
 	}
 
 	return 0;

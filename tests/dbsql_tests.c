@@ -800,7 +800,7 @@ END_TEST
 
 START_TEST(db_data_can_be_retrieved)
 {
-	int ret;;
+	int ret;
 	dbdatalist *datalist = NULL, *datalist_iterator = NULL;
 	dbdatalistinfo datainfo;
 
@@ -863,6 +863,104 @@ START_TEST(db_fatal_errors_get_detected)
 }
 END_TEST
 
+START_TEST(db_validate_with_valid_version)
+{
+	int ret;
+	defaultcfg();
+	suppress_output();
+	debug = 1;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_validate(0);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(db_errcode, 0);
+
+	ret = db_validate(1);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(db_errcode, 0);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_validate_with_no_version)
+{
+	int ret;
+	defaultcfg();
+	suppress_output();
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_exec("delete from info where name='dbversion';");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_validate(0);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(db_errcode, 0);
+
+	ret = db_validate(1);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(db_errcode, 0);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_validate_with_low_version)
+{
+	int ret;
+	defaultcfg();
+	suppress_output();
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_exec("update info set value='-1' where name='dbversion';");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_validate(0);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(db_errcode, 0);
+
+	ret = db_validate(1);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(db_errcode, 0);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_validate_with_high_version)
+{
+	int ret;
+	defaultcfg();
+	suppress_output();
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_exec("update info set value='100' where name='dbversion';");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_validate(0);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(db_errcode, 0);
+
+	ret = db_validate(1);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(db_errcode, 0);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 void add_dbsql_tests(Suite *s)
 {
 	TCase *tc_dbsql = tcase_create("DB SQL");
@@ -903,5 +1001,9 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_data_can_be_inserted);
 	tcase_add_test(tc_dbsql, db_data_can_be_retrieved);
 	tcase_add_test(tc_dbsql, db_fatal_errors_get_detected);
+	tcase_add_test(tc_dbsql, db_validate_with_valid_version);
+	tcase_add_test(tc_dbsql, db_validate_with_no_version);
+	tcase_add_test(tc_dbsql, db_validate_with_low_version);
+	tcase_add_test(tc_dbsql, db_validate_with_high_version);
 	suite_add_tcase(s, tc_dbsql);
 }
