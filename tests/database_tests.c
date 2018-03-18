@@ -221,26 +221,33 @@ START_TEST(database_outputs_do_not_crash)
 
 	suppress_output();
 
-	showdb("something", 0);
-	showdb("something", 1);
-	showdb("something", 2);
-	showdb("something", 3);
-	showdb("something", 4);
-	showdb("something", 5);
-	showdb("something", 6);
-	showdb("something", 7);
-	showdb("something", 8);
-	showdb("something", 9);
-	showdb("something", 10);
-	showdb("something", 11);
-	showdb("something", 12);
+	for (i=0; i<=4; i++) {
+		cfg.ostyle = i;
+		showdb("something", 0);
+		showdb("something", 1);
+		showdb("something", 2);
+		showdb("something", 3);
+		showdb("something", 4);
+		showdb("something", 5);
+		showdb("something", 6);
+		showdb("something", 7);
+		showdb("something", 8);
+		showdb("something", 9);
+		showdb("something", 10);
+		showdb("something", 11);
+		showdb("something", 12);
+		showdb("nothing", 0);
+	}
 
 	xmlheader();
 	showxml("something", 'd');
 	showxml("something", 'm');
 	showxml("something", 't');
 	showxml("something", 'h');
+	showxml("something", 'y');
+	showxml("something", '5');
 	showxml("something", 'a');
+	showxml("nothing", 'a');
 	xmlfooter();
 
 	jsonheader();
@@ -248,7 +255,10 @@ START_TEST(database_outputs_do_not_crash)
 	showjson("something", 0, 'm');
 	showjson("something", 0, 't');
 	showjson("something", 0, 'h');
-	showjson("something", 0, 'a');
+	showjson("something", 0, 'y');
+	showjson("something", 0, '5');
+	showjson("something", 1, 'a');
+	showjson("nothing", 0, 'a');
 	jsonfooter();
 
 	ret = db_close();
@@ -258,7 +268,7 @@ END_TEST
 
 START_TEST(database_outputs_do_not_crash_without_data)
 {
-	int ret;
+	int ret, i;
 
 	defaultcfg();
 
@@ -272,26 +282,33 @@ START_TEST(database_outputs_do_not_crash_without_data)
 
 	suppress_output();
 
-	showdb("something", 0);
-	showdb("something", 1);
-	showdb("something", 2);
-	showdb("something", 3);
-	showdb("something", 4);
-	showdb("something", 5);
-	showdb("something", 6);
-	showdb("something", 7);
-	showdb("something", 8);
-	showdb("something", 9);
-	showdb("something", 10);
-	showdb("something", 11);
-	showdb("something", 12);
+	for (i=0; i<=4; i++) {
+		cfg.ostyle = i;
+		showdb("something", 0);
+		showdb("something", 1);
+		showdb("something", 2);
+		showdb("something", 3);
+		showdb("something", 4);
+		showdb("something", 5);
+		showdb("something", 6);
+		showdb("something", 7);
+		showdb("something", 8);
+		showdb("something", 9);
+		showdb("something", 10);
+		showdb("something", 11);
+		showdb("something", 12);
+		showdb("nothing", 0);
+	}
 
 	xmlheader();
 	showxml("something", 'd');
 	showxml("something", 'm');
 	showxml("something", 't');
 	showxml("something", 'h');
+	showxml("something", 'y');
+	showxml("something", '5');
 	showxml("something", 'a');
+
 	xmlfooter();
 
 	jsonheader();
@@ -299,7 +316,10 @@ START_TEST(database_outputs_do_not_crash_without_data)
 	showjson("something", 0, 'm');
 	showjson("something", 0, 't');
 	showjson("something", 0, 'h');
-	showjson("something", 0, 'a');
+	showjson("something", 0, 'y');
+	showjson("something", 0, '5');
+	showjson("something", 1, 'a');
+	showjson("nothing", 0, 'a');
 	jsonfooter();
 
 	ret = db_close();

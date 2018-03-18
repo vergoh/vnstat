@@ -119,6 +119,7 @@ int db_open(const int createifnotfound, const int readonly)
 }
 
 /* TODO: error situation prints may be needed */
+/* TODO: tests */
 int db_validate(const int readonly)
 {
 	int dbversion, currentversion;
