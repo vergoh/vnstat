@@ -80,6 +80,10 @@ and most can be changed later from the config file.
 #define TFORMAT "%Y-%m-%d"             /* "%x"         "%d.%m.%y" */
 #define HFORMAT "%Y-%m-%d %H:%M"       /* "%x %H:%M"   "%d.%m.%Y %H:%M" */
 
+#ifndef DATETIMEFORMAT
+#define DATETIMEFORMAT "%Y-%m-%d %H:%M:%S"
+#endif
+
 /* characters used for visuals */
 #define RXCHAR "%"
 #define TXCHAR ":"
