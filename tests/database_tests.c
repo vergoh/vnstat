@@ -468,6 +468,185 @@ START_TEST(showbar_with_half_and_half_of_half)
 }
 END_TEST
 
+START_TEST(importlegacydb_does_not_overwrite_existing_interface_data)
+{
+	int ret;
+	defaultcfg();
+	disable_logprints();
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("ethtest");
+	ck_assert_int_eq(ret, 1);
+
+	ret = importlegacydb("ethtest", TESTDBDIR);
+	ck_assert_int_eq(ret, 0);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(importlegacydb_can_detect_when_database_read_fails)
+{
+	int ret;
+	defaultcfg();
+	disable_logprints();
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("ethsomethingelse");
+	ck_assert_int_eq(ret, 1);
+
+	ck_assert_int_eq(clean_testdbdir(), 1);
+	ck_assert_int_eq(create_zerosize_dbfile("ethtest"), 1);
+	ck_assert_int_eq(create_zerosize_dbfile(".ethtest"), 1);
+
+	ret = importlegacydb("ethtest", TESTDBDIR);
+	ck_assert_int_eq(ret, 0);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(importlegacydb_can_import_legacy_database)
+{
+	int ret, i;
+	DATA data;
+	interfaceinfo info;
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+
+	initdb(&data);
+	defaultcfg();
+	disable_logprints();
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("ethsomethingelse");
+	ck_assert_int_eq(ret, 1);
+	ret = (int)db_getinterfacecount();
+	ck_assert_int_eq(ret, 1);
+
+	strcpy(data.interface, "ethtest");
+	strcpy(data.nick, "still testing");
+	data.totalrx = 123123123;
+	data.totaltx = 321321321;
+	data.totalrxk = 1;
+	data.totaltxk = 2;
+	data.currx = 456;
+	data.curtx = 654;
+	for (i=0; i<24; i++) {
+		data.hour[i].date = 788911200 + 3600 * i;
+		data.hour[i].rx = (uint64_t)(12 * (i+1));
+		data.hour[i].tx = (uint64_t)(23 * (i+1));
+	}
+	for (i=0; i<30; i++) {
+		data.day[i].date = 788911200 + 86400 * (29-i);
+		data.day[i].used = 1;
+		data.day[i].rx = (uint64_t)(34 * i);
+		data.day[i].tx = (uint64_t)(45 * i);
+	}
+	for (i=0; i<12; i++) {
+		data.month[i].month = 788911200 + 2678400 * (11-i);
+		data.month[i].used = 1;
+		data.month[i].rx = (uint64_t)(56 * i);
+		data.month[i].tx = (uint64_t)(67 * i);
+	}
+	for (i=0; i<10; i++) {
+		data.top10[i].date = 788911200 + 86400 * i;
+		data.top10[i].used = 1;
+		data.top10[i].rx = (uint64_t)(89 * (9-i+1));
+		data.top10[i].tx = (uint64_t)(90 * (9-i+1));
+	}
+
+	ck_assert_int_eq(clean_testdbdir(), 1);
+	ck_assert_int_eq(writedb(&data, "ethtest", TESTDBDIR, 1), 1);
+	ck_assert_int_eq(check_dbfile_exists("ethtest", sizeof(DATA)), 1);
+
+	ret = importlegacydb("ethtest", TESTDBDIR);
+	ck_assert_int_eq(ret, 1);
+
+	ret = (int)db_getinterfacecount();
+	ck_assert_int_eq(ret, 2);
+
+	ret = (int)db_getinterfacecountbyname("ethtest");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getinterfaceinfo("ethtest", &info);
+	ck_assert_int_eq(ret, 1);
+
+	ck_assert_str_eq(info.alias, data.nick);
+	ck_assert_int_eq(info.active, data.active);
+	ck_assert_int_eq(info.rxtotal, (data.totalrx*1024*1024)+(uint64_t)(data.totalrxk*1024));
+	ck_assert_int_eq(info.txtotal, (data.totaltx*1024*1024)+(uint64_t)(data.totaltxk*1024));
+	ck_assert_int_eq(info.rxcounter, data.currx);
+	ck_assert_int_eq(info.txcounter, data.curtx);
+	ck_assert_int_ge(info.created, data.created);
+	ck_assert_int_ge(info.updated, data.lastupdated);
+
+	ret = db_getdata(&datalist, &datainfo, "ethtest", "day", 0);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 30);
+	datalist_i = datalist;
+	i = 29;
+	while (datalist_i != NULL)
+	{
+		ck_assert_int_eq(datalist_i->rx, data.day[i].rx*1024*1024);
+		ck_assert_int_eq(datalist_i->tx, data.day[i].tx*1024*1024);
+		datalist_i = datalist_i->next;
+		i--;
+	}
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "ethtest", "month", 0);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 12);
+	datalist_i = datalist;
+	i = 11;
+	while (datalist_i != NULL)
+	{
+		ck_assert_int_eq(datalist_i->rx, data.month[i].rx*1024*1024);
+		ck_assert_int_eq(datalist_i->tx, data.month[i].tx*1024*1024);
+		datalist_i = datalist_i->next;
+		i--;
+	}
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "ethtest", "hour", 0);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 24);
+	datalist_i = datalist;
+	i = 0;
+	while (datalist_i != NULL)
+	{
+		ck_assert_int_eq(datalist_i->rx, data.hour[i].rx*1024);
+		ck_assert_int_eq(datalist_i->tx, data.hour[i].tx*1024);
+		datalist_i = datalist_i->next;
+		i++;
+	}
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "ethtest", "top", 0);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 10);
+	datalist_i = datalist;
+	i = 0;
+	while (datalist_i != NULL)
+	{
+		ck_assert_int_eq(datalist_i->rx, data.top10[i].rx*1024*1024);
+		ck_assert_int_eq(datalist_i->tx, data.top10[i].tx*1024*1024);
+		datalist_i = datalist_i->next;
+		i++;
+	}
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 void add_database_tests(Suite *s)
 {
 	TCase *tc_db = tcase_create("Database");
@@ -495,6 +674,9 @@ void add_database_tests(Suite *s)
 	tcase_add_test(tc_db, showbar_with_small_rx_shows_all_tx);
 	tcase_add_test(tc_db, showbar_with_max_smaller_than_real_max);
 	tcase_add_test(tc_db, showbar_with_half_and_half_of_half);
+	tcase_add_test(tc_db, importlegacydb_does_not_overwrite_existing_interface_data);
+	tcase_add_test(tc_db, importlegacydb_can_detect_when_database_read_fails);
+	tcase_add_test(tc_db, importlegacydb_can_import_legacy_database);
 	suite_add_tcase(s, tc_db);
 }
 
