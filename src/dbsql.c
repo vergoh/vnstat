@@ -249,7 +249,7 @@ int db_create(void)
 	int i;
 	char *sql;
 	char buffer[32];
-	char *datatables[] = {"fiveminute", "hour", "day", "month", "year", "top"};
+	const char *datatables[] = {"fiveminute", "hour", "day", "month", "year", "top"};
 
 	if (!db_begintransaction()) {
 		return 0;
@@ -996,7 +996,7 @@ void dbiflistfree(dbiflist **dbifl)
 int db_getdata(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface, const char *table, const uint32_t resultlimit)
 {
 	int ret = 1, i, rc;
-	char *datatables[] = {"fiveminute", "hour", "day", "month", "year", "top"};
+	const char *datatables[] = {"fiveminute", "hour", "day", "month", "year", "top"};
 	char sql[512], limit[64];
 	sqlite3_int64 ifaceid = 0;
 	sqlite3_stmt *sqlstmt;
