@@ -50,7 +50,7 @@ durations. Yearly and five-minute resolution statistics are now included.
     * possibly more beta than seen with recent 1.x releases
     * has been tested so far mainly in 24/7 running servers
   * vnstatd (daemon) has all features implemented
-    * some sanity checks may be missing or disabled
+    * some sanity checks may be missing
   * vnstat (console output) has most features implemented
   * vnstati (image output) has all intended original features implemented
   * 5 minute resolution outputs available in both text and image formats
@@ -89,7 +89,8 @@ durations. Yearly and five-minute resolution statistics are now included.
   * `MonthRotate` configuration option
   * kernel test
     * provided some use mostly with 2.0 and 2.2 kernels
-  * `--update` / `-u` using vnstat command
+  * `--update` / `-u` and several other database modifiers using vnstat command
+  * `--exportdb`, use `--oneline`, `--json` or `--xml` instead
   * old style (default in versions up to 1.7) summary layout in image output
 
 ##### TODO
@@ -105,8 +106,6 @@ durations. Yearly and five-minute resolution statistics are now included.
   * decide if output type parameters should be renamed
     * currently `-h` results in a graph style output when everything else gives a list
     * `-h` to output list and have `-hg` (or similar) for the hourly graph?
-  * decide if some outputs should be removed
-    * `--exportdb` has now a different format which already breaks compatibility, `--json` and `--xml` still available
   * documentation
     * especially feature comparison with 1.x versions is needed as some features have been left out
   * remember what else has been forgotten from this list

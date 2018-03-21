@@ -44,7 +44,7 @@ void printcfgfile(void)
 
 	printf("# output style\n");
 	printf("# 0 = minimal & narrow, 1 = bar column visible\n");
-	printf("# 2 = same as 1 except rate in summary and weekly\n");
+	printf("# 2 = same as 1 except rate in summary\n");
 	printf("# 3 = rate column visible\n");
 	printf("OutputStyle %d\n\n", cfg.ostyle);
 
@@ -80,8 +80,8 @@ void printcfgfile(void)
 	printf("Sampletime %d\n\n", cfg.sampletime);
 
 	printf("# default query mode\n");
-	printf("# 0 = normal, 1 = days, 2 = months, 3 = top10\n");
-	printf("# 4 = exportdb, 5 = short, 6 = weeks, 7 = hours\n");
+	printf("# 0 = normal, 1 = days, 2 = months, 3 = top, 5 = short\n");
+	printf("# 7 = hours, 8 = xml, 9 = one line, 10 = json\n");
 	printf("QueryMode %d\n\n", cfg.qmode);
 
 	printf("# filesystem disk space check (1 = enabled, 0 = disabled)\n");

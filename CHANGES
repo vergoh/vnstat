@@ -12,6 +12,7 @@
  - Remove weekly output
  - Remove merge of data from multiple interfaces to one output
  - Remove --testkernel
+ - Remove --exportdb, use --oneline, --json or --xml instead
  - Remove --importdb, -u / --update and related options using vnstat command
  - Remove old style (default in versions up to 1.7) summary layout in
    image output

@@ -33,9 +33,6 @@ void showdb(const char *interface, int qmode)
 		case 3:
 			showlist(&info, "top");
 			break;
-		case 4:
-			exportdb(&info);
-			break;
 		case 5:
 			showsummary(&info, 1);
 			break;
@@ -799,45 +796,6 @@ void showhours(const interfaceinfo *interface)
 			printf("%c",matrix[i][j]);
 		}
 		printf("\n");
-	}
-	timeused(__func__, 0);
-}
-
-void exportdb(const interfaceinfo *interface)
-{
-	int i;
-	dbdatalist *datalist = NULL, *datalist_i = NULL;
-	dbdatalistinfo datainfo;
-	const char *datatables[] = {"hour", "day", "month", "year", "top"};
-
-	timeused(__func__, 1);
-
-	printf("version;%s\n", db_getinfo("dbversion"));
-	printf("vnstat;%s\n", db_getinfo("vnstatversion"));
-	printf("active;%d\n", interface->active);
-	printf("interface;%s\n", interface->name);
-	printf("alias;%s\n", interface->alias);
-	printf("created;%"PRIu64"\n", (uint64_t)interface->created);
-	printf("updated;%"PRIu64"\n", (uint64_t)interface->updated);
-
-	printf("totalrx;%"PRIu64"\n", interface->rxtotal);
-	printf("totaltx;%"PRIu64"\n", interface->rxtotal);
-	printf("currx;%"PRIu64"\n", interface->rxcounter);
-	printf("curtx;%"PRIu64"\n", interface->txcounter);
-	printf("btime;%s\n", db_getinfo("btime"));
-
-	for (i=0; i<5; i++) {
-
-		if (!db_getdata(&datalist, &datainfo, interface->name, datatables[i], 0)) {
-			printf("Error: Failed to fetch %s data.\n", datatables[i]);
-			return;
-		}
-		datalist_i = datalist;
-		while (datalist_i != NULL) {
-			printf("%c;%"PRId64";%"PRIu64";%"PRIu64";%"PRIu64"\n", datatables[i][0], datalist_i->rowid, (uint64_t)datalist_i->timestamp, datalist_i->rx, datalist_i->tx);
-			datalist_i = datalist_i->next;
-		}
-		dbdatalistfree(&datalist);
 	}
 	timeused(__func__, 0);
 }

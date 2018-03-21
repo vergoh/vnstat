@@ -26,8 +26,6 @@ vnstat \- a console-based network traffic monitor
 ] [
 .B \-\-debug
 ] [
-.B \-\-exportdb
-] [
 .B \-\-fiveminutes
 .I count
 .B \-\-help
@@ -152,45 +150,6 @@ file or the hardcoded default if no configuration file is available.
 .TP
 .B "-D, --debug"
 Show additional debug output.
-
-.TP
-.B "--exportdb"
-Instead of showing the database with a formatted output, this output will
-dump the whole database in a plain text based architecture independent format.
-Using the output for scripting is possible but the outputs of
-.B "--xml"
-and
-.B "--json"
-are likely to be more suitable. The dump uses ; as field delimiter.
-.TS
-l l.
-      active;1	activity status
-      interface;eth0	name for the interface
-      alias;localnet	alias (if given)
-      created;1023895272	creation date in Unix time
-      updated;1065467100	when the database was updated
-      totalrx;569605	all time total received bytes
-      totaltx;2023708	all time total transmitted bytes
-      currx;621673719	latest interface counter rx value
-      curtx;981730184	latest interface counter tx value
-      btime;1059414541	system boot time in Unix time
-.TE
-
-Then follows lines like the following
-
-      d;1;1078696800;559;7433
-
-where d = days, 1 = day index number in database, 1077314401 date in
-Unix time, 559 = rx bytes, 7433 = tx bytes.
-.TS
-l l.
-      m;1;1078092000;48649;139704
-      t;1;1078351200;5979;47155
-      h;1;1078699800;118265;516545
-      y;1;1483221600;4647879954;389902437
-.TE
-
-m = months, t = top, h = hours and y = years, all other fields are in the same order as in days.
 
 .TP
 .BI "-5, --fiveminutes " count
@@ -323,9 +282,8 @@ Modify the content and style of outputs. Set
 .I number
 to 0 for a more narrow output, 1 for enabling bar column, 2
 for same as previous but with average traffic rate visible in summary
-and weekly outputs and 3 for enabling average traffic rate in all
-outputs where it is supported. 4 disables the use of terminal control
-characters in
+output and 3 for enabling average traffic rate in all outputs where it is
+supported. 4 disables the use of terminal control characters in
 .B "-l / --live"
 mode.
 

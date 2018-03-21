@@ -100,7 +100,7 @@ and most can be changed later from the config file.
 
 /* output style */
 /* 0 = minimal/narrow, 1 = bars everywhere */
-/* 2 = same as 1 + rate in summary and weekly */
+/* 2 = same as 1 + rate in summary */
 /* 3 = rate everywhere */
 #define OSTYLE 3
 
@@ -150,9 +150,8 @@ and most can be changed later from the config file.
 #define MAXUPDATEINTERVAL 62
 
 /* default query mode */
-/* 0 = normal, 1 = days, 2 = months, 3 = top10 */
-/* 4 = exportdb, 5 = short, 6 = weeks, 7 = hours */
-/* 8 = xml */
+/* 0 = normal, 1 = days, 2 = months, 3 = top, 5 = short */
+/* 7 = hours, 8 = xml, 9 = one line, 10 = json */
 #define DEFQMODE 0
 
 /* how much the boot time can variate between updates (seconds) */
