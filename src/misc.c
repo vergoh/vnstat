@@ -226,8 +226,9 @@ char *gettrafficrate(const uint64_t bytes, const time_t interval, const int len)
 
 const char *getunitprefix(const int index)
 {
-	static const char *unitprefix[] = { "na", "B", "KiB", "MiB", "GiB", "TiB", "PiB",  /* IEC   - 1024^n */
-                                        "B", "KB",  "MB",  "GB",  "TB",  "PB" }; /* JEDEC - 1024^n */
+    static const char *unitprefix[] = { "na",
+        "B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB",  /* IEC   - 1024^n */
+        "B", "KB",  "MB",  "GB",  "TB",  "PB",  "EB" }; /* JEDEC - 1024^n */
 
 	if (index>UNITPREFIXCOUNT) {
 		return unitprefix[0];
@@ -238,10 +239,11 @@ const char *getunitprefix(const int index)
 
 const char *getrateunitprefix(const int unitmode, const int index)
 {
-	static const char *rateunitprefix[] = { "na", "B/s",     "KiB/s",   "MiB/s",   "GiB/s",   "TiB/s",   "PiB/s",    /* IEC   - 1024^n */
-                                            "B/s",     "KB/s",    "MB/s",    "GB/s",    "TB/s",    "PB/s",     /* JEDEC - 1024^n */
-                                            "bit/s",   "Kibit/s", "Mibit/s", "Gibit/s", "Tibit/s", "Pibit/s",  /* IEC   - 1024^n */
-                                            "bit/s",   "kbit/s",  "Mbit/s",  "Gbit/s",  "Tbit/s",  "Pbit/s" }; /* SI    - 1000^n */
+    static const char *rateunitprefix[] = { "na",
+        "B/s",     "KiB/s",   "MiB/s",   "GiB/s",   "TiB/s",   "PiB/s",   "EiB/s",    /* IEC   - 1024^n */
+        "B/s",     "KB/s",    "MB/s",    "GB/s",    "TB/s",    "PB/s",    "EB/s",     /* JEDEC - 1024^n */
+        "bit/s",   "Kibit/s", "Mibit/s", "Gibit/s", "Tibit/s", "Pibit/s", "Eibit/s",  /* IEC   - 1024^n */
+        "bit/s",   "kbit/s",  "Mbit/s",  "Gbit/s",  "Tbit/s",  "Pbit/s",  "Ebit/s" }; /* SI    - 1000^n */
 
 	if (index>UNITPREFIXCOUNT) {
 		return rateunitprefix[0];

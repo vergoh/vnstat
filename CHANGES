@@ -6,7 +6,7 @@
  - Full data import from 1.x version database format including reconstructed
    yearly data
  - Add yearly and 5 minute resolution statistics
- - Add pebibyte support
+ - Add pebibyte and exbibyte support
  - Add options the configure the length of each list output
  - Add hourly list output as alternative
  - Remove weekly output
