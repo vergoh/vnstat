@@ -637,6 +637,7 @@ void defaultcfg(void)
 	cfg.listmonths = LISTMONTHS;
 	cfg.listyears = LISTYEARS;
 	cfg.listtop = LISTTOP;
+	cfg.listjsonxml = LISTJSONXML;
 
 	cfg.fiveminutehours = FIVEMINUTEHOURS;
 	cfg.hourlydays = HOURLYDAYS;

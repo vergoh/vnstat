@@ -252,36 +252,52 @@ int main(int argc, char *argv[]) {
 				}
 			}
 		} else if (strcmp(argv[currentarg],"--xml")==0) {
-			if (currentarg+1<argc && argv[currentarg+1][0]!='-') {
+			if (currentarg+1<argc && argv[currentarg+1][0]!='-' && !isdigit(argv[currentarg+1][0])) {
 				p.xmlmode = argv[currentarg+1][0];
-				if (strlen(argv[currentarg+1])!=1 || strchr("a5hdmyt", p.xmlmode)==NULL) {
+				if (strlen(argv[currentarg+1])!=1 || strchr("afhdmyt", p.xmlmode)==NULL) {
 					printf("Error: Invalid mode parameter \"%s\" for --xml.\n", argv[currentarg+1]);
 					printf(" Valid parameters:\n");
 					printf("    a - all (default)\n");
-					printf("    5 - only 5 minutes\n");
+					printf("    f - only 5 minutes\n");
 					printf("    h - only hours\n");
 					printf("    d - only days\n");
 					printf("    m - only months\n");
 					printf("    y - only years\n");
-					printf("    t - only top 10\n");
+					printf("    t - only top\n");
+					return 1;
+				}
+				currentarg++;
+			}
+			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
+				cfg.listjsonxml = atoi(argv[currentarg+1]);
+				if (cfg.listjsonxml < 0) {
+					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg+1], argv[currentarg]);
 					return 1;
 				}
 				currentarg++;
 			}
 			cfg.qmode=8;
 		} else if (strcmp(argv[currentarg],"--json")==0) {
-			if (currentarg+1<argc && argv[currentarg+1][0]!='-') {
+			if (currentarg+1<argc && argv[currentarg+1][0]!='-' && !isdigit(argv[currentarg+1][0])) {
 				p.jsonmode = argv[currentarg+1][0];
-				if (strlen(argv[currentarg+1])!=1 || strchr("a5hdmyt", p.jsonmode)==NULL) {
+				if (strlen(argv[currentarg+1])!=1 || strchr("afhdmyt", p.jsonmode)==NULL) {
 					printf("Error: Invalid mode parameter \"%s\" for --json.\n", argv[currentarg+1]);
 					printf(" Valid parameters:\n");
 					printf("    a - all (default)\n");
-					printf("    5 - only 5 minutes\n");
+					printf("    f - only 5 minutes\n");
 					printf("    h - only hours\n");
 					printf("    d - only days\n");
 					printf("    m - only months\n");
 					printf("    y - only years\n");
-					printf("    t - only top 10\n");
+					printf("    t - only top\n");
+					return 1;
+				}
+				currentarg++;
+			}
+			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
+				cfg.listjsonxml = atoi(argv[currentarg+1]);
+				if (cfg.listjsonxml < 0) {
+					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg+1], argv[currentarg]);
 					return 1;
 				}
 				currentarg++;

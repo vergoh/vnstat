@@ -245,7 +245,7 @@ START_TEST(database_outputs_do_not_crash)
 	showxml("something", 't');
 	showxml("something", 'h');
 	showxml("something", 'y');
-	showxml("something", '5');
+	showxml("something", 'f');
 	showxml("something", 'a');
 	showxml("nothing", 'a');
 	xmlfooter();
@@ -256,7 +256,7 @@ START_TEST(database_outputs_do_not_crash)
 	showjson("something", 0, 't');
 	showjson("something", 0, 'h');
 	showjson("something", 0, 'y');
-	showjson("something", 0, '5');
+	showjson("something", 0, 'f');
 	showjson("something", 1, 'a');
 	showjson("nothing", 0, 'a');
 	jsonfooter();
@@ -306,7 +306,7 @@ START_TEST(database_outputs_do_not_crash_without_data)
 	showxml("something", 't');
 	showxml("something", 'h');
 	showxml("something", 'y');
-	showxml("something", '5');
+	showxml("something", 'f');
 	showxml("something", 'a');
 
 	xmlfooter();
@@ -317,7 +317,7 @@ START_TEST(database_outputs_do_not_crash_without_data)
 	showjson("something", 0, 't');
 	showjson("something", 0, 'h');
 	showjson("something", 0, 'y');
-	showjson("something", 0, '5');
+	showjson("something", 0, 'f');
 	showjson("something", 1, 'a');
 	showjson("nothing", 0, 'a');
 	jsonfooter();

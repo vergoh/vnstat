@@ -44,7 +44,7 @@ vnstat \- a console-based network traffic monitor
 .B \-\-iflist
 ] [
 .B \-\-json
-.I mode
+.I "mode limit"
 ] [
 .B \-\-live
 .I mode
@@ -90,7 +90,7 @@ vnstat \- a console-based network traffic monitor
 .B \-\-version
 ] [
 .B \-\-xml
-.I mode
+.I "mode limit"
 ]
 
 .SH DESCRIPTION
@@ -178,15 +178,20 @@ syntax.
 Show list of currently available interfaces.
 
 .TP
-.BI "--json " mode
+.BI "--json " "mode limit"
 Show database content for selected interface or all interfaces in json format. All
 traffic values in the output are in bytes. An optional
 .I mode
 parameter can be used for limiting the output to only selected information.
 Everything is shown by default. Setting
 .I mode
-to '5' will output only 5 minute resolution entries, 'h' hours, 'd' days, 'm' months,
-'y' years and 't' the top days. This option can also be used in combination with
+to 'f' will output only 5 minute resolution entries, 'h' hours, 'd' days, 'm' months, 'y'
+years and 't' the top days. An optional
+.I limit
+parameter can be used to limit the number results to a given number of most recent
+entries. The
+.BI "--json"
+option can be used in combination with
 .B "-l, --live"
 and
 .B "-tr"
@@ -313,15 +318,18 @@ option. However, in that case, the countdown before results isn't shown.
 Show current version.
 
 .TP
-.BI "--xml " mode
+.BI "--xml " "mode limit"
 Show database content for selected interface or all interfaces in xml format. All
 traffic values in the output are in bytes. An optional
 .I mode
 parameter can be used for limiting the output to only selected information.
 Everything is shown by default. Setting
 .I mode
-to '5' will output only 5 minute resolution entries, 'h' hours, 'd' days, 'm' months,
-'y' years and 't' the top days.
+to 'f' will output only 5 minute resolution entries, 'h' hours, 'd' days, 'm' months, 'y'
+years and 't' the top days. An optional
+.I limit
+parameter can be used to limit the number results to a given number of most recent
+entries.
 
 .TP
 .B "-?, --help"

@@ -49,7 +49,7 @@ void showjson(const char *interface, const int dbcount, const char mode)
 		case 'y':
 			jsondump(&info, "year", 4);
 			break;
-		case '5':
+		case 'f':
 			jsondump(&info, "fiveminute", 2);
 			break;
 		case 'a':
@@ -79,7 +79,7 @@ void jsondump(const interfaceinfo *interface, const char *tablename, const int d
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
 
-	if (!db_getdata(&datalist, &datainfo, interface->name, tablename, 0)) {
+	if (!db_getdata(&datalist, &datainfo, interface->name, tablename, (uint32_t)cfg.listjsonxml)) {
 		printf("Error: Failed to fetch %s data.\n", tablename);
 		return;
 	}

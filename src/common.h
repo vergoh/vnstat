@@ -173,6 +173,7 @@ and most can be changed later from the config file.
 #define LISTMONTHS 12
 #define LISTYEARS 0
 #define LISTTOP 10
+#define LISTJSONXML 0
 
 /* data retention defaults */
 #define FIVEMINUTEHOURS 48
@@ -279,7 +280,7 @@ typedef struct {
 	int32_t timesyncwait, updateinterval, pollinterval, saveinterval, offsaveinterval, savestatus;
 	int32_t uselogging, createdirs, updatefileowner, bwdetection, bwdetectioninterval, utflocale;
 	int32_t fiveminutehours, hourlydays, dailydays, monthlymonths, yearlyyears, topdayentries;
-	int32_t listfivemins, listhours, listdays, listmonths, listyears, listtop;
+	int32_t listfivemins, listhours, listdays, listmonths, listyears, listtop, listjsonxml;
 } CFG;
 
 /* internal interface information structure */

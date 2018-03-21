@@ -47,7 +47,7 @@ void showxml(const char *interface, const char mode)
 		case 'y':
 			xmldump(&info, "year", 4);
 			break;
-		case '5':
+		case 'f':
 			xmldump(&info, "fiveminute", 2);
 			break;
 		case 'a':
@@ -72,7 +72,7 @@ void xmldump(const interfaceinfo *interface, const char *tablename, const int da
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
 
-	if (!db_getdata(&datalist, &datainfo, interface->name, tablename, 0)) {
+	if (!db_getdata(&datalist, &datainfo, interface->name, tablename, (uint32_t)cfg.listjsonxml)) {
 		printf("Error: Failed to fetch %s data.\n", tablename);
 		return;
 	}

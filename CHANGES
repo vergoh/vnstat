@@ -8,6 +8,7 @@
  - Add yearly and 5 minute resolution statistics
  - Add pebibyte and exbibyte support
  - Add options the configure the length of each list output
+ - Add option to limit the length of --json and --xml outputs
  - Add hourly list output as alternative
  - Remove weekly output
  - Remove merge of data from multiple interfaces to one output
