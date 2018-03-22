@@ -1,97 +1,66 @@
 .TH VNSTAT 1 "MARCH 2018" "version 2.0" "User Manuals"
 .SH NAME
-
 vnstat \- a console-based network traffic monitor
 
 .SH SYNOPSIS
 
 .B vnstat
-[
-.B \-5Ddhlmqrstvw?
-] [
-.B \-\-add
-] [
-.B \-\-config
-.I file
-] [
-.B \-\-create
-] [
-.B \-\-days
-.I count
-] [
-.B \-\-delete
-] [
-.B \-\-dbdir
-.I directory
-] [
-.B \-\-debug
-] [
-.B \-\-fiveminutes
-.I count
-.B \-\-help
-] [
-.B \-\-hours
-] [
-.B \-\-hourslist
-.I count
-] [
-.B \-i
-.I interface
-] [
-.B \-\-iface
-.I interface
-] [
-.B \-\-iflist
-] [
-.B \-\-json
-.I "mode limit"
-] [
-.B \-\-live
-.I mode
-] [
-.B \-\-locale
-.I locale
-] [
-.B \-\-longhelp
-] [
-.B \-\-months
-.I count
-] [
-.B \-\-oneline
-.I mode
-] [
-.B \-\-query
-] [
-.B \-\-rateunit
-] [
-.B \-\-remove
-] [
-.B \-ru
-] [
-.B \-\-setalias
-.I alias
-] [
-.B \-\-short
-] [
-.B \-\-showconfig
-] [
-.B \-\-style
-.I number
-] [
-.B \-\-top
-.I count
-] [
-.B \-tr
-.I time
-] [
-.B \-\-traffic
-.I time
-] [
-.B \-\-version
-] [
-.B \-\-xml
-.I "mode limit"
-]
+.RB [ \-5Ddhlmqrstvw? ]
+.RB [ \-\-add ]
+.RB [ \-\-config
+.IR file ]
+.RB [ \-\-create ]
+.RB [ \-\-days
+.RI [ count ]]
+.RB [ \-\-delete ]
+.RB [ \-\-dbdir
+.RI [ directory ]]
+.RB [ \-\-debug ]
+.RB [ \-\-fiveminutes
+.RI [ count ]]
+.RB [ \-\-help ]
+.RB [ \-\-hours ]
+.RB [ \-\-hourslist
+.RI [ count ]]
+.RB [ \-i
+.IR interface ]
+.RB [ \-\-iface
+.IR interface ]
+.RB [ \-\-iflist ]
+.RB [ \-\-json
+.RI [ mode ]
+.RI [ limit ]]
+.RB [ \-\-live
+.RI [ mode ]]
+.RB [ \-\-locale
+.IR locale ]
+.RB [ \-\-longhelp ]
+.RB [ \-\-months
+.RI [ count ]]
+.RB [ \-\-oneline
+.RI [ mode ]]
+.RB [ \-\-query ]
+.RB [ \-\-rateunit
+.RI [ mode ]]
+.RB [ \-\-remove ]
+.RB [ \-ru
+.RI [ mode ]]
+.RB [ \-\-setalias
+.IR alias ]
+.RB [ \-\-short ]
+.RB [ \-\-showconfig ]
+.RB [ \-\-style
+.IR number ]
+.RB [ \-\-top
+.RI [ count ]]
+.RB [ \-tr
+.RI [ time ]]
+.RB [ \-\-traffic
+.RI [ time ]]
+.RB [ \-\-version ]
+.RB [ \-\-xml
+.RI [ mode ]
+.RI [ limit ]]
 
 .SH DESCRIPTION
 
@@ -132,7 +101,7 @@ as configuration file instead of using normal configuration file search
 functionality.
 
 .TP
-.BI "-d, --days " count
+.BI "-d, --days " [count]
 Show traffic statistics on a daily basis for the last days. The length of the list
 will default to 30 entries unless configured otherwise or unless the optional
 .I count
@@ -152,7 +121,7 @@ file or the hardcoded default if no configuration file is available.
 Show additional debug output.
 
 .TP
-.BI "-5, --fiveminutes " count
+.BI "-5, --fiveminutes " [count]
 Show traffic statistics on a 5 minutes resolution for the last hours.  The length of the list
 will default to 24 entries unless configured otherwise or unless the optional
 .I count
@@ -178,7 +147,7 @@ syntax.
 Show list of currently available interfaces.
 
 .TP
-.BI "--json " "mode limit"
+.BI "--json " "[mode] [limit]"
 Show database content for selected interface or all interfaces in json format. All
 traffic values in the output are in bytes. An optional
 .I mode
@@ -200,7 +169,7 @@ options without
 having any effect to the output.
 
 .TP
-.BI "-l, --live " mode
+.BI "-l, --live " [mode]
 Display current transfer rate for the selected interface in real time
 until interrupted. Statistics will be shown after interruption if the runtime
 was more than 10 seconds. An optional
@@ -225,7 +194,7 @@ default if no configuration file is available.
 Show complete options list.
 
 .TP
-.BI "-m, --months " count
+.BI "-m, --months " [count]
 Show traffic statistics on a monthly basis for the last months. The length of the list
 will default to 12 entries unless configured otherwise or unless the optional
 .I count
@@ -234,7 +203,7 @@ parameter is used. All entries stored in the database will be shown if
 is set to 0.
 
 .TP
-.BI "--oneline " mode
+.BI "--oneline " [mode]
 Show traffic summary for selected interface using one line with a parseable
 format. The output contains 15 fields with ; used as field delimiter. The 1st
 field contains the version information of the output that will be changed
@@ -262,13 +231,14 @@ or
 and stop monitoring it.
 
 .TP
-.B "-ru, --rateunit"
+.BI "-ru, --rateunit " [mode]
 Swap the configured rate unit. If rate has been configured to be shown in
 bytes then rate will be shown in bits if this option is present. In the same
 way, if rate has been configured to be shown in bits then rate will be shown
-in bytes when this option is present. Alternatively 0 or 1 can be given as
-parameter for this option in order to select between bytes (0) and bits
-(1) regardless of the configuration file setting.
+in bytes when this option is present. Alternatively,
+.I mode
+with either 0 or 1 can be used as parameter for this option in order to
+select between bytes (0) and bits (1) regardless of the configuration file setting.
 
 .TP
 .BI "--setalias " alias
@@ -293,7 +263,7 @@ supported. 4 disables the use of terminal control characters in
 mode.
 
 .TP
-.BI "-t, --top " count
+.BI "-t, --top " [count]
 Show all time top traffic days.   The length of the list
 will default to 10 entries unless configured otherwise or unless the optional
 .I count
@@ -302,7 +272,7 @@ parameter is used. All entries stored in the database will be shown if
 is set to 0.
 
 .TP
-.BI "-tr " time
+.BI "-tr " [time]
 Calculate how much traffic goes through the selected interface during
 the given
 .I time
@@ -318,7 +288,7 @@ option. However, in that case, the countdown before results isn't shown.
 Show current version.
 
 .TP
-.BI "--xml " "mode limit"
+.BI "--xml " "[mode] [limit]"
 Show database content for selected interface or all interfaces in xml format. All
 traffic values in the output are in bytes. An optional
 .I mode

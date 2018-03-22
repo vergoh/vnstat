@@ -1,89 +1,57 @@
 .TH VNSTATI 1 "MARCH 2018" "version 2.0" "User Manuals"
 .SH NAME
-
 vnstati \- png image output support for vnStat
 
 .SH SYNOPSIS
 
 .B vnstati
-[
-.B \-5cdhimostv?
-] [
-.B \-\-altdate
-] [
-.B \-\-cache
-.I time
-] [
-.B \-\-config
-.I file
-] [
-.B \-\-days
-.I count
-] [
-.B \-\-dbdir
-.I directory
-] [
-.B \-\-fiveminutes
-.I count
-] [
-.B \-\-headertext
-.I text
-] [
-.B \-\-help
-] [
-.B \-\-hours
-] [
-.B \-hs
-] [
-.B \-\-hsummary
-] [
-.B \-i
-.I interface
-] [
-.B \-\-iface
-.I interface
-] [
-.B \-\-locale
-.I locale
-] [
-.B \-\-months
-.I count
-] [
-.B \-ne
-] [
-.B \-nh
-] [
-.B \-nl
-] [
-.B \-\-noedge
-] [
-.B \-\-noheader
-] [
-.B \-\-nolegend
-] [
-.B \-\-output
-.I file
-] [
-.B \-ru
-] [
-.B \-\-rateunit
-] [
-.B \-\-style
-.I number
-] [
-.B \-\-summary
-] [
-.B \-\-top
-.I count
-] [
-.B \-\-transparent
-] [
-.B \-\-version
-] [
-.B \-vs
-] [
-.B \-\-vsummary
-]
+.RB [ \-5cdhimostv? ]
+.RB [ \-\-altdate ]
+.RB [ \-\-cache
+.IR time ]
+.RB [ \-\-config
+.IR file ]
+.RB [ \-\-days
+.RI [ count ]]
+.RB [ \-\-dbdir
+.IR directory ]
+.RB [ \-\-fiveminutes
+.RI [ count ]]
+.RB [ \-\-headertext
+.IR text ]
+.RB [ \-\-help ]
+.RB [ \-\-hours ]
+.RB [ \-hs ]
+.RB [ \-\-hsummary ]
+.RB [ \-i
+.IR interface ]
+.RB [ \-\-iface
+.IR interface ]
+.RB [ \-\-locale
+.IR locale ]
+.RB [ \-\-months
+.RI [ count ]]
+.RB [ \-ne ]
+.RB [ \-nh ]
+.RB [ \-nl ]
+.RB [ \-\-noedge ]
+.RB [ \-\-noheader ]
+.RB [ \-\-nolegend ]
+.RB [ \-\-output
+.IR file ]
+.RB [ \-ru
+.RI [ mode ]]
+.RB [ \-\-rateunit
+.RI [ mode ]]
+.RB [ \-\-style
+.IR number ]
+.RB [ \-\-summary ]
+.RB [ \-\-top
+.RI [ count ]]
+.RB [ \-\-transparent ]
+.RB [ \-\-version ]
+.RB [ \-vs ]
+.RB [ \-\-vsummary ]
 
 .SH DESCRIPTION
 
@@ -120,7 +88,7 @@ as configuration file instead of using normal configuration file search
 functionality.
 
 .TP
-.BI "-d, --days " count
+.BI "-d, --days " [count]
 Output traffic statistics on a daily basis for the last days. The length of the list
 will default to 30 entries unless configured otherwise or unless the optional
 .I count
@@ -136,7 +104,7 @@ as database directory instead of using the directory specified in the configurat
 file or the hardcoded default if no configuration file is available.
 
 .TP
-.BI "-5, --fiveminutes " count
+.BI "-5, --fiveminutes " [count]
 Output traffic statistics on a 5 minutes resolution for the last hours.  The length of the list
 will default to 24 entries unless configured otherwise or unless the optional
 .I count
@@ -179,7 +147,7 @@ instead of using the locale setting specified in the configuration file or the s
 default if no configuration file is available.
 
 .TP
-.BI "-m, --months " count
+.BI "-m, --months " [count]
 Output traffic statistics on a monthly basis for the last months. The length of the list
 will default to 12 entries unless configured otherwise or unless the optional
 .I count
@@ -207,13 +175,14 @@ Write png image to
 and exit. Output can be directed to stdout by giving "-" as filename.
 
 .TP
-.B "-ru, --rateunit"
-Change the configured rate unit. If rate has been configured to be shown in
+.BI "-ru, --rateunit " [mode]
+Swap the configured rate unit. If rate has been configured to be shown in
 bytes then rate will be shown in bits if this option is present. In the same
 way, if rate has been configured to be shown in bits then rate will be shown
-in bytes when this option is present. Alternatively 0 or 1 can be given as
-parameter for this option in order to select between bytes (0) and bits
-(1) regardless of the configuration file setting.
+in bytes when this option is present. Alternatively,
+.I mode
+with either 0 or 1 can be used as parameter for this option in order to
+select between bytes (0) and bits (1) regardless of the configuration file setting.
 
 .TP
 .BI "--style " number
@@ -227,7 +196,7 @@ Other values will show bar graphics instead.
 Output traffic statistics summary.
 
 .TP
-.BI "-t, --top " count
+.BI "-t, --top " [count]
 Output all time top traffic days. The length of the list
 will default to 10 entries unless configured otherwise or unless the optional
 .I count
