@@ -354,6 +354,24 @@ int main(int argc, char *argv[]) {
 		} else if (strcmp(argv[currentarg],"--remove")==0) {
 			p.removeiface=1;
 			p.query=0;
+		} else if ((strcmp(argv[currentarg],"-b")==0) || (strcmp(argv[currentarg],"--begin")==0)) {
+			if (currentarg+1<argc) {
+				/* TODO: validate input before use */
+				strncpy_nt(p.databegin, argv[currentarg+1], 18);
+				currentarg++;
+			} else {
+				printf("Error: Date for %s missing.\n", argv[currentarg]);
+				return 1;
+			}
+		} else if ((strcmp(argv[currentarg],"-e")==0) || (strcmp(argv[currentarg],"--end")==0)) {
+			if (currentarg+1<argc) {
+				/* TODO: validate input before use */
+				strncpy_nt(p.dataend, argv[currentarg+1], 18);
+				currentarg++;
+			} else {
+				printf("Error: Date for %s missing.\n", argv[currentarg]);
+				return 1;
+			}
 		} else if (strcmp(argv[currentarg],"--iflist")==0) {
 			getiflist(&p.ifacelist, 1);
 			printf("Available interfaces: %s\n", p.ifacelist);
@@ -470,12 +488,14 @@ void initparams(PARAMS *p)
 	p->traffic = 0;
 	p->livetraffic = 0;
 	p->defaultiface = 1;
-	p->removeiface=0;
+	p->removeiface = 0;
 	p->livemode = 0;
 	p->ifacelist = NULL;
 	p->cfgfile[0] = '\0';
 	p->jsonmode = 'a';
 	p->xmlmode = 'a';
+	p->databegin[0] = '\0';
+	p->dataend[0] = '\0';
 }
 
 void showhelp(PARAMS *p)
@@ -698,7 +718,7 @@ void handleshowdatabases(PARAMS *p)
 			if (debug)
 				printf("\nProcessing interface \"%s\"...\n", p->interface);
 			if (cfg.qmode==0) {
-				showdb(p->interface, 5);
+				showdb(p->interface, 5, "", "");
 			} else if (cfg.qmode==8) {
 				showxml(p->interface, p->xmlmode);
 			} else if (cfg.qmode==10) {
@@ -736,7 +756,7 @@ void showoneinterface(PARAMS *p, const char *interface)
 		}
 	}
 	if (cfg.qmode!=8 && cfg.qmode!=10) {
-		showdb(interface, cfg.qmode);
+		showdb(interface, cfg.qmode, p->databegin, p->dataend);
 	} else if (cfg.qmode==8) {
 		xmlheader();
 		showxml(p->interface, p->xmlmode);

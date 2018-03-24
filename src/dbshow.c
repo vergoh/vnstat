@@ -3,7 +3,7 @@
 #include "misc.h"
 #include "dbshow.h"
 
-void showdb(const char *interface, int qmode)
+void showdb(const char *interface, int qmode, const char *databegin, const char *dataend)
 {
 	interfaceinfo info;
 
@@ -15,7 +15,7 @@ void showdb(const char *interface, int qmode)
 		return;
 	}
 
-	if (info.rxtotal == 0 && info.txtotal == 0 && qmode != 4) {
+	if (info.rxtotal == 0 && info.txtotal == 0) {
 		printf(" %s: Not enough data available yet.\n", interface);
 		return;
 	}
@@ -25,19 +25,20 @@ void showdb(const char *interface, int qmode)
 			showsummary(&info, 0);
 			break;
 		case 1:
-			showlist(&info, "day");
+			showlist(&info, "day", databegin, dataend);
 			break;
 		case 2:
-			showlist(&info, "month");
+			showlist(&info, "month", databegin, dataend);
 			break;
 		case 3:
-			showlist(&info, "top");
+			/* TODO: should data range selection be supported here? */
+			showlist(&info, "top", "", "");
 			break;
 		case 5:
 			showsummary(&info, 1);
 			break;
 		case 6:
-			showlist(&info, "year");
+			showlist(&info, "year", databegin, dataend);
 			break;
 		case 7:
 			showhours(&info);
@@ -46,10 +47,10 @@ void showdb(const char *interface, int qmode)
 			showoneline(&info);
 			break;
 		case 11:
-			showlist(&info, "hour");
+			showlist(&info, "hour", databegin, dataend);
 			break;
 		case 12:
-			showlist(&info, "fiveminute");
+			showlist(&info, "fiveminute", databegin, dataend);
 			break;
 		default:
 			printf("Error: Not such query mode: %d\n", qmode);
@@ -277,7 +278,7 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 	timeused(__func__, 0);
 }
 
-void showlist(const interfaceinfo *interface, const char *listname)
+void showlist(const interfaceinfo *interface, const char *listname, const char *databegin, const char *dataend)
 {
 	int32_t limit;
 	int listtype, offset = 0, i = 1;
@@ -337,7 +338,7 @@ void showlist(const interfaceinfo *interface, const char *listname)
 	daybuff[0] = '\0';
 	e_rx = e_tx = e_secs = 0;
 
-	if (!db_getdata(&datalist, &datainfo, interface->name, listname, (uint32_t)limit)) {
+	if (!db_getdata_range(&datalist, &datainfo, interface->name, listname, (uint32_t)limit, databegin, dataend)) {
 		printf("Error: Failed to fetch %s data.\n", titlename);
 		return;
 	}

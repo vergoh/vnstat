@@ -995,9 +995,14 @@ void dbiflistfree(dbiflist **dbifl)
 
 int db_getdata(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface, const char *table, const uint32_t resultlimit)
 {
+	return db_getdata_range(dbdata, listinfo, iface, table, resultlimit, "", "");
+}
+
+int db_getdata_range(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface, const char *table, const uint32_t resultlimit, const char *databegin, const char *dataend)
+{
 	int ret = 1, i, rc;
 	const char *datatables[] = {"fiveminute", "hour", "day", "month", "year", "top"};
-	char sql[512], limit[64];
+	char sql[512], limit[64], dbegin[32], dend[32];
 	sqlite3_int64 ifaceid = 0;
 	sqlite3_stmt *sqlstmt;
 	time_t timestamp;
@@ -1022,10 +1027,19 @@ int db_getdata(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface,
 		return 0;
 	}
 
-	if (resultlimit > 0) {
+	dbegin[0] = '\0';
+	if (strlen(databegin)) {
+		snprintf(dbegin, 32, "and date >= '%s'", databegin);
+	}
+
+	dend[0] = '\0';
+	if (strlen(dataend)) {
+		snprintf(dend, 32, "and date <= '%s'", dataend);
+	}
+
+	limit[0] = '\0';
+	if (resultlimit > 0 && ( !strlen(dbegin) || !strlen(dend) )) {
 		snprintf(limit, 64, "limit %"PRIu32"", resultlimit);
-	} else {
-		limit[0] = '\0';
 	}
 
 	/* note that using the linked list reverses the order */
@@ -1033,7 +1047,11 @@ int db_getdata(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface,
 	if (strcmp(table, "top") == 0) {
 		sqlite3_snprintf(512, sql, "select * from (select id, strftime('%%s', date, 'utc'), rx, tx from %s where interface=%"PRId64" order by rx+tx desc %s) order by rx+tx asc;", table, (int64_t)ifaceid, limit);
 	} else {
-		sqlite3_snprintf(512, sql, "select id, strftime('%%s', date, 'utc'), rx, tx from %s where interface=%"PRId64" order by date desc %s;", table, (int64_t)ifaceid, limit);
+		if (strlen(dbegin) && strlen(limit)) {
+			sqlite3_snprintf(512, sql, "select * from (select id, strftime('%%s', date, 'utc') as date, rx, tx from %s where interface=%"PRId64" %s %s order by date asc %s) order by date desc;", table, (int64_t)ifaceid, dbegin, dend, limit);
+		} else {
+			sqlite3_snprintf(512, sql, "select id, strftime('%%s', date, 'utc'), rx, tx from %s where interface=%"PRId64" %s %s order by date desc %s;", table, (int64_t)ifaceid, dbegin, dend, limit);
+		}
 	}
 
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);

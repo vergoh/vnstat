@@ -223,20 +223,20 @@ START_TEST(database_outputs_do_not_crash)
 
 	for (i=0; i<=4; i++) {
 		cfg.ostyle = i;
-		showdb("something", 0);
-		showdb("something", 1);
-		showdb("something", 2);
-		showdb("something", 3);
-		showdb("something", 4);
-		showdb("something", 5);
-		showdb("something", 6);
-		showdb("something", 7);
-		showdb("something", 8);
-		showdb("something", 9);
-		showdb("something", 10);
-		showdb("something", 11);
-		showdb("something", 12);
-		showdb("nothing", 0);
+		showdb("something", 0, "", "");
+		showdb("something", 1, "", "");
+		showdb("something", 2, "", "");
+		showdb("something", 3, "", "");
+		showdb("something", 4, "", "");
+		showdb("something", 5, "", "");
+		showdb("something", 6, "", "");
+		showdb("something", 7, "", "");
+		showdb("something", 8, "", "");
+		showdb("something", 9, "", "");
+		showdb("something", 10, "", "");
+		showdb("something", 11, "", "");
+		showdb("something", 12, "", "");
+		showdb("nothing", 0, "", "");
 	}
 
 	xmlheader();
@@ -284,20 +284,20 @@ START_TEST(database_outputs_do_not_crash_without_data)
 
 	for (i=0; i<=4; i++) {
 		cfg.ostyle = i;
-		showdb("something", 0);
-		showdb("something", 1);
-		showdb("something", 2);
-		showdb("something", 3);
-		showdb("something", 4);
-		showdb("something", 5);
-		showdb("something", 6);
-		showdb("something", 7);
-		showdb("something", 8);
-		showdb("something", 9);
-		showdb("something", 10);
-		showdb("something", 11);
-		showdb("something", 12);
-		showdb("nothing", 0);
+		showdb("something", 0, "", "");
+		showdb("something", 1, "", "");
+		showdb("something", 2, "", "");
+		showdb("something", 3, "", "");
+		showdb("something", 4, "", "");
+		showdb("something", 5, "", "");
+		showdb("something", 6, "", "");
+		showdb("something", 7, "", "");
+		showdb("something", 8, "", "");
+		showdb("something", 9, "", "");
+		showdb("something", 10, "", "");
+		showdb("something", 11, "", "");
+		showdb("something", 12, "", "");
+		showdb("nothing", 0, "", "");
 	}
 
 	xmlheader();

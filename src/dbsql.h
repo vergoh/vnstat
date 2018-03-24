@@ -71,6 +71,7 @@ int dbiflistadd(dbiflist **dbifl, const char *iface);
 void dbiflistfree(dbiflist **dbifl);
 
 int db_getdata(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface, const char *table, const uint32_t resultlimit);
+int db_getdata_range(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface, const char *table, const uint32_t resultlimit, const char *databegin, const char *dataend);
 void updatelistinfo(dbdatalistinfo *listinfo, const uint64_t rx, const uint64_t tx, const time_t timestamp);
 int dbdatalistadd(dbdatalist **dbdata, const uint64_t rx, const uint64_t tx, const time_t timestamp, const int64_t rowid);
 void dbdatalistfree(dbdatalist **dbdata);
