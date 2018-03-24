@@ -11,6 +11,8 @@ void initimagecontent(IMAGECONTENT *ic)
 	ic->showlegend = 1;
 	ic->altdate = 0;
 	ic->headertext[0] = '\0';
+	ic->databegin[0] = '\0';
+	ic->dataend[0] = '\0';
 }
 
 void drawimage(IMAGECONTENT *ic)
@@ -467,6 +469,9 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		strncpy_nt(stampformat, cfg.tformat, 64);
 		limit = cfg.listtop;
 		offsetx = 30;
+		/* TODO: should data range selection be supported here? */
+		ic->databegin[0] = '\0';
+		ic->dataend[0] = '\0';
 	} else if (strcmp(listname, "hour") == 0) {
 		listtype = 5;
 		strncpy_nt(colname, listname, 8);
@@ -490,7 +495,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	daybuff[0] = '\0';
 	e_rx = e_tx = 0;
 
-	if (!db_getdata(&datalist, &datainfo, ic->interface.name, listname, (uint32_t)limit)) {
+	if (!db_getdata_range(&datalist, &datainfo, ic->interface.name, listname, (uint32_t)limit, ic->databegin, ic->dataend)) {
 		printf("Error: Failed to fetch %s data.\n", "day");
 		return;
 	}

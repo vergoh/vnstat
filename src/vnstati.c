@@ -19,6 +19,7 @@ vnStat image output - Copyright (c) 2007-2018 Teemu Toivola <tst@iki.fi>
 #include "dbsql.h"
 #include "image.h"
 #include "cfg.h"
+#include "misc.h"
 #include "vnstati.h"
 
 int main(int argc, char *argv[])
@@ -264,6 +265,30 @@ int main(int argc, char *argv[])
 				cfg.rateunit = !cfg.rateunit;
 				if (debug)
 					printf("Rateunit changed: %d\n", cfg.rateunit);
+			}
+		} else if ((strcmp(argv[currentarg],"-b")==0) || (strcmp(argv[currentarg],"--begin")==0)) {
+			if (currentarg+1<argc) {
+				if (!validatedatetime(argv[currentarg+1])) {
+					printf("Error: Invalid date format, expected YYYY-MM-DD HH:MM, YYYY-MM-DD or YYYY-MM.\n");
+					return 1;
+				}
+				strncpy_nt(ic.databegin, argv[currentarg+1], 18);
+				currentarg++;
+			} else {
+				printf("Error: Date for %s missing.\n", argv[currentarg]);
+				return 1;
+			}
+		} else if ((strcmp(argv[currentarg],"-e")==0) || (strcmp(argv[currentarg],"--end")==0)) {
+			if (currentarg+1<argc) {
+				if (!validatedatetime(argv[currentarg+1])) {
+					printf("Error: Invalid date format, expected YYYY-MM-DD HH:MM, YYYY-MM-DD or YYYY-MM.\n");
+					return 1;
+				}
+				strncpy_nt(ic.dataend, argv[currentarg+1], 18);
+				currentarg++;
+			} else {
+				printf("Error: Date for %s missing.\n", argv[currentarg]);
+				return 1;
 			}
 		} else if ((strcmp(argv[currentarg],"-v")==0) || (strcmp(argv[currentarg],"--version"))==0) {
 			printf("vnStat image output %s by Teemu Toivola <tst at iki dot fi>\n", getversion());
