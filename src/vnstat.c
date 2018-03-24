@@ -356,7 +356,10 @@ int main(int argc, char *argv[]) {
 			p.query=0;
 		} else if ((strcmp(argv[currentarg],"-b")==0) || (strcmp(argv[currentarg],"--begin")==0)) {
 			if (currentarg+1<argc) {
-				/* TODO: validate input before use */
+				if (!validatedatetime(argv[currentarg+1])) {
+					printf("Error: Invalid date format, expected YYYY-MM-DD HH:MM, YYYY-MM-DD or YYYY-MM.\n");
+					return 1;
+				}
 				strncpy_nt(p.databegin, argv[currentarg+1], 18);
 				currentarg++;
 			} else {
@@ -365,7 +368,10 @@ int main(int argc, char *argv[]) {
 			}
 		} else if ((strcmp(argv[currentarg],"-e")==0) || (strcmp(argv[currentarg],"--end")==0)) {
 			if (currentarg+1<argc) {
-				/* TODO: validate input before use */
+				if (!validatedatetime(argv[currentarg+1])) {
+					printf("Error: Invalid date format, expected YYYY-MM-DD HH:MM, YYYY-MM-DD or YYYY-MM.\n");
+					return 1;
+				}
 				strncpy_nt(p.dataend, argv[currentarg+1], 18);
 				currentarg++;
 			} else {

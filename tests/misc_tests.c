@@ -305,6 +305,56 @@ START_TEST(sighandler_sets_signal)
 }
 END_TEST
 
+START_TEST(validatedatetime_can_detect_valid_strings)
+{
+	ck_assert_int_eq(validatedatetime("2018-03-24 01:23"), 1);
+	ck_assert_int_eq(validatedatetime("1998-01-15 23:16"), 1);
+	ck_assert_int_eq(validatedatetime("2018-03-24"), 1);
+	ck_assert_int_eq(validatedatetime("1998-01-15"), 1);
+	ck_assert_int_eq(validatedatetime("2018-03"), 1);
+	ck_assert_int_eq(validatedatetime("1998-01"), 1);
+}
+END_TEST
+
+START_TEST(validatedatetime_can_detect_invalid_strings)
+{
+	ck_assert_int_eq(validatedatetime("2018-03-24 01:23:12"), 0);
+	ck_assert_int_eq(validatedatetime("2018-03-24 01"), 0);
+	ck_assert_int_eq(validatedatetime("2018-03-24 01:23am"), 0);
+	ck_assert_int_eq(validatedatetime("2018-03-24 1:23"), 0);
+	ck_assert_int_eq(validatedatetime("2018-03-24 01-23"), 0);
+	ck_assert_int_eq(validatedatetime("2018-03-24 "), 0);
+	ck_assert_int_eq(validatedatetime("2018-03-24 01:23 "), 0);
+	ck_assert_int_eq(validatedatetime("2018-03-24 "), 0);
+	ck_assert_int_eq(validatedatetime("2018-03-24T01:23"), 0);
+	ck_assert_int_eq(validatedatetime("2018-03-24_01:23"), 0);
+	ck_assert_int_eq(validatedatetime("2018-03-241"), 0);
+	ck_assert_int_eq(validatedatetime("2018/03/24"), 0);
+	ck_assert_int_eq(validatedatetime("2018-03-"), 0);
+	ck_assert_int_eq(validatedatetime("2018_03"), 0);
+	ck_assert_int_eq(validatedatetime("2018-3"), 0);
+	ck_assert_int_eq(validatedatetime("2018_03"), 0);
+	ck_assert_int_eq(validatedatetime("2018"), 0);
+	ck_assert_int_eq(validatedatetime("1998"), 0);
+	ck_assert_int_eq(validatedatetime("9999"), 0);
+	ck_assert_int_eq(validatedatetime("18-03"), 0);
+	ck_assert_int_eq(validatedatetime("18"), 0);
+	ck_assert_int_eq(validatedatetime(" "), 0);
+	ck_assert_int_eq(validatedatetime(""), 0);
+	ck_assert_int_eq(validatedatetime("wtf?"), 0);
+}
+END_TEST
+
+START_TEST(validatedatetime_does_not_validate_numbers)
+{
+	ck_assert_int_eq(validatedatetime("9999-99-99 99:99"), 1);
+	ck_assert_int_eq(validatedatetime("0000-00-00 00:00"), 1);
+	ck_assert_int_eq(validatedatetime("2018-03-24 01:90"), 1);
+	ck_assert_int_eq(validatedatetime("9999-99-99"), 1);
+	ck_assert_int_eq(validatedatetime("9999-99"), 1);
+}
+END_TEST
+
 void add_misc_tests(Suite *s)
 {
 	TCase *tc_misc = tcase_create("Misc");
@@ -326,5 +376,8 @@ void add_misc_tests(Suite *s)
 	tcase_add_test(tc_misc, gettrafficrate_interval_divides);
 	tcase_add_test(tc_misc, gettrafficrate_padding);
 	tcase_add_test(tc_misc, sighandler_sets_signal);
+	tcase_add_test(tc_misc, validatedatetime_can_detect_valid_strings);
+	tcase_add_test(tc_misc, validatedatetime_can_detect_invalid_strings);
+	tcase_add_test(tc_misc, validatedatetime_does_not_validate_numbers);
 	suite_add_tcase(s, tc_misc);
 }

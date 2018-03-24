@@ -352,3 +352,46 @@ void eraseline(void)
 {
 	printf("\033[2K");
 }
+
+/* validity of date or time itself isn't checked here as sqlite handles that */
+int validatedatetime(const char *str)
+{
+	short valid;
+	unsigned int len, i, t;
+	const char *templates[] = { "dddd-dd-dd dd:dd", "dddd-dd-dd", "dddd-dd" };
+
+	len = (unsigned int)strlen(str);
+	if (len > strlen(templates[0])) {
+		return 0;
+	}
+
+	for (t=0; t<3; t++) {
+		if (len != strlen(templates[t])) {
+			continue;
+		}
+		valid = 1;
+		for (i=0; i<strlen(templates[t]); i++) {
+			switch(templates[t][i]) {
+				case 'd':
+					if (!isdigit(str[i])) {
+						valid = 0;
+					}
+					break;
+				default:
+					if (str[i] != templates[t][i]) {
+						valid = 0;
+					}
+					break;
+			}
+			if (!valid) {
+				break;
+			}
+		}
+		if (!valid) {
+			continue;
+		}
+		return 1;
+	}
+
+	return 0;
+}

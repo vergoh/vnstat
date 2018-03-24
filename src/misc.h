@@ -20,5 +20,6 @@ void cursortocolumn(const int column);
 void cursorhide(void);
 void cursorshow(void);
 void eraseline(void);
+int validatedatetime(const char *str);
 
 #endif
