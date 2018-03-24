@@ -363,7 +363,7 @@ int main(int argc, char *argv[]) {
 				strncpy_nt(p.databegin, argv[currentarg+1], 18);
 				currentarg++;
 			} else {
-				printf("Error: Date for %s missing.\n", argv[currentarg]);
+				printf("Error: Date of format YYYY-MM-DD HH:MM, YYYY-MM-DD or YYYY-MM for %s missing.\n", argv[currentarg]);
 				return 1;
 			}
 		} else if ((strcmp(argv[currentarg],"-e")==0) || (strcmp(argv[currentarg],"--end")==0)) {
@@ -375,7 +375,7 @@ int main(int argc, char *argv[]) {
 				strncpy_nt(p.dataend, argv[currentarg+1], 18);
 				currentarg++;
 			} else {
-				printf("Error: Date for %s missing.\n", argv[currentarg]);
+				printf("Error: Date of format YYYY-MM-DD HH:MM, YYYY-MM-DD or YYYY-MM for %s missing.\n", argv[currentarg]);
 				return 1;
 			}
 		} else if (strcmp(argv[currentarg],"--iflist")==0) {
@@ -532,15 +532,17 @@ void showlonghelp(PARAMS *p)
 	printf(" vnStat %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
 
 	printf("   Query:\n");
-	printf("         -q,  --query           query database\n");
+	printf("         -q,  --query          query database\n");
 	printf("         -5,  --fiveminutes    show 5 minutes\n");
 	printf("         -h,  --hours          show hours\n");
 	printf("         -hl, --hourslist      show hours list\n");
-	printf("         -d,  --days            show days\n");
-	printf("         -m,  --months          show months\n");
-	printf("         -y,  --years           show years\n");
-	printf("         -t,  --top             show top days\n");
-	printf("         -s,  --short           use short output\n");
+	printf("         -d,  --days           show days\n");
+	printf("         -m,  --months         show months\n");
+	printf("         -y,  --years          show years\n");
+	printf("         -t,  --top            show top days\n");
+	printf("         -s,  --short          use short output\n");
+	printf("         -b,  --begin          begin list with specific date\n");
+	printf("         -e,  --end            end list with specific date\n");
 	printf("         -ru, --rateunit       swap configured rate unit\n");
 	printf("         --oneline             show simple parseable format\n");
 	printf("         --json                show database in json format\n");

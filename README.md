@@ -79,6 +79,7 @@ durations. Yearly and five-minute resolution statistics are now included.
   * most vnstat (console output) features
   * all vnstati (image output) features
   * pebibyte and exbibyte support
+  * query of time range specific data
 
 ##### Removed features
 
@@ -96,9 +97,6 @@ durations. Yearly and five-minute resolution statistics are now included.
 ##### TODO
 
   * `grep TODO src/* tests/*`
-  * query of specific time range date
-    * possibly not included in first 2.x release
-    * extending the length of the current outputs is however already supported
   * feature configurability
     * is something still missing?
   * freeze database structure

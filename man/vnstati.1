@@ -5,8 +5,10 @@ vnstati \- png image output support for vnStat
 .SH SYNOPSIS
 
 .B vnstati
-.RB [ \-5cdhimostv? ]
+.RB [ \-5bcdehimostv? ]
 .RB [ \-\-altdate ]
+.RB [ \-\-begin
+.IR date ]
 .RB [ \-\-cache
 .IR time ]
 .RB [ \-\-config
@@ -15,6 +17,8 @@ vnstati \- png image output support for vnStat
 .RI [ count ]]
 .RB [ \-\-dbdir
 .IR directory ]
+.RB [ \-\-end
+.IR date ]
 .RB [ \-\-fiveminutes
 .RI [ count ]]
 .RB [ \-\-headertext
@@ -74,6 +78,18 @@ will have no effect if
 has been selected.
 
 .TP
+.BI "-b, --begin " date
+Begin the list output with a specific date / time defined by
+.I date
+instead of the begin being selected based on the number of entries to be shown.
+If
+.I date
+isn't available in the database then the closest later date will be used.
+.I date
+supports the following formats: YYYY-MM-DD HH:MM, YYYY-MM-DD and YYYY-MM.
+This option can only be used with list outputs excluding top list.
+
+.TP
 .BI "-c, --cache " time
 Update output file only if at least
 .I time
@@ -102,6 +118,17 @@ Use
 .I directory
 as database directory instead of using the directory specified in the configuration
 file or the hardcoded default if no configuration file is available.
+
+.TP
+.BI "-e, --end " date
+End the list output with a specific date / time defined by
+.I date
+instead of the latest date / time in the database. If
+.I date
+isn't available in the database then the closest earlier date will be used.
+.I date
+supports the following formats: YYYY-MM-DD HH:MM, YYYY-MM-DD and YYYY-MM.
+This option can only be used with list outputs excluding top list.
 
 .TP
 .BI "-5, --fiveminutes " [count]

@@ -3,6 +3,7 @@
  - Fix: Data rate calculations when using SI decimal prefixes
  - C struct dump database has been replaced with sqlite database
  - User configurable data retention durations for all resolutions
+ - Query of time range specific data
  - Full data import from 1.x version database format including reconstructed
    yearly data
  - Add yearly and 5 minute resolution statistics

@@ -275,7 +275,7 @@ int main(int argc, char *argv[])
 				strncpy_nt(ic.databegin, argv[currentarg+1], 18);
 				currentarg++;
 			} else {
-				printf("Error: Date for %s missing.\n", argv[currentarg]);
+				printf("Error: Date of format YYYY-MM-DD HH:MM, YYYY-MM-DD or YYYY-MM for %s missing.\n", argv[currentarg]);
 				return 1;
 			}
 		} else if ((strcmp(argv[currentarg],"-e")==0) || (strcmp(argv[currentarg],"--end")==0)) {
@@ -287,7 +287,7 @@ int main(int argc, char *argv[])
 				strncpy_nt(ic.dataend, argv[currentarg+1], 18);
 				currentarg++;
 			} else {
-				printf("Error: Date for %s missing.\n", argv[currentarg]);
+				printf("Error: Date of format YYYY-MM-DD HH:MM, YYYY-MM-DD or YYYY-MM for %s missing.\n", argv[currentarg]);
 				return 1;
 			}
 		} else if ((strcmp(argv[currentarg],"-v")==0) || (strcmp(argv[currentarg],"--version"))==0) {
@@ -355,6 +355,8 @@ void showihelp(IPARAMS *p)
 	printf("         -o,  --output         select output filename\n");
 	printf("         -c,  --cache          update output only when too old\n");
 	printf("         -i,  --iface          used interface (default: %s)\n", p->interface);
+	printf("         -b,  --begin          begin list with specific date\n");
+	printf("         -e,  --end            end list with specific date\n");
 	printf("         -?,  --help           this help\n");
 	printf("         -D,  --debug          show some additional debug information\n");
 	printf("         -v,  --version        show version\n");
