@@ -961,6 +961,386 @@ START_TEST(db_validate_with_high_version)
 }
 END_TEST
 
+void range_test_month_setup(void)
+{
+	int ret;
+	defaultcfg();
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("ethtest");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_insertdata("month", "ethtest", 1, 2, 946677600); /* 2000-01-01 */
+	ck_assert_int_eq(ret, 1);
+	ret = db_insertdata("month", "ethtest", 1, 2, 949356000); /* 2000-02-01 */
+	ck_assert_int_eq(ret, 1);
+	ret = db_insertdata("month", "ethtest", 1, 2, 951861600); /* 2000-03-01 */
+	ck_assert_int_eq(ret, 1);
+	ret = db_insertdata("month", "ethtest", 1, 2, 954536400); /* 2000-04-01 */
+	ck_assert_int_eq(ret, 1);
+	ret = db_insertdata("month", "ethtest", 1, 2, 957128400); /* 2000-05-01 */
+	ck_assert_int_eq(ret, 1);
+	ret = db_insertdata("month", "ethtest", 1, 2, 959806800); /* 2000-06-01 */
+	ck_assert_int_eq(ret, 1);
+}
+
+START_TEST(db_getdata_range_can_get_months_without_range_defined)
+{
+	int ret, i;
+	char timestamp[64];
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+
+	range_test_month_setup();
+
+	ret = db_getdata_range(&datalist, &datainfo, "ethtest", "month", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 6);
+	datalist_i = datalist;
+	i = 0;
+	while (datalist_i != NULL)
+	{
+		switch(i) {
+			case 0:
+				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2000-01-01");
+				break;
+			case 5:
+				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2000-06-01");
+				break;
+		}
+		datalist_i = datalist_i->next;
+		i++;
+	}
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_getdata_range_can_get_months_with_range_matching_existing_data)
+{
+	int ret, i;
+	char timestamp[64];
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+
+	range_test_month_setup();
+
+	ret = db_getdata_range(&datalist, &datainfo, "ethtest", "month", 0, "2000-01-01", "2000-06-01");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 6);
+	datalist_i = datalist;
+	i = 0;
+	while (datalist_i != NULL)
+	{
+		switch(i) {
+			case 0:
+				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2000-01-01");
+				break;
+			case 5:
+				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2000-06-01");
+				break;
+		}
+		datalist_i = datalist_i->next;
+		i++;
+	}
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_getdata_range_can_get_months_with_range_past_existing_data)
+{
+	int ret, i;
+	char timestamp[64];
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+
+	range_test_month_setup();
+
+	ret = db_getdata_range(&datalist, &datainfo, "ethtest", "month", 0, "1999-01-01", "2000-08-01");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 6);
+	datalist_i = datalist;
+	i = 0;
+	while (datalist_i != NULL)
+	{
+		switch(i) {
+			case 0:
+				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2000-01-01");
+				break;
+			case 5:
+				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2000-06-01");
+				break;
+		}
+		datalist_i = datalist_i->next;
+		i++;
+	}
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_getdata_range_can_get_months_with_range_limiting_begin_and_end)
+{
+	int ret, i;
+	char timestamp[64];
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+
+	range_test_month_setup();
+
+	ret = db_getdata_range(&datalist, &datainfo, "ethtest", "month", 0, "2000-02-01", "2000-04-01");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 3);
+	datalist_i = datalist;
+	i = 0;
+	while (datalist_i != NULL)
+	{
+		switch(i) {
+			case 0:
+				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2000-02-01");
+				break;
+			case 2:
+				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2000-04-01");
+				break;
+		}
+		datalist_i = datalist_i->next;
+		i++;
+	}
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_getdata_range_can_get_months_with_range_limiting_begin)
+{
+	int ret, i;
+	char timestamp[64];
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+
+	range_test_month_setup();
+
+	ret = db_getdata_range(&datalist, &datainfo, "ethtest", "month", 0, "2000-03-01", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 4);
+	datalist_i = datalist;
+	i = 0;
+	while (datalist_i != NULL)
+	{
+		switch(i) {
+			case 0:
+				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2000-03-01");
+				break;
+			case 3:
+				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2000-06-01");
+				break;
+		}
+		datalist_i = datalist_i->next;
+		i++;
+	}
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_getdata_range_can_get_months_with_range_limiting_begin_with_limit)
+{
+	int ret, i;
+	char timestamp[64];
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+
+	range_test_month_setup();
+
+	ret = db_getdata_range(&datalist, &datainfo, "ethtest", "month", 3, "2000-03-01", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 3);
+	datalist_i = datalist;
+	i = 0;
+	while (datalist_i != NULL)
+	{
+		switch(i) {
+			case 0:
+				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2000-03-01");
+				break;
+			case 2:
+				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2000-05-01");
+				break;
+		}
+		datalist_i = datalist_i->next;
+		i++;
+	}
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_getdata_range_can_get_months_with_range_limiting_end)
+{
+	int ret, i;
+	char timestamp[64];
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+
+	range_test_month_setup();
+
+	ret = db_getdata_range(&datalist, &datainfo, "ethtest", "month", 0, "", "2000-04-01");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 4);
+	datalist_i = datalist;
+	i = 0;
+	while (datalist_i != NULL)
+	{
+		switch(i) {
+			case 0:
+				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2000-01-01");
+				break;
+			case 3:
+				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2000-04-01");
+				break;
+		}
+		datalist_i = datalist_i->next;
+		i++;
+	}
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_getdata_range_can_get_months_with_range_limiting_end_with_limit)
+{
+	int ret, i;
+	char timestamp[64];
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+
+	range_test_month_setup();
+
+	ret = db_getdata_range(&datalist, &datainfo, "ethtest", "month", 3, "", "2000-04-01");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 3);
+	datalist_i = datalist;
+	i = 0;
+	while (datalist_i != NULL)
+	{
+		switch(i) {
+			case 0:
+				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2000-02-01");
+				break;
+			case 2:
+				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2000-04-01");
+				break;
+		}
+		datalist_i = datalist_i->next;
+		i++;
+	}
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_getdata_range_can_get_months_with_range_on_same_month)
+{
+	int ret, i;
+	char timestamp[64];
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+
+	range_test_month_setup();
+
+	ret = db_getdata_range(&datalist, &datainfo, "ethtest", "month", 0, "2000-04-01", "2000-04-01");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 1);
+	datalist_i = datalist;
+	i = 0;
+	while (datalist_i != NULL)
+	{
+		switch(i) {
+			case 0:
+				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2000-04-01");
+				break;
+		}
+		datalist_i = datalist_i->next;
+		i++;
+	}
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_getdata_range_can_get_months_with_range_past_first_day_of_month)
+{
+	int ret, i;
+	char timestamp[64];
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+
+	range_test_month_setup();
+
+	ret = db_getdata_range(&datalist, &datainfo, "ethtest", "month", 3, "2000-02-02", "2000-05-06");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 3);
+	datalist_i = datalist;
+	i = 0;
+	while (datalist_i != NULL)
+	{
+		switch(i) {
+			case 0:
+				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2000-03-01");
+				break;
+			case 2:
+				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2000-05-01");
+				break;
+		}
+		datalist_i = datalist_i->next;
+		i++;
+	}
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 void add_dbsql_tests(Suite *s)
 {
 	TCase *tc_dbsql = tcase_create("DB SQL");
@@ -1005,5 +1385,15 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_validate_with_no_version);
 	tcase_add_test(tc_dbsql, db_validate_with_low_version);
 	tcase_add_test(tc_dbsql, db_validate_with_high_version);
+	tcase_add_test(tc_dbsql, db_getdata_range_can_get_months_without_range_defined);
+	tcase_add_test(tc_dbsql, db_getdata_range_can_get_months_with_range_matching_existing_data);
+	tcase_add_test(tc_dbsql, db_getdata_range_can_get_months_with_range_past_existing_data);
+	tcase_add_test(tc_dbsql, db_getdata_range_can_get_months_with_range_limiting_begin_and_end);
+	tcase_add_test(tc_dbsql, db_getdata_range_can_get_months_with_range_limiting_begin);
+	tcase_add_test(tc_dbsql, db_getdata_range_can_get_months_with_range_limiting_begin_with_limit);
+	tcase_add_test(tc_dbsql, db_getdata_range_can_get_months_with_range_limiting_end);
+	tcase_add_test(tc_dbsql, db_getdata_range_can_get_months_with_range_limiting_end_with_limit);
+	tcase_add_test(tc_dbsql, db_getdata_range_can_get_months_with_range_on_same_month);
+	tcase_add_test(tc_dbsql, db_getdata_range_can_get_months_with_range_past_first_day_of_month);
 	suite_add_tcase(s, tc_dbsql);
 }
