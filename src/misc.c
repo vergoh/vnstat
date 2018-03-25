@@ -358,14 +358,14 @@ int validatedatetime(const char *str)
 {
 	short valid;
 	unsigned int len, i, t;
-	const char *templates[] = { "dddd-dd-dd dd:dd", "dddd-dd-dd", "dddd-dd" };
+	const char *templates[] = { "dddd-dd-dd dd:dd", "dddd-dd-dd" };
 
 	len = (unsigned int)strlen(str);
 	if (len > strlen(templates[0])) {
 		return 0;
 	}
 
-	for (t=0; t<3; t++) {
+	for (t=0; t<2; t++) {
 		if (len != strlen(templates[t])) {
 			continue;
 		}

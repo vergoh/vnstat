@@ -475,6 +475,7 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 		i++;
 	}
 	if (datainfo.count == 0)
+		/* TODO: improve alignment */
 		printf("                           no data available\n");
 	if (cfg.ostyle == 3) {
 		if (listtype == 4) {

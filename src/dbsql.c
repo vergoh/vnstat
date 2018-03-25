@@ -1002,7 +1002,7 @@ int db_getdata_range(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *
 {
 	int ret = 1, i, rc;
 	const char *datatables[] = {"fiveminute", "hour", "day", "month", "year", "top"};
-	char sql[512], limit[64], dbegin[32], dend[32];
+	char sql[512], limit[64], dbegin[32], dend[44];
 	sqlite3_int64 ifaceid = 0;
 	sqlite3_stmt *sqlstmt;
 	time_t timestamp;
@@ -1034,7 +1034,11 @@ int db_getdata_range(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *
 
 	dend[0] = '\0';
 	if (strlen(dataend)) {
-		snprintf(dend, 32, "and date <= '%s'", dataend);
+		if (strchr(dataend, ':')) {
+			snprintf(dend, 44, "and date <= datetime('%s')", dataend);
+		} else {
+			snprintf(dend, 44, "and date <= datetime('%s 23:59:59')", dataend);
+		}
 	}
 
 	limit[0] = '\0';
