@@ -31,8 +31,7 @@ void showdb(const char *interface, int qmode, const char *databegin, const char 
 			showlist(&info, "month", databegin, dataend);
 			break;
 		case 3:
-			/* TODO: should data range selection be supported here? */
-			showlist(&info, "top", "", "");
+			showlist(&info, "top", databegin, dataend);
 			break;
 		case 5:
 			showsummary(&info, 1);

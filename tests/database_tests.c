@@ -240,25 +240,25 @@ START_TEST(database_outputs_do_not_crash)
 	}
 
 	xmlheader();
-	showxml("something", 'd');
-	showxml("something", 'm');
-	showxml("something", 't');
-	showxml("something", 'h');
-	showxml("something", 'y');
-	showxml("something", 'f');
-	showxml("something", 'a');
-	showxml("nothing", 'a');
+	showxml("something", 'd', "", "");
+	showxml("something", 'm', "", "");
+	showxml("something", 't', "", "");
+	showxml("something", 'h', "", "");
+	showxml("something", 'y', "", "");
+	showxml("something", 'f', "", "");
+	showxml("something", 'a', "", "");
+	showxml("nothing", 'a', "", "");
 	xmlfooter();
 
 	jsonheader();
-	showjson("something", 0, 'd');
-	showjson("something", 0, 'm');
-	showjson("something", 0, 't');
-	showjson("something", 0, 'h');
-	showjson("something", 0, 'y');
-	showjson("something", 0, 'f');
-	showjson("something", 1, 'a');
-	showjson("nothing", 0, 'a');
+	showjson("something", 0, 'd', "", "");
+	showjson("something", 0, 'm', "", "");
+	showjson("something", 0, 't', "", "");
+	showjson("something", 0, 'h', "", "");
+	showjson("something", 0, 'y', "", "");
+	showjson("something", 0, 'f', "", "");
+	showjson("something", 1, 'a', "", "");
+	showjson("nothing", 0, 'a', "", "");
 	jsonfooter();
 
 	ret = db_close();
@@ -301,25 +301,25 @@ START_TEST(database_outputs_do_not_crash_without_data)
 	}
 
 	xmlheader();
-	showxml("something", 'd');
-	showxml("something", 'm');
-	showxml("something", 't');
-	showxml("something", 'h');
-	showxml("something", 'y');
-	showxml("something", 'f');
-	showxml("something", 'a');
+	showxml("something", 'd', "", "");
+	showxml("something", 'm', "", "");
+	showxml("something", 't', "", "");
+	showxml("something", 'h', "", "");
+	showxml("something", 'y', "", "");
+	showxml("something", 'f', "", "");
+	showxml("something", 'a', "", "");
 
 	xmlfooter();
 
 	jsonheader();
-	showjson("something", 0, 'd');
-	showjson("something", 0, 'm');
-	showjson("something", 0, 't');
-	showjson("something", 0, 'h');
-	showjson("something", 0, 'y');
-	showjson("something", 0, 'f');
-	showjson("something", 1, 'a');
-	showjson("nothing", 0, 'a');
+	showjson("something", 0, 'd', "", "");
+	showjson("something", 0, 'm', "", "");
+	showjson("something", 0, 't', "", "");
+	showjson("something", 0, 'h', "", "");
+	showjson("something", 0, 'y', "", "");
+	showjson("something", 0, 'f', "", "");
+	showjson("something", 1, 'a', "", "");
+	showjson("nothing", 0, 'a', "", "");
 	jsonfooter();
 
 	ret = db_close();

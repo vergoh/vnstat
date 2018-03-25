@@ -727,12 +727,10 @@ void handleshowdatabases(PARAMS *p)
 				printf("\nProcessing interface \"%s\"...\n", p->interface);
 			if (cfg.qmode==0) {
 				showdb(p->interface, 5, "", "");
-
-			/* TODO: add support for time range for both xml and json */
 			} else if (cfg.qmode==8) {
-				showxml(p->interface, p->xmlmode);
+				showxml(p->interface, p->xmlmode, p->databegin, p->dataend);
 			} else if (cfg.qmode==10) {
-				showjson(p->interface, dbcount, p->jsonmode);
+				showjson(p->interface, dbcount, p->jsonmode, p->databegin, p->dataend);
 			}
 			dbcount++;
 			dbifl_i = dbifl_i->next;
@@ -769,11 +767,11 @@ void showoneinterface(PARAMS *p, const char *interface)
 		showdb(interface, cfg.qmode, p->databegin, p->dataend);
 	} else if (cfg.qmode==8) {
 		xmlheader();
-		showxml(p->interface, p->xmlmode);
+		showxml(p->interface, p->xmlmode, p->databegin, p->dataend);
 		xmlfooter();
 	} else if (cfg.qmode==10) {
 		jsonheader();
-		showjson(p->interface, 0, p->jsonmode);
+		showjson(p->interface, 0, p->jsonmode, p->databegin, p->dataend);
 		jsonfooter();
 	}
 }

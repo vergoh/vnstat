@@ -2,7 +2,7 @@
 #include "dbsql.h"
 #include "dbjson.h"
 
-void showjson(const char *interface, const int dbcount, const char mode)
+void showjson(const char *interface, const int dbcount, const char mode, const char *databegin, const char *dataend)
 {
 	interfaceinfo info;
 
@@ -35,36 +35,36 @@ void showjson(const char *interface, const int dbcount, const char mode)
 
 	switch (mode) {
 		case 'd':
-			jsondump(&info, "day", 1);
+			jsondump(&info, "day", 1, databegin, dataend);
 			break;
 		case 'm':
-			jsondump(&info, "month", 3);
+			jsondump(&info, "month", 3, databegin, dataend);
 			break;
 		case 't':
-			jsondump(&info, "top", 1);
+			jsondump(&info, "top", 1, databegin, dataend);
 			break;
 		case 'h':
-			jsondump(&info, "hour", 2);
+			jsondump(&info, "hour", 2, databegin, dataend);
 			break;
 		case 'y':
-			jsondump(&info, "year", 4);
+			jsondump(&info, "year", 4, databegin, dataend);
 			break;
 		case 'f':
-			jsondump(&info, "fiveminute", 2);
+			jsondump(&info, "fiveminute", 2, databegin, dataend);
 			break;
 		case 'a':
 		default:
-			jsondump(&info, "fiveminute", 2);
+			jsondump(&info, "fiveminute", 2, databegin, dataend);
 			printf(",");
-			jsondump(&info, "hour", 2);
+			jsondump(&info, "hour", 2, databegin, dataend);
 			printf(",");
-			jsondump(&info, "day", 1);
+			jsondump(&info, "day", 1, databegin, dataend);
 			printf(",");
-			jsondump(&info, "month", 3);
+			jsondump(&info, "month", 3, databegin, dataend);
 			printf(",");
-			jsondump(&info, "year", 4);
+			jsondump(&info, "year", 4, databegin, dataend);
 			printf(",");
-			jsondump(&info, "top", 1);
+			jsondump(&info, "top", 1, databegin, dataend);
 			break;
 	}
 
@@ -73,13 +73,13 @@ void showjson(const char *interface, const int dbcount, const char mode)
 	timeused(__func__, 0);
 }
 
-void jsondump(const interfaceinfo *interface, const char *tablename, const int datetype)
+void jsondump(const interfaceinfo *interface, const char *tablename, const int datetype, const char *databegin, const char *dataend)
 {
 	int first = 1;
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
 
-	if (!db_getdata(&datalist, &datainfo, interface->name, tablename, (uint32_t)cfg.listjsonxml)) {
+	if (!db_getdata_range(&datalist, &datainfo, interface->name, tablename, (uint32_t)cfg.listjsonxml, databegin, dataend)) {
 		printf("Error: Failed to fetch %s data.\n", tablename);
 		return;
 	}

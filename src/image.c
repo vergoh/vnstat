@@ -469,9 +469,6 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		strncpy_nt(stampformat, cfg.tformat, 64);
 		limit = cfg.listtop;
 		offsetx = 30;
-		/* TODO: should data range selection be supported here? */
-		ic->databegin[0] = '\0';
-		ic->dataend[0] = '\0';
 	} else if (strcmp(listname, "hour") == 0) {
 		listtype = 5;
 		strncpy_nt(colname, listname, 8);

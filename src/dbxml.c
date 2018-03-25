@@ -2,7 +2,7 @@
 #include "dbsql.h"
 #include "dbxml.h"
 
-void showxml(const char *interface, const char mode)
+void showxml(const char *interface, const char mode, const char *databegin, const char *dataend)
 {
 	interfaceinfo info;
 
@@ -33,31 +33,31 @@ void showxml(const char *interface, const char mode)
 
 	switch (mode) {
 		case 'd':
-			xmldump(&info, "day", 1);
+			xmldump(&info, "day", 1, databegin, dataend);
 			break;
 		case 'm':
-			xmldump(&info, "month", 3);
+			xmldump(&info, "month", 3, databegin, dataend);
 			break;
 		case 't':
-			xmldump(&info, "top", 1);
+			xmldump(&info, "top", 1, databegin, dataend);
 			break;
 		case 'h':
-			xmldump(&info, "hour", 2);
+			xmldump(&info, "hour", 2, databegin, dataend);
 			break;
 		case 'y':
-			xmldump(&info, "year", 4);
+			xmldump(&info, "year", 4, databegin, dataend);
 			break;
 		case 'f':
-			xmldump(&info, "fiveminute", 2);
+			xmldump(&info, "fiveminute", 2, databegin, dataend);
 			break;
 		case 'a':
 		default:
-			xmldump(&info, "fiveminute", 2);
-			xmldump(&info, "hour", 2);
-			xmldump(&info, "day", 1);
-			xmldump(&info, "month", 3);
-			xmldump(&info, "year", 2);
-			xmldump(&info, "top", 1);
+			xmldump(&info, "fiveminute", 2, databegin, dataend);
+			xmldump(&info, "hour", 2, databegin, dataend);
+			xmldump(&info, "day", 1, databegin, dataend);
+			xmldump(&info, "month", 3, databegin, dataend);
+			xmldump(&info, "year", 2, databegin, dataend);
+			xmldump(&info, "top", 1, databegin, dataend);
 			break;
 	}
 
@@ -67,12 +67,12 @@ void showxml(const char *interface, const char mode)
 	timeused(__func__, 0);
 }
 
-void xmldump(const interfaceinfo *interface, const char *tablename, const int datetype)
+void xmldump(const interfaceinfo *interface, const char *tablename, const int datetype, const char *databegin, const char *dataend)
 {
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
 
-	if (!db_getdata(&datalist, &datainfo, interface->name, tablename, (uint32_t)cfg.listjsonxml)) {
+	if (!db_getdata_range(&datalist, &datainfo, interface->name, tablename, (uint32_t)cfg.listjsonxml, databegin, dataend)) {
 		printf("Error: Failed to fetch %s data.\n", tablename);
 		return;
 	}
