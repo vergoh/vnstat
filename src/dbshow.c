@@ -473,9 +473,13 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 		datalist_i = datalist_i->next;
 		i++;
 	}
-	if (datainfo.count == 0)
-		/* TODO: improve alignment */
-		printf("                           no data available\n");
+	if (datainfo.count == 0) {
+		if (cfg.ostyle != 3) {
+			printf("                        no data available\n");
+		} else {
+			printf("                            no data available\n");
+		}
+	}
 	if (cfg.ostyle == 3) {
 		if (listtype == 4) {
 			printf("   -----");
