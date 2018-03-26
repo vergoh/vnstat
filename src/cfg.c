@@ -33,11 +33,12 @@ void printcfgfile(void)
 	printf("TXHourCharacter   \"%c\"\n\n", cfg.txhourchar[0]);
 
 	printf("# how units are prefixed when traffic is shown\n");
-	printf("# 0 = IEC standard prefixes (KiB/MiB/GiB/TiB)\n");
-	printf("# 1 = old style binary prefixes (KB/MB/GB/TB)\n");
+	printf("# 0 = IEC standard prefixes (KiB/MiB/GiB...)\n");
+	printf("# 1 = old style binary prefixes (KB/MB/GB...)\n");
+	printf("# 2 = SI decimal prefixes (kB/MB/GB...)\n");
 	printf("UnitMode %d\n\n", cfg.unitmode);
 
-	printf("# how units are prefixed when traffic rate is shown\n");
+	printf("# how units are prefixed when traffic rate is shown in bits\n");
 	printf("# 0 = IEC binary prefixes (Kibit/s...)\n");
 	printf("# 1 = SI decimal prefixes (kbit/s...)\n");
 	printf("RateUnitMode %d\n\n", cfg.rateunitmode);
@@ -341,7 +342,7 @@ void validatecfg(void)
 	const char *resettingto = "resetting to";
 	const char *noslashstart = "doesn't start with \"/\", resetting to default.";
 
-	if (cfg.unitmode<0 || cfg.unitmode>1) {
+	if (cfg.unitmode<0 || cfg.unitmode>2) {
 		cfg.unitmode = UNITMODE;
 		snprintf(errorstring, 1024, "%s UnitMode, %s \"%d\".", invalidvalue, resettingto, cfg.unitmode);
 		printe(PT_Config);

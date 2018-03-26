@@ -200,10 +200,11 @@ Log days without any traffic to daily list. 1 = enabled, 0 = disabled.
 
 .TP
 .B UnitMode
-Select how units are prefixed. This option changes only the prefix.
-Both options result in calculation being made using powers of 1024.
-0 = IEC standard prefixes (B/KiB/MiB/GiB/TiB), 1 = old style (JEDEC)
-binary prefixes (B/KB/MB/GB/TB). (vnstat and vnstati only)
+Select how units are prefixed. IEC and JEDEC binary prefixes are calculated
+with powers of 1024. SI decimal prefixes are calculated with powers of 1000.
+0 = IEC standard prefixes (B/KiB/MiB/GiB...), 1 = old style (JEDEC)
+binary prefixes (B/KB/MB/GB...), 2 = SI decimals prefixes (B/kB/MB/GB...)
+(vnstat and vnstati only)
 
 .TP
 .B UseFileLocking

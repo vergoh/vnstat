@@ -1128,9 +1128,9 @@ char *getimagevalue(const uint64_t b, const int len, const int rate)
 	if (b==0){
 		snprintf(buffer, 64, "%*s", len, "--");
 	} else {
-		if (rate && getunit() == 3) {
+		if (rate && (getunit() == 2 || getunit() == 4)) {
 			p = 1000;
-			unit = 3;
+			unit = getunit();
 		}
 		for (i=UNITPREFIXCOUNT-1; i>0; i--) {
 			limit = (uint64_t)(pow(p, i-1)) * 1000;
@@ -1156,7 +1156,7 @@ char *getimagescale(const uint64_t b, const int rate)
 		snprintf(buffer, 8, "--");
 	} else {
 		if (rate) {
-			if (unit == 3) {
+			if (unit == 2 || unit == 4) {
 				p = 1000;
 			}
 			while (div < UNITPREFIXCOUNT && b >= (pow(p, div-1) * 1000)) {
@@ -1175,11 +1175,13 @@ char *getimagescale(const uint64_t b, const int rate)
 
 uint64_t getscale(const uint64_t input, const int rate)
 {
-	int i;
+	int i, unit;
 	unsigned int div = 1024;
 	uint64_t result = input;
 
-	if (rate && getunit() == 3) {
+	unit = getunit();
+
+	if (rate && (unit == 2 || unit == 4)) {
 		div = 1000;
 	}
 

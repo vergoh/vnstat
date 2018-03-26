@@ -148,12 +148,16 @@ uint64_t getbtime(void)
 char *getvalue(const uint64_t bytes, const int len, const int type)
 {
 	static char buffer[64];
-	int i, declen = cfg.defaultdecimals;
+	int i, declen = cfg.defaultdecimals, p = 1024;
 	uint64_t limit;
 
 	/* request types: 1) normal  2) estimate  3) image scale */
 	if (type == 3) {
 		declen = 0;
+	}
+
+	if (cfg.unitmode == 2) {
+		p = 1000;
 	}
 
 	if ( (type == 2) && (bytes == 0) ){
@@ -164,15 +168,15 @@ char *getvalue(const uint64_t bytes, const int len, const int type)
 		snprintf(buffer, 64, "%*s  %*s", declen, "--", (int)strlen(getunitprefix(2)), " ");
 	} else {
 		for (i=UNITPREFIXCOUNT-1; i>0; i--) {
-			limit = (uint64_t)(pow(1024, i-1)) * 1000;
+			limit = (uint64_t)(pow(p, i-1)) * 1000;
 			if (bytes >= limit) {
 				if (i>1) {
-					snprintf(buffer, 64, "%"DECCONV"*.*f %s", getunitspacing(len, 5), declen, bytes/(double)(getunitdivisor(0, i+1)), getunitprefix(i+1));
+					snprintf(buffer, 64, "%"DECCONV"*.*f %s", getunitspacing(len, 5), declen, bytes/(double)(getunitdivisor(cfg.unitmode, i+1)), getunitprefix(i+1));
 				} else {
 					if (type == 2) {
 						declen = 0;
 					}
-					snprintf(buffer, 64, "%"DECCONV"*.*f %s", getunitspacing(len, 2), declen, bytes/(double)(getunitdivisor(0, i+1)), getunitprefix(i+1));
+					snprintf(buffer, 64, "%"DECCONV"*.*f %s", getunitspacing(len, 2), declen, bytes/(double)(getunitdivisor(cfg.unitmode, i+1)), getunitprefix(i+1));
 				}
 				return buffer;
 			}
@@ -228,7 +232,8 @@ const char *getunitprefix(const int index)
 {
     static const char *unitprefix[] = { "na",
         "B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB",  /* IEC   - 1024^n */
-        "B", "KB",  "MB",  "GB",  "TB",  "PB",  "EB" }; /* JEDEC - 1024^n */
+        "B", "KB",  "MB",  "GB",  "TB",  "PB",  "EB",   /* JEDEC - 1024^n */
+        "B", "kB",  "MB",  "GB",  "TB",  "PB",  "EB" }; /* SI    - 1000^n */
 
 	if (index>UNITPREFIXCOUNT) {
 		return unitprefix[0];
@@ -242,6 +247,7 @@ const char *getrateunitprefix(const int unitmode, const int index)
     static const char *rateunitprefix[] = { "na",
         "B/s",     "KiB/s",   "MiB/s",   "GiB/s",   "TiB/s",   "PiB/s",   "EiB/s",    /* IEC   - 1024^n */
         "B/s",     "KB/s",    "MB/s",    "GB/s",    "TB/s",    "PB/s",    "EB/s",     /* JEDEC - 1024^n */
+        "B/s",     "kB/s",    "MB/s",    "GB/s",    "TB/s",    "PB/s",    "EB/s",     /* SI    - 1000^n */
         "bit/s",   "Kibit/s", "Mibit/s", "Gibit/s", "Tibit/s", "Pibit/s", "Eibit/s",  /* IEC   - 1024^n */
         "bit/s",   "kbit/s",  "Mbit/s",  "Gbit/s",  "Tbit/s",  "Pbit/s",  "Ebit/s" }; /* SI    - 1000^n */
 
@@ -257,7 +263,7 @@ uint64_t getunitdivisor(const int unitmode, const int index)
 	if (index>UNITPREFIXCOUNT) {
 		return 1;
 	} else {
-		if (unitmode == 3) {
+		if (unitmode == 2 || unitmode == 4) {
 			return (uint64_t)(pow(1000, index-1));
 		} else {
 			return (uint64_t)(pow(1024, index-1));
@@ -272,7 +278,7 @@ int getunit(void)
 	if (cfg.rateunit == 0) {
 		unit = cfg.unitmode;
 	} else {
-		unit = 2 + cfg.rateunitmode;
+		unit = 3 + cfg.rateunitmode;
 	}
 
 	return unit;
@@ -286,7 +292,7 @@ char *getratestring(const uint64_t rate, const int len, const int declen)
 
 	unit = getunit();
 
-	if (unit == 3) {
+	if (unit == 2 || unit == 4) {
 		p = 1000;
 	}
 

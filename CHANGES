@@ -6,6 +6,8 @@
  - Query of time range specific data
  - Full data import from 1.x version database format including reconstructed
    yearly data
+ - Add option to select units to use SI decimal prefixes using calculations with
+   powers of 1000 (IEC and JEDEC prefixes use powers of 1024)
  - Add yearly and 5 minute resolution statistics
  - Add pebibyte and exbibyte support
  - Add options the configure the length of each list output
