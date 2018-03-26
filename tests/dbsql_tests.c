@@ -961,6 +961,21 @@ START_TEST(db_validate_with_high_version)
 }
 END_TEST
 
+uint64_t get_timestamp(const int year, const int month, const int day, const int hour, const int minute)
+{
+	struct tm stm;
+
+	memset(&stm, 0, sizeof(struct tm));
+	stm.tm_year = year - 1900;
+	stm.tm_mon = month - 1;
+	stm.tm_mday = day;
+	stm.tm_hour = hour;
+	stm.tm_min = minute;
+	stm.tm_isdst = -1;
+
+	return (uint64_t)mktime(&stm);
+}
+
 void range_test_month_setup(void)
 {
 	int ret;
@@ -971,17 +986,17 @@ void range_test_month_setup(void)
 	ret = db_addinterface("ethtest");
 	ck_assert_int_eq(ret, 1);
 
-	ret = db_insertdata("month", "ethtest", 1, 2, 946677600); /* 2000-01-01 */
+	ret = db_insertdata("month", "ethtest", 1, 2, get_timestamp(2000, 1, 1, 0, 0));
 	ck_assert_int_eq(ret, 1);
-	ret = db_insertdata("month", "ethtest", 1, 2, 949356000); /* 2000-02-01 */
+	ret = db_insertdata("month", "ethtest", 1, 2, get_timestamp(2000, 2, 1, 0, 0));
 	ck_assert_int_eq(ret, 1);
-	ret = db_insertdata("month", "ethtest", 1, 2, 951861600); /* 2000-03-01 */
+	ret = db_insertdata("month", "ethtest", 1, 2, get_timestamp(2000, 3, 1, 0, 0));
 	ck_assert_int_eq(ret, 1);
-	ret = db_insertdata("month", "ethtest", 1, 2, 954536400); /* 2000-04-01 */
+	ret = db_insertdata("month", "ethtest", 1, 2, get_timestamp(2000, 4, 1, 0, 0));
 	ck_assert_int_eq(ret, 1);
-	ret = db_insertdata("month", "ethtest", 1, 2, 957128400); /* 2000-05-01 */
+	ret = db_insertdata("month", "ethtest", 1, 2, get_timestamp(2000, 5, 1, 0, 0));
 	ck_assert_int_eq(ret, 1);
-	ret = db_insertdata("month", "ethtest", 1, 2, 959806800); /* 2000-06-01 */
+	ret = db_insertdata("month", "ethtest", 1, 2, get_timestamp(2000, 6, 1, 0, 0));
 	ck_assert_int_eq(ret, 1);
 }
 
