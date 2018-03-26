@@ -324,6 +324,7 @@ START_TEST(validatedatetime_can_detect_invalid_strings)
 	ck_assert_int_eq(validatedatetime("2018-03-24 "), 0);
 	ck_assert_int_eq(validatedatetime("2018-03-24 01:23 "), 0);
 	ck_assert_int_eq(validatedatetime("2018-03-24 "), 0);
+	ck_assert_int_eq(validatedatetime("2018-o3-24"), 0);
 	ck_assert_int_eq(validatedatetime("2018-03-24T01:23"), 0);
 	ck_assert_int_eq(validatedatetime("2018-03-24_01:23"), 0);
 	ck_assert_int_eq(validatedatetime("2018-03-241"), 0);

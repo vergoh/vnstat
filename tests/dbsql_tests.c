@@ -978,7 +978,7 @@ uint64_t get_timestamp(const int year, const int month, const int day, const int
 
 void range_test_month_setup(void)
 {
-	int ret;
+	int ret, i;
 	defaultcfg();
 
 	ret = db_open_rw(1);
@@ -986,18 +986,10 @@ void range_test_month_setup(void)
 	ret = db_addinterface("ethtest");
 	ck_assert_int_eq(ret, 1);
 
-	ret = db_insertdata("month", "ethtest", 1, 2, get_timestamp(2000, 1, 1, 0, 0));
-	ck_assert_int_eq(ret, 1);
-	ret = db_insertdata("month", "ethtest", 1, 2, get_timestamp(2000, 2, 1, 0, 0));
-	ck_assert_int_eq(ret, 1);
-	ret = db_insertdata("month", "ethtest", 1, 2, get_timestamp(2000, 3, 1, 0, 0));
-	ck_assert_int_eq(ret, 1);
-	ret = db_insertdata("month", "ethtest", 1, 2, get_timestamp(2000, 4, 1, 0, 0));
-	ck_assert_int_eq(ret, 1);
-	ret = db_insertdata("month", "ethtest", 1, 2, get_timestamp(2000, 5, 1, 0, 0));
-	ck_assert_int_eq(ret, 1);
-	ret = db_insertdata("month", "ethtest", 1, 2, get_timestamp(2000, 6, 1, 0, 0));
-	ck_assert_int_eq(ret, 1);
+	for (i=1; i<=6; i++) {
+		ret = db_insertdata("month", "ethtest", 1, 2, get_timestamp(2000, i, 1, 0, 0));
+		ck_assert_int_eq(ret, 1);
+	}
 }
 
 START_TEST(db_getdata_range_can_get_months_without_range_defined)
@@ -1356,6 +1348,348 @@ START_TEST(db_getdata_range_can_get_months_with_range_past_first_day_of_month)
 }
 END_TEST
 
+void range_test_hour_setup(void)
+{
+	int ret, i, j;
+	defaultcfg();
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("ethtest");
+	ck_assert_int_eq(ret, 1);
+
+	for (j=2; j<5; j++) {
+		for (i=0; i<24; i++) {
+			ret = db_insertdata("hour", "ethtest", 1, 2, get_timestamp(2002, 2, j, i, 0));
+			ck_assert_int_eq(ret, 1);
+		}
+	}
+}
+
+START_TEST(db_getdata_range_can_get_hours_without_range_defined)
+{
+	int ret, i;
+	char timestamp[64];
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+
+	range_test_hour_setup();
+
+	ret = db_getdata_range(&datalist, &datainfo, "ethtest", "hour", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 72);
+	datalist_i = datalist;
+	i = 0;
+	while (datalist_i != NULL)
+	{
+		switch(i) {
+			case 0:
+				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2002-02-02 00:00");
+				break;
+			case 71:
+				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2002-02-04 23:00");
+				break;
+		}
+		datalist_i = datalist_i->next;
+		i++;
+	}
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_getdata_range_can_get_hours_with_range_matching_existing_data)
+{
+	int ret, i;
+	char timestamp[64];
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+
+	range_test_hour_setup();
+
+	ret = db_getdata_range(&datalist, &datainfo, "ethtest", "hour", 0, "2002-02-02 00:00", "2002-02-04 23:00");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 72);
+	datalist_i = datalist;
+	i = 0;
+	while (datalist_i != NULL)
+	{
+		switch(i) {
+			case 0:
+				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2002-02-02 00:00");
+				break;
+			case 71:
+				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2002-02-04 23:00");
+				break;
+		}
+		datalist_i = datalist_i->next;
+		i++;
+	}
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_getdata_range_can_get_hours_with_range_past_existing_data)
+{
+	int ret, i;
+	char timestamp[64];
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+
+	range_test_hour_setup();
+
+	ret = db_getdata_range(&datalist, &datainfo, "ethtest", "hour", 0, "2002-01-01 15:00", "2002-02-04 23:30");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 72);
+	datalist_i = datalist;
+	i = 0;
+	while (datalist_i != NULL)
+	{
+		switch(i) {
+			case 0:
+				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2002-02-02 00:00");
+				break;
+			case 71:
+				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2002-02-04 23:00");
+				break;
+		}
+		datalist_i = datalist_i->next;
+		i++;
+	}
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_getdata_range_can_get_hours_with_range_limiting_begin_and_end)
+{
+	int ret, i;
+	char timestamp[64];
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+
+	range_test_hour_setup();
+
+	ret = db_getdata_range(&datalist, &datainfo, "ethtest", "hour", 0, "2002-02-02 20:00", "2002-02-03 17:00");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 22);
+	datalist_i = datalist;
+	i = 0;
+	while (datalist_i != NULL)
+	{
+		switch(i) {
+			case 0:
+				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2002-02-02 20:00");
+				break;
+			case 21:
+				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2002-02-03 17:00");
+				break;
+		}
+		datalist_i = datalist_i->next;
+		i++;
+	}
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_getdata_range_can_get_hours_with_range_limiting_begin)
+{
+	int ret, i;
+	char timestamp[64];
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+
+	range_test_hour_setup();
+
+	ret = db_getdata_range(&datalist, &datainfo, "ethtest", "hour", 0, "2002-02-02 20:00", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 52);
+	datalist_i = datalist;
+	i = 0;
+	while (datalist_i != NULL)
+	{
+		switch(i) {
+			case 0:
+				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2002-02-02 20:00");
+				break;
+			case 51:
+				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2002-02-04 23:00");
+				break;
+		}
+		datalist_i = datalist_i->next;
+		i++;
+	}
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_getdata_range_can_get_hours_with_range_limiting_begin_with_limit)
+{
+	int ret, i;
+	char timestamp[64];
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+
+	range_test_hour_setup();
+
+	ret = db_getdata_range(&datalist, &datainfo, "ethtest", "hour", 11, "2002-02-02 20:00", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 11);
+	datalist_i = datalist;
+	i = 0;
+	while (datalist_i != NULL)
+	{
+		switch(i) {
+			case 0:
+				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2002-02-02 20:00");
+				break;
+			case 10:
+				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2002-02-03 06:00");
+				break;
+		}
+		datalist_i = datalist_i->next;
+		i++;
+	}
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_getdata_range_can_get_hours_with_range_limiting_end)
+{
+	int ret, i;
+	char timestamp[64];
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+
+	range_test_hour_setup();
+
+	ret = db_getdata_range(&datalist, &datainfo, "ethtest", "hour", 0, "", "2002-02-02 20:00");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 21);
+	datalist_i = datalist;
+	i = 0;
+	while (datalist_i != NULL)
+	{
+		switch(i) {
+			case 0:
+				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2002-02-02 00:00");
+				break;
+			case 20:
+				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2002-02-02 20:00");
+				break;
+		}
+		datalist_i = datalist_i->next;
+		i++;
+	}
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_getdata_range_can_get_hours_with_range_limiting_end_with_limit)
+{
+	int ret, i;
+	char timestamp[64];
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+
+	range_test_hour_setup();
+
+	ret = db_getdata_range(&datalist, &datainfo, "ethtest", "hour", 5, "", "2002-02-02 20:00");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 5);
+	datalist_i = datalist;
+	i = 0;
+	while (datalist_i != NULL)
+	{
+		switch(i) {
+			case 0:
+				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2002-02-02 16:00");
+				break;
+			case 4:
+				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2002-02-02 20:00");
+				break;
+		}
+		datalist_i = datalist_i->next;
+		i++;
+	}
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_getdata_range_can_get_hours_with_range_on_same_hour)
+{
+	int ret, i;
+	char timestamp[64];
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+
+	range_test_hour_setup();
+
+	ret = db_getdata_range(&datalist, &datainfo, "ethtest", "hour", 0, "2002-02-02 20:00", "2002-02-02 20:00");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 1);
+	datalist_i = datalist;
+	i = 0;
+	while (datalist_i != NULL)
+	{
+		switch(i) {
+			case 0:
+				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2002-02-02 20:00");
+				break;
+		}
+		datalist_i = datalist_i->next;
+		i++;
+	}
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "ethtest", "hour", 0, "2002-02-02 20:15", "2002-02-02 20:45");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 0);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 void add_dbsql_tests(Suite *s)
 {
 	TCase *tc_dbsql = tcase_create("DB SQL");
@@ -1410,5 +1744,14 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_getdata_range_can_get_months_with_range_limiting_end_with_limit);
 	tcase_add_test(tc_dbsql, db_getdata_range_can_get_months_with_range_on_same_month);
 	tcase_add_test(tc_dbsql, db_getdata_range_can_get_months_with_range_past_first_day_of_month);
+	tcase_add_test(tc_dbsql, db_getdata_range_can_get_hours_without_range_defined);
+	tcase_add_test(tc_dbsql, db_getdata_range_can_get_hours_with_range_matching_existing_data);
+	tcase_add_test(tc_dbsql, db_getdata_range_can_get_hours_with_range_past_existing_data);
+	tcase_add_test(tc_dbsql, db_getdata_range_can_get_hours_with_range_limiting_begin_and_end);
+	tcase_add_test(tc_dbsql, db_getdata_range_can_get_hours_with_range_limiting_begin);
+	tcase_add_test(tc_dbsql, db_getdata_range_can_get_hours_with_range_limiting_begin_with_limit);
+	tcase_add_test(tc_dbsql, db_getdata_range_can_get_hours_with_range_limiting_end);
+	tcase_add_test(tc_dbsql, db_getdata_range_can_get_hours_with_range_limiting_end_with_limit);
+	tcase_add_test(tc_dbsql, db_getdata_range_can_get_hours_with_range_on_same_hour);
 	suite_add_tcase(s, tc_dbsql);
 }
