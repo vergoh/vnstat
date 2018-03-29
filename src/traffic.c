@@ -57,9 +57,6 @@ void trafficmeter(char iface[], unsigned int sampletime)
 		sleep(sampletime);
 	}
 
-	cursortocolumn(1);
-	eraseline();
-
 	/* read those values again... */
 	if (!getifinfo(iface)) {
 		printf("Error: Interface \"%s\" not available, exiting.\n", iface);
