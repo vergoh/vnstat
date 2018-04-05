@@ -67,16 +67,22 @@ void setuser(const char *user)
 		return;
 	}
 
-	if (!hasroot()) {
-		printf("Error: User can only be set as root.\n");
-		exit(EXIT_FAILURE);
-	}
-
 	if (isnumeric(user) && atoi(user) == 0) {
 		return;
 	}
 
 	uid = getuser(user);
+
+	if (uid == getuser("")) {
+		if (debug)
+			printf("no user switching needed, already as requested user \"%s\"\n", user);
+		return;
+	}
+
+	if (!hasroot()) {
+		printf("Error: User can only be set as root.\n");
+		exit(EXIT_FAILURE);
+	}
 
 	if (debug)
 		printf("switching to user id %d.\n", uid);
@@ -95,16 +101,22 @@ void setgroup(const char *group)
 		return;
 	}
 
-	if (!hasroot()) {
-		printf("Error: Group can only be set as root.\n");
-		exit(EXIT_FAILURE);
-	}
-
 	if (isnumeric(group) && atoi(group) == 0) {
 		return;
 	}
 
 	gid = getgroup(group);
+
+	if (gid == getgroup("")) {
+		if (debug)
+			printf("no group switching needed, already as requested group \"%s\"\n", group);
+		return;
+	}
+
+	if (!hasroot()) {
+		printf("Error: Group can only be set as root.\n");
+		exit(EXIT_FAILURE);
+	}
 
 	if (debug)
 		printf("switching to group id %d.\n", gid);

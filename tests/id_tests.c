@@ -66,10 +66,28 @@ START_TEST(setuser_with_empty_user)
 }
 END_TEST
 
+START_TEST(setuser_with_current_user)
+{
+	char temp[16];
+	suppress_output();
+	snprintf(temp, 16, "%d", getuser(""));
+	setuser(temp);
+}
+END_TEST
+
 START_TEST(setgroup_with_empty_group)
 {
 	suppress_output();
 	setgroup("");
+}
+END_TEST
+
+START_TEST(setgroup_with_current_group)
+{
+	char temp[16];
+	suppress_output();
+	snprintf(temp, 16, "%d", getgroup(""));
+	setgroup(temp);
 }
 END_TEST
 
@@ -85,6 +103,8 @@ void add_id_tests(Suite *s)
 	tcase_add_exit_test(tc_id, getgroup_no_such_user_string, 1);
 	tcase_add_exit_test(tc_id, getgroup_no_such_user_numeric, 1);
 	tcase_add_test(tc_id, setuser_with_empty_user);
+	tcase_add_test(tc_id, setuser_with_current_user);
 	tcase_add_test(tc_id, setgroup_with_empty_group);
+	tcase_add_test(tc_id, setgroup_with_current_group);
 	suite_add_tcase(s, tc_id);
 }
