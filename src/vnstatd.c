@@ -280,18 +280,21 @@ int main(int argc, char *argv[])
 
 void showhelp(void)
 {
-	printf(" vnStat daemon %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
-	printf("         -d, --daemon         fork process to background\n");
-	printf("         -n, --nodaemon       stay in foreground attached to the terminal\n\n");
-	printf("         -s, --sync           sync interface counters on first update\n");
-	printf("         -D, --debug          show additional debug and disable daemon\n");
-	printf("         -?, --help           show this help\n");
-	printf("         -v, --version        show version\n");
-	printf("         -p, --pidfile        select used pid file\n");
-	printf("         -u, --user           set daemon process user\n");
-	printf("         -g, --group          set daemon process group\n");
-	printf("         --config             select used config file\n");
-	printf("         --noadd              don't add found interfaces if no dbs are found\n");
-	printf("         --alwaysadd          always add new interfaces even when some dbs exist\n\n");
+	printf("vnStat daemon %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
+
+	printf("      -d, --daemon             fork process to background\n");
+	printf("      -n, --nodaemon           stay in foreground attached to the terminal\n\n");
+
+	printf("      -s, --sync               sync interface counters on first update\n");
+	printf("      -D, --debug              show additional debug and disable daemon\n");
+	printf("      -?, --help               show this help\n");
+	printf("      -v, --version            show version\n");
+	printf("      -p, --pidfile <file>     select used pid file\n");
+	printf("      -u, --user <user>        set daemon process user\n");
+	printf("      -g, --group <group>      set daemon process group\n");
+	printf("      --config <config file>   select used config file\n");
+	printf("      --noadd                  don't add found interfaces if no dbs are found\n");
+	printf("      --alwaysadd              always add new interfaces even when some dbs exist\n\n");
+
 	printf("See also \"man vnstatd\".\n");
 }

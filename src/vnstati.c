@@ -337,36 +337,38 @@ void initiparams(IPARAMS *p)
 
 void showihelp(IPARAMS *p)
 {
-	printf(" vnStat image output %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
-	printf("         -5,  --fiveminutes    output 5 minutes\n");
-	printf("         -h,  --hours          output hours\n");
-	printf("         -hl, --hourslist      output hours list\n");
-	printf("         -d,  --days           output days\n");
-	printf("         -m,  --months         output months\n");
-	printf("         -y,  --years          output years\n");
-	printf("         -t,  --top            output top days\n");
-	printf("         -s,  --summary        output summary\n");
-	printf("         -hs, --hsummary       output horizontal summary with hours\n");
-	printf("         -vs, --vsummary       output vertical summary with hours\n");
-	printf("         -nh, --noheader       remove header from output\n");
-	printf("         -ne, --noedge         remove edge from output\n");
-	printf("         -nl, --nolegend       remove legend from output\n");
-	printf("         -ru, --rateunit       swap configured rate unit\n");
-	printf("         -o,  --output         select output filename\n");
-	printf("         -c,  --cache          update output only when too old\n");
-	printf("         -i,  --iface          used interface (default: %s)\n", p->interface);
-	printf("         -b,  --begin          begin list with specific date\n");
-	printf("         -e,  --end            end list with specific date\n");
-	printf("         -?,  --help           this help\n");
-	printf("         -D,  --debug          show some additional debug information\n");
-	printf("         -v,  --version        show version\n");
-	printf("         --dbdir               select database directory\n");
-	printf("         --style               select output style (0-3)\n");
-	printf("         --locale              set locale\n");
-	printf("         --config              select config file\n");
-	printf("         --altdate             use alternative date location\n");
-	printf("         --headertext          specify header text string\n");
-	printf("         --transparent         toggle background transparency\n\n");
+	printf("vnStat image output %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
+
+	printf("      -5,  --fiveminutes [count]   output 5 minutes\n");
+	printf("      -h,  --hours                 output hours\n");
+	printf("      -hl, --hourslist [count]     output hours list\n");
+	printf("      -d,  --days [count]          output days\n");
+	printf("      -m,  --months [count]        output months\n");
+	printf("      -y,  --years [count]         output years\n");
+	printf("      -t,  --top [count]           output top days\n");
+	printf("      -s,  --summary               output summary\n");
+	printf("      -hs, --hsummary              output horizontal summary with hours\n");
+	printf("      -vs, --vsummary              output vertical summary with hours\n");
+	printf("      -nh, --noheader              remove header from output\n");
+	printf("      -ne, --noedge                remove edge from output\n");
+	printf("      -nl, --nolegend              remove legend from output\n");
+	printf("      -ru, --rateunit [mode]       swap configured rate unit\n");
+	printf("      -o,  --output <file>         select output filename\n");
+	printf("      -c,  --cache <minutes>       update output only when too old\n");
+	printf("      -i,  --iface <interface>     select interface (default: %s)\n", p->interface);
+	printf("      -b,  --begin <date>          set list begin date\n");
+	printf("      -e,  --end <date>            set list end date\n");
+	printf("      -?,  --help                  this help\n");
+	printf("      -D,  --debug                 show some additional debug information\n");
+	printf("      -v,  --version               show version\n");
+	printf("      --dbdir <directory>          select database directory\n");
+	printf("      --style <mode>               select output style (0-3)\n");
+	printf("      --locale <locale>            set locale\n");
+	printf("      --config <config file>       select config file\n");
+	printf("      --altdate                    use alternative date location\n");
+	printf("      --headertext <text>          specify header text string\n");
+	printf("      --transparent [enabled]      toggle background transparency\n\n");
+
 	printf("See also \"man vnstati\".\n");
 }
 

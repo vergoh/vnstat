@@ -506,69 +506,75 @@ void initparams(PARAMS *p)
 
 void showhelp(PARAMS *p)
 {
-	printf(" vnStat %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
+	printf("vnStat %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
 
-	printf("         -q,  --query          query database\n");
-	printf("         -5,  --fiveminutes    show 5 minutes\n");
-	printf("         -h,  --hours          show hours\n");
-	printf("         -hl, --hourslist      show hours list\n");
-	printf("         -d,  --days           show days\n");
-	printf("         -m,  --months         show months\n");
-	printf("         -y,  --years          show years\n");
-	printf("         -t,  --top            show top days\n");
-	printf("         -s,  --short          use short output\n");
-	printf("         -i,  --iface          select interface (default: %s)\n", p->definterface);
-	printf("         -?,  --help           short help\n");
-	printf("         -v,  --version        show version\n");
-	printf("         -tr, --traffic        calculate traffic\n");
-	printf("         -ru, --rateunit       swap configured rate unit\n");
-	printf("         -l,  --live           show transfer rate in real time\n\n");
+	printf("      -5,  --fiveminutes [count]   show 5 minutes\n");
+	printf("      -h,  --hours                 show hours\n");
+	printf("      -hl, --hourslist [count]     show hours list\n");
+	printf("      -d,  --days [count]          show days\n");
+	printf("      -m,  --months [count]        show months\n");
+	printf("      -y,  --years [count]         show years\n");
+	printf("      -t,  --top [count]           show top days\n\n");
 
-	printf("See also \"--longhelp\" for complete options list and \"man vnstat\".\n");
+	printf("      -b, --begin <date>           set list begin date\n");
+	printf("      -e, --end <date>             set list end date\n\n");
+
+	printf("      --oneline [mode]             show simple parseable format\n");
+	printf("      --json [mode] [limit]        show database in json format\n");
+	printf("      --xml [mode] [limit]         show database in xml format\n\n");
+
+	printf("      -tr, --traffic [time]        calculate traffic\n");
+	printf("      -l,  --live [mode]           show transfer rate in real time\n");
+	printf("      -i,  --iface <interface>     select interface (default: %s)\n\n", p->definterface);
+
+	printf("Use \"--longhelp\" or \"man vnstat\" for complete list of options.\n");
 }
 
 void showlonghelp(PARAMS *p)
 {
-	printf(" vnStat %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
+	printf("vnStat %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
 
-	printf("   Query:\n");
-	printf("         -q,  --query          query database\n");
-	printf("         -5,  --fiveminutes    show 5 minutes\n");
-	printf("         -h,  --hours          show hours\n");
-	printf("         -hl, --hourslist      show hours list\n");
-	printf("         -d,  --days           show days\n");
-	printf("         -m,  --months         show months\n");
-	printf("         -y,  --years          show years\n");
-	printf("         -t,  --top            show top days\n");
-	printf("         -s,  --short          use short output\n");
-	printf("         -b,  --begin          begin list with specific date\n");
-	printf("         -e,  --end            end list with specific date\n");
-	printf("         -ru, --rateunit       swap configured rate unit\n");
-	printf("         --oneline             show simple parseable format\n");
-	printf("         --json                show database in json format\n");
-	printf("         --xml                 show database in xml format\n");
+	printf("Query:\n");
 
-	printf("   Modify:\n");
-	printf("         --add                 add interface to database\n");
-	printf("         --remove              remove interface from database\n");
-	printf("         --setalias            set alias for interface\n");
+	printf("      -q,  --query                 query database\n");
+	printf("      -s,  --short                 use short output\n");
+	printf("      -5,  --fiveminutes [count]   show 5 minutes\n");
+	printf("      -h,  --hours                 show hours\n");
+	printf("      -hl, --hourslist [count]     show hours list\n");
+	printf("      -d,  --days [count]          show days\n");
+	printf("      -m,  --months [count]        show months\n");
+	printf("      -y,  --years [count]         show years\n");
+	printf("      -t,  --top [count]           show top days\n");
+	printf("      -b,  --begin <date>          set list begin date\n");
+	printf("      -e,  --end <date>            set list end date\n");
+	printf("      --oneline [mode]             show simple parseable format\n");
+	printf("      --json [mode] [limit]        show database in json format\n");
+	printf("      --xml [mode] [limit]         show database in xml format\n\n");
 
-	printf("   Misc:\n");
-	printf("         -i,  --iface          select interface (default: %s)\n", p->definterface);
-	printf("         -?,  --help           short help\n");
-	printf("         -D,  --debug          show some additional debug information\n");
-	printf("         -v,  --version        show version\n");
-	printf("         -tr, --traffic        calculate traffic\n");
-	printf("         -l,  --live           show transfer rate in real time\n");
-	printf("         --style               select output style (0-4)\n");
-	printf("         --iflist              show list of available interfaces\n");
-	printf("         --dbdir               select database directory\n");
-	printf("         --locale              set locale\n");
-	printf("         --config              select config file\n");
-	printf("         --showconfig          dump config file with current settings\n");
-	printf("         --longhelp            display this help\n\n");
+	printf("Modify:\n");
 
-	printf("See also \"man vnstat\".\n");
+	printf("      --add                        add interface to database\n");
+	printf("      --remove                     remove interface from database\n");
+	printf("      --setalias <alias>           set alias for interface\n\n");
+
+	printf("Misc:\n");
+
+	printf("      -i,  --iface <interface>     select interface (default: %s)\n", p->definterface);
+	printf("      -?,  --help                  show short help\n");
+	printf("      -D,  --debug                 show some additional debug information\n");
+	printf("      -v,  --version               show version\n");
+	printf("      -tr, --traffic [time]        calculate traffic\n");
+	printf("      -l,  --live [mode]           show transfer rate in real time\n");
+	printf("      -ru, --rateunit [mode]       swap configured rate unit\n");
+	printf("      --style <mode>               select output style (0-4)\n");
+	printf("      --iflist                     show list of available interfaces\n");
+	printf("      --dbdir <directory>          select database directory\n");
+	printf("      --locale <locale>            set locale\n");
+	printf("      --config <config file>       select config file\n");
+	printf("      --showconfig                 dump config file with current settings\n");
+	printf("      --longhelp                   show this help\n\n");
+
+	printf("See also \"man vnstat\" for longer descriptions of each option.\n");
 }
 
 void handleremoveinterface(PARAMS *p)
