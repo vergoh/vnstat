@@ -5,6 +5,7 @@ void printcfgfile(void)
 {
 	ibwnode *p = ifacebw;
 
+	/* common/vnstat section */
 	printf("# vnStat %s config file\n", getversion());
 	printf("##\n\n");
 
@@ -17,11 +18,7 @@ void printcfgfile(void)
 	printf("# locale (LC_ALL) (\"-\" = use system locale)\n");
 	printf("Locale \"%s\"\n\n", cfg.locale);
 
-	printf("# on which day should months change\n");
-	printf("MonthRotate %d\n\n", cfg.monthrotate);
-
 	printf("# date output formats for -d, -m, -t and -w\n");
-	printf("# see 'man date' for control codes\n");
 	printf("DayFormat    \"%s\"\n", cfg.dformat);
 	printf("MonthFormat  \"%s\"\n", cfg.mformat);
 	printf("TopFormat    \"%s\"\n\n", cfg.tformat);
@@ -38,6 +35,9 @@ void printcfgfile(void)
 	printf("# 2 = SI decimal prefixes (kB/MB/GB...)\n");
 	printf("UnitMode %d\n\n", cfg.unitmode);
 
+	printf("# used rate unit (0 = bytes, 1 = bits)\n");
+	printf("RateUnit %d\n\n", cfg.rateunit);
+
 	printf("# how units are prefixed when traffic rate is shown in bits\n");
 	printf("# 0 = IEC binary prefixes (Kibit/s...)\n");
 	printf("# 1 = SI decimal prefixes (kbit/s...)\n");
@@ -49,15 +49,39 @@ void printcfgfile(void)
 	printf("# 3 = rate column visible\n");
 	printf("OutputStyle %d\n\n", cfg.ostyle);
 
-	printf("# used rate unit (0 = bytes, 1 = bits)\n");
-	printf("RateUnit %d\n\n", cfg.rateunit);
-
 	printf("# number of decimals to use in outputs\n");
 	printf("DefaultDecimals %d\n", cfg.defaultdecimals);
 	printf("HourlyDecimals %d\n\n", cfg.hourlydecimals);
 
 	printf("# spacer for separating hourly sections (0 = none, 1 = '|', 2 = '][', 3 = '[ ]')\n");
 	printf("HourlySectionStyle %d\n\n", cfg.hourlystyle);
+
+	printf("# how many seconds should sampling for -tr take by default\n");
+	printf("Sampletime %d\n\n", cfg.sampletime);
+
+	printf("# default query mode\n");
+	printf("# 0 = normal, 1 = days, 2 = months, 3 = top, 5 = short\n");
+	printf("# 7 = hours, 8 = xml, 9 = one line, 10 = json\n");
+	printf("QueryMode %d\n\n", cfg.qmode);
+
+	printf("# default list output entry count (0 = all)\n");
+	printf("List5Mins      %2d\n", cfg.listfivemins);
+	printf("ListHours      %2d\n", cfg.listhours);
+	printf("ListDays       %2d\n", cfg.listdays);
+	printf("ListMonths     %2d\n", cfg.listmonths);
+	printf("ListYears      %2d\n", cfg.listyears);
+	printf("ListTop        %2d\n", cfg.listtop);
+
+	printf("\n\n");
+
+	/* vnstatd section */
+	printf("# vnstatd\n##\n\n");
+
+	printf("# switch to given user when started as root (leave empty to disable)\n");
+	printf("DaemonUser \"%s\"\n\n", cfg.daemonuser);
+
+	printf("# switch to given user when started as root (leave empty to disable)\n");
+	printf("DaemonGroup \"%s\"\n\n", cfg.daemongroup);
 
 	printf("# try to detect interface maximum bandwidth, 0 = disable feature\n");
 	printf("# MaxBandwidth will be used as fallback value when enabled\n");
@@ -77,55 +101,13 @@ void printcfgfile(void)
 
 	printf("\n");
 
-	printf("# how many seconds should sampling for -tr take by default\n");
-	printf("Sampletime %d\n\n", cfg.sampletime);
-
-	printf("# default query mode\n");
-	printf("# 0 = normal, 1 = days, 2 = months, 3 = top, 5 = short\n");
-	printf("# 7 = hours, 8 = xml, 9 = one line, 10 = json\n");
-	printf("QueryMode %d\n\n", cfg.qmode);
-
-	printf("# filesystem disk space check (1 = enabled, 0 = disabled)\n");
-	printf("CheckDiskSpace %d\n\n", cfg.spacecheck);
-
-	printf("# database file locking (1 = enabled, 0 = disabled)\n");
-	printf("UseFileLocking %d\n\n", cfg.flock);
-
-	printf("# how much the boot time can variate between updates (seconds)\n");
-	printf("BootVariation %d\n\n", cfg.bvar);
-
-	printf("# log days without traffic to daily list (1 = enabled, 0 = disabled)\n");
-	printf("TrafficlessDays %d\n\n", cfg.traflessday);
-
-	printf("# default list output entry count (0 = all)\n");
-	printf("List5Mins      %2d\n", cfg.listfivemins);
-	printf("ListHours      %2d\n", cfg.listhours);
-	printf("ListDays       %2d\n", cfg.listdays);
-	printf("ListMonths     %2d\n", cfg.listmonths);
-	printf("ListYears      %2d\n", cfg.listyears);
-	printf("ListTop        %2d\n\n", cfg.listtop);
-
 	printf("# data retention durations (-1 = unlimited, 0 = feature disabled)\n");
 	printf("5MinuteHours   %2d\n", cfg.fiveminutehours);
 	printf("HourlyDays     %2d\n", cfg.hourlydays);
 	printf("DailyDays      %2d\n", cfg.dailydays);
 	printf("MonthlyMonths  %2d\n", cfg.monthlymonths);
 	printf("YearlyYears    %2d\n", cfg.yearlyyears);
-	printf("TopDayEntries  %2d\n", cfg.topdayentries);
-
-	printf("\n\n");
-
-	printf("# vnstatd\n##\n\n");
-
-	printf("# switch to given user when started as root (leave empty to disable)\n");
-	printf("DaemonUser \"%s\"\n\n", cfg.daemonuser);
-
-	printf("# switch to given user when started as root (leave empty to disable)\n");
-	printf("DaemonGroup \"%s\"\n\n", cfg.daemongroup);
-
-	printf("# how many minutes to wait during daemon startup for system clock to\n");
-	printf("# sync time if most recent database update appears to be in the future\n");
-	printf("TimeSyncWait %d\n\n", cfg.timesyncwait);
+	printf("TopDayEntries  %2d\n\n", cfg.topdayentries);
 
 	printf("# how often (in seconds) interface data is updated\n");
 	printf("UpdateInterval %d\n\n", cfg.updateinterval);
@@ -133,13 +115,30 @@ void printcfgfile(void)
 	printf("# how often (in seconds) interface status changes are checked\n");
 	printf("PollInterval %d\n\n", cfg.pollinterval);
 
-	printf("# how often (in minutes) data is saved to file\n");
+	printf("# how often (in minutes) data is saved to database\n");
 	printf("SaveInterval %d\n\n", cfg.saveinterval);
 
 	printf("# how often (in minutes) data is saved when all interface are offline\n");
 	printf("OfflineSaveInterval %d\n\n", cfg.offsaveinterval);
 
-	printf("# how often (in minutes) bandwidth detection is redone when\n");
+	/* TODO */
+	printf("# on which day should months change\n");
+	printf("MonthRotate %d\n\n", cfg.monthrotate);
+
+	printf("# filesystem disk space check (1 = enabled, 0 = disabled)\n");
+	printf("CheckDiskSpace %d\n\n", cfg.spacecheck);
+
+	printf("# how much the boot time can variate between updates (seconds)\n");
+	printf("BootVariation %d\n\n", cfg.bvar);
+
+	printf("# log days without traffic to daily list (1 = enabled, 0 = disabled)\n");
+	printf("TrafficlessDays %d\n\n", cfg.traflessday);
+
+	printf("# how many minutes to wait during daemon startup for system clock to\n");
+	printf("# sync time if most recent database update appears to be in the future\n");
+	printf("TimeSyncWait %d\n\n", cfg.timesyncwait);
+
+	printf("# how often (in minutes) bandwidth detection is done when\n");
 	printf("# BandwidthDetection is enabled (0 = disabled)\n");
 	printf("BandwidthDetectionInterval %d\n\n", cfg.bwdetectioninterval);
 
@@ -163,6 +162,7 @@ void printcfgfile(void)
 
 	printf("\n\n");
 
+	/* vnstati section */
 	printf("# vnstati\n##\n\n");
 
 	printf("# title timestamp format\n");
@@ -226,7 +226,6 @@ int loadcfg(const char *cfgfile)
 		{ "Sampletime", 0, &cfg.sampletime, 0, 0 },
 		{ "QueryMode", 0, &cfg.qmode, 0, 0 },
 		{ "CheckDiskSpace", 0, &cfg.spacecheck, 0, 0 },
-		{ "UseFileLocking", 0, &cfg.flock, 0, 0 },
 		{ "BootVariation", 0, &cfg.bvar, 0, 0 },
 		{ "TrafficlessDays", 0, &cfg.traflessday, 0, 0 },
 		{ "List5Mins", 0, &cfg.listfivemins, 0, 0 },
@@ -405,12 +404,6 @@ void validatecfg(void)
 	if (cfg.spacecheck<0 || cfg.spacecheck>1) {
 		cfg.spacecheck = USESPACECHECK;
 		snprintf(errorstring, 1024, "%s CheckDiskSpace, %s \"%d\".", invalidvalue, resettingto, cfg.spacecheck);
-		printe(PT_Config);
-	}
-
-	if (cfg.flock<0 || cfg.flock>1) {
-		cfg.flock = USEFLOCK;
-		snprintf(errorstring, 1024, "%s UseFileLocking, %s \"%d\".", invalidvalue, resettingto, cfg.flock);
 		printe(PT_Config);
 	}
 
@@ -626,7 +619,6 @@ void defaultcfg(void)
 	cfg.bwdetectioninterval = BWDETECTINTERVAL;
 	cfg.maxbw = DEFMAXBW;
 	cfg.spacecheck = USESPACECHECK;
-	cfg.flock = USEFLOCK;
 	cfg.hourlyrate = HOURLYRATE;
 	cfg.summaryrate = SUMMARYRATE;
 	cfg.traflessday = TRAFLESSDAY;

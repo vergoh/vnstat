@@ -37,28 +37,6 @@ unlimited entries or to 0 to disable the data collection of this
 resolution.
 
 .TP
-.B BandwidthDetection
-Try to automatically detect
-.B MaxBandwidth
-value for each monitored interface. Mostly only ethernet interfaces support
-this feature.
-.B MaxBandwidth
-or interface specific
-.B MaxBW
-will be used as fallback value if detection fails.
-1 = enabled, 0 = disabled. (vnstat and vnstatd only)
-
-.TP
-.B BootVariation
-Time in seconds how much the boot time reported by system kernel can variate
-between updates. Value range: 0..300
-
-.TP
-.B CheckDiskSpace
-Enable or disable the availability check of at least some free disk space before
-a database write. 1 = enabled, 0 = disabled.
-
-.TP
 .B DatabaseDir
 Specifies the directory where interface databases are to be stored.
 A full path must be given and a leading '/' isn't required.
@@ -117,32 +95,11 @@ environment variable. Set to "-" or leave empty in order to use the
 system default value. (vnstat and vnstati only)
 
 .TP
-.B MaxBandwidth
-Maximum bandwidth for all interfaces. If the interface specific traffic
-exceeds the given value then the data is assumed to be invalid and rejected.
-Set to 0 in order to disable the feature. Value range: 0..50000
-(vnstat and vnstatd only)
-
-.TP
-.B MaxBW
-Same as MaxBandwidth but can be used for setting individual limits
-for selected interfaces. The name of the interface is specified directly
-after the MaxBW keyword without spaces. For example MaxBWeth0 for eth0
-and MaxBWppp0 for ppp0. Value range: 0..50000 (vnstat and vnstatd only)
-
-.TP
 .B MonthlyMonths
 Data retention duration for the one month resolution entries. The configuration
 defines for how many past months entries will be stored. Set to -1 for
 unlimited entries or to 0 to disable the data collection of this
 resolution.
-
-.TP
-.B MonthRotate
-Day of month that months are expected to change. Usually set to
-1 but can be set to alternative values for example for tracking
-monthly billed traffic where the billing period doesn't start on
-the first day. Value range: 1..28 (vnstat and vnstatd only)
 
 .TP
 .B OutputStyle
@@ -194,23 +151,12 @@ unlimited entries or to 0 to disable the data collection of this
 resolution.
 
 .TP
-.B TrafficlessDays
-Log days without any traffic to daily list. 1 = enabled, 0 = disabled.
-(vnstat and vnstatd only)
-
-.TP
 .B UnitMode
 Select how units are prefixed. IEC and JEDEC binary prefixes are calculated
 with powers of 1024. SI decimal prefixes are calculated with powers of 1000.
 0 = IEC standard prefixes (B/KiB/MiB/GiB...), 1 = old style (JEDEC)
 binary prefixes (B/KB/MB/GB...), 2 = SI decimals prefixes (B/kB/MB/GB...)
 (vnstat and vnstati only)
-
-.TP
-.B UseFileLocking
-Enable or disable the use of file locking during database access. Disabling
-file locking may cause database corruption if several processes are trying
-to write to the file at the same time.
 
 .TP
 .B YearlyYears
@@ -222,12 +168,34 @@ resolution.
 .SH DAEMON RELATED KEYWORDS
 
 .TP
+.B BandwidthDetection
+Try to automatically detect
+.B MaxBandwidth
+value for each monitored interface. Mostly only ethernet interfaces support
+this feature.
+.B MaxBandwidth
+or interface specific
+.B MaxBW
+will be used as fallback value if detection fails.
+1 = enabled, 0 = disabled.
+
+.TP
 .B BandwidthDetectionInterval
 How often in minutes interface specific detection of
 .B MaxBandwidth
 is done for detecting possible changes when
 .B BandwidthDetection
 is enabled. Can be disabled by setting to 0. Value range: 0..30
+
+.TP
+.B BootVariation
+Time in seconds how much the boot time reported by system kernel can variate
+between updates. Value range: 0..300
+
+.TP
+.B CheckDiskSpace
+Enable or disable the availability check of at least some free disk space before
+a database write. 1 = enabled, 0 = disabled.
 
 .TP
 .B CreateDirs
@@ -267,6 +235,26 @@ the process is started as root.
 Specify log file path and name to be used if UseLogging is set to 1.
 
 .TP
+.B MaxBandwidth
+Maximum bandwidth for all interfaces. If the interface specific traffic
+exceeds the given value then the data is assumed to be invalid and rejected.
+Set to 0 in order to disable the feature. Value range: 0..50000
+
+.TP
+.B MaxBW
+Same as MaxBandwidth but can be used for setting individual limits
+for selected interfaces. The name of the interface is specified directly
+after the MaxBW keyword without spaces. For example MaxBWeth0 for eth0
+and MaxBWppp0 for ppp0. Value range: 0..50000
+
+.TP
+.B MonthRotate
+Day of month that months are expected to change. Usually set to
+1 but can be set to alternative values for example for tracking
+monthly billed traffic where the billing period doesn't start on
+the first day. Value range: 1..28
+
+.TP
 .B OfflineSaveInterval
 How often in minutes cached interface data is saved to file when all monitored
 interfaces are offline. Value range:
@@ -300,6 +288,10 @@ most recent database update appears to be in the future. This may be needed
 in systems without a real-time clock (RTC) which require some time after boot
 to query and set the correct time. 0 = wait disabled.
 Value range: 0..60
+
+.TP
+.B TrafficlessDays
+Log days without any traffic to daily list. 1 = enabled, 0 = disabled.
 
 .TP
 .B UpdateFileOwner

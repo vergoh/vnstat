@@ -155,12 +155,6 @@ int readdb(DATA *data, const char *iface, const char *dirname, const int force)
 		return 1;
 	}
 
-	/* lock file */
-	if (!lockdb(fileno(legacydb), 0)) {
-		fclose(legacydb);
-		return -1;
-	}
-
 	if (fread(data,sizeof(DATA),1,legacydb)!=1 || ferror(legacydb)) {
 		data->version=-1;
 		if (debug) {
@@ -198,12 +192,6 @@ int readdb(DATA *data, const char *iface, const char *dirname, const int force)
 				} else {
 					exit(EXIT_FAILURE);
 				}
-			}
-
-			/* lock file */
-			if (!lockdb(fileno(legacydb), 0)) {
-				fclose(legacydb);
-				return -1;
 			}
 
 			if (fread(data,sizeof(DATA),1,legacydb)!=1 || ferror(legacydb)) {
@@ -356,60 +344,6 @@ void initdb(DATA *data)
 	}
 
 	data->btime=MAX32;
-}
-
-int lockdb(int fd, int dbwrite)
-{
-	int operation, locktry=1;
-
-	/* lock only if configured to do so */
-	if (!cfg.flock) {
-		return 1;
-	}
-
-	if (dbwrite) {
-		operation = LOCK_EX|LOCK_NB;
-	} else {
-		operation = LOCK_SH|LOCK_NB;
-	}
-
-	/* try locking file */
-	while (flock(fd, operation)!=0) {
-
-		if (debug) {
-			printf("db: Database access locked (%d, %d)\n", dbwrite, locktry);
-		}
-
-		/* give up if lock can't be obtained */
-		if (locktry>=LOCKTRYLIMIT) {
-			if (dbwrite) {
-				snprintf(errorstring, 1024, "Locking database file for write failed for %d tries: %s", locktry, strerror(errno));
-			} else {
-				snprintf(errorstring, 1024, "Locking database file for read failed for %d tries: %s", locktry, strerror(errno));
-			}
-			printe(PT_Error);
-			return 0;
-		}
-
-		/* someone else has the lock */
-		if (errno==EWOULDBLOCK) {
-			sleep(1);
-
-		/* real error */
-		} else {
-			if (dbwrite) {
-				snprintf(errorstring, 1024, "Locking database file for write failed: %s", strerror(errno));
-			} else {
-				snprintf(errorstring, 1024, "Locking database file for read failed: %s", strerror(errno));
-			}
-			printe(PT_Error);
-			return 0;
-		}
-
-		locktry++;
-	}
-
-	return 1;
 }
 
 int removedb(const char *iface, const char *dirname)

@@ -63,7 +63,6 @@ START_TEST(readdb_with_empty_file)
 {
 	DATA data;
 	disable_logprints();
-	cfg.flock = 1;
 	ck_assert_int_eq(clean_testdbdir(), 1);
 	ck_assert_int_eq(create_zerosize_dbfile("existingdb"), 1);
 	ck_assert_int_eq(readdb(&data, "existingdb", TESTDBDIR, 0), -1);
@@ -74,7 +73,6 @@ START_TEST(readdb_with_empty_file_and_backup)
 {
 	DATA data;
 	disable_logprints();
-	cfg.flock = 1;
 	ck_assert_int_eq(clean_testdbdir(), 1);
 	ck_assert_int_eq(create_zerosize_dbfile("existingdb"), 1);
 	ck_assert_int_eq(create_zerosize_dbfile(".existingdb"), 1);
@@ -86,7 +84,6 @@ START_TEST(readdb_with_nonexisting_file)
 {
 	DATA data;
 	disable_logprints();
-	cfg.flock = 1;
 	strcpy(data.interface, "none");
 	ck_assert_int_eq(clean_testdbdir(), 1);
 	ck_assert_int_eq(readdb(&data, "existingdb", TESTDBDIR, 0), 1);
@@ -100,7 +97,6 @@ START_TEST(readdb_with_existing_dbfile)
 	DATA data;
 	initdb(&data);
 	disable_logprints();
-	cfg.flock = 1;
 	strcpy(data.interface, "ethtest");
 	ck_assert_int_eq(clean_testdbdir(), 1);
 	ck_assert_int_eq(writedb(&data, "ethtest", TESTDBDIR, 1), 1);
@@ -117,7 +113,6 @@ START_TEST(readdb_with_existing_dbfile_and_max_name_length)
 	DATA data;
 	initdb(&data);
 	disable_logprints();
-	cfg.flock = 1;
 	strcpy(data.interface, "1234567890123456789012345678901");
 	ck_assert_int_eq(clean_testdbdir(), 1);
 	ck_assert_int_eq(writedb(&data, "1234567890123456789012345678901", TESTDBDIR, 1), 1);
@@ -134,7 +129,6 @@ START_TEST(readdb_with_existing_dbfile_with_rename)
 	DATA data;
 	initdb(&data);
 	disable_logprints();
-	cfg.flock = 1;
 	strcpy(data.interface, "ethtest");
 	strcpy(data.nick, "ethtest");
 	ck_assert_int_eq(clean_testdbdir(), 1);
@@ -154,7 +148,6 @@ START_TEST(readdb_with_existing_dbfile_and_over_max_name_length)
 	DATA data;
 	initdb(&data);
 	disable_logprints();
-	cfg.flock = 1;
 	strcpy(data.interface, "dummy");
 	strcpy(data.nick, "dummy");
 	ck_assert_int_eq(clean_testdbdir(), 1);
@@ -701,12 +694,6 @@ int writedb(DATA *data, const char *iface, const char *dirname, int newdb)
 	if ((testdb=fopen(file,"w"))==NULL) {
 		snprintf(errorstring, 1024, "Unable to open database \"%s\" for writing: %s", file, strerror(errno));
 		printe(PT_Error);
-		return 0;
-	}
-
-	/* lock file */
-	if (!lockdb(fileno(testdb), 1)) {
-		fclose(testdb);
 		return 0;
 	}
 

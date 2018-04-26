@@ -160,9 +160,6 @@ and most can be changed later from the config file.
 /* check disk space by default */
 #define USESPACECHECK 1
 
-/* use file locking by default */
-#define USEFLOCK 1
-
 /* log trafficless days by default */
 #define TRAFLESSDAY 1
 
@@ -175,6 +172,10 @@ and most can be changed later from the config file.
 #define LISTTOP 10
 #define LISTJSONXML 0
 
+/* TODO: are these defaults suitable for most users or too short?
+         how to handle upgrades and avoid discarding data if the
+         package maintainer provided configuration has shorter retention
+         than what user has configured? */
 /* data retention defaults */
 #define FIVEMINUTEHOURS 48
 #define HOURLYDAYS 2
@@ -185,10 +186,6 @@ and most can be changed later from the config file.
 
 /* assume that locale can be UTF-n when enabled */
 #define UTFLOCALE 1
-
-/* how many times try file locking before giving up */
-/* each try takes about a second */
-#define LOCKTRYLIMIT 5
 
 /* 1 = 2.0 */
 #define SQLDBVERSION "1"
@@ -273,7 +270,7 @@ typedef struct {
 	char cbg[8], cedge[8], cheader[8], cheadertitle[8], cheaderdate[8], ctext[8];
 	char cline[8], clinel[8], cvnstat[8], crx[8], crxd[8], ctx[8], ctxd[8];
 	int32_t unitmode, rateunitmode, rateunit, bvar, qmode, sampletime, hourlyrate, summaryrate;
-	int32_t monthrotate, maxbw, flock, spacecheck, traflessday, transbg, ostyle;
+	int32_t monthrotate, maxbw, spacecheck, traflessday, transbg, ostyle;
 	int32_t defaultdecimals, hourlydecimals, hourlystyle;
 	char cfgfile[512], logfile[512], pidfile[512];
 	char daemonuser[33], daemongroup[33];
