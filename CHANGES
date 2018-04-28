@@ -1,25 +1,25 @@
 2.0 / <not released yet>
 
- - Fix: Data rate calculations when using SI decimal prefixes
- - C struct dump database has been replaced with sqlite database
- - User configurable data retention durations for all resolutions
- - Query of time range specific data
- - Full data import from 1.x version database format including reconstructed
-   yearly data
- - Add option to select units to use SI decimal prefixes using calculations with
-   powers of 1000 (IEC and JEDEC prefixes use powers of 1024)
- - Add yearly and 5 minute resolution statistics
- - Add pebibyte and exbibyte support
- - Add options the configure the length of each list output
- - Add option to limit the length of --json and --xml outputs
- - Add hourly list output as alternative
- - Remove weekly output
- - Remove merge of data from multiple interfaces to one output
- - Remove --testkernel
- - Remove --exportdb, use --oneline, --json or --xml instead
- - Remove --importdb, -u / --update and related options using vnstat command
- - Remove old style (default in versions up to 1.7) summary layout in
-   image output
+ - Fixed
+   - Data rate calculations when using SI decimal prefixes
+ - New
+   - C struct dump database has been replaced with sqlite database
+   - User configurable data retention durations for all resolutions
+   - Option to select units to use SI decimal prefixes using calculations
+     with powers of 1000 (IEC and JEDEC prefixes use powers of 1024)
+   - Yearly and 5 minute resolution statistics
+   - Pebibyte and exbibyte support
+   - Options the configure the length of each list output
+   - Option to limit the length of --json and --xml outputs
+   - Hourly list output as alternative
+   - Options -b / --begin and -e / --end for specifying query time range
+ - Removed
+   - Weekly output
+   - Merge of data from multiple interfaces to one output
+   - --testkernel
+   - --exportdb, use --oneline, --json or --xml instead
+   - --importdb, -u / --update and related options using vnstat command
+   - Old style (default in versions up to 1.7) summary layout in image output
 
  - see "Current development status" section in README.md
 
