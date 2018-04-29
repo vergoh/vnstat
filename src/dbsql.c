@@ -614,7 +614,7 @@ int db_getiflist(dbiflist **dbifl)
 	return rc;
 }
 
-char *db_get_date_generator(const int range, const char *nowdate)
+char *db_get_date_generator(const int range, const short direct, const char *nowdate)
 {
 	static char dgen[512];
 	dgen[0] = '\0';
@@ -631,10 +631,19 @@ char *db_get_date_generator(const int range, const char *nowdate)
 			snprintf(dgen, 512, "date(%s, 'localtime')", nowdate);
 			break;
 		case 3: /* month */
-			snprintf(dgen, 512, "strftime('%%Y-%%m-01', %s, 'localtime')", nowdate);
+			if (direct || cfg.monthrotate == 1) {
+				snprintf(dgen, 512, "strftime('%%Y-%%m-01', %s, 'localtime')", nowdate);
+			} else {
+				snprintf(dgen, 512, "strftime('%%Y-%%m-01', datetime(%s, '-%d days'), 'localtime')", nowdate, cfg.monthrotate-1);
+			}
 			break;
 		case 4: /* year */
-			snprintf(dgen, 512, "strftime('%%Y-01-01', %s, 'localtime')", nowdate);
+			if (direct || cfg.monthrotate == 1) {
+				snprintf(dgen, 512, "strftime('%%Y-01-01', %s, 'localtime')", nowdate);
+			} else {
+				/* TODO: add option to select if MonthRotate affects also years */
+				snprintf(dgen, 512, "strftime('%%Y-01-01', datetime(%s, '-%d days'), 'localtime')", nowdate, cfg.monthrotate-1);
+			}
 			break;
 		default:
 			break;
@@ -701,12 +710,12 @@ int db_addtraffic_dated(const char *iface, const uint64_t rx, const uint64_t tx,
 		if (featurecfg[i] == 0) {
 			continue;
 		}
-		sqlite3_snprintf(1024, sql, "insert or ignore into %s (interface, date, rx, tx) values (%"PRId64", %s, 0, 0);", datatables[i], (int64_t)ifaceid, db_get_date_generator(i, nowdate));
+		sqlite3_snprintf(1024, sql, "insert or ignore into %s (interface, date, rx, tx) values (%"PRId64", %s, 0, 0);", datatables[i], (int64_t)ifaceid, db_get_date_generator(i, 0, nowdate));
 		if (!db_exec(sql)) {
 			db_rollbacktransaction();
 			return 0;
 		}
-		sqlite3_snprintf(1024, sql, "update %s set rx=rx+%"PRIu64", tx=tx+%"PRIu64" where interface=%"PRId64" and date=%s;", datatables[i], rx, tx, (int64_t)ifaceid, db_get_date_generator(i, nowdate));
+		sqlite3_snprintf(1024, sql, "update %s set rx=rx+%"PRIu64", tx=tx+%"PRIu64" where interface=%"PRId64" and date=%s;", datatables[i], rx, tx, (int64_t)ifaceid, db_get_date_generator(i, 0, nowdate));
 		if (!db_exec(sql)) {
 			db_rollbacktransaction();
 			return 0;
@@ -773,7 +782,7 @@ int db_insertdata(const char *table, const char *iface, const uint64_t rx, const
 
 	snprintf(nowdate, 64, "datetime(%"PRIu64", 'unixepoch')", timestamp);
 
-	sqlite3_snprintf(1024, sql, "insert or ignore into %s (interface, date, rx, tx) values (%"PRId64", %s, %"PRIu64", %"PRIu64");", table, (int64_t)ifaceid, db_get_date_generator(index+1, nowdate), rx, tx);
+	sqlite3_snprintf(1024, sql, "insert or ignore into %s (interface, date, rx, tx) values (%"PRId64", %s, %"PRIu64", %"PRIu64");", table, (int64_t)ifaceid, db_get_date_generator(index+1, 1, nowdate), rx, tx);
 	return db_exec(sql);
 }
 

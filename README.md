@@ -80,6 +80,7 @@ durations. Yearly and five-minute resolution statistics are now included.
   * all vnstati (image output) features
   * pebibyte and exbibyte support
   * query of time range specific data
+  * new `MonthRotate` configuration option handling
 
 ##### Removed features
 
@@ -87,7 +88,6 @@ durations. Yearly and five-minute resolution statistics are now included.
     * most likely better to do directly via sqlite cli or using some script language
   * merge of data from multiple interfaces
   * weekly ouput
-  * `MonthRotate` configuration option
   * kernel test
     * provided some use mostly with 2.0 and 2.2 kernels
   * `--update` / `-u` and several other database modifiers using vnstat command

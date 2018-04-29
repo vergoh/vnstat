@@ -121,7 +121,6 @@ void printcfgfile(void)
 	printf("# how often (in minutes) data is saved when all interface are offline\n");
 	printf("OfflineSaveInterval %d\n\n", cfg.offsaveinterval);
 
-	/* TODO */
 	printf("# on which day should months change\n");
 	printf("MonthRotate %d\n\n", cfg.monthrotate);
 

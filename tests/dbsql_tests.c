@@ -980,6 +980,7 @@ void range_test_month_setup(void)
 {
 	int ret, i;
 	defaultcfg();
+	cfg.monthrotate = 2; /* this should have no effect */
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -1352,6 +1353,7 @@ void range_test_hour_setup(void)
 {
 	int ret, i, j;
 	defaultcfg();
+	cfg.monthrotate = 2; /* this should have no effect */
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -1690,6 +1692,102 @@ START_TEST(db_getdata_range_can_get_hours_with_range_on_same_hour)
 }
 END_TEST
 
+START_TEST(db_addtraffic_without_monthrotate)
+{
+	int ret, i;
+	char timestamp[64];
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+
+	defaultcfg();
+	cfg.monthrotate = 1;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("ethtest");
+	ck_assert_int_eq(ret, 1);
+
+	for (i=1; i<=20; i++) {
+		ret = db_addtraffic_dated("ethtest", 1, 2, get_timestamp(2000, 2, i, 0, 0));
+		ck_assert_int_eq(ret, 1);
+	}
+
+	ret = db_getdata_range(&datalist, &datainfo, "ethtest", "month", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 1);
+	datalist_i = datalist;
+	i = 0;
+	while (datalist_i != NULL)
+	{
+		switch(i) {
+			case 0:
+				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2000-02-01");
+				ck_assert_int_eq(datalist_i->rx, 20);
+				ck_assert_int_eq(datalist_i->tx, 40);
+				break;
+		}
+		datalist_i = datalist_i->next;
+		i++;
+	}
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_addtraffic_with_monthrotate)
+{
+	int ret, i;
+	char timestamp[64];
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+
+	defaultcfg();
+	cfg.monthrotate = 7;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("ethtest");
+	ck_assert_int_eq(ret, 1);
+
+	for (i=1; i<=20; i++) {
+		ret = db_addtraffic_dated("ethtest", 1, 2, get_timestamp(2000, 2, i, 0, 0));
+		ck_assert_int_eq(ret, 1);
+	}
+
+	ret = db_getdata_range(&datalist, &datainfo, "ethtest", "month", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 2);
+	datalist_i = datalist;
+	i = 0;
+	while (datalist_i != NULL)
+	{
+		switch(i) {
+			case 0:
+				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2000-01-01");
+				ck_assert_int_eq(datalist_i->rx, 6);
+				ck_assert_int_eq(datalist_i->tx, 12);
+				break;
+			case 1:
+				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2000-02-01");
+				ck_assert_int_eq(datalist_i->rx, 14);
+				ck_assert_int_eq(datalist_i->tx, 28);
+				break;
+		}
+		datalist_i = datalist_i->next;
+		i++;
+	}
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 void add_dbsql_tests(Suite *s)
 {
 	TCase *tc_dbsql = tcase_create("DB SQL");
@@ -1753,5 +1851,7 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_getdata_range_can_get_hours_with_range_limiting_end);
 	tcase_add_test(tc_dbsql, db_getdata_range_can_get_hours_with_range_limiting_end_with_limit);
 	tcase_add_test(tc_dbsql, db_getdata_range_can_get_hours_with_range_on_same_hour);
+	tcase_add_test(tc_dbsql, db_addtraffic_without_monthrotate);
+	tcase_add_test(tc_dbsql, db_addtraffic_with_monthrotate);
 	suite_add_tcase(s, tc_dbsql);
 }

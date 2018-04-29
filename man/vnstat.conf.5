@@ -252,7 +252,9 @@ and MaxBWppp0 for ppp0. Value range: 0..50000
 Day of month that months are expected to change. Usually set to
 1 but can be set to alternative values for example for tracking
 monthly billed traffic where the billing period doesn't start on
-the first day. Value range: 1..28
+the first day. For example, if set to 7, days of February up to and
+including the 6th will count for January. Changing this option will
+not cause existing data to be recalculated. Value range: 1..28
 
 .TP
 .B OfflineSaveInterval
