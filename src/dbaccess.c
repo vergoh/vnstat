@@ -366,6 +366,7 @@ int validatedb(DATA *data)
 {
 	int i, used;
 	uint64_t rxsum, txsum;
+	const char *invaliddb = "Invalid database";
 
 	if (debug) {
 		printf("validating loaded database\n");
@@ -376,25 +377,25 @@ int validatedb(DATA *data)
 	data->nick[sizeof(data->nick)-1] = '\0';
 
 	if (data->version>LEGACYDBVERSION) {
-		snprintf(errorstring, 1024, "%s: Invalid database version: %d", data->interface, data->version);
+		snprintf(errorstring, 1024, "%s: %s version: %d", data->interface, invaliddb, data->version);
 		printe(PT_Error);
 		return 0;
 	}
 
 	if (data->active<0 || data->active>1) {
-		snprintf(errorstring, 1024, "%s: Invalid database activity status: %d", data->interface, data->active);
+		snprintf(errorstring, 1024, "%s: %s activity status: %d", data->interface, invaliddb, data->active);
 		printe(PT_Error);
 		return 0;
 	}
 
 	if (!strlen(data->interface)) {
-		snprintf(errorstring, 1024, "Invalid database interface string: %s", data->interface);
+		snprintf(errorstring, 1024, "%s interface string: %s", invaliddb, data->interface);
 		printe(PT_Error);
 		return 0;
 	}
 
 	if (!data->created || !data->lastupdated || !data->btime) {
-		snprintf(errorstring, 1024, "%s: Invalid database timestamp.", data->interface);
+		snprintf(errorstring, 1024, "%s: %s timestamp.", data->interface, invaliddb);
 		printe(PT_Error);
 		return 0;
 	}
@@ -403,17 +404,17 @@ int validatedb(DATA *data)
 	used = 1;
 	for (i=0; i<30; i++) {
 		if (data->day[i].used<0 || data->day[i].used>1) {
-			snprintf(errorstring, 1024, "%s: Invalid database daily use information: %d %d", data->interface, i, data->day[i].used);
+			snprintf(errorstring, 1024, "%s: %s daily use information: %d %d", data->interface, invaliddb, i, data->day[i].used);
 			printe(PT_Error);
 			return 0;
 		}
 		if (data->day[i].rxk<0 || data->day[i].txk<0) {
-			snprintf(errorstring, 1024, "%s: Invalid database daily traffic: %d", data->interface, i);
+			snprintf(errorstring, 1024, "%s: %s daily traffic: %d", data->interface, invaliddb, i);
 			printe(PT_Error);
 			return 0;
 		}
 		if (data->day[i].used && !used) {
-			snprintf(errorstring, 1024, "%s: Invalid database daily use order: %d", data->interface, i);
+			snprintf(errorstring, 1024, "%s: %s daily use order: %d", data->interface, invaliddb, i);
 			printe(PT_Error);
 			return 0;
 		} else if (!data->day[i].used) {
@@ -430,14 +431,14 @@ int validatedb(DATA *data)
 			break;
 		}
 		if (data->day[i-1].date < data->day[i].date) {
-			snprintf(errorstring, 1024, "%s: Invalid database daily date order: %u (%d) < %u (%d)", data->interface, (unsigned int)data->day[i-1].date, i-1, (unsigned int)data->day[i].date, i);
+			snprintf(errorstring, 1024, "%s: %s daily date order: %u (%d) < %u (%d)", data->interface, invaliddb, (unsigned int)data->day[i-1].date, i-1, (unsigned int)data->day[i].date, i);
 			printe(PT_Error);
 			return 0;
 		}
 	}
 
 	if (data->totalrx < rxsum || data->totaltx < txsum) {
-		snprintf(errorstring, 1024, "%s: Invalid database total traffic compared to daily usage.", data->interface);
+		snprintf(errorstring, 1024, "%s: %s total traffic compared to daily usage.", data->interface, invaliddb);
 		printe(PT_Error);
 		return 0;
 	}
@@ -446,17 +447,17 @@ int validatedb(DATA *data)
 	used = 1;
 	for (i=0; i<12; i++) {
 		if (data->month[i].used<0 || data->month[i].used>1) {
-			snprintf(errorstring, 1024, "%s: Invalid database monthly use information: %d %d", data->interface, i, data->month[i].used);
+			snprintf(errorstring, 1024, "%s: %s monthly use information: %d %d", data->interface, invaliddb, i, data->month[i].used);
 			printe(PT_Error);
 			return 0;
 		}
 		if (data->month[i].rxk<0 || data->month[i].txk<0) {
-			snprintf(errorstring, 1024, "%s: Invalid database monthly traffic: %d", data->interface, i);
+			snprintf(errorstring, 1024, "%s: %s monthly traffic: %d", data->interface, invaliddb, i);
 			printe(PT_Error);
 			return 0;
 		}
 		if (data->month[i].used && !used) {
-			snprintf(errorstring, 1024, "%s: Invalid database monthly use order: %d", data->interface, i);
+			snprintf(errorstring, 1024, "%s: %s monthly use order: %d", data->interface, invaliddb, i);
 			printe(PT_Error);
 			return 0;
 		} else if (!data->month[i].used) {
@@ -473,14 +474,14 @@ int validatedb(DATA *data)
 			break;
 		}
 		if (data->month[i-1].month < data->month[i].month) {
-			snprintf(errorstring, 1024, "%s: Invalid database monthly date order: %u (%d) < %u (%d)", data->interface, (unsigned int)data->month[i-1].month, i-1, (unsigned int)data->month[i].month, i);
+			snprintf(errorstring, 1024, "%s: %s monthly date order: %u (%d) < %u (%d)", data->interface, invaliddb, (unsigned int)data->month[i-1].month, i-1, (unsigned int)data->month[i].month, i);
 			printe(PT_Error);
 			return 0;
 		}
 	}
 
 	if (data->totalrx < rxsum || data->totaltx < txsum) {
-		snprintf(errorstring, 1024, "%s: Invalid database total traffic compared to monthly usage.", data->interface);
+		snprintf(errorstring, 1024, "%s: %s total traffic compared to monthly usage.", data->interface, invaliddb);
 		printe(PT_Error);
 		return 0;
 	}
@@ -488,17 +489,17 @@ int validatedb(DATA *data)
 	used = 1;
 	for (i=0; i<10; i++) {
 		if (data->top10[i].used<0 || data->top10[i].used>1) {
-			snprintf(errorstring, 1024, "%s: Invalid database top10 use information: %d %d", data->interface, i, data->top10[i].used);
+			snprintf(errorstring, 1024, "%s: %s top10 use information: %d %d", data->interface, invaliddb, i, data->top10[i].used);
 			printe(PT_Error);
 			return 0;
 		}
 		if (data->top10[i].rxk<0 || data->top10[i].txk<0) {
-			snprintf(errorstring, 1024, "%s: Invalid database top10 traffic: %d", data->interface, i);
+			snprintf(errorstring, 1024, "%s: %s top10 traffic: %d", data->interface, invaliddb, i);
 			printe(PT_Error);
 			return 0;
 		}
 		if (data->top10[i].used && !used) {
-			snprintf(errorstring, 1024, "%s: Invalid database top10 use order: %d", data->interface, i);
+			snprintf(errorstring, 1024, "%s: %s top10 use order: %d", data->interface, invaliddb, i);
 			printe(PT_Error);
 			return 0;
 		} else if (!data->top10[i].used) {

@@ -24,6 +24,7 @@ vnStat - Copyright (c) 2002-2018 Teemu Toivola <tst@iki.fi>
 #include "dbshow.h"
 #include "misc.h"
 #include "cfg.h"
+#include "cfgoutput.h"
 #include "ibw.h"
 #include "fs.h"
 #include "vnstat.h"

@@ -21,6 +21,7 @@ vnstat_SOURCES = src/vnstat.c src/vnstat.h \
   src/common.c src/common.h \
   src/misc.c src/misc.h \
   src/cfg.c src/cfg.h \
+  src/cfgoutput.c src/cfgoutput.h \
   src/ibw.c src/ibw.h \
   src/fs.c src/fs.h \
   src/id.c src/id.h \
@@ -72,6 +73,7 @@ check_vnstat_SOURCES = tests/vnstat_tests.c tests/vnstat_tests.h \
   tests/daemon_tests.c tests/daemon_tests.h
 
 check_vnstat_SOURCES += src/cfg.c src/cfg.h \
+  src/cfgoutput.c src/cfgoutput.h \
   src/common.c src/common.h \
   src/daemon.c src/daemon.h \
   src/dbsql.c src/dbsql.h \

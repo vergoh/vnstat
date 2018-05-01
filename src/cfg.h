@@ -9,7 +9,6 @@ struct cfgsetting {
 	short found;
 };
 
-void printcfgfile(void);
 int loadcfg(const char *cfgfile);
 void validatecfg(void);
 void defaultcfg(void);

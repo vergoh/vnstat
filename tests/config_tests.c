@@ -2,6 +2,7 @@
 #include "vnstat_tests.h"
 #include "config_tests.h"
 #include "cfg.h"
+#include "cfgoutput.h"
 #include "ibw.h"
 
 START_TEST(validatecfg_default)
