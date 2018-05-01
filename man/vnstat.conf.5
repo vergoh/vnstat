@@ -30,13 +30,6 @@ daemon related keywords and the last section is for image output.
 .SH COMMON KEYWORDS
 
 .TP
-.B 5MinuteHours
-Data retention duration for the 5 minute resolution entries. The configuration
-defines for how many past hours entries will be stored. Set to -1 for
-unlimited entries or to 0 to disable the data collection of this
-resolution.
-
-.TP
 .B DatabaseDir
 Specifies the directory where interface databases are to be stored.
 A full path must be given and a leading '/' isn't required.
@@ -48,23 +41,9 @@ Formatting of date in available outputs. Uses the same format as
 (vnstat and vnstati only)
 
 .TP
-.B DailyDays
-Data retention duration for the one day resolution entries. The configuration
-defines for how many past days entries will be stored. Set to -1 for
-unlimited entries or to 0 to disable the data collection of this
-resolution.
-
-.TP
 .B DefaultDecimals
 Number of decimals to use in outputs. Value range: 0..2
 (vnstat and vnstati only)
-
-.TP
-.B HourlyDays
-Data retention duration for the one hour resolution entries. The configuration
-defines for how many past days entries will be stored. Set to -1 for
-unlimited entries or to 0 to disable the data collection of this
-resolution.
 
 .TP
 .B HourlyDecimals
@@ -93,13 +72,6 @@ Set to 0 to show all entries available in the database.
 Locale setting to be used for prints. This replaces the LC_ALL
 environment variable. Set to "-" or leave empty in order to use the
 system default value. (vnstat and vnstati only)
-
-.TP
-.B MonthlyMonths
-Data retention duration for the one month resolution entries. The configuration
-defines for how many past months entries will be stored. Set to -1 for
-unlimited entries or to 0 to disable the data collection of this
-resolution.
 
 .TP
 .B OutputStyle
@@ -144,13 +116,6 @@ Defines how many seconds the \-tr option will sample traffic.
 Value range: 2..600 (vnstat only)
 
 .TP
-.B TopDayEntries
-Data retention duration for the top day entries. The configuration
-defines how many of the past top day entries will be stored. Set to -1 for
-unlimited entries or to 0 to disable the data collection of this
-resolution.
-
-.TP
 .B UnitMode
 Select how units are prefixed. IEC and JEDEC binary prefixes are calculated
 with powers of 1024. SI decimal prefixes are calculated with powers of 1000.
@@ -158,14 +123,14 @@ with powers of 1024. SI decimal prefixes are calculated with powers of 1000.
 binary prefixes (B/KB/MB/GB...), 2 = SI decimals prefixes (B/kB/MB/GB...)
 (vnstat and vnstati only)
 
+.SH DAEMON RELATED KEYWORDS
+
 .TP
-.B YearlyYears
-Data retention duration for the one year resolution entries. The configuration
-defines for how many past years entries will be stored. Set to -1 for
+.B 5MinuteHours
+Data retention duration for the 5 minute resolution entries. The configuration
+defines for how many past hours entries will be stored. Set to -1 for
 unlimited entries or to 0 to disable the data collection of this
 resolution.
-
-.SH DAEMON RELATED KEYWORDS
 
 .TP
 .B BandwidthDetection
@@ -231,6 +196,20 @@ Leave empty to disable the user switch. This option can only be used when
 the process is started as root.
 
 .TP
+.B DailyDays
+Data retention duration for the one day resolution entries. The configuration
+defines for how many past days entries will be stored. Set to -1 for
+unlimited entries or to 0 to disable the data collection of this
+resolution.
+
+.TP
+.B HourlyDays
+Data retention duration for the one hour resolution entries. The configuration
+defines for how many past days entries will be stored. Set to -1 for
+unlimited entries or to 0 to disable the data collection of this
+resolution.
+
+.TP
 .B LogFile
 Specify log file path and name to be used if UseLogging is set to 1.
 
@@ -246,6 +225,13 @@ Same as MaxBandwidth but can be used for setting individual limits
 for selected interfaces. The name of the interface is specified directly
 after the MaxBW keyword without spaces. For example MaxBWeth0 for eth0
 and MaxBWppp0 for ppp0. Value range: 0..50000
+
+.TP
+.B MonthlyMonths
+Data retention duration for the one month resolution entries. The configuration
+defines for how many past months entries will be stored. Set to -1 for
+unlimited entries or to 0 to disable the data collection of this
+resolution.
 
 .TP
 .B MonthRotate
@@ -292,6 +278,13 @@ to query and set the correct time. 0 = wait disabled.
 Value range: 0..60
 
 .TP
+.B TopDayEntries
+Data retention duration for the top day entries. The configuration
+defines how many of the past top day entries will be stored. Set to -1 for
+unlimited entries or to 0 to disable the data collection of this
+resolution.
+
+.TP
 .B TrafficlessDays
 Log days without any traffic to daily list. 1 = enabled, 0 = disabled.
 
@@ -316,6 +309,13 @@ How often in seconds the interface data is updated. Value range:
 .TP
 .B UseLogging
 Enable or disable logging. 0 = disabled, 1 = logfile and 2 = syslog.
+
+.TP
+.B YearlyYears
+Data retention duration for the one year resolution entries. The configuration
+defines for how many past years entries will be stored. Set to -1 for
+unlimited entries or to 0 to disable the data collection of this
+resolution.
 
 .SH IMAGE OUTPUT RELATED KEYWORDS
 

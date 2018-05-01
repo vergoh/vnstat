@@ -4,7 +4,15 @@
    - Data rate calculations when using SI decimal prefixes
  - New
    - C struct dump database has been replaced with sqlite database
-   - User configurable data retention durations for all resolutions
+   - User configurable data retention durations for all resolutions with
+     following changed defaults:
+                    v1.8     v2.0
+       5 minutes     n/a      576
+       hours          24       96
+       days           30       60
+       months         12       24
+       years         n/a      all
+       top days       10       20
    - Option to select units to use SI decimal prefixes using calculations
      with powers of 1000 (IEC and JEDEC prefixes use powers of 1024)
    - Yearly and 5 minute resolution statistics

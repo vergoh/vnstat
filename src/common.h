@@ -172,17 +172,16 @@ and most can be changed later from the config file.
 #define LISTTOP 10
 #define LISTJSONXML 0
 
-/* TODO: are these defaults suitable for most users or too short?
-         how to handle upgrades and avoid discarding data if the
+/* TODO: how to handle upgrades and avoid discarding data if the
          package maintainer provided configuration has shorter retention
          than what user has configured? */
 /* data retention defaults */
 #define FIVEMINUTEHOURS 48
-#define HOURLYDAYS 2
-#define DAILYDAYS 30
-#define MONTHLYMONTHS 12
+#define HOURLYDAYS 4
+#define DAILYDAYS 60
+#define MONTHLYMONTHS 24
 #define YEARLYYEARS -1
-#define TOPDAYENTRIES 10
+#define TOPDAYENTRIES 20
 
 /* assume that locale can be UTF-n when enabled */
 #define UTFLOCALE 1
