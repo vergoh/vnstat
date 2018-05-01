@@ -2,8 +2,8 @@
 #define DBACCESS_H
 
 /* legacy database version */
-/* import is supported on from version 3 */
-/* 1 = 1.0, 2 = 1.1-1.2, 3 = 1.3- */
+/* import is supported only from version 3 */
+/* 1 = 1.0, 2 = 1.1-1.2, 3 = 1.3-1.8 */
 #define LEGACYDBVERSION 3
 
 /* all structs below are used for supporting data import */
