@@ -1,6 +1,6 @@
 The latest version of this FAQ is available at
 
-   http://humdi.net/vnstat/FAQ
+   https://humdi.net/vnstat/FAQ
 
 
 
@@ -97,7 +97,7 @@ connection can't even transfer that much?
 Each update adds the complete amount of traffic and 'vnstat -u -D' claims that
 the system has been rebooted between updates.
 
-  That's most likely a broken kernel. Run with --testkernel (version 1.2+ 
+  That's most likely a broken kernel. Run with --testkernel (version 1.2+
   required) and see the result. Also make sure that the maximun bandwidth
   setting has been configured properly according to the network connection.
   See the next question for some explanation about possible kernel problems.

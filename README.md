@@ -11,7 +11,7 @@ months. Total seen traffic and a top 10 days listing is also provided.
 Optional png image output is available in systems with the gd library
 installed.
 
-See the official webpage http://humdi.net/vnstat/ for additional details
+See the official webpage https://humdi.net/vnstat/ for additional details
 and output examples.
 
 ## Getting started
@@ -20,9 +20,9 @@ vnStat works best when installed. It's possible to either use the latest
 stable release or get the current development version from git.
 
 Stable version
-  1. `wget http://humdi.net/vnstat/vnstat-latest.tar.gz`
+  1. `wget https://humdi.net/vnstat/vnstat-latest.tar.gz`
   2. optional steps for verifying the file signature
-     1. `wget http://humdi.net/vnstat/vnstat-latest.tar.gz.asc`
+     1. `wget https://humdi.net/vnstat/vnstat-latest.tar.gz.asc`
      2. `gpg --keyserver pgp.mit.edu --recv-key 0xDAFE84E63D140114`
      3. `gpg --verify vnstat-latest.tar.gz.asc vnstat-latest.tar.gz`
      4. the signature is correct if the output shows "Good signature from Teemu Toivola"

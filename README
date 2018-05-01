@@ -15,7 +15,7 @@ What is vnStat
  Optional png image output is available in systems with the gd library
  installed.
 
- See the webpage http://humdi.net/vnstat/ for output examples.
+ See the webpage https://humdi.net/vnstat/ for output examples.
 
 
 Getting started
@@ -50,7 +50,7 @@ Contacting the author
  git:      https://github.com/vergoh/vnstat
 
  The current version of vnStat is always available from
- http://humdi.net/vnstat/
+ https://humdi.net/vnstat/
 
  Bug reports, improvement ideas, feature requests and pull requests should
  be sent using the matching features on GitHub as those are harder to miss
