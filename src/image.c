@@ -526,7 +526,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	rowcount += datainfo.count;
 
 	width = 500;
-	if (listtype >= 4) { // less space needed when no estimate is shown
+	if (listtype >= 4 && (datainfo.count < 2 || strlen(ic->dataend) == 0)) { // less space needed when no estimate or sum is shown
 		height = 86;
 		offsety = -16;
 	} else {
@@ -685,10 +685,10 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		gdImageLine(ic->im, textx+2, texty+5, textx+296+offsetx, texty+5, ic->cline);
 	}
 
-	if (datainfo.count > 0 && listtype < 4) {
+	if ((strlen(ic->dataend) == 0 && datainfo.count > 0 && listtype < 4) || (strlen(ic->dataend) > 0 && datainfo.count > 1)) {
 
 		d = localtime(&ic->interface.updated);
-		if ( datalist_i->rx==0 || datalist_i->tx==0 ) {
+		if ( datalist_i->rx==0 || datalist_i->tx==0 || strlen(ic->dataend)>0) {
 			e_rx = e_tx = 0;
 		} else {
 			div = 0;
@@ -710,12 +710,26 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 				e_rx = e_tx = 0;
 			}
 		}
-		snprintf(buffer, 32, " estimated   ");
-		strncat(buffer, getvalue(e_rx, 10, 2), 32);
-		strcat(buffer, "   ");
-		strncat(buffer, getvalue(e_tx, 10, 2), 32);
-		strcat(buffer, "   ");
-		strncat(buffer, getvalue(e_rx+e_tx, 10, 2), 32);
+		if (strlen(ic->dataend) == 0) {
+			snprintf(buffer, 32, " estimated   ");
+			strncat(buffer, getvalue(e_rx, 10, 2), 32);
+			strcat(buffer, "   ");
+			strncat(buffer, getvalue(e_tx, 10, 2), 32);
+			strcat(buffer, "   ");
+			strncat(buffer, getvalue(e_rx+e_tx, 10, 2), 32);
+		} else {
+			if (datainfo.count < 100) {
+				snprintf(datebuff, 16, "sum of %"PRIu32"", datainfo.count);
+			} else {
+				snprintf(datebuff, 16, "sum");
+			}
+			snprintf(buffer, 32, " %9s   ", datebuff);
+			strncat(buffer, getvalue(datainfo.sumrx, 10, 2), 32);
+			strcat(buffer, "   ");
+			strncat(buffer, getvalue(datainfo.sumtx, 10, 2), 32);
+			strcat(buffer, "   ");
+			strncat(buffer, getvalue(datainfo.sumrx + datainfo.sumtx, 10, 2), 32);
+		}
 
 		gdImageString(ic->im, gdFontGetSmall(), textx, texty+8, (unsigned char*)buffer, ic->ctext);
 	}

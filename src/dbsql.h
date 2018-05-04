@@ -21,6 +21,7 @@ typedef struct dbdatalistinfo {
 	uint64_t minrx, mintx;
 	uint64_t maxrx, maxtx;
 	uint64_t min, max;
+	uint64_t sumrx, sumtx;
 } dbdatalistinfo;
 
 typedef struct interfaceinfo {

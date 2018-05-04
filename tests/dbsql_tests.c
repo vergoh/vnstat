@@ -823,8 +823,10 @@ START_TEST(db_data_can_be_retrieved)
 	ck_assert_int_eq(datainfo.count, 2);
 	ck_assert_int_eq(datainfo.minrx, 1);
 	ck_assert_int_eq(datainfo.maxrx, 10);
+	ck_assert_int_eq(datainfo.sumrx, 11);
 	ck_assert_int_eq(datainfo.mintx, 2);
 	ck_assert_int_eq(datainfo.maxtx, 20);
+	ck_assert_int_eq(datainfo.sumtx, 22);
 	/* db_insertdata rounds the timestamps to full hours */
 	ck_assert_int_eq((int)datainfo.maxtime, 7200);
 	ck_assert_int_eq((int)datainfo.mintime, 0);

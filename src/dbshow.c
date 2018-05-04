@@ -500,10 +500,10 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 		}
 		printf("\n");
 	}
-	if (datainfo.count > 0 && listtype < 4) {
+	if ((strlen(dataend) == 0 && datainfo.count > 0 && listtype < 4) || (strlen(dataend) > 0 && datainfo.count > 1)) {
 		/* use database update time for estimates */
 		d = localtime(&interface->updated);
-		if ( datalist_i->rx==0 || datalist_i->tx==0 ) {
+		if ( datalist_i->rx==0 || datalist_i->tx==0 || strlen(dataend)>0 ) {
 			e_rx = e_tx = 0;
 		} else {
 			div = 0;
@@ -528,9 +528,20 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 		if (cfg.ostyle == 3) {
 			printf("    ");
 		}
-		printf(" estimated   %s", getvalue(e_rx, 11, 2));
-		printf(" | %s", getvalue(e_tx, 11, 2));
-		printf(" | %s", getvalue(e_rx + e_tx, 11, 2));
+		if (strlen(dataend) == 0) {
+			printf(" estimated   %s", getvalue(e_rx, 11, 2));
+			printf(" | %s", getvalue(e_tx, 11, 2));
+			printf(" | %s", getvalue(e_rx + e_tx, 11, 2));
+		} else {
+			if (datainfo.count < 100) {
+				snprintf(datebuff, DATEBUFFLEN, "sum of %"PRIu32"", datainfo.count);
+			} else {
+				snprintf(datebuff, DATEBUFFLEN, "sum");
+			}
+			printf(" %9s   %s", datebuff, getvalue(datainfo.sumrx, 11, 2));
+			printf(" | %s", getvalue(datainfo.sumtx, 11, 2));
+			printf(" | %s", getvalue(datainfo.sumrx + datainfo.sumtx, 11, 2));
+		}
 		if (cfg.ostyle == 3) {
 			printf(" |");
 		}
