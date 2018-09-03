@@ -15,6 +15,7 @@ int loadcfg(const char *cfgfile)
 		{ "DatabaseDir", cfg.dbdir, 0, 512, 0 },
 		{ "Locale", cfg.locale, 0, 32, 0 },
 		{ "MonthRotate", 0, &cfg.monthrotate, 0, 0 },
+		{ "MonthRotateAffectsYears", 0, &cfg.monthrotateyears, 0, 0 },
 		{ "DayFormat", cfg.dformat, 0, 64, 0 },
 		{ "MonthFormat", cfg.mformat, 0, 64, 0 },
 		{ "TopFormat", cfg.tformat, 0, 64, 0 },
@@ -200,6 +201,12 @@ void validatecfg(void)
 	if (cfg.monthrotate<1 || cfg.monthrotate>28) {
 		cfg.monthrotate = MONTHROTATE;
 		snprintf(errorstring, 1024, "%s MonthRotate, %s \"%d\".", invalidvalue, resettingto, cfg.monthrotate);
+		printe(PT_Config);
+	}
+
+	if (cfg.monthrotateyears<0 || cfg.monthrotateyears>1) {
+		cfg.monthrotateyears = MONTHROTATEYEARS;
+		snprintf(errorstring, 1024, "%s MonthRotateAffectsYears, %s \"%d\".", invalidvalue, resettingto, cfg.monthrotateyears);
 		printe(PT_Config);
 	}
 
@@ -416,6 +423,7 @@ void defaultcfg(void)
 	cfg.qmode = DEFQMODE;
 	cfg.sampletime = DEFSAMPTIME;
 	cfg.monthrotate = MONTHROTATE;
+	cfg.monthrotateyears = MONTHROTATEYEARS;
 	cfg.unitmode = UNITMODE;
 	cfg.rateunitmode = RATEUNITMODE;
 	cfg.ostyle = OSTYLE;

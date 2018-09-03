@@ -638,10 +638,9 @@ char *db_get_date_generator(const int range, const short direct, const char *now
 			}
 			break;
 		case 4: /* year */
-			if (direct || cfg.monthrotate == 1) {
+			if (direct || cfg.monthrotate == 1 || cfg.monthrotateyears == 0) {
 				snprintf(dgen, 512, "strftime('%%Y-01-01', %s, 'localtime')", nowdate);
 			} else {
-				/* TODO: add option to select if MonthRotate affects also years */
 				snprintf(dgen, 512, "strftime('%%Y-01-01', datetime(%s, '-%d days'), 'localtime')", nowdate, cfg.monthrotate-1);
 			}
 			break;

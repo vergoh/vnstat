@@ -122,7 +122,8 @@ void printcfgfile(void)
 	printf("OfflineSaveInterval %d\n\n", cfg.offsaveinterval);
 
 	printf("# on which day should months change\n");
-	printf("MonthRotate %d\n\n", cfg.monthrotate);
+	printf("MonthRotate %d\n", cfg.monthrotate);
+	printf("MonthRotateAffectsYears %d\n\n", cfg.monthrotateyears);
 
 	printf("# filesystem disk space check (1 = enabled, 0 = disabled)\n");
 	printf("CheckDiskSpace %d\n\n", cfg.spacecheck);

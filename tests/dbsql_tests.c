@@ -1790,6 +1790,66 @@ START_TEST(db_addtraffic_with_monthrotate)
 }
 END_TEST
 
+START_TEST(db_get_date_generator_can_generate_dates)
+{
+	defaultcfg();
+
+	ck_assert_ptr_ne(strstr(db_get_date_generator(0, 0, "foo"), "minutes"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(1, 0, "foo"), "strftime('%Y-%m-%d %H:00:00', foo, 'localtime')"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(2, 0, "foo"), "date(foo, 'localtime')"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(5, 0, "foo"), "date(foo, 'localtime')"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(3, 0, "foo"), "strftime('%Y-%m-01', foo, 'localtime')"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(4, 0, "foo"), "strftime('%Y-01-01', foo, 'localtime')"), NULL);
+
+	ck_assert_ptr_ne(strstr(db_get_date_generator(0, 1, "foo"), "minutes"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(1, 1, "foo"), "strftime('%Y-%m-%d %H:00:00', foo, 'localtime')"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(2, 1, "foo"), "date(foo, 'localtime')"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(5, 1, "foo"), "date(foo, 'localtime')"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(3, 1, "foo"), "strftime('%Y-%m-01', foo, 'localtime')"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(4, 1, "foo"), "strftime('%Y-01-01', foo, 'localtime')"), NULL);
+}
+END_TEST
+
+START_TEST(db_get_date_generator_can_generate_dates_with_monthrotate)
+{
+	defaultcfg();
+
+	cfg.monthrotate = 10;
+	cfg.monthrotateyears = 0;
+
+	ck_assert_ptr_ne(strstr(db_get_date_generator(0, 0, "foo"), "minutes"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(1, 0, "foo"), "strftime('%Y-%m-%d %H:00:00', foo, 'localtime')"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(2, 0, "foo"), "date(foo, 'localtime')"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(5, 0, "foo"), "date(foo, 'localtime')"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(3, 0, "foo"), "strftime('%Y-%m-01', datetime(foo, '-9 days'), 'localtime')"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(4, 0, "foo"), "strftime('%Y-01-01', foo, 'localtime')"), NULL);
+
+	ck_assert_ptr_ne(strstr(db_get_date_generator(0, 1, "foo"), "minutes"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(1, 1, "foo"), "strftime('%Y-%m-%d %H:00:00', foo, 'localtime')"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(2, 1, "foo"), "date(foo, 'localtime')"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(5, 1, "foo"), "date(foo, 'localtime')"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(3, 1, "foo"), "strftime('%Y-%m-01', foo, 'localtime')"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(4, 1, "foo"), "strftime('%Y-01-01', foo, 'localtime')"), NULL);
+
+	cfg.monthrotate = 8;
+	cfg.monthrotateyears = 1;
+
+	ck_assert_ptr_ne(strstr(db_get_date_generator(0, 0, "foo"), "minutes"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(1, 0, "foo"), "strftime('%Y-%m-%d %H:00:00', foo, 'localtime')"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(2, 0, "foo"), "date(foo, 'localtime')"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(5, 0, "foo"), "date(foo, 'localtime')"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(3, 0, "foo"), "strftime('%Y-%m-01', datetime(foo, '-7 days'), 'localtime')"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(4, 0, "foo"), "strftime('%Y-01-01', datetime(foo, '-7 days'), 'localtime')"), NULL);
+
+	ck_assert_ptr_ne(strstr(db_get_date_generator(0, 1, "foo"), "minutes"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(1, 1, "foo"), "strftime('%Y-%m-%d %H:00:00', foo, 'localtime')"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(2, 1, "foo"), "date(foo, 'localtime')"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(5, 1, "foo"), "date(foo, 'localtime')"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(3, 1, "foo"), "strftime('%Y-%m-01', foo, 'localtime')"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(4, 1, "foo"), "strftime('%Y-01-01', foo, 'localtime')"), NULL);
+}
+END_TEST
+
 void add_dbsql_tests(Suite *s)
 {
 	TCase *tc_dbsql = tcase_create("DB SQL");
@@ -1855,5 +1915,7 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_getdata_range_can_get_hours_with_range_on_same_hour);
 	tcase_add_test(tc_dbsql, db_addtraffic_without_monthrotate);
 	tcase_add_test(tc_dbsql, db_addtraffic_with_monthrotate);
+	tcase_add_test(tc_dbsql, db_get_date_generator_can_generate_dates);
+	tcase_add_test(tc_dbsql, db_get_date_generator_can_generate_dates_with_monthrotate);
 	suite_add_tcase(s, tc_dbsql);
 }

@@ -243,6 +243,14 @@ including the 6th will count for January. Changing this option will
 not cause existing data to be recalculated. Value range: 1..28
 
 .TP
+.B MonthRotateAffectsYears
+Enable or disable
+.B MonthRotate
+also affecting yearly data. Applicable only when
+.B MonthRotate
+has a value greater than one. 1 = enabled, 0 = disabled.
+
+.TP
 .B OfflineSaveInterval
 How often in minutes cached interface data is saved to file when all monitored
 interfaces are offline. Value range:
