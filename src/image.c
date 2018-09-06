@@ -526,7 +526,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	rowcount += datainfo.count;
 
 	width = 500;
-	if (listtype >= 4 && (datainfo.count < 2 || strlen(ic->dataend) == 0)) { // less space needed when no estimate or sum is shown
+	if (listtype >= 4 && (datainfo.count < 2 || strlen(ic->dataend) == 0 || listtype == 4)) { // less space needed when no estimate or sum is shown
 		height = 86;
 		offsety = -16;
 	} else {
@@ -685,7 +685,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		gdImageLine(ic->im, textx+2, texty+5, textx+296+offsetx, texty+5, ic->cline);
 	}
 
-	if ((strlen(ic->dataend) == 0 && datainfo.count > 0 && listtype < 4) || (strlen(ic->dataend) > 0 && datainfo.count > 1)) {
+	if ((strlen(ic->dataend) == 0 && datainfo.count > 0 && listtype < 4) || (strlen(ic->dataend) > 0 && datainfo.count > 1 && listtype != 4)) {
 
 		d = localtime(&ic->interface.updated);
 		if ( datalist_i->rx==0 || datalist_i->tx==0 || strlen(ic->dataend)>0) {

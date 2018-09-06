@@ -111,7 +111,7 @@ This option can only be used with
 .B "--json"
 ,
 .B "--xml"
-and list outputs excluding top list.
+and list outputs.
 
 .TP
 .BI "--config " file
@@ -153,7 +153,9 @@ This option can only be used with
 .B "--json"
 ,
 .B "--xml"
-and list outputs excluding top list.
+and list outputs. The top list also requires
+.B "--begin"
+to be used at the same time with this option.
 
 .TP
 .BI "-5, --fiveminutes " [count]
@@ -304,7 +306,13 @@ will default to 10 entries unless configured otherwise or unless the optional
 .I count
 parameter is used. All entries stored in the database will be shown if
 .I count
-is set to 0.
+is set to 0. When used with
+.B "--begin"
+and optionally with
+.BR "--end" ,
+the list will be generated using the daily data instead of separate top entries.
+The availability of daily data defines the boundaries the date specific query
+can access.
 
 .TP
 .BI "-tr " [time]

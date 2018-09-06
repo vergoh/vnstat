@@ -1057,8 +1057,14 @@ int db_getdata_range(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *
 	/* note that using the linked list reverses the order */
 	/* most recent last in the linked list is considered the normal order */
 	if (strcmp(table, "top") == 0) {
-		/* TODO: should data range selection be supported here? */
-		sqlite3_snprintf(512, sql, "select * from (select id, strftime('%%s', date, 'utc'), rx, tx from %s where interface=%"PRId64" order by rx+tx desc %s) order by rx+tx asc;", table, (int64_t)ifaceid, limit);
+		if (strlen(dbegin)) {
+			if (resultlimit > 0) {
+				snprintf(limit, 64, "limit %"PRIu32"", resultlimit);
+			}
+			sqlite3_snprintf(512, sql, "select * from (select id, strftime('%%s', date, 'utc'), rx, tx from day where interface=%"PRId64" %s %s order by rx+tx desc %s) order by rx+tx asc;", (int64_t)ifaceid, dbegin, dend, limit);
+		} else {
+			sqlite3_snprintf(512, sql, "select * from (select id, strftime('%%s', date, 'utc'), rx, tx from top where interface=%"PRId64" order by rx+tx desc %s) order by rx+tx asc;", (int64_t)ifaceid, limit);
+		}
 	} else {
 		if (strlen(dbegin) && strlen(limit)) {
 			sqlite3_snprintf(512, sql, "select * from (select id, strftime('%%s', date, 'utc') as date, rx, tx from %s where interface=%"PRId64" %s %s order by date asc %s) order by date desc;", table, (int64_t)ifaceid, dbegin, dend, limit);

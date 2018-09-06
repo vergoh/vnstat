@@ -362,7 +362,17 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 	if (interface->active == 0) {
 		printf(" [disabled]");
 	}
-	printf("  /  %s\n\n", titlename);
+	printf("  /  %s", titlename);
+
+	if (listtype == 4 && (strlen(databegin))) {
+		printf("  (%s -", databegin);
+		if (strlen(dataend)) {
+			printf(" %s)", dataend);
+		} else {
+			printf(">)");
+		}
+	}
+	printf("\n\n");
 
 	if (cfg.ostyle == 3) {
 		if (listtype == 4) {
@@ -500,7 +510,7 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 		}
 		printf("\n");
 	}
-	if ((strlen(dataend) == 0 && datainfo.count > 0 && listtype < 4) || (strlen(dataend) > 0 && datainfo.count > 1)) {
+	if ((strlen(dataend) == 0 && datainfo.count > 0 && listtype < 4) || (strlen(dataend) > 0 && datainfo.count > 1 && listtype != 4)) {
 		/* use database update time for estimates */
 		d = localtime(&interface->updated);
 		if ( datalist_i->rx==0 || datalist_i->tx==0 || strlen(dataend)>0 ) {
