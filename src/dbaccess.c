@@ -224,7 +224,7 @@ int readdb(DATA *data, const char *iface, const char *dirname, const int force)
 
 			if (data->version!=LEGACYDBVERSION) {
 				if (data->version==-1) {
-					snprintf(errorstring, 1024, "Unable to use database \"%s\" or backup database \"%s\".", file, backup);
+					snprintf(errorstring, 1024, "Unable to use database \"%s\" or its backup.", file);
 					printe(PT_Error);
 					fclose(legacydb);
 

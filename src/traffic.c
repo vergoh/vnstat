@@ -224,7 +224,7 @@ void livetrafficmeter(char iface[32], int mode)
 				snprintf(buffer, 128, "   rx: %s   %s", gettrafficrate(rx, LIVETIME, ratewidth), getvalue(rxtotal, 1, 1));
 				snprintf(buffer2, 128, " %*s tx: %s   %s", paddingwidth, " ", gettrafficrate(tx, LIVETIME, ratewidth), getvalue(txtotal, 1, 1));
 			}
-			strncat(buffer, buffer2, 127);
+			strcat(buffer, buffer2);
 
 			if (cfg.ostyle!=4 || !debug) {
 				cursortocolumn(1);

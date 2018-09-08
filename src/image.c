@@ -604,13 +604,15 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 
 		if (listtype == 4) {
 			if (strftime(datebuff, 16, stampformat, d)<=8) {
-				snprintf(buffer, 32, "  %2d   %*s   ", i, getpadding(8, datebuff), datebuff);
+				snprintf(buffer, 32, "  %2d   %*s", i, getpadding(8, datebuff), datebuff);
+				strcat(buffer, "   ");
 			} else {
 				snprintf(buffer, 32, "  %2d  %-*s ", i, getpadding(11, datebuff), datebuff);
 			}
 		} else {
 			if (strftime(datebuff, 16, stampformat, d)<=8) {
-				snprintf(buffer, 32, "  %*s   ", getpadding(8, datebuff), datebuff);
+				snprintf(buffer, 32, "  %*s", getpadding(8, datebuff), datebuff);
+				strcat(buffer, "   ");
 			} else {
 				snprintf(buffer, 32, " %-*s ", getpadding(11, datebuff), datebuff);
 			}
@@ -1046,9 +1048,7 @@ void drawsummary(IMAGECONTENT *ic, int type, int rate)
 	gdImageString(ic->im, gdFontGetSmall(), textx, texty+50, (unsigned char*)buffer, ic->ctext);
 	d = localtime(&ic->interface.created);
 	strftime(datebuff, 16, cfg.tformat, d);
-	snprintf(daytemp, 7, "since ");
-	strncat(daytemp, datebuff, 16);
-	snprintf(buffer, 20, "%19s", daytemp);
+	snprintf(buffer, 24, "since %16s", datebuff);
 	gdImageString(ic->im, gdFontGetSmall(), textx-24, texty+70, (unsigned char*)buffer, ic->ctext);
 
 	drawlegend(ic, 410, 155-headermod);

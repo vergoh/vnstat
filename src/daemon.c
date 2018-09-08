@@ -799,8 +799,8 @@ void datacache_status(datacache **dc)
 			} else {
 				snprintf(bwtemp, 16, " (%"PRIu32" Mbit) ", bwlimit);
 			}
-			strncat(buffer, iterator->interface, strlen(iterator->interface));
-			strncat(buffer, bwtemp, strlen(bwtemp));
+			strcat(buffer, iterator->interface);
+			strcat(buffer, bwtemp);
 			b += strlen(iterator->interface) + strlen(bwtemp);
 		} else {
 			strcat(buffer, "...");

@@ -80,7 +80,7 @@ int getiflist(char **ifacelist, int showspeed)
 				if (*ifacelist == NULL) {
 					panicexit(__FILE__, __LINE__);
 				}
-				strncat(*ifacelist, interface, strlen(interface));
+				strcat(*ifacelist, interface);
 				strcat(*ifacelist, " ");
 				if (!showspeed) {
 					continue;
@@ -92,7 +92,7 @@ int getiflist(char **ifacelist, int showspeed)
 					if (*ifacelist == NULL) {
 						panicexit(__FILE__, __LINE__);
 					}
-					strncat(*ifacelist, temp, strlen(temp));
+					strcat(*ifacelist, temp);
 				}
 			}
 		}
@@ -113,7 +113,7 @@ int getiflist(char **ifacelist, int showspeed)
 				if (*ifacelist == NULL) {
 					panicexit(__FILE__, __LINE__);
 				}
-				strncat(*ifacelist, di->d_name, strlen(di->d_name));
+				strcat(*ifacelist, di->d_name);
 				strcat(*ifacelist, " ");
 				if (!showspeed) {
 					continue;
@@ -125,7 +125,7 @@ int getiflist(char **ifacelist, int showspeed)
 					if (*ifacelist == NULL) {
 						panicexit(__FILE__, __LINE__);
 					}
-					strncat(*ifacelist, temp, strlen(temp));
+					strcat(*ifacelist, temp);
 				}
 			}
 
@@ -146,7 +146,7 @@ int getiflist(char **ifacelist, int showspeed)
 			if (*ifacelist == NULL) {
 				panicexit(__FILE__, __LINE__);
 			}
-			strncat(*ifacelist, ifa->ifa_name, strlen(ifa->ifa_name));
+			strcat(*ifacelist, ifa->ifa_name);
 			strcat(*ifacelist, " ");
 			if (!showspeed) {
 				continue;
@@ -158,7 +158,7 @@ int getiflist(char **ifacelist, int showspeed)
 				if (*ifacelist == NULL) {
 					panicexit(__FILE__, __LINE__);
 				}
-				strncat(*ifacelist, temp, strlen(temp));
+				strcat(*ifacelist, temp);
 			}
 		}
 

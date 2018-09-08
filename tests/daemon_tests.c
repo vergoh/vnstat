@@ -613,7 +613,7 @@ END_TEST
 
 START_TEST(preparedirs_with_no_dir)
 {
-	char logdir[512], piddir[512];
+	char logdir[500], piddir[500];
 
 	DSTATE s;
 	initdstate(&s);
@@ -621,8 +621,8 @@ START_TEST(preparedirs_with_no_dir)
 	cfg.uselogging = 1;
 	s.rundaemon = 1;
 	strncpy_nt(s.dirname, TESTDBDIR, 512);
-	snprintf(logdir, 512, "%s/log/vnstat", TESTDIR);
-	snprintf(piddir, 512, "%s/pid/vnstat", TESTDIR);
+	snprintf(logdir, 500, "%s/log/vnstat", TESTDIR);
+	snprintf(piddir, 500, "%s/pid/vnstat", TESTDIR);
 	snprintf(cfg.logfile, 512, "%s/vnstat.log", logdir);
 	snprintf(cfg.pidfile, 512, "%s/vnstat.pid", piddir);
 
@@ -639,7 +639,7 @@ END_TEST
 
 START_TEST(preparedirs_with_dir)
 {
-	char logdir[512], piddir[512];
+	char logdir[500], piddir[500];
 
 	DSTATE s;
 	initdstate(&s);
@@ -647,8 +647,8 @@ START_TEST(preparedirs_with_dir)
 	cfg.uselogging = 1;
 	s.rundaemon = 1;
 	strncpy_nt(s.dirname, TESTDBDIR, 512);
-	snprintf(logdir, 512, "%s/log/vnstat", TESTDIR);
-	snprintf(piddir, 512, "%s/pid/vnstat", TESTDIR);
+	snprintf(logdir, 500, "%s/log/vnstat", TESTDIR);
+	snprintf(piddir, 500, "%s/pid/vnstat", TESTDIR);
 	snprintf(cfg.logfile, 512, "%s/vnstat.log", logdir);
 	snprintf(cfg.pidfile, 512, "%s/vnstat.pid", piddir);
 
