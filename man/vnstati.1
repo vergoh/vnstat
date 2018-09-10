@@ -24,7 +24,10 @@ vnstati \- png image output support for vnStat
 .RB [ \-\-headertext
 .IR text ]
 .RB [ \-\-help ]
-.RB [ \-\-hours ]
+.RB [ \-hg ]
+.RB [ \-\-hours
+.RI [ count ]]
+.RB [ \-\-hoursgraph ]
 .RB [ \-hs ]
 .RB [ \-\-hsummary ]
 .RB [ \-i
@@ -155,12 +158,21 @@ if maximal space is needed. This option will have no effect if
 has been selected.
 
 .TP
-.B "-h, --hours"
-Output traffic statistics on a hourly basis for the last 24 hours.
+.BI "-h, --hours "  [count]
+Output traffic statistics on a hourly basis. The length of the list will default
+to 24 entries unless configured otherwise or unless the optional
+.I count
+parameter is used. All entries store in the database will be shown if the
+.I count
+is set to 0.
+
+.TP
+.B "-hg, --hoursgraph"
+Output traffic statistics on a hourly basis for the last 24 hours using a bar graph.
 
 .TP
 .B "-hs, --hsummary"
-Output traffic summary including hourly data using a horizontal layout.
+Output traffic summary including hourly data bar graph using a horizontal layout.
 
 .TP
 .BI "-i, --iface " interface
@@ -253,7 +265,7 @@ Show current version.
 
 .TP
 .B "-vs, --vsummary"
-Output traffic summary including hourly data using a vertical layout.
+Output traffic summary including hourly data bar graph using a vertical layout.
 
 .TP
 .B "-?, --help"

@@ -7,11 +7,11 @@
      full data import included from legacy databases of versions 1.3 - 1.18
    - User configurable data retention durations for all resolutions with
      following changed defaults:
-                    v1.8     v2.0
+                   v1.18     v2.0
        5 minutes     n/a      576
        hours          24       96
-       days           30       60
-       months         12       24
+       days           30       62
+       months         12       25
        years         n/a      all
        top days       10       20
    - Option to select units to use SI decimal prefixes using calculations
@@ -20,7 +20,8 @@
    - Pebibyte and exbibyte support
    - Options the configure the length of each list output
    - Option to limit the length of --json and --xml outputs
-   - Hourly list output as alternative
+   - Hourly list output replaces the hourly graph when the -h parameter is used
+   - Hourly graph is accessible with -hg / --hoursgraph parameter
    - Options -b / --begin and -e / --end for specifying query time range
  - Removed
    - Weekly output

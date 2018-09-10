@@ -4,7 +4,7 @@ New configuration settings
 
 2.0: List5Mins, ListHours, ListDays, ListMonths, ListYears, ListTop,
      5MinuteHours, HourlyDays, DailyDays, MonthlyMonths, YearlyYears,
-     TopDayEntries
+     TopDayEntries, MonthRotateAffectsYears
 
 1.18: TimeSyncWait, DefaultDecimals, HourlyDecimals, HourlySectionStyle
 

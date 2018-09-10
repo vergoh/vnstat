@@ -173,14 +173,11 @@ and most can be changed later from the config file.
 #define LISTTOP 10
 #define LISTJSONXML 0
 
-/* TODO: how to handle upgrades and avoid discarding data if the
-         package maintainer provided configuration has shorter retention
-         than what user has configured? */
 /* data retention defaults */
 #define FIVEMINUTEHOURS 48
 #define HOURLYDAYS 4
-#define DAILYDAYS 60
-#define MONTHLYMONTHS 24
+#define DAILYDAYS 62
+#define MONTHLYMONTHS 25
 #define YEARLYYEARS -1
 #define TOPDAYENTRIES 20
 

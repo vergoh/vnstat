@@ -142,7 +142,7 @@ int db_validate(const int readonly)
 		return 0;
 
 	} else if (dbversion > currentversion) {
-		printf("Error: Database version \"%d\" is not supported with support up to version \"%d\", exiting.\n", dbversion, currentversion);
+		printf("Error: Database version \"%d\" is not supported. Support is available up to version \"%d\", exiting.\n", dbversion, currentversion);
 		return 0;
 
 	} else if (dbversion < currentversion) {
@@ -152,7 +152,7 @@ int db_validate(const int readonly)
 			return 0;
 		}
 		/* database upgrade actions should be performed here once needed, then return 1 */
-		/* however, since there aren't other versions supported, always return 0 */
+		/* however, since this is the first database version, always return 0 */
 	}
 
 	return 0;

@@ -23,9 +23,10 @@ vnstat \- a console-based network traffic monitor
 .RB [ \-\-fiveminutes
 .RI [ count ]]
 .RB [ \-\-help ]
-.RB [ \-\-hours ]
-.RB [ \-\-hourslist
+.RB [ \-hg ]
+.RB [ \-\-hours
 .RI [ count ]]
+.RB [ \-\-hoursgraph ]
 .RB [ \-i
 .IR interface ]
 .RB [ \-\-iface
@@ -167,8 +168,18 @@ parameter is used. All entries stored in the database will be shown if
 is set to 0.
 
 .TP
-.B "-h, --hours"
-Show traffic statistics on a hourly basis for the last 24 hours.
+.BI "-h, --hours "  [count]
+Show traffic statistics on a hourly basis. The length of the list will default
+to 24 entries unless configured otherwise or unless the optional
+.I count
+parameter is used. All entries store in the database will be shown if the
+.I count
+is set to 0.
+
+.TP
+.B "-hg, --hoursgraph"
+Show traffic statistics on a hourly basis for the last 24 hours using a bar graph
+followed by a table representing the numerical data.
 
 .TP
 .BI "-i, --iface " interface

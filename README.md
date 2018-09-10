@@ -47,11 +47,9 @@ durations. Yearly and five-minute resolution statistics are now included.
 ##### Overall status
 
   * beta version
-    * possibly more beta than seen with recent 1.x releases
-    * has been tested so far mainly in 24/7 running servers
   * vnstatd (daemon) has all features implemented
     * some sanity checks may be missing
-  * vnstat (console output) has most features implemented
+  * vnstat (console output) has all necessary features implemented
   * vnstati (image output) has all intended original features implemented
   * 5 minute resolution outputs available in both text and image formats
   * data migration verified to work automatically from 1.x version databases
@@ -76,7 +74,7 @@ durations. Yearly and five-minute resolution statistics are now included.
       * executed during startup and then once every hour
     * logging and handling of possible database access errors
       * only fatal errors will cause the daemon to exit directly
-  * most vnstat (console output) features
+  * all vnstat (console output) features
   * all vnstati (image output) features
   * pebibyte and exbibyte support
   * query of time range specific data
@@ -88,6 +86,7 @@ durations. Yearly and five-minute resolution statistics are now included.
     * most likely better to do directly via sqlite cli or using some script language
   * merge of data from multiple interfaces
   * weekly ouput
+    * data still accessible with time range specific queries
   * kernel test
     * provided some use mostly with 2.0 and 2.2 kernels
   * `--update` / `-u` and several other database modifiers using vnstat command
@@ -99,11 +98,6 @@ durations. Yearly and five-minute resolution statistics are now included.
   * `grep TODO src/* tests/*`
   * feature configurability
     * is something still missing?
-  * freeze database structure
-    * plan ahead and figure out how to migrate data to new structure if necessary?
-  * decide if output type parameters should be renamed
-    * currently `-h` results in a graph style output when everything else gives a list
-    * `-h` to output list and have `-hg` (or similar) for the hourly graph?
   * documentation
     * especially feature comparison with 1.x versions is needed as some features have been left out
   * remember what else has been forgotten from this list
