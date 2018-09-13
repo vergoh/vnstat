@@ -120,6 +120,10 @@ Installing without root access
  and replace it with
 
      DatabaseDir "/pathtomyhomedir/.vnstat"
+     
+ Due to permission problems you have to edit the PidFile (line 132) option to something like
+ 
+   PidFile "/yourhomedirectory/vnstat.pid
 
  and save the file. If you are unsure about your home directory path, execute
 
@@ -132,7 +136,7 @@ Installing without root access
  command 'crontab -e' and add the following line (without leading spaces,
  remember to change the path):
 
-     @reboot ~/bin/vnstatd -d
+     @reboot ~/bin/vnstatd -d --config /pathtomyhomedir/.vnstatrc
 
  If you found yourself using a strange editor then 'man vi' may help.
 
