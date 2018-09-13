@@ -36,7 +36,7 @@ int loadcfg(const char *cfgfile)
 		{ "QueryMode", 0, &cfg.qmode, 0, 0 },
 		{ "CheckDiskSpace", 0, &cfg.spacecheck, 0, 0 },
 		{ "BootVariation", 0, &cfg.bvar, 0, 0 },
-		{ "TrafficlessDays", 0, &cfg.traflessday, 0, 0 },
+		{ "TrafficlessEntries", 0, &cfg.trafficlessentries, 0, 0 },
 		{ "List5Mins", 0, &cfg.listfivemins, 0, 0 },
 		{ "ListHours", 0, &cfg.listhours, 0, 0 },
 		{ "ListDays", 0, &cfg.listdays, 0, 0 },
@@ -324,9 +324,9 @@ void validatecfg(void)
 		printe(PT_Config);
 	}
 
-	if (cfg.traflessday<0 || cfg.traflessday>1) {
-		cfg.traflessday = TRAFLESSDAY;
-		snprintf(errorstring, 1024, "%s TrafficlessDays, %s \"%d\".", invalidvalue, resettingto, cfg.traflessday);
+	if (cfg.trafficlessentries<0 || cfg.trafficlessentries>1) {
+		cfg.trafficlessentries = TRAFFICLESSENTRIES;
+		snprintf(errorstring, 1024, "%s TrafficlessEntries, %s \"%d\".", invalidvalue, resettingto, cfg.trafficlessentries);
 		printe(PT_Config);
 	}
 
@@ -437,7 +437,7 @@ void defaultcfg(void)
 	cfg.spacecheck = USESPACECHECK;
 	cfg.hourlyrate = HOURLYRATE;
 	cfg.summaryrate = SUMMARYRATE;
-	cfg.traflessday = TRAFLESSDAY;
+	cfg.trafficlessentries = TRAFFICLESSENTRIES;
 	cfg.utflocale = UTFLOCALE;
 
 	cfg.listfivemins = LISTFIVEMINS;

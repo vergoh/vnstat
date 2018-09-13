@@ -549,7 +549,7 @@ int processifinfo(DSTATE *s, datacache **dc)
 			}
 		}
 
-		if (rxchange || txchange || cfg.traflessday) {
+		if (rxchange || txchange || cfg.trafficlessentries) {
 			xferlog_add(&(*dc)->log, ifinfo.timestamp - (ifinfo.timestamp % 300), rxchange, txchange);
 		}
 	}

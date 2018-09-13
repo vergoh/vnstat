@@ -131,8 +131,8 @@ void printcfgfile(void)
 	printf("# how much the boot time can variate between updates (seconds)\n");
 	printf("BootVariation %d\n\n", cfg.bvar);
 
-	printf("# log days without traffic to daily list (1 = enabled, 0 = disabled)\n");
-	printf("TrafficlessDays %d\n\n", cfg.traflessday);
+	printf("# create database entries even when there is no traffic (1 = enabled, 0 = disabled)\n");
+	printf("TrafficlessEntries %d\n\n", cfg.trafficlessentries);
 
 	printf("# how many minutes to wait during daemon startup for system clock to\n");
 	printf("# sync time if most recent database update appears to be in the future\n");

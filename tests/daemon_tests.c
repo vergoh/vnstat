@@ -1314,7 +1314,7 @@ START_TEST(processifinfo_does_not_add_traffic_when_over_limit)
 	ifinfo.rx = 1111111;
 	ifinfo.tx = 2222222;
 	ifinfo.timestamp = 250;
-	cfg.traflessday = 0;
+	cfg.trafficlessentries = 0;
 
 	ck_assert_int_eq(datacache_count(&s.dcache), 0);
 	ret = datacache_add(&s.dcache, "ethsomething", 0);
@@ -1349,7 +1349,7 @@ START_TEST(processifinfo_adds_zero_traffic_when_over_limit)
 	ifinfo.rx = 1111111;
 	ifinfo.tx = 2222222;
 	ifinfo.timestamp = 250;
-	cfg.traflessday = 1;
+	cfg.trafficlessentries = 1;
 
 	ck_assert_int_eq(datacache_count(&s.dcache), 0);
 	ret = datacache_add(&s.dcache, "ethsomething", 0);
