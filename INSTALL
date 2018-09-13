@@ -121,7 +121,19 @@ Installing without root access
 
      DatabaseDir "/pathtomyhomedir/.vnstat"
 
- and save the file. If you are unsure about your home directory path, execute
+ Next, locate the following lines:
+
+     UseLogging 2
+     LogFile "/var/log/vnstat/vnstat.log"
+     PidFile "/var/run/vnstat/vnstat.pid"
+
+ and replace them with
+
+     UseLogging 1
+     LogFile "/pathtomyhomedir/.vnstat/.log"
+     PidFile "/pathtomyhomedir/.vnstat/.pid"
+
+ Finally, save the file. If you are unsure about your home directory path, execute
 
      cd ; pwd
 
