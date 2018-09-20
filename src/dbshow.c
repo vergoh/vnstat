@@ -832,11 +832,11 @@ int showbar(const uint64_t rx, const uint64_t tx, const uint64_t max, const int 
 
 	if ( (rx + tx) < max) {
 		width = (int)( ((rx + tx) / (float)max) * len );
-	} else if ((rx + tx) > max) {
+	} else if ((rx + tx) > max || max == 0) {
 		return 0;
 	}
 
-	if (len <= 0) {
+	if (width <= 0) {
 		return 0;
 	}
 

@@ -188,30 +188,33 @@ void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const ui
 {
 	int l, width = len;
 
-	if ((rx+tx)!=max) {
+	if ((rx+tx) < max) {
 		width=(int)(((rx+tx)/(float)max)*len);
+	} else if ((rx+tx) > max || max == 0) {
+		return;
 	}
 
-	if (width!=0) {
+	if (width <= 0) {
+		return;
+	}
 
-		if (tx>rx) {
-			l=(int)(rintf((rx/(float)(rx+tx)*width)));
+	if (tx > rx) {
+		l=(int)(rintf((rx/(float)(rx+tx)*width)));
 
-			gdImageFilledRectangle(ic->im, x, y+YBEGINOFFSET, x+l, y+YENDOFFSET, ic->crx);
-			gdImageRectangle(ic->im, x, y+YBEGINOFFSET, x+l, y+YENDOFFSET, ic->crxd);
+		gdImageFilledRectangle(ic->im, x, y+YBEGINOFFSET, x+l, y+YENDOFFSET, ic->crx);
+		gdImageRectangle(ic->im, x, y+YBEGINOFFSET, x+l, y+YENDOFFSET, ic->crxd);
 
-			gdImageFilledRectangle(ic->im, x+l, y+YBEGINOFFSET, x+width, y+YENDOFFSET, ic->ctx);
-			gdImageRectangle(ic->im, x+l, y+YBEGINOFFSET, x+width, y+YENDOFFSET, ic->ctxd);
+		gdImageFilledRectangle(ic->im, x+l, y+YBEGINOFFSET, x+width, y+YENDOFFSET, ic->ctx);
+		gdImageRectangle(ic->im, x+l, y+YBEGINOFFSET, x+width, y+YENDOFFSET, ic->ctxd);
 
-		} else {
-			l=(int)(rintf((tx/(float)(rx+tx)*width)));
+	} else {
+		l=(int)(rintf((tx/(float)(rx+tx)*width)));
 
-			gdImageFilledRectangle(ic->im, x, y+YBEGINOFFSET, x+(width-l), y+YENDOFFSET, ic->crx);
-			gdImageRectangle(ic->im, x, y+YBEGINOFFSET, x+(width-l), y+YENDOFFSET, ic->crxd);
+		gdImageFilledRectangle(ic->im, x, y+YBEGINOFFSET, x+(width-l), y+YENDOFFSET, ic->crx);
+		gdImageRectangle(ic->im, x, y+YBEGINOFFSET, x+(width-l), y+YENDOFFSET, ic->crxd);
 
-			gdImageFilledRectangle(ic->im, x+(width-l), y+YBEGINOFFSET, x+width, y+YENDOFFSET, ic->ctx);
-			gdImageRectangle(ic->im, x+(width-l), y+YBEGINOFFSET, x+width, y+YENDOFFSET, ic->ctxd);
-		}
+		gdImageFilledRectangle(ic->im, x+(width-l), y+YBEGINOFFSET, x+width, y+YENDOFFSET, ic->ctx);
+		gdImageRectangle(ic->im, x+(width-l), y+YBEGINOFFSET, x+width, y+YENDOFFSET, ic->ctxd);
 	}
 }
 
@@ -534,6 +537,11 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	}
 	height += 12 * rowcount;
 
+	if (!datainfo.count) {
+		height = 98;
+		offsety = -24;
+	}
+
 	if (!ic->showheader) {
 		headermod = 26;
 		height -= 22;
@@ -575,7 +583,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	} else { // everything else
 		snprintf(buffer, 512, " %8s       rx           tx          total", colname);
 	}
-	if (cfg.ostyle>2) {
+	if (cfg.ostyle > 2) {
 		strcat(buffer, "       avg. rate");
 		gdImageString(ic->im, gdFontGetSmall(), textx, texty, (unsigned char*)buffer, ic->ctext);
 		gdImageLine(ic->im, textx+2, texty+16, textx+392+offsetx, texty+16, ic->cline);
@@ -677,11 +685,15 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	}
 
 	if (!datainfo.count) {
-		gdImageString(ic->im, gdFontGetSmall(), textx, texty, (unsigned char*)"                 no data available", ic->ctext);
+		i = 102;
+		if (cfg.ostyle > 2) {
+			i += 46;
+		}
+		gdImageString(ic->im, gdFontGetSmall(), textx+i, texty, (unsigned char*)"no data available", ic->ctext);
 		texty += 12;
 	}
 
-	if (cfg.ostyle>2) {
+	if (cfg.ostyle > 2) {
 		gdImageLine(ic->im, textx+2, texty+5, textx+392+offsetx, texty+5, ic->cline);
 	} else {
 		gdImageLine(ic->im, textx+2, texty+5, textx+296+offsetx, texty+5, ic->cline);

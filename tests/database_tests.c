@@ -329,6 +329,15 @@ START_TEST(showbar_with_zero_len_is_nothing)
 }
 END_TEST
 
+START_TEST(showbar_with_zero_max)
+{
+	int len;
+	suppress_output();
+	len = showbar(0, 0, 0, 10);
+	ck_assert_int_eq(len, 0);
+}
+END_TEST
+
 START_TEST(showbar_with_big_max_and_small_numbers)
 {
 	int len;
@@ -659,6 +668,7 @@ void add_database_tests(Suite *s)
 	tcase_add_test(tc_db, database_outputs_do_not_crash);
 	tcase_add_test(tc_db, database_outputs_do_not_crash_without_data);
 	tcase_add_test(tc_db, showbar_with_zero_len_is_nothing);
+	tcase_add_test(tc_db, showbar_with_zero_max);
 	tcase_add_test(tc_db, showbar_with_big_max_and_small_numbers);
 	tcase_add_test(tc_db, showbar_with_all_rx);
 	tcase_add_test(tc_db, showbar_with_all_tx);
