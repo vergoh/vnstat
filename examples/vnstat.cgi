@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # vnstat.cgi -- example cgi for vnStat image output
-# copyright (c) 2008-2014 Teemu Toivola <tst at iki dot fi>
+# copyright (c) 2008-2018 Teemu Toivola <tst at iki dot fi>
 #
 # based on mailgraph.cgi
 # copyright (c) 2000-2007 ETH Zurich
@@ -37,7 +37,7 @@ my $bgcolor = "white";
 ################
 
 
-my $VERSION = "1.4";
+my $VERSION = "1.5";
 my $cssbody = "body { background-color: $bgcolor; }";
 
 sub graph($$$)
@@ -111,7 +111,7 @@ HEADER
 	print "<table border=\"0\"><tr><td>\n";
 	print "<img src=\"$scriptname?${interface}-s\" border=\"0\" alt=\"${interface} summary\">";
 	print "</td><td>\n";
-	print "<img src=\"$scriptname?${interface}-h\" border=\"0\" alt=\"${interface} hourly\">";
+	print "<img src=\"$scriptname?${interface}-hg\" border=\"0\" alt=\"${interface} hourly\">";
 	print "</td></tr><tr><td valign=\"top\">\n";
 	print "<img src=\"$scriptname?${interface}-d\" border=\"0\" alt=\"${interface} daily\">";
 	print "</td><td valign=\"top\">\n";
@@ -181,6 +181,10 @@ sub main()
 		elsif($img =~ /^(\d+)-h$/) {
 			my $file = "$tmp_dir/vnstat_$1_h.png";
 			graph($graphs[$1]{interface}, $file, "-h");
+			send_image($file);
+		elsif($img =~ /^(\d+)-hg$/) {
+			my $file = "$tmp_dir/vnstat_$1_hg.png";
+			graph($graphs[$1]{interface}, $file, "-hg");
 			send_image($file);
 		}
 		elsif($img =~ /^(\d+)-f$/) {
