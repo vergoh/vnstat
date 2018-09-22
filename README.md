@@ -95,7 +95,6 @@ durations. Yearly and five-minute resolution statistics are now included.
 
 ##### TODO
 
-  * `grep TODO src/* tests/*`
   * feature configurability
     * is something still missing?
   * documentation

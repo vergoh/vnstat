@@ -5,7 +5,7 @@ vnstat \- a console-based network traffic monitor
 .SH SYNOPSIS
 
 .B vnstat
-.RB [ \-5bDedhlmqrstvw? ]
+.RB [ \-5bDedhlmqrstvwy? ]
 .RB [ \-\-add ]
 .RB [ \-\-begin
 .IR date ]
@@ -66,6 +66,8 @@ vnstat \- a console-based network traffic monitor
 .RB [ \-\-xml
 .RI [ mode ]
 .RI [ limit ]]
+.RB [ \-\-years
+.RI [ count ]]
 
 .SH DESCRIPTION
 
@@ -300,6 +302,11 @@ Use short output mode. This mode is also used if more than one
 database is available.
 
 .TP
+.B "--showconfig"
+Show current configuration using the same format as the configuration file
+itself uses.
+
+.TP
 .BI "--style " number
 Modify the content and style of outputs. Set
 .I number
@@ -326,7 +333,7 @@ The availability of daily data defines the boundaries the date specific query
 can access.
 
 .TP
-.BI "-tr " [time]
+.BI "-tr, --traffic " [time]
 Calculate how much traffic goes through the selected interface during
 the given
 .I time
@@ -354,6 +361,15 @@ years and 't' the top days. An optional
 .I limit
 parameter can be used to limit the number results to a given number of most recent
 entries.
+
+.TP
+.BI "-y, --years " [count]
+Show traffic statistics on a yearly basis for the last years. The list will show all
+entries by default unless configured otherwise or unless the optional
+.I count
+parameter is used. All entries stored in the database will also be shown if
+.I count
+is set to 0.
 
 .TP
 .B "-?, --help"
