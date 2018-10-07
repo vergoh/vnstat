@@ -182,6 +182,7 @@ sub main()
 			my $file = "$tmp_dir/vnstat_$1_h.png";
 			graph($graphs[$1]{interface}, $file, "-h");
 			send_image($file);
+		}
 		elsif($img =~ /^(\d+)-hg$/) {
 			my $file = "$tmp_dir/vnstat_$1_hg.png";
 			graph($graphs[$1]{interface}, $file, "-hg");
