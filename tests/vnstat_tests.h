@@ -15,6 +15,7 @@ int create_zerosize_dbfile(const char *iface);
 int check_dbfile_exists(const char *iface, const int minsize);
 int fake_proc_net_dev(const char *mode, const char *iface, const int rx, const int tx, const int rxp, const int txp);
 int fake_sys_class_net(const char *iface, const int rx, const int tx, const int rxp, const int txp, const int speed);
+uint64_t get_timestamp(const int year, const int month, const int day, const int hour, const int minute);
 
 #ifndef TESTDIR
 #define TESTDIR "testdir"

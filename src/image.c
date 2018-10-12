@@ -240,29 +240,60 @@ void drawdonut(IMAGECONTENT *ic, const int x, const int y, const float rxp, cons
 		} else {
 			txarc = (int)(360 * (txp / (float)100));
 		}
-
-		/* fix possible graphical glitch */
-		if (!rxarc) {
-			rxarc = 1;
-		}
-
-		if (!txarc) {
-			txarc = 1;
-		}
 	}
 
+	// background filled circle
 	gdImageFilledArc(ic->im, x, y, DOUTRAD, DOUTRAD, 0, 360, ic->cbgoffset, 0);
 
-	if ( (int)(rxp + txp) > 0 ) {
-		gdImageFilledArc(ic->im, x, y, DOUTRAD, DOUTRAD, 270, 270+txarc, ic->ctx, 0);
+	if (txarc) {
 		gdImageFilledArc(ic->im, x, y, DOUTRAD, DOUTRAD, 270, 270+txarc, ic->ctxd, gdEdged|gdNoFill);
-		gdImageFilledArc(ic->im, x, y, DOUTRAD, DOUTRAD, 270+txarc, 270+txarc+rxarc, ic->crx, 0);
-		gdImageFilledArc(ic->im, x, y, DOUTRAD, DOUTRAD, 270+txarc, 270+txarc+rxarc, ic->crxd, gdEdged|gdNoFill);
-
+		if (txarc >= 5) {
+			gdImageFill(ic->im, x+1, y-(DOUTRAD/2-3), ic->ctx);
+		}
 		gdImageFilledArc(ic->im, x, y, DINRAD, DINRAD, 270, 270+txarc, ic->ctxd, gdEdged|gdNoFill);
+	}
+
+	if (rxarc) {
+		gdImageFilledArc(ic->im, x, y, DOUTRAD, DOUTRAD, 270+txarc, 270+txarc+rxarc, ic->crxd, gdEdged|gdNoFill);
+		if (rxarc >= 5) {
+			gdImageFill(ic->im, x+(DOUTRAD/2-3)*cos(((270*2+2*txarc+rxarc)/2)*M_PI/180), y+(DOUTRAD/2-3)*sin(((270*2+2*txarc+rxarc)/2)*M_PI/180), ic->crx);
+		}
 		gdImageFilledArc(ic->im, x, y, DINRAD, DINRAD, 270+txarc, 270+txarc+rxarc, ic->crxd, gdEdged|gdNoFill);
 	}
 
+	// remove center from background filled circle, making it a donut
+	gdImageFilledArc(ic->im, x, y, DINRAD-2, DINRAD-2, 0, 360, ic->cbackground, 0);
+}
+
+void drawdonut_libgd_native(IMAGECONTENT *ic, const int x, const int y, const float rxp, const float txp)
+{
+	int rxarc = 0, txarc = 0;
+
+	if ( (int)(rxp + txp) > 0 ) {
+		rxarc = (int)(360 * (rxp / (float)100));
+		if ( (int)(rxp + txp) == 100 ) {
+			txarc = 360 - rxarc;
+		} else {
+			txarc = (int)(360 * (txp / (float)100));
+		}
+	}
+
+	// background filled circle
+	gdImageFilledArc(ic->im, x, y, DOUTRAD, DOUTRAD, 0, 360, ic->cbgoffset, 0);
+
+	if (txarc) {
+		gdImageFilledArc(ic->im, x, y, DOUTRAD, DOUTRAD, 270, 270+txarc, ic->ctx, 0);
+		gdImageFilledArc(ic->im, x, y, DOUTRAD, DOUTRAD, 270, 270+txarc, ic->ctxd, gdEdged|gdNoFill);
+		gdImageFilledArc(ic->im, x, y, DINRAD, DINRAD, 270, 270+txarc, ic->ctxd, gdEdged|gdNoFill);
+	}
+
+	if (rxarc) {
+		gdImageFilledArc(ic->im, x, y, DOUTRAD, DOUTRAD, 270+txarc, 270+txarc+rxarc, ic->crx, 0);
+		gdImageFilledArc(ic->im, x, y, DOUTRAD, DOUTRAD, 270+txarc, 270+txarc+rxarc, ic->crxd, gdEdged|gdNoFill);
+		gdImageFilledArc(ic->im, x, y, DINRAD, DINRAD, 270+txarc, 270+txarc+rxarc, ic->crxd, gdEdged|gdNoFill);
+	}
+
+	// remove center from background filled circle, making it a donut
 	gdImageFilledArc(ic->im, x, y, DINRAD-2, DINRAD-2, 0, 360, ic->cbackground, 0);
 }
 

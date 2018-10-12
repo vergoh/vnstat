@@ -963,21 +963,6 @@ START_TEST(db_validate_with_high_version)
 }
 END_TEST
 
-uint64_t get_timestamp(const int year, const int month, const int day, const int hour, const int minute)
-{
-	struct tm stm;
-
-	memset(&stm, 0, sizeof(struct tm));
-	stm.tm_year = year - 1900;
-	stm.tm_mon = month - 1;
-	stm.tm_mday = day;
-	stm.tm_hour = hour;
-	stm.tm_min = minute;
-	stm.tm_isdst = -1;
-
-	return (uint64_t)mktime(&stm);
-}
-
 void range_test_month_setup(void)
 {
 	int ret, i;

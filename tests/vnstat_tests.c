@@ -303,3 +303,18 @@ int fake_sys_class_net(const char *iface, const int rx, const int tx, const int 
 
 	return 1;
 }
+
+uint64_t get_timestamp(const int year, const int month, const int day, const int hour, const int minute)
+{
+	struct tm stm;
+
+	memset(&stm, 0, sizeof(struct tm));
+	stm.tm_year = year - 1900;
+	stm.tm_mon = month - 1;
+	stm.tm_mday = day;
+	stm.tm_hour = hour;
+	stm.tm_min = minute;
+	stm.tm_isdst = -1;
+
+	return (uint64_t)mktime(&stm);
+}

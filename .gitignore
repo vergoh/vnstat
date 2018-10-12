@@ -11,6 +11,7 @@ vnstati
 *.trs
 coverage
 vnstat_tests
+vnstati_check.png
 check_vnstat
 testdir
 Makefile
