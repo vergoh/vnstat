@@ -2195,7 +2195,7 @@ uninstall-hook:
 	@echo
 
 clean-local:
-	-rm -fr coverage *.lcov *.gz test*.log test*.xml src/*.gc* tests/*.gc* *.old *.new
+	-rm -fr coverage *.lcov *.gz test*.log test*.xml src/*.gc* tests/*.gc* *.old *.new *check.png
 
 check-local:
 	-tail -n 2 test.log
