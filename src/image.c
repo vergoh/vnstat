@@ -1100,7 +1100,7 @@ void drawsummary(IMAGECONTENT *ic, int type, int rate)
 	d = localtime(&ic->interface.created);
 	strftime(datebuff, 16, cfg.tformat, d);
 	snprintf(daytemp, 24, "since %s", datebuff);
-	snprintf(buffer, 24, "%23s", daytemp);
+	snprintf(buffer, 32, "%23s", daytemp);
 	gdImageString(ic->im, gdFontGetSmall(), textx-48, texty+70, (unsigned char*)buffer, ic->ctext);
 
 	drawlegend(ic, 410, 155-headermod);

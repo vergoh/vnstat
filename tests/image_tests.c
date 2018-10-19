@@ -625,7 +625,7 @@ START_TEST(element_output_check)
 
 	gdImageStringUp(ic.im, gdFontGetSmall(), 1, y+15, (unsigned char*)"50.0%", ic.ctext);
 
-	for (i=50.0; i>=0; i-=0.2) {
+	for (i=50.0; i>=0; i-=(float)0.2) {
 
 		drawdonut(&ic, x, y, i, i);
 		x += 55;
