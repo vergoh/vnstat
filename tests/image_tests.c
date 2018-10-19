@@ -400,7 +400,7 @@ START_TEST(hourly_imagescaling_rate_1000)
 }
 END_TEST
 
-START_TEST(output_check)
+START_TEST(libgd_output_comparison)
 {
 	int ret, x, y;
 	IMAGECONTENT ic;
@@ -414,9 +414,9 @@ START_TEST(output_check)
 	ic.im = gdImageCreate(x, y);
 	colorinit(&ic);
 	ic.interface.updated = (time_t)get_timestamp(2001, 2, 3, 4, 5);
-	layoutinit(&ic, "vnstati output reference test", x, y);
+	layoutinit(&ic, "vnstati libgd output comparison", x, y);
 
-	pngout = fopen("vnstati_check.png", "w");
+	pngout = fopen("vnstati_libgd_comparison_check.png", "w");
 	ck_assert_ptr_ne(pngout, NULL);
 
 	drawlegend(&ic, 40, 30);
@@ -592,6 +592,100 @@ START_TEST(output_check)
 	gdImageString(ic.im, gdFontGetSmall(), x-20, y+30, (unsigned char*)"1.0/0.1 - 0.1/1.0", ic.ctext);
 
 
+	gdImagePng(ic.im, pngout);
+	ret = fclose(pngout);
+	ck_assert_int_eq(ret, 0);
+	gdImageDestroy(ic.im);
+}
+END_TEST
+
+START_TEST(element_output_check)
+{
+	int ret, x, y;
+	float i;
+	char buffer[6];
+	IMAGECONTENT ic;
+	FILE *pngout;
+
+	x = 1500;
+	y = 900;
+
+	defaultcfg();
+	initimagecontent(&ic);
+	ic.im = gdImageCreate(x, y);
+	colorinit(&ic);
+	ic.interface.updated = (time_t)get_timestamp(2012, 3, 4, 5, 6);
+	layoutinit(&ic, "donut with 0.2% input steps and other elements", x, y);
+
+	pngout = fopen("vnstati_element_check.png", "w");
+	ck_assert_ptr_ne(pngout, NULL);
+
+	x = 40;
+	y = 70;
+
+	gdImageStringUp(ic.im, gdFontGetSmall(), 1, y+15, (unsigned char*)"50.0%", ic.ctext);
+
+	for (i=50.0; i>=0; i-=0.2) {
+
+		drawdonut(&ic, x, y, i, i);
+		x += 55;
+
+		if (x>1000) {
+			x = 40;
+			y += 60;
+
+			snprintf(buffer, 6, "%3.1f%%", (double)i-0.2);
+			gdImageStringUp(ic.im, gdFontGetSmall(), 1, y+15, (unsigned char*)buffer, ic.ctext);
+		}
+	}
+
+	gdImageString(ic.im, gdFontGetGiant(), 1020, 40, (unsigned char*)"Giant - The quick brown fox jumps over the lazy dog", ic.ctext);
+	gdImageString(ic.im, gdFontGetLarge(), 1020, 60, (unsigned char*)"Large - The quick brown fox jumps over the lazy dog", ic.ctext);
+	gdImageString(ic.im, gdFontGetMediumBold(), 1020, 80, (unsigned char*)"MediumBold - The quick brown fox jumps over the lazy dog", ic.ctext);
+	gdImageString(ic.im, gdFontGetSmall(), 1020, 100, (unsigned char*)"Small - The quick brown fox jumps over the lazy dog", ic.ctext);
+	gdImageString(ic.im, gdFontGetTiny(), 1020, 120, (unsigned char*)"Tiny - The quick brown fox jumps over the lazy dog", ic.ctext);
+
+	drawlegend(&ic, 1230, 140);
+
+	drawbar(&ic, 1050, 160, 400, 50, 50, 100);
+	drawbar(&ic, 1050, 180, 400, 25, 75, 100);
+	drawbar(&ic, 1050, 200, 400, 75, 25, 100);
+	drawbar(&ic, 1050, 220, 400, 0, 100, 100);
+	drawbar(&ic, 1050, 240, 400, 100, 0, 100);
+
+	drawbar(&ic, 1050, 260, 400, 50, 50, 130);
+	drawbar(&ic, 1050, 280, 400, 25, 75, 130);
+	drawbar(&ic, 1050, 300, 400, 75, 25, 130);
+	drawbar(&ic, 1050, 320, 400, 0, 100, 130);
+	drawbar(&ic, 1050, 340, 400, 100, 0, 130);
+
+	drawpole(&ic, 1050, 360, 400, 50, 50, 100);
+	drawpole(&ic, 1070, 360, 400, 25, 75, 100);
+	drawpole(&ic, 1090, 360, 400, 75, 25, 100);
+	drawpole(&ic, 1110, 360, 400, 0, 100, 100);
+	drawpole(&ic, 1130, 360, 400, 100, 0, 100);
+
+	drawpole(&ic, 1150, 360, 400, 50, 50, 130);
+	drawpole(&ic, 1170, 360, 400, 25, 75, 130);
+	drawpole(&ic, 1190, 360, 400, 75, 25, 130);
+	drawpole(&ic, 1210, 360, 400, 0, 100, 130);
+	drawpole(&ic, 1230, 360, 400, 100, 0, 130);
+
+
+	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 400, (unsigned char*)"Color: ctext", ic.ctext);
+	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 420, (unsigned char*)"Color: cedge", ic.cedge);
+	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 440, (unsigned char*)"Color: cheader", ic.cheader);
+	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 460, (unsigned char*)"Color: cheadertitle", ic.cheadertitle);
+	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 480, (unsigned char*)"Color: cheaderdate", ic.cheaderdate);
+	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 500, (unsigned char*)"Color: cline", ic.cline);
+	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 520, (unsigned char*)"Color: clinel", ic.clinel);
+	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 540, (unsigned char*)"Color: cbackground", ic.cbackground);
+	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 560, (unsigned char*)"Color: cvnstat", ic.cvnstat);
+	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 580, (unsigned char*)"Color: cbgoffset", ic.cbgoffset);
+	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 600, (unsigned char*)"Color: crx", ic.crx);
+	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 620, (unsigned char*)"Color: crxd", ic.crxd);
+	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 640, (unsigned char*)"Color: ctx", ic.ctx);
+	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 660, (unsigned char*)"Color: ctxd", ic.ctxd);
 
 	gdImagePng(ic.im, pngout);
 	ret = fclose(pngout);
@@ -619,6 +713,7 @@ void add_image_tests(Suite *s)
 	tcase_add_test(tc_image, hourly_imagescaling_normal);
 	tcase_add_test(tc_image, hourly_imagescaling_rate_1024);
 	tcase_add_test(tc_image, hourly_imagescaling_rate_1000);
-	tcase_add_test(tc_image, output_check);
+	tcase_add_test(tc_image, libgd_output_comparison);
+	tcase_add_test(tc_image, element_output_check);
 	suite_add_tcase(s, tc_image);
 }

@@ -201,8 +201,10 @@ void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const ui
 	if (tx > rx) {
 		l=(int)(rintf((rx/(float)(rx+tx)*width)));
 
-		gdImageFilledRectangle(ic->im, x, y+YBEGINOFFSET, x+l, y+YENDOFFSET, ic->crx);
-		gdImageRectangle(ic->im, x, y+YBEGINOFFSET, x+l, y+YENDOFFSET, ic->crxd);
+		if (l > 0) {
+			gdImageFilledRectangle(ic->im, x, y+YBEGINOFFSET, x+l, y+YENDOFFSET, ic->crx);
+			gdImageRectangle(ic->im, x, y+YBEGINOFFSET, x+l, y+YENDOFFSET, ic->crxd);
+		}
 
 		gdImageFilledRectangle(ic->im, x+l, y+YBEGINOFFSET, x+width, y+YENDOFFSET, ic->ctx);
 		gdImageRectangle(ic->im, x+l, y+YBEGINOFFSET, x+width, y+YENDOFFSET, ic->ctxd);
@@ -213,8 +215,10 @@ void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const ui
 		gdImageFilledRectangle(ic->im, x, y+YBEGINOFFSET, x+(width-l), y+YENDOFFSET, ic->crx);
 		gdImageRectangle(ic->im, x, y+YBEGINOFFSET, x+(width-l), y+YENDOFFSET, ic->crxd);
 
-		gdImageFilledRectangle(ic->im, x+(width-l), y+YBEGINOFFSET, x+width, y+YENDOFFSET, ic->ctx);
-		gdImageRectangle(ic->im, x+(width-l), y+YBEGINOFFSET, x+width, y+YENDOFFSET, ic->ctxd);
+		if (l > 0) {
+			gdImageFilledRectangle(ic->im, x+(width-l), y+YBEGINOFFSET, x+width, y+YENDOFFSET, ic->ctx);
+			gdImageRectangle(ic->im, x+(width-l), y+YBEGINOFFSET, x+width, y+YENDOFFSET, ic->ctxd);
+		}
 	}
 }
 
@@ -223,10 +227,14 @@ void drawpole(IMAGECONTENT *ic, const int x, const int y, const int len, const u
 	int l;
 
 	l = (int)((rx/(float)max)*len);
-	gdImageFilledRectangle(ic->im, x, y+(len-l), x+7, y+len, ic->crx);
+	if (l > 0) {
+		gdImageFilledRectangle(ic->im, x, y+(len-l), x+7, y+len, ic->crx);
+	}
 
 	l = (int)((tx/(float)max)*len);
-	gdImageFilledRectangle(ic->im, x+5, y+(len-l), x+12, y+len, ic->ctx);
+	if (l > 0) {
+		gdImageFilledRectangle(ic->im, x+5, y+(len-l), x+12, y+len, ic->ctx);
+	}
 }
 
 void drawdonut(IMAGECONTENT *ic, const int x, const int y, const float rxp, const float txp)
