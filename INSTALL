@@ -27,7 +27,8 @@ Compiling the binaries
 
  will compile 'vnstat' and 'vnstatd'. The optional image output capable binary
  'vnstati' will also be compiled if the required additional libgd library is
- found to be available.
+ found to be available and --disable-image-output isn't given as parameter
+ for ./configure.
 
  An example cgi ('vnstat.cgi') to be used with a http server with the image
  output support has been provided in the 'examples' directory. Configuration
@@ -47,7 +48,8 @@ Installing as root
 
  If there were no errors, vnStat binaries, man pages and a configuration
  file should now be installed. The configuration file will be upgraded using
- previously configured values if it is found already to exist.
+ previously configured values if it is found already to exist. A backup
+ of the previous configuration file will be named as vnstat.conf.old.
 
  The configuration file /etc/vnstat.conf should be checked at this point.
  See the vnstat.conf man page for documentation about available options.
@@ -66,10 +68,6 @@ Installing as root
      systemctl enable vnstat
      systemctl start vnstat
 
-   upstart:
-     cp -v examples/upstart/vnstat.conf /etc/init/
-     initctl start vnstat
-
    init.d:
      Debian:
        cp -v examples/init.d/debian/vnstat /etc/init.d/
@@ -80,6 +78,10 @@ Installing as root
        chkconfig vnstat on
        service vnstat start
 
+   upstart:
+     cp -v examples/upstart/vnstat.conf /etc/init/
+     initctl start vnstat
+
  An alternative method is to add the command to an already existing
  script that gets executed during system startup. In many distributions
  /etc/rc.local can be used if nothing else suitable can be found. Note
@@ -88,7 +90,9 @@ Installing as root
 
  During first startup, the daemon (vnstatd) should list and add all
  available interfaces for monitoring. Depending on configuration, it may
- take some minutes for the 'vnstat' command to begin showing results.
+ take some minutes for the 'vnstat' command to begin showing results as
+ the entries in the database aren't updated constantly.
+
  Monitoring of unwanted interfaces can be stopped with:
 
      vnstat --remove -i ethunwanted
@@ -168,7 +172,7 @@ Appendix: Running the test suite
 
  This step isn't mandatory for using vnStat.
 
- The source package includes a test suite for validating at least some of the
+ The source package includes a test suite for validating many of the
  functionalities provided by the executables. The test suite requires the
  Check unit testing framework ( https://libcheck.github.io/check/ ) to be
  installed and available. Depending on the used distribution, the necessary

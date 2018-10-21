@@ -26,7 +26,8 @@ Compiling the binaries
 
  will compile 'vnstat' and 'vnstatd' without requiring additional libraries.
  The optional image output capable binary 'vnstati' will also be compiled if
- the required additional libgd2 library is found to be available.
+ the required additional libgd2 library is found to be available and
+ --disable-image-output isn't given as parameter for ./configure.
 
  An example cgi ('vnstat.cgi') to be used with a http server with the image
  output support has been provided in the 'examples' directory. Configuration
@@ -46,7 +47,8 @@ Installing as root
 
  If there were no errors, vnStat binaries, man pages and a configuration
  file should now be installed. The configuration file will be upgraded using
- previously configured values if it is found already to exist.
+ previously configured values if it is found already to exist. A backup
+ of the previous configuration file will be named as vnstat.conf.old.
 
  The configuration file /usr/local/etc/vnstat.conf should be checked at
  this point. See the vnstat.conf man page for documentation about available
@@ -64,8 +66,10 @@ Installing as root
  available interfaces for monitoring. The command can also be executed
  manually at this point in order to avoid having to reboot the system
  Depending on configuration, it may take some minutes for the 'vnstat'
- command to begin showing results. Monitoring of unwanted interfaces
- can be stopped with:
+ command to begin showing results as the entries in the database aren't
+ updated constantly.
+
+ Monitoring of unwanted interfaces can be stopped with:
 
      vnstat --remove -i ethunwanted
 
@@ -135,7 +139,7 @@ Appendix: Running the test suite
 
  This step isn't mandatory for using vnStat.
 
- The source package includes a test suite for validating at least some of the
+ The source package includes a test suite for validating many of the
  functionalities provided by the executables. The test suite requires the
  Check unit testing framework ( https://libcheck.github.io/check/ ) to
  be installed and available (usually 'devel/check' in ports). The configure

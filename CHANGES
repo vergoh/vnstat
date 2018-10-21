@@ -1,4 +1,4 @@
-2.0 / <not released yet>
+2.0 / 21-Oct-2018
 
  - Fixed
    - Data rate calculations when using SI decimal prefixes
@@ -33,8 +33,6 @@
    - --exportdb, use --oneline, --json or --xml instead
    - --importdb, -u / --update and related options using vnstat command
    - Old style (default in versions up to 1.7) summary layout in image output
-
- - see "Current development status" section in README.md
 
 
 1.18 / 4-Mar-2018

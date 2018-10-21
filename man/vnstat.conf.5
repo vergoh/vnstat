@@ -1,4 +1,4 @@
-.TH VNSTAT.CONF 5 "MARCH 2018" "version 2.0" "User Manuals"
+.TH VNSTAT.CONF 5 "OCTOBER 2018" "version 2.0" "User Manuals"
 .SH NAME
 vnstat.conf \- vnStat configuration file
 
@@ -20,18 +20,18 @@ Arguments may optionally be enclosed in double quotes (") in order
 to represent arguments containing spaces. Arguments can be padded
 with spaces or tabulator characters. A hardcoded default value
 will be used if a keyword can't be found from the configuration file or
-if the configured value is outside accepted limits.
+if the configured value cannot be parsed or is outside supported value range.
 .PP
 The configuration file is divided into three sections based on the
 usage of each keyword. The first section contains keywords that are
-considered generic for all commands, the second section is for
+considered common for all commands, the second section is for
 daemon related keywords and the last section is for image output.
 
 .SH COMMON KEYWORDS
 
 .TP
 .B DatabaseDir
-Specifies the directory where interface databases are to be stored.
+Specifies the directory where the database is to be stored.
 A full path must be given and a leading '/' isn't required.
 
 .TP
@@ -47,13 +47,13 @@ Number of decimals to use in outputs. Value range: 0..2
 
 .TP
 .B HourlyDecimals
-Number of decimals to use in hourly output. Value range: 0..2
+Number of decimals to use in hourly graph output. Value range: 0..2
 (vnstat only)
 
 .TP
 .B HourlySectionStyle
 Select what kind of spacer is used for separating the numerical sections of the
-hourly output. 0 = none, 1 = '|', 2 = '][', 3 = '[ ]'.
+hourly graph output. 0 = none, 1 = '|', 2 = '][', 3 = '[ ]'.
 (vnstat only)
 
 .TP
@@ -84,8 +84,8 @@ output, 3 = rate column is visible in all outputs where it is supported.
 .TP
 .B QueryMode
 Default query mode when no parameters are given. 0 = normal, 1 = days,
-2 = months, 3 = top, 5 = short, 7 = hours, 8 = xml, 9 = one line
-and 10 = json. (vnstat only)
+2 = months, 3 = top, 5 = short, 6 = years, 7 = hours graph, 8 = xml, 9 = one line,
+10 = json, 11 = hours and 12 = 5 minute. (vnstat only)
 
 .TP
 .B RateUnit
@@ -103,12 +103,12 @@ prefixes are calculated with powers of 1000.
 .TP
 .B "RXCharacter, TXCharacter"
 Character used for representing the percentual share of received
-and transmitted traffic in daily output. (vnstat only)
+and transmitted traffic in list mode outputs. (vnstat only)
 
 .TP
 .B "RXHourCharacter, TXHourCharacter"
 Character used for representing the percentual share of received
-and transmitted traffic in hourly output. (vnstat only)
+and transmitted traffic in hourly graph output. (vnstat only)
 
 .TP
 .B Sampletime
@@ -299,9 +299,9 @@ period. 1 = enabled, 0 = disabled.
 
 .TP
 .B UpdateFileOwner
-Enable or disable the update of file ownership during daemon process startup
-or during manual creation of new databases. During daemon startup, only database,
-log and pid files will be modified if the user or group change feature (
+Enable or disable the update of file ownership during daemon process startup.
+During daemon startup, only database, log and pid files will be modified if the
+user or group change feature (
 .B DaemonUser
 or
 .B DaemonGroup
@@ -334,7 +334,7 @@ Background color.
 
 .TP
 .B CEdge
-Edge color if visible.
+Edge color, if visible.
 
 .TP
 .B CHeader
@@ -355,7 +355,8 @@ Line color.
 .TP
 .B CLineL
 Lighter version of line color. Set to '-' in order to use a calculated
-value based on CLine.
+value based on
+.BR CLine .
 
 .TP
 .B CRx
@@ -364,7 +365,8 @@ Color for received data.
 .TP
 .B CRxD
 Darker version of received data color. Set to '-' in order to use
-a calculated value based on CRx.
+a calculated value based on
+.BR CRx .
 
 .TP
 .B CText
@@ -377,7 +379,8 @@ Color for transmitted data.
 .TP
 .B CTxD
 Darker version of transmitted data color. Set to '-' in order to use
-a calculated value based on CTx.
+a calculated value based on
+.BR CTx .
 
 .TP
 .B HeaderFormat

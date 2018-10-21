@@ -7,10 +7,12 @@ What is vnStat
  means that vnStat won't actually be sniffing any traffic and also ensures
  light use of system resources.
 
- Traffic statistics are stored on a hourly level for the last 24 hours,
- on a daily level for the last 30 days and on a monthly level for the
- last 12 months. Total seen traffic and a top 10 days listing is also
- provided.
+ By default, traffic statistics are stored on a five minute level for the last
+ 48 hours, on a hourly level for the last 4 days, on a daily level for the
+ last 2 full months and on a yearly level forever. The data retention durations
+ are fully user configurable. Total seen traffic and a top days listing is also
+ provided. Optional png image output is available in systems with the gd
+ library installed.
 
  Optional png image output is available in systems with the gd library
  installed.
