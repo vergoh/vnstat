@@ -405,7 +405,7 @@ int main(int argc, char *argv[]) {
 				printf("Error: Unable to open database \"%s/%s\": %s\n", p.dirname, DATABASEFILE, strerror(errno));
 				if (errno == ENOENT) {
 					printf("The vnStat daemon should have created the database when started.\n");
-					printf("Check that it is is configured and running. See also \"man vnstatd\".\n");
+					printf("Check that it is configured and running. See also \"man vnstatd\".\n");
 				}
 				return 1;
 			}
@@ -420,7 +420,7 @@ int main(int argc, char *argv[]) {
 			printf("Error: Unable to open database directory \"%s\": %s\n", p.dirname, strerror(errno));
 			if (errno==ENOENT) {
 				printf("The vnStat daemon should have created this directory when started.\n");
-				printf("Check that it is is configured and running. See also \"man vnstatd\".\n");
+				printf("Check that it is configured and running. See also \"man vnstatd\".\n");
 			} else {
 				printf("Make sure it is at least read enabled for current user.\n");
 				printf("Use --help for help.\n");
