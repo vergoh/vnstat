@@ -590,27 +590,31 @@ void showoneline(const interfaceinfo *interface)
 		return;
 	}
 
-	d = localtime(&datalist->timestamp);
-	strftime(daytemp, DATEBUFFLEN, cfg.dformat, d);
-	printf("%s;", daytemp);
+	if (datainfo.count > 0) {
+		d = localtime(&datalist->timestamp);
+		strftime(daytemp, DATEBUFFLEN, cfg.dformat, d);
+		printf("%s;", daytemp);
 
-	d = localtime(&interface->updated);
+		d = localtime(&interface->updated);
 
-	/* daily */
-	if (cfg.ostyle == 4) {
-		printf("%"PRIu64";", datalist->rx);
-		printf("%"PRIu64";", datalist->tx);
-		printf("%"PRIu64";", datalist->rx+datalist->tx);
-		div = (uint64_t)(d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600));
-		if (!div) {
-			div = 1;
+		/* daily */
+		if (cfg.ostyle == 4) {
+			printf("%"PRIu64";", datalist->rx);
+			printf("%"PRIu64";", datalist->tx);
+			printf("%"PRIu64";", datalist->rx+datalist->tx);
+			div = (uint64_t)(d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600));
+			if (!div) {
+				div = 1;
+			}
+			printf("%"PRIu64";", (datalist->rx+datalist->tx)/div);
+		} else {
+			printf("%s;", getvalue(datalist->rx, 1, 1));
+			printf("%s;", getvalue(datalist->tx, 1, 1));
+			printf("%s;", getvalue(datalist->rx+datalist->tx, 1, 1));
+			printf("%s;", gettrafficrate(datalist->rx+datalist->tx, (time_t)(d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600)), 1));
 		}
-		printf("%"PRIu64";", (datalist->rx+datalist->tx)/div);
 	} else {
-		printf("%s;", getvalue(datalist->rx, 1, 1));
-		printf("%s;", getvalue(datalist->tx, 1, 1));
-		printf("%s;", getvalue(datalist->rx+datalist->tx, 1, 1));
-		printf("%s;", gettrafficrate(datalist->rx+datalist->tx, (time_t)(d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600)), 1));
+		printf(";;;;;");
 	}
 	dbdatalistfree(&datalist);
 
@@ -619,25 +623,29 @@ void showoneline(const interfaceinfo *interface)
 		return;
 	}
 
-	d = localtime(&datalist->timestamp);
-	strftime(daytemp, DATEBUFFLEN, cfg.mformat, d);
-	printf("%s;", daytemp);
+	if (datainfo.count > 0) {
+		d = localtime(&datalist->timestamp);
+		strftime(daytemp, DATEBUFFLEN, cfg.mformat, d);
+		printf("%s;", daytemp);
 
-	/* monthly */
-	if (cfg.ostyle == 4) {
-		printf("%"PRIu64";", datalist->rx);
-		printf("%"PRIu64";", datalist->tx);
-		printf("%"PRIu64";", datalist->rx+datalist->tx);
-		div = (uint64_t)(mosecs(datalist->timestamp, interface->updated));
-		if (!div) {
-			div = 1;
+		/* monthly */
+		if (cfg.ostyle == 4) {
+			printf("%"PRIu64";", datalist->rx);
+			printf("%"PRIu64";", datalist->tx);
+			printf("%"PRIu64";", datalist->rx+datalist->tx);
+			div = (uint64_t)(mosecs(datalist->timestamp, interface->updated));
+			if (!div) {
+				div = 1;
+			}
+			printf("%"PRIu64";", (datalist->rx+datalist->tx)/div);
+		} else {
+			printf("%s;", getvalue(datalist->rx, 1, 1));
+			printf("%s;", getvalue(datalist->tx, 1, 1));
+			printf("%s;", getvalue(datalist->rx+datalist->tx, 1, 1));
+			printf("%s;", gettrafficrate(datalist->rx+datalist->tx, mosecs(datalist->timestamp, interface->updated), 1));
 		}
-		printf("%"PRIu64";", (datalist->rx+datalist->tx)/div);
 	} else {
-		printf("%s;", getvalue(datalist->rx, 1, 1));
-		printf("%s;", getvalue(datalist->tx, 1, 1));
-		printf("%s;", getvalue(datalist->rx+datalist->tx, 1, 1));
-		printf("%s;", gettrafficrate(datalist->rx+datalist->tx, mosecs(datalist->timestamp, interface->updated), 1));
+		printf(";;;;;");
 	}
 	dbdatalistfree(&datalist);
 

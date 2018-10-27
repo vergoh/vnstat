@@ -259,7 +259,7 @@ START_TEST(database_outputs_do_not_crash)
 }
 END_TEST
 
-START_TEST(database_outputs_do_not_crash_without_data)
+START_TEST(database_outputs_do_not_crash_without_traffic)
 {
 	int ret, i;
 
@@ -271,6 +271,125 @@ START_TEST(database_outputs_do_not_crash_without_data)
 	ck_assert_int_eq(ret, 1);
 
 	ret = db_addtraffic_dated("something", 0, 0, 85000);
+	ck_assert_int_eq(ret, 1);
+
+	suppress_output();
+
+	for (i=0; i<=4; i++) {
+		cfg.ostyle = i;
+		showdb("something", 0, "", "");
+		showdb("something", 1, "", "");
+		showdb("something", 2, "", "");
+		showdb("something", 3, "", "");
+		showdb("something", 4, "", "");
+		showdb("something", 5, "", "");
+		showdb("something", 6, "", "");
+		showdb("something", 7, "", "");
+		showdb("something", 8, "", "");
+		showdb("something", 9, "", "");
+		showdb("something", 10, "", "");
+		showdb("something", 11, "", "");
+		showdb("something", 12, "", "");
+		showdb("nothing", 0, "", "");
+	}
+
+	xmlheader();
+	showxml("something", 'd', "", "");
+	showxml("something", 'm', "", "");
+	showxml("something", 't', "", "");
+	showxml("something", 'h', "", "");
+	showxml("something", 'y', "", "");
+	showxml("something", 'f', "", "");
+	showxml("something", 'a', "", "");
+
+	xmlfooter();
+
+	jsonheader();
+	showjson("something", 0, 'd', "", "");
+	showjson("something", 0, 'm', "", "");
+	showjson("something", 0, 't', "", "");
+	showjson("something", 0, 'h', "", "");
+	showjson("something", 0, 'y', "", "");
+	showjson("something", 0, 'f', "", "");
+	showjson("something", 1, 'a', "", "");
+	showjson("nothing", 0, 'a', "", "");
+	jsonfooter();
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(database_outputs_do_not_crash_without_data)
+{
+	int ret, i;
+
+	defaultcfg();
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("something");
+	ck_assert_int_eq(ret, 1);
+
+	suppress_output();
+
+	for (i=0; i<=4; i++) {
+		cfg.ostyle = i;
+		showdb("something", 0, "", "");
+		showdb("something", 1, "", "");
+		showdb("something", 2, "", "");
+		showdb("something", 3, "", "");
+		showdb("something", 4, "", "");
+		showdb("something", 5, "", "");
+		showdb("something", 6, "", "");
+		showdb("something", 7, "", "");
+		showdb("something", 8, "", "");
+		showdb("something", 9, "", "");
+		showdb("something", 10, "", "");
+		showdb("something", 11, "", "");
+		showdb("something", 12, "", "");
+		showdb("nothing", 0, "", "");
+	}
+
+	xmlheader();
+	showxml("something", 'd', "", "");
+	showxml("something", 'm', "", "");
+	showxml("something", 't', "", "");
+	showxml("something", 'h', "", "");
+	showxml("something", 'y', "", "");
+	showxml("something", 'f', "", "");
+	showxml("something", 'a', "", "");
+
+	xmlfooter();
+
+	jsonheader();
+	showjson("something", 0, 'd', "", "");
+	showjson("something", 0, 'm', "", "");
+	showjson("something", 0, 't', "", "");
+	showjson("something", 0, 'h', "", "");
+	showjson("something", 0, 'y', "", "");
+	showjson("something", 0, 'f', "", "");
+	showjson("something", 1, 'a', "", "");
+	showjson("nothing", 0, 'a', "", "");
+	jsonfooter();
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(database_outputs_do_not_crash_without_data_if_totals_are_wrong)
+{
+	int ret, i;
+
+	defaultcfg();
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("something");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_settotal("something", 42, 84);
 	ck_assert_int_eq(ret, 1);
 
 	suppress_output();
@@ -666,7 +785,9 @@ void add_database_tests(Suite *s)
 	tcase_add_test(tc_db, validatedb_with_invalid_totals);
 	tcase_add_test(tc_db, validatedb_with_top10_use);
 	tcase_add_test(tc_db, database_outputs_do_not_crash);
+	tcase_add_test(tc_db, database_outputs_do_not_crash_without_traffic);
 	tcase_add_test(tc_db, database_outputs_do_not_crash_without_data);
+	tcase_add_test(tc_db, database_outputs_do_not_crash_without_data_if_totals_are_wrong);
 	tcase_add_test(tc_db, showbar_with_zero_len_is_nothing);
 	tcase_add_test(tc_db, showbar_with_zero_max);
 	tcase_add_test(tc_db, showbar_with_big_max_and_small_numbers);

@@ -1,3 +1,11 @@
+2.1 / <not relesed yet>
+
+ - Fixed
+   - --oneline could segmentation fault if database had total traffic values
+     set but didn't have any daily or monthly traffic (Arch bug #60588)
+   - Several typos and spelling mistakes in documentation
+
+
 2.0 / 21-Oct-2018
 
  - Fixed
