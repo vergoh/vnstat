@@ -759,8 +759,8 @@ void handleshowdatabases(PARAMS *p)
 void showoneinterface(PARAMS *p, const char *interface)
 {
 	if (!db_getinterfacecountbyname(p->interface)) {
-		p->query = 0;
-		return;
+		printf("Error: Interface \"%s\" not found in database.\n", p->interface);
+		exit(EXIT_FAILURE);
 	}
 
 	if (cfg.qmode==5) {

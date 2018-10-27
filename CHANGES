@@ -3,6 +3,8 @@
  - Fixed
    - --oneline could segmentation fault if database had total traffic values
      set but didn't have any daily or monthly traffic (Arch bug #60588)
+   - No proper error message was produced when querying interface which didn't
+     exist in the database
    - Several typos and spelling mistakes in documentation
 
 
