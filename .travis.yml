@@ -16,6 +16,18 @@ matrix:
       env:
         - CFLAGS='-Weverything -Wno-padded'
         - CPARAMS='--enable-werror'
+    - os: linux
+      dist: xenial
+      compiler: gcc
+      env:
+        - CFLAGS='-Wall -Wextra'
+        - CPARAMS='--enable-werror'
+    - os: linux
+      dist: xenial
+      compiler: clang
+      env:
+        - CFLAGS='-Weverything -Wno-padded'
+        - CPARAMS='--enable-werror'
     - os: osx
       compiler: clang
       env:
