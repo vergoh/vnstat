@@ -1,34 +1,42 @@
+git:
+  depth: 10
+
 language: c
 
 matrix:
   include:
-    - os: linux
+    - name: "Ubuntu 14.04 / GCC"
+      os: linux
       dist: trusty
       sudo: required
       compiler: gcc
       env:
         - CFLAGS='-Wall -Wextra'
         - CPARAMS='--enable-werror'
-    - os: linux
+    - name: "Ubuntu 14.04 / Clang"
+      os: linux
       dist: trusty
       sudo: required
       compiler: clang
       env:
         - CFLAGS='-Weverything -Wno-padded'
         - CPARAMS='--enable-werror'
-    - os: linux
+    - name: "Ubuntu 16.04 / GCC"
+      os: linux
       dist: xenial
       compiler: gcc
       env:
         - CFLAGS='-Wall -Wextra'
         - CPARAMS='--enable-werror'
-    - os: linux
+    - name: "Ubuntu 16.04 / Clang"
+      os: linux
       dist: xenial
       compiler: clang
       env:
         - CFLAGS='-Weverything -Wno-padded'
         - CPARAMS='--enable-werror'
-    - os: osx
+    - name: "OS X / Clang"
+      os: osx
       compiler: clang
       env:
         - CFLAGS='-Weverything -Wno-padded -Wno-reserved-id-macro -Wno-gnu-zero-variadic-macro-arguments -Wno-sign-conversion -Wno-unreachable-code -Wno-missing-noreturn'
