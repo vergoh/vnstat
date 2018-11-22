@@ -874,7 +874,7 @@ START_TEST(waittimesync_does_not_wait_with_new_interfaces)
 	ret = db_addinterface("eth0");
 	ck_assert_int_eq(ret, 1);
 	/* 'updated' needs to be slightly adjusted in order to be sure to never trigger an error */
-	ret = db_exec("update interface set updated=datetime('now', '-2 seconds') where id=1;");
+	ret = db_exec("update interface set updated=datetime('now', '-2 seconds', 'localtime') where id=1;");
 	ck_assert_int_eq(ret, 1);
 
 	filldatabaselist(&s);
@@ -904,7 +904,7 @@ START_TEST(waittimesync_knows_when_to_wait)
 	ck_assert_int_eq(ret, 1);
 	ret = db_addinterface("eth0");
 	ck_assert_int_eq(ret, 1);
-	ret = db_exec("update interface set updated=datetime('now', '+7 days') where id=1;");
+	ret = db_exec("update interface set updated=datetime('now', '+7 days', 'localtime') where id=1;");
 	ck_assert_int_eq(ret, 1);
 
 	filldatabaselist(&s);
@@ -938,7 +938,7 @@ START_TEST(waittimesync_knows_when_to_give_up)
 	ck_assert_int_eq(ret, 1);
 	ret = db_addinterface("eth0");
 	ck_assert_int_eq(ret, 1);
-	ret = db_exec("update interface set updated=datetime('now', '+7 days') where id=1;");
+	ret = db_exec("update interface set updated=datetime('now', '+7 days', 'localtime') where id=1;");
 	ck_assert_int_eq(ret, 1);
 
 	filldatabaselist(&s);
