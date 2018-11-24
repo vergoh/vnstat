@@ -415,7 +415,7 @@ void checkdbsaveneed(DSTATE *s)
 	if ((s->current - s->prevdbsave) >= (s->saveinterval) || s->forcesave) {
 		s->dodbsave = 1;
 		s->forcesave = 0;
-		s->prevdbsave = s->current;
+		s->prevdbsave = s->current - (s->current % s->saveinterval);
 	} else {
 		s->dodbsave = 0;
 	}

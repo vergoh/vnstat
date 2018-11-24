@@ -8,6 +8,9 @@
    - Several typos and spelling mistakes in documentation
    - Daemon:waittimesync_does_not_wait_with_new_interfaces test was failing if
      the system used a time zone with a negative numeric value
+ - New
+   - Remove possible PollInterval and UpdateInterval drift over time
+   - Sync SaveInterval to full minutes
 
 
 2.0 / 21-Oct-2018

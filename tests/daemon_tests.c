@@ -406,15 +406,15 @@ START_TEST(checkdbsaveneed_is_forced)
 	DSTATE s;
 	initdstate(&s);
 	s.dodbsave = 2;
-	s.current = 10;
-	s.prevdbsave = 0;
+	s.current = 125;
+	s.prevdbsave = 110;
 	s.saveinterval = 30;
 	s.forcesave = 1;
 
 	checkdbsaveneed(&s);
 
 	ck_assert_int_eq(s.dodbsave, 1);
-	ck_assert_int_eq(s.prevdbsave, s.current);
+	ck_assert_int_eq(s.prevdbsave, 120);
 	ck_assert_int_eq(s.forcesave, 0);
 }
 END_TEST
@@ -424,7 +424,7 @@ START_TEST(checkdbsaveneed_needs)
 	DSTATE s;
 	initdstate(&s);
 	s.dodbsave = 2;
-	s.current = 60;
+	s.current = 65;
 	s.prevdbsave = 5;
 	s.saveinterval = 30;
 	s.forcesave = 0;
@@ -432,7 +432,7 @@ START_TEST(checkdbsaveneed_needs)
 	checkdbsaveneed(&s);
 
 	ck_assert_int_eq(s.dodbsave, 1);
-	ck_assert_int_eq(s.prevdbsave, s.current);
+	ck_assert_int_eq(s.prevdbsave, 60);
 	ck_assert_int_eq(s.forcesave, 0);
 }
 END_TEST

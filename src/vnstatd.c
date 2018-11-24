@@ -242,7 +242,7 @@ int main(int argc, char *argv[])
 
 			/* update data cache */
 			} else {
-				s.prevdbupdate = s.current;
+				s.prevdbupdate = s.current - (s.current % s.updateinterval);
 
 				adjustsaveinterval(&s);
 				checkdbsaveneed(&s);
@@ -256,7 +256,7 @@ int main(int argc, char *argv[])
 		}
 
 		if (s.running && intsignal == 0) {
-			sleep((unsigned int)cfg.pollinterval);
+			sleep((unsigned int)(cfg.pollinterval - (time(NULL) % cfg.pollinterval)));
 		}
 
 		if (intsignal) {
