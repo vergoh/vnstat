@@ -202,10 +202,6 @@ time_t mosecs(time_t month, time_t updated)
 		return 1;
 	}
 
-	if (d.tm_mday < cfg.monthrotate) {
-		return 1;
-	}
-
 	d.tm_mday = cfg.monthrotate;
 	d.tm_hour = d.tm_min = d.tm_sec = 0;
 

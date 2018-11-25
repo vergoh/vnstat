@@ -8,6 +8,8 @@
    - Several typos and spelling mistakes in documentation
    - Daemon:waittimesync_does_not_wait_with_new_interfaces test was failing if
      the system used a time zone with a negative numeric value
+   - Traffic estimate and average rate for ongoing month was not being
+     calculated correctly when MonthRotate had a value larger than 1
  - New
    - Remove possible PollInterval and UpdateInterval drift over time
    - Sync SaveInterval to full minutes
