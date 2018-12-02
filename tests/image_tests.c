@@ -697,6 +697,7 @@ END_TEST
 void add_image_tests(Suite *s)
 {
 	TCase *tc_image = tcase_create("Image");
+	tcase_set_timeout(tc_image, 10);
 	tcase_add_test(tc_image, initimagecontent_does_not_crash);
 	tcase_add_test(tc_image, colorinit_does_not_crash);
 	tcase_add_test(tc_image, layoutinit_does_not_crash);

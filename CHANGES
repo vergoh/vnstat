@@ -10,6 +10,8 @@
      the system used a time zone with a negative numeric value
    - Traffic estimate and average rate for ongoing month was not being
      calculated correctly when MonthRotate had a value larger than 1
+   - Accuracy of traffic estimate and average rate for the ongoing month could
+     be slightly affected depending on the used time zone
  - New
    - Remove possible PollInterval and UpdateInterval drift over time
    - Sync SaveInterval to full minutes
