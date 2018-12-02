@@ -192,11 +192,6 @@ int isleapyear(int year)
 time_t mosecs(time_t month, time_t updated)
 {
 	struct tm d;
-#if defined(_SVID_SOURCE) || defined(_XOPEN_SOURCE) || defined(__APPLE__) || defined(__linux__)
-	/* extern long timezone; from time.h */
-#else
-	int timezone = 0;
-#endif
 
 	if (localtime_r(&month, &d) == NULL) {
 		return 1;
@@ -206,7 +201,7 @@ time_t mosecs(time_t month, time_t updated)
 	d.tm_hour = d.tm_min = d.tm_sec = 0;
 
 	if ((updated-month)>0) {
-		return updated-mktime(&d)+timezone;
+		return updated-mktime(&d);
 	} else {
 		return 1;
 	}

@@ -90,25 +90,23 @@ START_TEST(leapyears_are_known)
 }
 END_TEST
 
-#if defined(_SVID_SOURCE) || defined(_XOPEN_SOURCE) || defined(__linux__)
 START_TEST(mosecs_return_values)
 {
+	time_t a, b;
 	defaultcfg();
-	ck_assert_int_eq(cfg.monthrotate, 1);
+	cfg.monthrotate = 1;
 	ck_assert_int_eq(mosecs(0, 0), 1);
-	ck_assert_int_eq(mosecs(172800, 173000), 173000);
+
+	a = mosecs(172800, 173000);
+	ck_assert_int_gt(a, 1);
+
+	cfg.monthrotate = 2;
+	b = mosecs(172800, 173000);
+	ck_assert_int_gt(b, 1);
+
+	ck_assert_int_gt(a, b);
 }
 END_TEST
-#else
-START_TEST(mosecs_return_values_without_timezone)
-{
-	defaultcfg();
-	ck_assert_int_eq(cfg.monthrotate, 1);
-	ck_assert_int_eq(mosecs(0, 0), 1);
-	ck_assert_int_gt(mosecs(172800, 173000), 1);
-}
-END_TEST
-#endif
 
 START_TEST(mosecs_does_not_change_tz)
 {
@@ -296,11 +294,7 @@ void add_common_tests(Suite *s)
 	tcase_add_test(tc_common, logprint_options);
 	tcase_add_loop_test(tc_common, dmonth_return_within_range, 0, 12);
 	tcase_add_test(tc_common, leapyears_are_known);
-#if defined(_SVID_SOURCE) || defined(_XOPEN_SOURCE) || defined(__linux__)
 	tcase_add_test(tc_common, mosecs_return_values);
-#else
-	tcase_add_test(tc_common, mosecs_return_values_without_timezone);
-#endif
 	tcase_add_test(tc_common, mosecs_does_not_change_tz);
 	tcase_add_test(tc_common, mosecs_does_not_change_struct_tm_pointer_content);
 	tcase_add_test(tc_common, countercalc_no_change);
