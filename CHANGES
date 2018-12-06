@@ -1,4 +1,4 @@
-2.1 / <not relesed yet>
+2.1 / 6-Dec-2018
 
  - Fixed
    - --oneline could segmentation fault if database had total traffic values
@@ -9,9 +9,9 @@
    - Daemon:waittimesync_does_not_wait_with_new_interfaces test was failing if
      the system used a time zone with a negative numeric value
    - Traffic estimate and average rate for ongoing month was not being
-     calculated correctly when MonthRotate had a value larger than 1
+     calculated correctly when MonthRotate had a value greater than 1
    - Accuracy of traffic estimate and average rate for the ongoing month could
-     be slightly affected depending on the used time zone
+     be slightly skewed depending on the used time zone
  - New
    - Remove possible PollInterval and UpdateInterval drift over time
    - Sync SaveInterval to full minutes

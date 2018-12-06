@@ -1,4 +1,4 @@
-.TH VNSTATD 1 "OCTOBER 2018" "version 2.0" "User Manuals"
+.TH VNSTATD 1 "DECEMBER 2018" "version 2.1" "User Manuals"
 .SH NAME
 vnstatd \- daemon based database updating for vnStat
 
@@ -31,14 +31,11 @@ vnstatd \- daemon based database updating for vnStat
 
 The purpose of
 .B vnstatd
-is to provide a more flexible and robust way for updating
+is to provide a flexible and robust way for updating the database that
 .BR vnstat (1)
-the database than what using cron for updating can provide. The daemon makes
-possible updating the database more often but at the same time causes
-less disk access since data can be cached and written only later to disk
-at a user configurable interval. The availability of each interface is
-automatically tracked which removes the need for additional scripts to be
-implemented and called when an interface comes online or goes offline.
+uses. The availability of each interface is automatically tracked which
+removes the need for additional scripts to be implemented and called when
+an interface comes online or goes offline.
 .PP
 .B vnstatd
 is the command for starting the daemon. The daemon can either fork
@@ -78,7 +75,7 @@ getting added.
 .BI "--config " file
 Use
 .I file
-as configuration file instead of using normal configuration file search
+as configuration file instead of using automatic configuration file search
 functionality.
 
 .TP
@@ -248,12 +245,11 @@ configuration file or using the command line parameter.
 
 .SH RESTRICTIONS
 
-Updates needs to be executed at least as often as it is possible for the interface
+Updates need to be executed at least as often as it is possible for the interface
 to generate enough traffic to overflow the kernel interface traffic counter. Otherwise,
-it is possible that some traffic won't be seen. This isn't an issue for 64-bit kernels
-but at least one update every hour is always required in order to provide proper input.
-With 32-bit kernels, the maximum time between two updates depends on how fast the
-interface can transfer 4 GiB. Calculated theoretical times are:
+it is possible that some traffic won't be seen. With 32-bit kernels, the maximum time
+between two updates depends on how fast the interface can transfer 4 GiB. Calculated
+theoretical times are:
 .RS
 .TS
 l l.
@@ -264,7 +260,7 @@ l l.
 .RE
 
 However, for 1000 Mbit interfaces updating once every minute is usually a
-usable solution if faster updates can't be used.
+usable solution if a shorter update interval can't be used.
 .PP
 Virtual and aliased interfaces cannot be monitored because the kernel doesn't
 provide traffic information for that type of interfaces. Such interfaces are

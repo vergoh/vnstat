@@ -520,7 +520,7 @@ void showhelp(PARAMS *p)
 	printf("      -b, --begin <date>           set list begin date\n");
 	printf("      -e, --end <date>             set list end date\n\n");
 
-	printf("      --oneline [mode]             show simple parseable format\n");
+	printf("      --oneline [mode]             show simple parsable format\n");
 	printf("      --json [mode] [limit]        show database in json format\n");
 	printf("      --xml [mode] [limit]         show database in xml format\n\n");
 
@@ -548,7 +548,7 @@ void showlonghelp(PARAMS *p)
 	printf("      -t,  --top [count]           show top days\n");
 	printf("      -b,  --begin <date>          set list begin date\n");
 	printf("      -e,  --end <date>            set list end date\n");
-	printf("      --oneline [mode]             show simple parseable format\n");
+	printf("      --oneline [mode]             show simple parsable format\n");
 	printf("      --json [mode] [limit]        show database in json format\n");
 	printf("      --xml [mode] [limit]         show database in xml format\n\n");
 
