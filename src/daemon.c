@@ -526,8 +526,8 @@ int processifinfo(DSTATE *s, datacache **dc)
 	interval = ifinfo.timestamp - (*dc)->updated;
 	if ( (interval >= 1) && (interval <= (60*MAXUPDATEINTERVAL)) ) {
 
-		rxchange = countercalc(&(*dc)->currx, &ifinfo.rx);
-		txchange = countercalc(&(*dc)->curtx, &ifinfo.tx);
+		rxchange = countercalc(&(*dc)->currx, &ifinfo.rx, ifinfo.is64bit);
+		txchange = countercalc(&(*dc)->curtx, &ifinfo.tx, ifinfo.is64bit);
 
 		/* get bandwidth limit for current interface */
 		ibwget((*dc)->interface, &maxbw);

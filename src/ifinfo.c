@@ -13,6 +13,24 @@ int getifinfo(const char *iface)
 	ifinfo.filled = 0;
 	ifinfo.timestamp = 0;
 
+#if defined(__linux__)
+	if (cfg.is64bit == -2) {
+  #if HAVE_DECL_IFLA_STATS64
+		ifinfo.is64bit = 1;
+  #else
+		ifinfo.is64bit = 0;
+  #endif
+	} else {
+		ifinfo.is64bit = (short)cfg.is64bit;
+	}
+#else
+	if (cfg.is64bit < 0) {
+		ifinfo.is64bit = -1;
+	} else {
+		ifinfo.is64bit = (short)cfg.is64bit;
+	}
+#endif
+
 	if (strcmp(iface, "default")==0) {
 		strncpy_nt(inface, cfg.iface, 32);
 	} else {
@@ -350,6 +368,14 @@ int readifaddrs(const char *iface)
 		ifinfo.rxp = ifd.ifi_ipackets;
 		ifinfo.txp = ifd.ifi_opackets;
 		ifinfo.filled = 1;
+
+		if (cfg.is64bit == -2) {
+			if (sizeof(ifd.ifi_ibytes) == 8) {
+				ifinfo.is64bit = 1;
+			} else {
+				ifinfo.is64bit = 0;
+			}
+		}
 	}
 
 	return 1;

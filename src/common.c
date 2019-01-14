@@ -207,26 +207,26 @@ time_t mosecs(time_t month, time_t updated)
 	}
 }
 
-uint64_t countercalc(const uint64_t *a, const uint64_t *b)
+uint64_t countercalc(const uint64_t *a, const uint64_t *b, const short is64bit)
 {
-	/* no flip */
-	if (*b>=*a) {
+	/* no rollover */
+	if (*b >= *a) {
 		if (debug)
-			printf("cc: %"PRIu64" - %"PRIu64" = %"PRIu64"\n", *b, *a, *b-*a);
+			printf("cc (%d): %"PRIu64" - %"PRIu64" = %"PRIu64"\n", is64bit, *b, *a, *b-*a);
 		return *b-*a;
 
-	/* flip exists */
+	/* rollover exists */
 	} else {
-		/* original counter is 64bit */
-		if (*a>MAX32) {
+		/* counter is 64bit */
+		if (*a > MAX32 || is64bit == 1) {
 			if (debug)
-				printf("cc64: uint64 - %"PRIu64" + %"PRIu64" = %"PRIu64"\n", *a, *b, (uint64_t)MAX64-*a+*b);
+				printf("cc64 (%d): uint64 - %"PRIu64" + %"PRIu64" = %"PRIu64"\n", is64bit, *a, *b, (uint64_t)MAX64-*a+*b);
 			return MAX64-*a+*b;
 
-		/* original counter is 32bit */
+		/* counter is 32bit */
 		} else {
 			if (debug)
-				printf("cc32: uint32 - %"PRIu64" + %"PRIu64" = %"PRIu64"\n", *a, *b, (uint64_t)MAX32-*a+*b);
+				printf("cc32 (%d): uint32 - %"PRIu64" + %"PRIu64" = %"PRIu64"\n", is64bit, *a, *b, (uint64_t)MAX32-*a+*b);
 			return MAX32-*a+*b;
 		}
 	}

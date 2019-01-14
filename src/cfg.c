@@ -63,6 +63,7 @@ int loadcfg(const char *cfgfile)
 		{ "UpdateFileOwner", 0, &cfg.updatefileowner, 0, 0 },
 		{ "LogFile", cfg.logfile, 0, 512, 0 },
 		{ "PidFile", cfg.pidfile, 0, 512, 0 },
+		{ "64bitInterfaceCounters", 0, &cfg.is64bit, 0, 0 },
 		{ "HeaderFormat", cfg.hformat, 0, 64, 0 },
 		{ "HourlyRate", 0, &cfg.hourlyrate, 0, 0 },
 		{ "SummaryRate", 0, &cfg.summaryrate, 0, 0 },
@@ -306,6 +307,12 @@ void validatecfg(void)
 		printe(PT_Config);
 	}
 
+	if (cfg.is64bit<-2 || cfg.is64bit>1) {
+		cfg.is64bit = IS64BIT;
+		snprintf(errorstring, 1024, "%s 64bitInterfaceCounters, %s \"%d\".", invalidvalue, resettingto, cfg.is64bit);
+		printe(PT_Config);
+	}
+
 	if (cfg.transbg<0 || cfg.transbg>1) {
 		cfg.transbg = TRANSBG;
 		snprintf(errorstring, 1024, "%s TransparentBg, %s \"%d\".", invalidvalue, resettingto, cfg.transbg);
@@ -480,6 +487,7 @@ void defaultcfg(void)
 	cfg.updatefileowner = UPDATEFILEOWNER;
 	strncpy_nt(cfg.logfile, LOGFILE, 512);
 	strncpy_nt(cfg.pidfile, PIDFILE, 512);
+	cfg.is64bit = IS64BIT;
 
 	cfg.transbg = TRANSBG;
 	strncpy_nt(cfg.cbg, CBACKGROUND, 8);

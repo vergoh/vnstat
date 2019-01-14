@@ -145,49 +145,133 @@ START_TEST(mosecs_does_not_change_struct_tm_pointer_content)
 }
 END_TEST
 
-START_TEST(countercalc_no_change)
+START_TEST(countercalc_no_change_32bit)
 {
 	uint64_t a, b;
 
 	a = b = 0;
-	ck_assert_int_eq(countercalc(&a, &b), 0);
+	ck_assert_int_eq(countercalc(&a, &b, 0), 0);
+	ck_assert_int_eq(countercalc(&a, &b, -1), 0);
 	a = b = 1;
-	ck_assert_int_eq(countercalc(&a, &b), 0);
+	ck_assert_int_eq(countercalc(&a, &b, 0), 0);
+	ck_assert_int_eq(countercalc(&a, &b, -1), 0);
 }
 END_TEST
 
-START_TEST(countercalc_small_change)
+START_TEST(countercalc_no_change_64bit)
+{
+	uint64_t a, b;
+
+	a = b = 0;
+	ck_assert_int_eq(countercalc(&a, &b, 1), 0);
+	a = b = 1;
+	ck_assert_int_eq(countercalc(&a, &b, 1), 0);
+}
+END_TEST
+
+START_TEST(countercalc_small_change_32bit)
 {
 	uint64_t a, b;
 
 	a = 0;
 	b = 1;
-	ck_assert_int_eq(countercalc(&a, &b), 1);
+	ck_assert_int_eq(countercalc(&a, &b, 0), 1);
+	ck_assert_int_eq(countercalc(&a, &b, -1), 1);
 	a = 1;
 	b = 2;
-	ck_assert_int_eq(countercalc(&a, &b), 1);
+	ck_assert_int_eq(countercalc(&a, &b, 0), 1);
+	ck_assert_int_eq(countercalc(&a, &b, -1), 1);
 	b = 3;
-	ck_assert_int_eq(countercalc(&a, &b), 2);
+	ck_assert_int_eq(countercalc(&a, &b, 0), 2);
+	ck_assert_int_eq(countercalc(&a, &b, -1), 2);
 }
 END_TEST
 
-START_TEST(countercalc_32bit)
+START_TEST(countercalc_small_change_64bit)
+{
+	uint64_t a, b;
+
+	a = 0;
+	b = 1;
+	ck_assert_int_eq(countercalc(&a, &b, 1), 1);
+	a = 1;
+	b = 2;
+	ck_assert_int_eq(countercalc(&a, &b, 1), 1);
+	b = 3;
+	ck_assert_int_eq(countercalc(&a, &b, 1), 2);
+}
+END_TEST
+
+START_TEST(countercalc_rollover_with_32bit)
 {
 	uint64_t a, b;
 
 	a = 1;
 	b = 0;
-	ck_assert(countercalc(&a, &b)==(MAX32-1));
+	ck_assert(countercalc(&a, &b, 0)==(MAX32-1));
+	ck_assert(countercalc(&a, &b, -1)==(MAX32-1));
 }
 END_TEST
 
-START_TEST(countercalc_64bit)
+START_TEST(countercalc_rollover_with_64bit)
+{
+	uint64_t a, b;
+
+	a = 1;
+	b = 0;
+	ck_assert(countercalc(&a, &b, 1)==(MAX64-1));
+}
+END_TEST
+
+START_TEST(countercalc_rollover_with_64bit_2)
 {
 	uint64_t a, b;
 
 	a = MAX32+1;
 	b = 0;
-	ck_assert(countercalc(&a, &b)==(MAX64-MAX32-1));
+	ck_assert(countercalc(&a, &b, 1)==(MAX64-MAX32-1));
+}
+END_TEST
+
+START_TEST(countercalc_rollover_with_32bit_starting_32bit)
+{
+	uint64_t a, b;
+
+	a = MAX32-1;
+	b = 0;
+	ck_assert(countercalc(&a, &b, 0)==1);
+	ck_assert(countercalc(&a, &b, -1)==1);
+}
+END_TEST
+
+START_TEST(countercalc_rollover_with_32bit_starting_over_32bit)
+{
+	uint64_t a, b;
+
+	a = MAX32+1;
+	b = 0;
+	ck_assert(countercalc(&a, &b, 0)==(MAX64-MAX32-1));
+	ck_assert(countercalc(&a, &b, -1)==(MAX64-MAX32-1));
+}
+END_TEST
+
+START_TEST(countercalc_rollover_with_64bit_starting_32bit)
+{
+	uint64_t a, b;
+
+	a = MAX32-1;
+	b = 0;
+	ck_assert(countercalc(&a, &b, 1)==(MAX64-MAX32+1));
+}
+END_TEST
+
+START_TEST(countercalc_rollover_with_64bit_starting_64bit)
+{
+	uint64_t a, b;
+
+	a = MAX64-1;
+	b = 0;
+	ck_assert(countercalc(&a, &b, 1)==1);
 }
 END_TEST
 
@@ -297,10 +381,17 @@ void add_common_tests(Suite *s)
 	tcase_add_test(tc_common, mosecs_return_values);
 	tcase_add_test(tc_common, mosecs_does_not_change_tz);
 	tcase_add_test(tc_common, mosecs_does_not_change_struct_tm_pointer_content);
-	tcase_add_test(tc_common, countercalc_no_change);
-	tcase_add_test(tc_common, countercalc_small_change);
-	tcase_add_test(tc_common, countercalc_32bit);
-	tcase_add_test(tc_common, countercalc_64bit);
+	tcase_add_test(tc_common, countercalc_no_change_32bit);
+	tcase_add_test(tc_common, countercalc_no_change_64bit);
+	tcase_add_test(tc_common, countercalc_small_change_32bit);
+	tcase_add_test(tc_common, countercalc_small_change_64bit);
+	tcase_add_test(tc_common, countercalc_rollover_with_32bit);
+	tcase_add_test(tc_common, countercalc_rollover_with_64bit);
+	tcase_add_test(tc_common, countercalc_rollover_with_64bit_2);
+	tcase_add_test(tc_common, countercalc_rollover_with_32bit_starting_32bit);
+	tcase_add_test(tc_common, countercalc_rollover_with_32bit_starting_over_32bit);
+	tcase_add_test(tc_common, countercalc_rollover_with_64bit_starting_32bit);
+	tcase_add_test(tc_common, countercalc_rollover_with_64bit_starting_64bit);
 	tcase_add_test(tc_common, strncpy_nt_with_below_maximum_length_string);
 	tcase_add_test(tc_common, strncpy_nt_with_maximum_length_string);
 	tcase_add_test(tc_common, strncpy_nt_with_over_maximum_length_string);

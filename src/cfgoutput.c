@@ -158,7 +158,10 @@ void printcfgfile(void)
 	printf("LogFile \"%s\"\n\n", cfg.logfile);
 
 	printf("# file used as daemon pid / lock file\n");
-	printf("PidFile \"%s\"\n", cfg.pidfile);
+	printf("PidFile \"%s\"\n\n", cfg.pidfile);
+
+	printf("# 1 = 64-bit, 0 = 32-bit, -1 = old style logic, -2 = automatic detection\n");
+	printf("64bitInterfaceCounters %d\n", cfg.is64bit);
 
 	printf("\n\n");
 

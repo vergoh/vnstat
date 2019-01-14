@@ -46,6 +46,9 @@ AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 AM_CONDITIONAL([IS_CROSSCOMPILED], [test "$host" != "$build"])
 
+# Check if 64-bit interface counters are used in Linux
+AC_CHECK_DECLS([IFLA_STATS64], [], [], [[#include <linux/rtnetlink.h>]])
+
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_UID_T
 AC_TYPE_INT32_T

@@ -236,6 +236,7 @@ and most can be changed later from the config file.
 #define UPDATEFILEOWNER 1
 #define LOGFILE "/var/log/vnstat/vnstat.log"
 #define PIDFILE "/var/run/vnstat/vnstat.pid"
+#define IS64BIT -2
 
 /* no transparency by default */
 #define TRANSBG 0
@@ -268,7 +269,7 @@ typedef struct {
 	char cline[8], clinel[8], cvnstat[8], crx[8], crxd[8], ctx[8], ctxd[8];
 	int32_t unitmode, rateunitmode, rateunit, bvar, qmode, sampletime, hourlyrate, summaryrate;
 	int32_t monthrotate, monthrotateyears, maxbw, spacecheck, trafficlessentries, transbg, ostyle;
-	int32_t defaultdecimals, hourlydecimals, hourlystyle;
+	int32_t defaultdecimals, hourlydecimals, hourlystyle, is64bit;
 	char cfgfile[512], logfile[512], pidfile[512];
 	char daemonuser[33], daemongroup[33];
 	int32_t timesyncwait, updateinterval, pollinterval, saveinterval, offsaveinterval, savestatus;
@@ -280,7 +281,8 @@ typedef struct {
 /* internal interface information structure */
 typedef struct {
 	char name[32];
-	int filled;
+	short filled;
+	short is64bit;
 	uint64_t rx;
 	uint64_t tx;
 	uint64_t rxp;
@@ -313,7 +315,7 @@ int verifylogaccess(void);
 int dmonth(int month);
 int isleapyear(int year);
 time_t mosecs(time_t month, time_t updated);
-uint64_t countercalc(const uint64_t *a, const uint64_t *b);
+uint64_t countercalc(const uint64_t *a, const uint64_t *b, const short is64bit);
 char *strncpy_nt(char *dest, const char *src, size_t n);
 int isnumeric(const char *s);
 void panicexit(const char *sourcefile, const int sourceline) __attribute__((noreturn));

@@ -2,6 +2,8 @@
 New configuration settings
 ::::::::::::::::::::::::::
 
+2.2: 64bitInterfaceCounters
+
 2.1: (none)
 
 2.0: List5Mins, ListHours, ListDays, ListMonths, ListYears, ListTop,

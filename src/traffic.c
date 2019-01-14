@@ -64,10 +64,10 @@ void trafficmeter(char iface[], unsigned int sampletime)
 	}
 
 	/* calculate traffic and packets seen between updates */
-	rx = countercalc(&firstinfo.rx, &ifinfo.rx);
-	tx = countercalc(&firstinfo.tx, &ifinfo.tx);
-	rxp = countercalc(&firstinfo.rxp, &ifinfo.rxp);
-	txp = countercalc(&firstinfo.txp, &ifinfo.txp);
+	rx = countercalc(&firstinfo.rx, &ifinfo.rx, ifinfo.is64bit);
+	tx = countercalc(&firstinfo.tx, &ifinfo.tx, ifinfo.is64bit);
+	rxp = countercalc(&firstinfo.rxp, &ifinfo.rxp, ifinfo.is64bit);
+	txp = countercalc(&firstinfo.txp, &ifinfo.txp, ifinfo.is64bit);
 
 	/* show the difference in a readable format or json */
 	if (!json) {
@@ -192,10 +192,10 @@ void livetrafficmeter(char iface[32], int mode)
 		}
 
 		/* calculate traffic and packets seen between updates */
-		rx = countercalc(&previnfo.rx, &ifinfo.rx);
-		tx = countercalc(&previnfo.tx, &ifinfo.tx);
-		rxp = countercalc(&previnfo.rxp, &ifinfo.rxp);
-		txp = countercalc(&previnfo.txp, &ifinfo.txp);
+		rx = countercalc(&previnfo.rx, &ifinfo.rx, ifinfo.is64bit);
+		tx = countercalc(&previnfo.tx, &ifinfo.tx, ifinfo.is64bit);
+		rxp = countercalc(&previnfo.rxp, &ifinfo.rxp, ifinfo.is64bit);
+		txp = countercalc(&previnfo.txp, &ifinfo.txp, ifinfo.is64bit);
 
 		/* update totals */
 		rxtotal += rx;

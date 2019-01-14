@@ -133,6 +133,16 @@ unlimited entries or to 0 to disable the data collection of this
 resolution.
 
 .TP
+.B 64bitInterfaceCounters
+Select interface counter handling. Set to 1 for defining that all interfaces
+use 64-bit counters on the kernel side and 0 for defining 32-bit counter Set
+to -1 for using the old style logic used in earlier versions where counter
+values within 32-bits are assumed to be 32-bit and anything larger is assumed to
+be a 64-bit counter. This may produce false results if a 64-bit counter is
+reset within the 32-bits. Set to -2 for using automatic detection based on
+available kernel datastructures.
+
+.TP
 .B BandwidthDetection
 Try to automatically detect
 .B MaxBandwidth

@@ -6,6 +6,10 @@
 /* Define to 1 if your system has a working `chown' function. */
 #undef HAVE_CHOWN
 
+/* Define to 1 if you have the declaration of `IFLA_STATS64', and to 0 if you
+   don't. */
+#undef HAVE_DECL_IFLA_STATS64
+
 /* Define to 1 if you have the `dup2' function. */
 #undef HAVE_DUP2
 
