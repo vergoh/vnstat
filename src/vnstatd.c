@@ -1,5 +1,5 @@
 /*
-vnStat daemon - Copyright (c) 2008-2018 Teemu Toivola <tst@iki.fi>
+vnStat daemon - Copyright (c) 2008-2019 Teemu Toivola <tst@iki.fi>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -204,11 +204,11 @@ int main(int argc, char *argv[])
 	printe(PT_Info);
 
 	/* warmup */
-	if (s.dbcount == 0) {
+	if (s.dbifcount == 0) {
 		filldatabaselist(&s);
 		s.prevdbsave = 0;
 	}
-	while (s.running && s.dbcount && waittimesync(&s)) {
+	while (s.running && s.dbifcount && waittimesync(&s)) {
 		if (intsignal) {
 			handleintsignals(&s);
 		} else {
@@ -222,13 +222,13 @@ int main(int argc, char *argv[])
 		s.current = time(NULL);
 
 		/* track interface status only if at least one database exists */
-		if (s.dbcount != 0) {
+		if (s.dbifcount != 0) {
 			previflisthash = s.iflisthash;
 			interfacechangecheck(&s);
 			if (s.alwaysadd && s.iflisthash != previflisthash && previflisthash != 0) {
-				temp = s.dbcount;
-				s.dbcount += addinterfaces(&s);
-				if (temp != s.dbcount) {
+				temp = s.dbifcount;
+				s.dbifcount += addinterfaces(&s);
+				if (temp != s.dbifcount) {
 					datacache_status(&s.dcache);
 				}
 			}
@@ -246,7 +246,7 @@ int main(int argc, char *argv[])
 			}
 
 			/* fill database list if cache is empty */
-			if (s.dbcount == 0) {
+			if (s.dbifcount == 0) {
 				filldatabaselist(&s);
 
 			/* update data cache */

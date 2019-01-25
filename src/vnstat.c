@@ -1,5 +1,5 @@
 /*
-vnStat - Copyright (c) 2002-2018 Teemu Toivola <tst@iki.fi>
+vnStat - Copyright (c) 2002-2019 Teemu Toivola <tst@iki.fi>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -691,7 +691,7 @@ void handlesetalias(PARAMS *p)
 
 void handleshowdatabases(PARAMS *p)
 {
-	int dbcount = 0;
+	int ifcount = 0;
 	dbiflist *dbifl = NULL, *dbifl_i = NULL;
 
 	if (!p->query) {
@@ -737,9 +737,9 @@ void handleshowdatabases(PARAMS *p)
 			} else if (cfg.qmode==8) {
 				showxml(p->interface, p->xmlmode, p->databegin, p->dataend);
 			} else if (cfg.qmode==10) {
-				showjson(p->interface, dbcount, p->jsonmode, p->databegin, p->dataend);
+				showjson(p->interface, ifcount, p->jsonmode, p->databegin, p->dataend);
 			}
-			dbcount++;
+			ifcount++;
 			dbifl_i = dbifl_i->next;
 		}
 		dbiflistfree(&dbifl);

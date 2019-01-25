@@ -2,7 +2,7 @@
 #include "dbsql.h"
 #include "dbjson.h"
 
-void showjson(const char *interface, const int dbcount, const char mode, const char *databegin, const char *dataend)
+void showjson(const char *interface, const int ifcount, const char mode, const char *databegin, const char *dataend)
 {
 	interfaceinfo info;
 
@@ -16,7 +16,7 @@ void showjson(const char *interface, const int dbcount, const char mode, const c
 		return;
 	}
 
-	if (dbcount) {
+	if (ifcount) {
 		printf(",");
 	}
 	printf("{");

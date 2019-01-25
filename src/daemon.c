@@ -259,7 +259,7 @@ void initdstate(DSTATE *s)
 	s->group[0] = '\0';
 	s->prevdbupdate = 0;
 	s->prevdbsave = 0;
-	s->dbcount = 0;
+	s->dbifcount = 0;
 	s->dodbsave = 0;
 	s->bootdetected = 0;
 	s->cleanuphour = getcurrenthour();
@@ -269,19 +269,19 @@ void initdstate(DSTATE *s)
 
 void preparedatabases(DSTATE *s)
 {
-	s->dbcount = db_getinterfacecount();
+	s->dbifcount = db_getinterfacecount();
 
-	if (s->dbcount > 0 && !s->alwaysadd) {
-		s->dbcount = 0;
+	if (s->dbifcount > 0 && !s->alwaysadd) {
+		s->dbifcount = 0;
 		return;
 	}
 
 	if (debug) {
-		printf("db count: %"PRIu64"\n", s->dbcount);
+		printf("db if count: %"PRIu64"\n", s->dbifcount);
 	}
 
 	if (s->noadd) {
-		printf("Zero database found, exiting.\n");
+		printf("No interfaces found in database, exiting.\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -290,24 +290,24 @@ void preparedatabases(DSTATE *s)
 		exit(EXIT_FAILURE);
 	}
 
-	if (s->dbcount == 0) {
+	if (s->dbifcount == 0) {
 		if (importlegacydbs(s) && !s->alwaysadd) {
-			s->dbcount = 0;
+			s->dbifcount = 0;
 			return;
 		}
 	}
 
-	if (s->dbcount == 0) {
-		printf("Zero database found, adding available interfaces...\n");
+	if (s->dbifcount == 0) {
+		printf("No interfaces found in database, adding available interfaces...\n");
 	}
 
-	if (!addinterfaces(s) && s->dbcount == 0) {
+	if (!addinterfaces(s) && s->dbifcount == 0) {
 		printf("Nothing to do, exiting.\n");
 		exit(EXIT_FAILURE);
 	}
 
 	/* set counter back to zero so that dbs will be cached later */
-	s->dbcount = 0;
+	s->dbifcount = 0;
 }
 
 unsigned int importlegacydbs(DSTATE *s)
@@ -323,7 +323,7 @@ unsigned int importlegacydbs(DSTATE *s)
 		exit(EXIT_FAILURE);
 	}
 
-	s->dbcount = 0;
+	s->dbifcount = 0;
 	while ((di=readdir(dir))) {
 		if ((di->d_name[0]!='.') && (strcmp(di->d_name, DATABASEFILE)!=0)) {
 			/* ignore already known interfaces */
@@ -337,7 +337,7 @@ unsigned int importlegacydbs(DSTATE *s)
 	}
 	closedir(dir);
 
-	s->dbcount += importcount;
+	s->dbifcount += importcount;
 	return importcount;
 }
 
@@ -379,7 +379,7 @@ void filldatabaselist(DSTATE *s)
 			printe(PT_Error);
 			errorexitdaemon(s, 1);
 		}
-		s->dbcount++;
+		s->dbifcount++;
 		dbifl_iterator = dbifl_iterator->next;
 	}
 
@@ -388,7 +388,7 @@ void filldatabaselist(DSTATE *s)
 
 	/* disable update interval check for one loop if database list was refreshed */
 	/* otherwise increase default update interval since there's nothing else to do */
-	if (s->dbcount) {
+	if (s->dbifcount) {
 		s->updateinterval = 0;
 		intsignal = 42;
 		s->prevdbsave = s->current;
@@ -698,7 +698,7 @@ void cleanremovedinterfaces(DSTATE *s)
 			snprintf(errorstring, 1024, "Removing interface \"%s\" from update list.", dbifl_iterator->interface);
 			printe(PT_Info);
 			datacache_remove(&s->dcache, dbifl_iterator->interface);
-			s->dbcount--;
+			s->dbifcount--;
 			dbifl_iterator = dbifl_iterator->next;
 		}
 		datacache_status(&s->dcache);
@@ -716,7 +716,7 @@ void handleintsignals(DSTATE *s)
 			printe(PT_Info);
 			flushcachetodisk(s);
 			datacache_clear(&s->dcache);
-			s->dbcount = 0;
+			s->dbifcount = 0;
 			ibwflush();
 			db_close();
 			if (loadcfg(s->cfgfile)) {

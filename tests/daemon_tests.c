@@ -301,7 +301,7 @@ START_TEST(filldatabaselist_does_not_exit_with_empty_database_dir)
 
 	filldatabaselist(&s);
 
-	ck_assert_int_eq(s.dbcount, 0);
+	ck_assert_int_eq(s.dbifcount, 0);
 	ck_assert_int_eq(s.sync, 0);
 	ck_assert_int_eq(s.updateinterval, 120);
 	ret = db_close();
@@ -343,7 +343,7 @@ START_TEST(filldatabaselist_adds_databases)
 	ck_assert_int_eq(check_dbfile_exists(".name1", 0), 0);
 	ck_assert_int_eq(check_dbfile_exists("name2", 0), 1);
 	ck_assert_int_eq(check_dbfile_exists(".name2", 0), 0);
-	ck_assert_int_eq(s.dbcount, 2);
+	ck_assert_int_eq(s.dbifcount, 2);
 	ck_assert_int_eq(s.sync, 0);
 	ck_assert_int_eq(s.updateinterval, 0);
 	ck_assert_int_eq(intsignal, 42);
@@ -498,13 +498,13 @@ START_TEST(handleintsignals_handles_no_signal)
 	defaultcfg();
 	initdstate(&s);
 	s.running = 1;
-	s.dbcount = 1;
+	s.dbifcount = 1;
 
 	intsignal = 0;
 	handleintsignals(&s);
 	ck_assert_int_eq(intsignal, 0);
 	ck_assert_int_eq(s.running, 1);
-	ck_assert_int_eq(s.dbcount, 1);
+	ck_assert_int_eq(s.dbifcount, 1);
 }
 END_TEST
 
@@ -514,13 +514,13 @@ START_TEST(handleintsignals_handles_42)
 	defaultcfg();
 	initdstate(&s);
 	s.running = 1;
-	s.dbcount = 1;
+	s.dbifcount = 1;
 
 	intsignal = 42;
 	handleintsignals(&s);
 	ck_assert_int_eq(intsignal, 0);
 	ck_assert_int_eq(s.running, 1);
-	ck_assert_int_eq(s.dbcount, 1);
+	ck_assert_int_eq(s.dbifcount, 1);
 }
 END_TEST
 
@@ -530,7 +530,7 @@ START_TEST(handleintsignals_handles_unknown_signal)
 	defaultcfg();
 	initdstate(&s);
 	s.running = 1;
-	s.dbcount = 1;
+	s.dbifcount = 1;
 
 	disable_logprints();
 
@@ -538,7 +538,7 @@ START_TEST(handleintsignals_handles_unknown_signal)
 	handleintsignals(&s);
 	ck_assert_int_eq(intsignal, 0);
 	ck_assert_int_eq(s.running, 1);
-	ck_assert_int_eq(s.dbcount, 1);
+	ck_assert_int_eq(s.dbifcount, 1);
 }
 END_TEST
 
@@ -548,7 +548,7 @@ START_TEST(handleintsignals_handles_sigterm)
 	defaultcfg();
 	initdstate(&s);
 	s.running = 1;
-	s.dbcount = 1;
+	s.dbifcount = 1;
 
 	disable_logprints();
 
@@ -556,7 +556,7 @@ START_TEST(handleintsignals_handles_sigterm)
 	handleintsignals(&s);
 	ck_assert_int_eq(intsignal, 0);
 	ck_assert_int_eq(s.running, 0);
-	ck_assert_int_eq(s.dbcount, 1);
+	ck_assert_int_eq(s.dbifcount, 1);
 }
 END_TEST
 
@@ -566,7 +566,7 @@ START_TEST(handleintsignals_handles_sigint)
 	defaultcfg();
 	initdstate(&s);
 	s.running = 1;
-	s.dbcount = 1;
+	s.dbifcount = 1;
 
 	disable_logprints();
 
@@ -575,7 +575,7 @@ START_TEST(handleintsignals_handles_sigint)
 	handleintsignals(&s);
 	ck_assert_int_eq(intsignal, 0);
 	ck_assert_int_eq(s.running, 0);
-	ck_assert_int_eq(s.dbcount, 1);
+	ck_assert_int_eq(s.dbifcount, 1);
 }
 END_TEST
 
@@ -586,7 +586,7 @@ START_TEST(handleintsignals_handles_sighup)
 	defaultcfg();
 	initdstate(&s);
 	s.running = 1;
-	s.dbcount = 1;
+	s.dbifcount = 1;
 
 	disable_logprints();
 
@@ -604,7 +604,7 @@ START_TEST(handleintsignals_handles_sighup)
 	handleintsignals(&s);
 	ck_assert_int_eq(intsignal, 0);
 	ck_assert_int_eq(s.running, 1);
-	ck_assert_int_eq(s.dbcount, 0);
+	ck_assert_int_eq(s.dbifcount, 0);
 
 	ret = db_close();
 	ck_assert_int_eq(ret, 1);
@@ -1140,7 +1140,7 @@ START_TEST(cleanremovedinterfaces_allows_interfaces_to_be_removed)
 	ret = datacache_add(&s.dcache, "ethnotindb4", 0);
 	ck_assert_int_eq(ret, 1);
 	ck_assert_int_eq(datacache_count(&s.dcache), 7);
-	s.dbcount = 7;
+	s.dbifcount = 7;
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -1153,7 +1153,7 @@ START_TEST(cleanremovedinterfaces_allows_interfaces_to_be_removed)
 
 	cleanremovedinterfaces(&s);
 
-	ck_assert_int_eq(s.dbcount, 3);
+	ck_assert_int_eq(s.dbifcount, 3);
 	ck_assert_int_eq(datacache_count(&s.dcache), 3);
 
 	ret = db_close();
