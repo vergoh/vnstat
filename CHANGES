@@ -1,5 +1,7 @@
 2.2 / <not released yet>
 
+ - Fixed
+   - O_CLOEXEC undeclared error when compiling with glibc older than 2.12
  - New
    - Detection of 32-bit / 64-bit kernel interface counters for improving
      traffic calculations in rollover situations, cfg: 64bitInterfaceCounters

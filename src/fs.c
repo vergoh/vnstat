@@ -179,7 +179,7 @@ void updatedirownerid(const char *dir, const uid_t uid, const gid_t gid)
 		return;
 	}
 
-	if ((dir_fd = open(dir, O_RDONLY | O_CLOEXEC)) == -1)
+	if ((dir_fd = open(dir, FS_OPEN_RO_FLAGS)) == -1)
 		return;
 	if (fstat(dir_fd, &statbuf)!=0) {
 		close(dir_fd);
@@ -210,7 +210,7 @@ void updatedirownerid(const char *dir, const uid_t uid, const gid_t gid)
 			continue;
 		}
 		snprintf(entryname, 512, "%s/%s", dir, di->d_name);
-		if ((file_fd = open(entryname, O_RDONLY | O_CLOEXEC)) == -1)
+		if ((file_fd = open(entryname, FS_OPEN_RO_FLAGS)) == -1)
 			continue;
 		if (fstat(file_fd, &statbuf)!=0) {
 			close(file_fd);

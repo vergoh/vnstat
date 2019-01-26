@@ -1,6 +1,13 @@
 #ifndef FS_H
 #define FS_H
 
+/* O_CLOEXEC is specified starting POSIX.1-2008 / glibc 2.12 / Linux 2.6.23 */
+#if HAVE_DECL_O_CLOEXEC
+#define FS_OPEN_RO_FLAGS O_RDONLY | O_CLOEXEC
+#else
+#define FS_OPEN_RO_FLAGS O_RDONLY
+#endif
+
 int direxists(const char *dir);
 int fileexists(const char *file);
 int mkpath(const char *dir, const mode_t mode);

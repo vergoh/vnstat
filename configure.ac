@@ -49,6 +49,9 @@ AM_CONDITIONAL([IS_CROSSCOMPILED], [test "$host" != "$build"])
 # Check if 64-bit interface counters are used in Linux
 AC_CHECK_DECLS([IFLA_STATS64], [], [], [[#include <linux/rtnetlink.h>]])
 
+# Check if O_CLOEXEC can be used
+AC_CHECK_DECLS([O_CLOEXEC], [], [], [[#include <fcntl.h>]])
+
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_UID_T
 AC_TYPE_INT32_T
