@@ -12,7 +12,7 @@ are fully user configurable. Total seen traffic and a top days listing is also
 provided. Optional png image output is available in systems with the gd library
 installed.
 
-See the official webpage https://humdi.net/vnstat/ for additional details
+See the [official webpage](https://humdi.net/vnstat/) for additional details
 and output examples.
 
 ## Getting started
@@ -34,15 +34,16 @@ Development version
   1. `git clone https://github.com/vergoh/vnstat`
   2. `cd vnstat`
 
-In both cases, continue with instructions from the INSTALL or INSTALL_BSD file
-depending on used operating system. Instructions for upgrading from a previous
-version are included in the UPGRADE file.
+In both cases, continue with instructions from the [INSTALL](INSTALL) or
+[INSTALL_BSD](INSTALL_BSD) file depending on used operating system.
+Instructions for upgrading from a previous version are included in the
+[UPGRADE](UPGRADE) file.
 
 ## Contacting the author
 
-**email:** Teemu Toivola <tst at iki dot fi>
-**irc:** Vergo (IRCNet)
-**git:** https://github.com/vergoh/vnstat
+  - **email** - Teemu Toivola &lt;tst at iki dot fi&gt;
+  - **irc** - Vergo ([IRCNet](http://www.irchelp.org/networks/ircnet/))
+  - **git** - https://github.com/vergoh/vnstat
 
 Bug reports, improvement ideas, feature requests and pull requests should be
 sent using the matching features on GitHub as those are harder to miss or
