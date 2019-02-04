@@ -464,10 +464,14 @@ void drawhourly(IMAGECONTENT *ic, const int rate)
 
 	colorinit(ic);
 
-	if (strcmp(ic->interface.name, ic->interface.alias) == 0 || strlen(ic->interface.alias) == 0) {
-		snprintf(buffer, 512, "%s / hourly", ic->interface.name);
+	if (strlen(ic->headertext)) {
+		strncpy_nt(buffer, ic->headertext, 65);
 	} else {
-		snprintf(buffer, 512, "%s (%s) / hourly", ic->interface.alias, ic->interface.name);
+		if (strcmp(ic->interface.name, ic->interface.alias) == 0 || strlen(ic->interface.alias) == 0) {
+			snprintf(buffer, 512, "%s / hourly", ic->interface.name);
+		} else {
+			snprintf(buffer, 512, "%s (%s) / hourly", ic->interface.alias, ic->interface.name);
+		}
 	}
 
 	layoutinit(ic, buffer, width, height);
@@ -592,10 +596,14 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 
 	colorinit(ic);
 
-	if (strcmp(ic->interface.name, ic->interface.alias) == 0 || strlen(ic->interface.alias) == 0) {
-		snprintf(buffer, 512, "%s / %s", ic->interface.name, titlename);
+	if (strlen(ic->headertext)) {
+		strncpy_nt(buffer, ic->headertext, 65);
 	} else {
-		snprintf(buffer, 512, "%s (%s) / %s", ic->interface.alias, ic->interface.name, titlename);
+		if (strcmp(ic->interface.name, ic->interface.alias) == 0 || strlen(ic->interface.alias) == 0) {
+			snprintf(buffer, 512, "%s / %s", ic->interface.name, titlename);
+		} else {
+			snprintf(buffer, 512, "%s (%s) / %s", ic->interface.alias, ic->interface.name, titlename);
+		}
 	}
 
 	layoutinit(ic, buffer, width, height);
