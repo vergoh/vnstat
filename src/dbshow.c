@@ -153,7 +153,7 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 					e_tx = (uint64_t)(datalist_i->tx/(float)(mosecs(datalist_i->timestamp, interface->updated)))*(uint64_t)(dmonth(d->tm_mon)*86400);
 				}
 				if (shortmode && cfg.ostyle != 0) {
-					printf("%s%s", fieldseparator, getvalue(e_rx+e_tx, 11, 1));
+					printf("%s%s", fieldseparator, getvalue(e_rx+e_tx, 11, 2));
 				} else if (!shortmode) {
 					printf("%s%s", fieldseparator, gettrafficrate(datalist_i->rx+datalist_i->tx, mosecs(datalist_i->timestamp, interface->updated), 14));
 				}
@@ -548,9 +548,9 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 			} else {
 				snprintf(datebuff, DATEBUFFLEN, "sum");
 			}
-			printf(" %9s   %s", datebuff, getvalue(datainfo.sumrx, 11, 2));
-			printf(" | %s", getvalue(datainfo.sumtx, 11, 2));
-			printf(" | %s", getvalue(datainfo.sumrx + datainfo.sumtx, 11, 2));
+			printf(" %9s   %s", datebuff, getvalue(datainfo.sumrx, 11, 1));
+			printf(" | %s", getvalue(datainfo.sumtx, 11, 1));
+			printf(" | %s", getvalue(datainfo.sumrx + datainfo.sumtx, 11, 1));
 		}
 		if (cfg.ostyle == 3) {
 			printf(" |");
