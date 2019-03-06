@@ -221,8 +221,8 @@ void livetrafficmeter(char iface[32], int mode)
 				snprintf(buffer2, 128, " %*s tx: %s %*"PRIu64" p/s", paddingwidth, " ", gettrafficrate(tx, LIVETIME, ratewidth), ppswidth, (uint64_t)txp/LIVETIME);
 			} else {
 				/* total transfer amount visible */
-				snprintf(buffer, 128, "   rx: %s   %s", gettrafficrate(rx, LIVETIME, ratewidth), getvalue(rxtotal, 1, 1));
-				snprintf(buffer2, 128, " %*s tx: %s   %s", paddingwidth, " ", gettrafficrate(tx, LIVETIME, ratewidth), getvalue(txtotal, 1, 1));
+				snprintf(buffer, 128, "   rx: %s   %s", gettrafficrate(rx, LIVETIME, ratewidth), getvalue(rxtotal, 1, RT_Normal));
+				snprintf(buffer2, 128, " %*s tx: %s   %s", paddingwidth, " ", gettrafficrate(tx, LIVETIME, ratewidth), getvalue(txtotal, 1, RT_Normal));
 			}
 			strcat(buffer, buffer2);
 
@@ -275,8 +275,8 @@ void livetrafficmeter(char iface[32], int mode)
 
 		printf("                           rx         |       tx\n");
 		printf("--------------------------------------+------------------\n");
-		printf("  bytes              %s", getvalue(rxtotal, 15, 1));
-		printf("  | %s", getvalue(txtotal, 15, 1));
+		printf("  bytes              %s", getvalue(rxtotal, 15, RT_Normal));
+		printf("  | %s", getvalue(txtotal, 15, RT_Normal));
 		printf("\n");
 		printf("--------------------------------------+------------------\n");
 		printf("          max        %s", gettrafficrate(rxmax, LIVETIME, 15));

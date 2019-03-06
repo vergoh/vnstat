@@ -145,14 +145,13 @@ uint64_t getbtime(void)
 	return result;
 }
 
-char *getvalue(const uint64_t bytes, const int len, const int type)
+char *getvalue(const uint64_t bytes, const int len, const RequestType type)
 {
 	static char buffer[64];
 	int i, declen = cfg.defaultdecimals, p = 1024;
 	uint64_t limit;
 
-	/* request types: 1) normal  2) estimate  3) image scale */
-	if (type == 3) {
+	if (type == RT_ImageScale) {
 		declen = 0;
 	}
 
@@ -160,7 +159,7 @@ char *getvalue(const uint64_t bytes, const int len, const int type)
 		p = 1000;
 	}
 
-	if ( (type == 2) && (bytes == 0) ){
+	if ( (type == RT_Estimate) && (bytes == 0) ) {
 		declen = len-(int)strlen(getunitprefix(2))-2;
 		if (declen < 2) {
 			declen = 2;
@@ -173,7 +172,7 @@ char *getvalue(const uint64_t bytes, const int len, const int type)
 				if (i>1) {
 					snprintf(buffer, 64, "%"DECCONV"*.*f %s", getunitspacing(len, 5), declen, bytes/(double)(getunitdivisor(cfg.unitmode, i+1)), getunitprefix(i+1));
 				} else {
-					if (type == 2) {
+					if (type == RT_Estimate) {
 						declen = 0;
 					}
 					snprintf(buffer, 64, "%"DECCONV"*.*f %s", getunitspacing(len, 2), declen, bytes/(double)(getunitdivisor(cfg.unitmode, i+1)), getunitprefix(i+1));

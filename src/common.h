@@ -309,11 +309,11 @@ typedef enum PrintType {
 } PrintType;
 
 /* common functions */
-int printe(PrintType type);
-int logprint(PrintType type);
+int printe(const PrintType type);
+int logprint(const PrintType type);
 int verifylogaccess(void);
-int dmonth(int month);
-int isleapyear(int year);
+int dmonth(const int month);
+int isleapyear(const int year);
 time_t mosecs(time_t month, time_t updated);
 uint64_t countercalc(const uint64_t *a, const uint64_t *b, const short is64bit);
 char *strncpy_nt(char *dest, const char *src, size_t n);

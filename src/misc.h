@@ -3,10 +3,16 @@
 
 #define UNITPREFIXCOUNT 7
 
+typedef enum RequestType {
+	RT_Normal = 1,
+	RT_Estimate,
+	RT_ImageScale
+} RequestType;
+
 int spacecheck(const char *path);
 void sighandler(int sig);
 uint64_t getbtime(void);
-char *getvalue(const uint64_t bytes, const int len, const int type);
+char *getvalue(const uint64_t bytes, const int len, const RequestType type);
 int getunitspacing(const int len, const int index);
 char *gettrafficrate(const uint64_t bytes, const time_t interval, const int len);
 const char *getunitprefix(const int index);

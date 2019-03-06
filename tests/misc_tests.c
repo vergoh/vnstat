@@ -84,29 +84,29 @@ START_TEST(getvalue_normal)
 {
 	cfg.defaultdecimals = 2;
 	cfg.unitmode = 0;
-	ck_assert_str_eq(getvalue(100, 0, 1), "100 B");
-	ck_assert_str_eq(getvalue(1024, 0, 1), "1.00 KiB");
-	ck_assert_str_eq(getvalue(1048576, 0, 1), "1.00 MiB");
-	ck_assert_str_eq(getvalue(1073741824, 0, 1), "1.00 GiB");
-	ck_assert_str_eq(getvalue(1099511627776ULL, 0, 1), "1.00 TiB");
-	ck_assert_str_eq(getvalue(1125899906842624ULL, 0, 1), "1.00 PiB");
-	ck_assert_str_eq(getvalue(1152921504606846976ULL, 0, 1), "1.00 EiB");
+	ck_assert_str_eq(getvalue(100, 0, RT_Normal), "100 B");
+	ck_assert_str_eq(getvalue(1024, 0, RT_Normal), "1.00 KiB");
+	ck_assert_str_eq(getvalue(1048576, 0, RT_Normal), "1.00 MiB");
+	ck_assert_str_eq(getvalue(1073741824, 0, RT_Normal), "1.00 GiB");
+	ck_assert_str_eq(getvalue(1099511627776ULL, 0, RT_Normal), "1.00 TiB");
+	ck_assert_str_eq(getvalue(1125899906842624ULL, 0, RT_Normal), "1.00 PiB");
+	ck_assert_str_eq(getvalue(1152921504606846976ULL, 0, RT_Normal), "1.00 EiB");
 	cfg.unitmode = 1;
-	ck_assert_str_eq(getvalue(100, 0, 1), "100 B");
-	ck_assert_str_eq(getvalue(1024, 0, 1), "1.00 KB");
-	ck_assert_str_eq(getvalue(1048576, 0, 1), "1.00 MB");
-	ck_assert_str_eq(getvalue(1073741824, 0, 1), "1.00 GB");
-	ck_assert_str_eq(getvalue(1099511627776ULL, 0, 1), "1.00 TB");
-	ck_assert_str_eq(getvalue(1125899906842624ULL, 0, 1), "1.00 PB");
-	ck_assert_str_eq(getvalue(1152921504606846976ULL, 0, 1), "1.00 EB");
+	ck_assert_str_eq(getvalue(100, 0, RT_Normal), "100 B");
+	ck_assert_str_eq(getvalue(1024, 0, RT_Normal), "1.00 KB");
+	ck_assert_str_eq(getvalue(1048576, 0, RT_Normal), "1.00 MB");
+	ck_assert_str_eq(getvalue(1073741824, 0, RT_Normal), "1.00 GB");
+	ck_assert_str_eq(getvalue(1099511627776ULL, 0, RT_Normal), "1.00 TB");
+	ck_assert_str_eq(getvalue(1125899906842624ULL, 0, RT_Normal), "1.00 PB");
+	ck_assert_str_eq(getvalue(1152921504606846976ULL, 0, RT_Normal), "1.00 EB");
 	cfg.unitmode = 2;
-	ck_assert_str_eq(getvalue(100, 0, 1), "100 B");
-	ck_assert_str_eq(getvalue(1000, 0, 1), "1.00 kB");
-	ck_assert_str_eq(getvalue(1000000, 0, 1), "1.00 MB");
-	ck_assert_str_eq(getvalue(1000000000, 0, 1), "1.00 GB");
-	ck_assert_str_eq(getvalue(1000000000000ULL, 0, 1), "1.00 TB");
-	ck_assert_str_eq(getvalue(1000000000000000ULL, 0, 1), "1.00 PB");
-	ck_assert_str_eq(getvalue(1000000000000000000ULL, 0, 1), "1.00 EB");
+	ck_assert_str_eq(getvalue(100, 0, RT_Normal), "100 B");
+	ck_assert_str_eq(getvalue(1000, 0, RT_Normal), "1.00 kB");
+	ck_assert_str_eq(getvalue(1000000, 0, RT_Normal), "1.00 MB");
+	ck_assert_str_eq(getvalue(1000000000, 0, RT_Normal), "1.00 GB");
+	ck_assert_str_eq(getvalue(1000000000000ULL, 0, RT_Normal), "1.00 TB");
+	ck_assert_str_eq(getvalue(1000000000000000ULL, 0, RT_Normal), "1.00 PB");
+	ck_assert_str_eq(getvalue(1000000000000000000ULL, 0, RT_Normal), "1.00 EB");
 }
 END_TEST
 
@@ -114,29 +114,29 @@ START_TEST(getvalue_estimate)
 {
 	cfg.defaultdecimals = 2;
 	cfg.unitmode = 0;
-	ck_assert_str_eq(getvalue(100, 0, 2), "100 B");
-	ck_assert_str_eq(getvalue(1024, 0, 2), "1 KiB");
-	ck_assert_str_eq(getvalue(1048576, 0, 2), "1.00 MiB");
-	ck_assert_str_eq(getvalue(1073741824, 0, 2), "1.00 GiB");
-	ck_assert_str_eq(getvalue(1099511627776ULL, 0, 2), "1.00 TiB");
-	ck_assert_str_eq(getvalue(1125899906842624ULL, 0, 2), "1.00 PiB");
-	ck_assert_str_eq(getvalue(1152921504606846976ULL, 0, 2), "1.00 EiB");
+	ck_assert_str_eq(getvalue(100, 0, RT_Estimate), "100 B");
+	ck_assert_str_eq(getvalue(1024, 0, RT_Estimate), "1 KiB");
+	ck_assert_str_eq(getvalue(1048576, 0, RT_Estimate), "1.00 MiB");
+	ck_assert_str_eq(getvalue(1073741824, 0, RT_Estimate), "1.00 GiB");
+	ck_assert_str_eq(getvalue(1099511627776ULL, 0, RT_Estimate), "1.00 TiB");
+	ck_assert_str_eq(getvalue(1125899906842624ULL, 0, RT_Estimate), "1.00 PiB");
+	ck_assert_str_eq(getvalue(1152921504606846976ULL, 0, RT_Estimate), "1.00 EiB");
 	cfg.unitmode = 1;
-	ck_assert_str_eq(getvalue(100, 0, 2), "100 B");
-	ck_assert_str_eq(getvalue(1024, 0, 2), "1 KB");
-	ck_assert_str_eq(getvalue(1048576, 0, 2), "1.00 MB");
-	ck_assert_str_eq(getvalue(1073741824, 0, 2), "1.00 GB");
-	ck_assert_str_eq(getvalue(1099511627776ULL, 0, 2), "1.00 TB");
-	ck_assert_str_eq(getvalue(1125899906842624ULL, 0, 2), "1.00 PB");
-	ck_assert_str_eq(getvalue(1152921504606846976ULL, 0, 2), "1.00 EB");
+	ck_assert_str_eq(getvalue(100, 0, RT_Estimate), "100 B");
+	ck_assert_str_eq(getvalue(1024, 0, RT_Estimate), "1 KB");
+	ck_assert_str_eq(getvalue(1048576, 0, RT_Estimate), "1.00 MB");
+	ck_assert_str_eq(getvalue(1073741824, 0, RT_Estimate), "1.00 GB");
+	ck_assert_str_eq(getvalue(1099511627776ULL, 0, RT_Estimate), "1.00 TB");
+	ck_assert_str_eq(getvalue(1125899906842624ULL, 0, RT_Estimate), "1.00 PB");
+	ck_assert_str_eq(getvalue(1152921504606846976ULL, 0, RT_Estimate), "1.00 EB");
 	cfg.unitmode = 2;
-	ck_assert_str_eq(getvalue(100, 0, 2), "100 B");
-	ck_assert_str_eq(getvalue(1000, 0, 2), "1 kB");
-	ck_assert_str_eq(getvalue(1000000, 0, 2), "1.00 MB");
-	ck_assert_str_eq(getvalue(1000000000, 0, 2), "1.00 GB");
-	ck_assert_str_eq(getvalue(1000000000000ULL, 0, 2), "1.00 TB");
-	ck_assert_str_eq(getvalue(1000000000000000ULL, 0, 2), "1.00 PB");
-	ck_assert_str_eq(getvalue(1000000000000000000ULL, 0, 2), "1.00 EB");
+	ck_assert_str_eq(getvalue(100, 0, RT_Estimate), "100 B");
+	ck_assert_str_eq(getvalue(1000, 0, RT_Estimate), "1 kB");
+	ck_assert_str_eq(getvalue(1000000, 0, RT_Estimate), "1.00 MB");
+	ck_assert_str_eq(getvalue(1000000000, 0, RT_Estimate), "1.00 GB");
+	ck_assert_str_eq(getvalue(1000000000000ULL, 0, RT_Estimate), "1.00 TB");
+	ck_assert_str_eq(getvalue(1000000000000000ULL, 0, RT_Estimate), "1.00 PB");
+	ck_assert_str_eq(getvalue(1000000000000000000ULL, 0, RT_Estimate), "1.00 EB");
 }
 END_TEST
 
@@ -144,29 +144,29 @@ START_TEST(getvalue_imagescale)
 {
 	cfg.defaultdecimals = 2;
 	cfg.unitmode = 0;
-	ck_assert_str_eq(getvalue(100, 0, 3), "100 B");
-	ck_assert_str_eq(getvalue(1024, 0, 3), "1 KiB");
-	ck_assert_str_eq(getvalue(1048576, 0, 3), "1 MiB");
-	ck_assert_str_eq(getvalue(1073741824, 0, 3), "1 GiB");
-	ck_assert_str_eq(getvalue(1099511627776ULL, 0,3), "1 TiB");
-	ck_assert_str_eq(getvalue(1125899906842624ULL, 0, 3), "1 PiB");
-	ck_assert_str_eq(getvalue(1152921504606846976ULL, 0, 3), "1 EiB");
+	ck_assert_str_eq(getvalue(100, 0, RT_ImageScale), "100 B");
+	ck_assert_str_eq(getvalue(1024, 0, RT_ImageScale), "1 KiB");
+	ck_assert_str_eq(getvalue(1048576, 0, RT_ImageScale), "1 MiB");
+	ck_assert_str_eq(getvalue(1073741824, 0, RT_ImageScale), "1 GiB");
+	ck_assert_str_eq(getvalue(1099511627776ULL, 0, RT_ImageScale), "1 TiB");
+	ck_assert_str_eq(getvalue(1125899906842624ULL, 0, RT_ImageScale), "1 PiB");
+	ck_assert_str_eq(getvalue(1152921504606846976ULL, 0, RT_ImageScale), "1 EiB");
 	cfg.unitmode = 1;
-	ck_assert_str_eq(getvalue(100, 0, 3), "100 B");
-	ck_assert_str_eq(getvalue(1024, 0, 3), "1 KB");
-	ck_assert_str_eq(getvalue(1048576, 0, 3), "1 MB");
-	ck_assert_str_eq(getvalue(1073741824, 0, 3), "1 GB");
-	ck_assert_str_eq(getvalue(1099511627776ULL, 0, 3), "1 TB");
-	ck_assert_str_eq(getvalue(1125899906842624ULL, 0, 3), "1 PB");
-	ck_assert_str_eq(getvalue(1152921504606846976ULL, 0, 3), "1 EB");
+	ck_assert_str_eq(getvalue(100, 0, RT_ImageScale), "100 B");
+	ck_assert_str_eq(getvalue(1024, 0, RT_ImageScale), "1 KB");
+	ck_assert_str_eq(getvalue(1048576, 0, RT_ImageScale), "1 MB");
+	ck_assert_str_eq(getvalue(1073741824, 0, RT_ImageScale), "1 GB");
+	ck_assert_str_eq(getvalue(1099511627776ULL, 0, RT_ImageScale), "1 TB");
+	ck_assert_str_eq(getvalue(1125899906842624ULL, 0, RT_ImageScale), "1 PB");
+	ck_assert_str_eq(getvalue(1152921504606846976ULL, 0, RT_ImageScale), "1 EB");
 	cfg.unitmode = 2;
-	ck_assert_str_eq(getvalue(100, 0, 3), "100 B");
-	ck_assert_str_eq(getvalue(1000, 0, 3), "1 kB");
-	ck_assert_str_eq(getvalue(1000000, 0, 3), "1 MB");
-	ck_assert_str_eq(getvalue(1000000000, 0, 3), "1 GB");
-	ck_assert_str_eq(getvalue(1000000000000ULL, 0, 3), "1 TB");
-	ck_assert_str_eq(getvalue(1000000000000000ULL, 0, 3), "1 PB");
-	ck_assert_str_eq(getvalue(1000000000000000000ULL, 0, 3), "1 EB");
+	ck_assert_str_eq(getvalue(100, 0, RT_ImageScale), "100 B");
+	ck_assert_str_eq(getvalue(1000, 0, RT_ImageScale), "1 kB");
+	ck_assert_str_eq(getvalue(1000000, 0, RT_ImageScale), "1 MB");
+	ck_assert_str_eq(getvalue(1000000000, 0, RT_ImageScale), "1 GB");
+	ck_assert_str_eq(getvalue(1000000000000ULL, 0, RT_ImageScale), "1 TB");
+	ck_assert_str_eq(getvalue(1000000000000000ULL, 0, RT_ImageScale), "1 PB");
+	ck_assert_str_eq(getvalue(1000000000000000000ULL, 0, RT_ImageScale), "1 EB");
 }
 END_TEST
 
@@ -174,34 +174,34 @@ START_TEST(getvalue_padding)
 {
 	cfg.defaultdecimals = 2;
 	cfg.unitmode = 0;
-	ck_assert_str_eq(getvalue(1024, 10, 1), "  1.00 KiB");
+	ck_assert_str_eq(getvalue(1024, 10, RT_Normal), "  1.00 KiB");
 	cfg.unitmode = 1;
-	ck_assert_str_eq(getvalue(1024, 10, 1), "   1.00 KB");
+	ck_assert_str_eq(getvalue(1024, 10, RT_Normal), "   1.00 KB");
 	cfg.unitmode = 2;
-	ck_assert_str_eq(getvalue(1000, 10, 1), "   1.00 kB");
+	ck_assert_str_eq(getvalue(1000, 10, RT_Normal), "   1.00 kB");
 }
 END_TEST
 
 START_TEST(getvalue_zero_values)
 {
 	cfg.unitmode = 0;
-	ck_assert_str_eq(getvalue(0, 0, 1), "0 B");
-	ck_assert_str_eq(getvalue(0, 10, 2), "   --     ");
-	ck_assert_int_eq((int)strlen(getvalue(0, 10, 2)), 10);
-	ck_assert_int_eq((int)strlen(getvalue(0, 20, 2)), 20);
-	ck_assert_str_eq(getvalue(0, 0, 3), "0 B");
+	ck_assert_str_eq(getvalue(0, 0, RT_Normal), "0 B");
+	ck_assert_str_eq(getvalue(0, 10, RT_Estimate), "   --     ");
+	ck_assert_int_eq((int)strlen(getvalue(0, 10, RT_Estimate)), 10);
+	ck_assert_int_eq((int)strlen(getvalue(0, 20, RT_Estimate)), 20);
+	ck_assert_str_eq(getvalue(0, 0, RT_ImageScale), "0 B");
 	cfg.unitmode = 1;
-	ck_assert_str_eq(getvalue(0, 0, 1), "0 B");
-	ck_assert_str_eq(getvalue(0, 10, 2), "    --    ");
-	ck_assert_int_eq((int)strlen(getvalue(0, 10, 2)), 10);
-	ck_assert_int_eq((int)strlen(getvalue(0, 20, 2)), 20);
-	ck_assert_str_eq(getvalue(0, 0, 3), "0 B");
+	ck_assert_str_eq(getvalue(0, 0, RT_Normal), "0 B");
+	ck_assert_str_eq(getvalue(0, 10, RT_Estimate), "    --    ");
+	ck_assert_int_eq((int)strlen(getvalue(0, 10, RT_Estimate)), 10);
+	ck_assert_int_eq((int)strlen(getvalue(0, 20, RT_Estimate)), 20);
+	ck_assert_str_eq(getvalue(0, 0, RT_ImageScale), "0 B");
 	cfg.unitmode = 2;
-	ck_assert_str_eq(getvalue(0, 0, 1), "0 B");
-	ck_assert_str_eq(getvalue(0, 10, 2), "    --    ");
-	ck_assert_int_eq((int)strlen(getvalue(0, 10, 2)), 10);
-	ck_assert_int_eq((int)strlen(getvalue(0, 20, 2)), 20);
-	ck_assert_str_eq(getvalue(0, 0, 3), "0 B");
+	ck_assert_str_eq(getvalue(0, 0, RT_Normal), "0 B");
+	ck_assert_str_eq(getvalue(0, 10, RT_Estimate), "    --    ");
+	ck_assert_int_eq((int)strlen(getvalue(0, 10, RT_Estimate)), 10);
+	ck_assert_int_eq((int)strlen(getvalue(0, 20, RT_Estimate)), 20);
+	ck_assert_str_eq(getvalue(0, 0, RT_ImageScale), "0 B");
 }
 END_TEST
 

@@ -106,11 +106,11 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 		printf(" since %s\n\n", datebuff);
 
 		indent(10);
-		printf("rx:  %s", getvalue(interface->rxtotal, 1, 1));
+		printf("rx:  %s", getvalue(interface->rxtotal, 1, RT_Normal));
 		indent(3);
-		printf("   tx:  %s", getvalue(interface->txtotal, 1, 1));
+		printf("   tx:  %s", getvalue(interface->txtotal, 1, RT_Normal));
 		indent(3);
-		printf("   total:  %s\n\n", getvalue(interface->rxtotal+interface->txtotal, 1, 1));
+		printf("   total:  %s\n\n", getvalue(interface->rxtotal+interface->txtotal, 1, RT_Normal));
 
 		indent(3);
 		printf("monthly\n");
@@ -138,12 +138,12 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 		indent(5);
 		d = localtime(&datalist_i->timestamp);
 		if (strftime(datebuff, DATEBUFFLEN, cfg.mformat, d)<=8) {
-			printf("%*s   %s", getpadding(9, datebuff), datebuff, getvalue(datalist_i->rx, 11, 1));
+			printf("%*s   %s", getpadding(9, datebuff), datebuff, getvalue(datalist_i->rx, 11, RT_Normal));
 		} else {
-			printf("%-*s %s", getpadding(11, datebuff), datebuff, getvalue(datalist_i->rx, 11, 1));
+			printf("%-*s %s", getpadding(11, datebuff), datebuff, getvalue(datalist_i->rx, 11, RT_Normal));
 		}
-		printf("%s%s", fieldseparator, getvalue(datalist_i->tx, 11, 1));
-		printf("%s%s", fieldseparator, getvalue(datalist_i->rx+datalist_i->tx, 11, 1));
+		printf("%s%s", fieldseparator, getvalue(datalist_i->tx, 11, RT_Normal));
+		printf("%s%s", fieldseparator, getvalue(datalist_i->rx+datalist_i->tx, 11, RT_Normal));
 		if (cfg.ostyle >= 2) {
 			if (datalist_i->next == NULL) {
 				if ( datalist_i->rx == 0 || datalist_i->tx == 0 || (interface->updated-datalist_i->timestamp) == 0 ) {
@@ -153,7 +153,7 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 					e_tx = (uint64_t)(datalist_i->tx/(float)(mosecs(datalist_i->timestamp, interface->updated)))*(uint64_t)(dmonth(d->tm_mon)*86400);
 				}
 				if (shortmode && cfg.ostyle != 0) {
-					printf("%s%s", fieldseparator, getvalue(e_rx+e_tx, 11, 2));
+					printf("%s%s", fieldseparator, getvalue(e_rx+e_tx, 11, RT_Estimate));
 				} else if (!shortmode) {
 					printf("%s%s", fieldseparator, gettrafficrate(datalist_i->rx+datalist_i->tx, mosecs(datalist_i->timestamp, interface->updated), 14));
 				}
@@ -173,9 +173,9 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 			printf("------------------------+-------------+------------\n");
 		}
 		indent(5);
-		printf("estimated   %s", getvalue(e_rx, 11, 2));
-		printf(" | %s", getvalue(e_tx, 11, 2));
-		printf(" | %s", getvalue(e_rx+e_tx, 11, 2));
+		printf("estimated   %s", getvalue(e_rx, 11, RT_Estimate));
+		printf(" | %s", getvalue(e_tx, 11, RT_Estimate));
+		printf(" | %s", getvalue(e_rx+e_tx, 11, RT_Estimate));
 		if (cfg.ostyle >= 2) {
 			printf(" |\n\n");
 		} else {
@@ -225,12 +225,12 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 			snprintf(datebuff, DATEBUFFLEN, "yesterday");
 		}
 		if (strlen(datebuff) <= 8) {
-			printf("%*s   %s", getpadding(9, datebuff), datebuff, getvalue(datalist_i->rx, 11, 1));
+			printf("%*s   %s", getpadding(9, datebuff), datebuff, getvalue(datalist_i->rx, 11, RT_Normal));
 		} else {
-			printf("%-*s %s", getpadding(11, datebuff), datebuff, getvalue(datalist_i->rx, 11, 1));
+			printf("%-*s %s", getpadding(11, datebuff), datebuff, getvalue(datalist_i->rx, 11, RT_Normal));
 		}
-		printf("%s%s", fieldseparator, getvalue(datalist_i->tx, 11, 1));
-		printf("%s%s", fieldseparator, getvalue(datalist_i->rx+datalist_i->tx, 11, 1));
+		printf("%s%s", fieldseparator, getvalue(datalist_i->tx, 11, RT_Normal));
+		printf("%s%s", fieldseparator, getvalue(datalist_i->rx+datalist_i->tx, 11, RT_Normal));
 		if (cfg.ostyle >= 2) {
 			if (datalist_i->next == NULL) {
 				d = localtime(&interface->updated);
@@ -241,7 +241,7 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 					e_tx = (uint64_t)((datalist_i->tx)/(float)(d->tm_hour*60+d->tm_min))*1440;
 				}
 				if (shortmode && cfg.ostyle != 0) {
-					printf("%s%s", fieldseparator, getvalue(e_rx+e_tx, 11, 2));
+					printf("%s%s", fieldseparator, getvalue(e_rx+e_tx, 11, RT_Estimate));
 				} else if (!shortmode) {
 					printf("%s%s", fieldseparator, gettrafficrate(datalist_i->rx+datalist_i->tx, d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600), 14));
 				}
@@ -261,9 +261,9 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 			printf("------------------------+-------------+------------\n");
 		}
 		indent(5);
-		printf("estimated   %s", getvalue(e_rx, 11, 2));
-		printf(" | %s", getvalue(e_tx, 11, 2));
-		printf(" | %s", getvalue(e_rx+e_tx, 11, 2));
+		printf("estimated   %s", getvalue(e_rx, 11, RT_Estimate));
+		printf(" | %s", getvalue(e_tx, 11, RT_Estimate));
+		printf(" | %s", getvalue(e_rx+e_tx, 11, RT_Estimate));
 		if (cfg.ostyle >= 2) {
 			printf(" |\n");
 		} else {
@@ -437,12 +437,12 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 		}
 
 		if (strlen(datebuff)<=9 && listtype != 4) {
-			printf(" %*s   %s", getpadding(9, datebuff), datebuff, getvalue(datalist_i->rx, 11, 1));
+			printf(" %*s   %s", getpadding(9, datebuff), datebuff, getvalue(datalist_i->rx, 11, RT_Normal));
 		} else {
-			printf(" %-*s %s", getpadding(11, datebuff), datebuff, getvalue(datalist_i->rx, 11, 1));
+			printf(" %-*s %s", getpadding(11, datebuff), datebuff, getvalue(datalist_i->rx, 11, RT_Normal));
 		}
-		printf(" | %s", getvalue(datalist_i->tx, 11, 1));
-		printf(" | %s", getvalue(datalist_i->rx+datalist_i->tx, 11, 1));
+		printf(" | %s", getvalue(datalist_i->tx, 11, RT_Normal));
+		printf(" | %s", getvalue(datalist_i->rx+datalist_i->tx, 11, RT_Normal));
 		if (cfg.ostyle == 3) {
 			if (datalist_i->next == NULL) {
 				d = localtime(&interface->updated);
@@ -539,18 +539,18 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 			printf("    ");
 		}
 		if (strlen(dataend) == 0) {
-			printf(" estimated   %s", getvalue(e_rx, 11, 2));
-			printf(" | %s", getvalue(e_tx, 11, 2));
-			printf(" | %s", getvalue(e_rx + e_tx, 11, 2));
+			printf(" estimated   %s", getvalue(e_rx, 11, RT_Estimate));
+			printf(" | %s", getvalue(e_tx, 11, RT_Estimate));
+			printf(" | %s", getvalue(e_rx + e_tx, 11, RT_Estimate));
 		} else {
 			if (datainfo.count < 100) {
 				snprintf(datebuff, DATEBUFFLEN, "sum of %"PRIu32"", datainfo.count);
 			} else {
 				snprintf(datebuff, DATEBUFFLEN, "sum");
 			}
-			printf(" %9s   %s", datebuff, getvalue(datainfo.sumrx, 11, 1));
-			printf(" | %s", getvalue(datainfo.sumtx, 11, 1));
-			printf(" | %s", getvalue(datainfo.sumrx + datainfo.sumtx, 11, 1));
+			printf(" %9s   %s", datebuff, getvalue(datainfo.sumrx, 11, RT_Normal));
+			printf(" | %s", getvalue(datainfo.sumtx, 11, RT_Normal));
+			printf(" | %s", getvalue(datainfo.sumrx + datainfo.sumtx, 11, RT_Normal));
 		}
 		if (cfg.ostyle == 3) {
 			printf(" |");
@@ -608,9 +608,9 @@ void showoneline(const interfaceinfo *interface)
 			}
 			printf("%"PRIu64";", (datalist->rx+datalist->tx)/div);
 		} else {
-			printf("%s;", getvalue(datalist->rx, 1, 1));
-			printf("%s;", getvalue(datalist->tx, 1, 1));
-			printf("%s;", getvalue(datalist->rx+datalist->tx, 1, 1));
+			printf("%s;", getvalue(datalist->rx, 1, RT_Normal));
+			printf("%s;", getvalue(datalist->tx, 1, RT_Normal));
+			printf("%s;", getvalue(datalist->rx+datalist->tx, 1, RT_Normal));
 			printf("%s;", gettrafficrate(datalist->rx+datalist->tx, (time_t)(d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600)), 1));
 		}
 	} else {
@@ -639,9 +639,9 @@ void showoneline(const interfaceinfo *interface)
 			}
 			printf("%"PRIu64";", (datalist->rx+datalist->tx)/div);
 		} else {
-			printf("%s;", getvalue(datalist->rx, 1, 1));
-			printf("%s;", getvalue(datalist->tx, 1, 1));
-			printf("%s;", getvalue(datalist->rx+datalist->tx, 1, 1));
+			printf("%s;", getvalue(datalist->rx, 1, RT_Normal));
+			printf("%s;", getvalue(datalist->tx, 1, RT_Normal));
+			printf("%s;", getvalue(datalist->rx+datalist->tx, 1, RT_Normal));
 			printf("%s;", gettrafficrate(datalist->rx+datalist->tx, mosecs(datalist->timestamp, interface->updated), 1));
 		}
 	} else {
@@ -655,9 +655,9 @@ void showoneline(const interfaceinfo *interface)
 		printf("%"PRIu64";", interface->txtotal);
 		printf("%"PRIu64"\n", interface->rxtotal+interface->txtotal);
 	} else {
-		printf("%s;", getvalue(interface->rxtotal, 1, 1));
-		printf("%s;", getvalue(interface->txtotal, 1, 1));
-		printf("%s\n", getvalue(interface->rxtotal+interface->txtotal, 1, 1));
+		printf("%s;", getvalue(interface->rxtotal, 1, RT_Normal));
+		printf("%s;", getvalue(interface->txtotal, 1, RT_Normal));
+		printf("%s\n", getvalue(interface->rxtotal+interface->txtotal, 1, RT_Normal));
 	}
 	timeused(__func__, 0);
 }

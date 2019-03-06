@@ -12,7 +12,7 @@ int pidfile;
 int disableprints;
 
 
-int printe(PrintType type)
+int printe(const PrintType type)
 {
 	int result = 1;
 
@@ -66,7 +66,7 @@ int printe(PrintType type)
 	return result;
 }
 
-int logprint(PrintType type)
+int logprint(const PrintType type)
 {
 	/* buffer needs some extra space for timestamp + infor compared to errorstring */
 	char timestamp[22], buffer[1060];
@@ -157,7 +157,7 @@ int verifylogaccess(void)
 	return 1;
 }
 
-int dmonth(int month)
+int dmonth(const int month)
 {
 	static int dmon[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 	int year;
@@ -177,7 +177,7 @@ int dmonth(int month)
 	}
 }
 
-int isleapyear(int year)
+int isleapyear(const int year)
 {
 	if (year % 4 != 0) {
 		return 0;

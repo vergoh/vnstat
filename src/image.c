@@ -672,11 +672,11 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 				snprintf(buffer, 32, " %-*s ", getpadding(11, datebuff), datebuff);
 			}
 		}
-		strncat(buffer, getvalue(datalist_i->rx, 10, 1), 32);
+		strncat(buffer, getvalue(datalist_i->rx, 10, RT_Normal), 32);
 		strcat(buffer, "   ");
-		strncat(buffer, getvalue(datalist_i->tx, 10, 1), 32);
+		strncat(buffer, getvalue(datalist_i->tx, 10, RT_Normal), 32);
 		strcat(buffer, "   ");
-		strncat(buffer, getvalue(datalist_i->rx+datalist_i->tx, 10, 1), 32);
+		strncat(buffer, getvalue(datalist_i->rx+datalist_i->tx, 10, RT_Normal), 32);
 		if (cfg.ostyle>2) {
 			strcat(buffer, "  ");
 			if (datalist_i->next == NULL) {
@@ -773,11 +773,11 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		}
 		if (strlen(ic->dataend) == 0) {
 			snprintf(buffer, 32, " estimated   ");
-			strncat(buffer, getvalue(e_rx, 10, 2), 32);
+			strncat(buffer, getvalue(e_rx, 10, RT_Estimate), 32);
 			strcat(buffer, "   ");
-			strncat(buffer, getvalue(e_tx, 10, 2), 32);
+			strncat(buffer, getvalue(e_tx, 10, RT_Estimate), 32);
 			strcat(buffer, "   ");
-			strncat(buffer, getvalue(e_rx+e_tx, 10, 2), 32);
+			strncat(buffer, getvalue(e_rx+e_tx, 10, RT_Estimate), 32);
 		} else {
 			if (datainfo.count < 100) {
 				snprintf(datebuff, 16, "sum of %"PRIu32"", datainfo.count);
@@ -785,11 +785,11 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 				snprintf(datebuff, 16, "sum");
 			}
 			snprintf(buffer, 32, " %9s   ", datebuff);
-			strncat(buffer, getvalue(datainfo.sumrx, 10, 2), 32);
+			strncat(buffer, getvalue(datainfo.sumrx, 10, RT_Normal), 32);
 			strcat(buffer, "   ");
-			strncat(buffer, getvalue(datainfo.sumtx, 10, 2), 32);
+			strncat(buffer, getvalue(datainfo.sumtx, 10, RT_Normal), 32);
 			strcat(buffer, "   ");
-			strncat(buffer, getvalue(datainfo.sumrx + datainfo.sumtx, 10, 2), 32);
+			strncat(buffer, getvalue(datainfo.sumrx + datainfo.sumtx, 10, RT_Normal), 32);
 		}
 
 		gdImageString(ic->im, gdFontGetSmall(), textx, texty+8, (unsigned char*)buffer, ic->ctext);
@@ -912,13 +912,13 @@ void drawsummary(IMAGECONTENT *ic, int type, int rate)
 	}
 
 	snprintf(buffer, 4, "rx ");
-	strncat(buffer, getvalue(data_current->rx, 12, 1), 32);
+	strncat(buffer, getvalue(data_current->rx, 12, RT_Normal), 32);
 	gdImageString(ic->im, gdFontGetSmall(), textx-74, texty+18, (unsigned char*)buffer, ic->ctext);
 	snprintf(buffer, 4, "tx ");
-	strncat(buffer, getvalue(data_current->tx, 12, 1), 32);
+	strncat(buffer, getvalue(data_current->tx, 12, RT_Normal), 32);
 	gdImageString(ic->im, gdFontGetSmall(), textx-74, texty+30, (unsigned char*)buffer, ic->ctext);
 	snprintf(buffer, 4, " = ");
-	strncat(buffer, getvalue(data_current->rx+data_current->tx, 12, 1), 32);
+	strncat(buffer, getvalue(data_current->rx+data_current->tx, 12, RT_Normal), 32);
 	gdImageString(ic->im, gdFontGetSmall(), textx-74, texty+44, (unsigned char*)buffer, ic->ctext);
 
 	/* yesterday */
@@ -966,13 +966,13 @@ void drawsummary(IMAGECONTENT *ic, int type, int rate)
 		}
 
 		snprintf(buffer, 4, "rx ");
-		strncat(buffer, getvalue(data_previous->rx, 12, 1), 32);
+		strncat(buffer, getvalue(data_previous->rx, 12, RT_Normal), 32);
 		gdImageString(ic->im, gdFontGetSmall(), textx-74, texty+18, (unsigned char*)buffer, ic->ctext);
 		snprintf(buffer, 4, "tx ");
-		strncat(buffer, getvalue(data_previous->tx, 12, 1), 32);
+		strncat(buffer, getvalue(data_previous->tx, 12, RT_Normal), 32);
 		gdImageString(ic->im, gdFontGetSmall(), textx-74, texty+30, (unsigned char*)buffer, ic->ctext);
 		snprintf(buffer, 4, " = ");
-		strncat(buffer, getvalue(data_previous->rx+data_previous->tx, 12, 1), 32);
+		strncat(buffer, getvalue(data_previous->rx+data_previous->tx, 12, RT_Normal), 32);
 		gdImageString(ic->im, gdFontGetSmall(), textx-74, texty+44, (unsigned char*)buffer, ic->ctext);
 	}
 
@@ -1033,13 +1033,13 @@ void drawsummary(IMAGECONTENT *ic, int type, int rate)
 	}
 
 	snprintf(buffer, 4, "rx ");
-	strncat(buffer, getvalue(data_current->rx, 12, 1), 32);
+	strncat(buffer, getvalue(data_current->rx, 12, RT_Normal), 32);
 	gdImageString(ic->im, gdFontGetSmall(), textx-74, texty+18, (unsigned char*)buffer, ic->ctext);
 	snprintf(buffer, 4, "tx ");
-	strncat(buffer, getvalue(data_current->tx, 12, 1), 32);
+	strncat(buffer, getvalue(data_current->tx, 12, RT_Normal), 32);
 	gdImageString(ic->im, gdFontGetSmall(), textx-74, texty+30, (unsigned char*)buffer, ic->ctext);
 	snprintf(buffer, 4, " = ");
-	strncat(buffer, getvalue(data_current->rx+data_current->tx, 12, 1), 32);
+	strncat(buffer, getvalue(data_current->rx+data_current->tx, 12, RT_Normal), 32);
 	gdImageString(ic->im, gdFontGetSmall(), textx-74, texty+44, (unsigned char*)buffer, ic->ctext);
 
 	/* previous month */
@@ -1077,13 +1077,13 @@ void drawsummary(IMAGECONTENT *ic, int type, int rate)
 		}
 
 		snprintf(buffer, 4, "rx ");
-		strncat(buffer, getvalue(data_previous->rx, 12, 1), 32);
+		strncat(buffer, getvalue(data_previous->rx, 12, RT_Normal), 32);
 		gdImageString(ic->im, gdFontGetSmall(), textx-74, texty+18, (unsigned char*)buffer, ic->ctext);
 		snprintf(buffer, 4, "tx ");
-		strncat(buffer, getvalue(data_previous->tx, 12, 1), 32);
+		strncat(buffer, getvalue(data_previous->tx, 12, RT_Normal), 32);
 		gdImageString(ic->im, gdFontGetSmall(), textx-74, texty+30, (unsigned char*)buffer, ic->ctext);
 		snprintf(buffer, 4, " = ");
-		strncat(buffer, getvalue(data_previous->rx+data_previous->tx, 12, 1), 32);
+		strncat(buffer, getvalue(data_previous->rx+data_previous->tx, 12, RT_Normal), 32);
 		gdImageString(ic->im, gdFontGetSmall(), textx-74, texty+44, (unsigned char*)buffer, ic->ctext);
 	}
 
@@ -1097,13 +1097,13 @@ void drawsummary(IMAGECONTENT *ic, int type, int rate)
 
 	gdImageString(ic->im, gdFontGetLarge(), textx+12, texty, (unsigned char*)"all time", ic->ctext);
 	snprintf(buffer, 4, "rx ");
-	strncat(buffer, getvalue(ic->interface.rxtotal, 12, 1), 32);
+	strncat(buffer, getvalue(ic->interface.rxtotal, 12, RT_Normal), 32);
 	gdImageString(ic->im, gdFontGetSmall(), textx, texty+24, (unsigned char*)buffer, ic->ctext);
 	snprintf(buffer, 4, "tx ");
-	strncat(buffer, getvalue(ic->interface.txtotal, 12, 1), 32);
+	strncat(buffer, getvalue(ic->interface.txtotal, 12, RT_Normal), 32);
 	gdImageString(ic->im, gdFontGetSmall(), textx, texty+36, (unsigned char*)buffer, ic->ctext);
 	snprintf(buffer, 4, " = ");
-	strncat(buffer, getvalue(ic->interface.rxtotal+ic->interface.txtotal, 12, 1), 32);
+	strncat(buffer, getvalue(ic->interface.rxtotal+ic->interface.txtotal, 12, RT_Normal), 32);
 	gdImageString(ic->im, gdFontGetSmall(), textx, texty+50, (unsigned char*)buffer, ic->ctext);
 	d = localtime(&ic->interface.created);
 	strftime(datebuff, 16, cfg.tformat, d);
