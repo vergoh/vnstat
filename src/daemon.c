@@ -524,7 +524,9 @@ int processifinfo(DSTATE *s, datacache **dc)
 	}
 
 	interval = ifinfo.timestamp - (*dc)->updated;
-	if ( (interval >= 1) && (interval <= (60*MAXUPDATEINTERVAL)) ) {
+	/* maximum configurable update interval is 5 minutes, limit here is set to 6 minutes (360 seconds) */
+	/* in order to be on the safe side and avoid discarding data in case there's some random extra delay */
+	if ( (interval >= 1) && (interval <= 360) ) {
 
 		rxchange = countercalc(&(*dc)->currx, &ifinfo.rx, ifinfo.is64bit);
 		txchange = countercalc(&(*dc)->curtx, &ifinfo.tx, ifinfo.is64bit);

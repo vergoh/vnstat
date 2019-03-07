@@ -144,12 +144,6 @@ and most can be changed later from the config file.
 /* how many seconds should sampling take by default */
 #define DEFSAMPTIME 5
 
-/* maximum time (minutes) between two updates before traffic */
-/* for that period will be discarded */
-/* set to a little over one hour so that it doesn't break using */
-/* cron.hourly like Gentoo seems to do */
-#define MAXUPDATEINTERVAL 62
-
 /* default query mode */
 /* 0 = normal, 1 = days, 2 = months, 3 = top, 5 = short */
 /* 7 = hours, 8 = xml, 9 = one line, 10 = json */
