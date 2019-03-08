@@ -80,7 +80,7 @@ void printcfgfile(void)
 	printf("# switch to given user when started as root (leave empty to disable)\n");
 	printf("DaemonUser \"%s\"\n\n", cfg.daemonuser);
 
-	printf("# switch to given user when started as root (leave empty to disable)\n");
+	printf("# switch to given group when started as root (leave empty to disable)\n");
 	printf("DaemonGroup \"%s\"\n\n", cfg.daemongroup);
 
 	printf("# try to detect interface maximum bandwidth, 0 = disable feature\n");
