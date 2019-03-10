@@ -45,6 +45,7 @@ int db_removeinterface(const char *iface);
 uint64_t db_getinterfacecount(void);
 uint64_t db_getinterfacecountbyname(const char *iface);
 sqlite3_int64 db_getinterfaceid(const char *iface, const int createifnotfound);
+char *db_getinterfaceidin(const char *iface);
 int db_setactive(const char *iface, const int active);
 int db_setupdated(const char *iface, const time_t timestamp);
 int db_setcounters(const char *iface, const uint64_t rxcounter, const uint64_t txcounter);
@@ -77,7 +78,7 @@ void updatelistinfo(dbdatalistinfo *listinfo, const uint64_t rx, const uint64_t 
 int dbdatalistadd(dbdatalist **dbdata, const uint64_t rx, const uint64_t tx, const time_t timestamp, const int64_t rowid);
 void dbdatalistfree(dbdatalist **dbdata);
 
-char *getifaceinquery(const char *input, const unsigned int ifacecount);
+char *getifaceinquery(const char *input);
 
 /* global db */
 extern sqlite3 *db;
