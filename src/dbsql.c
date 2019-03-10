@@ -342,16 +342,31 @@ uint64_t db_getinterfacecount(void)
 
 uint64_t db_getinterfacecountbyname(const char *iface)
 {
-	int rc;
+	int rc, i, search_count = 1;
 	uint64_t result = 0;
-	char sql[512];
+	char sql[512], *inquery = NULL;
 	sqlite3_stmt *sqlstmt;
 
-	if (strlen(iface) > 0) {
-		sqlite3_snprintf(512, sql, "select count(*) from interface where name='%q'", iface);
+	if (strchr(iface, '+') == NULL) {
+		if (strlen(iface) > 0) {
+			sqlite3_snprintf(512, sql, "select count(*) from interface where name='%q'", iface);
+		} else {
+			sqlite3_snprintf(512, sql, "select count(*) from interface");
+		}
 	} else {
-		sqlite3_snprintf(512, sql, "select count(*) from interface");
+		for (i = 0; i < (int)strlen(iface); i++) {
+			if (iface[i] == '+') {
+				search_count++;
+			}
+		}
+		inquery = getifaceinquery(iface, (unsigned int)search_count);
+		if (inquery == NULL) {
+			return 0;
+		}
+		sqlite3_snprintf(512, sql, "select count(*) from interface where name in (%q)", inquery);
+		free(inquery);
 	}
+
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
 	if (rc != SQLITE_OK) {
 		db_errcode = rc;
@@ -1187,4 +1202,34 @@ void dbdatalistfree(dbdatalist **dbdata)
 		free(dbdata_prev);
 	}
 
+}
+
+char *getifaceinquery(const char *input, const unsigned int ifacecount)
+{
+	unsigned int i, j;
+	char *result;
+
+	if (input[strlen(input)-1] == '+') {
+		return NULL;
+	}
+
+	/* each interface requires two quotes and comma or \0 so 3 extra chars */
+	j = (unsigned int)strlen(input) + ifacecount * 3;
+	result = malloc(sizeof(char) * j);
+	memset(result, '\0', j);
+
+	result[0] = '"';
+	j = 1;
+	for (i = 0; i < (unsigned int)strlen(input); i++) {
+		if (input[i] == '+') {
+			strcat(result, "\",\"");
+			j += 3;
+		} else {
+			result[j] = input[i];
+			j++;
+		}
+	}
+	result[j] = '"';
+
+	return result;
 }
