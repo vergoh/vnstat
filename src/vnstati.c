@@ -70,6 +70,10 @@ int main(int argc, char *argv[])
 			p.help = 1;
 		} else if ((strcmp(argv[currentarg],"-i")==0) || (strcmp(argv[currentarg],"--iface"))==0) {
 			if (currentarg+1<argc) {
+				if (strlen(argv[currentarg+1]) > 31) {
+					printf("Error: Interface name is limited to 31 characters.\n");
+					return 1;
+				}
 				strncpy_nt(p.interface, argv[currentarg+1], 32);
 				if (debug)
 					printf("Used interface: \"%s\"\n", p.interface);
