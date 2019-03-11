@@ -354,6 +354,7 @@ uint64_t db_getinterfacecountbyname(const char *iface)
 			sqlite3_snprintf(512, sql, "select count(*) from interface");
 		}
 	} else {
+		/* TODO: tests + possibly verify all given interfaces exist in the database */
 		inquery = getifaceinquery(iface);
 		if (inquery == NULL) {
 			return 0;
@@ -410,6 +411,7 @@ sqlite3_int64 db_getinterfaceid(const char *iface, const int createifnotfound)
 	return ifaceid;
 }
 
+/* TODO: tests */
 char *db_getinterfaceidin(const char *iface)
 {
 	int rc;
@@ -529,6 +531,7 @@ int db_getinterfaceinfo(const char *iface, interfaceinfo *info)
 		}
 		sqlite3_snprintf(512, sql, "select name, alias, active, strftime('%%s', created, 'utc'), strftime('%%s', updated, 'utc'), rxcounter, txcounter, rxtotal, txtotal from interface where id=%"PRId64";", (int64_t)ifaceid);
 	} else {
+		/* TODO: tests */
 		ifaceidin = db_getinterfaceidin(iface);
 		if (ifaceidin == NULL || strlen(ifaceidin) < 1) {
 			return 0;
@@ -1236,15 +1239,17 @@ void dbdatalistfree(dbdatalist **dbdata)
 
 }
 
+/* TODO: tests */
 char *getifaceinquery(const char *input)
 {
 	unsigned int i, j, ifacecount = 1;
 	char *result;
 
-	if (input[strlen(input)-1] == '+') {
+	if (input[0] == '+' || input[strlen(input)-1] == '+') {
 		return NULL;
 	}
 
+	/* TODO: check that there's no double + */
 	for (i = 0; i < (unsigned int)strlen(input); i++) {
 		if (input[i] == '+') {
 			ifacecount++;
