@@ -538,6 +538,9 @@ START_TEST(db_getinterfacecountbyname_counts_interfaces)
 	ret = db_addinterface("eth1");
 	ck_assert_int_eq(ret, 1);
 
+	ret = db_addinterface("eth3");
+	ck_assert_int_eq(ret, 1);
+
 	ret = (int)db_getinterfacecountbyname("foo");
 	ck_assert_int_eq(ret, 0);
 
@@ -551,6 +554,15 @@ START_TEST(db_getinterfacecountbyname_counts_interfaces)
 	ck_assert_int_eq(ret, 0);
 
 	ret = (int)db_getinterfacecountbyname("");
+	ck_assert_int_eq(ret, 3);
+
+	ret = (int)db_getinterfacecountbyname("eth0+eth1");
+	ck_assert_int_eq(ret, 2);
+
+	ret = (int)db_getinterfacecountbyname("eth0+eth1+eth3");
+	ck_assert_int_eq(ret, 3);
+
+	ret = (int)db_getinterfacecountbyname("eth0+eth1+eth2");
 	ck_assert_int_eq(ret, 2);
 
 	ret = db_close();
@@ -1835,6 +1847,202 @@ START_TEST(db_get_date_generator_can_generate_dates_with_monthrotate)
 }
 END_TEST
 
+START_TEST(getifaceinquery_does_not_mess_regular_interfaces)
+{
+	char *result;
+
+	result = getifaceinquery("eth0");
+	ck_assert_ptr_ne(result, NULL);
+	ck_assert_str_eq(result, "\"eth0\"");
+	free(result);
+
+	/* this isn't a realistic scenario but doesn't hurt to have a test */
+	result = getifaceinquery("eth0 with space");
+	ck_assert_ptr_ne(result, NULL);
+	ck_assert_str_eq(result, "\"eth0 with space\"");
+	free(result);
+
+	result = getifaceinquery("em1_em2");
+	ck_assert_ptr_ne(result, NULL);
+	ck_assert_str_eq(result, "\"em1_em2\"");
+	free(result);
+
+	result = getifaceinquery("em1-em2");
+	ck_assert_ptr_ne(result, NULL);
+	ck_assert_str_eq(result, "\"em1-em2\"");
+	free(result);
+}
+END_TEST
+
+START_TEST(getifaceinquery_can_create_merge_queries)
+{
+	char *result;
+
+	result = getifaceinquery("eth0+eth1");
+	ck_assert_ptr_ne(result, NULL);
+	ck_assert_str_eq(result, "\"eth0\",\"eth1\"");
+	free(result);
+
+	result = getifaceinquery("eth1+eth0");
+	ck_assert_ptr_ne(result, NULL);
+	ck_assert_str_eq(result, "\"eth1\",\"eth0\"");
+	free(result);
+
+	result = getifaceinquery("eth0+em1+eth1");
+	ck_assert_ptr_ne(result, NULL);
+	ck_assert_str_eq(result, "\"eth0\",\"em1\",\"eth1\"");
+	free(result);
+}
+END_TEST
+
+START_TEST(getifaceinquery_does_not_tolerate_nonsense)
+{
+	char *result;
+
+	result = getifaceinquery("");
+	ck_assert_ptr_eq(result, NULL);
+
+	result = getifaceinquery("+eth0");
+	ck_assert_ptr_eq(result, NULL);
+
+	result = getifaceinquery("eth0+");
+	ck_assert_ptr_eq(result, NULL);
+
+	result = getifaceinquery("+eth0+");
+	ck_assert_ptr_eq(result, NULL);
+
+	result = getifaceinquery("eth0++eth1");
+	ck_assert_ptr_eq(result, NULL);
+
+	result = getifaceinquery("eth0+++eth1");
+	ck_assert_ptr_eq(result, NULL);
+
+	result = getifaceinquery("eth0+eth1++eth2");
+	ck_assert_ptr_eq(result, NULL);
+
+	result = getifaceinquery("+++ATH0");
+	ck_assert_ptr_eq(result, NULL);
+}
+END_TEST
+
+START_TEST(db_getinterfaceid_can_get_ids)
+{
+	int ret;
+
+	defaultcfg();
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth3");
+	ck_assert_int_eq(ret, 1);
+
+	ret = (int)db_getinterfacecount();
+	ck_assert_int_eq(ret, 3);
+
+	ret = (int)db_getinterfaceid("eth0", 0);
+	ck_assert_int_eq(ret, 1);
+
+	ret = (int)db_getinterfaceid("eth0", 1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = (int)db_getinterfaceid("eth1", 0);
+	ck_assert_int_eq(ret, 2);
+
+	ret = (int)db_getinterfaceid("eth2", 0);
+	ck_assert_int_eq(ret, 0);
+
+	ret = (int)db_getinterfaceid("eth3", 0);
+	ck_assert_int_eq(ret, 3);
+
+	ret = (int)db_getinterfaceid("eth2", 1);
+	ck_assert_int_eq(ret, 4);
+
+	ret = (int)db_getinterfaceid("eth2", 0);
+	ck_assert_int_eq(ret, 4);
+
+	ret = (int)db_getinterfacecount();
+	ck_assert_int_eq(ret, 4);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_getinterfaceidin_can_get_in_groups)
+{
+	int ret;
+	char *result;
+
+	defaultcfg();
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth3");
+	ck_assert_int_eq(ret, 1);
+
+	result = db_getinterfaceidin("eth0");
+	ck_assert_str_eq(result, "1");
+	free(result);
+
+	result = db_getinterfaceidin("eth0+eth1");
+	ck_assert_str_eq(result, "1,2");
+	free(result);
+
+	result = db_getinterfaceidin("eth0+eth3");
+	ck_assert_str_eq(result, "1,3");
+	free(result);
+
+	result = db_getinterfaceidin("eth0+eth3+eth1");
+	ck_assert_str_eq(result, "1,2,3");
+	free(result);
+
+	result = db_getinterfaceidin("eth0+eth3+eth1+eth4");
+	ck_assert_str_eq(result, "1,2,3");
+	free(result);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_getinterfaceidin_can_handle_error_situations)
+{
+	int ret;
+	char *result;
+
+	defaultcfg();
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+
+	result = db_getinterfaceidin("+eth0");
+	ck_assert_ptr_eq(result, NULL);
+
+	result = db_getinterfaceidin("eth4");
+	ck_assert_ptr_eq(result, NULL);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 void add_dbsql_tests(Suite *s)
 {
 	TCase *tc_dbsql = tcase_create("DB SQL");
@@ -1902,5 +2110,11 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_addtraffic_with_monthrotate);
 	tcase_add_test(tc_dbsql, db_get_date_generator_can_generate_dates);
 	tcase_add_test(tc_dbsql, db_get_date_generator_can_generate_dates_with_monthrotate);
+	tcase_add_test(tc_dbsql, getifaceinquery_does_not_mess_regular_interfaces);
+	tcase_add_test(tc_dbsql, getifaceinquery_can_create_merge_queries);
+	tcase_add_test(tc_dbsql, getifaceinquery_does_not_tolerate_nonsense);
+	tcase_add_test(tc_dbsql, db_getinterfaceid_can_get_ids);
+	tcase_add_test(tc_dbsql, db_getinterfaceidin_can_get_in_groups);
+	tcase_add_test(tc_dbsql, db_getinterfaceidin_can_handle_error_situations);
 	suite_add_tcase(s, tc_dbsql);
 }
