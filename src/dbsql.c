@@ -533,7 +533,6 @@ int db_getinterfaceinfo(const char *iface, interfaceinfo *info)
 		}
 		sqlite3_snprintf(512, sql, "select name, alias, active, strftime('%%s', created, 'utc'), strftime('%%s', updated, 'utc'), rxcounter, txcounter, rxtotal, txtotal from interface where id=%"PRId64";", (int64_t)ifaceid);
 	} else {
-		/* TODO: tests */
 		ifaceidin = db_getinterfaceidin(iface);
 		if (ifaceidin == NULL || strlen(ifaceidin) < 1) {
 			return 0;
@@ -1109,6 +1108,7 @@ int db_getdata_range(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *
 	/* note that using the linked list reverses the order */
 	/* most recent last in the linked list is considered the normal order */
 	if (strcmp(table, "top") == 0) {
+		/* 'top' entries, requires different query due to rx+tx ordering */
 		if (strlen(dbegin)) {
 			if (resultlimit > 0) {
 				snprintf(limit, 64, "limit %"PRIu32"", resultlimit);

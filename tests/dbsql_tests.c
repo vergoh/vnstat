@@ -2043,6 +2043,97 @@ START_TEST(db_getinterfaceidin_can_handle_error_situations)
 }
 END_TEST
 
+START_TEST(db_getinterfaceinfo_can_handle_interface_merges)
+{
+	int ret;
+	interfaceinfo info;
+
+	defaultcfg();
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addtraffic("eth0", 1, 1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addtraffic("eth1", 2, 2);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addtraffic("eth2", 5, 5);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getinterfaceinfo("eth0+ethnone", &info);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(info.rxtotal, 1);
+	ck_assert_int_eq(info.txtotal, 1);
+	ck_assert_int_gt(info.updated, 1000);
+	ck_assert_int_lt(info.updated, 2100000000);
+
+	ret = db_getinterfaceinfo("eth0+eth1", &info);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(info.rxtotal, 3);
+	ck_assert_int_eq(info.txtotal, 3);
+	ck_assert_int_gt(info.updated, 1000);
+	ck_assert_int_lt(info.updated, 2100000000);
+
+	ret = db_getinterfaceinfo("eth1+eth2", &info);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(info.rxtotal, 7);
+	ck_assert_int_eq(info.txtotal, 7);
+	ck_assert_int_gt(info.updated, 1000);
+	ck_assert_int_lt(info.updated, 2100000000);
+
+	ret = db_getinterfaceinfo("eth0+eth1+eth2", &info);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(info.rxtotal, 8);
+	ck_assert_int_eq(info.txtotal, 8);
+	ck_assert_int_gt(info.updated, 1000);
+	ck_assert_int_lt(info.updated, 2100000000);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_getinterfaceinfo_can_handle_invalid_input)
+{
+	int ret;
+	interfaceinfo info;
+
+	defaultcfg();
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addtraffic("eth0", 1, 1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addtraffic("eth1", 2, 2);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addtraffic("eth2", 5, 5);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getinterfaceinfo("eth0+", &info);
+	ck_assert_int_eq(ret, 0);
+
+	ret = db_getinterfaceinfo("+", &info);
+	ck_assert_int_eq(ret, 0);
+
+	ret = db_getinterfaceinfo("++", &info);
+	ck_assert_int_eq(ret, 0);
+
+	ret = db_getinterfaceinfo("", &info);
+	ck_assert_int_eq(ret, 0);
+
+	ret = db_getinterfaceinfo("ethunknown", &info);
+	ck_assert_int_eq(ret, 0);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 void add_dbsql_tests(Suite *s)
 {
 	TCase *tc_dbsql = tcase_create("DB SQL");
@@ -2116,5 +2207,7 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_getinterfaceid_can_get_ids);
 	tcase_add_test(tc_dbsql, db_getinterfaceidin_can_get_in_groups);
 	tcase_add_test(tc_dbsql, db_getinterfaceidin_can_handle_error_situations);
+	tcase_add_test(tc_dbsql, db_getinterfaceinfo_can_handle_interface_merges);
+	tcase_add_test(tc_dbsql, db_getinterfaceinfo_can_handle_invalid_input);
 	suite_add_tcase(s, tc_dbsql);
 }
