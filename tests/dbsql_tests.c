@@ -1691,6 +1691,55 @@ START_TEST(db_getdata_range_can_get_hours_with_range_on_same_hour)
 }
 END_TEST
 
+START_TEST(db_getdata_range_with_merged_interfaces)
+{
+	int ret, i;
+	char timestamp[64];
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+
+	defaultcfg();
+	cfg.monthrotate = 1;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("ethtest");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("ethother");
+	ck_assert_int_eq(ret, 1);
+
+	for (i=1; i<=20; i++) {
+		ret = db_addtraffic_dated("ethtest", 1, 2, get_timestamp(2000, 2, i, 0, 0));
+		ck_assert_int_eq(ret, 1);
+		ret = db_addtraffic_dated("ethother", 3, 7, get_timestamp(2000, 2, i, 0, 0));
+		ck_assert_int_eq(ret, 1);
+	}
+
+	ret = db_getdata_range(&datalist, &datainfo, "ethtest+ethother", "month", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 1);
+	datalist_i = datalist;
+	i = 0;
+	while (datalist_i != NULL)
+	{
+		switch(i) {
+			case 0:
+				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2000-02-01");
+				ck_assert_int_eq(datalist_i->rx, 80);
+				ck_assert_int_eq(datalist_i->tx, 180);
+				break;
+		}
+		datalist_i = datalist_i->next;
+		i++;
+	}
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 START_TEST(db_addtraffic_without_monthrotate)
 {
 	int ret, i;
@@ -2197,6 +2246,7 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_getdata_range_can_get_hours_with_range_limiting_end);
 	tcase_add_test(tc_dbsql, db_getdata_range_can_get_hours_with_range_limiting_end_with_limit);
 	tcase_add_test(tc_dbsql, db_getdata_range_can_get_hours_with_range_on_same_hour);
+	tcase_add_test(tc_dbsql, db_getdata_range_with_merged_interfaces);
 	tcase_add_test(tc_dbsql, db_addtraffic_without_monthrotate);
 	tcase_add_test(tc_dbsql, db_addtraffic_with_monthrotate);
 	tcase_add_test(tc_dbsql, db_get_date_generator_can_generate_dates);

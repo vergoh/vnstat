@@ -1069,7 +1069,6 @@ int db_getdata_range(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *
 
 	listinfo->count = 0;
 
-	/* TODO: tests */
 	ifaceidin = db_getinterfaceidin(iface);
 	if (ifaceidin == NULL) {
 		return 0;
