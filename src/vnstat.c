@@ -766,7 +766,7 @@ void showoneinterface(PARAMS *p, const char *interface)
 		if (strchr(p->interface, '+') == NULL)  {
 			printf("Error: Interface \"%s\" not found in database.\n", p->interface);
 		} else {
-			printf("Error: Not all requested interfaces found in database.\n");
+			printf("Error: Not all requested interfaces found in database or given interfaces aren't unique.\n");
 		}
 		exit(EXIT_FAILURE);
 	}

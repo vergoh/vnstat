@@ -563,7 +563,7 @@ START_TEST(db_getinterfacecountbyname_counts_interfaces)
 	ck_assert_int_eq(ret, 3);
 
 	ret = (int)db_getinterfacecountbyname("eth0+eth1+eth2");
-	ck_assert_int_eq(ret, 2);
+	ck_assert_int_eq(ret, 0);
 
 	ret = db_close();
 	ck_assert_int_eq(ret, 1);
@@ -2183,6 +2183,27 @@ START_TEST(db_getinterfaceinfo_can_handle_invalid_input)
 }
 END_TEST
 
+START_TEST(getqueryinterfacecount_can_count)
+{
+	ck_assert_int_eq(getqueryinterfacecount("eth0"), 1);
+	ck_assert_int_eq(getqueryinterfacecount("eth1"), 1);
+	ck_assert_int_eq(getqueryinterfacecount("eth1+eth2"), 2);
+	ck_assert_int_eq(getqueryinterfacecount("eth1+eth2+eth3"), 3);
+	ck_assert_int_eq(getqueryinterfacecount("eth1+eth2+eth3+eth1"), 4);
+	ck_assert_int_eq(getqueryinterfacecount("eth0+eth0"), 2);
+	ck_assert_int_eq(getqueryinterfacecount("eth0++eth1"), 0);
+	ck_assert_int_eq(getqueryinterfacecount(""), 0);
+	ck_assert_int_eq(getqueryinterfacecount("1"), 1);
+	ck_assert_int_eq(getqueryinterfacecount("+"), 0);
+	ck_assert_int_eq(getqueryinterfacecount("++"), 0);
+	ck_assert_int_eq(getqueryinterfacecount("+ +"), 0);
+	ck_assert_int_eq(getqueryinterfacecount("+ethsomething"), 0);
+	ck_assert_int_eq(getqueryinterfacecount("ethnothing+"), 0);
+	ck_assert_int_eq(getqueryinterfacecount("eth+nothing"), 2);
+	ck_assert_int_eq(getqueryinterfacecount("ethlongcanbelong+ethnotsoshort+ethdoesnotcare"), 3);
+}
+END_TEST
+
 void add_dbsql_tests(Suite *s)
 {
 	TCase *tc_dbsql = tcase_create("DB SQL");
@@ -2259,5 +2280,6 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_getinterfaceidin_can_handle_error_situations);
 	tcase_add_test(tc_dbsql, db_getinterfaceinfo_can_handle_interface_merges);
 	tcase_add_test(tc_dbsql, db_getinterfaceinfo_can_handle_invalid_input);
+	tcase_add_test(tc_dbsql, getqueryinterfacecount_can_count);
 	suite_add_tcase(s, tc_dbsql);
 }

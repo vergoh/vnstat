@@ -354,7 +354,6 @@ uint64_t db_getinterfacecountbyname(const char *iface)
 			sqlite3_snprintf(512, sql, "select count(*) from interface");
 		}
 	} else {
-		/* TODO: possibly verify all given interfaces exist in the database */
 		inquery = getifaceinquery(iface);
 		if (inquery == NULL) {
 			return 0;
@@ -377,6 +376,13 @@ uint64_t db_getinterfacecountbyname(const char *iface)
 		result = (uint64_t)sqlite3_column_int64(sqlstmt, 0);
 	}
 	sqlite3_finalize(sqlstmt);
+
+	/* consider merge query as invalid if not all requested interfaces are found or are not unique */
+	if (strchr(iface, '+') != NULL) {
+		if (result != getqueryinterfacecount(iface)) {
+			result = 0;
+		}
+	}
 
 	return result;
 }
@@ -1241,23 +1247,36 @@ void dbdatalistfree(dbdatalist **dbdata)
 
 }
 
-char *getifaceinquery(const char *input)
+unsigned int getqueryinterfacecount(const char *input)
 {
-	unsigned int i, j, ifacecount = 1;
-	char *result;
+	unsigned int i, ifacecount = 1;
 
 	if (input[0] == '+' || input[strlen(input)-1] == '+' || !strlen(input)) {
-		return NULL;
+		return 0;
 	}
 
 	for (i = 0; i < (unsigned int)strlen(input); i++) {
 		if (input[i] == '+') {
 			if (i > 0 && input[i-1] == '+') {
-				return NULL;
+				return 0;
 			} else {
 				ifacecount++;
 			}
 		}
+	}
+
+	return ifacecount;
+}
+
+char *getifaceinquery(const char *input)
+{
+	unsigned int i, j, ifacecount = 1;
+	char *result;
+
+	ifacecount = getqueryinterfacecount(input);
+
+	if (ifacecount == 0) {
+		return NULL;
 	}
 
 	/* each interface requires two quotes and comma or \0 so 3 extra chars */

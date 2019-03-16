@@ -78,6 +78,7 @@ void updatelistinfo(dbdatalistinfo *listinfo, const uint64_t rx, const uint64_t 
 int dbdatalistadd(dbdatalist **dbdata, const uint64_t rx, const uint64_t tx, const time_t timestamp, const int64_t rowid);
 void dbdatalistfree(dbdatalist **dbdata);
 
+unsigned int getqueryinterfacecount(const char *input);
 char *getifaceinquery(const char *input);
 
 /* global db */

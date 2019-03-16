@@ -415,7 +415,11 @@ void handledatabase(IPARAMS *p, IMAGECONTENT *ic)
 		exit(EXIT_FAILURE);
 	}
 	if (!db_getinterfacecountbyname(p->interface)) {
-		printf("Error: Interface \"%s\" not found in database.\n", p->interface);
+		if (strchr(p->interface, '+') == NULL)  {
+			printf("Error: Interface \"%s\" not found in database.\n", p->interface);
+		} else {
+			printf("Error: Not all requested interfaces found in database or given interfaces aren't unique.\n");
+		}
 		exit(EXIT_FAILURE);
 	}
 	if (!db_getinterfaceinfo(p->interface, &ic->interface)) {
