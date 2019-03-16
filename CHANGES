@@ -6,6 +6,8 @@
  - New
    - Detection of 32-bit / 64-bit kernel interface counters for improving
      traffic calculations in rollover situations, cfg: 64bitInterfaceCounters
+   - Possibility for queries to merge data from multiple interfaces to one
+     output with interface1+interface2 syntax
 
 
 2.1 / 6-Dec-2018

@@ -185,7 +185,11 @@ followed by a table representing the numerical data.
 .BI "-i, --iface " interface
 Select one specific
 .I interface
-and apply actions to only it.
+and apply actions to only it. For queries, it is possible to merge the
+information of two or more interfaces using the
+.I interface1+interface2+...
+syntax. All provided interfaces must be unique and must exist in the database
+when the merge syntax is used.
 
 .TP
 .B "--iflist"
@@ -390,6 +394,10 @@ for more information.
 .B "vnstat"
 Display traffic summary for the default interface or multiple interfaces
 when more than one is monitored.
+
+.TP
+.B "vnstat -i eth0+eth1+eth3"
+Display traffic summary for a merge of interfaces eth0, eth1 and eth3.
 
 .TP
 .B "vnstat -i eth2 --xml"

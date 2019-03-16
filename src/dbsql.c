@@ -344,14 +344,24 @@ uint64_t db_getinterfacecountbyname(const char *iface)
 {
 	int rc;
 	uint64_t result = 0;
-	char sql[512];
+	char sql[512], *inquery = NULL;
 	sqlite3_stmt *sqlstmt;
 
-	if (strlen(iface) > 0) {
-		sqlite3_snprintf(512, sql, "select count(*) from interface where name='%q'", iface);
+	if (strchr(iface, '+') == NULL) {
+		if (strlen(iface) > 0) {
+			sqlite3_snprintf(512, sql, "select count(*) from interface where name='%q'", iface);
+		} else {
+			sqlite3_snprintf(512, sql, "select count(*) from interface");
+		}
 	} else {
-		sqlite3_snprintf(512, sql, "select count(*) from interface");
+		inquery = getifaceinquery(iface);
+		if (inquery == NULL) {
+			return 0;
+		}
+		sqlite3_snprintf(512, sql, "select count(*) from interface where name in (%q)", inquery);
+		free(inquery);
 	}
+
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
 	if (rc != SQLITE_OK) {
 		db_errcode = rc;
@@ -366,6 +376,13 @@ uint64_t db_getinterfacecountbyname(const char *iface)
 		result = (uint64_t)sqlite3_column_int64(sqlstmt, 0);
 	}
 	sqlite3_finalize(sqlstmt);
+
+	/* consider merge query as invalid if not all requested interfaces are found or are not unique */
+	if (strchr(iface, '+') != NULL) {
+		if (result != getqueryinterfacecount(iface)) {
+			result = 0;
+		}
+	}
 
 	return result;
 }
@@ -398,6 +415,37 @@ sqlite3_int64 db_getinterfaceid(const char *iface, const int createifnotfound)
 	}
 
 	return ifaceid;
+}
+
+char *db_getinterfaceidin(const char *iface)
+{
+	int rc;
+	char sql[512], *result, *inquery;
+	sqlite3_stmt *sqlstmt;
+
+	result = NULL;
+	inquery = getifaceinquery(iface);
+	if (inquery == NULL) {
+		return NULL;
+	}
+
+	sqlite3_snprintf(512, sql, "select group_concat(id) from interface where name in (%q)", inquery);
+	free(inquery);
+	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
+	if (rc == SQLITE_OK) {
+		if (sqlite3_step(sqlstmt) == SQLITE_ROW) {
+			if (sqlite3_column_text(sqlstmt, 0) != NULL) {
+				result = strdup((const char *)sqlite3_column_text(sqlstmt, 0));
+			}
+		}
+		sqlite3_finalize(sqlstmt);
+	} else {
+		db_errcode = rc;
+		snprintf(errorstring, 1024, "Failed to get interface id from database (%d): %s", rc, sqlite3_errmsg(db));
+		printe(PT_Error);
+	}
+
+	return result;
 }
 
 int db_setactive(const char *iface, const int active)
@@ -480,16 +528,25 @@ int db_getcounters(const char *iface, uint64_t *rxcounter, uint64_t *txcounter)
 int db_getinterfaceinfo(const char *iface, interfaceinfo *info)
 {
 	int rc;
-	char sql[512];
+	char sql[512], *ifaceidin = NULL;
 	sqlite3_int64 ifaceid = 0;
 	sqlite3_stmt *sqlstmt;
 
-	ifaceid = db_getinterfaceid(iface, 0);
-	if (ifaceid == 0) {
-		return 0;
+	if (strchr(iface, '+') == NULL) {
+		ifaceid = db_getinterfaceid(iface, 0);
+		if (ifaceid == 0) {
+			return 0;
+		}
+		sqlite3_snprintf(512, sql, "select name, alias, active, strftime('%%s', created, 'utc'), strftime('%%s', updated, 'utc'), rxcounter, txcounter, rxtotal, txtotal from interface where id=%"PRId64";", (int64_t)ifaceid);
+	} else {
+		ifaceidin = db_getinterfaceidin(iface);
+		if (ifaceidin == NULL || strlen(ifaceidin) < 1) {
+			return 0;
+		}
+		sqlite3_snprintf(512, sql, "select \"%q\", NULL, max(active), max(strftime('%%s', created, 'utc')), min(strftime('%%s', updated, 'utc')), 0, 0, sum(rxtotal), sum(txtotal) from interface where id in (%q);", iface, ifaceidin);
+		free(ifaceidin);
 	}
 
-	sqlite3_snprintf(512, sql, "select name, alias, active, strftime('%%s', created, 'utc'), strftime('%%s', updated, 'utc'), rxcounter, txcounter, rxtotal, txtotal from interface where id=%"PRId64";", (int64_t)ifaceid);
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
 	if (rc != SQLITE_OK) {
 		db_errcode = rc;
@@ -1010,8 +1067,7 @@ int db_getdata_range(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *
 {
 	int ret = 1, i, rc;
 	const char *datatables[] = {"fiveminute", "hour", "day", "month", "year", "top"};
-	char sql[512], limit[64], dbegin[32], dend[44];
-	sqlite3_int64 ifaceid = 0;
+	char sql[512], limit[64], dbegin[32], dend[44], *ifaceidin = NULL;
 	sqlite3_stmt *sqlstmt;
 	time_t timestamp;
 	int64_t rowid;
@@ -1019,8 +1075,8 @@ int db_getdata_range(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *
 
 	listinfo->count = 0;
 
-	ifaceid = db_getinterfaceid(iface, 0);
-	if (ifaceid == 0) {
+	ifaceidin = db_getinterfaceidin(iface);
+	if (ifaceidin == NULL) {
 		return 0;
 	}
 
@@ -1057,21 +1113,23 @@ int db_getdata_range(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *
 	/* note that using the linked list reverses the order */
 	/* most recent last in the linked list is considered the normal order */
 	if (strcmp(table, "top") == 0) {
+		/* 'top' entries, requires different query due to rx+tx ordering */
 		if (strlen(dbegin)) {
 			if (resultlimit > 0) {
 				snprintf(limit, 64, "limit %"PRIu32"", resultlimit);
 			}
-			sqlite3_snprintf(512, sql, "select * from (select id, strftime('%%s', date, 'utc'), rx, tx from day where interface=%"PRId64" %s %s order by rx+tx desc %s) order by rx+tx asc;", (int64_t)ifaceid, dbegin, dend, limit);
+			sqlite3_snprintf(512, sql, "select * from (select id, strftime('%%s', date, 'utc'), sum(rx) as rx, sum(tx) as tx from day where interface in (%q) %s %s group by date order by rx+tx desc %s) order by rx+tx asc;", ifaceidin, dbegin, dend, limit);
 		} else {
-			sqlite3_snprintf(512, sql, "select * from (select id, strftime('%%s', date, 'utc'), rx, tx from top where interface=%"PRId64" order by rx+tx desc %s) order by rx+tx asc;", (int64_t)ifaceid, limit);
+			sqlite3_snprintf(512, sql, "select * from (select id, strftime('%%s', date, 'utc'), sum(rx) as rx, sum(tx) as tx from top where interface in (%q) group by date order by rx+tx desc %s) order by rx+tx asc;", ifaceidin, limit);
 		}
 	} else {
 		if (strlen(dbegin) && strlen(limit)) {
-			sqlite3_snprintf(512, sql, "select * from (select id, strftime('%%s', date, 'utc') as date, rx, tx from %s where interface=%"PRId64" %s %s order by date asc %s) order by date desc;", table, (int64_t)ifaceid, dbegin, dend, limit);
+			sqlite3_snprintf(512, sql, "select * from (select id, strftime('%%s', date, 'utc') as unixdate, sum(rx), sum(tx) from %s where interface in (%q) %s %s group by date order by date asc %s) order by unixdate desc;", table, ifaceidin, dbegin, dend, limit);
 		} else {
-			sqlite3_snprintf(512, sql, "select id, strftime('%%s', date, 'utc'), rx, tx from %s where interface=%"PRId64" %s %s order by date desc %s;", table, (int64_t)ifaceid, dbegin, dend, limit);
+			sqlite3_snprintf(512, sql, "select id, strftime('%%s', date, 'utc'), sum(rx), sum(tx) from %s where interface in (%q) %s %s group by date order by date desc %s;", table, ifaceidin, dbegin, dend, limit);
 		}
 	}
+	free(ifaceidin);
 
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
 	if (rc != SQLITE_OK) {
@@ -1187,4 +1245,57 @@ void dbdatalistfree(dbdatalist **dbdata)
 		free(dbdata_prev);
 	}
 
+}
+
+unsigned int getqueryinterfacecount(const char *input)
+{
+	unsigned int i, ifacecount = 1;
+
+	if (input[0] == '+' || input[strlen(input)-1] == '+' || !strlen(input)) {
+		return 0;
+	}
+
+	for (i = 0; i < (unsigned int)strlen(input); i++) {
+		if (input[i] == '+') {
+			if (i > 0 && input[i-1] == '+') {
+				return 0;
+			} else {
+				ifacecount++;
+			}
+		}
+	}
+
+	return ifacecount;
+}
+
+char *getifaceinquery(const char *input)
+{
+	unsigned int i, j, ifacecount = 1;
+	char *result;
+
+	ifacecount = getqueryinterfacecount(input);
+
+	if (ifacecount == 0) {
+		return NULL;
+	}
+
+	/* each interface requires two quotes and comma or \0 so 3 extra chars */
+	j = (unsigned int)strlen(input) + ifacecount * 3;
+	result = malloc(sizeof(char) * j);
+	memset(result, '\0', j);
+
+	result[0] = '"';
+	j = 1;
+	for (i = 0; i < (unsigned int)strlen(input); i++) {
+		if (input[i] == '+') {
+			strcat(result, "\",\"");
+			j += 3;
+		} else {
+			result[j] = input[i];
+			j++;
+		}
+	}
+	result[j] = '"';
+
+	return result;
 }

@@ -87,6 +87,10 @@ int main(int argc, char *argv[]) {
 			return 0;
 		} else if ((strcmp(argv[currentarg],"-i")==0) || (strcmp(argv[currentarg],"--iface")==0)) {
 			if (currentarg+1<argc) {
+				if (strlen(argv[currentarg+1]) > 31) {
+					printf("Error: Interface name is limited to 31 characters.\n");
+					return 1;
+				}
 				strncpy_nt(p.interface, argv[currentarg+1], 32);
 				p.defaultiface = 0;
 				if (debug)
@@ -759,7 +763,11 @@ void handleshowdatabases(PARAMS *p)
 void showoneinterface(PARAMS *p, const char *interface)
 {
 	if (!db_getinterfacecountbyname(p->interface)) {
-		printf("Error: Interface \"%s\" not found in database.\n", p->interface);
+		if (strchr(p->interface, '+') == NULL)  {
+			printf("Error: Interface \"%s\" not found in database.\n", p->interface);
+		} else {
+			printf("Error: Not all requested interfaces found in database or given interfaces aren't unique.\n");
+		}
 		exit(EXIT_FAILURE);
 	}
 

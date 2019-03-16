@@ -185,7 +185,11 @@ Output traffic summary including hourly data bar graph using a horizontal layout
 .BI "-i, --iface " interface
 Use
 .I interface
-instead of default or configured interface.
+instead of default or configured interface. It is also possible to merge the
+information of two or more interfaces using the
+.I interface1+interface2+...
+syntax.  All provided interfaces must be unique and must exist in the database
+when the merge syntax is used.
 
 .TP
 .BI "--locale " locale
@@ -306,6 +310,11 @@ for more information.
 .TP
 .B "vnstati -s -i eth0 -o /tmp/vnstat.png"
 Output traffic summary for interface eth0 to file /tmp/vnstat.png.
+
+.TP
+.B "vnstati -vs -i eth0+eth1+eth2 -o /tmp/vnstat.png"
+Output traffic summary with hourly data under the normal summary for a merge of
+interfaces eth0, eth1 and eth2 to file /tmp/vnstat.png.
 
 .TP
 .B "vnstati -h -c 15 -o /tmp/vnstat_h.png"
