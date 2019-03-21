@@ -282,6 +282,7 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 	int32_t limit;
 	int listtype, offset = 0, i = 1;
 	struct tm *d;
+	time_t current;
 	char datebuff[DATEBUFFLEN], daybuff[DATEBUFFLEN];
 	char titlename[16], colname[8], stampformat[64];
 	uint64_t e_rx, e_tx, e_secs, div, mult;
@@ -351,6 +352,9 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 		} else {
 			snprintf(titlename, 16, "top %d", limit);
 		}
+		current = time(NULL);
+		d = localtime(&current);
+		strftime(daybuff, DATEBUFFLEN, stampformat, d);
 	}
 
 	printf("\n");
@@ -433,7 +437,11 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 		}
 
 		if (listtype == 4) {
-			printf("  %2d  ", i);
+			if (strcmp(daybuff, datebuff) == 0) {
+				printf("> %2d  ", i);
+			} else {
+				printf("  %2d  ", i);
+			}
 		}
 
 		if (strlen(datebuff)<=9 && listtype != 4) {

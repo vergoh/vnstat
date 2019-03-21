@@ -488,6 +488,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	char buffer[512], datebuff[16], daybuff[16];
 	char stampformat[64], titlename[16], colname[8];
 	struct tm *d;
+	time_t current;
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
 
@@ -613,6 +614,9 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 			if (cfg.ostyle<=2) {
 				drawlegend(ic, 398, 40-headermod);
 			}
+			current = time(NULL);
+			d = localtime(&current);
+			strftime(daybuff, 16, stampformat, d);
 		} else { // everything else
 			if (cfg.ostyle>2) {
 				drawlegend(ic, 432, 40-headermod);
@@ -663,6 +667,13 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 				strcat(buffer, "   ");
 			} else {
 				snprintf(buffer, 32, "  %2d  %-*s ", i, getpadding(11, datebuff), datebuff);
+			}
+			if (strcmp(datebuff, daybuff) == 0) {
+				if (cfg.ostyle > 2) {
+					gdImageFilledRectangle(ic->im, textx+2, texty+2, textx+422, texty+12, ic->cbgoffset);
+				} else {
+					gdImageFilledRectangle(ic->im, textx+2, texty+2, textx+326, texty+12, ic->cbgoffset);
+				}
 			}
 		} else {
 			if (strftime(datebuff, 16, stampformat, d)<=8) {

@@ -8,6 +8,7 @@
      traffic calculations in rollover situations, cfg: 64bitInterfaceCounters
    - Possibility for queries to merge data from multiple interfaces to one
      output with interface1+interface2 syntax
+   - Highlight current day in top list when visible
 
 
 2.1 / 6-Dec-2018
