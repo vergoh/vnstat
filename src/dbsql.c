@@ -164,11 +164,11 @@ int db_setpragmas(void)
 	sqlite3_stmt *sqlstmt;
 
 	/* enable use of foreign keys */
-	if (!db_exec("PRAGMA foreign_keys = ON;")) {
+	if (!db_exec("PRAGMA foreign_keys = ON")) {
 		return 0;
 	}
 
-	rc = sqlite3_prepare_v2(db, "PRAGMA foreign_keys;", -1, &sqlstmt, NULL);
+	rc = sqlite3_prepare_v2(db, "PRAGMA foreign_keys", -1, &sqlstmt, NULL);
 	if (rc != SQLITE_OK) {
 		db_errcode = rc;
 		snprintf(errorstring, 1024, "Exec prepare \"PRAGMA foreign_keys;\" failed (%d): %s", rc, sqlite3_errmsg(db));
@@ -258,7 +258,7 @@ int db_create(void)
 	sql = "CREATE TABLE info(\n" \
 		"  id       INTEGER PRIMARY KEY,\n" \
 		"  name     TEXT UNIQUE NOT NULL,\n" \
-		"  value    TEXT NOT NULL);";
+		"  value    TEXT NOT NULL)";
 
 	if (!db_exec(sql)) {
 		db_rollbacktransaction();
@@ -275,7 +275,7 @@ int db_create(void)
 		"  rxcounter    INTEGER NOT NULL,\n" \
 		"  txcounter    INTEGER NOT NULL,\n" \
 		"  rxtotal      INTEGER NOT NULL,\n" \
-		"  txtotal      INTEGER NOT NULL);";
+		"  txtotal      INTEGER NOT NULL)";
 
 	if (!db_exec(sql)) {
 		db_rollbacktransaction();
@@ -290,7 +290,7 @@ int db_create(void)
 			"  date         DATE NOT NULL,\n" \
 			"  rx           INTEGER NOT NULL,\n" \
 			"  tx           INTEGER NOT NULL,\n" \
-			"  CONSTRAINT u UNIQUE (interface, date));", datatables[i]);
+			"  CONSTRAINT u UNIQUE (interface, date))", datatables[i]);
 
 		if (!db_exec(sql)) {
 			free(sql);
@@ -311,19 +311,19 @@ int db_create(void)
 
 int db_addinterface(const char *iface)
 {
-	char sql[1024];
+	char sql[256];
 
 	if (!strlen(iface)) {
 		return 0;
 	}
 
-	sqlite3_snprintf(1024, sql, "insert into interface (name, active, created, updated, rxcounter, txcounter, rxtotal, txtotal) values ('%q', 1, datetime('now', 'localtime'), datetime('now', 'localtime'), 0, 0, 0, 0);", iface);
+	sqlite3_snprintf(256, sql, "insert into interface (name, active, created, updated, rxcounter, txcounter, rxtotal, txtotal) values ('%q', 1, datetime('now', 'localtime'), datetime('now', 'localtime'), 0, 0, 0, 0)", iface);
 	return db_exec(sql);
 }
 
 int db_removeinterface(const char *iface)
 {
-	char sql[256];
+	char sql[64];
 	sqlite3_int64 ifaceid = 0;
 
 	ifaceid = db_getinterfaceid(iface, 0);
@@ -331,7 +331,7 @@ int db_removeinterface(const char *iface)
 		return 0;
 	}
 
-	sqlite3_snprintf(256, sql, "delete from interface where id=%"PRId64";", (int64_t)ifaceid);
+	sqlite3_snprintf(64, sql, "delete from interface where id=%"PRId64"", (int64_t)ifaceid);
 	return db_exec(sql);
 }
 
@@ -344,21 +344,21 @@ uint64_t db_getinterfacecountbyname(const char *iface)
 {
 	int rc;
 	uint64_t result = 0;
-	char sql[512], *inquery = NULL;
+	char sql[128], *inquery = NULL;
 	sqlite3_stmt *sqlstmt;
 
 	if (strchr(iface, '+') == NULL) {
 		if (strlen(iface) > 0) {
-			sqlite3_snprintf(512, sql, "select count(*) from interface where name='%q'", iface);
+			sqlite3_snprintf(128, sql, "select count(*) from interface where name='%q'", iface);
 		} else {
-			sqlite3_snprintf(512, sql, "select count(*) from interface");
+			sqlite3_snprintf(128, sql, "select count(*) from interface");
 		}
 	} else {
 		inquery = getifaceinquery(iface);
 		if (inquery == NULL) {
 			return 0;
 		}
-		sqlite3_snprintf(512, sql, "select count(*) from interface where name in (%q)", inquery);
+		sqlite3_snprintf(128, sql, "select count(*) from interface where name in (%q)", inquery);
 		free(inquery);
 	}
 
@@ -390,11 +390,11 @@ uint64_t db_getinterfacecountbyname(const char *iface)
 sqlite3_int64 db_getinterfaceid(const char *iface, const int createifnotfound)
 {
 	int rc;
-	char sql[512];
+	char sql[128];
 	sqlite3_int64 ifaceid = 0;
 	sqlite3_stmt *sqlstmt;
 
-	sqlite3_snprintf(512, sql, "select id from interface where name='%q'", iface);
+	sqlite3_snprintf(128, sql, "select id from interface where name='%q'", iface);
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
 	if (rc == SQLITE_OK) {
 		if (sqlite3_step(sqlstmt) == SQLITE_ROW) {
@@ -420,7 +420,7 @@ sqlite3_int64 db_getinterfaceid(const char *iface, const int createifnotfound)
 char *db_getinterfaceidin(const char *iface)
 {
 	int rc;
-	char sql[512], *result, *inquery;
+	char sql[256], *result, *inquery;
 	sqlite3_stmt *sqlstmt;
 
 	result = NULL;
@@ -429,7 +429,7 @@ char *db_getinterfaceidin(const char *iface)
 		return NULL;
 	}
 
-	sqlite3_snprintf(512, sql, "select group_concat(id) from interface where name in (%q)", inquery);
+	sqlite3_snprintf(256, sql, "select group_concat(id) from interface where name in (%q)", inquery);
 	free(inquery);
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
 	if (rc == SQLITE_OK) {
@@ -450,7 +450,7 @@ char *db_getinterfaceidin(const char *iface)
 
 int db_setactive(const char *iface, const int active)
 {
-	char sql[512];
+	char sql[64];
 	sqlite3_int64 ifaceid = 0;
 
 	ifaceid = db_getinterfaceid(iface, 0);
@@ -458,13 +458,13 @@ int db_setactive(const char *iface, const int active)
 		return 0;
 	}
 
-	sqlite3_snprintf(512, sql, "update interface set active=%d where id=%"PRId64";", active, (int64_t)ifaceid);
+	sqlite3_snprintf(64, sql, "update interface set active=%d where id=%"PRId64"", active, (int64_t)ifaceid);
 	return db_exec(sql);
 }
 
 int db_setupdated(const char *iface, const time_t timestamp)
 {
-	char sql[512];
+	char sql[256];
 	sqlite3_int64 ifaceid = 0;
 
 	ifaceid = db_getinterfaceid(iface, 0);
@@ -472,13 +472,13 @@ int db_setupdated(const char *iface, const time_t timestamp)
 		return 0;
 	}
 
-	sqlite3_snprintf(512, sql, "update interface set updated=datetime(%"PRIu64", 'unixepoch', 'localtime') where id=%"PRId64";", (uint64_t)timestamp, (int64_t)ifaceid);
+	sqlite3_snprintf(256, sql, "update interface set updated=datetime(%"PRIu64", 'unixepoch', 'localtime') where id=%"PRId64"", (uint64_t)timestamp, (int64_t)ifaceid);
 	return db_exec(sql);
 }
 
 int db_setcounters(const char *iface, const uint64_t rxcounter, const uint64_t txcounter)
 {
-	char sql[512];
+	char sql[256];
 	sqlite3_int64 ifaceid = 0;
 
 	ifaceid = db_getinterfaceid(iface, 0);
@@ -486,14 +486,14 @@ int db_setcounters(const char *iface, const uint64_t rxcounter, const uint64_t t
 		return 0;
 	}
 
-	sqlite3_snprintf(512, sql, "update interface set rxcounter=%"PRIu64", txcounter=%"PRIu64" where id=%"PRId64";", rxcounter, txcounter, (int64_t)ifaceid);
+	sqlite3_snprintf(256, sql, "update interface set rxcounter=%"PRIu64", txcounter=%"PRIu64" where id=%"PRId64"", rxcounter, txcounter, (int64_t)ifaceid);
 	return db_exec(sql);
 }
 
 int db_getcounters(const char *iface, uint64_t *rxcounter, uint64_t *txcounter)
 {
 	int rc;
-	char sql[512];
+	char sql[128];
 	sqlite3_int64 ifaceid = 0;
 	sqlite3_stmt *sqlstmt;
 
@@ -504,7 +504,7 @@ int db_getcounters(const char *iface, uint64_t *rxcounter, uint64_t *txcounter)
 		return 0;
 	}
 
-	sqlite3_snprintf(512, sql, "select rxcounter, txcounter from interface where id=%"PRId64";", (int64_t)ifaceid);
+	sqlite3_snprintf(128, sql, "select rxcounter, txcounter from interface where id=%"PRId64"", (int64_t)ifaceid);
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
 	if (rc != SQLITE_OK) {
 		db_errcode = rc;
@@ -537,13 +537,13 @@ int db_getinterfaceinfo(const char *iface, interfaceinfo *info)
 		if (ifaceid == 0) {
 			return 0;
 		}
-		sqlite3_snprintf(512, sql, "select name, alias, active, strftime('%%s', created, 'utc'), strftime('%%s', updated, 'utc'), rxcounter, txcounter, rxtotal, txtotal from interface where id=%"PRId64";", (int64_t)ifaceid);
+		sqlite3_snprintf(512, sql, "select name, alias, active, strftime('%%s', created, 'utc'), strftime('%%s', updated, 'utc'), rxcounter, txcounter, rxtotal, txtotal from interface where id=%"PRId64"", (int64_t)ifaceid);
 	} else {
 		ifaceidin = db_getinterfaceidin(iface);
 		if (ifaceidin == NULL || strlen(ifaceidin) < 1) {
 			return 0;
 		}
-		sqlite3_snprintf(512, sql, "select \"%q\", NULL, max(active), max(strftime('%%s', created, 'utc')), min(strftime('%%s', updated, 'utc')), 0, 0, sum(rxtotal), sum(txtotal) from interface where id in (%q);", iface, ifaceidin);
+		sqlite3_snprintf(512, sql, "select \"%q\", NULL, max(active), max(strftime('%%s', created, 'utc')), min(strftime('%%s', updated, 'utc')), 0, 0, sum(rxtotal), sum(txtotal) from interface where id in (%q)", iface, ifaceidin);
 		free(ifaceidin);
 	}
 
@@ -583,7 +583,7 @@ int db_getinterfaceinfo(const char *iface, interfaceinfo *info)
 
 int db_setalias(const char *iface, const char *alias)
 {
-	char sql[512];
+	char sql[128];
 	sqlite3_int64 ifaceid = 0;
 
 	ifaceid = db_getinterfaceid(iface, 0);
@@ -591,22 +591,22 @@ int db_setalias(const char *iface, const char *alias)
 		return 0;
 	}
 
-	sqlite3_snprintf(512, sql, "update interface set alias='%q' where id=%"PRId64";", alias, (int64_t)ifaceid);
+	sqlite3_snprintf(128, sql, "update interface set alias='%q' where id=%"PRId64"", alias, (int64_t)ifaceid);
 	return db_exec(sql);
 }
 
 int db_setinfo(const char *name, const char *value, const int createifnotfound)
 {
 	int rc;
-	char sql[512];
+	char sql[128];
 
-	sqlite3_snprintf(512, sql, "update info set value='%q' where name='%q';", value, name);
+	sqlite3_snprintf(128, sql, "update info set value='%q' where name='%q'", value, name);
 	rc = db_exec(sql);
 	if (!rc || (!sqlite3_changes(db) && !createifnotfound)) {
 		return 0;
 	}
 	if (!sqlite3_changes(db) && createifnotfound) {
-		sqlite3_snprintf(512, sql, "insert into info (name, value) values ('%q', '%q');", name, value);
+		sqlite3_snprintf(512, sql, "insert into info (name, value) values ('%q', '%q')", name, value);
 		rc = db_exec(sql);
 	}
 	return rc;
@@ -615,13 +615,13 @@ int db_setinfo(const char *name, const char *value, const int createifnotfound)
 char *db_getinfo(const char *name)
 {
 	int rc;
-	char sql[512];
+	char sql[128];
 	static char buffer[64];
 	sqlite3_stmt *sqlstmt;
 
 	buffer[0] = '\0';
 
-	sqlite3_snprintf(512, sql, "select value from info where name='%q';", name);
+	sqlite3_snprintf(128, sql, "select value from info where name='%q'", name);
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
 	if (rc != SQLITE_OK) {
 		db_errcode = rc;
@@ -642,10 +642,10 @@ char *db_getinfo(const char *name)
 int db_getiflist(dbiflist **dbifl)
 {
 	int rc;
-	char sql[512];
+	char *sql;
 	sqlite3_stmt *sqlstmt;
 
-	sqlite3_snprintf(512, sql, "select name from interface order by name desc;");
+	sql = "select name from interface order by name desc";
 
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
 	if (rc != SQLITE_OK ) {
@@ -743,9 +743,9 @@ int db_addtraffic_dated(const char *iface, const uint64_t rx, const uint64_t tx,
 
 	/* change updated only if more recent than previous when timestamp provided */
 	if (timestamp > 0) {
-		sqlite3_snprintf(1024, sql, "update interface set active=1, updated=datetime(%s, 'localtime') where id=%"PRId64" and updated < datetime(%s, 'localtime');", nowdate, (int64_t)ifaceid, nowdate);
+		sqlite3_snprintf(1024, sql, "update interface set active=1, updated=datetime(%s, 'localtime') where id=%"PRId64" and updated < datetime(%s, 'localtime')", nowdate, (int64_t)ifaceid, nowdate);
 	} else {
-		sqlite3_snprintf(1024, sql, "update interface set active=1, updated=datetime(%s, 'localtime') where id=%"PRId64";", nowdate, (int64_t)ifaceid);
+		sqlite3_snprintf(1024, sql, "update interface set active=1, updated=datetime(%s, 'localtime') where id=%"PRId64"", nowdate, (int64_t)ifaceid);
 	}
 	if (!db_exec(sql)) {
 		/* no transaction rollback needed here as failure of the first step results in no transaction being active */
@@ -754,7 +754,7 @@ int db_addtraffic_dated(const char *iface, const uint64_t rx, const uint64_t tx,
 
 	/* total */
 	if (rx > 0 || tx > 0) {
-		sqlite3_snprintf(1024, sql, "update interface set rxtotal=rxtotal+%"PRIu64", txtotal=txtotal+%"PRIu64" where id=%"PRId64";", rx, tx, (int64_t)ifaceid);
+		sqlite3_snprintf(1024, sql, "update interface set rxtotal=rxtotal+%"PRIu64", txtotal=txtotal+%"PRIu64" where id=%"PRId64"", rx, tx, (int64_t)ifaceid);
 		if (!db_exec(sql)) {
 			db_rollbacktransaction();
 			return 0;
@@ -766,12 +766,12 @@ int db_addtraffic_dated(const char *iface, const uint64_t rx, const uint64_t tx,
 		if (featurecfg[i] == 0) {
 			continue;
 		}
-		sqlite3_snprintf(1024, sql, "insert or ignore into %s (interface, date, rx, tx) values (%"PRId64", %s, 0, 0);", datatables[i], (int64_t)ifaceid, db_get_date_generator(i, 0, nowdate));
+		sqlite3_snprintf(1024, sql, "insert or ignore into %s (interface, date, rx, tx) values (%"PRId64", %s, 0, 0)", datatables[i], (int64_t)ifaceid, db_get_date_generator(i, 0, nowdate));
 		if (!db_exec(sql)) {
 			db_rollbacktransaction();
 			return 0;
 		}
-		sqlite3_snprintf(1024, sql, "update %s set rx=rx+%"PRIu64", tx=tx+%"PRIu64" where interface=%"PRId64" and date=%s;", datatables[i], rx, tx, (int64_t)ifaceid, db_get_date_generator(i, 0, nowdate));
+		sqlite3_snprintf(1024, sql, "update %s set rx=rx+%"PRIu64", tx=tx+%"PRIu64" where interface=%"PRId64" and date=%s", datatables[i], rx, tx, (int64_t)ifaceid, db_get_date_generator(i, 0, nowdate));
 		if (!db_exec(sql)) {
 			db_rollbacktransaction();
 			return 0;
@@ -786,7 +786,7 @@ int db_addtraffic_dated(const char *iface, const uint64_t rx, const uint64_t tx,
 
 int db_setcreation(const char *iface, const time_t timestamp)
 {
-	char sql[512];
+	char sql[256];
 	sqlite3_int64 ifaceid = 0;
 
 	ifaceid = db_getinterfaceid(iface, 0);
@@ -794,13 +794,13 @@ int db_setcreation(const char *iface, const time_t timestamp)
 		return 0;
 	}
 
-	sqlite3_snprintf(512, sql, "update interface set created=datetime(%"PRIu64", 'unixepoch', 'localtime') where id=%"PRId64";", (uint64_t)timestamp, (int64_t)ifaceid);
+	sqlite3_snprintf(256, sql, "update interface set created=datetime(%"PRIu64", 'unixepoch', 'localtime') where id=%"PRId64"", (uint64_t)timestamp, (int64_t)ifaceid);
 	return db_exec(sql);
 }
 
 int db_settotal(const char *iface, const uint64_t rx, const uint64_t tx)
 {
-	char sql[512];
+	char sql[256];
 	sqlite3_int64 ifaceid = 0;
 
 	ifaceid = db_getinterfaceid(iface, 0);
@@ -808,7 +808,7 @@ int db_settotal(const char *iface, const uint64_t rx, const uint64_t tx)
 		return 0;
 	}
 
-	sqlite3_snprintf(512, sql, "update interface set rxtotal=%"PRIu64", txtotal=%"PRIu64" where id=%"PRId64";", rx, tx, (int64_t)ifaceid);
+	sqlite3_snprintf(256, sql, "update interface set rxtotal=%"PRIu64", txtotal=%"PRIu64" where id=%"PRId64"", rx, tx, (int64_t)ifaceid);
 	return db_exec(sql);
 }
 
@@ -838,13 +838,13 @@ int db_insertdata(const char *table, const char *iface, const uint64_t rx, const
 
 	snprintf(nowdate, 64, "datetime(%"PRIu64", 'unixepoch')", timestamp);
 
-	sqlite3_snprintf(1024, sql, "insert or ignore into %s (interface, date, rx, tx) values (%"PRId64", %s, %"PRIu64", %"PRIu64");", table, (int64_t)ifaceid, db_get_date_generator(index+1, 1, nowdate), rx, tx);
+	sqlite3_snprintf(1024, sql, "insert or ignore into %s (interface, date, rx, tx) values (%"PRId64", %s, %"PRIu64", %"PRIu64")", table, (int64_t)ifaceid, db_get_date_generator(index+1, 1, nowdate), rx, tx);
 	return db_exec(sql);
 }
 
 int db_removeoldentries(void)
 {
-	char sql[512];
+	char sql[256];
 
 	if (debug) {
 		printf("db: removing old entries\n");
@@ -862,7 +862,7 @@ int db_removeoldentries(void)
 		if (debug) {
 			printf("db: fiveminute cleanup (%dh)\n", cfg.fiveminutehours);
 		}
-		sqlite3_snprintf(512, sql, "delete from fiveminute where date < datetime('now', '-%d hours', 'localtime');", cfg.fiveminutehours);
+		sqlite3_snprintf(256, sql, "delete from fiveminute where date < datetime('now', '-%d hours', 'localtime')", cfg.fiveminutehours);
 		if (!db_exec(sql)) {
 			db_rollbacktransaction();
 			return 0;
@@ -873,7 +873,7 @@ int db_removeoldentries(void)
 		if (debug) {
 			printf("db: hour cleanup (%dd)\n", cfg.hourlydays);
 		}
-		sqlite3_snprintf(512, sql, "delete from hour where date < datetime('now', '-%d days', 'localtime');", cfg.hourlydays);
+		sqlite3_snprintf(256, sql, "delete from hour where date < datetime('now', '-%d days', 'localtime')", cfg.hourlydays);
 		if (!db_exec(sql)) {
 			db_rollbacktransaction();
 			return 0;
@@ -884,7 +884,7 @@ int db_removeoldentries(void)
 		if (debug) {
 			printf("db: day cleanup (%dd)\n", cfg.dailydays);
 		}
-		sqlite3_snprintf(512, sql, "delete from day where date < date('now', '-%d days', 'localtime');", cfg.dailydays);
+		sqlite3_snprintf(256, sql, "delete from day where date < date('now', '-%d days', 'localtime')", cfg.dailydays);
 		if (!db_exec(sql)) {
 			db_rollbacktransaction();
 			return 0;
@@ -895,7 +895,7 @@ int db_removeoldentries(void)
 		if (debug) {
 			printf("db: month cleanup (%dm)\n", cfg.monthlymonths);
 		}
-		sqlite3_snprintf(512, sql, "delete from month where date < date('now', '-%d months', 'localtime');", cfg.monthlymonths);
+		sqlite3_snprintf(256, sql, "delete from month where date < date('now', '-%d months', 'localtime')", cfg.monthlymonths);
 		if (!db_exec(sql)) {
 			db_rollbacktransaction();
 			return 0;
@@ -906,7 +906,7 @@ int db_removeoldentries(void)
 		if (debug) {
 			printf("db: year cleanup (%dy)\n", cfg.yearlyyears);
 		}
-		sqlite3_snprintf(512, sql, "delete from year where date < date('now', '-%d years', 'localtime');", cfg.yearlyyears);
+		sqlite3_snprintf(256, sql, "delete from year where date < date('now', '-%d years', 'localtime')", cfg.yearlyyears);
 		if (!db_exec(sql)) {
 			db_rollbacktransaction();
 			return 0;
@@ -945,7 +945,7 @@ int db_removeoldentries_top(void)
 			continue;
 		}
 
-		sqlite3_snprintf(512, sql, "delete from top where id in ( select id from top where interface=%"PRId64" and date!=date('now', 'localtime') order by rx+tx desc limit -1 offset %d );", (int64_t)ifaceid, cfg.topdayentries);
+		sqlite3_snprintf(512, sql, "delete from top where id in ( select id from top where interface=%"PRId64" and date!=date('now', 'localtime') order by rx+tx desc limit -1 offset %d )", (int64_t)ifaceid, cfg.topdayentries);
 
 		if (!db_exec(sql)) {
 			errorcount++;
@@ -967,7 +967,7 @@ int db_removeoldentries_top(void)
 
 int db_vacuum(void)
 {
-	return db_exec("VACUUM;");
+	return db_exec("VACUUM");
 }
 
 int db_begintransaction(void)
@@ -1118,15 +1118,15 @@ int db_getdata_range(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *
 			if (resultlimit > 0) {
 				snprintf(limit, 64, "limit %"PRIu32"", resultlimit);
 			}
-			sqlite3_snprintf(512, sql, "select * from (select id, strftime('%%s', date, 'utc'), sum(rx) as rx, sum(tx) as tx from day where interface in (%q) %s %s group by date order by rx+tx desc %s) order by rx+tx asc;", ifaceidin, dbegin, dend, limit);
+			sqlite3_snprintf(512, sql, "select * from (select id, strftime('%%s', date, 'utc'), sum(rx) as rx, sum(tx) as tx from day where interface in (%q) %s %s group by date order by rx+tx desc %s) order by rx+tx asc", ifaceidin, dbegin, dend, limit);
 		} else {
-			sqlite3_snprintf(512, sql, "select * from (select id, strftime('%%s', date, 'utc'), sum(rx) as rx, sum(tx) as tx from top where interface in (%q) group by date order by rx+tx desc %s) order by rx+tx asc;", ifaceidin, limit);
+			sqlite3_snprintf(512, sql, "select * from (select id, strftime('%%s', date, 'utc'), sum(rx) as rx, sum(tx) as tx from top where interface in (%q) group by date order by rx+tx desc %s) order by rx+tx asc", ifaceidin, limit);
 		}
 	} else {
 		if (strlen(dbegin) && strlen(limit)) {
-			sqlite3_snprintf(512, sql, "select * from (select id, strftime('%%s', date, 'utc') as unixdate, sum(rx), sum(tx) from %s where interface in (%q) %s %s group by date order by date asc %s) order by unixdate desc;", table, ifaceidin, dbegin, dend, limit);
+			sqlite3_snprintf(512, sql, "select * from (select id, strftime('%%s', date, 'utc') as unixdate, sum(rx), sum(tx) from %s where interface in (%q) %s %s group by date order by date asc %s) order by unixdate desc", table, ifaceidin, dbegin, dend, limit);
 		} else {
-			sqlite3_snprintf(512, sql, "select id, strftime('%%s', date, 'utc'), sum(rx), sum(tx) from %s where interface in (%q) %s %s group by date order by date desc %s;", table, ifaceidin, dbegin, dend, limit);
+			sqlite3_snprintf(512, sql, "select id, strftime('%%s', date, 'utc'), sum(rx), sum(tx) from %s where interface in (%q) %s %s group by date order by date desc %s", table, ifaceidin, dbegin, dend, limit);
 		}
 	}
 	free(ifaceidin);
