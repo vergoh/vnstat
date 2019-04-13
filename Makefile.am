@@ -96,6 +96,18 @@ check_vnstat_SOURCES += tests/image_tests.c tests/image_tests.h \
 endif
 endif
 
+INSTALL:
+	cp -a INSTALL.md INSTALL
+
+INSTALL_BSD:
+	cp -a INSTALL_BSD.md INSTALL_BSD
+
+UPGRADE:
+	cp -a UPGRADE.md UPGRADE
+
+UNINSTALL:
+	cp -a UNINSTALL.md UNINSTALL
+
 setdebug:
 	CFLAGS='-Wall -Wextra -g' ./configure
 
@@ -153,7 +165,7 @@ uninstall-hook:
 	@echo
 
 clean-local:
-	-rm -fr coverage *.lcov *.gz test*.log test*.xml src/*.gc* tests/*.gc* *.old *.new *check.png
+	-rm -fr coverage *.lcov *.gz test*.log test*.xml src/*.gc* tests/*.gc* *.old *.new *check.png INSTALL INSTALL_BSD UPGRADE UNINSTALL
 
 check-local:
 	-tail -n 2 test.log

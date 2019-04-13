@@ -76,7 +76,8 @@ However, it isn't a packet sniffer. The traffic information is read from the
 .BR proc (5)
 or
 .B sys
-filesystems depending on availability. That way vnStat can be used even
+filesystems depending on availability resulting in light use of system resources
+regardless of network traffic rate. That way vnStat can be used even
 without root permissions on most systems.
 .PP
 The implementation is divided into two commands. The purpose of the

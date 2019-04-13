@@ -3,7 +3,7 @@
 vnStat is a console-based network traffic monitor that uses the network
 interface statistics provided by the kernel as information source. This
 means that vnStat won't actually be sniffing any traffic and also ensures
-light use of system resources.
+light use of system resources regardless of network traffic rate.
 
 By default, traffic statistics are stored on a five minute level for the last
 48 hours, on a hourly level for the last 4 days, on a daily level for the
@@ -34,10 +34,10 @@ Development version
   1. `git clone https://github.com/vergoh/vnstat`
   2. `cd vnstat`
 
-In both cases, continue with instructions from the [INSTALL](INSTALL) or
-[INSTALL_BSD](INSTALL_BSD) file depending on used operating system.
+In both cases, continue with instructions from the [INSTALL](INSTALL.md) or
+[INSTALL_BSD](INSTALL_BSD.md) file depending on used operating system.
 Instructions for upgrading from a previous version are included in the
-[UPGRADE](UPGRADE) file.
+[UPGRADE](UPGRADE.md) file.
 
 ## Contacting the author
 

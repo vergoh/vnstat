@@ -1,6 +1,7 @@
+# Uninstall 
 
- 1. Stop the daemon (vnstatd) if still running
+ 1. Stop the daemon (`vnstatd`) if still running
  2. Remove any manually installed service files or file entries
     used to start the daemon
- 3. Run 'make uninstall' and follow the instructions
+ 3. Run `make uninstall` and follow the instructions
  4. Remove possible database directory if no longer needed

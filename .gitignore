@@ -24,3 +24,7 @@ src/stamp-h1
 tests/.deps
 tests/.dirstamp
 *~
+INSTALL
+INSTALL_BSD
+UPGRADE
+UNINSTALL
