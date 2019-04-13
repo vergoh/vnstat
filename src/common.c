@@ -6,11 +6,10 @@ IFINFO ifinfo;
 char errorstring[1024];
 ibwnode *ifacebw;
 int debug;
-int noexit;      /* = running as daemon if 2 */
+int noexit; /* = running as daemon if 2 */
 int intsignal;
 int pidfile;
 int disableprints;
-
 
 int printe(const PrintType type)
 {
@@ -19,12 +18,12 @@ int printe(const PrintType type)
 	if (disableprints) {
 		return 1;
 
-	/* daemon running but log not enabled */
-	} else if (noexit==2 && cfg.uselogging==0) {
+		/* daemon running but log not enabled */
+	} else if (noexit == 2 && cfg.uselogging == 0) {
 		return 1;
 
-	/* daemon running, log enabled */
-	} else if (noexit==2) {
+		/* daemon running, log enabled */
+	} else if (noexit == 2) {
 
 		switch (type) {
 			case PT_Multiline:
@@ -38,7 +37,7 @@ int printe(const PrintType type)
 				break;
 		}
 
-	/* daemon isn't running */
+		/* daemon isn't running */
 	} else {
 
 		switch (type) {
@@ -76,7 +75,7 @@ int logprint(const PrintType type)
 	buffer[0] = '\0';
 
 	/* logfile */
-	if (cfg.uselogging==1) {
+	if (cfg.uselogging == 1) {
 
 		if (type == PT_Multiline) {
 			return 0;
@@ -107,7 +106,7 @@ int logprint(const PrintType type)
 				break;
 		}
 
-		if (fwrite(buffer, strlen(buffer), 1, logfile)!=1) {
+		if (fwrite(buffer, strlen(buffer), 1, logfile) != 1) {
 			fclose(logfile);
 			return 0;
 		}
@@ -115,8 +114,8 @@ int logprint(const PrintType type)
 		fclose(logfile);
 		return 1;
 
-	/* syslog */
-	} else if (cfg.uselogging==2) {
+		/* syslog */
+	} else if (cfg.uselogging == 2) {
 
 		openlog("vnstatd", LOG_PID, LOG_DAEMON);
 
@@ -148,7 +147,7 @@ int verifylogaccess(void)
 	FILE *logfile;
 
 	/* only logfile logging can be verified */
-	if (cfg.uselogging==1) {
+	if (cfg.uselogging == 1) {
 		if ((logfile = fopen(cfg.logfile, "a")) == NULL) {
 			return 0;
 		}
@@ -164,7 +163,7 @@ int dmonth(const int month)
 	time_t current;
 
 	/* handle leap years */
-	if (month==1) {
+	if (month == 1) {
 		current = time(NULL);
 		year = localtime(&current)->tm_year + 1900;
 		if (isleapyear(year)) {
@@ -200,8 +199,8 @@ time_t mosecs(time_t month, time_t updated)
 	d.tm_mday = cfg.monthrotate;
 	d.tm_hour = d.tm_min = d.tm_sec = 0;
 
-	if ((updated-month)>0) {
-		return updated-mktime(&d);
+	if ((updated - month) > 0) {
+		return updated - mktime(&d);
 	} else {
 		return 1;
 	}
@@ -212,22 +211,22 @@ uint64_t countercalc(const uint64_t *a, const uint64_t *b, const short is64bit)
 	/* no rollover */
 	if (*b >= *a) {
 		if (debug)
-			printf("cc (%d): %"PRIu64" - %"PRIu64" = %"PRIu64"\n", is64bit, *b, *a, *b-*a);
-		return *b-*a;
+			printf("cc (%d): %" PRIu64 " - %" PRIu64 " = %" PRIu64 "\n", is64bit, *b, *a, *b - *a);
+		return *b - *a;
 
-	/* rollover exists */
+		/* rollover exists */
 	} else {
 		/* counter is 64bit */
 		if (*a > MAX32 || is64bit == 1) {
 			if (debug)
-				printf("cc64 (%d): uint64 - %"PRIu64" + %"PRIu64" = %"PRIu64"\n", is64bit, *a, *b, (uint64_t)MAX64-*a+*b);
-			return MAX64-*a+*b;
+				printf("cc64 (%d): uint64 - %" PRIu64 " + %" PRIu64 " = %" PRIu64 "\n", is64bit, *a, *b, (uint64_t)MAX64 - *a + *b);
+			return MAX64 - *a + *b;
 
-		/* counter is 32bit */
+			/* counter is 32bit */
 		} else {
 			if (debug)
-				printf("cc32 (%d): uint32 - %"PRIu64" + %"PRIu64" = %"PRIu64"\n", is64bit, *a, *b, (uint64_t)MAX32-*a+*b);
-			return MAX32-*a+*b;
+				printf("cc32 (%d): uint32 - %" PRIu64 " + %" PRIu64 " = %" PRIu64 "\n", is64bit, *a, *b, (uint64_t)MAX32 - *a + *b);
+			return MAX32 - *a + *b;
 		}
 	}
 }
@@ -236,7 +235,7 @@ uint64_t countercalc(const uint64_t *a, const uint64_t *b, const short is64bit)
 char *strncpy_nt(char *dest, const char *src, size_t n)
 {
 	strncpy(dest, src, n);
-	dest[n-1] = '\0';
+	dest[n - 1] = '\0';
 	return dest;
 }
 
@@ -248,7 +247,7 @@ int isnumeric(const char *s)
 		return 0;
 	}
 
-	for (i=0; i<len; i++) {
+	for (i = 0; i < len; i++) {
 		if (!isdigit(s[i])) {
 			return 0;
 		}
@@ -257,8 +256,7 @@ int isnumeric(const char *s)
 	return 1;
 }
 
-__attribute__((noreturn))
-void panicexit(const char *sourcefile, const int sourceline)
+__attribute__((noreturn)) void panicexit(const char *sourcefile, const int sourceline)
 {
 	snprintf(errorstring, 1024, "Unexpected error (%s), exiting. (%s:%d)", strerror(errno), sourcefile, sourceline);
 	fprintf(stderr, "%s\n", errorstring);
@@ -271,7 +269,7 @@ char *getversion(void)
 	int i;
 	static char versionbuffer[16];
 	strncpy_nt(versionbuffer, VERSION, 16);
-	for (i=0; i<(int)strlen(versionbuffer); i++) {
+	for (i = 0; i < (int)strlen(versionbuffer); i++) {
 		if (versionbuffer[i] == '_') {
 			versionbuffer[i] = ' ';
 		}

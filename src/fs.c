@@ -11,8 +11,8 @@ int fileexists(const char *file)
 {
 	struct stat statbuf;
 
-	if (stat(file, &statbuf)!=0) {
-		if (errno==ENOENT) {
+	if (stat(file, &statbuf) != 0) {
+		if (errno == ENOENT) {
 			return 0;
 		}
 		if (debug)
@@ -49,19 +49,19 @@ int mkpath(const char *dir, const mode_t mode)
 	}
 
 	len = strlen(tmp);
-	if (tmp[len-1] == '/') {
-		tmp[len-1] = '\0';
+	if (tmp[len - 1] == '/') {
+		tmp[len - 1] = '\0';
 	}
 
 	if (tmp[0] == '/') {
 		i++;
 	}
 
-	for (; i<len; i++) {
+	for (; i < len; i++) {
 		if (tmp[i] == '/') {
 			tmp[i] = '\0';
 			if (!direxists(tmp)) {
-				if (mkdir(tmp, mode)!=0) {
+				if (mkdir(tmp, mode) != 0) {
 					if (debug)
 						printf("Error: mkdir() \"%s\": %s\n", tmp, strerror(errno));
 					ret = 0;
@@ -72,7 +72,7 @@ int mkpath(const char *dir, const mode_t mode)
 		}
 	}
 	if (ret) {
-		if (mkdir(tmp, mode)!=0) {
+		if (mkdir(tmp, mode) != 0) {
 			if (debug)
 				printf("Error: mkdir() \"%s\": %s\n", tmp, strerror(errno));
 			ret = 0;
@@ -87,7 +87,7 @@ int mkpath(const char *dir, const mode_t mode)
 
 void preparevnstatdir(const char *dir, const char *user, const char *group)
 {
-	size_t i, len, lastslash=0;
+	size_t i, len, lastslash = 0;
 	char *path, *base;
 
 	if (dir == NULL) {
@@ -95,11 +95,11 @@ void preparevnstatdir(const char *dir, const char *user, const char *group)
 	}
 
 	len = strlen(dir);
-	if (len<2) {
+	if (len < 2) {
 		return;
 	}
 
-	if (dir[len-1] == '/') {
+	if (dir[len - 1] == '/') {
 		return;
 	}
 
@@ -110,7 +110,7 @@ void preparevnstatdir(const char *dir, const char *user, const char *group)
 
 	/* verify that path ends with vnstat or vnstatd */
 	base = basename(dirname(path));
-	if (strcmp(base, "vnstat")!=0 && strcmp(base, "vnstatd")!=0) {
+	if (strcmp(base, "vnstat") != 0 && strcmp(base, "vnstatd") != 0) {
 		free(path);
 		return;
 	}
@@ -122,7 +122,7 @@ void preparevnstatdir(const char *dir, const char *user, const char *group)
 	}
 
 	/* extract path */
-	for (i=0; i<len; i++) {
+	for (i = 0; i < len; i++) {
 		if (path[i] == '/') {
 			lastslash = i;
 		}
@@ -181,7 +181,7 @@ void updatedirownerid(const char *dir, const uid_t uid, const gid_t gid)
 
 	if ((dir_fd = open(dir, FS_OPEN_RO_FLAGS)) == -1)
 		return;
-	if (fstat(dir_fd, &statbuf)!=0) {
+	if (fstat(dir_fd, &statbuf) != 0) {
 		close(dir_fd);
 		return;
 	}
@@ -198,21 +198,21 @@ void updatedirownerid(const char *dir, const uid_t uid, const gid_t gid)
 		}
 	}
 
-	if ((d=fdopendir(dir_fd))==NULL) {
+	if ((d = fdopendir(dir_fd)) == NULL) {
 		if (debug)
 			printf("Error: updatedirowner() diropen() \"%s\": %s\n", dir, strerror(errno));
 		close(dir_fd);
 		return;
 	}
 
-	while ((di=readdir(d))) {
+	while ((di = readdir(d))) {
 		if (di->d_type != DT_REG) {
 			continue;
 		}
 		snprintf(entryname, 512, "%s/%s", dir, di->d_name);
 		if ((file_fd = open(entryname, FS_OPEN_RO_FLAGS)) == -1)
 			continue;
-		if (fstat(file_fd, &statbuf)!=0) {
+		if (fstat(file_fd, &statbuf) != 0) {
 			close(file_fd);
 			continue;
 		}
@@ -271,7 +271,7 @@ int getdirowner(const char *dir, uid_t *uid, gid_t *gid)
 		return 0;
 	}
 
-	if (stat(dir, &statbuf)!=0) {
+	if (stat(dir, &statbuf) != 0) {
 		if (debug)
 			printf("Error: stat() \"%s\": %s\n", dir, strerror(errno));
 		return 0;

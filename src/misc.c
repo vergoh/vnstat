@@ -1,16 +1,16 @@
 #if !defined(__FreeBSD__) && !defined(__NetBSD__) && !defined(__OpenBSD__) && !defined(__APPLE__) && !defined(__FreeBSD_kernel__)
-  #if defined(__clang__)
-    #pragma clang diagnostic push
-    #pragma clang diagnostic ignored "-Wreserved-id-macro"
-  #endif
-  #define _XOPEN_SOURCE 600
-  #if defined(__clang__)
-    #pragma clang diagnostic pop
-  #endif
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wreserved-id-macro"
+#endif
+#define _XOPEN_SOURCE 600
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 #endif
 /* enable wcswidth on kFreeBSD */
 #if defined(__FreeBSD_kernel__) && defined(__GLIBC__)
-  #define __USE_XOPEN
+#define __USE_XOPEN
 #endif
 #include "common.h"
 #include "misc.h"
@@ -36,7 +36,7 @@ int spacecheck(const char *path)
 		}
 	}
 
-	free = (uint64_t)(buf.f_bavail/(float)1024) * buf.f_bsize;
+	free = (uint64_t)(buf.f_bavail / (float)1024) * buf.f_bsize;
 
 	if (debug) {
 		printf("bsize %d\n", (int)buf.f_bsize);
@@ -44,13 +44,13 @@ int spacecheck(const char *path)
 		printf("bfree %lu\n", (unsigned long int)buf.f_bfree);
 		printf("bavail %lu\n", (unsigned long int)buf.f_bavail);
 		printf("ffree %lu\n", (unsigned long int)buf.f_ffree);
-		printf("%"PRIu64" free space left\n", free);
+		printf("%" PRIu64 " free space left\n", free);
 	}
 
-	/* the database is less than 3kB but let's require */
-	/* 1MB to be on the safe side, anyway, the filesystem should */
+	/* the database is likely to be less than 200 kiB but let's require */
+	/* 1 MiB to be on the safe side, anyway, the filesystem should */
 	/* always have more free space than that */
-	if (free<=1024) {
+	if (free <= 1024) {
 		return 0;
 	} else {
 		return 1;
@@ -80,7 +80,6 @@ void sighandler(int sig)
 			default:
 				snprintf(errorstring, 1024, "DEBUG: Unknown signal %d", sig);
 				break;
-
 		}
 		printe(PT_Info);
 	}
@@ -88,13 +87,13 @@ void sighandler(int sig)
 
 uint64_t getbtime(void)
 {
-	uint64_t result=0;
+	uint64_t result = 0;
 #if defined(__linux__)
 	FILE *fp;
 	int check;
 	char temp[64], statline[128];
 
-	if ((fp=fopen("/proc/stat","r"))==NULL) {
+	if ((fp = fopen("/proc/stat", "r")) == NULL) {
 		snprintf(errorstring, 1024, "Unable to read /proc/stat: %s", strerror(errno));
 		printe(PT_Error);
 		if (noexit) {
@@ -104,19 +103,19 @@ uint64_t getbtime(void)
 		}
 	}
 
-	check=0;
-	while (fgets(statline,128,fp)!=NULL) {
-		sscanf(statline,"%63s",temp);
-		if (strcmp(temp,"btime")==0) {
+	check = 0;
+	while (fgets(statline, 128, fp) != NULL) {
+		sscanf(statline, "%63s", temp);
+		if (strcmp(temp, "btime") == 0) {
 			/* if (debug)
 				printf("\n%s\n",statline); */
-			check=1;
+			check = 1;
 			break;
 		}
 	}
 	fclose(fp);
 
-	if (check==0) {
+	if (check == 0) {
 		snprintf(errorstring, 1024, "btime missing from /proc/stat.");
 		printe(PT_Error);
 		if (noexit) {
@@ -126,7 +125,7 @@ uint64_t getbtime(void)
 		}
 	}
 
-	result = strtoull(statline+6, (char **)NULL, 0);
+	result = strtoull(statline + 6, (char **)NULL, 0);
 
 #elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__FreeBSD_kernel__)
 	struct timeval btm;
@@ -159,28 +158,28 @@ char *getvalue(const uint64_t bytes, const int len, const RequestType type)
 		p = 1000;
 	}
 
-	if ( (type == RT_Estimate) && (bytes == 0) ) {
-		declen = len-(int)strlen(getunitprefix(2))-2;
+	if ((type == RT_Estimate) && (bytes == 0)) {
+		declen = len - (int)strlen(getunitprefix(2)) - 2;
 		if (declen < 2) {
 			declen = 2;
 		}
 		snprintf(buffer, 64, "%*s  %*s", declen, "--", (int)strlen(getunitprefix(2)), " ");
 	} else {
-		for (i=UNITPREFIXCOUNT-1; i>0; i--) {
-			limit = (uint64_t)(pow(p, i-1)) * 1000;
+		for (i = UNITPREFIXCOUNT - 1; i > 0; i--) {
+			limit = (uint64_t)(pow(p, i - 1)) * 1000;
 			if (bytes >= limit) {
-				if (i>1) {
-					snprintf(buffer, 64, "%"DECCONV"*.*f %s", getunitspacing(len, 5), declen, bytes/(double)(getunitdivisor(cfg.unitmode, i+1)), getunitprefix(i+1));
+				if (i > 1) {
+					snprintf(buffer, 64, "%" DECCONV "*.*f %s", getunitspacing(len, 5), declen, bytes / (double)(getunitdivisor(cfg.unitmode, i + 1)), getunitprefix(i + 1));
 				} else {
 					if (type == RT_Estimate) {
 						declen = 0;
 					}
-					snprintf(buffer, 64, "%"DECCONV"*.*f %s", getunitspacing(len, 2), declen, bytes/(double)(getunitdivisor(cfg.unitmode, i+1)), getunitprefix(i+1));
+					snprintf(buffer, 64, "%" DECCONV "*.*f %s", getunitspacing(len, 2), declen, bytes / (double)(getunitdivisor(cfg.unitmode, i + 1)), getunitprefix(i + 1));
 				}
 				return buffer;
 			}
 		}
-		snprintf(buffer, 64, "%"DECCONV"*"PRIu64" %s", getunitspacing(len, 1), bytes, getunitprefix(1));
+		snprintf(buffer, 64, "%" DECCONV "*" PRIu64 " %s", getunitspacing(len, 1), bytes, getunitprefix(1));
 	}
 
 	return buffer;
@@ -206,7 +205,7 @@ char *gettrafficrate(const uint64_t bytes, const time_t interval, const int len)
 	int declen = cfg.defaultdecimals;
 	uint64_t b;
 
-	if (interval==0) {
+	if (interval == 0) {
 		snprintf(buffer, 64, "%*s", len, "n/a");
 		return buffer;
 	}
@@ -219,7 +218,7 @@ char *gettrafficrate(const uint64_t bytes, const time_t interval, const int len)
 		}
 	} else {
 		b = bytes;
-		if (interval < 5 && ( b / (uint64_t)interval ) < 1000) {
+		if (interval < 5 && (b / (uint64_t)interval) < 1000) {
 			declen = 0;
 		}
 	}
@@ -229,43 +228,47 @@ char *gettrafficrate(const uint64_t bytes, const time_t interval, const int len)
 
 const char *getunitprefix(const int index)
 {
+	/* clang-format off */
     static const char *unitprefix[] = { "na",
         "B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB",  /* IEC   - 1024^n */
         "B", "KB",  "MB",  "GB",  "TB",  "PB",  "EB",   /* JEDEC - 1024^n */
         "B", "kB",  "MB",  "GB",  "TB",  "PB",  "EB" }; /* SI    - 1000^n */
+	/* clang-format on */
 
-	if (index>UNITPREFIXCOUNT) {
+	if (index > UNITPREFIXCOUNT) {
 		return unitprefix[0];
 	} else {
-		return unitprefix[(cfg.unitmode*UNITPREFIXCOUNT)+index];
+		return unitprefix[(cfg.unitmode * UNITPREFIXCOUNT) + index];
 	}
 }
 
 const char *getrateunitprefix(const int unitmode, const int index)
 {
+	/* clang-format off */
     static const char *rateunitprefix[] = { "na",
         "B/s",     "KiB/s",   "MiB/s",   "GiB/s",   "TiB/s",   "PiB/s",   "EiB/s",    /* IEC   - 1024^n */
         "B/s",     "KB/s",    "MB/s",    "GB/s",    "TB/s",    "PB/s",    "EB/s",     /* JEDEC - 1024^n */
         "B/s",     "kB/s",    "MB/s",    "GB/s",    "TB/s",    "PB/s",    "EB/s",     /* SI    - 1000^n */
         "bit/s",   "Kibit/s", "Mibit/s", "Gibit/s", "Tibit/s", "Pibit/s", "Eibit/s",  /* IEC   - 1024^n */
         "bit/s",   "kbit/s",  "Mbit/s",  "Gbit/s",  "Tbit/s",  "Pbit/s",  "Ebit/s" }; /* SI    - 1000^n */
+	/* clang-format on */
 
-	if (index>UNITPREFIXCOUNT) {
+	if (index > UNITPREFIXCOUNT) {
 		return rateunitprefix[0];
 	} else {
-		return rateunitprefix[(unitmode*UNITPREFIXCOUNT)+index];
+		return rateunitprefix[(unitmode * UNITPREFIXCOUNT) + index];
 	}
 }
 
 uint64_t getunitdivisor(const int unitmode, const int index)
 {
-	if (index>UNITPREFIXCOUNT) {
+	if (index > UNITPREFIXCOUNT) {
 		return 1;
 	} else {
 		if (unitmode == 2 || unitmode == 4) {
-			return (uint64_t)(pow(1000, index-1));
+			return (uint64_t)(pow(1000, index - 1));
 		} else {
-			return (uint64_t)(pow(1024, index-1));
+			return (uint64_t)(pow(1024, index - 1));
 		}
 	}
 }
@@ -295,18 +298,17 @@ char *getratestring(const uint64_t rate, const int len, const int declen)
 		p = 1000;
 	}
 
-	for (i=UNITPREFIXCOUNT-1; i>0; i--)
-	{
-		limit = (uint64_t)(pow(p, i-1)) * 1000;
+	for (i = UNITPREFIXCOUNT - 1; i > 0; i--) {
+		limit = (uint64_t)(pow(p, i - 1)) * 1000;
 		if (rate >= limit) {
-			l = getratespacing(len, unit, i+1);
-			snprintf(buffer, 64, "%"DECCONV"*.2f %s", l, rate/(double)(getunitdivisor(unit, i+1)), getrateunitprefix(unit, i+1));
+			l = getratespacing(len, unit, i + 1);
+			snprintf(buffer, 64, "%" DECCONV "*.2f %s", l, rate / (double)(getunitdivisor(unit, i + 1)), getrateunitprefix(unit, i + 1));
 			return buffer;
 		}
 	}
 
 	l = getratespacing(len, unit, 1);
-	snprintf(buffer, 64, "%"DECCONV"*.*f %s", l, declen, rate/(double)(getunitdivisor(unit, 1)), getrateunitprefix(unit, 1));
+	snprintf(buffer, 64, "%" DECCONV "*.*f %s", l, declen, rate / (double)(getunitdivisor(unit, 1)), getrateunitprefix(unit, 1));
 	return buffer;
 }
 
@@ -363,20 +365,20 @@ int validatedatetime(const char *str)
 {
 	short valid;
 	unsigned int len, i, t;
-	const char *templates[] = { "dddd-dd-dd dd:dd", "dddd-dd-dd" };
+	const char *templates[] = {"dddd-dd-dd dd:dd", "dddd-dd-dd"};
 
 	len = (unsigned int)strlen(str);
 	if (len > strlen(templates[0])) {
 		return 0;
 	}
 
-	for (t=0; t<2; t++) {
+	for (t = 0; t < 2; t++) {
 		if (len != strlen(templates[t])) {
 			continue;
 		}
 		valid = 1;
-		for (i=0; i<strlen(templates[t]); i++) {
-			switch(templates[t][i]) {
+		for (i = 0; i < strlen(templates[t]); i++) {
+			switch (templates[t][i]) {
 				case 'd':
 					if (!isdigit(str[i])) {
 						valid = 0;

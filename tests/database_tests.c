@@ -207,14 +207,14 @@ START_TEST(database_outputs_do_not_crash)
 	ret = db_addinterface("something");
 	ck_assert_int_eq(ret, 1);
 
-	for (i=1; i<100; i++) {
-		ret = db_addtraffic_dated("something", (uint64_t)i*1234, (uint64_t)i*2345, (uint64_t)i*85000);
+	for (i = 1; i < 100; i++) {
+		ret = db_addtraffic_dated("something", (uint64_t)i * 1234, (uint64_t)i * 2345, (uint64_t)i * 85000);
 		ck_assert_int_eq(ret, 1);
 	}
 
 	suppress_output();
 
-	for (i=0; i<=4; i++) {
+	for (i = 0; i <= 4; i++) {
 		cfg.ostyle = i;
 		showdb("something", 0, "", "");
 		showdb("something", 1, "", "");
@@ -275,7 +275,7 @@ START_TEST(database_outputs_do_not_crash_without_traffic)
 
 	suppress_output();
 
-	for (i=0; i<=4; i++) {
+	for (i = 0; i <= 4; i++) {
 		cfg.ostyle = i;
 		showdb("something", 0, "", "");
 		showdb("something", 1, "", "");
@@ -333,7 +333,7 @@ START_TEST(database_outputs_do_not_crash_without_data)
 
 	suppress_output();
 
-	for (i=0; i<=4; i++) {
+	for (i = 0; i <= 4; i++) {
 		cfg.ostyle = i;
 		showdb("something", 0, "", "");
 		showdb("something", 1, "", "");
@@ -394,7 +394,7 @@ START_TEST(database_outputs_do_not_crash_without_data_if_totals_are_wrong)
 
 	suppress_output();
 
-	for (i=0; i<=4; i++) {
+	for (i = 0; i <= 4; i++) {
 		cfg.ostyle = i;
 		showdb("something", 0, "", "");
 		showdb("something", 1, "", "");
@@ -658,28 +658,28 @@ START_TEST(importlegacydb_can_import_legacy_database)
 	data.totaltxk = 2;
 	data.currx = 456;
 	data.curtx = 654;
-	for (i=0; i<24; i++) {
+	for (i = 0; i < 24; i++) {
 		data.hour[i].date = 788911200 + 3600 * i;
-		data.hour[i].rx = (uint64_t)(12 * (i+1));
-		data.hour[i].tx = (uint64_t)(23 * (i+1));
+		data.hour[i].rx = (uint64_t)(12 * (i + 1));
+		data.hour[i].tx = (uint64_t)(23 * (i + 1));
 	}
-	for (i=0; i<30; i++) {
-		data.day[i].date = 788911200 + 86400 * (29-i);
+	for (i = 0; i < 30; i++) {
+		data.day[i].date = 788911200 + 86400 * (29 - i);
 		data.day[i].used = 1;
 		data.day[i].rx = (uint64_t)(34 * i);
 		data.day[i].tx = (uint64_t)(45 * i);
 	}
-	for (i=0; i<12; i++) {
-		data.month[i].month = 788911200 + 2678400 * (11-i);
+	for (i = 0; i < 12; i++) {
+		data.month[i].month = 788911200 + 2678400 * (11 - i);
 		data.month[i].used = 1;
 		data.month[i].rx = (uint64_t)(56 * i);
 		data.month[i].tx = (uint64_t)(67 * i);
 	}
-	for (i=0; i<10; i++) {
+	for (i = 0; i < 10; i++) {
 		data.top10[i].date = 788911200 + 86400 * i;
 		data.top10[i].used = 1;
-		data.top10[i].rx = (uint64_t)(89 * (9-i+1));
-		data.top10[i].tx = (uint64_t)(90 * (9-i+1));
+		data.top10[i].rx = (uint64_t)(89 * (9 - i + 1));
+		data.top10[i].tx = (uint64_t)(90 * (9 - i + 1));
 	}
 
 	ck_assert_int_eq(clean_testdbdir(), 1);
@@ -700,8 +700,8 @@ START_TEST(importlegacydb_can_import_legacy_database)
 
 	ck_assert_str_eq(info.alias, data.nick);
 	ck_assert_int_eq(info.active, data.active);
-	ck_assert_int_eq(info.rxtotal, (data.totalrx*1024*1024)+(uint64_t)(data.totalrxk*1024));
-	ck_assert_int_eq(info.txtotal, (data.totaltx*1024*1024)+(uint64_t)(data.totaltxk*1024));
+	ck_assert_int_eq(info.rxtotal, (data.totalrx * 1024 * 1024) + (uint64_t)(data.totalrxk * 1024));
+	ck_assert_int_eq(info.txtotal, (data.totaltx * 1024 * 1024) + (uint64_t)(data.totaltxk * 1024));
 	ck_assert_int_eq(info.rxcounter, data.currx);
 	ck_assert_int_eq(info.txcounter, data.curtx);
 	ck_assert_int_ge(info.created, data.created);
@@ -712,10 +712,9 @@ START_TEST(importlegacydb_can_import_legacy_database)
 	ck_assert_int_eq(datainfo.count, 30);
 	datalist_i = datalist;
 	i = 29;
-	while (datalist_i != NULL)
-	{
-		ck_assert_int_eq(datalist_i->rx, data.day[i].rx*1024*1024);
-		ck_assert_int_eq(datalist_i->tx, data.day[i].tx*1024*1024);
+	while (datalist_i != NULL) {
+		ck_assert_int_eq(datalist_i->rx, data.day[i].rx * 1024 * 1024);
+		ck_assert_int_eq(datalist_i->tx, data.day[i].tx * 1024 * 1024);
 		datalist_i = datalist_i->next;
 		i--;
 	}
@@ -726,10 +725,9 @@ START_TEST(importlegacydb_can_import_legacy_database)
 	ck_assert_int_eq(datainfo.count, 12);
 	datalist_i = datalist;
 	i = 11;
-	while (datalist_i != NULL)
-	{
-		ck_assert_int_eq(datalist_i->rx, data.month[i].rx*1024*1024);
-		ck_assert_int_eq(datalist_i->tx, data.month[i].tx*1024*1024);
+	while (datalist_i != NULL) {
+		ck_assert_int_eq(datalist_i->rx, data.month[i].rx * 1024 * 1024);
+		ck_assert_int_eq(datalist_i->tx, data.month[i].tx * 1024 * 1024);
 		datalist_i = datalist_i->next;
 		i--;
 	}
@@ -740,10 +738,9 @@ START_TEST(importlegacydb_can_import_legacy_database)
 	ck_assert_int_eq(datainfo.count, 24);
 	datalist_i = datalist;
 	i = 0;
-	while (datalist_i != NULL)
-	{
-		ck_assert_int_eq(datalist_i->rx, data.hour[i].rx*1024);
-		ck_assert_int_eq(datalist_i->tx, data.hour[i].tx*1024);
+	while (datalist_i != NULL) {
+		ck_assert_int_eq(datalist_i->rx, data.hour[i].rx * 1024);
+		ck_assert_int_eq(datalist_i->tx, data.hour[i].tx * 1024);
 		datalist_i = datalist_i->next;
 		i++;
 	}
@@ -754,10 +751,9 @@ START_TEST(importlegacydb_can_import_legacy_database)
 	ck_assert_int_eq(datainfo.count, 10);
 	datalist_i = datalist;
 	i = 0;
-	while (datalist_i != NULL)
-	{
-		ck_assert_int_eq(datalist_i->rx, data.top10[i].rx*1024*1024);
-		ck_assert_int_eq(datalist_i->tx, data.top10[i].tx*1024*1024);
+	while (datalist_i != NULL) {
+		ck_assert_int_eq(datalist_i->rx, data.top10[i].rx * 1024 * 1024);
+		ck_assert_int_eq(datalist_i->tx, data.top10[i].tx * 1024 * 1024);
 		datalist_i = datalist_i->next;
 		i++;
 	}
@@ -820,20 +816,20 @@ int writedb(DATA *data, const char *iface, const char *dirname, int newdb)
 	}
 
 	/* make sure version stays correct */
-	data->version=LEGACYDBVERSION;
+	data->version = LEGACYDBVERSION;
 
-	if ((testdb=fopen(file,"w"))==NULL) {
+	if ((testdb = fopen(file, "w")) == NULL) {
 		snprintf(errorstring, 1024, "Unable to open database \"%s\" for writing: %s", file, strerror(errno));
 		printe(PT_Error);
 		return 0;
 	}
 
 	/* update timestamp when not merging */
-	if (newdb!=2) {
-		data->lastupdated=time(NULL);
+	if (newdb != 2) {
+		data->lastupdated = time(NULL);
 	}
 
-	if (fwrite(data,sizeof(DATA),1,testdb)==0) {
+	if (fwrite(data, sizeof(DATA), 1, testdb) == 0) {
 		snprintf(errorstring, 1024, "Unable to write database \"%s\": %s", file, strerror(errno));
 		printe(PT_Error);
 		fclose(testdb);
@@ -843,7 +839,7 @@ int writedb(DATA *data, const char *iface, const char *dirname, int newdb)
 			printf("db: Database \"%s\" saved.\n", file);
 		}
 		fclose(testdb);
-		if ((newdb) && (noexit==0)) {
+		if ((newdb) && (noexit == 0)) {
 			snprintf(errorstring, 1024, "-> A new database has been created.");
 			printe(PT_Info);
 			matchdbownerwithdirowner(dirname);
@@ -872,7 +868,7 @@ int backupdb(const char *current, const char *backup)
 	b = fileno(bf);
 
 	/* copy data */
-	while((bytes = (int)read(c, buffer, sizeof(buffer))) > 0) {
+	while ((bytes = (int)read(c, buffer, sizeof(buffer))) > 0) {
 		if (write(b, buffer, (size_t)bytes) < 0) {
 			close(c);
 			fclose(bf);

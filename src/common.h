@@ -37,18 +37,18 @@
 
 /* OpenBSD and NetBSD don't support the ' character (decimal conversion) in printf formatting */
 #if !defined(__OpenBSD__) && !defined(__NetBSD__)
-  #define DECCONV "'"
+#define DECCONV "'"
 #else
-  #define DECCONV
+#define DECCONV
 #endif
 
 /* used in debug to get function name */
 #if __STDC_VERSION__ < 199901L
-  #if __GNUC__ >= 2
-    #define __func__ __FUNCTION__
-  #else
-    #define __func__ "function"
-  #endif
+#if __GNUC__ >= 2
+#define __func__ __FUNCTION__
+#else
+#define __func__ "function"
+#endif
 #endif
 
 /*
@@ -60,11 +60,11 @@ and most can be changed later from the config file.
 
 /* location of the database directory */
 #ifndef DATABASEDIR
-  #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__)
-    #define DATABASEDIR "/var/db/vnstat"
-  #else
-    #define DATABASEDIR "/var/lib/vnstat"
-  #endif
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__)
+#define DATABASEDIR "/var/db/vnstat"
+#else
+#define DATABASEDIR "/var/lib/vnstat"
+#endif
 #endif
 
 /* database file name */
@@ -76,10 +76,10 @@ and most can be changed later from the config file.
 
 /* date output formats for -d, -m, -t and image header*/
 /* see 'man date' for control codes      1.x values     <1.8 values */
-#define DFORMAT "%Y-%m-%d"             /* "%x"         "%d.%m." */
-#define MFORMAT "%Y-%m"                /* "%b '%y"     "%b '%y" */
-#define TFORMAT "%Y-%m-%d"             /* "%x"         "%d.%m.%y" */
-#define HFORMAT "%Y-%m-%d %H:%M"       /* "%x %H:%M"   "%d.%m.%Y %H:%M" */
+#define DFORMAT "%Y-%m-%d"		 /* "%x"         "%d.%m." */
+#define MFORMAT "%Y-%m"			 /* "%b '%y"     "%b '%y" */
+#define TFORMAT "%Y-%m-%d"		 /* "%x"         "%d.%m.%y" */
+#define HFORMAT "%Y-%m-%d %H:%M" /* "%x %H:%M"   "%d.%m.%Y %H:%M" */
 
 #ifndef DATETIMEFORMAT
 #define DATETIMEFORMAT "%Y-%m-%d %H:%M:%S"
@@ -322,7 +322,7 @@ extern IFINFO ifinfo;
 extern char errorstring[1024];
 extern ibwnode *ifacebw;
 extern int debug;
-extern int noexit;      /* = running as daemon if 2 */
+extern int noexit; /* = running as daemon if 2 */
 extern int intsignal;
 extern int pidfile;
 extern int disableprints;

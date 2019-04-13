@@ -15,11 +15,11 @@ int getifinfo(const char *iface)
 
 #if defined(__linux__)
 	if (cfg.is64bit == -2) {
-  #if HAVE_DECL_IFLA_STATS64
+#if HAVE_DECL_IFLA_STATS64
 		ifinfo.is64bit = 1;
-  #else
+#else
 		ifinfo.is64bit = 0;
-  #endif
+#endif
 	} else {
 		ifinfo.is64bit = (short)cfg.is64bit;
 	}
@@ -31,7 +31,7 @@ int getifinfo(const char *iface)
 	}
 #endif
 
-	if (strcmp(iface, "default")==0) {
+	if (strcmp(iface, "default") == 0) {
 		strncpy_nt(inface, cfg.iface, 32);
 	} else {
 		strncpy_nt(inface, iface, 32);
@@ -39,7 +39,7 @@ int getifinfo(const char *iface)
 
 #if defined(__linux__) || defined(CHECK_VNSTAT)
 	/* try getting interface info from /proc */
-	if (readproc(inface)==1) {
+	if (readproc(inface) == 1) {
 		ifinfo.timestamp = time(NULL);
 		return 1;
 	} else {
@@ -48,13 +48,13 @@ int getifinfo(const char *iface)
 	}
 
 	/* try getting interface info from /sys */
-	if (readsysclassnet(inface)==1) {
+	if (readsysclassnet(inface) == 1) {
 		ifinfo.timestamp = time(NULL);
 		return 1;
 	}
 
-#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__)  || defined(__FreeBSD_kernel__)
-	if (readifaddrs(inface)==1) {
+#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__FreeBSD_kernel__)
+	if (readifaddrs(inface) == 1) {
 		ifinfo.timestamp = time(NULL);
 		return 1;
 	}
@@ -87,14 +87,14 @@ int getiflist(char **ifacelist, int showspeed)
 	*ifacelist[0] = '\0';
 
 #if defined(__linux__) || defined(CHECK_VNSTAT)
-	if ((fp=fopen(PROCNETDEV, "r"))!=NULL) {
+	if ((fp = fopen(PROCNETDEV, "r")) != NULL) {
 
 		/* make list of interfaces */
-		while (fgets(procline, 512, fp)!=NULL) {
+		while (fgets(procline, 512, fp) != NULL) {
 			sscanf(procline, "%63s", temp);
-			if (strlen(temp)>0 && (isdigit(temp[(strlen(temp)-1)]) || temp[(strlen(temp)-1)]==':')) {
+			if (strlen(temp) > 0 && (isdigit(temp[(strlen(temp) - 1)]) || temp[(strlen(temp) - 1)] == ':')) {
 				sscanf(temp, "%31[^':']s", interface);
-				*ifacelist = (char *)realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(interface) + 2 ) * sizeof(char)) );
+				*ifacelist = (char *)realloc(*ifacelist, ((strlen(*ifacelist) + strlen(interface) + 2) * sizeof(char)));
 				if (*ifacelist == NULL) {
 					panicexit(__FILE__, __LINE__);
 				}
@@ -106,7 +106,7 @@ int getiflist(char **ifacelist, int showspeed)
 				speed = getifspeed(interface);
 				if (speed > 0) {
 					snprintf(temp, 64, "(%u Mbit) ", speed);
-					*ifacelist = (char *)realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(temp) + 1 ) * sizeof(char)) );
+					*ifacelist = (char *)realloc(*ifacelist, ((strlen(*ifacelist) + strlen(temp) + 1) * sizeof(char)));
 					if (*ifacelist == NULL) {
 						panicexit(__FILE__, __LINE__);
 					}
@@ -120,14 +120,14 @@ int getiflist(char **ifacelist, int showspeed)
 
 	} else {
 
-		if ((dp=opendir(SYSCLASSNET))!=NULL) {
+		if ((dp = opendir(SYSCLASSNET)) != NULL) {
 
 			/* make list of interfaces */
-			while ((di=readdir(dp))) {
+			while ((di = readdir(dp))) {
 				if (di->d_name[0] == '.' || strlen(di->d_name) > 31) {
 					continue;
 				}
-				*ifacelist = (char *)realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(di->d_name) + 2 ) * sizeof(char)) );
+				*ifacelist = (char *)realloc(*ifacelist, ((strlen(*ifacelist) + strlen(di->d_name) + 2) * sizeof(char)));
 				if (*ifacelist == NULL) {
 					panicexit(__FILE__, __LINE__);
 				}
@@ -139,7 +139,7 @@ int getiflist(char **ifacelist, int showspeed)
 				speed = getifspeed(di->d_name);
 				if (speed > 0) {
 					snprintf(temp, 64, "(%u Mbit) ", speed);
-					*ifacelist = (char *)realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(temp) + 1 ) * sizeof(char)) );
+					*ifacelist = (char *)realloc(*ifacelist, ((strlen(*ifacelist) + strlen(temp) + 1) * sizeof(char)));
 					if (*ifacelist == NULL) {
 						panicexit(__FILE__, __LINE__);
 					}
@@ -160,7 +160,7 @@ int getiflist(char **ifacelist, int showspeed)
 			if (ifa->ifa_addr->sa_family != AF_LINK || strlen(ifa->ifa_name) > 31) {
 				continue;
 			}
-			*ifacelist = realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(ifa->ifa_name) + 2 ) * sizeof(char)) );
+			*ifacelist = realloc(*ifacelist, ((strlen(*ifacelist) + strlen(ifa->ifa_name) + 2) * sizeof(char)));
 			if (*ifacelist == NULL) {
 				panicexit(__FILE__, __LINE__);
 			}
@@ -172,7 +172,7 @@ int getiflist(char **ifacelist, int showspeed)
 			speed = getifspeed(ifa->ifa_name);
 			if (speed > 0) {
 				snprintf(temp, 64, "(%u Mbit) ", speed);
-				*ifacelist = realloc(*ifacelist, ( ( strlen(*ifacelist) + strlen(temp) + 1 ) * sizeof(char)) );
+				*ifacelist = realloc(*ifacelist, ((strlen(*ifacelist) + strlen(temp) + 1) * sizeof(char)));
 				if (*ifacelist == NULL) {
 					panicexit(__FILE__, __LINE__);
 				}
@@ -195,7 +195,7 @@ int readproc(const char *iface)
 	char temp[4][64], procline[512], *proclineptr, ifaceid[33];
 	int check;
 
-	if ((fp=fopen(PROCNETDEV, "r"))==NULL) {
+	if ((fp = fopen(PROCNETDEV, "r")) == NULL) {
 		if (debug)
 			printf("Error: Unable to read %s: %s\n", PROCNETDEV, strerror(errno));
 		return 0;
@@ -205,9 +205,9 @@ int readproc(const char *iface)
 	strcat(ifaceid, ":");
 
 	check = 0;
-	while (fgets(procline, 512, fp)!=NULL) {
+	while (fgets(procline, 512, fp) != NULL) {
 		sscanf(procline, "%63s", temp[0]);
-		if (strncmp(ifaceid, temp[0], strlen(ifaceid))==0) {
+		if (strncmp(ifaceid, temp[0], strlen(ifaceid)) == 0) {
 			/* if (debug)
 				printf("\n%s\n", procline); */
 			check = 1;
@@ -216,7 +216,7 @@ int readproc(const char *iface)
 	}
 	fclose(fp);
 
-	if (check==0) {
+	if (check == 0) {
 		if (debug)
 			printf("Requested interface \"%s\" not found.\n", iface);
 		return 0;
@@ -226,7 +226,7 @@ int readproc(const char *iface)
 
 		/* get rx and tx from procline */
 		proclineptr = strchr(procline, ':');
-		sscanf(proclineptr+1, "%63s %63s %*s %*s %*s %*s %*s %*s %63s %63s", temp[0], temp[1], temp[2], temp[3]);
+		sscanf(proclineptr + 1, "%63s %63s %*s %*s %*s %*s %*s %*s %63s %63s", temp[0], temp[1], temp[2], temp[3]);
 
 		ifinfo.rx = strtoull(temp[0], (char **)NULL, 0);
 		ifinfo.tx = strtoull(temp[2], (char **)NULL, 0);
@@ -257,12 +257,12 @@ int readsysclassnet(const char *iface)
 
 	/* rx bytes */
 	snprintf(file, 76, "%s/rx_bytes", path);
-	if ((fp=fopen(file, "r"))==NULL) {
+	if ((fp = fopen(file, "r")) == NULL) {
 		if (debug)
 			printf("Unable to read: %s - %s\n", file, strerror(errno));
 		return 0;
 	} else {
-		if (fgets(buffer, 64, fp)!=NULL) {
+		if (fgets(buffer, 64, fp) != NULL) {
 			ifinfo.rx = strtoull(buffer, (char **)NULL, 0);
 		} else {
 			fclose(fp);
@@ -273,12 +273,12 @@ int readsysclassnet(const char *iface)
 
 	/* tx bytes */
 	snprintf(file, 76, "%s/tx_bytes", path);
-	if ((fp=fopen(file, "r"))==NULL) {
+	if ((fp = fopen(file, "r")) == NULL) {
 		if (debug)
 			printf("Unable to read: %s - %s\n", file, strerror(errno));
 		return 0;
 	} else {
-		if (fgets(buffer, 64, fp)!=NULL) {
+		if (fgets(buffer, 64, fp) != NULL) {
 			ifinfo.tx = strtoull(buffer, (char **)NULL, 0);
 		} else {
 			fclose(fp);
@@ -292,12 +292,12 @@ int readsysclassnet(const char *iface)
 
 		/* rx packets */
 		snprintf(file, 76, "%s/rx_packets", path);
-		if ((fp=fopen(file, "r"))==NULL) {
+		if ((fp = fopen(file, "r")) == NULL) {
 			if (debug)
 				printf("Unable to read: %s - %s\n", file, strerror(errno));
 			return 0;
 		} else {
-			if (fgets(buffer, 64, fp)!=NULL) {
+			if (fgets(buffer, 64, fp) != NULL) {
 				ifinfo.rxp = strtoull(buffer, (char **)NULL, 0);
 			} else {
 				fclose(fp);
@@ -308,12 +308,12 @@ int readsysclassnet(const char *iface)
 
 		/* tx packets */
 		snprintf(file, 76, "%s/tx_packets", path);
-		if ((fp=fopen(file, "r"))==NULL) {
+		if ((fp = fopen(file, "r")) == NULL) {
 			if (debug)
 				printf("Unable to read: %s - %s\n", file, strerror(errno));
 			return 0;
 		} else {
-			if (fgets(buffer, 64, fp)!=NULL) {
+			if (fgets(buffer, 64, fp) != NULL) {
 				ifinfo.txp = strtoull(buffer, (char **)NULL, 0);
 			} else {
 				fclose(fp);
@@ -392,12 +392,12 @@ uint32_t getifspeed(const char *iface)
 
 	snprintf(file, 64, "%s/%s/speed", SYSCLASSNET, iface);
 
-	if ((fp=fopen(file, "r"))==NULL) {
+	if ((fp = fopen(file, "r")) == NULL) {
 		if (debug)
 			printf("Unable to open: %s - %s\n", file, strerror(errno));
 		return 0;
 	} else {
-		if (fgets(buffer, 64, fp)!=NULL) {
+		if (fgets(buffer, 64, fp) != NULL) {
 			speed = strtoull(buffer, (char **)NULL, 0);
 		} else {
 			if (debug)
@@ -408,7 +408,7 @@ uint32_t getifspeed(const char *iface)
 	}
 	fclose(fp);
 
-#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__)  || defined(__FreeBSD_kernel__)
+#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__FreeBSD_kernel__)
 
 	struct if_data ifd;
 
@@ -422,7 +422,7 @@ uint32_t getifspeed(const char *iface)
 
 #endif
 	if (debug)
-		printf("getifspeed: \"%s\": %"PRIu64"\n", iface, speed);
+		printf("getifspeed: \"%s\": %" PRIu64 "\n", iface, speed);
 
 	if (speed > 1000000) {
 		speed = 0;

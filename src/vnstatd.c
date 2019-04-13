@@ -35,13 +35,13 @@ int main(int argc, char *argv[])
 
 	/* early check for debug and config parameter */
 	if (argc > 1) {
-		for (currentarg=1; currentarg<argc; currentarg++) {
-			if ((strcmp(argv[currentarg],"-D")==0) || (strcmp(argv[currentarg],"--debug")==0)) {
+		for (currentarg = 1; currentarg < argc; currentarg++) {
+			if ((strcmp(argv[currentarg], "-D") == 0) || (strcmp(argv[currentarg], "--debug") == 0)) {
 				debug = 1;
 				printf("Debug enabled, vnstatd %s\n", VERSION);
-			} else if (strcmp(argv[currentarg],"--config")==0) {
-				if (currentarg+1<argc) {
-					strncpy_nt(s.cfgfile, argv[currentarg+1], 512);
+			} else if (strcmp(argv[currentarg], "--config") == 0) {
+				if (currentarg + 1 < argc) {
+					strncpy_nt(s.cfgfile, argv[currentarg + 1], 512);
 					if (debug)
 						printf("Used config file: %s\n", s.cfgfile);
 					currentarg++;
@@ -67,30 +67,30 @@ int main(int argc, char *argv[])
 	strncpy_nt(s.user, cfg.daemonuser, 33);
 	strncpy_nt(s.group, cfg.daemongroup, 33);
 	s.updateinterval = cfg.updateinterval;
-	s.saveinterval = cfg.saveinterval*60;
+	s.saveinterval = cfg.saveinterval * 60;
 
 	/* parse parameters, maybe not the best way but... */
-	for (currentarg=1; currentarg<argc; currentarg++) {
+	for (currentarg = 1; currentarg < argc; currentarg++) {
 		if (debug)
-			printf("arg %d: \"%s\"\n",currentarg,argv[currentarg]);
-		if ((strcmp(argv[currentarg],"-?")==0) || (strcmp(argv[currentarg],"--help")==0)) {
+			printf("arg %d: \"%s\"\n", currentarg, argv[currentarg]);
+		if ((strcmp(argv[currentarg], "-?") == 0) || (strcmp(argv[currentarg], "--help") == 0)) {
 			break;
-		} else if (strcmp(argv[currentarg],"--config")==0) {
+		} else if (strcmp(argv[currentarg], "--config") == 0) {
 			/* config has already been parsed earlier so nothing to do here */
 			currentarg++;
 			continue;
-		} else if ((strcmp(argv[currentarg],"-D")==0) || (strcmp(argv[currentarg],"--debug")==0)) {
+		} else if ((strcmp(argv[currentarg], "-D") == 0) || (strcmp(argv[currentarg], "--debug") == 0)) {
 			debug = 1;
-		} else if ((strcmp(argv[currentarg],"-d")==0) || (strcmp(argv[currentarg],"--daemon")==0)) {
+		} else if ((strcmp(argv[currentarg], "-d") == 0) || (strcmp(argv[currentarg], "--daemon") == 0)) {
 			s.rundaemon = 1;
 			s.showhelp = 0;
-		} else if ((strcmp(argv[currentarg],"-n")==0) || (strcmp(argv[currentarg],"--nodaemon")==0)) {
+		} else if ((strcmp(argv[currentarg], "-n") == 0) || (strcmp(argv[currentarg], "--nodaemon") == 0)) {
 			s.showhelp = 0;
-		} else if ((strcmp(argv[currentarg],"-s")==0) || (strcmp(argv[currentarg],"--sync")==0)) {
+		} else if ((strcmp(argv[currentarg], "-s") == 0) || (strcmp(argv[currentarg], "--sync") == 0)) {
 			s.sync = 1;
-		} else if ((strcmp(argv[currentarg],"-u")==0) || (strcmp(argv[currentarg],"--user")==0)) {
-			if (currentarg+1<argc) {
-				strncpy_nt(s.user, argv[currentarg+1], 33);
+		} else if ((strcmp(argv[currentarg], "-u") == 0) || (strcmp(argv[currentarg], "--user") == 0)) {
+			if (currentarg + 1 < argc) {
+				strncpy_nt(s.user, argv[currentarg + 1], 33);
 				if (debug)
 					printf("Requested user: \"%s\"\n", s.user);
 				currentarg++;
@@ -99,9 +99,9 @@ int main(int argc, char *argv[])
 				printf("Error: User for --user missing.\n");
 				return 1;
 			}
-		} else if ((strcmp(argv[currentarg],"-g")==0) || (strcmp(argv[currentarg],"--group")==0)) {
-			if (currentarg+1<argc) {
-				strncpy_nt(s.group, argv[currentarg+1], 33);
+		} else if ((strcmp(argv[currentarg], "-g") == 0) || (strcmp(argv[currentarg], "--group") == 0)) {
+			if (currentarg + 1 < argc) {
+				strncpy_nt(s.group, argv[currentarg + 1], 33);
 				if (debug)
 					printf("Requested group: \"%s\"\n", s.group);
 				currentarg++;
@@ -110,16 +110,16 @@ int main(int argc, char *argv[])
 				printf("Error: Group for --group missing.\n");
 				return 1;
 			}
-		} else if (strcmp(argv[currentarg],"--noadd")==0) {
+		} else if (strcmp(argv[currentarg], "--noadd") == 0) {
 			s.noadd = 1;
-		} else if (strcmp(argv[currentarg],"--alwaysadd")==0) {
+		} else if (strcmp(argv[currentarg], "--alwaysadd") == 0) {
 			s.alwaysadd = 1;
-		} else if ((strcmp(argv[currentarg],"-v")==0) || (strcmp(argv[currentarg],"--version")==0)) {
+		} else if ((strcmp(argv[currentarg], "-v") == 0) || (strcmp(argv[currentarg], "--version") == 0)) {
 			printf("vnStat daemon %s by Teemu Toivola <tst at iki dot fi>\n", getversion());
 			return 0;
-		} else if ((strcmp(argv[currentarg],"-p")==0) || (strcmp(argv[currentarg],"--pidfile")==0)) {
-			if (currentarg+1<argc) {
-				strncpy_nt(cfg.pidfile, argv[currentarg+1], 512);
+		} else if ((strcmp(argv[currentarg], "-p") == 0) || (strcmp(argv[currentarg], "--pidfile") == 0)) {
+			if (currentarg + 1 < argc) {
+				strncpy_nt(cfg.pidfile, argv[currentarg + 1], 512);
 				cfg.pidfile[511] = '\0';
 				if (debug)
 					printf("Used pid file: %s\n", cfg.pidfile);
@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
 				return 1;
 			}
 		} else {
-			printf("Unknown arg \"%s\". Use --help for help.\n",argv[currentarg]);
+			printf("Unknown arg \"%s\". Use --help for help.\n", argv[currentarg]);
 			return 1;
 		}
 	}
@@ -193,11 +193,11 @@ int main(int argc, char *argv[])
 	s.running = 1;
 
 #if defined(__linux__)
-  #if HAVE_DECL_IFLA_STATS64
+#if HAVE_DECL_IFLA_STATS64
 	snprintf(errorstring, 1024, "vnStat daemon %s started. (pid:%d uid:%d gid:%d 64-bit)", getversion(), (int)getpid(), (int)getuid(), (int)getgid());
-  #else
+#else
 	snprintf(errorstring, 1024, "vnStat daemon %s started. (pid:%d uid:%d gid:%d 32-bit)", getversion(), (int)getpid(), (int)getuid(), (int)getgid());
-  #endif
+#endif
 #else
 	snprintf(errorstring, 1024, "vnStat daemon %s started. (pid:%d uid:%d gid:%d)", getversion(), (int)getpid(), (int)getuid(), (int)getgid());
 #endif
@@ -249,7 +249,7 @@ int main(int argc, char *argv[])
 			if (s.dbifcount == 0) {
 				filldatabaselist(&s);
 
-			/* update data cache */
+				/* update data cache */
 			} else {
 				s.prevdbupdate = s.current - (s.current % s.updateinterval);
 

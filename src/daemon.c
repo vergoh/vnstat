@@ -15,17 +15,17 @@ void daemonize(void)
 	int i;
 	char str[10];
 
-	if (getppid()==1) {
+	if (getppid() == 1) {
 		return; /* already a daemon */
 	}
 
 	i = (int)fork();
 
-	if (i<0) { /* fork error */
+	if (i < 0) { /* fork error */
 		perror("Error: fork");
 		exit(EXIT_FAILURE);
 	}
-	if (i>0) { /* parent exits */
+	if (i > 0) { /* parent exits */
 		exit(EXIT_SUCCESS);
 	}
 	/* child (daemon) continues */
@@ -38,14 +38,14 @@ void daemonize(void)
 	}
 
 	/* lock / pid file */
-	pidfile = open(cfg.pidfile, O_RDWR|O_CREAT, 0644);
-	if (pidfile<0) {
+	pidfile = open(cfg.pidfile, O_RDWR | O_CREAT, 0644);
+	if (pidfile < 0) {
 		perror("Error: pidfile");
 		snprintf(errorstring, 1024, "opening pidfile \"%s\" failed (%s), exiting.", cfg.pidfile, strerror(errno));
 		printe(PT_Error);
 		exit(EXIT_FAILURE); /* can't open */
 	}
-	if (lockf(pidfile,F_TLOCK,0)<0) {
+	if (lockf(pidfile, F_TLOCK, 0) < 0) {
 		perror("Error: pidfile lock");
 		snprintf(errorstring, 1024, "pidfile \"%s\" lock failed (%s), exiting.", cfg.pidfile, strerror(errno));
 		printe(PT_Error);
@@ -53,14 +53,14 @@ void daemonize(void)
 	}
 
 	/* close all descriptors except lock file */
-	for (i=getdtablesize();i>=0;--i) {
-		if (i!=pidfile) {
+	for (i = getdtablesize(); i >= 0; --i) {
+		if (i != pidfile) {
 			close(i);
 		}
 	}
 
 	/* redirect standard i/o to null */
-	i=open("/dev/null",O_RDWR); /* stdin */
+	i = open("/dev/null", O_RDWR); /* stdin */
 
 	if (i < 0) {
 		perror("Error: open() /dev/null");
@@ -100,17 +100,17 @@ void daemonize(void)
 	snprintf(str, 10, "%d\n", (int)getpid());
 
 	/* record pid to pidfile */
-	if (write(pidfile,str,strlen(str)) < 0) {
+	if (write(pidfile, str, strlen(str)) < 0) {
 		perror("Error: write(pidfile)");
 		snprintf(errorstring, 1024, "writing to pidfile \"%s\" failed (%s), exiting.", cfg.pidfile, strerror(errno));
 		printe(PT_Error);
 		exit(EXIT_FAILURE);
 	}
 
-	signal(SIGCHLD,SIG_IGN); /* ignore child */
-	signal(SIGTSTP,SIG_IGN); /* ignore tty signals */
-	signal(SIGTTOU,SIG_IGN);
-	signal(SIGTTIN,SIG_IGN);
+	signal(SIGCHLD, SIG_IGN); /* ignore child */
+	signal(SIGTSTP, SIG_IGN); /* ignore tty signals */
+	signal(SIGTTOU, SIG_IGN);
+	signal(SIGTTIN, SIG_IGN);
 }
 
 unsigned int addinterfaces(DSTATE *s)
@@ -122,12 +122,12 @@ unsigned int addinterfaces(DSTATE *s)
 	timeused(__func__, 1);
 
 	/* get list of currently visible interfaces */
-	if (getiflist(&ifacelist, 0)==0) {
+	if (getiflist(&ifacelist, 0) == 0) {
 		free(ifacelist);
 		return 0;
 	}
 
-	if (strlen(ifacelist)<2) {
+	if (strlen(ifacelist) < 2) {
 		free(ifacelist);
 		return 0;
 	}
@@ -135,14 +135,14 @@ unsigned int addinterfaces(DSTATE *s)
 	if (debug)
 		printf("Interface list: \"%s\"\n", ifacelist);
 
-	while (sscanf(ifacelist+index, "%31s", interface)!=EOF) {
+	while (sscanf(ifacelist + index, "%31s", interface) != EOF) {
 		if (debug)
 			printf("Processing: \"%s\"\n", interface);
 
-		index += strlen(interface)+1;
+		index += strlen(interface) + 1;
 
 		/* skip local interfaces */
-		if ((strcmp(interface,"lo")==0) || (strcmp(interface,"lo0")==0) || (strcmp(interface,"sit0")==0)) {
+		if ((strcmp(interface, "lo") == 0) || (strcmp(interface, "lo0") == 0) || (strcmp(interface, "sit0") == 0)) {
 			if (debug)
 				printf("skip\n");
 			continue;
@@ -174,7 +174,7 @@ unsigned int addinterfaces(DSTATE *s)
 		count++;
 		ibwget(interface, &bwlimit);
 		if (bwlimit > 0) {
-			snprintf(errorstring, 1024, "Interface \"%s\" added with %"PRIu32" Mbit bandwidth limit.", interface, bwlimit);
+			snprintf(errorstring, 1024, "Interface \"%s\" added with %" PRIu32 " Mbit bandwidth limit.", interface, bwlimit);
 		} else {
 			snprintf(errorstring, 1024, "Interface \"%s\" added. Warning: no bandwidth limit has been set.", interface);
 		}
@@ -212,19 +212,19 @@ void detectboot(DSTATE *s)
 	if (current_btime == 0) {
 		return;
 	} else if (strlen(btime_buffer) == 0) {
-		snprintf(buffer, 32, "%"PRIu64"", current_btime);
+		snprintf(buffer, 32, "%" PRIu64 "", current_btime);
 		db_setinfo("btime", buffer, 1);
 		return;
 	}
 	db_btime = strtoull(btime_buffer, (char **)NULL, 0);
 
-	if (db_btime < (current_btime-(uint32_t)cfg.bvar)) {
+	if (db_btime < (current_btime - (uint32_t)cfg.bvar)) {
 		s->bootdetected = 1;
 		if (debug)
-			printf("System has been booted, %"PRIu64" < %"PRIu64" - %d\n", db_btime, current_btime, cfg.bvar);
+			printf("System has been booted, %" PRIu64 " < %" PRIu64 " - %d\n", db_btime, current_btime, cfg.bvar);
 	}
 
-	snprintf(buffer, 32, "%"PRIu64"", current_btime);
+	snprintf(buffer, 32, "%" PRIu64 "", current_btime);
 	db_setinfo("btime", buffer, 1);
 }
 
@@ -240,8 +240,8 @@ void debugtimestamp(void)
 
 void initdstate(DSTATE *s)
 {
-	noexit = 1;        /* disable exits in functions */
-	debug = 0;         /* debug disabled by default */
+	noexit = 1;		   /* disable exits in functions */
+	debug = 0;		   /* debug disabled by default */
 	disableprints = 0; /* let prints be visible */
 	s->rundaemon = 0;  /* daemon disabled by default */
 
@@ -277,7 +277,7 @@ void preparedatabases(DSTATE *s)
 	}
 
 	if (debug) {
-		printf("db if count: %"PRIu64"\n", s->dbifcount);
+		printf("db if count: %" PRIu64 "\n", s->dbifcount);
 	}
 
 	if (s->noadd) {
@@ -316,7 +316,7 @@ unsigned int importlegacydbs(DSTATE *s)
 	struct dirent *di;
 	unsigned int importcount = 0;
 
-	if ((dir=opendir(s->dirname))==NULL) {
+	if ((dir = opendir(s->dirname)) == NULL) {
 		printf("Error: Unable to open database directory \"%s\": %s\n", s->dirname, strerror(errno));
 		printf("Make sure it exists and is at least read enabled for current user.\n");
 		printf("Exiting...\n");
@@ -324,8 +324,8 @@ unsigned int importlegacydbs(DSTATE *s)
 	}
 
 	s->dbifcount = 0;
-	while ((di=readdir(dir))) {
-		if ((di->d_name[0]!='.') && (strcmp(di->d_name, DATABASEFILE)!=0)) {
+	while ((di = readdir(dir))) {
+		if ((di->d_name[0] != '.') && (strcmp(di->d_name, DATABASEFILE) != 0)) {
 			/* ignore already known interfaces */
 			if (db_getinterfacecountbyname(di->d_name)) {
 				continue;
@@ -515,7 +515,7 @@ int processifinfo(DSTATE *s, datacache **dc)
 	if ((*dc)->updated > ifinfo.timestamp) {
 		/* skip update if previous update is less than a day in the future */
 		/* otherwise exit with error message since the clock is problably messed */
-		if ((*dc)->updated > (ifinfo.timestamp+86400)) {
+		if ((*dc)->updated > (ifinfo.timestamp + 86400)) {
 			snprintf(errorstring, 1024, "Interface \"%s\" has previous update date too much in the future, exiting. (%u / %u)", (*dc)->interface, (unsigned int)(*dc)->updated, (unsigned int)ifinfo.timestamp);
 			printe(PT_Error);
 			errorexitdaemon(s, 1);
@@ -526,7 +526,7 @@ int processifinfo(DSTATE *s, datacache **dc)
 	interval = ifinfo.timestamp - (*dc)->updated;
 	/* maximum configurable update interval is 5 minutes, limit here is set to 6 minutes (360 seconds) */
 	/* in order to be on the safe side and avoid discarding data in case there's some random extra delay */
-	if ( (interval >= 1) && (interval <= 360) ) {
+	if ((interval >= 1) && (interval <= 360)) {
 
 		rxchange = countercalc(&(*dc)->currx, &ifinfo.rx, ifinfo.is64bit);
 		txchange = countercalc(&(*dc)->curtx, &ifinfo.tx, ifinfo.is64bit);
@@ -538,14 +538,14 @@ int processifinfo(DSTATE *s, datacache **dc)
 
 			/* calculate maximum possible transfer since last update based on set maximum rate */
 			/* and add 10% in order to be on the safe side */
-			maxtransfer = (uint64_t)(ceilf((maxbw/(float)8)*interval*(float)1.1)) * 1024 * 1024;
+			maxtransfer = (uint64_t)(ceilf((maxbw / (float)8) * interval * (float)1.1)) * 1024 * 1024;
 
 			if (debug)
-				printf("interval: %"PRIu64"  maxbw: %"PRIu32"  maxrate: %"PRIu64"  rxc: %"PRIu64"  txc: %"PRIu64"\n", (uint64_t)interval, maxbw, maxtransfer, rxchange, txchange);
+				printf("interval: %" PRIu64 "  maxbw: %" PRIu32 "  maxrate: %" PRIu64 "  rxc: %" PRIu64 "  txc: %" PRIu64 "\n", (uint64_t)interval, maxbw, maxtransfer, rxchange, txchange);
 
 			/* sync counters if traffic is greater than set maximum */
-			if ( (rxchange > maxtransfer) || (txchange > maxtransfer) ) {
-				snprintf(errorstring, 1024, "Traffic rate for \"%s\" higher than set maximum %"PRIu32" Mbit (%"PRIu64"->%"PRIu64", r%"PRIu64" t%"PRIu64"), syncing.", (*dc)->interface, maxbw, (uint64_t)interval, maxtransfer, rxchange, txchange);
+			if ((rxchange > maxtransfer) || (txchange > maxtransfer)) {
+				snprintf(errorstring, 1024, "Traffic rate for \"%s\" higher than set maximum %" PRIu32 " Mbit (%" PRIu64 "->%" PRIu64 ", r%" PRIu64 " t%" PRIu64 "), syncing.", (*dc)->interface, maxbw, (uint64_t)interval, maxtransfer, rxchange, txchange);
 				printe(PT_Info);
 				rxchange = txchange = 0;
 			}
@@ -795,11 +795,11 @@ void datacache_status(datacache **dc)
 	b = (unsigned int)strlen(buffer) + 1;
 
 	while (iterator != NULL) {
-		if ((b+strlen(iterator->interface)+16) < 1020) {
+		if ((b + strlen(iterator->interface) + 16) < 1020) {
 			if (!ibwget(iterator->interface, &bwlimit) || bwlimit == 0) {
 				snprintf(bwtemp, 16, " (no limit) ");
 			} else {
-				snprintf(bwtemp, 16, " (%"PRIu32" Mbit) ", bwlimit);
+				snprintf(bwtemp, 16, " (%" PRIu32 " Mbit) ", bwlimit);
 			}
 			strcat(buffer, iterator->interface);
 			strcat(buffer, bwtemp);
@@ -831,7 +831,7 @@ void interfacechangecheck(DSTATE *s)
 	timeused(__func__, 1);
 
 	/* get list of currently visible interfaces */
-	if (getiflist(&ifacelist, 0)==0) {
+	if (getiflist(&ifacelist, 0) == 0) {
 		free(ifacelist);
 		s->iflisthash = 0;
 		return;
@@ -859,7 +859,7 @@ void interfacechangecheck(DSTATE *s)
 		found = offset = 0;
 
 		while (offset <= (int)strlen(ifacelist)) {
-			sscanf(ifacelist+offset, "%31s", interface);
+			sscanf(ifacelist + offset, "%31s", interface);
 			if (strcmp(iterator->interface, interface) == 0) {
 				found = 1;
 				break;
@@ -916,8 +916,7 @@ uint32_t simplehash(const char *data, int len)
 	return hash;
 }
 
-__attribute__((noreturn))
-void errorexitdaemon(DSTATE *s, const int fataldberror)
+__attribute__((noreturn)) void errorexitdaemon(DSTATE *s, const int fataldberror)
 {
 	if (!fataldberror) {
 		flushcachetodisk(s);
@@ -1016,7 +1015,7 @@ int waittimesync(DSTATE *s)
 			snprintf(errorstring, 1024, "Latest database update is in the future (db: %s > now: %s). Giving the system clock up to %d minutes to sync before continuing.", timestamp2, timestamp, cfg.timesyncwait);
 			printe(PT_Info);
 		}
-		if (s->current - s->prevdbupdate >= cfg.timesyncwait*60) {
+		if (s->current - s->prevdbupdate >= cfg.timesyncwait * 60) {
 			strftime(timestamp, 22, DATETIMEFORMAT, localtime(&s->current));
 			strftime(timestamp2, 22, DATETIMEFORMAT, localtime(&s->prevdbsave));
 			snprintf(errorstring, 1024, "Latest database update is still in the future (db: %s > now: %s), continuing. Some errors may follow.", timestamp2, timestamp);

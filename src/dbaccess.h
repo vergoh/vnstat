@@ -10,8 +10,8 @@
 /* from the legacy database format => don't modify  */
 
 #if defined(__clang__)
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wpadded"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
 #endif
 typedef struct {
 	time_t date;
@@ -48,7 +48,7 @@ typedef struct {
 	uint64_t btime;
 } DATA;
 #if defined(__clang__)
-  #pragma clang diagnostic pop
+#pragma clang diagnostic pop
 #endif
 
 int importlegacydb(const char *iface, const char *dirname);

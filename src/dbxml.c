@@ -29,7 +29,7 @@ void showxml(const char *interface, const char mode, const char *databegin, cons
 	printf("</updated>\n");
 
 	printf("  <traffic>\n");
-	printf("   <total><rx>%"PRIu64"</rx><tx>%"PRIu64"</tx></total>\n", info.rxtotal, info.txtotal);
+	printf("   <total><rx>%" PRIu64 "</rx><tx>%" PRIu64 "</tx></total>\n", info.rxtotal, info.txtotal);
 
 	switch (mode) {
 		case 'd':
@@ -80,9 +80,9 @@ void xmldump(const interfaceinfo *interface, const char *tablename, const int da
 	printf("   <%ss>\n", tablename);
 	datalist_i = datalist;
 	while (datalist_i != NULL) {
-		printf("    <%s id=\"%"PRId64"\">", tablename, datalist_i->rowid);
+		printf("    <%s id=\"%" PRId64 "\">", tablename, datalist_i->rowid);
 		xmldate(&datalist_i->timestamp, datetype);
-		printf("<rx>%"PRIu64"</rx><tx>%"PRIu64"</tx></%s>\n", datalist_i->rx, datalist_i->tx, tablename);
+		printf("<rx>%" PRIu64 "</rx><tx>%" PRIu64 "</tx></%s>\n", datalist_i->rx, datalist_i->tx, tablename);
 		datalist_i = datalist_i->next;
 	}
 	dbdatalistfree(&datalist);
@@ -97,20 +97,20 @@ void xmldate(const time_t *date, const int type)
 
 	switch (type) {
 		case 1:
-			printf("<date><year>%d</year><month>%02d</month><day>%02d</day></date>", \
-					1900+d->tm_year, 1+d->tm_mon, d->tm_mday);
+			printf("<date><year>%d</year><month>%02d</month><day>%02d</day></date>",
+				   1900 + d->tm_year, 1 + d->tm_mon, d->tm_mday);
 			break;
 		case 2:
-			printf("<date><year>%d</year><month>%02d</month><day>%02d</day></date><time><hour>%02d</hour><minute>%02d</minute></time>", \
-					1900+d->tm_year, 1+d->tm_mon, d->tm_mday, d->tm_hour, d->tm_min);
+			printf("<date><year>%d</year><month>%02d</month><day>%02d</day></date><time><hour>%02d</hour><minute>%02d</minute></time>",
+				   1900 + d->tm_year, 1 + d->tm_mon, d->tm_mday, d->tm_hour, d->tm_min);
 			break;
 		case 3:
-			printf("<date><year>%d</year><month>%02d</month></date>", \
-					1900+d->tm_year, 1+d->tm_mon);
+			printf("<date><year>%d</year><month>%02d</month></date>",
+				   1900 + d->tm_year, 1 + d->tm_mon);
 			break;
 		case 4:
-			printf("<date><year>%d</year></date>", \
-					1900+d->tm_year);
+			printf("<date><year>%d</year></date>",
+				   1900 + d->tm_year);
 			break;
 		default:
 			break;

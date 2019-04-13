@@ -31,7 +31,7 @@ void showjson(const char *interface, const int ifcount, const char mode, const c
 	printf("},");
 
 	printf("\"traffic\":");
-	printf("{\"total\":{\"rx\":%"PRIu64",\"tx\":%"PRIu64"},", info.rxtotal, info.txtotal);
+	printf("{\"total\":{\"rx\":%" PRIu64 ",\"tx\":%" PRIu64 "},", info.rxtotal, info.txtotal);
 
 	switch (mode) {
 		case 'd':
@@ -92,9 +92,9 @@ void jsondump(const interfaceinfo *interface, const char *tablename, const int d
 		} else {
 			first = 0;
 		}
-		printf("{\"id\":%"PRId64",", datalist_i->rowid);
+		printf("{\"id\":%" PRId64 ",", datalist_i->rowid);
 		jsondate(&datalist_i->timestamp, datetype);
-		printf(",\"rx\":%"PRIu64",\"tx\":%"PRIu64"}", datalist_i->rx, datalist_i->tx);
+		printf(",\"rx\":%" PRIu64 ",\"tx\":%" PRIu64 "}", datalist_i->rx, datalist_i->tx);
 		datalist_i = datalist_i->next;
 	}
 	dbdatalistfree(&datalist);
@@ -109,20 +109,20 @@ void jsondate(const time_t *date, const int type)
 
 	switch (type) {
 		case 1:
-			printf("\"date\":{\"year\":%d,\"month\":%d,\"day\":%d}", \
-					1900+d->tm_year, 1+d->tm_mon, d->tm_mday);
+			printf("\"date\":{\"year\":%d,\"month\":%d,\"day\":%d}",
+				   1900 + d->tm_year, 1 + d->tm_mon, d->tm_mday);
 			break;
 		case 2:
-			printf("\"date\":{\"year\":%d,\"month\":%d,\"day\":%d},\"time\":{\"hour\":%d,\"minute\":%d}", \
-					1900+d->tm_year, 1+d->tm_mon, d->tm_mday, d->tm_hour, d->tm_min);
+			printf("\"date\":{\"year\":%d,\"month\":%d,\"day\":%d},\"time\":{\"hour\":%d,\"minute\":%d}",
+				   1900 + d->tm_year, 1 + d->tm_mon, d->tm_mday, d->tm_hour, d->tm_min);
 			break;
 		case 3:
-			printf("\"date\":{\"year\":%d,\"month\":%d}", \
-					1900+d->tm_year, 1+d->tm_mon);
+			printf("\"date\":{\"year\":%d,\"month\":%d}",
+				   1900 + d->tm_year, 1 + d->tm_mon);
 			break;
 		case 4:
-			printf("\"date\":{\"year\":%d}", \
-					1900+d->tm_year);
+			printf("\"date\":{\"year\":%d}",
+				   1900 + d->tm_year);
 			break;
 		default:
 			break;

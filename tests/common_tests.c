@@ -43,8 +43,8 @@ START_TEST(logprint_options)
 END_TEST
 
 #if defined(__clang__)
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wused-but-marked-unused"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wused-but-marked-unused"
 #endif
 START_TEST(dmonth_return_within_range)
 {
@@ -55,7 +55,7 @@ START_TEST(dmonth_return_within_range)
 }
 END_TEST
 #if defined(__clang__)
-  #pragma clang diagnostic pop
+#pragma clang diagnostic pop
 #endif
 
 START_TEST(leapyears_are_known)
@@ -208,8 +208,8 @@ START_TEST(countercalc_rollover_with_32bit)
 
 	a = 1;
 	b = 0;
-	ck_assert(countercalc(&a, &b, 0)==(MAX32-1));
-	ck_assert(countercalc(&a, &b, -1)==(MAX32-1));
+	ck_assert(countercalc(&a, &b, 0) == (MAX32 - 1));
+	ck_assert(countercalc(&a, &b, -1) == (MAX32 - 1));
 }
 END_TEST
 
@@ -219,7 +219,7 @@ START_TEST(countercalc_rollover_with_64bit)
 
 	a = 1;
 	b = 0;
-	ck_assert(countercalc(&a, &b, 1)==(MAX64-1));
+	ck_assert(countercalc(&a, &b, 1) == (MAX64 - 1));
 }
 END_TEST
 
@@ -227,9 +227,9 @@ START_TEST(countercalc_rollover_with_64bit_2)
 {
 	uint64_t a, b;
 
-	a = MAX32+1;
+	a = MAX32 + 1;
 	b = 0;
-	ck_assert(countercalc(&a, &b, 1)==(MAX64-MAX32-1));
+	ck_assert(countercalc(&a, &b, 1) == (MAX64 - MAX32 - 1));
 }
 END_TEST
 
@@ -237,10 +237,10 @@ START_TEST(countercalc_rollover_with_32bit_starting_32bit)
 {
 	uint64_t a, b;
 
-	a = MAX32-1;
+	a = MAX32 - 1;
 	b = 0;
-	ck_assert(countercalc(&a, &b, 0)==1);
-	ck_assert(countercalc(&a, &b, -1)==1);
+	ck_assert(countercalc(&a, &b, 0) == 1);
+	ck_assert(countercalc(&a, &b, -1) == 1);
 }
 END_TEST
 
@@ -248,10 +248,10 @@ START_TEST(countercalc_rollover_with_32bit_starting_over_32bit)
 {
 	uint64_t a, b;
 
-	a = MAX32+1;
+	a = MAX32 + 1;
 	b = 0;
-	ck_assert(countercalc(&a, &b, 0)==(MAX64-MAX32-1));
-	ck_assert(countercalc(&a, &b, -1)==(MAX64-MAX32-1));
+	ck_assert(countercalc(&a, &b, 0) == (MAX64 - MAX32 - 1));
+	ck_assert(countercalc(&a, &b, -1) == (MAX64 - MAX32 - 1));
 }
 END_TEST
 
@@ -259,9 +259,9 @@ START_TEST(countercalc_rollover_with_64bit_starting_32bit)
 {
 	uint64_t a, b;
 
-	a = MAX32-1;
+	a = MAX32 - 1;
 	b = 0;
-	ck_assert(countercalc(&a, &b, 1)==(MAX64-MAX32+1));
+	ck_assert(countercalc(&a, &b, 1) == (MAX64 - MAX32 + 1));
 }
 END_TEST
 
@@ -269,9 +269,9 @@ START_TEST(countercalc_rollover_with_64bit_starting_64bit)
 {
 	uint64_t a, b;
 
-	a = MAX64-1;
+	a = MAX64 - 1;
 	b = 0;
-	ck_assert(countercalc(&a, &b, 1)==1);
+	ck_assert(countercalc(&a, &b, 1) == 1);
 }
 END_TEST
 

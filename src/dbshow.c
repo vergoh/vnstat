@@ -20,7 +20,7 @@ void showdb(const char *interface, int qmode, const char *databegin, const char 
 		return;
 	}
 
-	switch(qmode) {
+	switch (qmode) {
 		case 0:
 			showsummary(&info, 0);
 			break;
@@ -70,10 +70,10 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 
 	timeused(__func__, 1);
 
-	current=time(NULL);
-	yesterday=current-86400;
+	current = time(NULL);
+	yesterday = current - 86400;
 
-	e_rx=e_tx=0;
+	e_rx = e_tx = 0;
 
 	if (interface->updated && !shortmode) {
 		strftime(datebuff, DATEBUFFLEN, DATETIMEFORMAT, localtime(&interface->updated));
@@ -101,7 +101,7 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 		printf(":\n");
 	} else {
 		/* get formatted date for creation date */
-		d=localtime(&interface->created);
+		d = localtime(&interface->created);
 		strftime(datebuff, DATEBUFFLEN, cfg.tformat, d);
 		printf(" since %s\n\n", datebuff);
 
@@ -110,7 +110,7 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 		indent(3);
 		printf("   tx:  %s", getvalue(interface->txtotal, 1, RT_Normal));
 		indent(3);
-		printf("   total:  %s\n\n", getvalue(interface->rxtotal+interface->txtotal, 1, RT_Normal));
+		printf("   total:  %s\n\n", getvalue(interface->rxtotal + interface->txtotal, 1, RT_Normal));
 
 		indent(3);
 		printf("monthly\n");
@@ -137,28 +137,28 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 	while (datalist_i != NULL) {
 		indent(5);
 		d = localtime(&datalist_i->timestamp);
-		if (strftime(datebuff, DATEBUFFLEN, cfg.mformat, d)<=8) {
+		if (strftime(datebuff, DATEBUFFLEN, cfg.mformat, d) <= 8) {
 			printf("%*s   %s", getpadding(9, datebuff), datebuff, getvalue(datalist_i->rx, 11, RT_Normal));
 		} else {
 			printf("%-*s %s", getpadding(11, datebuff), datebuff, getvalue(datalist_i->rx, 11, RT_Normal));
 		}
 		printf("%s%s", fieldseparator, getvalue(datalist_i->tx, 11, RT_Normal));
-		printf("%s%s", fieldseparator, getvalue(datalist_i->rx+datalist_i->tx, 11, RT_Normal));
+		printf("%s%s", fieldseparator, getvalue(datalist_i->rx + datalist_i->tx, 11, RT_Normal));
 		if (cfg.ostyle >= 2) {
 			if (datalist_i->next == NULL) {
-				if ( datalist_i->rx == 0 || datalist_i->tx == 0 || (interface->updated-datalist_i->timestamp) == 0 ) {
+				if (datalist_i->rx == 0 || datalist_i->tx == 0 || (interface->updated - datalist_i->timestamp) == 0) {
 					e_rx = e_tx = 0;
 				} else {
-					e_rx = (uint64_t)(datalist_i->rx/(float)(mosecs(datalist_i->timestamp, interface->updated)))*(uint64_t)(dmonth(d->tm_mon)*86400);
-					e_tx = (uint64_t)(datalist_i->tx/(float)(mosecs(datalist_i->timestamp, interface->updated)))*(uint64_t)(dmonth(d->tm_mon)*86400);
+					e_rx = (uint64_t)(datalist_i->rx / (float)(mosecs(datalist_i->timestamp, interface->updated))) * (uint64_t)(dmonth(d->tm_mon) * 86400);
+					e_tx = (uint64_t)(datalist_i->tx / (float)(mosecs(datalist_i->timestamp, interface->updated))) * (uint64_t)(dmonth(d->tm_mon) * 86400);
 				}
 				if (shortmode && cfg.ostyle != 0) {
-					printf("%s%s", fieldseparator, getvalue(e_rx+e_tx, 11, RT_Estimate));
+					printf("%s%s", fieldseparator, getvalue(e_rx + e_tx, 11, RT_Estimate));
 				} else if (!shortmode) {
-					printf("%s%s", fieldseparator, gettrafficrate(datalist_i->rx+datalist_i->tx, mosecs(datalist_i->timestamp, interface->updated), 14));
+					printf("%s%s", fieldseparator, gettrafficrate(datalist_i->rx + datalist_i->tx, mosecs(datalist_i->timestamp, interface->updated), 14));
 				}
 			} else if (!shortmode) {
-				printf(" | %s", gettrafficrate(datalist_i->rx+datalist_i->tx, dmonth(d->tm_mon)*86400, 14));
+				printf(" | %s", gettrafficrate(datalist_i->rx + datalist_i->tx, dmonth(d->tm_mon) * 86400, 14));
 			}
 		}
 		printf("\n");
@@ -175,7 +175,7 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 		indent(5);
 		printf("estimated   %s", getvalue(e_rx, 11, RT_Estimate));
 		printf(" | %s", getvalue(e_tx, 11, RT_Estimate));
-		printf(" | %s", getvalue(e_rx+e_tx, 11, RT_Estimate));
+		printf(" | %s", getvalue(e_rx + e_tx, 11, RT_Estimate));
 		if (cfg.ostyle >= 2) {
 			printf(" |\n\n");
 		} else {
@@ -230,23 +230,23 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 			printf("%-*s %s", getpadding(11, datebuff), datebuff, getvalue(datalist_i->rx, 11, RT_Normal));
 		}
 		printf("%s%s", fieldseparator, getvalue(datalist_i->tx, 11, RT_Normal));
-		printf("%s%s", fieldseparator, getvalue(datalist_i->rx+datalist_i->tx, 11, RT_Normal));
+		printf("%s%s", fieldseparator, getvalue(datalist_i->rx + datalist_i->tx, 11, RT_Normal));
 		if (cfg.ostyle >= 2) {
 			if (datalist_i->next == NULL) {
 				d = localtime(&interface->updated);
-				if ( datalist_i->rx == 0 || datalist_i->tx == 0 || (d->tm_hour*60+d->tm_min) == 0 ) {
+				if (datalist_i->rx == 0 || datalist_i->tx == 0 || (d->tm_hour * 60 + d->tm_min) == 0) {
 					e_rx = e_tx = 0;
 				} else {
-					e_rx = (uint64_t)((datalist_i->rx)/(float)(d->tm_hour*60+d->tm_min))*1440;
-					e_tx = (uint64_t)((datalist_i->tx)/(float)(d->tm_hour*60+d->tm_min))*1440;
+					e_rx = (uint64_t)((datalist_i->rx) / (float)(d->tm_hour * 60 + d->tm_min)) * 1440;
+					e_tx = (uint64_t)((datalist_i->tx) / (float)(d->tm_hour * 60 + d->tm_min)) * 1440;
 				}
 				if (shortmode && cfg.ostyle != 0) {
-					printf("%s%s", fieldseparator, getvalue(e_rx+e_tx, 11, RT_Estimate));
+					printf("%s%s", fieldseparator, getvalue(e_rx + e_tx, 11, RT_Estimate));
 				} else if (!shortmode) {
-					printf("%s%s", fieldseparator, gettrafficrate(datalist_i->rx+datalist_i->tx, d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600), 14));
+					printf("%s%s", fieldseparator, gettrafficrate(datalist_i->rx + datalist_i->tx, d->tm_sec + (d->tm_min * 60) + (d->tm_hour * 3600), 14));
 				}
 			} else if (!shortmode) {
-				printf(" | %s", gettrafficrate(datalist_i->rx+datalist_i->tx, 86400, 14));
+				printf(" | %s", gettrafficrate(datalist_i->rx + datalist_i->tx, 86400, 14));
 			}
 		}
 		printf("\n");
@@ -263,7 +263,7 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 		indent(5);
 		printf("estimated   %s", getvalue(e_rx, 11, RT_Estimate));
 		printf(" | %s", getvalue(e_tx, 11, RT_Estimate));
-		printf(" | %s", getvalue(e_rx+e_tx, 11, RT_Estimate));
+		printf(" | %s", getvalue(e_rx + e_tx, 11, RT_Estimate));
 		if (cfg.ostyle >= 2) {
 			printf(" |\n");
 		} else {
@@ -444,26 +444,26 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 			}
 		}
 
-		if (strlen(datebuff)<=9 && listtype != 4) {
+		if (strlen(datebuff) <= 9 && listtype != 4) {
 			printf(" %*s   %s", getpadding(9, datebuff), datebuff, getvalue(datalist_i->rx, 11, RT_Normal));
 		} else {
 			printf(" %-*s %s", getpadding(11, datebuff), datebuff, getvalue(datalist_i->rx, 11, RT_Normal));
 		}
 		printf(" | %s", getvalue(datalist_i->tx, 11, RT_Normal));
-		printf(" | %s", getvalue(datalist_i->rx+datalist_i->tx, 11, RT_Normal));
+		printf(" | %s", getvalue(datalist_i->rx + datalist_i->tx, 11, RT_Normal));
 		if (cfg.ostyle == 3) {
 			if (datalist_i->next == NULL) {
 				d = localtime(&interface->updated);
 				if (listtype == 1) { // day
-					e_secs = (uint64_t)(d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600));
+					e_secs = (uint64_t)(d->tm_sec + (d->tm_min * 60) + (d->tm_hour * 3600));
 				} else if (listtype == 2) { // month
 					e_secs = (uint64_t)mosecs(datalist_i->timestamp, interface->updated);
 				} else if (listtype == 3) { // year
-					e_secs = (uint64_t)(d->tm_yday*86400+d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600));
+					e_secs = (uint64_t)(d->tm_yday * 86400 + d->tm_sec + (d->tm_min * 60) + (d->tm_hour * 3600));
 				} else if (listtype == 4) { // top
 					e_secs = 86400;
 				} else if (listtype == 5) { // hour
-					e_secs = (uint64_t)(d->tm_sec+(d->tm_min*60));
+					e_secs = (uint64_t)(d->tm_sec + (d->tm_min * 60));
 				} else if (listtype == 6) { // 5min
 					e_secs = 300;
 				}
@@ -473,16 +473,16 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 				} else if (listtype == 2) { // month
 					e_secs = (uint64_t)(dmonth(d->tm_mon) * 86400);
 				} else if (listtype == 3) { // year
-					e_secs = (uint64_t)((365 + isleapyear(d->tm_year+1900)) * 86400);
+					e_secs = (uint64_t)((365 + isleapyear(d->tm_year + 1900)) * 86400);
 				} else if (listtype == 5) { // hour
 					e_secs = 3600;
 				} else if (listtype == 6) { // 5min
 					e_secs = 300;
 				}
 			}
-			printf(" | %s", gettrafficrate(datalist_i->rx+datalist_i->tx, (time_t)e_secs, 14));
+			printf(" | %s", gettrafficrate(datalist_i->rx + datalist_i->tx, (time_t)e_secs, 14));
 		} else if (cfg.ostyle != 0) {
-			showbar(datalist_i->rx, datalist_i->tx, datainfo.max, 24-offset);
+			showbar(datalist_i->rx, datalist_i->tx, datainfo.max, 24 - offset);
 		}
 		printf("\n");
 		if (datalist_i->next == NULL) {
@@ -521,7 +521,7 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 	if ((strlen(dataend) == 0 && datainfo.count > 0 && listtype < 4) || (strlen(dataend) > 0 && datainfo.count > 1 && listtype != 4)) {
 		/* use database update time for estimates */
 		d = localtime(&interface->updated);
-		if ( datalist_i->rx==0 || datalist_i->tx==0 || strlen(dataend)>0 ) {
+		if (datalist_i->rx == 0 || datalist_i->tx == 0 || strlen(dataend) > 0) {
 			e_rx = e_tx = 0;
 		} else {
 			div = 0;
@@ -552,7 +552,7 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 			printf(" | %s", getvalue(e_rx + e_tx, 11, RT_Estimate));
 		} else {
 			if (datainfo.count < 100) {
-				snprintf(datebuff, DATEBUFFLEN, "sum of %"PRIu32"", datainfo.count);
+				snprintf(datebuff, DATEBUFFLEN, "sum of %" PRIu32 "", datainfo.count);
 			} else {
 				snprintf(datebuff, DATEBUFFLEN, "sum");
 			}
@@ -607,19 +607,19 @@ void showoneline(const interfaceinfo *interface)
 
 		/* daily */
 		if (cfg.ostyle == 4) {
-			printf("%"PRIu64";", datalist->rx);
-			printf("%"PRIu64";", datalist->tx);
-			printf("%"PRIu64";", datalist->rx+datalist->tx);
-			div = (uint64_t)(d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600));
+			printf("%" PRIu64 ";", datalist->rx);
+			printf("%" PRIu64 ";", datalist->tx);
+			printf("%" PRIu64 ";", datalist->rx + datalist->tx);
+			div = (uint64_t)(d->tm_sec + (d->tm_min * 60) + (d->tm_hour * 3600));
 			if (!div) {
 				div = 1;
 			}
-			printf("%"PRIu64";", (datalist->rx+datalist->tx)/div);
+			printf("%" PRIu64 ";", (datalist->rx + datalist->tx) / div);
 		} else {
 			printf("%s;", getvalue(datalist->rx, 1, RT_Normal));
 			printf("%s;", getvalue(datalist->tx, 1, RT_Normal));
-			printf("%s;", getvalue(datalist->rx+datalist->tx, 1, RT_Normal));
-			printf("%s;", gettrafficrate(datalist->rx+datalist->tx, (time_t)(d->tm_sec+(d->tm_min*60)+(d->tm_hour*3600)), 1));
+			printf("%s;", getvalue(datalist->rx + datalist->tx, 1, RT_Normal));
+			printf("%s;", gettrafficrate(datalist->rx + datalist->tx, (time_t)(d->tm_sec + (d->tm_min * 60) + (d->tm_hour * 3600)), 1));
 		}
 	} else {
 		printf(";;;;;");
@@ -638,19 +638,19 @@ void showoneline(const interfaceinfo *interface)
 
 		/* monthly */
 		if (cfg.ostyle == 4) {
-			printf("%"PRIu64";", datalist->rx);
-			printf("%"PRIu64";", datalist->tx);
-			printf("%"PRIu64";", datalist->rx+datalist->tx);
+			printf("%" PRIu64 ";", datalist->rx);
+			printf("%" PRIu64 ";", datalist->tx);
+			printf("%" PRIu64 ";", datalist->rx + datalist->tx);
 			div = (uint64_t)(mosecs(datalist->timestamp, interface->updated));
 			if (!div) {
 				div = 1;
 			}
-			printf("%"PRIu64";", (datalist->rx+datalist->tx)/div);
+			printf("%" PRIu64 ";", (datalist->rx + datalist->tx) / div);
 		} else {
 			printf("%s;", getvalue(datalist->rx, 1, RT_Normal));
 			printf("%s;", getvalue(datalist->tx, 1, RT_Normal));
-			printf("%s;", getvalue(datalist->rx+datalist->tx, 1, RT_Normal));
-			printf("%s;", gettrafficrate(datalist->rx+datalist->tx, mosecs(datalist->timestamp, interface->updated), 1));
+			printf("%s;", getvalue(datalist->rx + datalist->tx, 1, RT_Normal));
+			printf("%s;", gettrafficrate(datalist->rx + datalist->tx, mosecs(datalist->timestamp, interface->updated), 1));
 		}
 	} else {
 		printf(";;;;;");
@@ -659,22 +659,22 @@ void showoneline(const interfaceinfo *interface)
 
 	/* all time total */
 	if (cfg.ostyle == 4) {
-		printf("%"PRIu64";", interface->rxtotal);
-		printf("%"PRIu64";", interface->txtotal);
-		printf("%"PRIu64"\n", interface->rxtotal+interface->txtotal);
+		printf("%" PRIu64 ";", interface->rxtotal);
+		printf("%" PRIu64 ";", interface->txtotal);
+		printf("%" PRIu64 "\n", interface->rxtotal + interface->txtotal);
 	} else {
 		printf("%s;", getvalue(interface->rxtotal, 1, RT_Normal));
 		printf("%s;", getvalue(interface->txtotal, 1, RT_Normal));
-		printf("%s\n", getvalue(interface->rxtotal+interface->txtotal, 1, RT_Normal));
+		printf("%s\n", getvalue(interface->rxtotal + interface->txtotal, 1, RT_Normal));
 	}
 	timeused(__func__, 0);
 }
 
 void showhours(const interfaceinfo *interface)
 {
-	int i, s=0, hour, minute, declen=cfg.hourlydecimals, div=1;
-	unsigned int j, k, tmax=0, dots=0;
-	uint64_t max=1;
+	int i, s = 0, hour, minute, declen = cfg.hourlydecimals, div = 1;
+	unsigned int j, k, tmax = 0, dots = 0;
+	uint64_t max = 1;
 	char matrix[24][81]; /* width is one over 80 so that snprintf can write the end char */
 	char unit[4];
 	struct tm *d;
@@ -684,7 +684,7 @@ void showhours(const interfaceinfo *interface)
 
 	timeused(__func__, 1);
 
-	for (i=0; i<24; i++) {
+	for (i = 0; i < 24; i++) {
 		hourdata[i].rx = hourdata[i].tx = 0;
 		hourdata[i].date = 0;
 	}
@@ -702,7 +702,7 @@ void showhours(const interfaceinfo *interface)
 
 	while (datalist_i != NULL) {
 		d = localtime(&datalist_i->timestamp);
-		if (hourdata[d->tm_hour].date != 0 || interface->updated-datalist_i->timestamp > 86400) {
+		if (hourdata[d->tm_hour].date != 0 || interface->updated - datalist_i->timestamp > 86400) {
 			datalist_i = datalist_i->next;
 			continue;
 		}
@@ -720,7 +720,7 @@ void showhours(const interfaceinfo *interface)
 	hour = d->tm_hour;
 	minute = d->tm_min;
 
-	for (i=0; i<24; i++) {
+	for (i = 0; i < 24; i++) {
 		if (hourdata[i].date >= hourdata[tmax].date) {
 			tmax = (unsigned int)i;
 		}
@@ -733,34 +733,34 @@ void showhours(const interfaceinfo *interface)
 	}
 
 	/* mr. proper */
-	for (i=0; i<24; i++) {
-		for (j=0; j<81; j++) {
+	for (i = 0; i < 24; i++) {
+		for (j = 0; j < 81; j++) {
 			matrix[i][j] = ' ';
 		}
 	}
 
 	/* unit selection */
-	while (max/(pow(1024, div)) >= 100 && div < UNITPREFIXCOUNT) {
+	while (max / (pow(1024, div)) >= 100 && div < UNITPREFIXCOUNT) {
 		div++;
 	}
 	strncpy_nt(unit, getunitprefix(div), 4);
-	div = (int)(pow(1024, div-1));
+	div = (int)(pow(1024, div - 1));
 	if (div == 1) {
 		declen = 0;
 	}
 
 	/* structure */
 	snprintf(matrix[11], 81, " -+--------------------------------------------------------------------------->");
-	for (i=0; i<3; i++) {
-		snprintf(matrix[14]+(i*28), 14, " h %*srx (%s)", 1+cfg.unitmode, " ", unit);
-		snprintf(matrix[14]+(i*28)+15+cfg.unitmode, 10, "tx (%s)", unit);
+	for (i = 0; i < 3; i++) {
+		snprintf(matrix[14] + (i * 28), 14, " h %*srx (%s)", 1 + cfg.unitmode, " ", unit);
+		snprintf(matrix[14] + (i * 28) + 15 + cfg.unitmode, 10, "tx (%s)", unit);
 	}
 
-	for (i=10;i>1;i--)
-		matrix[i][2]='|';
+	for (i = 10; i > 1; i--)
+		matrix[i][2] = '|';
 
-	matrix[1][2]='^';
-	matrix[12][2]='|';
+	matrix[1][2] = '^';
+	matrix[12][2] = '|';
 
 	/* title */
 	if (strcmp(interface->name, interface->alias) == 0 || strlen(interface->alias) == 0) {
@@ -769,63 +769,63 @@ void showhours(const interfaceinfo *interface)
 		i = snprintf(matrix[0], 81, " %s (%s)", interface->alias, interface->name);
 	}
 	if (interface->active == 0) {
-		snprintf(matrix[0]+i+1, 81, " [disabled]");
+		snprintf(matrix[0] + i + 1, 81, " [disabled]");
 	}
 
 	/* time to the corner */
-	snprintf(matrix[0]+74, 7, "%02d:%02d", hour, minute);
+	snprintf(matrix[0] + 74, 7, "%02d:%02d", hour, minute);
 
 	/* numbers under x-axis and graphics :) */
 	k = 5;
-	for (i=23; i>=0; i--) {
+	for (i = 23; i >= 0; i--) {
 		s = (int)tmax - i;
 		if (s < 0)
 			s += 24;
 
-		snprintf(matrix[12]+k, 81-k, "%02d ", s);
+		snprintf(matrix[12] + k, 81 - k, "%02d ", s);
 
 		dots = (unsigned int)(10 * (hourdata[s].rx / (float)max));
-		for (j=0; j<dots; j++)
-			matrix[10-j][k] = cfg.rxhourchar[0];
+		for (j = 0; j < dots; j++)
+			matrix[10 - j][k] = cfg.rxhourchar[0];
 
 		dots = (unsigned int)(10 * (hourdata[s].tx / (float)max));
-		for (j=0; j<dots; j++)
-			matrix[10-j][k+1] = cfg.txhourchar[0];
+		for (j = 0; j < dots; j++)
+			matrix[10 - j][k + 1] = cfg.txhourchar[0];
 
 		k = k + 3;
 	}
 
 	/* hours and traffic */
-	for (i=0; i<=7; i++) {
+	for (i = 0; i <= 7; i++) {
 		s = (int)tmax + i + 1;
-		for (j=0; j<3; j++) {
-			snprintf(matrix[15+i]+(j*28), 25, "%02d %"DECCONV"10.*f %"DECCONV"10.*f", \
-			((unsigned int)s+(j*8))%24, declen, hourdata[((unsigned int)s+(j*8))%24].rx/(double)div, \
-										declen, hourdata[((unsigned int)s+(j*8))%24].tx/(double)div);
+		for (j = 0; j < 3; j++) {
+			snprintf(matrix[15 + i] + (j * 28), 25, "%02d %" DECCONV "10.*f %" DECCONV "10.*f",
+					 ((unsigned int)s + (j * 8)) % 24, declen, hourdata[((unsigned int)s + (j * 8)) % 24].rx / (double)div,
+					 declen, hourdata[((unsigned int)s + (j * 8)) % 24].tx / (double)div);
 		}
 	}
 
 	/* section separators */
 	if (cfg.hourlystyle) {
-		for (i=0;i<9;i++) {
+		for (i = 0; i < 9; i++) {
 			if (cfg.hourlystyle == 1) {
-				matrix[14+i][26]='|';
-				matrix[14+i][54]='|';
+				matrix[14 + i][26] = '|';
+				matrix[14 + i][54] = '|';
 			} else if (cfg.hourlystyle == 2) {
-				matrix[14+i][25]=']';
-				matrix[14+i][26]='[';
-				matrix[14+i][53]=']';
-				matrix[14+i][54]='[';
+				matrix[14 + i][25] = ']';
+				matrix[14 + i][26] = '[';
+				matrix[14 + i][53] = ']';
+				matrix[14 + i][54] = '[';
 			} else if (cfg.hourlystyle == 3) {
-				matrix[14+i][26]='[';
-				matrix[14+i][53]=']';
+				matrix[14 + i][26] = '[';
+				matrix[14 + i][53] = ']';
 			}
 		}
 	}
 
 	/* clean \0 */
-	for (i=0; i<23; i++) {
-		for (j=0; j<80; j++) {
+	for (i = 0; i < 23; i++) {
+		for (j = 0; j < 80; j++) {
 			if (matrix[i][j] == '\0') {
 				matrix[i][j] = ' ';
 			}
@@ -833,9 +833,9 @@ void showhours(const interfaceinfo *interface)
 	}
 
 	/* show matrix (yes, the last line isn't shown) */
-	for (i=0; i<23; i++) {
-		for (j=0; j<80; j++) {
-			printf("%c",matrix[i][j]);
+	for (i = 0; i < 23; i++) {
+		for (j = 0; j < 80; j++) {
+			printf("%c", matrix[i][j]);
 		}
 		printf("\n");
 	}
@@ -846,8 +846,8 @@ int showbar(const uint64_t rx, const uint64_t tx, const uint64_t max, const int 
 {
 	int i, l, width = len;
 
-	if ( (rx + tx) < max) {
-		width = (int)( ((rx + tx) / (float)max) * len );
+	if ((rx + tx) < max) {
+		width = (int)(((rx + tx) / (float)max) * len);
 	} else if ((rx + tx) > max || max == 0) {
 		return 0;
 	}
@@ -859,21 +859,21 @@ int showbar(const uint64_t rx, const uint64_t tx, const uint64_t max, const int 
 	printf("  ");
 
 	if (tx > rx) {
-		l = (int)(rintf((rx/(float)(rx+tx)*width)));
+		l = (int)(rintf((rx / (float)(rx + tx) * width)));
 
-		for (i=0; i<l; i++) {
+		for (i = 0; i < l; i++) {
 			printf("%c", cfg.rxchar[0]);
 		}
-		for (i=0; i<(width-l); i++) {
+		for (i = 0; i < (width - l); i++) {
 			printf("%c", cfg.txchar[0]);
 		}
 	} else {
-		l = (int)(rintf((tx/(float)(rx+tx)*width)));
+		l = (int)(rintf((tx / (float)(rx + tx) * width)));
 
-		for (i=0; i<(width-l); i++) {
+		for (i = 0; i < (width - l); i++) {
 			printf("%c", cfg.rxchar[0]);
 		}
-		for (i=0; i<l; i++) {
+		for (i = 0; i < l; i++) {
 			printf("%c", cfg.txchar[0]);
 		}
 	}

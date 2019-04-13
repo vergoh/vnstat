@@ -29,7 +29,8 @@ vnStat - Copyright (c) 2002-2019 Teemu Toivola <tst@iki.fi>
 #include "fs.h"
 #include "vnstat.h"
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
 
 	int currentarg;
 	DIR *dir = NULL;
@@ -40,13 +41,13 @@ int main(int argc, char *argv[]) {
 
 	/* early check for debug and config parameter */
 	if (argc > 1) {
-		for (currentarg=1; currentarg<argc; currentarg++) {
-			if ((strcmp(argv[currentarg],"-D")==0) || (strcmp(argv[currentarg],"--debug")==0)) {
+		for (currentarg = 1; currentarg < argc; currentarg++) {
+			if ((strcmp(argv[currentarg], "-D") == 0) || (strcmp(argv[currentarg], "--debug") == 0)) {
 				debug = 1;
 				printf("Debug enabled, vnstat %s\n", VERSION);
-			} else if (strcmp(argv[currentarg],"--config")==0) {
-				if (currentarg+1<argc) {
-					strncpy_nt(p.cfgfile, argv[currentarg+1], 512);
+			} else if (strcmp(argv[currentarg], "--config") == 0) {
+				if (currentarg + 1 < argc) {
+					strncpy_nt(p.cfgfile, argv[currentarg + 1], 512);
 					if (debug)
 						printf("Used config file: %s\n", p.cfgfile);
 					currentarg++;
@@ -76,22 +77,22 @@ int main(int argc, char *argv[]) {
 	strncpy_nt(p.dirname, cfg.dbdir, 512);
 
 	/* parse parameters, maybe not the best way but... */
-	for (currentarg=1; currentarg<argc; currentarg++) {
+	for (currentarg = 1; currentarg < argc; currentarg++) {
 		if (debug)
-			printf("arg %d: \"%s\"\n",currentarg,argv[currentarg]);
-		if (strcmp(argv[currentarg],"--longhelp")==0) {
+			printf("arg %d: \"%s\"\n", currentarg, argv[currentarg]);
+		if (strcmp(argv[currentarg], "--longhelp") == 0) {
 			showlonghelp(&p);
 			return 0;
-		} else if ((strcmp(argv[currentarg],"-?")==0) || (strcmp(argv[currentarg],"--help")==0)) {
+		} else if ((strcmp(argv[currentarg], "-?") == 0) || (strcmp(argv[currentarg], "--help") == 0)) {
 			showhelp(&p);
 			return 0;
-		} else if ((strcmp(argv[currentarg],"-i")==0) || (strcmp(argv[currentarg],"--iface")==0)) {
-			if (currentarg+1<argc) {
-				if (strlen(argv[currentarg+1]) > 31) {
+		} else if ((strcmp(argv[currentarg], "-i") == 0) || (strcmp(argv[currentarg], "--iface") == 0)) {
+			if (currentarg + 1 < argc) {
+				if (strlen(argv[currentarg + 1]) > 31) {
 					printf("Error: Interface name is limited to 31 characters.\n");
 					return 1;
 				}
-				strncpy_nt(p.interface, argv[currentarg+1], 32);
+				strncpy_nt(p.interface, argv[currentarg + 1], 32);
 				p.defaultiface = 0;
 				if (debug)
 					printf("Used interface: %s\n", p.interface);
@@ -101,13 +102,13 @@ int main(int argc, char *argv[]) {
 				printf("Error: Interface for %s missing.\n", argv[currentarg]);
 				return 1;
 			}
-		} else if (strcmp(argv[currentarg],"--config")==0) {
+		} else if (strcmp(argv[currentarg], "--config") == 0) {
 			/* config has already been parsed earlier so nothing to do here */
 			currentarg++;
 			continue;
-		} else if (strcmp(argv[currentarg],"--setalias")==0 || strcmp(argv[currentarg],"--nick")==0) {
-			if (currentarg+1<argc) {
-				strncpy_nt(p.alias, argv[currentarg+1], 32);
+		} else if (strcmp(argv[currentarg], "--setalias") == 0 || strcmp(argv[currentarg], "--nick") == 0) {
+			if (currentarg + 1 < argc) {
+				strncpy_nt(p.alias, argv[currentarg + 1], 32);
 				if (debug)
 					printf("Used alias: %s\n", p.alias);
 				p.setalias = 1;
@@ -117,8 +118,8 @@ int main(int argc, char *argv[]) {
 				printf("Error: Alias for %s missing.\n", argv[currentarg]);
 				return 1;
 			}
-		} else if ((strcmp(argv[currentarg],"--style"))==0) {
-			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
+		} else if ((strcmp(argv[currentarg], "--style")) == 0) {
+			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {
 				if (cfg.ostyle > 4 || cfg.ostyle < 0) {
 					printf("Error: Invalid style parameter \"%d\" for --style.\n", cfg.ostyle);
 					printf(" Valid parameters:\n");
@@ -130,7 +131,7 @@ int main(int argc, char *argv[]) {
 					printf("        and show raw values in --oneline\n");
 					return 1;
 				}
-				cfg.ostyle = atoi(argv[currentarg+1]);
+				cfg.ostyle = atoi(argv[currentarg + 1]);
 				if (debug)
 					printf("Style changed: %d\n", cfg.ostyle);
 				currentarg++;
@@ -146,9 +147,9 @@ int main(int argc, char *argv[]) {
 				printf("        and show raw values in --oneline\n");
 				return 1;
 			}
-		} else if ((strcmp(argv[currentarg],"--dbdir"))==0) {
-			if (currentarg+1<argc) {
-				strncpy_nt(p.dirname, argv[currentarg+1], 512);
+		} else if ((strcmp(argv[currentarg], "--dbdir")) == 0) {
+			if (currentarg + 1 < argc) {
+				strncpy_nt(p.dirname, argv[currentarg + 1], 512);
 				if (debug)
 					printf("DatabaseDir: \"%s\"\n", p.dirname);
 				currentarg++;
@@ -157,110 +158,110 @@ int main(int argc, char *argv[]) {
 				printf("Error: Directory for %s missing.\n", argv[currentarg]);
 				return 1;
 			}
-		} else if ((strcmp(argv[currentarg],"--locale"))==0) {
-			if (currentarg+1<argc) {
-				setlocale(LC_ALL, argv[currentarg+1]);
+		} else if ((strcmp(argv[currentarg], "--locale")) == 0) {
+			if (currentarg + 1 < argc) {
+				setlocale(LC_ALL, argv[currentarg + 1]);
 				if (debug)
-					printf("Locale: \"%s\"\n", argv[currentarg+1]);
+					printf("Locale: \"%s\"\n", argv[currentarg + 1]);
 				currentarg++;
 				continue;
 			} else {
 				printf("Error: Locale for %s missing.\n", argv[currentarg]);
 				return 1;
 			}
-		} else if (strcmp(argv[currentarg],"--add")==0) {
-			p.addiface=1;
-			p.query=0;
-		} else if ((strcmp(argv[currentarg],"-u")==0) || (strcmp(argv[currentarg],"--update")==0)) {
+		} else if (strcmp(argv[currentarg], "--add") == 0) {
+			p.addiface = 1;
+			p.query = 0;
+		} else if ((strcmp(argv[currentarg], "-u") == 0) || (strcmp(argv[currentarg], "--update") == 0)) {
 			printf("Error: The \"%s\" parameter is not supported in this version.\n", argv[currentarg]);
 			return 1;
-		} else if ((strcmp(argv[currentarg],"-q")==0) || (strcmp(argv[currentarg],"--query")==0)) {
-			p.query=1;
-		} else if ((strcmp(argv[currentarg],"-D")==0) || (strcmp(argv[currentarg],"--debug")==0)) {
-			debug=1;
-		} else if ((strcmp(argv[currentarg],"-d")==0) || (strcmp(argv[currentarg],"--days")==0)) {
-			cfg.qmode=1;
-			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
-				cfg.listdays = atoi(argv[currentarg+1]);
+		} else if ((strcmp(argv[currentarg], "-q") == 0) || (strcmp(argv[currentarg], "--query") == 0)) {
+			p.query = 1;
+		} else if ((strcmp(argv[currentarg], "-D") == 0) || (strcmp(argv[currentarg], "--debug") == 0)) {
+			debug = 1;
+		} else if ((strcmp(argv[currentarg], "-d") == 0) || (strcmp(argv[currentarg], "--days") == 0)) {
+			cfg.qmode = 1;
+			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {
+				cfg.listdays = atoi(argv[currentarg + 1]);
 				if (cfg.listdays < 0) {
-					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg+1], argv[currentarg]);
+					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg + 1], argv[currentarg]);
 					return 1;
 				}
 				currentarg++;
 			}
-		} else if ((strcmp(argv[currentarg],"-m")==0) || (strcmp(argv[currentarg],"--months")==0)) {
-			cfg.qmode=2;
-			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
-				cfg.listmonths = atoi(argv[currentarg+1]);
+		} else if ((strcmp(argv[currentarg], "-m") == 0) || (strcmp(argv[currentarg], "--months") == 0)) {
+			cfg.qmode = 2;
+			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {
+				cfg.listmonths = atoi(argv[currentarg + 1]);
 				if (cfg.listmonths < 0) {
-					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg+1], argv[currentarg]);
+					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg + 1], argv[currentarg]);
 					return 1;
 				}
 				currentarg++;
 			}
-		} else if ((strcmp(argv[currentarg],"-t")==0) || (strcmp(argv[currentarg],"--top")==0)) {
-			cfg.qmode=3;
-			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
-				cfg.listtop = atoi(argv[currentarg+1]);
+		} else if ((strcmp(argv[currentarg], "-t") == 0) || (strcmp(argv[currentarg], "--top") == 0)) {
+			cfg.qmode = 3;
+			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {
+				cfg.listtop = atoi(argv[currentarg + 1]);
 				if (cfg.listtop < 0) {
-					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg+1], argv[currentarg]);
+					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg + 1], argv[currentarg]);
 					return 1;
 				}
 				currentarg++;
 			}
-		} else if ((strcmp(argv[currentarg],"-s")==0) || (strcmp(argv[currentarg],"--short")==0)) {
-			cfg.qmode=5;
-		} else if ((strcmp(argv[currentarg],"-y")==0) || (strcmp(argv[currentarg],"--years")==0)) {
-			cfg.qmode=6;
-			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
-				cfg.listyears = atoi(argv[currentarg+1]);
+		} else if ((strcmp(argv[currentarg], "-s") == 0) || (strcmp(argv[currentarg], "--short") == 0)) {
+			cfg.qmode = 5;
+		} else if ((strcmp(argv[currentarg], "-y") == 0) || (strcmp(argv[currentarg], "--years") == 0)) {
+			cfg.qmode = 6;
+			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {
+				cfg.listyears = atoi(argv[currentarg + 1]);
 				if (cfg.listyears < 0) {
-					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg+1], argv[currentarg]);
+					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg + 1], argv[currentarg]);
 					return 1;
 				}
 				currentarg++;
 			}
-		} else if ((strcmp(argv[currentarg],"-hg")==0) || (strcmp(argv[currentarg],"--hoursgraph")==0)) {
-			cfg.qmode=7;
-		} else if ((strcmp(argv[currentarg],"-h")==0) || (strcmp(argv[currentarg],"--hours")==0)) {
-			cfg.qmode=11;
-			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
-				cfg.listhours = atoi(argv[currentarg+1]);
+		} else if ((strcmp(argv[currentarg], "-hg") == 0) || (strcmp(argv[currentarg], "--hoursgraph") == 0)) {
+			cfg.qmode = 7;
+		} else if ((strcmp(argv[currentarg], "-h") == 0) || (strcmp(argv[currentarg], "--hours") == 0)) {
+			cfg.qmode = 11;
+			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {
+				cfg.listhours = atoi(argv[currentarg + 1]);
 				if (cfg.listhours < 0) {
-					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg+1], argv[currentarg]);
+					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg + 1], argv[currentarg]);
 					return 1;
 				}
 				currentarg++;
 			}
-		} else if ((strcmp(argv[currentarg],"-5")==0) || (strcmp(argv[currentarg],"--fiveminutes")==0)) {
-			cfg.qmode=12;
-			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
-				cfg.listfivemins = atoi(argv[currentarg+1]);
+		} else if ((strcmp(argv[currentarg], "-5") == 0) || (strcmp(argv[currentarg], "--fiveminutes") == 0)) {
+			cfg.qmode = 12;
+			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {
+				cfg.listfivemins = atoi(argv[currentarg + 1]);
 				if (cfg.listfivemins < 0) {
-					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg+1], argv[currentarg]);
+					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg + 1], argv[currentarg]);
 					return 1;
 				}
 				currentarg++;
 			}
-		} else if (strcmp(argv[currentarg],"--oneline")==0) {
-			cfg.qmode=9;
-			if (currentarg+1<argc && argv[currentarg+1][0]!='-') {
-				if (argv[currentarg+1][0]=='b') {
+		} else if (strcmp(argv[currentarg], "--oneline") == 0) {
+			cfg.qmode = 9;
+			if (currentarg + 1 < argc && argv[currentarg + 1][0] != '-') {
+				if (argv[currentarg + 1][0] == 'b') {
 					cfg.ostyle = 4;
 					currentarg++;
 				} else {
-					printf("Error: Invalid mode parameter \"%s\" for --oneline.\n", argv[currentarg+1]);
+					printf("Error: Invalid mode parameter \"%s\" for --oneline.\n", argv[currentarg + 1]);
 					printf(" Valid parameters:\n");
 					printf("    (none) - automatically scaled units visible\n");
 					printf("    b      - all values in bytes\n");
 					return 1;
 				}
 			}
-		} else if (strcmp(argv[currentarg],"--xml")==0) {
-			if (currentarg+1<argc && argv[currentarg+1][0]!='-' && !isdigit(argv[currentarg+1][0])) {
-				p.xmlmode = argv[currentarg+1][0];
-				if (strlen(argv[currentarg+1])!=1 || strchr("afhdmyt", p.xmlmode)==NULL) {
-					printf("Error: Invalid mode parameter \"%s\" for --xml.\n", argv[currentarg+1]);
+		} else if (strcmp(argv[currentarg], "--xml") == 0) {
+			if (currentarg + 1 < argc && argv[currentarg + 1][0] != '-' && !isdigit(argv[currentarg + 1][0])) {
+				p.xmlmode = argv[currentarg + 1][0];
+				if (strlen(argv[currentarg + 1]) != 1 || strchr("afhdmyt", p.xmlmode) == NULL) {
+					printf("Error: Invalid mode parameter \"%s\" for --xml.\n", argv[currentarg + 1]);
 					printf(" Valid parameters:\n");
 					printf("    a - all (default)\n");
 					printf("    f - only 5 minutes\n");
@@ -273,20 +274,20 @@ int main(int argc, char *argv[]) {
 				}
 				currentarg++;
 			}
-			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
-				cfg.listjsonxml = atoi(argv[currentarg+1]);
+			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {
+				cfg.listjsonxml = atoi(argv[currentarg + 1]);
 				if (cfg.listjsonxml < 0) {
-					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg+1], argv[currentarg]);
+					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg + 1], argv[currentarg]);
 					return 1;
 				}
 				currentarg++;
 			}
-			cfg.qmode=8;
-		} else if (strcmp(argv[currentarg],"--json")==0) {
-			if (currentarg+1<argc && argv[currentarg+1][0]!='-' && !isdigit(argv[currentarg+1][0])) {
-				p.jsonmode = argv[currentarg+1][0];
-				if (strlen(argv[currentarg+1])!=1 || strchr("afhdmyt", p.jsonmode)==NULL) {
-					printf("Error: Invalid mode parameter \"%s\" for --json.\n", argv[currentarg+1]);
+			cfg.qmode = 8;
+		} else if (strcmp(argv[currentarg], "--json") == 0) {
+			if (currentarg + 1 < argc && argv[currentarg + 1][0] != '-' && !isdigit(argv[currentarg + 1][0])) {
+				p.jsonmode = argv[currentarg + 1][0];
+				if (strlen(argv[currentarg + 1]) != 1 || strchr("afhdmyt", p.jsonmode) == NULL) {
+					printf("Error: Invalid mode parameter \"%s\" for --json.\n", argv[currentarg + 1]);
 					printf(" Valid parameters:\n");
 					printf("    a - all (default)\n");
 					printf("    f - only 5 minutes\n");
@@ -299,17 +300,17 @@ int main(int argc, char *argv[]) {
 				}
 				currentarg++;
 			}
-			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
-				cfg.listjsonxml = atoi(argv[currentarg+1]);
+			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {
+				cfg.listjsonxml = atoi(argv[currentarg + 1]);
 				if (cfg.listjsonxml < 0) {
-					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg+1], argv[currentarg]);
+					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg + 1], argv[currentarg]);
 					return 1;
 				}
 				currentarg++;
 			}
-			cfg.qmode=10;
-		} else if ((strcmp(argv[currentarg],"-ru")==0) || (strcmp(argv[currentarg],"--rateunit"))==0) {
-			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
+			cfg.qmode = 10;
+		} else if ((strcmp(argv[currentarg], "-ru") == 0) || (strcmp(argv[currentarg], "--rateunit")) == 0) {
+			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {
 				if (cfg.rateunit > 1 || cfg.rateunit < 0) {
 					printf("Error: Invalid parameter \"%d\" for --rateunit.\n", cfg.rateunit);
 					printf(" Valid parameters:\n");
@@ -317,7 +318,7 @@ int main(int argc, char *argv[]) {
 					printf("    1 - bits\n");
 					return 1;
 				}
-				cfg.rateunit = atoi(argv[currentarg+1]);
+				cfg.rateunit = atoi(argv[currentarg + 1]);
 				if (debug)
 					printf("Rateunit changed: %d\n", cfg.rateunit);
 				currentarg++;
@@ -327,80 +328,79 @@ int main(int argc, char *argv[]) {
 				if (debug)
 					printf("Rateunit changed: %d\n", cfg.rateunit);
 			}
-		} else if ((strcmp(argv[currentarg],"-tr")==0) || (strcmp(argv[currentarg],"--traffic")==0)) {
-			if (currentarg+1<argc && isdigit(argv[currentarg+1][0])) {
-				cfg.sampletime=atoi(argv[currentarg+1]);
+		} else if ((strcmp(argv[currentarg], "-tr") == 0) || (strcmp(argv[currentarg], "--traffic") == 0)) {
+			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {
+				cfg.sampletime = atoi(argv[currentarg + 1]);
 				currentarg++;
-				p.traffic=1;
-				p.query=0;
+				p.traffic = 1;
+				p.query = 0;
 				continue;
 			}
-			p.traffic=1;
-			p.query=0;
-		} else if ((strcmp(argv[currentarg],"-l")==0) || (strcmp(argv[currentarg],"--live")==0)) {
-			if (currentarg+1<argc && argv[currentarg+1][0]!='-') {
-				if (!isdigit(argv[currentarg+1][0]) || p.livemode > 1 || p.livemode < 0) {
-					printf("Error: Invalid mode parameter \"%s\" for -l / --live.\n", argv[currentarg+1]);
+			p.traffic = 1;
+			p.query = 0;
+		} else if ((strcmp(argv[currentarg], "-l") == 0) || (strcmp(argv[currentarg], "--live") == 0)) {
+			if (currentarg + 1 < argc && argv[currentarg + 1][0] != '-') {
+				if (!isdigit(argv[currentarg + 1][0]) || p.livemode > 1 || p.livemode < 0) {
+					printf("Error: Invalid mode parameter \"%s\" for -l / --live.\n", argv[currentarg + 1]);
 					printf(" Valid parameters:\n");
 					printf("    0 - show packets per second (default)\n");
 					printf("    1 - show transfer counters\n");
 					return 1;
 				}
-				p.livemode = atoi(argv[currentarg+1]);
+				p.livemode = atoi(argv[currentarg + 1]);
 				currentarg++;
 			}
-			p.livetraffic=1;
-			p.query=0;
-		} else if (strcmp(argv[currentarg],"--force")==0) {
-			p.force=1;
-		} else if (strcmp(argv[currentarg],"--showconfig")==0) {
+			p.livetraffic = 1;
+			p.query = 0;
+		} else if (strcmp(argv[currentarg], "--force") == 0) {
+			p.force = 1;
+		} else if (strcmp(argv[currentarg], "--showconfig") == 0) {
 			printcfgfile();
 			return 0;
-		} else if (strcmp(argv[currentarg],"--remove")==0) {
-			p.removeiface=1;
-			p.query=0;
-		} else if ((strcmp(argv[currentarg],"-b")==0) || (strcmp(argv[currentarg],"--begin")==0)) {
-			if (currentarg+1<argc) {
-				if (!validatedatetime(argv[currentarg+1])) {
+		} else if (strcmp(argv[currentarg], "--remove") == 0) {
+			p.removeiface = 1;
+			p.query = 0;
+		} else if ((strcmp(argv[currentarg], "-b") == 0) || (strcmp(argv[currentarg], "--begin") == 0)) {
+			if (currentarg + 1 < argc) {
+				if (!validatedatetime(argv[currentarg + 1])) {
 					printf("Error: Invalid date format, expected YYYY-MM-DD HH:MM or YYYY-MM-DD.\n");
 					return 1;
 				}
-				strncpy_nt(p.databegin, argv[currentarg+1], 18);
+				strncpy_nt(p.databegin, argv[currentarg + 1], 18);
 				currentarg++;
 			} else {
 				printf("Error: Date of format YYYY-MM-DD HH:MM or YYYY-MM-DD for %s missing.\n", argv[currentarg]);
 				return 1;
 			}
-		} else if ((strcmp(argv[currentarg],"-e")==0) || (strcmp(argv[currentarg],"--end")==0)) {
-			if (currentarg+1<argc) {
-				if (!validatedatetime(argv[currentarg+1])) {
+		} else if ((strcmp(argv[currentarg], "-e") == 0) || (strcmp(argv[currentarg], "--end") == 0)) {
+			if (currentarg + 1 < argc) {
+				if (!validatedatetime(argv[currentarg + 1])) {
 					printf("Error: Invalid date format, expected YYYY-MM-DD HH:MM or YYYY-MM-DD.\n");
 					return 1;
 				}
-				strncpy_nt(p.dataend, argv[currentarg+1], 18);
+				strncpy_nt(p.dataend, argv[currentarg + 1], 18);
 				currentarg++;
 			} else {
 				printf("Error: Date of format YYYY-MM-DD HH:MM or YYYY-MM-DD for %s missing.\n", argv[currentarg]);
 				return 1;
 			}
-		} else if (strcmp(argv[currentarg],"--iflist")==0) {
+		} else if (strcmp(argv[currentarg], "--iflist") == 0) {
 			getiflist(&p.ifacelist, 1);
 			printf("Available interfaces: %s\n", p.ifacelist);
 			free(p.ifacelist);
 			return 0;
-		} else if ((strcmp(argv[currentarg],"-v")==0) || (strcmp(argv[currentarg],"--version")==0)) {
+		} else if ((strcmp(argv[currentarg], "-v") == 0) || (strcmp(argv[currentarg], "--version") == 0)) {
 			printf("vnStat %s by Teemu Toivola <tst at iki dot fi>\n", getversion());
 			return 0;
 		} else {
-			printf("Unknown parameter \"%s\". Use --help for help.\n",argv[currentarg]);
+			printf("Unknown parameter \"%s\". Use --help for help.\n", argv[currentarg]);
 			return 1;
 		}
-
 	}
 
 	/* open database and see if it contains any interfaces */
 	if (!p.traffic && !p.livetraffic) {
-		if ((dir=opendir(p.dirname))!=NULL) {
+		if ((dir = opendir(p.dirname)) != NULL) {
 			if (debug)
 				printf("Dir OK\n");
 			closedir(dir);
@@ -415,14 +415,14 @@ int main(int argc, char *argv[]) {
 			}
 			p.ifcount = db_getinterfacecount();
 			if (debug)
-				printf("%"PRIu64" interface(s) found\n", p.ifcount);
+				printf("%" PRIu64 " interface(s) found\n", p.ifcount);
 
 			if (p.ifcount > 1) {
 				strncpy_nt(p.definterface, cfg.iface, 32);
 			}
 		} else {
 			printf("Error: Unable to open database directory \"%s\": %s\n", p.dirname, strerror(errno));
-			if (errno==ENOENT) {
+			if (errno == ENOENT) {
 				printf("The vnStat daemon should have created this directory when started.\n");
 				printf("Check that it is configured and running. See also \"man vnstatd\".\n");
 			} else {
@@ -448,7 +448,7 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	}
-	p.interface[31]='\0';
+	p.interface[31] = '\0';
 
 	/* parameter handlers */
 	handleremoveinterface(&p);
@@ -487,8 +487,8 @@ int main(int argc, char *argv[]) {
 
 void initparams(PARAMS *p)
 {
-	noexit = 0; /* allow functions to exit in case of error */
-	debug = 0; /* debug disabled by default */
+	noexit = 0;		   /* allow functions to exit in case of error */
+	debug = 0;		   /* debug disabled by default */
 	disableprints = 0; /* let prints be visible */
 
 	p->addiface = 0;
@@ -709,20 +709,20 @@ void handleshowdatabases(PARAMS *p)
 	}
 
 	/* show all interfaces if -i isn't specified */
-	if (p->ifcount==0) {
+	if (p->ifcount == 0) {
 		/* printf("No database found.\n"); */
-		p->query=0;
-	} else if ((cfg.qmode==0 || cfg.qmode==8 || cfg.qmode==10) && (p->ifcount>1)) {
+		p->query = 0;
+	} else if ((cfg.qmode == 0 || cfg.qmode == 8 || cfg.qmode == 10) && (p->ifcount > 1)) {
 
-		if (cfg.qmode==0) {
-			if (cfg.ostyle!=0) {
+		if (cfg.qmode == 0) {
+			if (cfg.ostyle != 0) {
 				printf("\n                      rx      /      tx      /     total    /   estimated\n");
 			} else {
 				printf("\n                      rx      /      tx      /     total\n");
 			}
-		} else if (cfg.qmode==8) {
+		} else if (cfg.qmode == 8) {
 			xmlheader();
-		} else if (cfg.qmode==10) {
+		} else if (cfg.qmode == 10) {
 			jsonheader();
 		}
 
@@ -736,11 +736,11 @@ void handleshowdatabases(PARAMS *p)
 			strncpy_nt(p->interface, dbifl_i->interface, 32);
 			if (debug)
 				printf("\nProcessing interface \"%s\"...\n", p->interface);
-			if (cfg.qmode==0) {
+			if (cfg.qmode == 0) {
 				showdb(p->interface, 5, "", "");
-			} else if (cfg.qmode==8) {
+			} else if (cfg.qmode == 8) {
 				showxml(p->interface, p->xmlmode, p->databegin, p->dataend);
-			} else if (cfg.qmode==10) {
+			} else if (cfg.qmode == 10) {
 				showjson(p->interface, ifcount, p->jsonmode, p->databegin, p->dataend);
 			}
 			ifcount++;
@@ -748,13 +748,13 @@ void handleshowdatabases(PARAMS *p)
 		}
 		dbiflistfree(&dbifl);
 
-		if (cfg.qmode==8) {
+		if (cfg.qmode == 8) {
 			xmlfooter();
-		} else if (cfg.qmode==10) {
+		} else if (cfg.qmode == 10) {
 			jsonfooter();
 		}
 
-	/* show in qmode if there's only one file or qmode!=0 */
+		/* show in qmode if there's only one file or qmode!=0 */
 	} else {
 		showoneinterface(p, p->interface);
 	}
@@ -763,7 +763,7 @@ void handleshowdatabases(PARAMS *p)
 void showoneinterface(PARAMS *p, const char *interface)
 {
 	if (!db_getinterfacecountbyname(p->interface)) {
-		if (strchr(p->interface, '+') == NULL)  {
+		if (strchr(p->interface, '+') == NULL) {
 			printf("Error: Interface \"%s\" not found in database.\n", p->interface);
 		} else {
 			printf("Error: Not all requested interfaces found in database or given interfaces aren't unique.\n");
@@ -771,20 +771,20 @@ void showoneinterface(PARAMS *p, const char *interface)
 		exit(EXIT_FAILURE);
 	}
 
-	if (cfg.qmode==5) {
-		if (cfg.ostyle!=0) {
+	if (cfg.qmode == 5) {
+		if (cfg.ostyle != 0) {
 			printf("\n                      rx      /      tx      /     total    /   estimated\n");
 		} else {
 			printf("\n                      rx      /      tx      /     total\n");
 		}
 	}
-	if (cfg.qmode!=8 && cfg.qmode!=10) {
+	if (cfg.qmode != 8 && cfg.qmode != 10) {
 		showdb(interface, cfg.qmode, p->databegin, p->dataend);
-	} else if (cfg.qmode==8) {
+	} else if (cfg.qmode == 8) {
 		xmlheader();
 		showxml(p->interface, p->xmlmode, p->databegin, p->dataend);
 		xmlfooter();
-	} else if (cfg.qmode==10) {
+	} else if (cfg.qmode == 10) {
 		jsonheader();
 		showjson(p->interface, 0, p->jsonmode, p->databegin, p->dataend);
 		jsonfooter();

@@ -87,9 +87,9 @@ int clean_testdbdir(void)
 
 	create_testdir();
 
-	if (stat(TESTDBDIR, &statbuf)!=0) {
-		if (errno==ENOENT) {
-			if (mkdir(TESTDBDIR, 0755)==0) {
+	if (stat(TESTDBDIR, &statbuf) != 0) {
+		if (errno == ENOENT) {
+			if (mkdir(TESTDBDIR, 0755) == 0) {
 				return 1;
 			}
 		}
@@ -100,7 +100,7 @@ int clean_testdbdir(void)
 		ck_abort_msg("error \"%s\" while removing directory \"%s\", please remove it manually", strerror(errno), TESTDBDIR);
 	}
 
-	if (mkdir(TESTDBDIR, 0755)!=0) {
+	if (mkdir(TESTDBDIR, 0755) != 0) {
 		ck_abort_msg("error \"%s\" while creating directory \"%s\"", strerror(errno), TESTDBDIR);
 	}
 
@@ -111,9 +111,9 @@ int create_testdir(void)
 {
 	struct stat statbuf;
 
-	if (stat(TESTDIR, &statbuf)!=0) {
-		if (errno==ENOENT) {
-			if (mkdir(TESTDIR, 0755)==0) {
+	if (stat(TESTDIR, &statbuf) != 0) {
+		if (errno == ENOENT) {
+			if (mkdir(TESTDIR, 0755) == 0) {
 				return 1;
 			}
 		}
@@ -127,8 +127,8 @@ int create_directory(const char *directory)
 {
 	struct stat statbuf;
 
-	if (stat(directory, &statbuf)!=0) {
-		if (errno==ENOENT) {
+	if (stat(directory, &statbuf) != 0) {
+		if (errno == ENOENT) {
 			if (mkdir(directory, 0755) != 0) {
 				ck_abort_msg("error \"%s\" while creating directory \"%s\"", strerror(errno), directory);
 			}
@@ -146,26 +146,26 @@ int remove_directory(const char *directory)
 	struct dirent *di = NULL;
 	char entryname[512];
 
-	if ((dir=opendir(directory))==NULL) {
-		if (errno==ENOENT) {
+	if ((dir = opendir(directory)) == NULL) {
+		if (errno == ENOENT) {
 			return 1;
 		} else {
 			return 0;
 		}
 	}
 
-	while ((di=readdir(dir))) {
+	while ((di = readdir(dir))) {
 		switch (di->d_type) {
 			case DT_LNK:
 			case DT_REG:
 				snprintf(entryname, 512, "%s/%s", directory, di->d_name);
-				if (unlink(entryname)!=0) {
+				if (unlink(entryname) != 0) {
 					closedir(dir);
 					return 0;
 				}
 				break;
 			case DT_DIR:
-				if (strcmp(di->d_name, ".")==0 || strcmp(di->d_name, "..")==0) {
+				if (strcmp(di->d_name, ".") == 0 || strcmp(di->d_name, "..") == 0) {
 					continue;
 				}
 				snprintf(entryname, 512, "%s/%s", directory, di->d_name);
@@ -179,7 +179,7 @@ int remove_directory(const char *directory)
 		}
 	}
 	closedir(dir);
-	if (rmdir(directory)!=0) {
+	if (rmdir(directory) != 0) {
 		return 0;
 	}
 
@@ -192,7 +192,7 @@ int create_zerosize_dbfile(const char *iface)
 	char filename[512];
 
 	snprintf(filename, 512, "%s/%s", TESTDBDIR, iface);
-	if ((fp=fopen(filename, "w"))==NULL) {
+	if ((fp = fopen(filename, "w")) == NULL) {
 		ck_abort_msg("error \"%s\" while opening file \"%s\" for writing", strerror(errno), filename);
 	}
 	fclose(fp);
@@ -206,8 +206,8 @@ int check_dbfile_exists(const char *iface, const int minsize)
 	char filename[512];
 
 	snprintf(filename, 512, "%s/%s", TESTDBDIR, iface);
-	if (stat(filename, &statbuf)!=0) {
-		if (errno==ENOENT) {
+	if (stat(filename, &statbuf) != 0) {
+		if (errno == ENOENT) {
 			return 0;
 		}
 		ck_abort_msg("error \"%s\" while inspecting file \"%s\"", strerror(errno), filename);
@@ -225,7 +225,7 @@ int fake_proc_net_dev(const char *mode, const char *iface, const int rx, const i
 	FILE *devfp;
 	char filename[512];
 
-	if (strcmp(mode, "w") != 0  && strcmp(mode, "a") != 0) {
+	if (strcmp(mode, "w") != 0 && strcmp(mode, "a") != 0) {
 		ck_abort_msg("error: only w and a modes are supported");
 	}
 
@@ -233,7 +233,7 @@ int fake_proc_net_dev(const char *mode, const char *iface, const int rx, const i
 	create_directory(TESTPROCDIR);
 
 	snprintf(filename, 512, "%s/dev", TESTPROCDIR);
-	if ((devfp=fopen(filename, mode))==NULL) {
+	if ((devfp = fopen(filename, mode)) == NULL) {
 		ck_abort_msg("error \"%s\" while opening file \"%s\" for writing", strerror(errno), filename);
 	}
 
@@ -266,7 +266,7 @@ int fake_sys_class_net(const char *iface, const int rx, const int tx, const int 
 
 	if (speed != 0) {
 		snprintf(filename, 512, "%s/%s/speed", TESTSYSCLASSNETDIR, iface);
-		if ((devfp=fopen(filename, "w"))==NULL) {
+		if ((devfp = fopen(filename, "w")) == NULL) {
 			ck_abort_msg("error \"%s\" while opening file \"%s\" for writing", strerror(errno), filename);
 		}
 		fprintf(devfp, "%d\n", speed);
@@ -274,28 +274,28 @@ int fake_sys_class_net(const char *iface, const int rx, const int tx, const int 
 	}
 
 	snprintf(filename, 512, "%s/%s/statistics/rx_bytes", TESTSYSCLASSNETDIR, iface);
-	if ((devfp=fopen(filename, "w"))==NULL) {
+	if ((devfp = fopen(filename, "w")) == NULL) {
 		ck_abort_msg("error \"%s\" while opening file \"%s\" for writing", strerror(errno), filename);
 	}
 	fprintf(devfp, "%d\n", rx);
 	fclose(devfp);
 
 	snprintf(filename, 512, "%s/%s/statistics/tx_bytes", TESTSYSCLASSNETDIR, iface);
-	if ((devfp=fopen(filename, "w"))==NULL) {
+	if ((devfp = fopen(filename, "w")) == NULL) {
 		ck_abort_msg("error \"%s\" while opening file \"%s\" for writing", strerror(errno), filename);
 	}
 	fprintf(devfp, "%d\n", tx);
 	fclose(devfp);
 
 	snprintf(filename, 512, "%s/%s/statistics/rx_packets", TESTSYSCLASSNETDIR, iface);
-	if ((devfp=fopen(filename, "w"))==NULL) {
+	if ((devfp = fopen(filename, "w")) == NULL) {
 		ck_abort_msg("error \"%s\" while opening file \"%s\" for writing", strerror(errno), filename);
 	}
 	fprintf(devfp, "%d\n", rxp);
 	fclose(devfp);
 
 	snprintf(filename, 512, "%s/%s/statistics/tx_packets", TESTSYSCLASSNETDIR, iface);
-	if ((devfp=fopen(filename, "w"))==NULL) {
+	if ((devfp = fopen(filename, "w")) == NULL) {
 		ck_abort_msg("error \"%s\" while opening file \"%s\" for writing", strerror(errno), filename);
 	}
 	fprintf(devfp, "%d\n", txp);

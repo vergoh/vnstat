@@ -193,5 +193,4 @@ void printcfgfile(void)
 	printf("CTx             \"%s\"\n", cfg.ctx);
 	printf("CRxD            \"%s\"\n", cfg.crxd);
 	printf("CTxD            \"%s\"\n", cfg.ctxd);
-
 }

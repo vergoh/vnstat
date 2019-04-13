@@ -695,7 +695,8 @@ END_TEST
 START_TEST(db_getiflist_lists_interfaces)
 {
 	int ret;
-	dbiflist *dbifl = NULL, *dbifl_i = NULL;;
+	dbiflist *dbifl = NULL, *dbifl_i = NULL;
+	;
 
 	defaultcfg();
 
@@ -986,7 +987,7 @@ void range_test_month_setup(void)
 	ret = db_addinterface("ethtest");
 	ck_assert_int_eq(ret, 1);
 
-	for (i=1; i<=6; i++) {
+	for (i = 1; i <= 6; i++) {
 		ret = db_insertdata("month", "ethtest", 1, 2, get_timestamp(2000, i, 1, 0, 0));
 		ck_assert_int_eq(ret, 1);
 	}
@@ -1006,9 +1007,8 @@ START_TEST(db_getdata_range_can_get_months_without_range_defined)
 	ck_assert_int_eq(datainfo.count, 6);
 	datalist_i = datalist;
 	i = 0;
-	while (datalist_i != NULL)
-	{
-		switch(i) {
+	while (datalist_i != NULL) {
+		switch (i) {
 			case 0:
 				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2000-01-01");
@@ -1042,9 +1042,8 @@ START_TEST(db_getdata_range_can_get_months_with_range_matching_existing_data)
 	ck_assert_int_eq(datainfo.count, 6);
 	datalist_i = datalist;
 	i = 0;
-	while (datalist_i != NULL)
-	{
-		switch(i) {
+	while (datalist_i != NULL) {
+		switch (i) {
 			case 0:
 				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2000-01-01");
@@ -1078,9 +1077,8 @@ START_TEST(db_getdata_range_can_get_months_with_range_past_existing_data)
 	ck_assert_int_eq(datainfo.count, 6);
 	datalist_i = datalist;
 	i = 0;
-	while (datalist_i != NULL)
-	{
-		switch(i) {
+	while (datalist_i != NULL) {
+		switch (i) {
 			case 0:
 				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2000-01-01");
@@ -1114,9 +1112,8 @@ START_TEST(db_getdata_range_can_get_months_with_range_limiting_begin_and_end)
 	ck_assert_int_eq(datainfo.count, 3);
 	datalist_i = datalist;
 	i = 0;
-	while (datalist_i != NULL)
-	{
-		switch(i) {
+	while (datalist_i != NULL) {
+		switch (i) {
 			case 0:
 				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2000-02-01");
@@ -1150,9 +1147,8 @@ START_TEST(db_getdata_range_can_get_months_with_range_limiting_begin)
 	ck_assert_int_eq(datainfo.count, 4);
 	datalist_i = datalist;
 	i = 0;
-	while (datalist_i != NULL)
-	{
-		switch(i) {
+	while (datalist_i != NULL) {
+		switch (i) {
 			case 0:
 				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2000-03-01");
@@ -1186,9 +1182,8 @@ START_TEST(db_getdata_range_can_get_months_with_range_limiting_begin_with_limit)
 	ck_assert_int_eq(datainfo.count, 3);
 	datalist_i = datalist;
 	i = 0;
-	while (datalist_i != NULL)
-	{
-		switch(i) {
+	while (datalist_i != NULL) {
+		switch (i) {
 			case 0:
 				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2000-03-01");
@@ -1222,9 +1217,8 @@ START_TEST(db_getdata_range_can_get_months_with_range_limiting_end)
 	ck_assert_int_eq(datainfo.count, 4);
 	datalist_i = datalist;
 	i = 0;
-	while (datalist_i != NULL)
-	{
-		switch(i) {
+	while (datalist_i != NULL) {
+		switch (i) {
 			case 0:
 				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2000-01-01");
@@ -1258,9 +1252,8 @@ START_TEST(db_getdata_range_can_get_months_with_range_limiting_end_with_limit)
 	ck_assert_int_eq(datainfo.count, 3);
 	datalist_i = datalist;
 	i = 0;
-	while (datalist_i != NULL)
-	{
-		switch(i) {
+	while (datalist_i != NULL) {
+		switch (i) {
 			case 0:
 				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2000-02-01");
@@ -1294,9 +1287,8 @@ START_TEST(db_getdata_range_can_get_months_with_range_on_same_month)
 	ck_assert_int_eq(datainfo.count, 1);
 	datalist_i = datalist;
 	i = 0;
-	while (datalist_i != NULL)
-	{
-		switch(i) {
+	while (datalist_i != NULL) {
+		switch (i) {
 			case 0:
 				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2000-04-01");
@@ -1326,9 +1318,8 @@ START_TEST(db_getdata_range_can_get_months_with_range_past_first_day_of_month)
 	ck_assert_int_eq(datainfo.count, 3);
 	datalist_i = datalist;
 	i = 0;
-	while (datalist_i != NULL)
-	{
-		switch(i) {
+	while (datalist_i != NULL) {
+		switch (i) {
 			case 0:
 				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2000-03-01");
@@ -1359,8 +1350,8 @@ void range_test_hour_setup(void)
 	ret = db_addinterface("ethtest");
 	ck_assert_int_eq(ret, 1);
 
-	for (j=2; j<5; j++) {
-		for (i=0; i<24; i++) {
+	for (j = 2; j < 5; j++) {
+		for (i = 0; i < 24; i++) {
 			ret = db_insertdata("hour", "ethtest", 1, 2, get_timestamp(2002, 2, j, i, 0));
 			ck_assert_int_eq(ret, 1);
 		}
@@ -1381,9 +1372,8 @@ START_TEST(db_getdata_range_can_get_hours_without_range_defined)
 	ck_assert_int_eq(datainfo.count, 72);
 	datalist_i = datalist;
 	i = 0;
-	while (datalist_i != NULL)
-	{
-		switch(i) {
+	while (datalist_i != NULL) {
+		switch (i) {
 			case 0:
 				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2002-02-02 00:00");
@@ -1417,9 +1407,8 @@ START_TEST(db_getdata_range_can_get_hours_with_range_matching_existing_data)
 	ck_assert_int_eq(datainfo.count, 72);
 	datalist_i = datalist;
 	i = 0;
-	while (datalist_i != NULL)
-	{
-		switch(i) {
+	while (datalist_i != NULL) {
+		switch (i) {
 			case 0:
 				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2002-02-02 00:00");
@@ -1453,9 +1442,8 @@ START_TEST(db_getdata_range_can_get_hours_with_range_past_existing_data)
 	ck_assert_int_eq(datainfo.count, 72);
 	datalist_i = datalist;
 	i = 0;
-	while (datalist_i != NULL)
-	{
-		switch(i) {
+	while (datalist_i != NULL) {
+		switch (i) {
 			case 0:
 				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2002-02-02 00:00");
@@ -1489,9 +1477,8 @@ START_TEST(db_getdata_range_can_get_hours_with_range_limiting_begin_and_end)
 	ck_assert_int_eq(datainfo.count, 22);
 	datalist_i = datalist;
 	i = 0;
-	while (datalist_i != NULL)
-	{
-		switch(i) {
+	while (datalist_i != NULL) {
+		switch (i) {
 			case 0:
 				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2002-02-02 20:00");
@@ -1525,9 +1512,8 @@ START_TEST(db_getdata_range_can_get_hours_with_range_limiting_begin)
 	ck_assert_int_eq(datainfo.count, 52);
 	datalist_i = datalist;
 	i = 0;
-	while (datalist_i != NULL)
-	{
-		switch(i) {
+	while (datalist_i != NULL) {
+		switch (i) {
 			case 0:
 				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2002-02-02 20:00");
@@ -1561,9 +1547,8 @@ START_TEST(db_getdata_range_can_get_hours_with_range_limiting_begin_with_limit)
 	ck_assert_int_eq(datainfo.count, 11);
 	datalist_i = datalist;
 	i = 0;
-	while (datalist_i != NULL)
-	{
-		switch(i) {
+	while (datalist_i != NULL) {
+		switch (i) {
 			case 0:
 				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2002-02-02 20:00");
@@ -1597,9 +1582,8 @@ START_TEST(db_getdata_range_can_get_hours_with_range_limiting_end)
 	ck_assert_int_eq(datainfo.count, 21);
 	datalist_i = datalist;
 	i = 0;
-	while (datalist_i != NULL)
-	{
-		switch(i) {
+	while (datalist_i != NULL) {
+		switch (i) {
 			case 0:
 				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2002-02-02 00:00");
@@ -1633,9 +1617,8 @@ START_TEST(db_getdata_range_can_get_hours_with_range_limiting_end_with_limit)
 	ck_assert_int_eq(datainfo.count, 5);
 	datalist_i = datalist;
 	i = 0;
-	while (datalist_i != NULL)
-	{
-		switch(i) {
+	while (datalist_i != NULL) {
+		switch (i) {
 			case 0:
 				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2002-02-02 16:00");
@@ -1669,9 +1652,8 @@ START_TEST(db_getdata_range_can_get_hours_with_range_on_same_hour)
 	ck_assert_int_eq(datainfo.count, 1);
 	datalist_i = datalist;
 	i = 0;
-	while (datalist_i != NULL)
-	{
-		switch(i) {
+	while (datalist_i != NULL) {
+		switch (i) {
 			case 0:
 				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2002-02-02 20:00");
@@ -1708,7 +1690,7 @@ START_TEST(db_getdata_range_with_merged_interfaces)
 	ret = db_addinterface("ethother");
 	ck_assert_int_eq(ret, 1);
 
-	for (i=1; i<=20; i++) {
+	for (i = 1; i <= 20; i++) {
 		ret = db_addtraffic_dated("ethtest", 1, 2, get_timestamp(2000, 2, i, 0, 0));
 		ck_assert_int_eq(ret, 1);
 		ret = db_addtraffic_dated("ethother", 3, 7, get_timestamp(2000, 2, i, 0, 0));
@@ -1720,9 +1702,8 @@ START_TEST(db_getdata_range_with_merged_interfaces)
 	ck_assert_int_eq(datainfo.count, 1);
 	datalist_i = datalist;
 	i = 0;
-	while (datalist_i != NULL)
-	{
-		switch(i) {
+	while (datalist_i != NULL) {
+		switch (i) {
 			case 0:
 				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2000-02-01");
@@ -1755,7 +1736,7 @@ START_TEST(db_addtraffic_without_monthrotate)
 	ret = db_addinterface("ethtest");
 	ck_assert_int_eq(ret, 1);
 
-	for (i=1; i<=20; i++) {
+	for (i = 1; i <= 20; i++) {
 		ret = db_addtraffic_dated("ethtest", 1, 2, get_timestamp(2000, 2, i, 0, 0));
 		ck_assert_int_eq(ret, 1);
 	}
@@ -1765,9 +1746,8 @@ START_TEST(db_addtraffic_without_monthrotate)
 	ck_assert_int_eq(datainfo.count, 1);
 	datalist_i = datalist;
 	i = 0;
-	while (datalist_i != NULL)
-	{
-		switch(i) {
+	while (datalist_i != NULL) {
+		switch (i) {
 			case 0:
 				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2000-02-01");
@@ -1800,7 +1780,7 @@ START_TEST(db_addtraffic_with_monthrotate)
 	ret = db_addinterface("ethtest");
 	ck_assert_int_eq(ret, 1);
 
-	for (i=1; i<=20; i++) {
+	for (i = 1; i <= 20; i++) {
 		ret = db_addtraffic_dated("ethtest", 1, 2, get_timestamp(2000, 2, i, 0, 0));
 		ck_assert_int_eq(ret, 1);
 	}
@@ -1810,9 +1790,8 @@ START_TEST(db_addtraffic_with_monthrotate)
 	ck_assert_int_eq(datainfo.count, 2);
 	datalist_i = datalist;
 	i = 0;
-	while (datalist_i != NULL)
-	{
-		switch(i) {
+	while (datalist_i != NULL) {
+		switch (i) {
 			case 0:
 				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2000-01-01");

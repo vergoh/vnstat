@@ -10,8 +10,8 @@ START_TEST(getbtime_does_not_return_zero)
 END_TEST
 
 #if defined(__clang__)
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wused-but-marked-unused"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wused-but-marked-unused"
 #endif
 START_TEST(getunitprefix_returns_something_with_all_cfg_combinations)
 {
@@ -19,7 +19,7 @@ START_TEST(getunitprefix_returns_something_with_all_cfg_combinations)
 	int j;
 
 	cfg.unitmode = _i;
-	for (j=1; j<=(UNITPREFIXCOUNT+1); j++) {
+	for (j = 1; j <= (UNITPREFIXCOUNT + 1); j++) {
 		string = getunitprefix(j);
 		ck_assert_int_gt(strlen(string), 0);
 	}
@@ -31,7 +31,7 @@ START_TEST(getrateunitprefix_returns_something_with_all_cfg_combinations)
 	const char *string;
 	int j;
 
-	for (j=1; j<=(UNITPREFIXCOUNT+1); j++) {
+	for (j = 1; j <= (UNITPREFIXCOUNT + 1); j++) {
 		string = getrateunitprefix(_i, j);
 		ck_assert_int_gt(strlen(string), 0);
 	}
@@ -43,9 +43,9 @@ START_TEST(getunitdivisor_returns_something_with_all_cfg_combinations)
 	int j;
 	char div[16];
 
-	for (j=1; j<=(UNITPREFIXCOUNT+1); j++) {
-		snprintf(div, 15, "%"PRIu64"", getunitdivisor(_i, j));
-		if (j>UNITPREFIXCOUNT) {
+	for (j = 1; j <= (UNITPREFIXCOUNT + 1); j++) {
+		snprintf(div, 15, "%" PRIu64 "", getunitdivisor(_i, j));
+		if (j > UNITPREFIXCOUNT) {
 			ck_assert_str_eq(div, "1");
 		} else {
 			ck_assert_str_ne(div, "0");
@@ -54,7 +54,7 @@ START_TEST(getunitdivisor_returns_something_with_all_cfg_combinations)
 }
 END_TEST
 #if defined(__clang__)
-  #pragma clang diagnostic pop
+#pragma clang diagnostic pop
 #endif
 
 START_TEST(spacecheck_does_not_check_when_not_configured)
@@ -209,9 +209,9 @@ START_TEST(gettrafficrate_zero_interval)
 {
 	int i, j;
 
-	for (i=0; i<=1; i++) {
+	for (i = 0; i <= 1; i++) {
 		cfg.rateunit = i;
-		for (j=0; j<=2; j++) {
+		for (j = 0; j <= 2; j++) {
 			cfg.unitmode = j;
 			ck_assert_str_eq(gettrafficrate(1, 0, 0), "n/a");
 		}
@@ -330,12 +330,12 @@ START_TEST(gettrafficrate_padding)
 	cfg.defaultdecimals = 2;
 	cfg.unitmode = 0;
 	cfg.rateunit = 0;
-	ck_assert_str_eq(gettrafficrate(102400, 1, 0),  "100.00 KiB/s");
+	ck_assert_str_eq(gettrafficrate(102400, 1, 0), "100.00 KiB/s");
 	ck_assert_str_eq(gettrafficrate(102400, 1, 12), "100.00 KiB/s");
 	ck_assert_str_eq(gettrafficrate(102400, 1, 14), "  100.00 KiB/s");
 
-	ck_assert_str_eq(gettrafficrate(900, 1, 0),  "900 B/s");
-	ck_assert_str_eq(gettrafficrate(900, 1, 7),  "900 B/s");
+	ck_assert_str_eq(gettrafficrate(900, 1, 0), "900 B/s");
+	ck_assert_str_eq(gettrafficrate(900, 1, 7), "900 B/s");
 	ck_assert_str_eq(gettrafficrate(900, 1, 12), "     900 B/s");
 	ck_assert_str_eq(gettrafficrate(900, 1, 14), "       900 B/s");
 }
@@ -346,9 +346,9 @@ START_TEST(sighandler_sets_signal)
 	debug = 1;
 	intsignal = 0;
 	disable_logprints();
-	ck_assert(signal(SIGINT, sighandler)!=SIG_ERR);
-	ck_assert(signal(SIGHUP, sighandler)!=SIG_ERR);
-	ck_assert(signal(SIGTERM, sighandler)!=SIG_ERR);
+	ck_assert(signal(SIGINT, sighandler) != SIG_ERR);
+	ck_assert(signal(SIGHUP, sighandler) != SIG_ERR);
+	ck_assert(signal(SIGTERM, sighandler) != SIG_ERR);
 
 	ck_assert_int_eq(kill(getpid(), SIGINT), 0);
 	ck_assert_int_eq(intsignal, SIGINT);

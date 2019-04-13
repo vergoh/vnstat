@@ -1087,11 +1087,11 @@ START_TEST(handledatabaseerror_does_not_exit_if_limit_is_not_reached)
 
 	ck_assert_int_eq(s.dbretrycount, 1);
 
-	for (i=1; i<DBRETRYLIMIT-1; i++) {
+	for (i = 1; i < DBRETRYLIMIT - 1; i++) {
 		handledatabaseerror(&s);
 	}
 
-	ck_assert_int_eq(s.dbretrycount, DBRETRYLIMIT-1);
+	ck_assert_int_eq(s.dbretrycount, DBRETRYLIMIT - 1);
 }
 END_TEST
 
@@ -1110,7 +1110,7 @@ START_TEST(handledatabaseerror_exits_if_limit_is_reached)
 
 	ck_assert_int_eq(s.dbretrycount, 1);
 
-	for (i=1; i<DBRETRYLIMIT; i++) {
+	for (i = 1; i < DBRETRYLIMIT; i++) {
 		handledatabaseerror(&s);
 	}
 }
@@ -1421,7 +1421,7 @@ START_TEST(datacache_status_has_no_issues_with_large_number_of_interfaces)
 	disable_logprints();
 	dcache = NULL;
 
-	for (i=0; i<100; i++) {
+	for (i = 0; i < 100; i++) {
 		snprintf(buffer, 8, "eth%d", i);
 		ret = datacache_add(&dcache, buffer, 0);
 		ck_assert_int_eq(ret, 1);

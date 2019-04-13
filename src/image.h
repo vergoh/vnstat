@@ -1,12 +1,12 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
-#include <gd.h>        /* libgd2-dev libgd2 */
-#include <gdfontt.h>   /* gdFontGetTiny() */
-#include <gdfonts.h>   /* gdFontGetSmall() */
-#include <gdfontmb.h>  /* gdFontGetMediumBold() */
-#include <gdfontl.h>   /* gdFontGetLarge() */
-#include <gdfontg.h>   /* gdFontGetGiant() */
+#include <gd.h>		  /* libgd2-dev libgd2 */
+#include <gdfontt.h>  /* gdFontGetTiny() */
+#include <gdfonts.h>  /* gdFontGetSmall() */
+#include <gdfontmb.h> /* gdFontGetMediumBold() */
+#include <gdfontl.h>  /* gdFontGetLarge() */
+#include <gdfontg.h>  /* gdFontGetGiant() */
 
 /* rectangle size */
 #define YBEGINOFFSET (-1)

@@ -17,7 +17,7 @@ void trafficmeter(char iface[], unsigned int sampletime)
 	}
 
 	/* less than 2 seconds doesn't produce good results */
-	if (sampletime<2) {
+	if (sampletime < 2) {
 		printf("Error: Time for sampling too short.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -38,17 +38,17 @@ void trafficmeter(char iface[], unsigned int sampletime)
 		snprintf(buffer, 256, "Sampling %s (%u seconds average)", iface, sampletime);
 		printf("%s", buffer);
 		fflush(stdout);
-		sleep(sampletime/3);
+		sleep(sampletime / 3);
 		printf(".");
 		fflush(stdout);
-		sleep(sampletime/3);
+		sleep(sampletime / 3);
 		printf(".");
 		fflush(stdout);
-		sleep(sampletime/3);
+		sleep(sampletime / 3);
 		printf(".");
 		fflush(stdout);
-		if ((sampletime/3)*3!=sampletime) {
-			sleep(sampletime-((sampletime/3)*3));
+		if ((sampletime / 3) * 3 != sampletime) {
+			sleep(sampletime - ((sampletime / 3) * 3));
 		}
 
 		cursortocolumn(1);
@@ -71,10 +71,10 @@ void trafficmeter(char iface[], unsigned int sampletime)
 
 	/* show the difference in a readable format or json */
 	if (!json) {
-		printf("%"PRIu64" packets sampled in %d seconds\n", rxp+txp, sampletime);
+		printf("%" PRIu64 " packets sampled in %d seconds\n", rxp + txp, sampletime);
 		printf("Traffic average for %s\n", iface);
-		printf("\n      rx     %s         %5"PRIu64" packets/s\n", gettrafficrate(rx, sampletime, 15), (uint64_t)(rxp/sampletime));
-		printf("      tx     %s         %5"PRIu64" packets/s\n\n", gettrafficrate(tx, sampletime, 15), (uint64_t)(txp/sampletime));
+		printf("\n      rx     %s         %5" PRIu64 " packets/s\n", gettrafficrate(rx, sampletime, 15), (uint64_t)(rxp / sampletime));
+		printf("      tx     %s         %5" PRIu64 " packets/s\n\n", gettrafficrate(tx, sampletime, 15), (uint64_t)(txp / sampletime));
 	} else {
 		printf("{\"jsonversion\":\"%d\",", JSONVERSION_TR);
 		printf("\"vnstatversion\":\"%s\",", getversion());
@@ -82,17 +82,17 @@ void trafficmeter(char iface[], unsigned int sampletime)
 		printf("\"sampletime\":%u,", sampletime);
 		printf("\"rx\":{");
 		printf("\"ratestring\":\"%s\",", gettrafficrate(rx, sampletime, 0));
-		printf("\"bytespersecond\":%"PRIu64",", (uint64_t)(rx/sampletime));
-		printf("\"packetspersecond\":%"PRIu64",", (uint64_t)(rxp/sampletime));
-		printf("\"bytes\":%"PRIu64",", rx);
-		printf("\"packets\":%"PRIu64"", rxp);
+		printf("\"bytespersecond\":%" PRIu64 ",", (uint64_t)(rx / sampletime));
+		printf("\"packetspersecond\":%" PRIu64 ",", (uint64_t)(rxp / sampletime));
+		printf("\"bytes\":%" PRIu64 ",", rx);
+		printf("\"packets\":%" PRIu64 "", rxp);
 		printf("},");
 		printf("\"tx\":{");
 		printf("\"ratestring\":\"%s\",", gettrafficrate(tx, sampletime, 0));
-		printf("\"bytespersecond\":%"PRIu64",", (uint64_t)(tx/sampletime));
-		printf("\"packetspersecond\":%"PRIu64",", (uint64_t)(txp/sampletime));
-		printf("\"bytes\":%"PRIu64",", tx);
-		printf("\"packets\":%"PRIu64"", txp);
+		printf("\"bytespersecond\":%" PRIu64 ",", (uint64_t)(tx / sampletime));
+		printf("\"packetspersecond\":%" PRIu64 ",", (uint64_t)(txp / sampletime));
+		printf("\"bytes\":%" PRIu64 ",", tx);
+		printf("\"packets\":%" PRIu64 "", txp);
 		printf("}}\n");
 	}
 }
@@ -130,9 +130,9 @@ void livetrafficmeter(char iface[32], int mode)
 	}
 
 	/* set some defaults */
-	rxtotal=txtotal=rxptotal=txptotal=rxpmax=txpmax=0;
-	rxpmin=txpmin=rxmin=txmin=MAX64;
-	rxmax=txmax=0;
+	rxtotal = txtotal = rxptotal = txptotal = rxpmax = txpmax = 0;
+	rxpmin = txpmin = rxmin = txmin = MAX64;
+	rxmax = txmax = 0;
 	timeslept = 0;
 
 	timespent = (uint64_t)time(NULL);
@@ -164,7 +164,7 @@ void livetrafficmeter(char iface[32], int mode)
 	}
 
 	/* loop until user gets bored */
-	while (intsignal==0) {
+	while (intsignal == 0) {
 
 		timeslept = (uint64_t)time(NULL);
 
@@ -204,21 +204,37 @@ void livetrafficmeter(char iface[32], int mode)
 		txptotal += txp;
 
 		/* update min & max */
-		if (rxmin>rx) {	rxmin = rx;	}
-		if (txmin>tx) {	txmin = tx;	}
-		if (rxmax<rx) {	rxmax = rx;	}
-		if (txmax<tx) {	txmax = tx;	}
-		if (rxpmin>rxp) { rxpmin = rxp;	}
-		if (txpmin>txp) { txpmin = txp;	}
-		if (rxpmax<rxp) { rxpmax = rxp;	}
-		if (txpmax<txp) { txpmax = txp;	}
+		if (rxmin > rx) {
+			rxmin = rx;
+		}
+		if (txmin > tx) {
+			txmin = tx;
+		}
+		if (rxmax < rx) {
+			rxmax = rx;
+		}
+		if (txmax < tx) {
+			txmax = tx;
+		}
+		if (rxpmin > rxp) {
+			rxpmin = rxp;
+		}
+		if (txpmin > txp) {
+			txpmin = txp;
+		}
+		if (rxpmax < rxp) {
+			rxpmax = rxp;
+		}
+		if (txpmax < txp) {
+			txpmax = txp;
+		}
 
 		/* show the difference in a readable format or json */
 		if (!json) {
 			if (mode == 0) {
 				/* packets per second visible */
-				snprintf(buffer, 128, "   rx: %s %*"PRIu64" p/s", gettrafficrate(rx, LIVETIME, ratewidth), ppswidth, (uint64_t)rxp/LIVETIME);
-				snprintf(buffer2, 128, " %*s tx: %s %*"PRIu64" p/s", paddingwidth, " ", gettrafficrate(tx, LIVETIME, ratewidth), ppswidth, (uint64_t)txp/LIVETIME);
+				snprintf(buffer, 128, "   rx: %s %*" PRIu64 " p/s", gettrafficrate(rx, LIVETIME, ratewidth), ppswidth, (uint64_t)rxp / LIVETIME);
+				snprintf(buffer2, 128, " %*s tx: %s %*" PRIu64 " p/s", paddingwidth, " ", gettrafficrate(tx, LIVETIME, ratewidth), ppswidth, (uint64_t)txp / LIVETIME);
 			} else {
 				/* total transfer amount visible */
 				snprintf(buffer, 128, "   rx: %s   %s", gettrafficrate(rx, LIVETIME, ratewidth), getvalue(rxtotal, 1, RT_Normal));
@@ -226,36 +242,36 @@ void livetrafficmeter(char iface[32], int mode)
 			}
 			strcat(buffer, buffer2);
 
-			if (cfg.ostyle!=4 || !debug) {
+			if (cfg.ostyle != 4 || !debug) {
 				cursortocolumn(1);
 				eraseline();
 			}
-			if (cfg.ostyle!=4) {
+			if (cfg.ostyle != 4) {
 				printf("%s", buffer);
 				fflush(stdout);
 			} else {
 				printf("%s\n", buffer);
 			}
 		} else {
-			printf("{\"index\":%"PRIu64",", index);
-			printf("\"seconds\":%"PRIu64",", (uint64_t)time(NULL) - timespent);
+			printf("{\"index\":%" PRIu64 ",", index);
+			printf("\"seconds\":%" PRIu64 ",", (uint64_t)time(NULL) - timespent);
 			printf("\"rx\":{");
 			printf("\"ratestring\":\"%s\",", gettrafficrate(rx, LIVETIME, 0));
-			printf("\"bytespersecond\":%"PRIu64",", (uint64_t)(rx/LIVETIME));
-			printf("\"packetspersecond\":%"PRIu64",", (uint64_t)(rxp/LIVETIME));
-			printf("\"bytes\":%"PRIu64",", rx);
-			printf("\"packets\":%"PRIu64",", rxp);
-			printf("\"totalbytes\":%"PRIu64",", rxtotal);
-			printf("\"totalpackets\":%"PRIu64"", rxptotal);
+			printf("\"bytespersecond\":%" PRIu64 ",", (uint64_t)(rx / LIVETIME));
+			printf("\"packetspersecond\":%" PRIu64 ",", (uint64_t)(rxp / LIVETIME));
+			printf("\"bytes\":%" PRIu64 ",", rx);
+			printf("\"packets\":%" PRIu64 ",", rxp);
+			printf("\"totalbytes\":%" PRIu64 ",", rxtotal);
+			printf("\"totalpackets\":%" PRIu64 "", rxptotal);
 			printf("},");
 			printf("\"tx\":{");
 			printf("\"ratestring\":\"%s\",", gettrafficrate(tx, LIVETIME, 0));
-			printf("\"bytespersecond\":%"PRIu64",", (uint64_t)(tx/LIVETIME));
-			printf("\"packetspersecond\":%"PRIu64",", (uint64_t)(txp/LIVETIME));
-			printf("\"bytes\":%"PRIu64",", tx);
-			printf("\"packets\":%"PRIu64",", txp);
-			printf("\"totalbytes\":%"PRIu64",", txtotal);
-			printf("\"totalpackets\":%"PRIu64"", txptotal);
+			printf("\"bytespersecond\":%" PRIu64 ",", (uint64_t)(tx / LIVETIME));
+			printf("\"packetspersecond\":%" PRIu64 ",", (uint64_t)(txp / LIVETIME));
+			printf("\"bytes\":%" PRIu64 ",", tx);
+			printf("\"packets\":%" PRIu64 ",", txp);
+			printf("\"totalbytes\":%" PRIu64 ",", txtotal);
+			printf("\"totalpackets\":%" PRIu64 "", txptotal);
 			printf("}}\n");
 			index++;
 		}
@@ -269,7 +285,7 @@ void livetrafficmeter(char iface[32], int mode)
 	}
 
 	/* print some statistics if enough time did pass */
-	if (!json && timespent>=10) {
+	if (!json && timespent >= 10) {
 
 		printf("\n %s  /  traffic statistics\n\n", iface);
 
@@ -286,43 +302,43 @@ void livetrafficmeter(char iface[32], int mode)
 		printf("          min        %s", gettrafficrate(rxmin, LIVETIME, 15));
 		printf("  | %s\n", gettrafficrate(txmin, LIVETIME, 15));
 		printf("--------------------------------------+------------------\n");
-		printf("  packets               %12"PRIu64"  |    %12"PRIu64"\n", rxptotal, txptotal);
+		printf("  packets               %12" PRIu64 "  |    %12" PRIu64 "\n", rxptotal, txptotal);
 		printf("--------------------------------------+------------------\n");
-		printf("          max          %9"PRIu64" p/s  |   %9"PRIu64" p/s\n", rxpmax/LIVETIME, txpmax/LIVETIME);
-		printf("      average          %9"PRIu64" p/s  |   %9"PRIu64" p/s\n", rxptotal/timespent, txptotal/timespent);
-		printf("          min          %9"PRIu64" p/s  |   %9"PRIu64" p/s\n", rxpmin/LIVETIME, txpmin/LIVETIME);
+		printf("          max          %9" PRIu64 " p/s  |   %9" PRIu64 " p/s\n", rxpmax / LIVETIME, txpmax / LIVETIME);
+		printf("      average          %9" PRIu64 " p/s  |   %9" PRIu64 " p/s\n", rxptotal / timespent, txptotal / timespent);
+		printf("          min          %9" PRIu64 " p/s  |   %9" PRIu64 " p/s\n", rxpmin / LIVETIME, txpmin / LIVETIME);
 		printf("--------------------------------------+------------------\n");
 
-		if (timespent<=60) {
-			printf("  time             %9"PRIu64" seconds\n", timespent);
+		if (timespent <= 60) {
+			printf("  time             %9" PRIu64 " seconds\n", timespent);
 		} else {
-			printf("  time               %7.2f minutes\n", timespent/(double)60);
+			printf("  time               %7.2f minutes\n", timespent / (double)60);
 		}
 
 		printf("\n");
 	} else if (json) {
-			printf("{\"seconds\":%"PRIu64",", timespent);
-			printf("\"rx\":{");
-			printf("\"maxratestring\":\"%s\",", gettrafficrate(rxmax, LIVETIME, 0));
-			printf("\"averageratestring\":\"%s\",", gettrafficrate(rxtotal, (time_t)timespent, 0));
-			printf("\"minratestring\":\"%s\",", gettrafficrate(rxmin, LIVETIME, 0));
-			printf("\"totalbytes\":%"PRIu64",", rxtotal);
-			printf("\"maxbytes\":%"PRIu64",", rxmax);
-			printf("\"minbytes\":%"PRIu64",", rxmin);
-			printf("\"totalpackets\":%"PRIu64",", rxptotal);
-			printf("\"maxpackets\":%"PRIu64",", rxpmax);
-			printf("\"minpackets\":%"PRIu64"", rxpmin);
-			printf("},");
-			printf("\"tx\":{");
-			printf("\"maxratestring\":\"%s\",", gettrafficrate(txmax, LIVETIME, 0));
-			printf("\"averageratestring\":\"%s\",", gettrafficrate(txtotal, (time_t)timespent, 0));
-			printf("\"minratestring\":\"%s\",", gettrafficrate(txmin, LIVETIME, 0));
-			printf("\"totalbytes\":%"PRIu64",", txtotal);
-			printf("\"maxbytes\":%"PRIu64",", txmax);
-			printf("\"minbytes\":%"PRIu64",", txmin);
-			printf("\"totalpackets\":%"PRIu64",", txptotal);
-			printf("\"maxpackets\":%"PRIu64",", txpmax);
-			printf("\"minpackets\":%"PRIu64"", txpmin);
-			printf("}}\n");
+		printf("{\"seconds\":%" PRIu64 ",", timespent);
+		printf("\"rx\":{");
+		printf("\"maxratestring\":\"%s\",", gettrafficrate(rxmax, LIVETIME, 0));
+		printf("\"averageratestring\":\"%s\",", gettrafficrate(rxtotal, (time_t)timespent, 0));
+		printf("\"minratestring\":\"%s\",", gettrafficrate(rxmin, LIVETIME, 0));
+		printf("\"totalbytes\":%" PRIu64 ",", rxtotal);
+		printf("\"maxbytes\":%" PRIu64 ",", rxmax);
+		printf("\"minbytes\":%" PRIu64 ",", rxmin);
+		printf("\"totalpackets\":%" PRIu64 ",", rxptotal);
+		printf("\"maxpackets\":%" PRIu64 ",", rxpmax);
+		printf("\"minpackets\":%" PRIu64 "", rxpmin);
+		printf("},");
+		printf("\"tx\":{");
+		printf("\"maxratestring\":\"%s\",", gettrafficrate(txmax, LIVETIME, 0));
+		printf("\"averageratestring\":\"%s\",", gettrafficrate(txtotal, (time_t)timespent, 0));
+		printf("\"minratestring\":\"%s\",", gettrafficrate(txmin, LIVETIME, 0));
+		printf("\"totalbytes\":%" PRIu64 ",", txtotal);
+		printf("\"maxbytes\":%" PRIu64 ",", txmax);
+		printf("\"minbytes\":%" PRIu64 ",", txmin);
+		printf("\"totalpackets\":%" PRIu64 ",", txptotal);
+		printf("\"maxpackets\":%" PRIu64 ",", txpmax);
+		printf("\"minpackets\":%" PRIu64 "", txpmin);
+		printf("}}\n");
 	}
 }

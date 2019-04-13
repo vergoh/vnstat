@@ -276,8 +276,8 @@ START_TEST(datacache_can_do_stuff)
 
 	iter = dc;
 	ret = datacache_seek(&iter, "eth3");
-	for (i=1; i<=10; i++) {
-		ret = xferlog_add(&iter->log, (time_t)i, (uint64_t)i*10, (uint64_t)i*20);
+	for (i = 1; i <= 10; i++) {
+		ret = xferlog_add(&iter->log, (time_t)i, (uint64_t)i * 10, (uint64_t)i * 20);
 		ck_assert_int_eq(ret, 1);
 	}
 	ck_assert_int_eq(iter->log->timestamp, 10);

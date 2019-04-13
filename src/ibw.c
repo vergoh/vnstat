@@ -49,7 +49,7 @@ int ibwadd(const char *iface, const uint32_t limit)
 
 		/* update previous value if already in list */
 		while (p != NULL) {
-			if (strcmp(p->interface, iface)==0) {
+			if (strcmp(p->interface, iface) == 0) {
 				p->limit = limit;
 				return 1;
 			}
@@ -57,7 +57,7 @@ int ibwadd(const char *iface, const uint32_t limit)
 		}
 
 		/* add new node if not found */
-		n =  (ibwnode *)malloc(sizeof(ibwnode));
+		n = (ibwnode *)malloc(sizeof(ibwnode));
 
 		if (n == NULL) {
 			return 0;
@@ -77,7 +77,7 @@ int ibwadd(const char *iface, const uint32_t limit)
 
 void ibwlist(void)
 {
-	int i=1;
+	int i = 1;
 	ibwnode *p = ifacebw;
 
 	if (p == NULL) {
@@ -105,7 +105,7 @@ int ibwget(const char *iface, uint32_t *limit)
 
 	/* search for interface specific limit */
 	while (p != NULL) {
-		if (strcasecmp(p->interface, iface)==0) {
+		if (strcasecmp(p->interface, iface) == 0) {
 
 			if (cfg.bwdetection && p->retries < 5) {
 				if (cfg.bwdetectioninterval > 0 && (current - p->detected) > (cfg.bwdetectioninterval * 60)) {
@@ -121,7 +121,7 @@ int ibwget(const char *iface, uint32_t *limit)
 				}
 			}
 
-			if (p->limit>0) {
+			if (p->limit > 0) {
 				*limit = p->limit;
 				return 1;
 			} else {
@@ -149,7 +149,7 @@ int ibwget(const char *iface, uint32_t *limit)
 	}
 
 	/* return default limit if specified */
-	if (cfg.maxbw>0) {
+	if (cfg.maxbw > 0) {
 		*limit = (uint32_t)cfg.maxbw;
 		return 1;
 	}
@@ -161,7 +161,7 @@ ibwnode *ibwgetnode(const char *iface)
 	ibwnode *p = ifacebw;
 
 	while (p != NULL) {
-		if (strcasecmp(p->interface, iface)==0) {
+		if (strcasecmp(p->interface, iface) == 0) {
 			return p;
 		}
 		p = p->next;
@@ -197,70 +197,70 @@ int ibwcfgread(FILE *fd)
 		cfgline[0] = '\0';
 
 		/* get current line */
-		if (fgets(cfgline, 512, fd)==NULL) {
+		if (fgets(cfgline, 512, fd) == NULL) {
 			break;
 		}
 
 		linelen = (int)strlen(cfgline);
 
-		if (linelen<=8 || cfgline[0]=='#') {
+		if (linelen <= 8 || cfgline[0] == '#') {
 			continue;
 		}
 
-		if (strncasecmp(cfgline, "MaxBW", 5)!=0) {
+		if (strncasecmp(cfgline, "MaxBW", 5) != 0) {
 			continue;
 		}
 
 		/* clear name and value buffers */
-		for (j=0; j<512; j++) {
-			name[j]=value[j]='\0';
+		for (j = 0; j < 512; j++) {
+			name[j] = value[j] = '\0';
 		}
 
 		/* get interface name */
-		j=0;
-		for (i=5; i<linelen; i++) {
-			if (cfgline[i]==' ' || cfgline[i]=='=' || cfgline[i]=='\t' || cfgline[i]=='\n' || cfgline[i]=='\r') {
+		j = 0;
+		for (i = 5; i < linelen; i++) {
+			if (cfgline[i] == ' ' || cfgline[i] == '=' || cfgline[i] == '\t' || cfgline[i] == '\n' || cfgline[i] == '\r') {
 				break;
 			} else {
-				name[j]=cfgline[i];
+				name[j] = cfgline[i];
 				j++;
 			}
 		}
 
 		/* get new line if no usable name was found */
-		if (strlen(name)==0) {
+		if (strlen(name) == 0) {
 			continue;
 		}
 
 		/* search value */
-		j=0;
-		for (i++; i<linelen; i++) {
-			if (cfgline[i]=='\n' || cfgline[i]=='\r') {
+		j = 0;
+		for (i++; i < linelen; i++) {
+			if (cfgline[i] == '\n' || cfgline[i] == '\r') {
 				break;
-			} else if (cfgline[i]=='\"') {
-				if (j==0) {
+			} else if (cfgline[i] == '\"') {
+				if (j == 0) {
 					continue;
 				} else {
 					break;
 				}
 			} else {
-				if (j==0 && (cfgline[i]==' ' || cfgline[i]=='=' || cfgline[i]=='\t')) {
+				if (j == 0 && (cfgline[i] == ' ' || cfgline[i] == '=' || cfgline[i] == '\t')) {
 					continue;
 				} else {
-					value[j]=cfgline[i];
+					value[j] = cfgline[i];
 					j++;
 				}
 			}
 		}
 
 		/* get new line if no usable value was found */
-		if ((strlen(value)==0) || (!isdigit(value[0])) ) {
+		if ((strlen(value) == 0) || (!isdigit(value[0]))) {
 			continue;
 		}
 
 		/* add interface and limit to list if value is within limits */
 		ivalue = strtol(value, (char **)NULL, 0);
-		if (ivalue<0 || ivalue>BWMAX) {
+		if (ivalue < 0 || ivalue > BWMAX) {
 			snprintf(errorstring, 1024, "Invalid value \"%ld\" for MaxBW%s, ignoring parameter.", ivalue, name);
 			printe(PT_Config);
 		} else {

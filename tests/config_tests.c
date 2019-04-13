@@ -85,7 +85,7 @@ START_TEST(ibwget_with_empty_list_and_maxbw)
 	int ret;
 	uint32_t limit;
 	cfg.maxbw = 10;
-	ret  = ibwget("does_not_exist", &limit);
+	ret = ibwget("does_not_exist", &limit);
 	ck_assert_int_eq(ret, 1);
 	ck_assert_int_eq(limit, 10);
 }
@@ -98,7 +98,7 @@ START_TEST(ibwget_from_config)
 	ck_assert_int_eq(loadcfg(CFGFILE), 1);
 	ck_assert_int_eq(ibwloadcfg(CFGFILE), 1);
 	cfg.maxbw = 10;
-	ret  = ibwget("ethnone", &limit);
+	ret = ibwget("ethnone", &limit);
 	ck_assert_int_eq(ret, 1);
 	ck_assert_int_eq(limit, 8);
 }
@@ -356,7 +356,7 @@ START_TEST(setcfgvalue_can_set_chars)
 {
 	int ret;
 	char target[32];
-	struct cfgsetting cset[] = {{ "unused", target, 0, 32, 0 }};
+	struct cfgsetting cset[] = {{"unused", target, 0, 32, 0}};
 
 	ret = setcfgvalue(&cset[0], "one", "unused");
 	ck_assert_int_eq(ret, 1);
@@ -379,7 +379,7 @@ END_TEST
 START_TEST(setcfgvalue_can_set_ints)
 {
 	int ret, target;
-	struct cfgsetting cset[] = {{ "unused", 0, &target, 0, 0 }};
+	struct cfgsetting cset[] = {{"unused", 0, &target, 0, 0}};
 
 	ret = setcfgvalue(&cset[0], "1", "unused");
 	ck_assert_int_eq(ret, 1);
@@ -407,7 +407,7 @@ START_TEST(setcfgvalue_does_not_exceed_char_limit)
 {
 	int ret;
 	char target[10];
-	struct cfgsetting cset[] = {{ "unused", target, 0, 5, 0 }};
+	struct cfgsetting cset[] = {{"unused", target, 0, 5, 0}};
 
 	ret = setcfgvalue(&cset[0], "one", "unused");
 	ck_assert_int_eq(ret, 1);
@@ -426,7 +426,7 @@ END_TEST
 START_TEST(setcfgvalue_can_do_nothing)
 {
 	int ret;
-	struct cfgsetting cset[] = {{ "unused", 0, 0, 0, 0 }};
+	struct cfgsetting cset[] = {{"unused", 0, 0, 0, 0}};
 
 	ret = setcfgvalue(&cset[0], "nothing", "unused");
 	ck_assert_int_eq(ret, 0);
