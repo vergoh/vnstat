@@ -7,44 +7,20 @@ The latest version of this FAQ is available at
 ----
 
 
-A snapshot of the FAQ (updated 26.2.2014):
-
+A snapshot of the FAQ (updated 13.4.2019):
 
 
 I managed to get invalid data into the database after ... playing around with
 the system clock / doing some strange network experiments / having the cron
 entry not properly configured. Is there a database editor available?
 
-  No.
-
-
-How should dialup users use vnStat? There's some errors because the interface
-isn't available when offline.
-
-  Dialup users should use the daemon for updates. It will take care of
-  enabling and disabling the database every time the interface comes and goes.
-  It is still also possible to use cron based updates even with a dialup
-  interface but that requires proper setup of scripts with enable/disable
-  commands every time the status of the interface changes. Example scripts
-  can be founds from the pppd directory that came with the source packages.
-
-
-Does vnStat work for PPPoE users?
-
-  Yes. PPPoE is basically like a dialup connection and it can be monitored
-  in the same way as any ppp interface. However, with PPPoE it's usually also
-  possible to bring up the LAN interface used for the connection without
-  configuring any ip to it. Monitoring that interface is a good alternative
-  since it doesn't go down and up when the connection is closed and opened
-  again.
+  Nothing vnStat specific is available. The sqlite3 command can be used to
+  read and modify the database.
 
 
 How do I stop monitoring an interface?
 
-  Go to the vnStat database directory (default: /var/lib/vnstat) and delete
-  the database file named according to the interface you want to stop
-  monitoring. The daemon needs to be stopped before this procedure if it's
-  being used for updates.
+  Execute "vnstat --remove -i interfacename" with correct permissions.
 
 
 How do I uninstall vnStat?
@@ -76,9 +52,9 @@ What does the 'estimated' value mean?
   usually gets better by the end of the day/month.
 
 
-Why isn't the estimated value shown with --dumpdb?
+Why isn't the estimated value shown with --json or xml outputs?
 
-  That features only dumps the database and since the estimate is always
+  Those features only dump the database and since the estimate is always
   calculated in real time, there's no reason to write it into the database.
 
 
@@ -91,33 +67,13 @@ How is the estimated value calculated?
     z = total minutes/hours ...
 
 
-Why does vnStat show sometimes multiple GB of traffic although my network
-connection can't even transfer that much?
-     OR
-Each update adds the complete amount of traffic and 'vnstat -u -D' claims that
-the system has been rebooted between updates.
-
-  That's most likely a broken kernel. Run with --testkernel (version 1.2+
-  required) and see the result. Also make sure that the maximun bandwidth
-  setting has been configured properly according to the network connection.
-  See the next question for some explanation about possible kernel problems.
-
-
-Why is there problems with most 2.4.18 kernels?
-
-  Every current kernel has a btime (boot time) value in /proc/stat that
-  indicates when the system was booted. vnStat uses this to know when the
-  interface counters in the database should be reset. Unfortunately, some
-  kernels don't keep the btime value static even when the system isn't
-  rebooted.
-
-
 About bug reports
 
-  Any bug report should at least include an explanation about how the bug can
-  be reproduced. Having output dumps usually helps and the --dumpdb feature
-  should be used if there's some reason to assume the bug has something to do
-  with the database. Also include information about the used distribution,
-  kernel (uname -a), compiler (gcc --version) and network interface card.
-  Read the report again before sending it. :)
-
+  If the latest version isn't being used then test if the issue can still
+  be replicated with the latest or latest development version. If the issue
+  can still be reproduced, check if there's already an issue open in GitHub.
+  If not then using https://github.com/vergoh/vnstat/issues for reporting new
+  issues is suggested. Any bug report should at least include an explanation
+  about how the bug can be reproduced. Also include information about the used
+  distribution, kernel (uname -a), compiler (gcc --version) and network
+  interface card. Read the report again before sending it. :)
