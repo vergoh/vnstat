@@ -20,7 +20,7 @@
 # Compiling the binaries
 
 This source package contains the required source files for vnStat including
-the daemon (`vnstatd`) and image output (vnstati). Executing
+the daemon (`vnstatd`) and image output (`vnstati`). Executing
 
     ./configure && make
 
@@ -47,7 +47,8 @@ Login as root and run the following command:
 If there were no errors, vnStat binaries, man pages and a configuration
 file should now be installed. The configuration file will be upgraded using
 previously configured values if it is found already to exist. A backup
-of the previous configuration file will be named as `vnstat.conf.old`.
+of the previous configuration file will be named as `vnstat.conf.old` in the
+current directory.
 
 The configuration file `/usr/local/etc/vnstat.conf` should be checked at
 this point. See the `vnstat.conf` man page for documentation about available
@@ -76,7 +77,7 @@ Monitoring of unwanted interfaces can be stopped with:
 # Installing without root access
 
 Copy all needed binaries to some directory included in your PATH
-(`~/bin/` is an example) and create the database directory.
+(`~/bin/` is used here as an example) and create the database directory.
 
     cp -v vnstat vnstatd vnstati ~/bin/
     cp -v cfg/vnstat.conf ~/.vnstatrc
@@ -137,12 +138,12 @@ file `~/.vnstatrc` for interface and other settings.
 This step isn't mandatory for using vnStat.
 
 The source package includes a test suite for validating many of the
-functionalities provided by the executables. The test suite requires the
-Check unit testing framework ( https://libcheck.github.io/check/ ) to
+functionalities provided and used by the executables. The test suite requires
+the Check unit testing framework ( https://libcheck.github.io/check/ ) to
 be installed and available (usually `devel/check` in ports). The configure
 script also assumes that the `pkg-config` command is installed. That command
-is usually part of the `devel/pkgconf` package. After the configure script has
-been executed the test suite can be executed with:
+is usually part of the `devel/pkgconf` package. After the `./configure` script
+has been executed the test suite can be executed with:
 
     make check
 

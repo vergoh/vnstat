@@ -21,7 +21,7 @@
 # Compiling the binaries
 
 This source package contains the required source files for vnStat including
-the daemon (vnstatd) and image output (vnstati). Executing
+the daemon (`vnstatd`) and image output (`vnstati`). Executing
 
     ./configure --prefix=/usr --sysconfdir=/etc && make
 
@@ -48,7 +48,8 @@ Log in as root and run the following command:
 If there were no errors, vnStat binaries, man pages and a configuration
 file should now be installed. The configuration file will be upgraded using
 previously configured values if it is found already to exist. A backup
-of the previous configuration file will be named as `vnstat.conf.old`.
+of the previous configuration file will be named as `vnstat.conf.old` in the
+current directory.
 
 The configuration file `/etc/vnstat.conf` should be checked at this point.
 See the `vnstat.conf` man page for documentation about available options.
@@ -180,11 +181,11 @@ file `~/.vnstatrc` for interface and other settings.
 This step isn't mandatory for using vnStat.
 
 The source package includes a test suite for validating many of the
-functionalities provided by the executables. The test suite requires the
-Check unit testing framework ( https://libcheck.github.io/check/ ) to be
+functionalities provided and used by the executables. The test suite requires
+the Check unit testing framework ( https://libcheck.github.io/check/ ) to be
 installed and available. Depending on the used distribution, the necessary
 package to be installed is usually called `check` and may also require
-`check-devel` to be installed if available. After the configure script has
+`check-devel` to be installed if available. After the `./configure` script has
 been executed the test suite can be executed with:
 
     make check
