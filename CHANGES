@@ -9,6 +9,8 @@
    - Possibility in queries to merge data from multiple interfaces to one
      output with interface1+interface2 syntax
    - Highlight current day in top list when visible
+   - Changes in interface specific detected bandwidth limits are reported
+     in the log
 
 
 2.1 / 6-Dec-2018

@@ -111,6 +111,10 @@ int ibwget(const char *iface, uint32_t *limit)
 				if (cfg.bwdetectioninterval > 0 && (current - p->detected) > (cfg.bwdetectioninterval * 60)) {
 					speed = getifspeed(iface);
 					if (speed > 0) {
+						if (p->detected > 0 && speed != p->limit) {
+							snprintf(errorstring, 1024, "Detected bandwidth limit for \"%s\" changed from %" PRIu32 " Mbit to %" PRIu32 " Mbit.", iface, p->limit, speed);
+							printe(PT_Info);
+						}
 						p->limit = speed;
 						p->retries = 0;
 						p->detected = current;
