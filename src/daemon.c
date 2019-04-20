@@ -549,7 +549,7 @@ int processifinfo(DSTATE *s, datacache **dc)
 
 			/* sync counters if traffic is greater than set maximum */
 			if ((rxchange > maxtransfer) || (txchange > maxtransfer)) {
-				snprintf(errorstring, 1024, "Traffic rate for \"%s\" higher than set maximum %" PRIu32 " Mbit (%" PRIu64 "->%" PRIu64 ", r%" PRIu64 " t%" PRIu64 "), syncing.", (*dc)->interface, maxbw, (uint64_t)interval, maxtransfer, rxchange, txchange);
+				snprintf(errorstring, 1024, "Traffic rate for \"%s\" higher than set maximum %" PRIu32 " Mbit (%" PRIu64 "s->%" PRIu64 ", r%" PRIu64 " t%" PRIu64 ", 64bit:%d), syncing.", (*dc)->interface, maxbw, (uint64_t)interval, maxtransfer, rxchange, txchange, ifinfo.is64bit);
 				printe(PT_Info);
 				rxchange = txchange = 0;
 			}

@@ -219,7 +219,7 @@ and most can be changed later from the config file.
 #endif
 
 /* daemon defaults */
-#define UPDATEINTERVAL 30
+#define UPDATEINTERVAL 20
 #define TIMESYNCWAIT 5
 #define POLLINTERVAL 5
 #define SAVEINTERVAL 5
