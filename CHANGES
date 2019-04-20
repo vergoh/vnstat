@@ -16,6 +16,7 @@
      'xmlversion' fields in the --json and --xml outputs should be seen as
      the API version and compared to the previously used version in 3rd party
      implementations for verifying compatibility
+   - Default value of UpdateInterval is now 20 instead of previous 30 seconds
 
 
 2.1 / 6-Dec-2018
