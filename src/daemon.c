@@ -528,6 +528,10 @@ int processifinfo(DSTATE *s, datacache **dc)
 	/* in order to be on the safe side and avoid discarding data in case there's some random extra delay */
 	if ((interval >= 1) && (interval <= 360)) {
 
+		if ((*dc)->currx > MAX32 || (*dc)->curtx > MAX32 || ifinfo.rx > MAX32 || ifinfo.tx > MAX32) {
+			ifinfo.is64bit = 1;
+		}
+
 		rxchange = countercalc(&(*dc)->currx, &ifinfo.rx, ifinfo.is64bit);
 		txchange = countercalc(&(*dc)->curtx, &ifinfo.tx, ifinfo.is64bit);
 

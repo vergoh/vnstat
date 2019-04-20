@@ -217,7 +217,7 @@ uint64_t countercalc(const uint64_t *a, const uint64_t *b, const short is64bit)
 		/* rollover exists */
 	} else {
 		/* counter is 64bit */
-		if (*a > MAX32 || is64bit == 1) {
+		if (*a > MAX32 || *b > MAX32 || is64bit == 1) {
 			if (debug)
 				printf("cc64 (%d): uint64 - %" PRIu64 " + %" PRIu64 " = %" PRIu64 "\n", is64bit, *a, *b, (uint64_t)MAX64 - *a + *b);
 			return MAX64 - *a + *b;
