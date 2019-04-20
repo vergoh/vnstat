@@ -11,6 +11,11 @@
    - Highlight current day in top list when visible
    - Changes in interface specific detected bandwidth limits are reported
      in the log
+ - Notes
+   - Added clarification to the man page that the 'jsonversion' and
+     'xmlversion' fields in the --json and --xml outputs should be seen as
+     the API version and compared to the previously used version in 3rd party
+     implementations for verifying compatibility
 
 
 2.1 / 6-Dec-2018

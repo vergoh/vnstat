@@ -216,7 +216,12 @@ and
 .B "-tr"
 options without
 .I mode
-having any effect to the output.
+having any effect to the output. The
+.B "jsonversion"
+field in the output contains the API version information. It will be changed only when the
+names or structures of previously existing content gets changed. In comparison, the
+.B "vnstatversion"
+field exists mainly as extra information.
 
 .TP
 .BI "-l, --live " [mode]
@@ -256,8 +261,8 @@ is set to 0.
 .BI "--oneline " [mode]
 Show traffic summary for selected interface using one line with a parsable
 format. The output contains 15 fields with ; used as field delimiter. The 1st
-field contains the version information of the output that will be changed
-in future versions of vnStat if the field structure changes. The following
+field contains the API version information of the output that will only be changed
+in future versions if the field content or structure changes. The following
 fields in order 2) interface name, 3) timestamp for today, 4) rx for today,
 5) tx for today, 6) total for today, 7) average traffic rate for today,
 8) timestamp for current month, 9) rx for current month, 10) tx for current
@@ -360,7 +365,12 @@ to 'f' will output only 5 minute resolution entries, 'h' hours, 'd' days, 'm' mo
 years and 't' the top days. An optional
 .I limit
 parameter can be used to limit the number results to a given number of most recent
-entries.
+entries. The
+.B "xmlversion"
+field in the output contains the API version information. It will be changed only when the
+names or structures of previously existing content gets changed. In comparison, the
+.B "vnstatversion"
+field exists mainly as extra information.
 
 .TP
 .BI "-y, --years " [count]
