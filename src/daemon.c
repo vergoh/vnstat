@@ -504,6 +504,7 @@ int processifinfo(DSTATE *s, datacache **dc)
 	uint64_t maxtransfer;
 	uint32_t maxbw;
 	time_t interval;
+	short detected64bit = 0;
 
 	if ((*dc)->syncneeded) { /* if --sync was used during startup */
 		(*dc)->currx = ifinfo.rx;
@@ -530,10 +531,21 @@ int processifinfo(DSTATE *s, datacache **dc)
 
 		if ((*dc)->currx > MAX32 || (*dc)->curtx > MAX32 || ifinfo.rx > MAX32 || ifinfo.tx > MAX32) {
 			ifinfo.is64bit = 1;
+			detected64bit = 1;
 		}
 
 		rxchange = countercalc(&(*dc)->currx, &ifinfo.rx, ifinfo.is64bit);
 		txchange = countercalc(&(*dc)->curtx, &ifinfo.tx, ifinfo.is64bit);
+
+		/* workaround for interface drivers using only 32-bit range with 64-bit interface counters, */
+		/* active only when automatic detection is enabled and all values are within 32-bit range */
+		if (cfg.is64bit == -2 || !detected64bit) {
+			if ((rxchange / (uint64_t)interval / 1024 / 1024 * 8) > BWMAX || (txchange / (uint64_t)interval / 1024 / 1024 * 8) > BWMAX) {
+				ifinfo.is64bit = 0;
+				rxchange = countercalc(&(*dc)->currx, &ifinfo.rx, 0);
+				txchange = countercalc(&(*dc)->curtx, &ifinfo.tx, 0);
+			}
+		}
 
 		/* get bandwidth limit for current interface */
 		ibwget((*dc)->interface, &maxbw);
