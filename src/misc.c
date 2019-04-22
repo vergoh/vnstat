@@ -203,7 +203,7 @@ char *gettrafficrate(const uint64_t bytes, const time_t interval, const int len)
 {
 	static char buffer[64];
 	int declen = cfg.defaultdecimals;
-	uint64_t b;
+	uint64_t b = bytes;
 
 	if (interval == 0) {
 		snprintf(buffer, 64, "%*s", len, "n/a");
@@ -212,15 +212,7 @@ char *gettrafficrate(const uint64_t bytes, const time_t interval, const int len)
 
 	/* convert to proper unit */
 	if (cfg.rateunit == 1) {
-		b = bytes * 8;
-		if (interval < 5) {
-			declen = 0;
-		}
-	} else {
-		b = bytes;
-		if (interval < 5 && (b / (uint64_t)interval) < 1000) {
-			declen = 0;
-		}
+		b *= 8;
 	}
 
 	return getratestring(b / (uint64_t)interval, len, declen);
@@ -302,13 +294,13 @@ char *getratestring(const uint64_t rate, const int len, const int declen)
 		limit = (uint64_t)(pow(p, i - 1)) * 1000;
 		if (rate >= limit) {
 			l = getratespacing(len, unit, i + 1);
-			snprintf(buffer, 64, "%" DECCONV "*.2f %s", l, rate / (double)(getunitdivisor(unit, i + 1)), getrateunitprefix(unit, i + 1));
+			snprintf(buffer, 64, "%" DECCONV "*.*f %s", l, declen, rate / (double)(getunitdivisor(unit, i + 1)), getrateunitprefix(unit, i + 1));
 			return buffer;
 		}
 	}
 
 	l = getratespacing(len, unit, 1);
-	snprintf(buffer, 64, "%" DECCONV "*.*f %s", l, declen, rate / (double)(getunitdivisor(unit, 1)), getrateunitprefix(unit, 1));
+	snprintf(buffer, 64, "%" DECCONV "*.0f %s", l, rate / (double)(getunitdivisor(unit, 1)), getrateunitprefix(unit, 1));
 	return buffer;
 }
 
