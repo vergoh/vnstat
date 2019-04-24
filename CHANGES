@@ -12,6 +12,8 @@
    - Highlight current day in top list when visible
    - Changes in interface specific detected bandwidth limits are reported
      in the log
+   - UpdateInterval value is automatically adjusted during daemon startup if
+     found to be too high compared to the value of MaxBandwidth
  - Notes
    - Added clarification to the man page that the 'jsonversion' and
      'xmlversion' fields in the --json and --xml outputs should be seen as

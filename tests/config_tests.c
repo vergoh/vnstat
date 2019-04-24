@@ -37,6 +37,35 @@ START_TEST(validatecfg_restores_invalid_values_back_to_default)
 }
 END_TEST
 
+START_TEST(validatecfg_can_tune_updateinterval_to_avoid_rollover_issues)
+{
+	noexit = 1;
+	defaultcfg();
+	cfg.updateinterval = 60;
+	cfg.maxbw = 1000;
+	cfg.bwdetection = 1;
+	suppress_output();
+	validatecfg();
+	ck_assert_int_ne(cfg.updateinterval, 60);
+	ck_assert_int_eq(cfg.updateinterval, UPDATEINTERVAL);
+}
+END_TEST
+
+START_TEST(validatecfg_has_fallback_for_updateinterval_for_very_fast_interfaces)
+{
+	noexit = 1;
+	defaultcfg();
+	cfg.updateinterval = 60;
+	cfg.maxbw = 2000;
+	cfg.bwdetection = 1;
+	suppress_output();
+	validatecfg();
+	ck_assert_int_ne(cfg.updateinterval, 60);
+	ck_assert_int_ne(cfg.updateinterval, UPDATEINTERVAL);
+	ck_assert_int_eq(cfg.updateinterval, (UPDATEINTERVAL / 2));
+}
+END_TEST
+
 START_TEST(printcfgfile_default)
 {
 	defaultcfg();
@@ -492,6 +521,8 @@ void add_config_tests(Suite *s)
 	tcase_add_test(tc_config, validatecfg_default);
 	tcase_add_test(tc_config, validatecfg_does_not_modify_valid_changes);
 	tcase_add_test(tc_config, validatecfg_restores_invalid_values_back_to_default);
+	tcase_add_test(tc_config, validatecfg_can_tune_updateinterval_to_avoid_rollover_issues);
+	tcase_add_test(tc_config, validatecfg_has_fallback_for_updateinterval_for_very_fast_interfaces);
 	tcase_add_test(tc_config, printcfgfile_default);
 	tcase_add_test(tc_config, loadcfg_included_default);
 	tcase_add_test(tc_config, loadcfg_no_file);

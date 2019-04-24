@@ -166,6 +166,7 @@ void validateint(const char *cfgname, int32_t *cfgptr, const int32_t defaultvalu
 
 void validatecfg(void)
 {
+	uint32_t rolloversecs;
 	const char *invalidvalue = "Invalid value for";
 	const char *resettingto = "resetting to";
 	const char *noslashstart = "doesn't start with \"/\", resetting to default.";
@@ -254,6 +255,21 @@ void validatecfg(void)
 		}
 		snprintf(errorstring, 1024, "%s OfflineSaveInterval, %s \"%d\".", invalidvalue, resettingto, cfg.offsaveinterval);
 		printe(PT_Config);
+	}
+
+	/* enforce update interval to be short enough that 32-bit interface counter rollover can be detected */
+	/* 1.02 is the same 2% safety buffer as used in processifinfo() in daemon.c */
+	/* noexit check results in warning being shown only when the daemon is started */
+	if (noexit && cfg.maxbw > 0) {
+		rolloversecs = (uint32_t)(MAX32 / (cfg.maxbw * 1024 * 1024 * (float)1.02 / 8));
+		if (rolloversecs <= (uint32_t)cfg.updateinterval) {
+			cfg.updateinterval = UPDATEINTERVAL;
+			if (rolloversecs <= (uint32_t)cfg.updateinterval) {
+				cfg.updateinterval /= 2;
+			}
+			snprintf(errorstring, 1024, "UpdateInterval has been reset to %d seconds in order to ensure correct counter rollover detection at %d Mbit.", cfg.updateinterval, cfg.maxbw);
+			printe(PT_Config);
+		}
 	}
 }
 
