@@ -12,6 +12,31 @@ START_TEST(validatecfg_default)
 }
 END_TEST
 
+START_TEST(validatecfg_does_not_modify_valid_changes)
+{
+	defaultcfg();
+	ck_assert_int_eq(cfg.listhours, LISTHOURS);
+	cfg.listhours = 1;
+	ck_assert_int_ne(cfg.listhours, LISTHOURS);
+	validatecfg();
+	ck_assert_int_eq(cfg.listhours, 1);
+}
+END_TEST
+
+START_TEST(validatecfg_restores_invalid_values_back_to_default)
+{
+	defaultcfg();
+	cfg.unitmode = 3;
+	cfg.savestatus = 2;
+	cfg.listhours = -1;
+	suppress_output();
+	validatecfg();
+	ck_assert_int_eq(cfg.unitmode, UNITMODE);
+	ck_assert_int_eq(cfg.savestatus, SAVESTATUS);
+	ck_assert_int_eq(cfg.listhours, LISTHOURS);
+}
+END_TEST
+
 START_TEST(printcfgfile_default)
 {
 	defaultcfg();
@@ -465,6 +490,8 @@ void add_config_tests(Suite *s)
 {
 	TCase *tc_config = tcase_create("Config");
 	tcase_add_test(tc_config, validatecfg_default);
+	tcase_add_test(tc_config, validatecfg_does_not_modify_valid_changes);
+	tcase_add_test(tc_config, validatecfg_restores_invalid_values_back_to_default);
 	tcase_add_test(tc_config, printcfgfile_default);
 	tcase_add_test(tc_config, loadcfg_included_default);
 	tcase_add_test(tc_config, loadcfg_no_file);

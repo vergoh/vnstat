@@ -142,83 +142,71 @@ int loadcfg(const char *cfgfile)
 	return 1;
 }
 
+void validatebool(const char *cfgname, int32_t *cfgptr, const int32_t defaultvalue)
+{
+	validateint(cfgname, cfgptr, defaultvalue, 0, 1);
+}
+
+void validateint(const char *cfgname, int32_t *cfgptr, const int32_t defaultvalue, const int32_t minvalue, const int32_t maxvalue)
+{
+	if (maxvalue > minvalue) {
+		if (*cfgptr < minvalue || *cfgptr > maxvalue) {
+			*cfgptr = defaultvalue;
+			snprintf(errorstring, 1024, "Invalid value for %s, resetting to \"%d\".", cfgname, *cfgptr);
+			printe(PT_Config);
+		}
+	} else {
+		if (*cfgptr < minvalue) {
+			*cfgptr = defaultvalue;
+			snprintf(errorstring, 1024, "Invalid value for %s, resetting to \"%d\".", cfgname, *cfgptr);
+			printe(PT_Config);
+		}
+	}
+}
+
 void validatecfg(void)
 {
 	const char *invalidvalue = "Invalid value for";
 	const char *resettingto = "resetting to";
 	const char *noslashstart = "doesn't start with \"/\", resetting to default.";
 
-	if (cfg.unitmode < 0 || cfg.unitmode > 2) {
-		cfg.unitmode = UNITMODE;
-		snprintf(errorstring, 1024, "%s UnitMode, %s \"%d\".", invalidvalue, resettingto, cfg.unitmode);
-		printe(PT_Config);
-	}
-
-	if (cfg.rateunitmode < 0 || cfg.rateunitmode > 1) {
-		cfg.rateunitmode = RATEUNITMODE;
-		snprintf(errorstring, 1024, "%s RateUnitMode, %s \"%d\".", invalidvalue, resettingto, cfg.rateunitmode);
-		printe(PT_Config);
-	}
-
-	if (cfg.ostyle < 0 || cfg.ostyle > 3) {
-		cfg.ostyle = OSTYLE;
-		snprintf(errorstring, 1024, "%s OutputStyle, %s \"%d\".", invalidvalue, resettingto, cfg.ostyle);
-		printe(PT_Config);
-	}
-
-	if (cfg.defaultdecimals < 0 || cfg.defaultdecimals > 2) {
-		cfg.defaultdecimals = DEFAULTDECIMALS;
-		snprintf(errorstring, 1024, "%s DefaultDecimals, %s \"%d\".", invalidvalue, resettingto, cfg.defaultdecimals);
-		printe(PT_Config);
-	}
-
-	if (cfg.hourlydecimals < 0 || cfg.hourlydecimals > 2) {
-		cfg.hourlydecimals = HOURLYDECIMALS;
-		snprintf(errorstring, 1024, "%s HourlyDecimals, %s \"%d\".", invalidvalue, resettingto, cfg.hourlydecimals);
-		printe(PT_Config);
-	}
-
-	if (cfg.hourlystyle < 0 || cfg.hourlystyle > 3) {
-		cfg.hourlystyle = HOURLYSTYLE;
-		snprintf(errorstring, 1024, "%s HourlySectionStyle, %s \"%d\".", invalidvalue, resettingto, cfg.hourlystyle);
-		printe(PT_Config);
-	}
-
-	if (cfg.bvar < 0 || cfg.bvar > 300) {
-		cfg.bvar = BVAR;
-		snprintf(errorstring, 1024, "%s BootVariation, %s \"%d\".", invalidvalue, resettingto, cfg.bvar);
-		printe(PT_Config);
-	}
-
-	if (cfg.sampletime < 2 || cfg.sampletime > 600) {
-		cfg.sampletime = DEFSAMPTIME;
-		snprintf(errorstring, 1024, "%s Sampletime, %s \"%d\".", invalidvalue, resettingto, cfg.sampletime);
-		printe(PT_Config);
-	}
-
-	if (cfg.monthrotate < 1 || cfg.monthrotate > 28) {
-		cfg.monthrotate = MONTHROTATE;
-		snprintf(errorstring, 1024, "%s MonthRotate, %s \"%d\".", invalidvalue, resettingto, cfg.monthrotate);
-		printe(PT_Config);
-	}
-
-	if (cfg.monthrotateyears < 0 || cfg.monthrotateyears > 1) {
-		cfg.monthrotateyears = MONTHROTATEYEARS;
-		snprintf(errorstring, 1024, "%s MonthRotateAffectsYears, %s \"%d\".", invalidvalue, resettingto, cfg.monthrotateyears);
-		printe(PT_Config);
-	}
-
-	if (cfg.maxbw < 0 || cfg.maxbw > BWMAX) {
-		cfg.maxbw = DEFMAXBW;
-		snprintf(errorstring, 1024, "%s MaxBandwidth, %s \"%d\".", invalidvalue, resettingto, cfg.maxbw);
-		printe(PT_Config);
-	}
-
-	if (cfg.spacecheck < 0 || cfg.spacecheck > 1) {
-		cfg.spacecheck = USESPACECHECK;
-		snprintf(errorstring, 1024, "%s CheckDiskSpace, %s \"%d\".", invalidvalue, resettingto, cfg.spacecheck);
-		printe(PT_Config);
-	}
+	validateint("UnitMode", &cfg.unitmode, UNITMODE, 0, 2);
+	validatebool("RateUnitMode", &cfg.rateunitmode, RATEUNITMODE);
+	validateint("OutputStyle", &cfg.ostyle, OSTYLE, 0, 3);
+	validateint("DefaultDecimals", &cfg.defaultdecimals, DEFAULTDECIMALS, 0, 2);
+	validateint("HourlyDecimals", &cfg.hourlydecimals, HOURLYDECIMALS, 0, 2);
+	validateint("HourlySectionStyle", &cfg.hourlystyle, HOURLYSTYLE, 0, 3);
+	validateint("BootVariation", &cfg.bvar, BVAR, 0, 300);
+	validateint("Sampletime", &cfg.sampletime, DEFSAMPTIME, 2, 600);
+	validateint("MonthRotate", &cfg.monthrotate, MONTHROTATE, 1, 28);
+	validatebool("MonthRotateAffectsYears", &cfg.monthrotateyears, MONTHROTATEYEARS);
+	validateint("MaxBandwidth", &cfg.maxbw, DEFMAXBW, 0, BWMAX);
+	validatebool("CheckDiskSpace", &cfg.spacecheck, USESPACECHECK);
+	validateint("TimeSyncWait", &cfg.timesyncwait, TIMESYNCWAIT, 0, 60);
+	validateint("PollInterval", &cfg.pollinterval, POLLINTERVAL, 2, 60);
+	validatebool("SaveOnStatusChange", &cfg.savestatus, SAVESTATUS);
+	validateint("UseLogging", &cfg.uselogging, USELOGGING, 0, 2);
+	validateint("CreateDirs", &cfg.createdirs, CREATEDIRS, 0, 2);
+	validateint("UpdateFileOwner", &cfg.updatefileowner, UPDATEFILEOWNER, 0, 2);
+	validateint("64bitInterfaceCounters", &cfg.is64bit, IS64BIT, -2, 1);
+	validatebool("TransparentBg", &cfg.transbg, TRANSBG);
+	validatebool("HourlyRate", &cfg.hourlyrate, HOURLYRATE);
+	validatebool("SummaryRate", &cfg.summaryrate, SUMMARYRATE);
+	validatebool("TrafficlessEntries", &cfg.trafficlessentries, TRAFFICLESSENTRIES);
+	validateint("List5Mins", &cfg.listfivemins, LISTFIVEMINS, 0, 0);
+	validateint("ListHours", &cfg.listhours, LISTHOURS, 0, 0);
+	validateint("ListDays", &cfg.listdays, LISTDAYS, 0, 0);
+	validateint("ListMonths", &cfg.listmonths, LISTMONTHS, 0, 0);
+	validateint("ListYears", &cfg.listyears, LISTYEARS, 0, 0);
+	validateint("ListTop", &cfg.listtop, LISTTOP, 0, 0);
+	validateint("5MinuteHours", &cfg.fiveminutehours, FIVEMINUTEHOURS, -1, -1);
+	validateint("HourlyDays", &cfg.hourlydays, HOURLYDAYS, -1, -1);
+	validateint("DailyDays", &cfg.dailydays, DAILYDAYS, -1, -1);
+	validateint("MonthlyMonths", &cfg.monthlymonths, MONTHLYMONTHS, -1, -1);
+	validateint("YearlyYears", &cfg.yearlyyears, YEARLYYEARS, -1, -1);
+	validateint("TopDayEntries", &cfg.topdayentries, TOPDAYENTRIES, -1, -1);
+	validatebool("BandwidthDetection", &cfg.bwdetection, BWDETECT);
+	validateint("BandwidthDetectionInterval", &cfg.bwdetectioninterval, BWDETECTINTERVAL, 0, 30);
 
 	if (cfg.dbdir[0] != '/') {
 		strncpy_nt(cfg.dbdir, DATABASEDIR, 512);
@@ -226,15 +214,15 @@ void validatecfg(void)
 		printe(PT_Config);
 	}
 
-	if (cfg.timesyncwait < 0 || cfg.timesyncwait > 60) {
-		cfg.timesyncwait = TIMESYNCWAIT;
-		snprintf(errorstring, 1024, "%s TimeSyncWait, %s \"%d\".", invalidvalue, resettingto, cfg.timesyncwait);
+	if (cfg.logfile[0] != '/') {
+		strncpy_nt(cfg.logfile, LOGFILE, 512);
+		snprintf(errorstring, 1024, "LogFile %s", noslashstart);
 		printe(PT_Config);
 	}
 
-	if (cfg.pollinterval < 2 || cfg.pollinterval > 60) {
-		cfg.pollinterval = POLLINTERVAL;
-		snprintf(errorstring, 1024, "%s PollInterval, %s \"%d\".", invalidvalue, resettingto, cfg.pollinterval);
+	if (cfg.pidfile[0] != '/') {
+		strncpy_nt(cfg.pidfile, PIDFILE, 512);
+		snprintf(errorstring, 1024, "PidFile %s", noslashstart);
 		printe(PT_Config);
 	}
 
@@ -265,156 +253,6 @@ void validatecfg(void)
 			cfg.offsaveinterval = OFFSAVEINTERVAL;
 		}
 		snprintf(errorstring, 1024, "%s OfflineSaveInterval, %s \"%d\".", invalidvalue, resettingto, cfg.offsaveinterval);
-		printe(PT_Config);
-	}
-
-	if (cfg.savestatus < 0 || cfg.savestatus > 1) {
-		cfg.savestatus = SAVESTATUS;
-		snprintf(errorstring, 1024, "%s SaveOnStatusChange, %s \"%d\".", invalidvalue, resettingto, cfg.savestatus);
-		printe(PT_Config);
-	}
-
-	if (cfg.uselogging < 0 || cfg.uselogging > 2) {
-		cfg.uselogging = USELOGGING;
-		snprintf(errorstring, 1024, "%s UseLogging, %s \"%d\".", invalidvalue, resettingto, cfg.uselogging);
-		printe(PT_Config);
-	}
-
-	if (cfg.createdirs < 0 || cfg.createdirs > 2) {
-		cfg.createdirs = CREATEDIRS;
-		snprintf(errorstring, 1024, "%s CreateDirs, %s \"%d\".", invalidvalue, resettingto, cfg.createdirs);
-		printe(PT_Config);
-	}
-
-	if (cfg.updatefileowner < 0 || cfg.updatefileowner > 2) {
-		cfg.updatefileowner = UPDATEFILEOWNER;
-		snprintf(errorstring, 1024, "%s UpdateFileOwner, %s \"%d\".", invalidvalue, resettingto, cfg.updatefileowner);
-		printe(PT_Config);
-	}
-
-	if (cfg.logfile[0] != '/') {
-		strncpy_nt(cfg.logfile, LOGFILE, 512);
-		snprintf(errorstring, 1024, "LogFile %s", noslashstart);
-		printe(PT_Config);
-	}
-
-	if (cfg.pidfile[0] != '/') {
-		strncpy_nt(cfg.pidfile, PIDFILE, 512);
-		snprintf(errorstring, 1024, "PidFile %s", noslashstart);
-		printe(PT_Config);
-	}
-
-	if (cfg.is64bit < -2 || cfg.is64bit > 1) {
-		cfg.is64bit = IS64BIT;
-		snprintf(errorstring, 1024, "%s 64bitInterfaceCounters, %s \"%d\".", invalidvalue, resettingto, cfg.is64bit);
-		printe(PT_Config);
-	}
-
-	if (cfg.transbg < 0 || cfg.transbg > 1) {
-		cfg.transbg = TRANSBG;
-		snprintf(errorstring, 1024, "%s TransparentBg, %s \"%d\".", invalidvalue, resettingto, cfg.transbg);
-		printe(PT_Config);
-	}
-
-	if (cfg.hourlyrate < 0 || cfg.hourlyrate > 1) {
-		cfg.hourlyrate = HOURLYRATE;
-		snprintf(errorstring, 1024, "%s HourlyRate, %s \"%d\".", invalidvalue, resettingto, cfg.hourlyrate);
-		printe(PT_Config);
-	}
-
-	if (cfg.summaryrate < 0 || cfg.summaryrate > 1) {
-		cfg.summaryrate = SUMMARYRATE;
-		snprintf(errorstring, 1024, "%s SummaryRate, %s \"%d\".", invalidvalue, resettingto, cfg.summaryrate);
-		printe(PT_Config);
-	}
-
-	if (cfg.trafficlessentries < 0 || cfg.trafficlessentries > 1) {
-		cfg.trafficlessentries = TRAFFICLESSENTRIES;
-		snprintf(errorstring, 1024, "%s TrafficlessEntries, %s \"%d\".", invalidvalue, resettingto, cfg.trafficlessentries);
-		printe(PT_Config);
-	}
-
-	if (cfg.listfivemins < 0) {
-		cfg.listfivemins = LISTFIVEMINS;
-		snprintf(errorstring, 1024, "%s List5Mins, %s \"%d\".", invalidvalue, resettingto, cfg.listfivemins);
-		printe(PT_Config);
-	}
-
-	if (cfg.listhours < 0) {
-		cfg.listhours = LISTHOURS;
-		snprintf(errorstring, 1024, "%s ListHours, %s \"%d\".", invalidvalue, resettingto, cfg.listhours);
-		printe(PT_Config);
-	}
-
-	if (cfg.listdays < 0) {
-		cfg.listdays = LISTDAYS;
-		snprintf(errorstring, 1024, "%s ListDays, %s \"%d\".", invalidvalue, resettingto, cfg.listdays);
-		printe(PT_Config);
-	}
-
-	if (cfg.listmonths < 0) {
-		cfg.listmonths = LISTMONTHS;
-		snprintf(errorstring, 1024, "%s ListMonths, %s \"%d\".", invalidvalue, resettingto, cfg.listmonths);
-		printe(PT_Config);
-	}
-
-	if (cfg.listyears < 0) {
-		cfg.listyears = LISTYEARS;
-		snprintf(errorstring, 1024, "%s ListYears, %s \"%d\".", invalidvalue, resettingto, cfg.listyears);
-		printe(PT_Config);
-	}
-
-	if (cfg.listtop < 0) {
-		cfg.listtop = LISTTOP;
-		snprintf(errorstring, 1024, "%s ListTop, %s \"%d\".", invalidvalue, resettingto, cfg.listtop);
-		printe(PT_Config);
-	}
-
-	if (cfg.fiveminutehours < -1) {
-		cfg.fiveminutehours = FIVEMINUTEHOURS;
-		snprintf(errorstring, 1024, "%s 5MinuteHours, %s \"%d\".", invalidvalue, resettingto, cfg.fiveminutehours);
-		printe(PT_Config);
-	}
-
-	if (cfg.hourlydays < -1) {
-		cfg.hourlydays = HOURLYDAYS;
-		snprintf(errorstring, 1024, "%s HourlyDays, %s \"%d\".", invalidvalue, resettingto, cfg.hourlydays);
-		printe(PT_Config);
-	}
-
-	if (cfg.dailydays < -1) {
-		cfg.dailydays = DAILYDAYS;
-		snprintf(errorstring, 1024, "%s DailyDays, %s \"%d\".", invalidvalue, resettingto, cfg.dailydays);
-		printe(PT_Config);
-	}
-
-	if (cfg.monthlymonths < -1) {
-		cfg.monthlymonths = MONTHLYMONTHS;
-		snprintf(errorstring, 1024, "%s MonthlyMonths, %s \"%d\".", invalidvalue, resettingto, cfg.monthlymonths);
-		printe(PT_Config);
-	}
-
-	if (cfg.yearlyyears < -1) {
-		cfg.yearlyyears = YEARLYYEARS;
-		snprintf(errorstring, 1024, "%s YearlyYears, %s \"%d\".", invalidvalue, resettingto, cfg.yearlyyears);
-		printe(PT_Config);
-	}
-
-	if (cfg.topdayentries < -1) {
-		cfg.topdayentries = TOPDAYENTRIES;
-		snprintf(errorstring, 1024, "%s TopDayEntries, %s \"%d\".", invalidvalue, resettingto, cfg.topdayentries);
-		printe(PT_Config);
-	}
-
-	if (cfg.bwdetection < 0 || cfg.bwdetection > 1) {
-		cfg.bwdetection = BWDETECT;
-		snprintf(errorstring, 1024, "%s BandwidthDetection, %s \"%d\".", invalidvalue, resettingto, cfg.bwdetection);
-		printe(PT_Config);
-	}
-
-	if (cfg.bwdetectioninterval < 0 || cfg.bwdetectioninterval > 30) {
-		cfg.bwdetectioninterval = BWDETECTINTERVAL;
-		snprintf(errorstring, 1024, "%s BandwidthDetectionInterval, %s \"%d\".", invalidvalue, resettingto, cfg.bwdetectioninterval);
 		printe(PT_Config);
 	}
 }

@@ -10,6 +10,8 @@ struct cfgsetting {
 };
 
 int loadcfg(const char *cfgfile);
+void validatebool(const char *cfgname, int32_t *cfgptr, const int32_t defaultvalue);
+void validateint(const char *cfgname, int32_t *cfgptr, const int32_t defaultvalue, const int32_t minvalue, const int32_t maxvalue);
 void validatecfg(void);
 void defaultcfg(void);
 int opencfgfile(const char *cfgfile, FILE **fd);
