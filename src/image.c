@@ -703,7 +703,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 				} else if (listtype == 5) { // hour
 					e_secs = (uint64_t)(d->tm_sec + (d->tm_min * 60));
 				} else if (listtype == 6) { // 5min
-					if ((&ic->interface.updated - ((uint64_t)&ic->interface.updated % 300)) == (&datalist_i->timestamp - ((uint64_t)&datalist_i->timestamp % 300))) {
+					if ((ic->interface.updated - (ic->interface.updated % 300)) == (datalist_i->timestamp - (datalist_i->timestamp % 300))) {
 						e_secs = (uint64_t)(d->tm_sec + (d->tm_min % 5 * 60));
 					} else {
 						e_secs = 300;

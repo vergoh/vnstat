@@ -465,7 +465,7 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 				} else if (listtype == 5) { // hour
 					e_secs = (uint64_t)(d->tm_sec + (d->tm_min * 60));
 				} else if (listtype == 6) { // 5min
-					if ((&interface->updated - ((uint64_t)&interface->updated % 300)) == (&datalist_i->timestamp - ((uint64_t)&datalist_i->timestamp % 300))) {
+					if ((interface->updated - (interface->updated % 300)) == (datalist_i->timestamp - (datalist_i->timestamp % 300))) {
 						e_secs = (uint64_t)(d->tm_sec + (d->tm_min % 5 * 60));
 					} else {
 						e_secs = 300;
