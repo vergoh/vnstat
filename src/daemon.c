@@ -568,7 +568,7 @@ int processifinfo(DSTATE *s, datacache **dc)
 		}
 
 		if (rxchange || txchange || cfg.trafficlessentries) {
-			xferlog_add(&(*dc)->log, ifinfo.timestamp - (ifinfo.timestamp % 300), rxchange, txchange);
+			xferlog_add(&(*dc)->log, (*dc)->updated - ((*dc)->updated % 300), rxchange, txchange);
 		}
 	}
 	(*dc)->currx = ifinfo.rx;
