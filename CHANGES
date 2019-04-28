@@ -1,4 +1,4 @@
-2.2 / <not released yet>
+2.2 / 28-Apr-2018
 
  - Fixed
    - O_CLOEXEC undeclared error when compiling with glibc older than 2.12
