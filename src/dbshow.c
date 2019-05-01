@@ -73,8 +73,6 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 	current = time(NULL);
 	yesterday = current - 86400;
 
-	e_rx = e_tx = 0;
-
 	if (interface->updated && !shortmode) {
 		strftime(datebuff, DATEBUFFLEN, DATETIMEFORMAT, localtime(&interface->updated));
 		printf("Database updated: %s\n\n", datebuff);
@@ -132,6 +130,7 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 		return;
 	}
 
+	e_rx = e_tx = 0;
 	datalist_i = datalist;
 
 	while (datalist_i != NULL) {
@@ -212,6 +211,7 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 		return;
 	}
 
+	e_rx = e_tx = 0;
 	datalist_i = datalist;
 
 	while (datalist_i != NULL) {
