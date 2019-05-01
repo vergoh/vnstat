@@ -302,6 +302,16 @@ typedef enum PrintType {
 	PT_ShortMultiline
 } PrintType;
 
+typedef enum ListType {
+	LT_None = 0,
+	LT_5min,
+	LT_Hour,
+	LT_Day,
+	LT_Month,
+	LT_Year,
+	LT_Top
+} ListType;
+
 /* common functions */
 int printe(const PrintType type);
 int logprint(const PrintType type);

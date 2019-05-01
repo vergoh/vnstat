@@ -145,7 +145,7 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 		printf("%s%s", fieldseparator, getvalue(datalist_i->tx, 11, RT_Normal));
 		printf("%s%s", fieldseparator, getvalue(datalist_i->rx + datalist_i->tx, 11, RT_Normal));
 		if (cfg.ostyle >= 2) {
-			if (datalist_i->next == NULL) {
+			if (datalist_i->next == NULL) { // TODO: estimate shouldn't be calculated if the last month isn't the current month, image output has the same issue
 				if (datalist_i->rx == 0 || datalist_i->tx == 0 || (interface->updated - datalist_i->timestamp) == 0) {
 					e_rx = e_tx = 0;
 				} else {
@@ -220,8 +220,7 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 		strftime(datebuff, DATEBUFFLEN, cfg.dformat, d);
 		if (strcmp(datebuff, todaystr) == 0) {
 			snprintf(datebuff, DATEBUFFLEN, "    today");
-		}
-		if (strcmp(datebuff, yesterdaystr) == 0) {
+		} else if (strcmp(datebuff, yesterdaystr) == 0) {
 			snprintf(datebuff, DATEBUFFLEN, "yesterday");
 		}
 		if (strlen(datebuff) <= 8) {
@@ -232,7 +231,7 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 		printf("%s%s", fieldseparator, getvalue(datalist_i->tx, 11, RT_Normal));
 		printf("%s%s", fieldseparator, getvalue(datalist_i->rx + datalist_i->tx, 11, RT_Normal));
 		if (cfg.ostyle >= 2) {
-			if (datalist_i->next == NULL) {
+			if (datalist_i->next == NULL && strcmp(datebuff, "    today") == 0) { // TODO: could use improvement for detecting when the last entry is from today
 				d = localtime(&interface->updated);
 				if (datalist_i->rx == 0 || datalist_i->tx == 0 || (d->tm_hour * 60 + d->tm_min) == 0) {
 					e_rx = e_tx = 0;
@@ -280,7 +279,8 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 void showlist(const interfaceinfo *interface, const char *listname, const char *databegin, const char *dataend)
 {
 	int32_t limit;
-	int listtype, offset = 0, i = 1;
+	ListType listtype = LT_None;
+	int offset = 0, i = 1;
 	struct tm *d;
 	time_t current;
 	char datebuff[DATEBUFFLEN], daybuff[DATEBUFFLEN];
@@ -292,37 +292,37 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 	timeused(__func__, 1);
 
 	if (strcmp(listname, "day") == 0) {
-		listtype = 1;
+		listtype = LT_Day;
 		strncpy_nt(colname, listname, 8);
 		snprintf(titlename, 16, "daily");
 		strncpy_nt(stampformat, cfg.dformat, 64);
 		limit = cfg.listdays;
 	} else if (strcmp(listname, "month") == 0) {
-		listtype = 2;
+		listtype = LT_Month;
 		strncpy_nt(colname, listname, 8);
 		snprintf(titlename, 16, "monthly");
 		strncpy_nt(stampformat, cfg.mformat, 64);
 		limit = cfg.listmonths;
 	} else if (strcmp(listname, "year") == 0) {
-		listtype = 3;
+		listtype = LT_Year;
 		strncpy_nt(colname, listname, 8);
 		snprintf(titlename, 16, "yearly");
 		strncpy_nt(stampformat, "%Y", 64);
 		limit = cfg.listyears;
 	} else if (strcmp(listname, "top") == 0) {
-		listtype = 4;
+		listtype = LT_Top;
 		snprintf(colname, 8, "day");
 		strncpy_nt(stampformat, cfg.tformat, 64);
 		limit = cfg.listtop;
 		offset = 6;
 	} else if (strcmp(listname, "hour") == 0) {
-		listtype = 5;
+		listtype = LT_Hour;
 		strncpy_nt(colname, listname, 8);
 		snprintf(titlename, 16, "hourly");
 		strncpy_nt(stampformat, "%H:%M", 64);
 		limit = cfg.listhours;
 	} else if (strcmp(listname, "fiveminute") == 0) {
-		listtype = 6;
+		listtype = LT_5min;
 		strncpy_nt(colname, "time", 8);
 		snprintf(titlename, 16, "5 minute");
 		strncpy_nt(stampformat, "%H:%M", 64);
@@ -343,7 +343,7 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 		return;
 	}
 
-	if (listtype == 4) {
+	if (listtype == LT_Top) {
 		if (limit > 0 && datainfo.count < (uint32_t)limit) {
 			limit = (int32_t)datainfo.count;
 		}
@@ -368,7 +368,7 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 	}
 	printf("  /  %s", titlename);
 
-	if (listtype == 4 && (strlen(databegin))) {
+	if (listtype == LT_Top && (strlen(databegin))) {
 		printf("  (%s -", databegin);
 		if (strlen(dataend)) {
 			printf(" %s)", dataend);
@@ -379,33 +379,33 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 	printf("\n\n");
 
 	if (cfg.ostyle == 3) {
-		if (listtype == 4) {
+		if (listtype == LT_Top) {
 			printf("    # %8s  ", colname);
 		} else {
 			indent(5);
 			printf("%8s", colname);
 		}
 		printf("        rx      |     tx      |    total    |   avg. rate\n");
-		if (listtype == 4) {
+		if (listtype == LT_Top) {
 			printf("   -----");
 		} else {
 			indent(5);
 		}
 		printf("------------------------+-------------+-------------+---------------\n");
 	} else {
-		if (listtype == 4) {
+		if (listtype == LT_Top) {
 			printf("   # %8s  ", colname);
 		} else {
 			printf(" %8s", colname);
 		}
 		printf("        rx      |     tx      |    total\n");
-		if (listtype == 4) {
+		if (listtype == LT_Top) {
 			printf("------");
 		}
 		printf("-------------------------+-------------+------------");
 		if (cfg.ostyle != 0) {
 			printf("---------------------");
-			if (listtype != 4) {
+			if (listtype != LT_Top) {
 				printf("------");
 			}
 		}
@@ -417,7 +417,7 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 	while (datalist_i != NULL) {
 		d = localtime(&datalist_i->timestamp);
 
-		if (listtype == 5 || listtype == 6) {
+		if (listtype == LT_Hour || listtype == LT_5min) {
 			strftime(datebuff, DATEBUFFLEN, cfg.dformat, d);
 			if (strcmp(daybuff, datebuff) != 0) {
 				if (cfg.ostyle == 3) {
@@ -431,12 +431,12 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 		strftime(datebuff, DATEBUFFLEN, stampformat, d);
 		if (cfg.ostyle == 3) {
 			indent(1);
-			if (listtype != 4) {
+			if (listtype != LT_Top) {
 				indent(3);
 			}
 		}
 
-		if (listtype == 4) {
+		if (listtype == LT_Top) {
 			if (strcmp(daybuff, datebuff) == 0) {
 				printf("> %2d  ", i);
 			} else {
@@ -444,7 +444,7 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 			}
 		}
 
-		if (strlen(datebuff) <= 9 && listtype != 4) {
+		if (strlen(datebuff) <= 9 && listtype != LT_Top) {
 			printf(" %*s   %s", getpadding(9, datebuff), datebuff, getvalue(datalist_i->rx, 11, RT_Normal));
 		} else {
 			printf(" %-*s %s", getpadding(11, datebuff), datebuff, getvalue(datalist_i->rx, 11, RT_Normal));
@@ -452,19 +452,19 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 		printf(" | %s", getvalue(datalist_i->tx, 11, RT_Normal));
 		printf(" | %s", getvalue(datalist_i->rx + datalist_i->tx, 11, RT_Normal));
 		if (cfg.ostyle == 3) {
-			if (datalist_i->next == NULL) {
+			if (datalist_i->next == NULL) { // TODO: the 5min special scenario most likely applies also to every other except top
 				d = localtime(&interface->updated);
-				if (listtype == 1) { // day
+				if (listtype == LT_Day) {
 					e_secs = (uint64_t)(d->tm_sec + (d->tm_min * 60) + (d->tm_hour * 3600));
-				} else if (listtype == 2) { // month
+				} else if (listtype == LT_Month) {
 					e_secs = (uint64_t)mosecs(datalist_i->timestamp, interface->updated);
-				} else if (listtype == 3) { // year
+				} else if (listtype == LT_Year) {
 					e_secs = (uint64_t)(d->tm_yday * 86400 + d->tm_sec + (d->tm_min * 60) + (d->tm_hour * 3600));
-				} else if (listtype == 4) { // top
+				} else if (listtype == LT_Top) {
 					e_secs = 86400;
-				} else if (listtype == 5) { // hour
+				} else if (listtype == LT_Hour) {
 					e_secs = (uint64_t)(d->tm_sec + (d->tm_min * 60));
-				} else if (listtype == 6) { // 5min
+				} else if (listtype == LT_5min) {
 					if ((interface->updated - (interface->updated % 300)) == (datalist_i->timestamp - (datalist_i->timestamp % 300))) {
 						e_secs = (uint64_t)(d->tm_sec + (d->tm_min % 5 * 60));
 					} else {
@@ -472,15 +472,15 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 					}
 				}
 			} else {
-				if (listtype == 1 || listtype == 4) { // day
+				if (listtype == LT_Day || listtype == LT_Top) {
 					e_secs = 86400;
-				} else if (listtype == 2) { // month
+				} else if (listtype == LT_Month) {
 					e_secs = (uint64_t)(dmonth(d->tm_mon) * 86400);
-				} else if (listtype == 3) { // year
+				} else if (listtype == LT_Year) {
 					e_secs = (uint64_t)((365 + isleapyear(d->tm_year + 1900)) * 86400);
-				} else if (listtype == 5) { // hour
+				} else if (listtype == LT_Hour) {
 					e_secs = 3600;
-				} else if (listtype == 6) { // 5min
+				} else if (listtype == LT_5min) {
 					e_secs = 300;
 				}
 			}
@@ -503,26 +503,26 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 		}
 	}
 	if (cfg.ostyle == 3) {
-		if (listtype == 4) {
+		if (listtype == LT_Top) {
 			printf("   -----");
 		} else {
 			indent(5);
 		}
 		printf("------------------------+-------------+-------------+---------------\n");
 	} else {
-		if (listtype == 4) {
+		if (listtype == LT_Top) {
 			printf("------");
 		}
 		printf("-------------------------+-------------+------------");
 		if (cfg.ostyle != 0) {
 			printf("---------------------");
-			if (listtype != 4) {
+			if (listtype != LT_Top) {
 				printf("------");
 			}
 		}
 		printf("\n");
 	}
-	if ((strlen(dataend) == 0 && datainfo.count > 0 && listtype < 4) || (strlen(dataend) > 0 && datainfo.count > 1 && listtype != 4)) {
+	if ((strlen(dataend) == 0 && datainfo.count > 0 && (listtype == LT_Day || listtype == LT_Month || listtype == LT_Year)) || (strlen(dataend) > 0 && datainfo.count > 1 && listtype != LT_Top)) {
 		/* use database update time for estimates */
 		d = localtime(&interface->updated);
 		if (datalist_i->rx == 0 || datalist_i->tx == 0 || strlen(dataend) > 0) {
@@ -530,13 +530,13 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 		} else {
 			div = 0;
 			mult = 0;
-			if (listtype == 1) { // day
+			if (listtype == LT_Day) {
 				div = (uint64_t)(d->tm_hour * 60 + d->tm_min);
 				mult = 1440;
-			} else if (listtype == 2) { // month
+			} else if (listtype == LT_Month) {
 				div = (uint64_t)mosecs(datalist_i->timestamp, interface->updated);
 				mult = (uint64_t)(dmonth(d->tm_mon) * 86400);
-			} else if (listtype == 3) { // year
+			} else if (listtype == LT_Year) {
 				div = (uint64_t)(d->tm_yday * 1440 + d->tm_hour * 60 + d->tm_min);
 				mult = (uint64_t)(1440 * (365 + isleapyear(d->tm_year + 1900)));
 			}

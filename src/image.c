@@ -481,7 +481,8 @@ void drawhourly(IMAGECONTENT *ic, const int rate)
 
 void drawlist(IMAGECONTENT *ic, const char *listname)
 {
-	int listtype, textx, texty, offsetx = 0, offsety = 0;
+	ListType listtype = LT_None;
+	int textx, texty, offsetx = 0, offsety = 0;
 	int width, height, headermod, i = 1, rowcount = 0;
 	int32_t limit;
 	uint64_t e_rx, e_tx, e_secs = 86400, div, mult;
@@ -493,37 +494,37 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	dbdatalistinfo datainfo;
 
 	if (strcmp(listname, "day") == 0) {
-		listtype = 1;
+		listtype = LT_Day;
 		strncpy_nt(colname, listname, 8);
 		snprintf(titlename, 16, "daily");
 		strncpy_nt(stampformat, cfg.dformat, 64);
 		limit = cfg.listdays;
 	} else if (strcmp(listname, "month") == 0) {
-		listtype = 2;
+		listtype = LT_Month;
 		strncpy_nt(colname, listname, 8);
 		snprintf(titlename, 16, "monthly");
 		strncpy_nt(stampformat, cfg.mformat, 64);
 		limit = cfg.listmonths;
 	} else if (strcmp(listname, "year") == 0) {
-		listtype = 3;
+		listtype = LT_Year;
 		strncpy_nt(colname, listname, 8);
 		snprintf(titlename, 16, "yearly");
 		strncpy_nt(stampformat, "%Y", 64);
 		limit = cfg.listyears;
 	} else if (strcmp(listname, "top") == 0) {
-		listtype = 4;
+		listtype = LT_Top;
 		snprintf(colname, 8, "day");
 		strncpy_nt(stampformat, cfg.tformat, 64);
 		limit = cfg.listtop;
 		offsetx = 30;
 	} else if (strcmp(listname, "hour") == 0) {
-		listtype = 5;
+		listtype = LT_Hour;
 		strncpy_nt(colname, listname, 8);
 		snprintf(titlename, 16, "hourly");
 		strncpy_nt(stampformat, "%H:%M", 64);
 		limit = cfg.listhours;
 	} else if (strcmp(listname, "fiveminute") == 0) {
-		listtype = 6;
+		listtype = LT_5min;
 		strncpy_nt(colname, "time", 8);
 		snprintf(titlename, 16, "5 minute");
 		strncpy_nt(stampformat, "%H:%M", 64);
@@ -546,7 +547,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 
 	datalist_i = datalist;
 
-	if (listtype == 4) {
+	if (listtype == LT_Top) {
 		if (limit > 0 && datainfo.count < (uint32_t)limit) {
 			limit = (int32_t)datainfo.count;
 		}
@@ -557,7 +558,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		}
 	}
 
-	if (listtype == 5 || listtype == 6) {
+	if (listtype == LT_Hour || listtype == LT_5min) {
 		while (datalist_i != NULL) {
 			d = localtime(&datalist_i->timestamp);
 			strftime(datebuff, 16, cfg.dformat, d);
@@ -573,7 +574,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	rowcount += datainfo.count;
 
 	width = 500;
-	if (listtype >= 4 && (datainfo.count < 2 || strlen(ic->dataend) == 0 || listtype == 4)) { // less space needed when no estimate or sum is shown
+	if ((listtype == LT_Day || listtype == LT_Month || listtype == LT_Year || listtype == LT_Top) && (datainfo.count < 2 || strlen(ic->dataend) == 0 || listtype == LT_Top)) { // less space needed when no estimate or sum is shown
 		height = 86;
 		offsety = -16;
 	} else {
@@ -610,7 +611,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	layoutinit(ic, buffer, width, height);
 
 	if (datainfo.count) {
-		if (listtype == 4) { // top
+		if (listtype == LT_Top) {
 			if (cfg.ostyle <= 2) {
 				drawlegend(ic, 398, 40 - headermod);
 			}
@@ -629,7 +630,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	textx = 10;
 	texty = 40 - headermod;
 
-	if (listtype == 4) { // top
+	if (listtype == LT_Top) { // top
 		snprintf(buffer, 512, "   #      day        rx           tx          total");
 	} else { // everything else
 		snprintf(buffer, 512, " %8s       rx           tx          total", colname);
@@ -651,7 +652,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	while (datalist_i != NULL) {
 		d = localtime(&datalist_i->timestamp);
 
-		if (listtype == 5 || listtype == 6) {
+		if (listtype == LT_5min || listtype == LT_Hour) {
 			strftime(datebuff, 16, cfg.dformat, d);
 			if (strcmp(daybuff, datebuff) != 0) {
 				snprintf(buffer, 32, " %s", datebuff);
@@ -661,7 +662,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 			}
 		}
 
-		if (listtype == 4) {
+		if (listtype == LT_Top) {
 			if (strftime(datebuff, 16, stampformat, d) <= 8) {
 				snprintf(buffer, 32, "  %2d   %*s", i, getpadding(8, datebuff), datebuff);
 				strcat(buffer, "   ");
@@ -692,17 +693,17 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 			strcat(buffer, "  ");
 			if (datalist_i->next == NULL) {
 				d = localtime(&ic->interface.updated);
-				if (listtype == 1) { // day
+				if (listtype == LT_Day) {
 					e_secs = (uint64_t)(d->tm_sec + (d->tm_min * 60) + (d->tm_hour * 3600));
-				} else if (listtype == 2) { // month
+				} else if (listtype == LT_Month) {
 					e_secs = (uint64_t)mosecs(datalist_i->timestamp, ic->interface.updated);
-				} else if (listtype == 3) { // year
+				} else if (listtype == LT_Year) {
 					e_secs = (uint64_t)(d->tm_yday * 86400 + d->tm_sec + (d->tm_min * 60) + (d->tm_hour * 3600));
-				} else if (listtype == 4) { // top
+				} else if (listtype == LT_Top) {
 					e_secs = 86400;
-				} else if (listtype == 5) { // hour
+				} else if (listtype == LT_Hour) {
 					e_secs = (uint64_t)(d->tm_sec + (d->tm_min * 60));
-				} else if (listtype == 6) { // 5min
+				} else if (listtype == LT_5min) {
 					if ((ic->interface.updated - (ic->interface.updated % 300)) == (datalist_i->timestamp - (datalist_i->timestamp % 300))) {
 						e_secs = (uint64_t)(d->tm_sec + (d->tm_min % 5 * 60));
 					} else {
@@ -710,22 +711,22 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 					}
 				}
 			} else {
-				if (listtype == 1 || listtype == 4) { // day
+				if (listtype == LT_Day || listtype == LT_Top) {
 					e_secs = 86400;
-				} else if (listtype == 2) { // month
+				} else if (listtype == LT_Month) {
 					e_secs = (uint64_t)(dmonth(d->tm_mon) * 86400);
-				} else if (listtype == 3) { // year
+				} else if (listtype == LT_Year) {
 					e_secs = (uint64_t)((365 + isleapyear(d->tm_year + 1900)) * 86400);
-				} else if (listtype == 5) { // hour
+				} else if (listtype == LT_Hour) {
 					e_secs = 3600;
-				} else if (listtype == 6) { // 5min
+				} else if (listtype == LT_5min) {
 					e_secs = 300;
 				}
 			}
 			strncat(buffer, gettrafficrate(datalist_i->rx + datalist_i->tx, (time_t)e_secs, 14), 32);
 		}
 		gdImageString(ic->im, gdFontGetSmall(), textx, texty, (unsigned char *)buffer, ic->ctext);
-		if (listtype == 4) { // top
+		if (listtype == LT_Top) {
 			if (cfg.ostyle > 2) {
 				drawbar(ic, textx + 428, texty + 4, 52, datalist_i->rx, datalist_i->tx, datainfo.max);
 			} else {
@@ -761,7 +762,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		gdImageLine(ic->im, textx + 2, texty + 5, textx + 296 + offsetx, texty + 5, ic->cline);
 	}
 
-	if ((strlen(ic->dataend) == 0 && datainfo.count > 0 && listtype < 4) || (strlen(ic->dataend) > 0 && datainfo.count > 1 && listtype != 4)) {
+	if ((strlen(ic->dataend) == 0 && datainfo.count > 0 && (listtype == LT_Day || listtype == LT_Month || listtype == LT_Year)) || (strlen(ic->dataend) > 0 && datainfo.count > 1 && listtype != LT_Top)) {
 
 		d = localtime(&ic->interface.updated);
 		if (datalist_i->rx == 0 || datalist_i->tx == 0 || strlen(ic->dataend) > 0) {
@@ -769,13 +770,13 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		} else {
 			div = 0;
 			mult = 0;
-			if (listtype == 1) { // day
+			if (listtype == LT_Day) {
 				div = (uint64_t)(d->tm_hour * 60 + d->tm_min);
 				mult = 1440;
-			} else if (listtype == 2) { // month
+			} else if (listtype == LT_Month) {
 				div = (uint64_t)mosecs(datalist_i->timestamp, ic->interface.updated);
 				mult = (uint64_t)(dmonth(d->tm_mon) * 86400);
-			} else if (listtype == 3) { // year
+			} else if (listtype == LT_Year) {
 				div = (uint64_t)(d->tm_yday * 1440 + d->tm_hour * 60 + d->tm_min);
 				mult = (uint64_t)(1440 * (365 + isleapyear(d->tm_year + 1900)));
 			}
