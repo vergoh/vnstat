@@ -527,6 +527,184 @@ START_TEST(defaultdecimals_controls_the_number_of_decimals)
 }
 END_TEST
 
+START_TEST(issametimeslot_knows_the_none_list)
+{
+	ck_assert_int_eq(issametimeslot(LT_None, 10, 11), 0);
+}
+END_TEST
+
+START_TEST(issametimeslot_handles_updates_before_the_entry_time)
+{
+	time_t entry, updated;
+
+	entry = (time_t)get_timestamp(2019, 4, 15, 12, 31);
+	updated = (time_t)get_timestamp(2019, 4, 15, 12, 30);
+
+	ck_assert_int_eq(issametimeslot(LT_5min, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Hour, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Day, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Top, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Month, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Year, entry, updated), 0);
+}
+END_TEST
+
+START_TEST(issametimeslot_knows_simple_slots)
+{
+	time_t entry, updated;
+
+	entry = (time_t)get_timestamp(2019, 4, 15, 12, 30);
+
+	updated = entry;
+	ck_assert_int_eq(issametimeslot(LT_5min, entry, updated), 1);
+	ck_assert_int_eq(issametimeslot(LT_Hour, entry, updated), 1);
+	ck_assert_int_eq(issametimeslot(LT_Day, entry, updated), 1);
+	ck_assert_int_eq(issametimeslot(LT_Top, entry, updated), 1);
+	ck_assert_int_eq(issametimeslot(LT_Month, entry, updated), 1);
+	ck_assert_int_eq(issametimeslot(LT_Year, entry, updated), 1);
+
+	updated = entry + 1;
+	ck_assert_int_eq(issametimeslot(LT_5min, entry, updated), 1);
+	ck_assert_int_eq(issametimeslot(LT_Hour, entry, updated), 1);
+	ck_assert_int_eq(issametimeslot(LT_Day, entry, updated), 1);
+	ck_assert_int_eq(issametimeslot(LT_Top, entry, updated), 1);
+	ck_assert_int_eq(issametimeslot(LT_Month, entry, updated), 1);
+	ck_assert_int_eq(issametimeslot(LT_Year, entry, updated), 1);
+
+	entry = (time_t)get_timestamp(2019, 4, 1, 12, 30);
+	updated = (time_t)get_timestamp(2019, 4, 1, 12, 34);
+	ck_assert_int_eq(issametimeslot(LT_5min, entry, updated), 1);
+
+	updated = (time_t)get_timestamp(2019, 4, 1, 12, 35);
+	ck_assert_int_eq(issametimeslot(LT_5min, entry, updated), 0);
+
+	entry = (time_t)get_timestamp(2019, 4, 1, 12, 0);
+	updated = (time_t)get_timestamp(2019, 4, 1, 12, 59);
+	ck_assert_int_eq(issametimeslot(LT_Hour, entry, updated), 1);
+
+	updated = (time_t)get_timestamp(2019, 4, 1, 13, 0);
+	ck_assert_int_eq(issametimeslot(LT_Hour, entry, updated), 0);
+
+	entry = (time_t)get_timestamp(2019, 4, 1, 0, 0);
+	updated = (time_t)get_timestamp(2019, 4, 1, 23, 59);
+	ck_assert_int_eq(issametimeslot(LT_Day, entry, updated), 1);
+	ck_assert_int_eq(issametimeslot(LT_Top, entry, updated), 1);
+
+	updated = (time_t)get_timestamp(2019, 4, 2, 0, 0);
+	ck_assert_int_eq(issametimeslot(LT_Day, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Top, entry, updated), 0);
+
+	entry = (time_t)get_timestamp(2019, 4, 1, 0, 0);
+	updated = (time_t)get_timestamp(2019, 4, 30, 23, 59);
+	ck_assert_int_eq(issametimeslot(LT_Month, entry, updated), 1);
+
+	updated = (time_t)get_timestamp(2019, 5, 1, 0, 0);
+	ck_assert_int_eq(issametimeslot(LT_Month, entry, updated), 0);
+
+	entry = (time_t)get_timestamp(2019, 1, 1, 0, 0);
+	updated = (time_t)get_timestamp(2019, 12, 31, 23, 59);
+	ck_assert_int_eq(issametimeslot(LT_Year, entry, updated), 1);
+
+	entry = (time_t)get_timestamp(2019, 1, 1, 0, 0);
+	updated = (time_t)get_timestamp(2020, 1, 1, 0, 0);
+	ck_assert_int_eq(issametimeslot(LT_Year, entry, updated), 0);
+}
+END_TEST
+
+START_TEST(issametimeslot_knows_its_slots)
+{
+	time_t entry, updated;
+
+	entry = (time_t)get_timestamp(2019, 4, 15, 12, 30);
+
+	/* the database has the entry timestamp stored with the first possible */
+	/* time of the specific range resulting in many the following scenarios */
+	/* never happening during normal usage */
+
+	updated = (time_t)get_timestamp(2019, 4, 15, 12, 32);
+	ck_assert_int_eq(issametimeslot(LT_5min, entry, updated), 1);
+	ck_assert_int_eq(issametimeslot(LT_Hour, entry, updated), 1);
+	ck_assert_int_eq(issametimeslot(LT_Day, entry, updated), 1);
+	ck_assert_int_eq(issametimeslot(LT_Top, entry, updated), 1);
+	ck_assert_int_eq(issametimeslot(LT_Month, entry, updated), 1);
+	ck_assert_int_eq(issametimeslot(LT_Year, entry, updated), 1);
+
+	updated = (time_t)get_timestamp(2019, 4, 15, 12, 35);
+	ck_assert_int_eq(issametimeslot(LT_5min, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Hour, entry, updated), 1);
+	ck_assert_int_eq(issametimeslot(LT_Day, entry, updated), 1);
+	ck_assert_int_eq(issametimeslot(LT_Top, entry, updated), 1);
+	ck_assert_int_eq(issametimeslot(LT_Month, entry, updated), 1);
+	ck_assert_int_eq(issametimeslot(LT_Year, entry, updated), 1);
+
+	updated = (time_t)get_timestamp(2019, 4, 15, 13, 00);
+	ck_assert_int_eq(issametimeslot(LT_5min, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Hour, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Day, entry, updated), 1);
+	ck_assert_int_eq(issametimeslot(LT_Top, entry, updated), 1);
+	ck_assert_int_eq(issametimeslot(LT_Month, entry, updated), 1);
+	ck_assert_int_eq(issametimeslot(LT_Year, entry, updated), 1);
+
+	updated = (time_t)get_timestamp(2019, 4, 16, 13, 00);
+	ck_assert_int_eq(issametimeslot(LT_5min, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Hour, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Day, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Top, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Month, entry, updated), 1);
+	ck_assert_int_eq(issametimeslot(LT_Year, entry, updated), 1);
+
+	updated = (time_t)get_timestamp(2019, 4, 30, 00, 00);
+	ck_assert_int_eq(issametimeslot(LT_5min, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Hour, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Day, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Top, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Month, entry, updated), 1);
+	ck_assert_int_eq(issametimeslot(LT_Year, entry, updated), 1);
+
+	updated = (time_t)get_timestamp(2019, 4, 30, 23, 59);
+	ck_assert_int_eq(issametimeslot(LT_5min, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Hour, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Day, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Top, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Month, entry, updated), 1);
+	ck_assert_int_eq(issametimeslot(LT_Year, entry, updated), 1);
+
+	updated = (time_t)get_timestamp(2019, 5, 16, 13, 00);
+	ck_assert_int_eq(issametimeslot(LT_5min, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Hour, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Day, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Top, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Month, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Year, entry, updated), 1);
+
+	updated = (time_t)get_timestamp(2020, 5, 16, 13, 00);
+	ck_assert_int_eq(issametimeslot(LT_5min, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Hour, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Day, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Top, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Month, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Year, entry, updated), 0);
+
+	entry = (time_t)get_timestamp(2019, 4, 1, 0, 0);
+	updated = (time_t)get_timestamp(2019, 5, 1, 0, 0);
+	ck_assert_int_eq(issametimeslot(LT_5min, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Hour, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Day, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Top, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Month, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Year, entry, updated), 1);
+
+	entry = (time_t)get_timestamp(2019, 12, 31, 23, 59);
+	updated = (time_t)get_timestamp(2020, 1, 1, 0, 0);
+	ck_assert_int_eq(issametimeslot(LT_5min, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Hour, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Day, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Top, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Month, entry, updated), 0);
+	ck_assert_int_eq(issametimeslot(LT_Year, entry, updated), 0);
+}
+END_TEST
+
 void add_misc_tests(Suite *s)
 {
 	TCase *tc_misc = tcase_create("Misc");
@@ -552,5 +730,9 @@ void add_misc_tests(Suite *s)
 	tcase_add_test(tc_misc, validatedatetime_can_detect_invalid_strings);
 	tcase_add_test(tc_misc, validatedatetime_does_not_validate_numbers);
 	tcase_add_test(tc_misc, defaultdecimals_controls_the_number_of_decimals);
+	tcase_add_test(tc_misc, issametimeslot_knows_the_none_list);
+	tcase_add_test(tc_misc, issametimeslot_handles_updates_before_the_entry_time);
+	tcase_add_test(tc_misc, issametimeslot_knows_simple_slots);
+	tcase_add_test(tc_misc, issametimeslot_knows_its_slots);
 	suite_add_tcase(s, tc_misc);
 }

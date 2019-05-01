@@ -9,6 +9,16 @@ typedef enum RequestType {
 	RT_ImageScale
 } RequestType;
 
+typedef enum ListType {
+	LT_None = 0,
+	LT_5min,
+	LT_Hour,
+	LT_Day,
+	LT_Month,
+	LT_Year,
+	LT_Top
+} ListType;
+
 int spacecheck(const char *path);
 void sighandler(int sig);
 uint64_t getbtime(void);
@@ -27,5 +37,6 @@ void cursorhide(void);
 void cursorshow(void);
 void eraseline(void);
 int validatedatetime(const char *str);
+int issametimeslot(const ListType listtype, const time_t entry, const time_t updated);
 
 #endif

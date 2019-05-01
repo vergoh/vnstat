@@ -691,7 +691,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		strncat(buffer, getvalue(datalist_i->rx + datalist_i->tx, 10, RT_Normal), 32);
 		if (cfg.ostyle > 2) {
 			strcat(buffer, "  ");
-			if (datalist_i->next == NULL) {
+			if (datalist_i->next == NULL && issametimeslot(listtype, datalist_i->timestamp, ic->interface.updated)) {
 				d = localtime(&ic->interface.updated);
 				if (listtype == LT_Day) {
 					e_secs = (uint64_t)(d->tm_sec + (d->tm_min * 60) + (d->tm_hour * 3600));
@@ -704,11 +704,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 				} else if (listtype == LT_Hour) {
 					e_secs = (uint64_t)(d->tm_sec + (d->tm_min * 60));
 				} else if (listtype == LT_5min) {
-					if ((ic->interface.updated - (ic->interface.updated % 300)) == (datalist_i->timestamp - (datalist_i->timestamp % 300))) {
-						e_secs = (uint64_t)(d->tm_sec + (d->tm_min % 5 * 60));
-					} else {
-						e_secs = 300;
-					}
+					e_secs = (uint64_t)(d->tm_sec + (d->tm_min % 5 * 60));
 				}
 			} else {
 				if (listtype == LT_Day || listtype == LT_Top) {

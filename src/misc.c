@@ -394,3 +394,53 @@ int validatedatetime(const char *str)
 
 	return 0;
 }
+
+int issametimeslot(const ListType listtype, const time_t entry, const time_t updated)
+{
+	struct tm e, u;
+
+	if (updated < entry) {
+		return 0;
+	}
+
+	if (entry == updated) {
+		return 1;
+	}
+
+	if (localtime_r(&entry, &e) == NULL || localtime_r(&updated, &u) == NULL) {
+		return 0;
+	}
+
+	switch (listtype) {
+		case LT_5min:
+			if ((entry - (entry % 300)) == (updated - (updated % 300))) {
+				return 1;
+			}
+			break;
+		case LT_Hour:
+			if (e.tm_year == u.tm_year && e.tm_yday == u.tm_yday && e.tm_hour == u.tm_hour) {
+				return 1;
+			}
+			break;
+		case LT_Top:
+		case LT_Day:
+			if (e.tm_year == u.tm_year && e.tm_yday == u.tm_yday) {
+				return 1;
+			}
+			break;
+		case LT_Month:
+			if (e.tm_year == u.tm_year && e.tm_mon == u.tm_mon) {
+				return 1;
+			}
+			break;
+		case LT_Year:
+			if (e.tm_year == u.tm_year) {
+				return 1;
+			}
+			break;
+		case LT_None:
+			return 0;
+	}
+
+	return 0;
+}

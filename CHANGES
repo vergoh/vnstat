@@ -1,4 +1,8 @@
 2.3 / <not released yet>
+ - Fixed
+   - Traffic rate wasn't being shown for the last entry of most lists during
+     the first update of the next period (first SaveInterval minutes of each
+     new hour, day, month and year)
 
 
 2.2 / 28-Apr-2018

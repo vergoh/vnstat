@@ -145,7 +145,7 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 		printf("%s%s", fieldseparator, getvalue(datalist_i->tx, 11, RT_Normal));
 		printf("%s%s", fieldseparator, getvalue(datalist_i->rx + datalist_i->tx, 11, RT_Normal));
 		if (cfg.ostyle >= 2) {
-			if (datalist_i->next == NULL) { // TODO: estimate shouldn't be calculated if the last month isn't the current month, image output has the same issue
+			if (datalist_i->next == NULL && issametimeslot(LT_Month, datalist_i->timestamp, interface->updated)) {
 				if (datalist_i->rx == 0 || datalist_i->tx == 0 || (interface->updated - datalist_i->timestamp) == 0) {
 					e_rx = e_tx = 0;
 				} else {
@@ -231,7 +231,7 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 		printf("%s%s", fieldseparator, getvalue(datalist_i->tx, 11, RT_Normal));
 		printf("%s%s", fieldseparator, getvalue(datalist_i->rx + datalist_i->tx, 11, RT_Normal));
 		if (cfg.ostyle >= 2) {
-			if (datalist_i->next == NULL && strcmp(datebuff, "    today") == 0) { // TODO: could use improvement for detecting when the last entry is from today
+			if (datalist_i->next == NULL && issametimeslot(LT_Day, datalist_i->timestamp, interface->updated)) {
 				d = localtime(&interface->updated);
 				if (datalist_i->rx == 0 || datalist_i->tx == 0 || (d->tm_hour * 60 + d->tm_min) == 0) {
 					e_rx = e_tx = 0;
@@ -452,7 +452,7 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 		printf(" | %s", getvalue(datalist_i->tx, 11, RT_Normal));
 		printf(" | %s", getvalue(datalist_i->rx + datalist_i->tx, 11, RT_Normal));
 		if (cfg.ostyle == 3) {
-			if (datalist_i->next == NULL) { // TODO: the 5min special scenario most likely applies also to every other except top
+			if (datalist_i->next == NULL && issametimeslot(listtype, datalist_i->timestamp, interface->updated)) {
 				d = localtime(&interface->updated);
 				if (listtype == LT_Day) {
 					e_secs = (uint64_t)(d->tm_sec + (d->tm_min * 60) + (d->tm_hour * 3600));
@@ -465,11 +465,7 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 				} else if (listtype == LT_Hour) {
 					e_secs = (uint64_t)(d->tm_sec + (d->tm_min * 60));
 				} else if (listtype == LT_5min) {
-					if ((interface->updated - (interface->updated % 300)) == (datalist_i->timestamp - (datalist_i->timestamp % 300))) {
-						e_secs = (uint64_t)(d->tm_sec + (d->tm_min % 5 * 60));
-					} else {
-						e_secs = 300;
-					}
+					e_secs = (uint64_t)(d->tm_sec + (d->tm_min % 5 * 60));
 				}
 			} else {
 				if (listtype == LT_Day || listtype == LT_Top) {
