@@ -64,8 +64,17 @@ service managers. Refer to your operating system / distribution
 documentation if unsure which service manager is being used.
 
  * systemd
+
+   * option 1: hardened - requires a more recent systemd version
     ~~~
     cp -v examples/systemd/vnstat.service /etc/systemd/system/
+    systemctl enable vnstat
+    systemctl start vnstat
+    ~~~
+
+   * option 2: simple - works also with older systemd versions
+    ~~~
+    cp -v examples/systemd/simple/vnstat.service /etc/systemd/system/
     systemctl enable vnstat
     systemctl start vnstat
     ~~~
