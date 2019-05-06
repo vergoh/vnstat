@@ -3,6 +3,9 @@
    - Traffic rate wasn't being shown for the last entry of most lists during
      the first update of the next period (first SaveInterval minutes of each
      new hour, day, month and year)
+   - Systemd example service file could result in database file write issues
+     if the used systemd version supported ProtectSystem=strict but didn't
+     support StateDirectory (issue seen at least with systemd 232 in Debian 9)
 
 
 2.2 / 28-Apr-2018

@@ -2,14 +2,18 @@
 Description=vnStat network traffic monitor
 Documentation=man:vnstatd(1) man:vnstat(1) man:vnstat.conf(5)
 After=network.target
+StartLimitIntervalSec=20
+StartLimitBurst=4
 
 [Service]
 ExecStart=/usr/sbin/vnstatd -n
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=on-failure
+RestartSec=2
 
 # Hardening
 ProtectSystem=strict
+ReadWritePaths=/var/lib
 StateDirectory=vnstat
 PrivateDevices=yes
 ProtectKernelTunables=yes
