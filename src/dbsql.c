@@ -95,9 +95,11 @@ int db_open(const int createifnotfound, const int readonly)
 	}
 
 	/* set pragmas */
-	if (!db_setpragmas()) {
-		db_close();
-		return 0;
+	if (!readonly) {
+		if (!db_setpragmas()) {
+			db_close();
+			return 0;
+		}
 	}
 
 	if (!createdb) {
@@ -193,6 +195,23 @@ int db_setpragmas(void)
 		return 0;
 	}
 
+	/* set journal_mode */
+	if (cfg.waldb) {
+		if (!db_exec("PRAGMA journal_mode = WAL")) {
+			return 0;
+		}
+		if (!db_exec("PRAGMA synchronous = 1")) {
+			return 0;
+		}
+	} else {
+		if (!db_exec("PRAGMA journal_mode = DELETE")) {
+			return 0;
+		}
+		if (!db_exec("PRAGMA synchronous = 2")) {
+			return 0;
+		}
+	}
+
 	return 1;
 }
 
@@ -224,7 +243,7 @@ int db_exec(const char *sql)
 	}
 
 	rc = sqlite3_step(sqlstmt);
-	if (rc != SQLITE_DONE) {
+	if (rc != SQLITE_DONE && rc != SQLITE_ROW) {
 		db_errcode = rc;
 		snprintf(errorstring, 1024, "Exec step failed (%d: %s): \"%s\"", rc, sqlite3_errmsg(db), sql);
 		printe(PT_Error);

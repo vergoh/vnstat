@@ -231,6 +231,7 @@ and most can be changed later from the config file.
 #define LOGFILE "/var/log/vnstat/vnstat.log"
 #define PIDFILE "/var/run/vnstat/vnstat.pid"
 #define IS64BIT -2
+#define WALDB 0
 
 /* no transparency by default */
 #define TRANSBG 0
@@ -263,7 +264,7 @@ typedef struct {
 	char cline[8], clinel[8], cvnstat[8], crx[8], crxd[8], ctx[8], ctxd[8];
 	int32_t unitmode, rateunitmode, rateunit, bvar, qmode, sampletime, hourlyrate, summaryrate;
 	int32_t monthrotate, monthrotateyears, maxbw, spacecheck, trafficlessentries, transbg, ostyle;
-	int32_t defaultdecimals, hourlydecimals, hourlystyle, is64bit;
+	int32_t defaultdecimals, hourlydecimals, hourlystyle, is64bit, waldb;
 	char cfgfile[512], logfile[512], pidfile[512];
 	char daemonuser[33], daemongroup[33];
 	int32_t timesyncwait, updateinterval, pollinterval, saveinterval, offsaveinterval, savestatus;

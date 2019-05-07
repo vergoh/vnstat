@@ -336,6 +336,12 @@ defines for how many past years entries will be stored. Set to -1 for
 unlimited entries or to 0 to disable the data collection of this
 resolution.
 
+.TP
+.B WriteAheadLoggingDatabase
+Enable or disable SQLite Write-Ahead Logging mode for the database. See SQLite
+documentation for more details and note that support for read-only operations
+isn't available in older versions. 1 = enabled, 0 = disabled.
+
 .SH IMAGE OUTPUT RELATED KEYWORDS
 
 .TP

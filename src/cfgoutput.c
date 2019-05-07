@@ -70,9 +70,9 @@ void printcfgfile(void)
 	printf("ListDays       %2d\n", cfg.listdays);
 	printf("ListMonths     %2d\n", cfg.listmonths);
 	printf("ListYears      %2d\n", cfg.listyears);
-	printf("ListTop        %2d\n", cfg.listtop);
+	printf("ListTop        %2d\n\n", cfg.listtop);
 
-	printf("\n\n");
+	printf("\n");
 
 	/* vnstatd section */
 	printf("# vnstatd\n##\n\n");
@@ -161,9 +161,12 @@ void printcfgfile(void)
 	printf("PidFile \"%s\"\n\n", cfg.pidfile);
 
 	printf("# 1 = 64-bit, 0 = 32-bit, -1 = old style logic, -2 = automatic detection\n");
-	printf("64bitInterfaceCounters %d\n", cfg.is64bit);
+	printf("64bitInterfaceCounters %d\n\n", cfg.is64bit);
 
-	printf("\n\n");
+	printf("# use SQLite Write-Ahead Logging mode (1 = enabled, 0 = disabled)\n");
+	printf("WriteAheadLoggingDatabase %d\n\n", cfg.waldb);
+
+	printf("\n");
 
 	/* vnstati section */
 	printf("# vnstati\n##\n\n");

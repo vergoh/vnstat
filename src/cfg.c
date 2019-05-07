@@ -64,6 +64,7 @@ int loadcfg(const char *cfgfile)
 		 {"LogFile", cfg.logfile, 0, 512, 0},
 		 {"PidFile", cfg.pidfile, 0, 512, 0},
 		 {"64bitInterfaceCounters", 0, &cfg.is64bit, 0, 0},
+		 {"WriteAheadLoggingDatabase", 0, &cfg.waldb, 0, 0},
 		 {"HeaderFormat", cfg.hformat, 0, 64, 0},
 		 {"HourlyRate", 0, &cfg.hourlyrate, 0, 0},
 		 {"SummaryRate", 0, &cfg.summaryrate, 0, 0},
@@ -190,6 +191,7 @@ void validatecfg(void)
 	validateint("CreateDirs", &cfg.createdirs, CREATEDIRS, 0, 2);
 	validateint("UpdateFileOwner", &cfg.updatefileowner, UPDATEFILEOWNER, 0, 2);
 	validateint("64bitInterfaceCounters", &cfg.is64bit, IS64BIT, -2, 1);
+	validatebool("WriteAheadLoggingDatabase", &cfg.waldb, WALDB);
 	validatebool("TransparentBg", &cfg.transbg, TRANSBG);
 	validatebool("HourlyRate", &cfg.hourlyrate, HOURLYRATE);
 	validatebool("SummaryRate", &cfg.summaryrate, SUMMARYRATE);
@@ -339,6 +341,7 @@ void defaultcfg(void)
 	strncpy_nt(cfg.logfile, LOGFILE, 512);
 	strncpy_nt(cfg.pidfile, PIDFILE, 512);
 	cfg.is64bit = IS64BIT;
+	cfg.waldb = WALDB;
 
 	cfg.transbg = TRANSBG;
 	strncpy_nt(cfg.cbg, CBACKGROUND, 8);

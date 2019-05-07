@@ -1,6 +1,8 @@
 
 # New configuration settings
 
+ * 2.3: WriteAheadLoggingDatabase
+
  * 2.2: 64bitInterfaceCounters
 
  * 2.1: (none)
