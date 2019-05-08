@@ -325,7 +325,7 @@ unsigned int importlegacydbs(DSTATE *s)
 
 	s->dbifcount = 0;
 	while ((di = readdir(dir))) {
-		if ((di->d_name[0] != '.') && (strcmp(di->d_name, DATABASEFILE) != 0)) {
+		if ((di->d_name[0] != '.') && (strncmp(di->d_name, DATABASEFILE, strlen(DATABASEFILE)) != 0)) {
 			/* ignore already known interfaces */
 			if (db_getinterfacecountbyname(di->d_name)) {
 				continue;
