@@ -406,7 +406,7 @@ int main(int argc, char *argv[])
 			closedir(dir);
 			strncpy_nt(cfg.dbdir, p.dirname, 512);
 			if (!db_open_ro()) {
-				printf("Error: Unable to open database \"%s/%s\": %s\n", p.dirname, DATABASEFILE, strerror(errno));
+				printf("Error: Failed to open database \"%s/%s\" in read-only mode.\n", p.dirname, DATABASEFILE);
 				if (errno == ENOENT) {
 					printf("The vnStat daemon should have created the database when started.\n");
 					printf("Check that it is configured and running. See also \"man vnstatd\".\n");

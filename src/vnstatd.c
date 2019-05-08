@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
 	setuser(s.user);
 
 	if (!db_open_rw(1)) {
-		printf("Error: Unable to open database \"%s/%s\": %s\n", s.dirname, DATABASEFILE, strerror(errno));
+		printf("Error: Failed to open database \"%s/%s\" in read/write mode.\n", s.dirname, DATABASEFILE);
 		printf("Exiting...\n");
 		exit(EXIT_FAILURE);
 	}

@@ -411,7 +411,7 @@ void handlecaching(IPARAMS *p, IMAGECONTENT *ic)
 void handledatabase(IPARAMS *p, IMAGECONTENT *ic)
 {
 	if (!db_open_ro()) {
-		printf("Error: Unable to open database \"%s/%s\": %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
+		printf("Error: Failed to open database \"%s/%s\" in read-only mode.\n", cfg.dbdir, DATABASEFILE);
 		exit(EXIT_FAILURE);
 	}
 	if (!db_getinterfacecountbyname(p->interface)) {
