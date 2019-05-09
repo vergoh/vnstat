@@ -68,6 +68,7 @@ int db_begintransaction(void);
 int db_committransaction(void);
 int db_rollbacktransaction(void);
 int db_iserrcodefatal(int errcode);
+void db_walcheckpoint(void);
 
 int dbiflistadd(dbiflist **dbifl, const char *iface);
 void dbiflistfree(dbiflist **dbifl);

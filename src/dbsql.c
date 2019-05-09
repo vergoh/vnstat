@@ -1053,6 +1053,15 @@ int db_iserrcodefatal(int errcode)
 	}
 }
 
+void db_walcheckpoint(void)
+{
+	timeused(__func__, 1);
+	if (debug)
+		printf("wal checkpoint");
+	sqlite3_wal_checkpoint_v2(db, NULL, SQLITE_CHECKPOINT_TRUNCATE, NULL, NULL);
+	timeused(__func__, 0);
+}
+
 int dbiflistadd(dbiflist **dbifl, const char *iface)
 {
 	dbiflist *newif;

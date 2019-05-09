@@ -54,6 +54,8 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	timeused("daemon_startup", 1);
+
 	/* load config if available */
 	if (!loadcfg(s.cfgfile)) {
 		return 1;
@@ -190,6 +192,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	timeused("daemon_startup", 0);
 	s.running = 1;
 
 #if defined(__linux__)
@@ -257,6 +260,11 @@ int main(int argc, char *argv[])
 				checkdbsaveneed(&s);
 
 				processdatacache(&s);
+
+				if (cfg.waldb && (s.current - s.prevwaldbcheckpoint) >= WALDBCHECKPOINTINTERVALMINS * 60) {
+					db_walcheckpoint();
+					s.prevwaldbcheckpoint = s.current;
+				}
 
 				if (debug) {
 					printf("\n");

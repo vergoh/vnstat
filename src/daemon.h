@@ -10,7 +10,7 @@ typedef struct {
 	uint64_t dbifcount;
 	char cfgfile[512], dirname[512];
 	char user[33], group[33];
-	time_t current, prevdbupdate, prevdbsave;
+	time_t current, prevdbupdate, prevdbsave, prevwaldbcheckpoint;
 	datacache *dcache;
 } DSTATE;
 

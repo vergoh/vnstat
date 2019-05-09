@@ -265,6 +265,7 @@ void initdstate(DSTATE *s)
 	s->cleanuphour = getcurrenthour();
 	s->dbretrycount = 0;
 	s->dcache = NULL;
+	s->prevwaldbcheckpoint = time(NULL);
 }
 
 void preparedatabases(DSTATE *s)

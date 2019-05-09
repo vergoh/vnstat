@@ -232,6 +232,7 @@ and most can be changed later from the config file.
 #define PIDFILE "/var/run/vnstat/vnstat.pid"
 #define IS64BIT -2
 #define WALDB 0
+#define WALDBCHECKPOINTINTERVALMINS 240
 
 /* no transparency by default */
 #define TRANSBG 0
