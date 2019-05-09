@@ -1058,7 +1058,7 @@ void db_walcheckpoint(void)
 	timeused(__func__, 1);
 	if (debug)
 		printf("wal checkpoint");
-	sqlite3_wal_checkpoint_v2(db, NULL, SQLITE_CHECKPOINT_TRUNCATE, NULL, NULL);
+	sqlite3_wal_checkpoint_v2(db, NULL, SQLITE_CHECKPOINT_RESTART, NULL, NULL);
 	timeused(__func__, 0);
 }
 
