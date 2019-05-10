@@ -582,12 +582,13 @@ int processifinfo(DSTATE *s, datacache **dc)
 void flushcachetodisk(DSTATE *s)
 {
 	int ret;
+	double used_secs = 0.0;
 	uint32_t logcount = 0;
 	datacache *iterator = s->dcache;
 	xferlog *logiterator;
 	interfaceinfo info;
 
-	timeused_debug(__func__, 1);
+	timeused(__func__, 1);
 
 	if (!db_begintransaction()) {
 		handledatabaseerror(s);
@@ -678,7 +679,11 @@ void flushcachetodisk(DSTATE *s)
 	} else {
 		db_rollbacktransaction();
 	}
-	timeused_debug(__func__, 0);
+	used_secs = timeused(__func__, 0);
+	if (used_secs > SLOWDBFLUSHWARNLIMIT) {
+		snprintf(errorstring, 1024, "Writing cached data to database took %.2f seconds.", used_secs);
+		printe(PT_Warning);
+	}
 }
 
 void handledatabaseerror(DSTATE *s)

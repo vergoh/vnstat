@@ -233,6 +233,7 @@ and most can be changed later from the config file.
 #define IS64BIT -2
 #define WALDB 0
 #define WALDBCHECKPOINTINTERVALMINS 240
+#define SLOWDBFLUSHWARNLIMIT 3.0
 
 /* no transparency by default */
 #define TRANSBG 0
