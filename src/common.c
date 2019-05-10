@@ -50,6 +50,7 @@ int printe(const PrintType type)
 				break;
 			case PT_Warning:
 				printf("Warning: %s\n", errorstring);
+				break;
 			case PT_Error:
 				printf("Error: %s\n", errorstring);
 				break;
