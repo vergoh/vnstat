@@ -52,6 +52,9 @@ AC_CHECK_DECLS([IFLA_STATS64], [], [], [[#include <linux/rtnetlink.h>]])
 # Check if O_CLOEXEC can be used
 AC_CHECK_DECLS([O_CLOEXEC], [], [], [[#include <fcntl.h>]])
 
+# Check availability and level of SQLite WAL mode support
+AC_CHECK_DECLS([SQLITE_CHECKPOINT_RESTART, SQLITE_CHECKPOINT_TRUNCATE], [], [], [[#include <sqlite3.h>]])
+
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_UID_T
 AC_TYPE_INT32_T

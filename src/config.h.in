@@ -14,6 +14,14 @@
    don't. */
 #undef HAVE_DECL_O_CLOEXEC
 
+/* Define to 1 if you have the declaration of `SQLITE_CHECKPOINT_RESTART', and
+   to 0 if you don't. */
+#undef HAVE_DECL_SQLITE_CHECKPOINT_RESTART
+
+/* Define to 1 if you have the declaration of `SQLITE_CHECKPOINT_TRUNCATE',
+   and to 0 if you don't. */
+#undef HAVE_DECL_SQLITE_CHECKPOINT_TRUNCATE
+
 /* Define to 1 if you have the `dup2' function. */
 #undef HAVE_DUP2
 

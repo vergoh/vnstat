@@ -17,11 +17,12 @@ START_TEST(printe_options)
 	strcpy(errorstring, "dummy string");
 	suppress_output();
 	ck_assert_int_eq(printe(PT_Info), 1);
+	ck_assert_int_eq(printe(PT_Warning), 1);
 	ck_assert_int_eq(printe(PT_Error), 1);
 	ck_assert_int_eq(printe(PT_Config), 1);
 	ck_assert_int_eq(printe(PT_Multiline), 1);
 	ck_assert_int_eq(printe(PT_ShortMultiline), 1);
-	ck_assert_int_eq(printe(5), 1);
+	ck_assert_int_eq(printe(6), 1);
 }
 END_TEST
 
@@ -34,11 +35,12 @@ START_TEST(logprint_options)
 	strcpy(cfg.logfile, "/dev/null");
 	strcpy(errorstring, "dummy string");
 	ck_assert_int_eq(logprint(PT_Info), 1);
+	ck_assert_int_eq(logprint(PT_Warning), 1);
 	ck_assert_int_eq(logprint(PT_Error), 1);
 	ck_assert_int_eq(logprint(PT_Config), 1);
 	ck_assert_int_eq(logprint(PT_Multiline), 0);
 	ck_assert_int_eq(logprint(PT_ShortMultiline), 1);
-	ck_assert_int_eq(logprint(5), 1);
+	ck_assert_int_eq(logprint(6), 1);
 }
 END_TEST
 

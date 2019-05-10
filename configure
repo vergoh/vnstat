@@ -5041,6 +5041,31 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
+# Check availability and level of SQLite WAL mode support
+ac_fn_c_check_decl "$LINENO" "SQLITE_CHECKPOINT_RESTART" "ac_cv_have_decl_SQLITE_CHECKPOINT_RESTART" "#include <sqlite3.h>
+"
+if test "x$ac_cv_have_decl_SQLITE_CHECKPOINT_RESTART" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_SQLITE_CHECKPOINT_RESTART $ac_have_decl
+_ACEOF
+ac_fn_c_check_decl "$LINENO" "SQLITE_CHECKPOINT_TRUNCATE" "ac_cv_have_decl_SQLITE_CHECKPOINT_TRUNCATE" "#include <sqlite3.h>
+"
+if test "x$ac_cv_have_decl_SQLITE_CHECKPOINT_TRUNCATE" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_SQLITE_CHECKPOINT_TRUNCATE $ac_have_decl
+_ACEOF
+
+
 # Checks for typedefs, structures, and compiler characteristics.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for uid_t in sys/types.h" >&5
 $as_echo_n "checking for uid_t in sys/types.h... " >&6; }

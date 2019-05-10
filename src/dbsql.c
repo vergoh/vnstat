@@ -198,6 +198,7 @@ int db_setpragmas(void)
 		return 0;
 	}
 
+#if HAVE_DECL_SQLITE_CHECKPOINT_RESTART
 	/* set journal_mode */
 	if (cfg.waldb) {
 		if (!db_exec("PRAGMA journal_mode = WAL")) {
@@ -214,6 +215,7 @@ int db_setpragmas(void)
 			return 0;
 		}
 	}
+#endif
 
 	return 1;
 }
@@ -1053,14 +1055,20 @@ int db_iserrcodefatal(int errcode)
 	}
 }
 
+#if HAVE_DECL_SQLITE_CHECKPOINT_RESTART
 void db_walcheckpoint(void)
 {
 	timeused(__func__, 1);
 	if (debug)
 		printf("wal checkpoint");
+#if HAVE_DECL_SQLITE_CHECKPOINT_TRUNCATE
+	sqlite3_wal_checkpoint_v2(db, NULL, SQLITE_CHECKPOINT_TRUNCATE, NULL, NULL);
+#else
 	sqlite3_wal_checkpoint_v2(db, NULL, SQLITE_CHECKPOINT_RESTART, NULL, NULL);
+#endif
 	timeused(__func__, 0);
 }
+#endif
 
 int dbiflistadd(dbiflist **dbifl, const char *iface)
 {

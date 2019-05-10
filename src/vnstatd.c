@@ -206,6 +206,13 @@ int main(int argc, char *argv[])
 #endif
 	printe(PT_Info);
 
+#if !HAVE_DECL_SQLITE_CHECKPOINT_RESTART
+	if (cfg.waldb) {
+		snprintf(errorstring, 1024, "WriteAheadLoggingDatabase is enabled but used libsqlite3 does not support it");
+		printe(PT_Warning);
+	}
+#endif
+
 	/* warmup */
 	if (s.dbifcount == 0) {
 		filldatabaselist(&s);
@@ -261,10 +268,12 @@ int main(int argc, char *argv[])
 
 				processdatacache(&s);
 
+#if HAVE_DECL_SQLITE_CHECKPOINT_RESTART
 				if (cfg.waldb && (s.current - s.prevwaldbcheckpoint) >= WALDBCHECKPOINTINTERVALMINS * 60) {
 					db_walcheckpoint();
 					s.prevwaldbcheckpoint = s.current;
 				}
+#endif
 
 				if (debug) {
 					printf("\n");

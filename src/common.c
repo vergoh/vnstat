@@ -30,6 +30,7 @@ int printe(const PrintType type)
 				break;
 			case PT_Info:
 			case PT_Infoless:
+			case PT_Warning:
 			case PT_Error:
 			case PT_Config:
 			case PT_ShortMultiline:
@@ -47,6 +48,8 @@ int printe(const PrintType type)
 			case PT_Infoless:
 				printf("%s\n", errorstring);
 				break;
+			case PT_Warning:
+				printf("Warning: %s\n", errorstring);
 			case PT_Error:
 				printf("Error: %s\n", errorstring);
 				break;
@@ -67,7 +70,7 @@ int printe(const PrintType type)
 
 int logprint(const PrintType type)
 {
-	/* buffer needs some extra space for timestamp + infor compared to errorstring */
+	/* buffer needs some extra space for timestamp + info compared to errorstring */
 	char timestamp[22], buffer[1060];
 	time_t current;
 	FILE *logfile;
@@ -92,6 +95,9 @@ int logprint(const PrintType type)
 			case PT_Info:
 			case PT_Infoless:
 				snprintf(buffer, 1060, "[%s] %s\n", timestamp, errorstring);
+				break;
+			case PT_Warning:
+				snprintf(buffer, 1060, "[%s] Warning: %s\n", timestamp, errorstring);
 				break;
 			case PT_Error:
 				snprintf(buffer, 1060, "[%s] Error: %s\n", timestamp, errorstring);
@@ -121,6 +127,9 @@ int logprint(const PrintType type)
 
 		switch (type) {
 			case PT_Multiline:
+				break;
+			case PT_Warning:
+				syslog(LOG_WARNING, "Warning: %s", errorstring);
 				break;
 			case PT_Error:
 				syslog(LOG_ERR, "Error: %s", errorstring);
