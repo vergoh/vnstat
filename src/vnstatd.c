@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	timeused("daemon_startup", 1);
+	timeused_debug("daemon_startup", 1);
 
 	/* load config if available */
 	if (!loadcfg(s.cfgfile)) {
@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	timeused("daemon_startup", 0);
+	timeused_debug("daemon_startup", 0);
 	s.running = 1;
 
 #if defined(__linux__)

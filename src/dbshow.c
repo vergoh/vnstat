@@ -68,7 +68,7 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
 
-	timeused(__func__, 1);
+	timeused_debug(__func__, 1);
 
 	current = time(NULL);
 	yesterday = current - 86400;
@@ -273,7 +273,7 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 	}
 
 	dbdatalistfree(&datalist);
-	timeused(__func__, 0);
+	timeused_debug(__func__, 0);
 }
 
 void showlist(const interfaceinfo *interface, const char *listname, const char *databegin, const char *dataend)
@@ -289,7 +289,7 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
 
-	timeused(__func__, 1);
+	timeused_debug(__func__, 1);
 
 	if (strcmp(listname, "day") == 0) {
 		listtype = LT_Day;
@@ -566,7 +566,7 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 		printf("\n");
 	}
 	dbdatalistfree(&datalist);
-	timeused(__func__, 0);
+	timeused_debug(__func__, 0);
 }
 
 void showoneline(const interfaceinfo *interface)
@@ -577,7 +577,7 @@ void showoneline(const interfaceinfo *interface)
 	dbdatalist *datalist = NULL;
 	dbdatalistinfo datainfo;
 
-	timeused(__func__, 1);
+	timeused_debug(__func__, 1);
 
 	/* version string */
 	printf("%d;", ONELINEVERSION);
@@ -667,7 +667,7 @@ void showoneline(const interfaceinfo *interface)
 		printf("%s;", getvalue(interface->txtotal, 1, RT_Normal));
 		printf("%s\n", getvalue(interface->rxtotal + interface->txtotal, 1, RT_Normal));
 	}
-	timeused(__func__, 0);
+	timeused_debug(__func__, 0);
 }
 
 void showhours(const interfaceinfo *interface)
@@ -682,7 +682,7 @@ void showhours(const interfaceinfo *interface)
 	dbdatalistinfo datainfo;
 	HOURDATA hourdata[24];
 
-	timeused(__func__, 1);
+	timeused_debug(__func__, 1);
 
 	for (i = 0; i < 24; i++) {
 		hourdata[i].rx = hourdata[i].tx = 0;
@@ -839,7 +839,7 @@ void showhours(const interfaceinfo *interface)
 		}
 		printf("\n");
 	}
-	timeused(__func__, 0);
+	timeused_debug(__func__, 0);
 }
 
 int showbar(const uint64_t rx, const uint64_t tx, const uint64_t max, const int len)

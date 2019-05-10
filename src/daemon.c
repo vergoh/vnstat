@@ -119,7 +119,7 @@ unsigned int addinterfaces(DSTATE *s)
 	unsigned int index = 0, count = 0;
 	uint32_t bwlimit = 0;
 
-	timeused(__func__, 1);
+	timeused_debug(__func__, 1);
 
 	/* get list of currently visible interfaces */
 	if (getiflist(&ifacelist, 0) == 0) {
@@ -196,7 +196,7 @@ unsigned int addinterfaces(DSTATE *s)
 	}
 
 	free(ifacelist);
-	timeused(__func__, 0);
+	timeused_debug(__func__, 0);
 	return count;
 }
 
@@ -363,7 +363,7 @@ void filldatabaselist(DSTATE *s)
 {
 	dbiflist *dbifl = NULL, *dbifl_iterator = NULL;
 
-	timeused(__func__, 1);
+	timeused_debug(__func__, 1);
 
 	if (db_getiflist(&dbifl) < 0) {
 		errorexitdaemon(s, 1);
@@ -398,7 +398,7 @@ void filldatabaselist(DSTATE *s)
 	} else {
 		s->updateinterval = 120;
 	}
-	timeused(__func__, 0);
+	timeused_debug(__func__, 0);
 }
 
 void adjustsaveinterval(DSTATE *s)
@@ -426,7 +426,7 @@ void processdatacache(DSTATE *s)
 {
 	datacache *iterator = s->dcache;
 
-	timeused(__func__, 1);
+	timeused_debug(__func__, 1);
 
 	while (iterator != NULL) {
 
@@ -465,7 +465,7 @@ void processdatacache(DSTATE *s)
 	if (s->bootdetected) {
 		s->bootdetected = 0;
 	}
-	timeused(__func__, 0);
+	timeused_debug(__func__, 0);
 
 	if (s->dodbsave) {
 		flushcachetodisk(s);
@@ -587,7 +587,7 @@ void flushcachetodisk(DSTATE *s)
 	xferlog *logiterator;
 	interfaceinfo info;
 
-	timeused(__func__, 1);
+	timeused_debug(__func__, 1);
 
 	if (!db_begintransaction()) {
 		handledatabaseerror(s);
@@ -678,7 +678,7 @@ void flushcachetodisk(DSTATE *s)
 	} else {
 		db_rollbacktransaction();
 	}
-	timeused(__func__, 0);
+	timeused_debug(__func__, 0);
 }
 
 void handledatabaseerror(DSTATE *s)
@@ -702,7 +702,7 @@ void cleanremovedinterfaces(DSTATE *s)
 	datacache *iterator = s->dcache;
 	dbiflist *dbifl = NULL, *dbifl_iterator = NULL;
 
-	timeused(__func__, 1);
+	timeused_debug(__func__, 1);
 
 	while (iterator != NULL) {
 		if (!db_getinterfacecountbyname(iterator->interface)) {
@@ -723,7 +723,7 @@ void cleanremovedinterfaces(DSTATE *s)
 		datacache_status(&s->dcache);
 		dbiflistfree(&dbifl);
 	}
-	timeused(__func__, 0);
+	timeused_debug(__func__, 0);
 }
 
 void handleintsignals(DSTATE *s)
@@ -806,7 +806,7 @@ void datacache_status(datacache **dc)
 	uint32_t bwlimit = 0;
 	datacache *iterator = *dc;
 
-	timeused(__func__, 1);
+	timeused_debug(__func__, 1);
 
 	snprintf(buffer, 1024, "Monitoring (%d): ", datacache_count(dc));
 	b = (unsigned int)strlen(buffer) + 1;
@@ -835,7 +835,7 @@ void datacache_status(datacache **dc)
 		snprintf(errorstring, 1024, "Nothing to monitor");
 	}
 	printe(PT_Info);
-	timeused(__func__, 0);
+	timeused_debug(__func__, 0);
 }
 
 void interfacechangecheck(DSTATE *s)
@@ -845,7 +845,7 @@ void interfacechangecheck(DSTATE *s)
 	uint32_t newhash;
 	int offset, found;
 
-	timeused(__func__, 1);
+	timeused_debug(__func__, 1);
 
 	/* get list of currently visible interfaces */
 	if (getiflist(&ifacelist, 0) == 0) {
@@ -909,7 +909,7 @@ void interfacechangecheck(DSTATE *s)
 	free(ifacelist);
 
 	s->iflisthash = newhash;
-	timeused(__func__, 0);
+	timeused_debug(__func__, 0);
 }
 
 uint32_t simplehash(const char *data, int len)

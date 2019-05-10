@@ -317,7 +317,8 @@ char *strncpy_nt(char *dest, const char *src, size_t n);
 int isnumeric(const char *s);
 void panicexit(const char *sourcefile, const int sourceline) __attribute__((noreturn));
 char *getversion(void);
-void timeused(const char *func, const int reset);
+double timeused(const char *func, const int reset);
+void timeused_debug(const char *func, const int reset);
 
 /* global variables */
 extern CFG cfg;

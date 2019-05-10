@@ -342,7 +342,7 @@ START_TEST(getversion_returns_a_version)
 }
 END_TEST
 
-START_TEST(timeused_outputs_something_expected)
+START_TEST(timeused_debug_outputs_something_expected_when_debug_is_enabled)
 {
 	int pipe, len;
 	char buffer[512];
@@ -354,13 +354,55 @@ START_TEST(timeused_outputs_something_expected)
 	/* the assumption here is that the next two steps
 	   can always execute in less than one second resulting
 	   in a duration that starts with a zero */
-	timeused("nothing", 1);
-	timeused("something", 0);
+	timeused_debug("that_func", 1);
+	timeused_debug("that_func", 0);
 	fflush(stdout);
 
 	len = (int)read(pipe, buffer, 512);
-	ck_assert_int_gt(len, 0);
-	ck_assert_ptr_ne(strstr(buffer, "something() in 0"), NULL);
+	ck_assert_int_gt(len, 1);
+	ck_assert_ptr_ne(strstr(buffer, "that_func() in 0"), NULL);
+}
+END_TEST
+
+START_TEST(timeused_debug_does_not_output_anything_when_debug_is_disabled)
+{
+	int pipe, len;
+	char buffer[512];
+	memset(&buffer, '\0', sizeof(buffer));
+
+	defaultcfg();
+	debug = 0;
+	pipe = pipe_output();
+	/* the assumption here is that the next two steps
+	   can always execute in less than one second resulting
+	   in a duration that starts with a zero */
+	timeused_debug("other_func", 1);
+	timeused_debug("other_func", 0);
+	printf("-"); // stdout needs to contain something so that read doesn't block
+	fflush(stdout);
+
+	len = (int)read(pipe, buffer, 512);
+	ck_assert_int_eq(len, 1);
+}
+END_TEST
+
+START_TEST(timeused_tracks_used_time)
+{
+	int i, j = 0;
+	double used;
+
+	defaultcfg();
+
+	used = timeused("quick_func", 1);
+	ck_assert(used == 0.0);
+
+	/* assume that this spends some non-zero time */
+	for (i = 0; i < 10000; i++) {
+		j = j + 2;
+	}
+
+	used = timeused("quick_func", 0);
+	ck_assert(used > 0.0);
 }
 END_TEST
 
@@ -401,7 +443,9 @@ void add_common_tests(Suite *s)
 	tcase_add_test(tc_common, isnumeric_it_is);
 	tcase_add_test(tc_common, isnumeric_it_is_not);
 	tcase_add_test(tc_common, getversion_returns_a_version);
-	tcase_add_test(tc_common, timeused_outputs_something_expected);
+	tcase_add_test(tc_common, timeused_debug_outputs_something_expected_when_debug_is_enabled);
+	tcase_add_test(tc_common, timeused_debug_does_not_output_anything_when_debug_is_disabled);
+	tcase_add_test(tc_common, timeused_tracks_used_time);
 	tcase_add_exit_test(tc_common, can_panic, 1);
 	suite_add_tcase(s, tc_common);
 }

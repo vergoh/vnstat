@@ -1058,7 +1058,7 @@ int db_iserrcodefatal(int errcode)
 #if HAVE_DECL_SQLITE_CHECKPOINT_RESTART
 void db_walcheckpoint(void)
 {
-	timeused(__func__, 1);
+	timeused_debug(__func__, 1);
 	if (debug)
 		printf("wal checkpoint");
 #if HAVE_DECL_SQLITE_CHECKPOINT_TRUNCATE
@@ -1066,7 +1066,7 @@ void db_walcheckpoint(void)
 #else
 	sqlite3_wal_checkpoint_v2(db, NULL, SQLITE_CHECKPOINT_RESTART, NULL, NULL);
 #endif
-	timeused(__func__, 0);
+	timeused_debug(__func__, 0);
 }
 #endif
 

@@ -6,7 +6,7 @@ void showxml(const char *interface, const char mode, const char *databegin, cons
 {
 	interfaceinfo info;
 
-	timeused(__func__, 1);
+	timeused_debug(__func__, 1);
 
 	if (!db_getinterfacecountbyname(interface)) {
 		return;
@@ -64,7 +64,7 @@ void showxml(const char *interface, const char mode, const char *databegin, cons
 	printf("  </traffic>\n");
 	printf(" </interface>\n");
 
-	timeused(__func__, 0);
+	timeused_debug(__func__, 0);
 }
 
 void xmldump(const interfaceinfo *interface, const char *tablename, const int datetype, const char *databegin, const char *dataend)

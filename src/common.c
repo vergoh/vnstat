@@ -287,22 +287,35 @@ char *getversion(void)
 	return versionbuffer;
 }
 
-void timeused(const char *func, const int reset)
+double timeused(const char *func, const int reset)
 {
 	static struct timeval starttime;
 	struct timeval endtime;
+	double used_secs;
 
+	if (reset) {
+		gettimeofday(&starttime, NULL);
+		return 0.0;
+	}
+
+	if (gettimeofday(&endtime, NULL) != 0) {
+		return 0.0;
+	}
+
+	used_secs = (double)(endtime.tv_usec - starttime.tv_usec) / 1000000 + (double)(endtime.tv_sec - starttime.tv_sec);
+
+	if (debug) {
+		printf("%s() in %f s\n", func, used_secs);
+	}
+
+	return used_secs;
+}
+
+void timeused_debug(const char *func, const int reset)
+{
 	if (!debug) {
 		return;
 	}
 
-	if (reset) {
-		gettimeofday(&starttime, NULL);
-		return;
-	}
-
-	if (gettimeofday(&endtime, NULL) != 0) {
-		return;
-	}
-	printf("%s() in %f s\n", func, (double)(endtime.tv_usec - starttime.tv_usec) / 1000000 + (double)(endtime.tv_sec - starttime.tv_sec));
+	timeused(func, reset);
 }
