@@ -12,6 +12,8 @@
      see https://www.sqlite.org/wal.html for more details and note that
      SQLite 3.22.0 or later is required to support read-only operations
    - Show warning in log if writing cached data to database is slow
+   - Try database query for up to 5 seconds when database is busy or locked
+     instead of giving up immediately
 
 
 2.2 / 28-Apr-2018

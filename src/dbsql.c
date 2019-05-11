@@ -100,9 +100,9 @@ int db_open(const int createifnotfound, const int readonly)
 			db_close();
 			return 0;
 		}
-	/* set/increase busy timeout to 5 seconds */
 	} else {
-		sqlite3_busy_timeout(db, 5000);
+		/* set busy timeout when database is open in read-only mode */
+		sqlite3_busy_timeout(db, DBREADTIMEOUTSECS * 1000);
 	}
 
 	if (!createdb) {

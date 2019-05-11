@@ -235,6 +235,9 @@ and most can be changed later from the config file.
 #define WALDBCHECKPOINTINTERVALMINS 240
 #define SLOWDBFLUSHWARNLIMIT 3.0
 
+/* database read timeout */
+#define DBREADTIMEOUTSECS 5
+
 /* no transparency by default */
 #define TRANSBG 0
 
