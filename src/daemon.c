@@ -681,7 +681,7 @@ void flushcachetodisk(DSTATE *s)
 	}
 	used_secs = timeused(__func__, 0);
 	if (used_secs > SLOWDBFLUSHWARNLIMIT) {
-		snprintf(errorstring, 1024, "Writing cached data to database took %.2f seconds.", used_secs);
+		snprintf(errorstring, 1024, "Writing cached data to database took %.1f seconds.", used_secs);
 		printe(PT_Warning);
 	}
 }
