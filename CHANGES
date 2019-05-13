@@ -7,7 +7,7 @@
      if the used systemd version supported ProtectSystem=strict but didn't
      support StateDirectory (issue seen at least with systemd 232 in Debian 9)
  - New
-   - Add configuration option WriteAheadLoggingDatabase to enable SQLite
+   - Add configuration option DatabaseWriteAheadLogging to enable SQLite
      Write-Ahead Logging mode which may provide some disk i/o benefits,
      see https://www.sqlite.org/wal.html for more details and note that
      SQLite 3.22.0 or later is required to support read-only operations

@@ -208,7 +208,7 @@ int main(int argc, char *argv[])
 
 #if !HAVE_DECL_SQLITE_CHECKPOINT_RESTART
 	if (cfg.waldb) {
-		snprintf(errorstring, 1024, "WriteAheadLoggingDatabase is enabled but used libsqlite3 does not support it");
+		snprintf(errorstring, 1024, "DatabaseWriteAheadLogging is enabled but used libsqlite3 does not support it");
 		printe(PT_Warning);
 	}
 #endif

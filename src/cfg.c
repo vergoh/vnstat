@@ -64,7 +64,7 @@ int loadcfg(const char *cfgfile)
 		 {"LogFile", cfg.logfile, 0, 512, 0},
 		 {"PidFile", cfg.pidfile, 0, 512, 0},
 		 {"64bitInterfaceCounters", 0, &cfg.is64bit, 0, 0},
-		 {"WriteAheadLoggingDatabase", 0, &cfg.waldb, 0, 0},
+		 {"DatabaseWriteAheadLogging", 0, &cfg.waldb, 0, 0},
 		 {"DatabaseSynchronous", 0, &cfg.dbsynchronous, 0, 0},
 		 {"HeaderFormat", cfg.hformat, 0, 64, 0},
 		 {"HourlyRate", 0, &cfg.hourlyrate, 0, 0},
@@ -192,7 +192,7 @@ void validatecfg(void)
 	validateint("CreateDirs", &cfg.createdirs, CREATEDIRS, 0, 2);
 	validateint("UpdateFileOwner", &cfg.updatefileowner, UPDATEFILEOWNER, 0, 2);
 	validateint("64bitInterfaceCounters", &cfg.is64bit, IS64BIT, -2, 1);
-	validatebool("WriteAheadLoggingDatabase", &cfg.waldb, WALDB);
+	validatebool("DatabaseWriteAheadLogging", &cfg.waldb, WALDB);
 	validateint("DatabaseSynchronous", &cfg.dbsynchronous, DBSYNCHRONOUS, -1, 3);
 	validatebool("TransparentBg", &cfg.transbg, TRANSBG);
 	validatebool("HourlyRate", &cfg.hourlyrate, HOURLYRATE);

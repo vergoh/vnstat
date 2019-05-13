@@ -220,9 +220,15 @@ the database before continuing other actions. Higher values take extra steps
 to ensure data safety at the cost of slower performance. A value of 0 will
 result in all handling being left to the filesystem itself. Set to -1 to
 select the default value according to database mode controlled by
-.B WriteAheadLoggingDatabase
+.B DatabaseWriteAheadLogging
 setting. See SQLite documentation for more details regarding values from 1
 to 3. Value range: -1..3
+
+.TP
+.B DatabaseWriteAheadLogging
+Enable or disable SQLite Write-Ahead Logging mode for the database. See SQLite
+documentation for more details and note that support for read-only operations
+isn't available in older versions. 1 = enabled, 0 = disabled.
 
 .TP
 .B HourlyDays
@@ -347,12 +353,6 @@ Data retention duration for the one year resolution entries. The configuration
 defines for how many past years entries will be stored. Set to -1 for
 unlimited entries or to 0 to disable the data collection of this
 resolution.
-
-.TP
-.B WriteAheadLoggingDatabase
-Enable or disable SQLite Write-Ahead Logging mode for the database. See SQLite
-documentation for more details and note that support for read-only operations
-isn't available in older versions. 1 = enabled, 0 = disabled.
 
 .SH IMAGE OUTPUT RELATED KEYWORDS
 

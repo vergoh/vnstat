@@ -164,7 +164,7 @@ void printcfgfile(void)
 	printf("64bitInterfaceCounters %d\n\n", cfg.is64bit);
 
 	printf("# use SQLite Write-Ahead Logging mode (1 = enabled, 0 = disabled)\n");
-	printf("WriteAheadLoggingDatabase %d\n\n", cfg.waldb);
+	printf("DatabaseWriteAheadLogging %d\n\n", cfg.waldb);
 
 	printf("# change the setting of the SQLite \"synchronous\" flag\n");
 	printf("# (-1 = auto, 0 = off, 1, = normal, 2 = full, 3 = extra)\n");
