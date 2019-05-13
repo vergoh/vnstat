@@ -65,6 +65,7 @@ int loadcfg(const char *cfgfile)
 		 {"PidFile", cfg.pidfile, 0, 512, 0},
 		 {"64bitInterfaceCounters", 0, &cfg.is64bit, 0, 0},
 		 {"WriteAheadLoggingDatabase", 0, &cfg.waldb, 0, 0},
+		 {"DatabaseSynchronous", 0, &cfg.dbsynchronous, 0, 0},
 		 {"HeaderFormat", cfg.hformat, 0, 64, 0},
 		 {"HourlyRate", 0, &cfg.hourlyrate, 0, 0},
 		 {"SummaryRate", 0, &cfg.summaryrate, 0, 0},
@@ -192,6 +193,7 @@ void validatecfg(void)
 	validateint("UpdateFileOwner", &cfg.updatefileowner, UPDATEFILEOWNER, 0, 2);
 	validateint("64bitInterfaceCounters", &cfg.is64bit, IS64BIT, -2, 1);
 	validatebool("WriteAheadLoggingDatabase", &cfg.waldb, WALDB);
+	validateint("DatabaseSynchronous", &cfg.dbsynchronous, DBSYNCHRONOUS, -1, 3);
 	validatebool("TransparentBg", &cfg.transbg, TRANSBG);
 	validatebool("HourlyRate", &cfg.hourlyrate, HOURLYRATE);
 	validatebool("SummaryRate", &cfg.summaryrate, SUMMARYRATE);
@@ -342,6 +344,7 @@ void defaultcfg(void)
 	strncpy_nt(cfg.pidfile, PIDFILE, 512);
 	cfg.is64bit = IS64BIT;
 	cfg.waldb = WALDB;
+	cfg.dbsynchronous = DBSYNCHRONOUS;
 
 	cfg.transbg = TRANSBG;
 	strncpy_nt(cfg.cbg, CBACKGROUND, 8);

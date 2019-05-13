@@ -234,6 +234,7 @@ and most can be changed later from the config file.
 #define WALDB 0
 #define WALDBCHECKPOINTINTERVALMINS 240
 #define SLOWDBFLUSHWARNLIMIT 3.0
+#define DBSYNCHRONOUS -1
 
 /* database read timeout */
 #define DBREADTIMEOUTSECS 5
@@ -269,7 +270,7 @@ typedef struct {
 	char cline[8], clinel[8], cvnstat[8], crx[8], crxd[8], ctx[8], ctxd[8];
 	int32_t unitmode, rateunitmode, rateunit, bvar, qmode, sampletime, hourlyrate, summaryrate;
 	int32_t monthrotate, monthrotateyears, maxbw, spacecheck, trafficlessentries, transbg, ostyle;
-	int32_t defaultdecimals, hourlydecimals, hourlystyle, is64bit, waldb;
+	int32_t defaultdecimals, hourlydecimals, hourlystyle, is64bit, waldb, dbsynchronous;
 	char cfgfile[512], logfile[512], pidfile[512];
 	char daemonuser[33], daemongroup[33];
 	int32_t timesyncwait, updateinterval, pollinterval, saveinterval, offsaveinterval, savestatus;

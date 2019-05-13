@@ -165,6 +165,7 @@ int db_validate(const int readonly)
 int db_setpragmas(void)
 {
 	int rc;
+	char sql[25];
 	sqlite3_stmt *sqlstmt;
 
 	/* enable use of foreign keys */
@@ -204,18 +205,36 @@ int db_setpragmas(void)
 		if (!db_exec("PRAGMA journal_mode = WAL")) {
 			return 0;
 		}
-		if (!db_exec("PRAGMA synchronous = 1")) {
-			return 0;
-		}
 	} else {
 		if (!db_exec("PRAGMA journal_mode = DELETE")) {
 			return 0;
 		}
+	}
+#endif
+
+	/* set synchronous */
+	if (cfg.dbsynchronous == -1) {
+#if HAVE_DECL_SQLITE_CHECKPOINT_RESTART
+		if (cfg.waldb) {
+			if (!db_exec("PRAGMA synchronous = 1")) {
+				return 0;
+			}
+		} else {
+			if (!db_exec("PRAGMA synchronous = 2")) {
+				return 0;
+			}
+		}
+#else
 		if (!db_exec("PRAGMA synchronous = 2")) {
 			return 0;
 		}
-	}
 #endif
+	} else {
+		snprintf(sql, 25, "PRAGMA synchronous = %d", cfg.dbsynchronous);
+		if (!db_exec(sql)) {
+			return 0;
+		}
+	}
 
 	return 1;
 }

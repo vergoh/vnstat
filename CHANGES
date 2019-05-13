@@ -11,6 +11,9 @@
      Write-Ahead Logging mode which may provide some disk i/o benefits,
      see https://www.sqlite.org/wal.html for more details and note that
      SQLite 3.22.0 or later is required to support read-only operations
+   - Add configuration option DatabaseSynchronous for changing the SQLite
+     setting of the "synchronous" flag, see
+     https://www.sqlite.org/pragma.html#pragma_synchronous for more details
    - Show warning in log if writing cached data to database is slow
    - Try database query for up to 5 seconds when database is busy or locked
      instead of giving up immediately
