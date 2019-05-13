@@ -1077,13 +1077,21 @@ int db_iserrcodefatal(int errcode)
 #if HAVE_DECL_SQLITE_CHECKPOINT_RESTART
 void db_walcheckpoint(void)
 {
-	timeused_debug(__func__, 1);
+	double used_secs = 0.0;
+
+	timeused(__func__, 1);
 #if HAVE_DECL_SQLITE_CHECKPOINT_TRUNCATE
 	sqlite3_wal_checkpoint_v2(db, NULL, SQLITE_CHECKPOINT_TRUNCATE, NULL, NULL);
 #else
 	sqlite3_wal_checkpoint_v2(db, NULL, SQLITE_CHECKPOINT_RESTART, NULL, NULL);
 #endif
-	timeused_debug(__func__, 0);
+	timeused(__func__, 0);
+
+	used_secs = timeused(__func__, 0);
+	if (used_secs > SLOWDBWARNLIMIT) {
+		snprintf(errorstring, 1024, "Write-Ahead Logging checkpoint took %.1f seconds.", used_secs);
+		printe(PT_Warning);
+	}
 }
 #endif
 

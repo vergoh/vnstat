@@ -233,7 +233,7 @@ and most can be changed later from the config file.
 #define IS64BIT -2
 #define WALDB 0
 #define WALDBCHECKPOINTINTERVALMINS 240
-#define SLOWDBFLUSHWARNLIMIT 3.0
+#define SLOWDBWARNLIMIT 4.0 // needs to be less than DBREADTIMEOUTSECS
 #define DBSYNCHRONOUS -1
 
 /* database read timeout */
