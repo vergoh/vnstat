@@ -1,5 +1,6 @@
 #include "common.h"
 #include "ifinfo.h"
+#include "iflist.h"
 #include "dbsql.h"
 #include "dbaccess.h"
 #include "datacache.h"
@@ -122,7 +123,7 @@ unsigned int addinterfaces(DSTATE *s)
 	timeused_debug(__func__, 1);
 
 	/* get list of currently visible interfaces */
-	if (getiflist(&ifacelist, 0) == 0) {
+	if (getifliststring(&ifacelist, 0) == 0) {
 		free(ifacelist);
 		return 0;
 	}
@@ -135,6 +136,7 @@ unsigned int addinterfaces(DSTATE *s)
 	if (debug)
 		printf("Interface list: \"%s\"\n", ifacelist);
 
+	// TODO: refactor to use list structure
 	while (sscanf(ifacelist + index, "%31s", interface) != EOF) {
 		if (debug)
 			printf("Processing: \"%s\"\n", interface);
@@ -711,7 +713,7 @@ void cleanremovedinterfaces(DSTATE *s)
 
 	while (iterator != NULL) {
 		if (!db_getinterfacecountbyname(iterator->interface)) {
-			iflistadd(&dbifl, iterator->interface, -1);
+			iflistadd(&dbifl, iterator->interface, 0);
 		}
 		iterator = iterator->next;
 	}
@@ -853,7 +855,7 @@ void interfacechangecheck(DSTATE *s)
 	timeused_debug(__func__, 1);
 
 	/* get list of currently visible interfaces */
-	if (getiflist(&ifacelist, 0) == 0) {
+	if (getifliststring(&ifacelist, 0) == 0) {
 		free(ifacelist);
 		s->iflisthash = 0;
 		return;

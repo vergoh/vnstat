@@ -17,6 +17,7 @@ vnStat - Copyright (c) 2002-2019 Teemu Toivola <tst@iki.fi>
 
 #include "common.h"
 #include "ifinfo.h"
+#include "iflist.h"
 #include "traffic.h"
 #include "dbsql.h"
 #include "dbxml.h"
@@ -385,7 +386,7 @@ int main(int argc, char *argv[])
 				return 1;
 			}
 		} else if (strcmp(argv[currentarg], "--iflist") == 0) {
-			getiflist(&p.ifacelist, 1);
+			getifliststring(&p.ifacelist, 1);
 			printf("Available interfaces: %s\n", p.ifacelist);
 			free(p.ifacelist);
 			return 0;
@@ -462,7 +463,7 @@ int main(int argc, char *argv[])
 
 		/* give more help if there's no database */
 		if (p.ifcount == 0) {
-			getiflist(&p.ifacelist, 1);
+			getifliststring(&p.ifacelist, 1);
 			printf("No interfaces found in the database, nothing to do. Use --help for help.\n\n");
 			printf("Interfaces can be added to the database with the following command:\n");
 			printf("    %s --add -i eth0\n\n", argv[0]);
@@ -636,7 +637,7 @@ void handleaddinterface(PARAMS *p)
 	}
 
 	if (!p->force && !getifinfo(p->interface)) {
-		getiflist(&p->ifacelist, 1);
+		getifliststring(&p->ifacelist, 1);
 		printf("Only available interfaces can be added for monitoring.\n\n");
 		printf("The following interfaces are currently available:\n    %s\n", p->ifacelist);
 		free(p->ifacelist);
@@ -798,7 +799,7 @@ void handletrafficmeters(PARAMS *p)
 	}
 
 	if (!isifavailable(p->interface)) {
-		getiflist(&p->ifacelist, 0);
+		getifliststring(&p->ifacelist, 0);
 		if (p->defaultiface) {
 			printf("Error: Configured default interface \"%s\" isn't available.\n\n", p->interface);
 			if (strlen(cfg.cfgfile)) {

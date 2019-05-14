@@ -65,9 +65,57 @@ int getifinfo(const char *iface)
 	return 0;
 }
 
-int getiflist(char **ifacelist, int showspeed)
+int getifliststring(char **ifacelist, int showspeed)
 {
-	uint32_t speed;
+	char temp[64];
+	iflist *ifl = NULL, *ifl_iterator = NULL;
+
+	/* initialize list string */
+	*ifacelist = (char *)malloc(sizeof(char));
+	if (*ifacelist == NULL) {
+		panicexit(__FILE__, __LINE__);
+	}
+	*ifacelist[0] = '\0';
+
+	if (getiflist(&ifl, showspeed) > 0) {
+
+		ifl_iterator = ifl;
+
+		/* seek to end of list to show entries in original input order */
+		while (ifl_iterator->next != NULL) {
+			ifl_iterator = ifl_iterator->next;
+		}
+
+		while (ifl_iterator != NULL) {
+			*ifacelist = (char *)realloc(*ifacelist, ((strlen(*ifacelist) + strlen(ifl_iterator->interface) + 2) * sizeof(char)));
+			if (*ifacelist == NULL) {
+				panicexit(__FILE__, __LINE__);
+			}
+			strcat(*ifacelist, ifl_iterator->interface);
+			strcat(*ifacelist, " ");
+
+			if (showspeed && ifl_iterator->bandwidth > 0) {
+				snprintf(temp, 64, "(%u Mbit) ", ifl_iterator->bandwidth);
+				*ifacelist = (char *)realloc(*ifacelist, ((strlen(*ifacelist) + strlen(temp) + 1) * sizeof(char)));
+				if (*ifacelist == NULL) {
+					panicexit(__FILE__, __LINE__);
+				}
+				strcat(*ifacelist, temp);
+			}
+
+			ifl_iterator = ifl_iterator->prev;
+		}
+
+		iflistfree(&ifl);
+		return 1;
+	}
+
+	iflistfree(&ifl);
+	return 0;
+}
+
+int getiflist(iflist **ifl, int getspeed)
+{
 	char temp[64];
 #if defined(__linux__) || defined(CHECK_VNSTAT)
 	char interface[32];
@@ -79,13 +127,6 @@ int getiflist(char **ifacelist, int showspeed)
 	struct ifaddrs *ifap, *ifa;
 #endif
 
-	/* initialize list */
-	*ifacelist = (char *)malloc(sizeof(char));
-	if (*ifacelist == NULL) {
-		panicexit(__FILE__, __LINE__);
-	}
-	*ifacelist[0] = '\0';
-
 #if defined(__linux__) || defined(CHECK_VNSTAT)
 	if ((fp = fopen(PROCNETDEV, "r")) != NULL) {
 
@@ -94,23 +135,10 @@ int getiflist(char **ifacelist, int showspeed)
 			sscanf(procline, "%63s", temp);
 			if (strlen(temp) > 0 && (isdigit(temp[(strlen(temp) - 1)]) || temp[(strlen(temp) - 1)] == ':')) {
 				sscanf(temp, "%31[^':']s", interface);
-				*ifacelist = (char *)realloc(*ifacelist, ((strlen(*ifacelist) + strlen(interface) + 2) * sizeof(char)));
-				if (*ifacelist == NULL) {
-					panicexit(__FILE__, __LINE__);
-				}
-				strcat(*ifacelist, interface);
-				strcat(*ifacelist, " ");
-				if (!showspeed) {
-					continue;
-				}
-				speed = getifspeed(interface);
-				if (speed > 0) {
-					snprintf(temp, 64, "(%u Mbit) ", speed);
-					*ifacelist = (char *)realloc(*ifacelist, ((strlen(*ifacelist) + strlen(temp) + 1) * sizeof(char)));
-					if (*ifacelist == NULL) {
-						panicexit(__FILE__, __LINE__);
-					}
-					strcat(*ifacelist, temp);
+				if (getspeed) {
+					iflistadd(ifl, interface, getifspeed(interface));
+				} else {
+					iflistadd(ifl, interface, 0);
 				}
 			}
 		}
@@ -127,23 +155,10 @@ int getiflist(char **ifacelist, int showspeed)
 				if (di->d_name[0] == '.' || strlen(di->d_name) > 31) {
 					continue;
 				}
-				*ifacelist = (char *)realloc(*ifacelist, ((strlen(*ifacelist) + strlen(di->d_name) + 2) * sizeof(char)));
-				if (*ifacelist == NULL) {
-					panicexit(__FILE__, __LINE__);
-				}
-				strcat(*ifacelist, di->d_name);
-				strcat(*ifacelist, " ");
-				if (!showspeed) {
-					continue;
-				}
-				speed = getifspeed(di->d_name);
-				if (speed > 0) {
-					snprintf(temp, 64, "(%u Mbit) ", speed);
-					*ifacelist = (char *)realloc(*ifacelist, ((strlen(*ifacelist) + strlen(temp) + 1) * sizeof(char)));
-					if (*ifacelist == NULL) {
-						panicexit(__FILE__, __LINE__);
-					}
-					strcat(*ifacelist, temp);
+				if (getspeed) {
+					iflistadd(ifl, di->d_name, getifspeed(di->d_name));
+				} else {
+					iflistadd(ifl, di->d_name, 0);
 				}
 			}
 
@@ -160,23 +175,10 @@ int getiflist(char **ifacelist, int showspeed)
 			if (ifa->ifa_addr->sa_family != AF_LINK || strlen(ifa->ifa_name) > 31) {
 				continue;
 			}
-			*ifacelist = realloc(*ifacelist, ((strlen(*ifacelist) + strlen(ifa->ifa_name) + 2) * sizeof(char)));
-			if (*ifacelist == NULL) {
-				panicexit(__FILE__, __LINE__);
-			}
-			strcat(*ifacelist, ifa->ifa_name);
-			strcat(*ifacelist, " ");
-			if (!showspeed) {
-				continue;
-			}
-			speed = getifspeed(ifa->ifa_name);
-			if (speed > 0) {
-				snprintf(temp, 64, "(%u Mbit) ", speed);
-				*ifacelist = realloc(*ifacelist, ((strlen(*ifacelist) + strlen(temp) + 1) * sizeof(char)));
-				if (*ifacelist == NULL) {
-					panicexit(__FILE__, __LINE__);
-				}
-				strcat(*ifacelist, temp);
+			if (getspeed) {
+				iflistadd(ifl, ifa->ifa_name, getifspeed(ifa->ifa_name));
+			} else {
+				iflistadd(ifl, ifa->ifa_name, 0);
 			}
 		}
 

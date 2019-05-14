@@ -2,7 +2,7 @@
 #define DBSQL_H
 
 #include <sqlite3.h>
-#include "misc.h"
+#include "iflist.h"
 
 typedef struct dbdatalist {
 	time_t timestamp;

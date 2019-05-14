@@ -19,12 +19,6 @@ typedef enum ListType {
 	LT_Top
 } ListType;
 
-typedef struct iflist {
-	char interface[32];
-	int bandwidth;
-	struct iflist *next;
-} iflist;
-
 int spacecheck(const char *path);
 void sighandler(int sig);
 uint64_t getbtime(void);
@@ -44,7 +38,5 @@ void cursorshow(void);
 void eraseline(void);
 int validatedatetime(const char *str);
 int issametimeslot(const ListType listtype, const time_t entry, const time_t updated);
-int iflistadd(iflist **ifl, const char *iface, const int bandwidth);
-void iflistfree(iflist **ifl);
 
 #endif

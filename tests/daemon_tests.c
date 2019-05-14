@@ -702,7 +702,7 @@ START_TEST(interfacechangecheck_with_no_changes_in_iflist)
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	fake_proc_net_dev("w", "ethsomething", 1, 2, 3, 4);
 	fake_proc_net_dev("a", "ethelse", 5, 6, 7, 8);
-	ck_assert_int_ne(getiflist(&ifacelist, 0), 0);
+	ck_assert_int_ne(getifliststring(&ifacelist, 0), 0);
 	ifhash = simplehash(ifacelist, (int)strlen(ifacelist));
 	s.iflisthash = ifhash;
 

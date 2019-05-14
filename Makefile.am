@@ -14,6 +14,7 @@ vnstati_LDADD = @IMAGELIBS@
 
 vnstat_SOURCES = src/vnstat.c src/vnstat.h \
   src/ifinfo.c src/ifinfo.h \
+  src/iflist.c src/iflist.h \
   src/dbsql.c src/dbsql.h \
   src/dbxml.c src/dbxml.h \
   src/dbjson.c src/dbjson.h \
@@ -29,6 +30,7 @@ vnstat_SOURCES = src/vnstat.c src/vnstat.h \
 
 vnstatd_SOURCES = src/vnstatd.c src/vnstatd.h \
   src/ifinfo.c src/ifinfo.h \
+  src/iflist.c src/iflist.h \
   src/dbsql.c src/dbsql.h \
   src/dbaccess.c src/dbaccess.h \
   src/datacache.c src/datacache.h \
@@ -41,6 +43,7 @@ vnstatd_SOURCES = src/vnstatd.c src/vnstatd.h \
   src/daemon.c src/daemon.h
 
 vnstati_SOURCES = src/vnstati.c src/vnstati.h \
+  src/iflist.c src/iflist.h \
   src/image.c src/image.h \
   src/dbsql.c src/dbsql.h \
   src/common.c src/common.h \
@@ -84,6 +87,7 @@ check_vnstat_SOURCES += src/cfg.c src/cfg.h \
   src/dbxml.c src/dbxml.h \
   src/ibw.c src/ibw.h \
   src/ifinfo.c src/ifinfo.h \
+  src/iflist.c src/iflist.h \
   src/misc.c src/misc.h \
   src/fs.c src/fs.h \
   src/id.c src/id.h

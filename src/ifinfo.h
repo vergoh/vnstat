@@ -1,12 +1,15 @@
 #ifndef IFINFO_H
 #define IFINFO_H
 
+#include "iflist.h"
+
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__FreeBSD_kernel__)
 #include <net/if.h>
 #endif
 
 int getifinfo(const char *iface);
-int getiflist(char **ifacelist, int showspeed);
+int getifliststring(char **ifacelist, int showspeed);
+int getiflist(iflist **ifl, int getspeed);
 int readproc(const char *iface);
 int readsysclassnet(const char *iface);
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__FreeBSD_kernel__)

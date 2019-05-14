@@ -1,5 +1,6 @@
 #include "common.h"
 #include "misc.h"
+#include "iflist.h"
 #include "dbsql.h"
 
 /* global db */
@@ -703,7 +704,7 @@ int db_getiflist(iflist **ifl)
 		if (sqlite3_column_text(sqlstmt, 0) == NULL) {
 			continue;
 		}
-		if (!iflistadd(ifl, (const char *)sqlite3_column_text(sqlstmt, 0), -1)) {
+		if (!iflistadd(ifl, (const char *)sqlite3_column_text(sqlstmt, 0), 0)) {
 			break;
 		}
 		rc++;

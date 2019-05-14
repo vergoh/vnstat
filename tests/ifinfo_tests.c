@@ -7,21 +7,21 @@
 #include "cfg.h"
 #include "ibw.h"
 
-START_TEST(getiflist_no_source)
+START_TEST(getifliststring_no_source)
 {
 	char *ifacelist;
 
 	linuxonly;
 
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
-	ck_assert_int_eq(getiflist(&ifacelist, 0), 0);
+	ck_assert_int_eq(getifliststring(&ifacelist, 0), 0);
 	ck_assert_str_eq(ifacelist, "");
 
 	free(ifacelist);
 }
 END_TEST
 
-START_TEST(getiflist_proc_one_interface)
+START_TEST(getifliststring_proc_one_interface)
 {
 	char *ifacelist;
 
@@ -30,14 +30,14 @@ START_TEST(getiflist_proc_one_interface)
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	fake_proc_net_dev("w", "ethunusual", 0, 0, 0, 0);
 
-	ck_assert_int_eq(getiflist(&ifacelist, 1), 1);
+	ck_assert_int_eq(getifliststring(&ifacelist, 1), 1);
 	ck_assert_str_eq(ifacelist, "lo ethunusual ");
 
 	free(ifacelist);
 }
 END_TEST
 
-START_TEST(getiflist_proc_one_interface_with_speed)
+START_TEST(getifliststring_proc_one_interface_with_speed)
 {
 	char *ifacelist;
 
@@ -47,14 +47,14 @@ START_TEST(getiflist_proc_one_interface_with_speed)
 	fake_proc_net_dev("w", "ethunusual", 0, 0, 0, 0);
 	fake_sys_class_net("ethunusual", 0, 0, 0, 0, 10);
 
-	ck_assert_int_eq(getiflist(&ifacelist, 1), 1);
+	ck_assert_int_eq(getifliststring(&ifacelist, 1), 1);
 	ck_assert_str_eq(ifacelist, "lo ethunusual (10 Mbit) ");
 
 	free(ifacelist);
 }
 END_TEST
 
-START_TEST(getiflist_proc_multiple_interfaces)
+START_TEST(getifliststring_proc_multiple_interfaces)
 {
 	char *ifacelist;
 
@@ -67,14 +67,14 @@ START_TEST(getiflist_proc_multiple_interfaces)
 	fake_proc_net_dev("a", "fun", 0, 0, 0, 0);
 	fake_proc_net_dev("a", "i", 0, 0, 0, 0);
 
-	ck_assert_int_eq(getiflist(&ifacelist, 0), 1);
+	ck_assert_int_eq(getifliststring(&ifacelist, 0), 1);
 	ck_assert_str_eq(ifacelist, "lo random interfaces having fun i ");
 
 	free(ifacelist);
 }
 END_TEST
 
-START_TEST(getiflist_proc_long_interface_names)
+START_TEST(getifliststring_proc_long_interface_names)
 {
 	char *ifacelist;
 
@@ -89,14 +89,14 @@ START_TEST(getiflist_proc_long_interface_names)
 	fake_proc_net_dev("a", "longestinterfaceislongerthanshouldbeexpectedanywhereinanormallyfunctioningenvironment", 0, 0, 0, 0);
 	fake_proc_net_dev("a", "a", 0, 0, 0, 0);
 
-	ck_assert_int_eq(getiflist(&ifacelist, 0), 1);
+	ck_assert_int_eq(getifliststring(&ifacelist, 0), 1);
 	ck_assert_str_eq(ifacelist, "lo random interfaces having toomuchfun longinterfaceislong a ");
 
 	free(ifacelist);
 }
 END_TEST
 
-START_TEST(getiflist_sysclassnet_one_interface)
+START_TEST(getifliststring_sysclassnet_one_interface)
 {
 	char *ifacelist;
 
@@ -105,14 +105,14 @@ START_TEST(getiflist_sysclassnet_one_interface)
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	fake_sys_class_net("ethunusual", 0, 0, 0, 0, 0);
 
-	ck_assert_int_eq(getiflist(&ifacelist, 1), 1);
+	ck_assert_int_eq(getifliststring(&ifacelist, 1), 1);
 	ck_assert_str_eq(ifacelist, "ethunusual ");
 
 	free(ifacelist);
 }
 END_TEST
 
-START_TEST(getiflist_sysclassnet_one_interface_with_speed)
+START_TEST(getifliststring_sysclassnet_one_interface_with_speed)
 {
 	char *ifacelist;
 
@@ -121,14 +121,14 @@ START_TEST(getiflist_sysclassnet_one_interface_with_speed)
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	fake_sys_class_net("ethunusual", 0, 0, 0, 0, 10);
 
-	ck_assert_int_eq(getiflist(&ifacelist, 1), 1);
+	ck_assert_int_eq(getifliststring(&ifacelist, 1), 1);
 	ck_assert_str_eq(ifacelist, "ethunusual (10 Mbit) ");
 
 	free(ifacelist);
 }
 END_TEST
 
-START_TEST(getiflist_sysclassnet_multiple_interfaces)
+START_TEST(getifliststring_sysclassnet_multiple_interfaces)
 {
 	char *ifacelist;
 
@@ -141,14 +141,14 @@ START_TEST(getiflist_sysclassnet_multiple_interfaces)
 	fake_sys_class_net("fun", 0, 0, 0, 0, 0);
 	fake_sys_class_net("i", 0, 0, 0, 0, 0);
 
-	ck_assert_int_eq(getiflist(&ifacelist, 0), 1);
+	ck_assert_int_eq(getifliststring(&ifacelist, 0), 1);
 	ck_assert_int_eq(strlen(ifacelist), 31);
 
 	free(ifacelist);
 }
 END_TEST
 
-START_TEST(getiflist_sysclassnet_long_interface_names)
+START_TEST(getifliststring_sysclassnet_long_interface_names)
 {
 	char *ifacelist;
 
@@ -163,7 +163,7 @@ START_TEST(getiflist_sysclassnet_long_interface_names)
 	fake_sys_class_net("longestinterfaceislongerthanshouldbeexpectedanywhereinanormallyfunctioningenvironment", 0, 0, 0, 0, 0);
 	fake_sys_class_net("a", 0, 0, 0, 0, 0);
 
-	ck_assert_int_eq(getiflist(&ifacelist, 0), 1);
+	ck_assert_int_eq(getifliststring(&ifacelist, 0), 1);
 	ck_assert_int_eq(strlen(ifacelist), 58);
 
 	free(ifacelist);
@@ -288,15 +288,15 @@ END_TEST
 void add_ifinfo_tests(Suite *s)
 {
 	TCase *tc_ifinfo = tcase_create("Ifinfo");
-	tcase_add_test(tc_ifinfo, getiflist_no_source);
-	tcase_add_test(tc_ifinfo, getiflist_proc_one_interface);
-	tcase_add_test(tc_ifinfo, getiflist_proc_one_interface_with_speed);
-	tcase_add_test(tc_ifinfo, getiflist_proc_multiple_interfaces);
-	tcase_add_test(tc_ifinfo, getiflist_proc_long_interface_names);
-	tcase_add_test(tc_ifinfo, getiflist_sysclassnet_one_interface);
-	tcase_add_test(tc_ifinfo, getiflist_sysclassnet_one_interface_with_speed);
-	tcase_add_test(tc_ifinfo, getiflist_sysclassnet_multiple_interfaces);
-	tcase_add_test(tc_ifinfo, getiflist_sysclassnet_long_interface_names);
+	tcase_add_test(tc_ifinfo, getifliststring_no_source);
+	tcase_add_test(tc_ifinfo, getifliststring_proc_one_interface);
+	tcase_add_test(tc_ifinfo, getifliststring_proc_one_interface_with_speed);
+	tcase_add_test(tc_ifinfo, getifliststring_proc_multiple_interfaces);
+	tcase_add_test(tc_ifinfo, getifliststring_proc_long_interface_names);
+	tcase_add_test(tc_ifinfo, getifliststring_sysclassnet_one_interface);
+	tcase_add_test(tc_ifinfo, getifliststring_sysclassnet_one_interface_with_speed);
+	tcase_add_test(tc_ifinfo, getifliststring_sysclassnet_multiple_interfaces);
+	tcase_add_test(tc_ifinfo, getifliststring_sysclassnet_long_interface_names);
 	tcase_add_test(tc_ifinfo, readproc_no_file);
 	tcase_add_test(tc_ifinfo, readproc_not_found);
 	tcase_add_test(tc_ifinfo, readproc_success);

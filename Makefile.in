@@ -129,9 +129,10 @@ am__check_vnstat_SOURCES_DIST = tests/vnstat_tests.c \
 	src/dbsql.c src/dbsql.h src/dbaccess.c src/dbaccess.h \
 	src/datacache.c src/datacache.h src/dbshow.c src/dbshow.h \
 	src/dbjson.c src/dbjson.h src/dbxml.c src/dbxml.h src/ibw.c \
-	src/ibw.h src/ifinfo.c src/ifinfo.h src/misc.c src/misc.h \
-	src/fs.c src/fs.h src/id.c src/id.h tests/image_tests.c \
-	tests/image_tests.h src/image.c src/image.h
+	src/ibw.h src/ifinfo.c src/ifinfo.h src/iflist.c src/iflist.h \
+	src/misc.c src/misc.h src/fs.c src/fs.h src/id.c src/id.h \
+	tests/image_tests.c tests/image_tests.h src/image.c \
+	src/image.h
 am__dirstamp = $(am__leading_dot)dirstamp
 @HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@am__objects_1 = tests/check_vnstat-image_tests.$(OBJEXT) \
 @HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@	src/check_vnstat-image.$(OBJEXT)
@@ -159,6 +160,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @HAVE_CHECK_TRUE@	src/check_vnstat-dbxml.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	src/check_vnstat-ibw.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	src/check_vnstat-ifinfo.$(OBJEXT) \
+@HAVE_CHECK_TRUE@	src/check_vnstat-iflist.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	src/check_vnstat-misc.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	src/check_vnstat-fs.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	src/check_vnstat-id.$(OBJEXT) \
@@ -169,22 +171,25 @@ am__DEPENDENCIES_1 =
 check_vnstat_LINK = $(CCLD) $(check_vnstat_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 am_vnstat_OBJECTS = src/vnstat.$(OBJEXT) src/ifinfo.$(OBJEXT) \
-	src/dbsql.$(OBJEXT) src/dbxml.$(OBJEXT) src/dbjson.$(OBJEXT) \
-	src/dbshow.$(OBJEXT) src/common.$(OBJEXT) src/misc.$(OBJEXT) \
-	src/cfg.$(OBJEXT) src/cfgoutput.$(OBJEXT) src/ibw.$(OBJEXT) \
-	src/fs.$(OBJEXT) src/id.$(OBJEXT) src/traffic.$(OBJEXT)
+	src/iflist.$(OBJEXT) src/dbsql.$(OBJEXT) src/dbxml.$(OBJEXT) \
+	src/dbjson.$(OBJEXT) src/dbshow.$(OBJEXT) src/common.$(OBJEXT) \
+	src/misc.$(OBJEXT) src/cfg.$(OBJEXT) src/cfgoutput.$(OBJEXT) \
+	src/ibw.$(OBJEXT) src/fs.$(OBJEXT) src/id.$(OBJEXT) \
+	src/traffic.$(OBJEXT)
 vnstat_OBJECTS = $(am_vnstat_OBJECTS)
 vnstat_LDADD = $(LDADD)
 am_vnstatd_OBJECTS = src/vnstatd.$(OBJEXT) src/ifinfo.$(OBJEXT) \
-	src/dbsql.$(OBJEXT) src/dbaccess.$(OBJEXT) \
-	src/datacache.$(OBJEXT) src/common.$(OBJEXT) \
-	src/misc.$(OBJEXT) src/cfg.$(OBJEXT) src/ibw.$(OBJEXT) \
-	src/fs.$(OBJEXT) src/id.$(OBJEXT) src/daemon.$(OBJEXT)
+	src/iflist.$(OBJEXT) src/dbsql.$(OBJEXT) \
+	src/dbaccess.$(OBJEXT) src/datacache.$(OBJEXT) \
+	src/common.$(OBJEXT) src/misc.$(OBJEXT) src/cfg.$(OBJEXT) \
+	src/ibw.$(OBJEXT) src/fs.$(OBJEXT) src/id.$(OBJEXT) \
+	src/daemon.$(OBJEXT)
 vnstatd_OBJECTS = $(am_vnstatd_OBJECTS)
 vnstatd_LDADD = $(LDADD)
-am_vnstati_OBJECTS = src/vnstati.$(OBJEXT) src/image.$(OBJEXT) \
-	src/dbsql.$(OBJEXT) src/common.$(OBJEXT) src/misc.$(OBJEXT) \
-	src/fs.$(OBJEXT) src/id.$(OBJEXT) src/cfg.$(OBJEXT)
+am_vnstati_OBJECTS = src/vnstati.$(OBJEXT) src/iflist.$(OBJEXT) \
+	src/image.$(OBJEXT) src/dbsql.$(OBJEXT) src/common.$(OBJEXT) \
+	src/misc.$(OBJEXT) src/fs.$(OBJEXT) src/id.$(OBJEXT) \
+	src/cfg.$(OBJEXT)
 vnstati_OBJECTS = $(am_vnstati_OBJECTS)
 vnstati_DEPENDENCIES =
 AM_V_P = $(am__v_P_@AM_V@)
@@ -628,6 +633,7 @@ EXTRA_DIST = cfg examples UPGRADE CHANGES FAQ INSTALL_BSD UNINSTALL
 vnstati_LDADD = @IMAGELIBS@
 vnstat_SOURCES = src/vnstat.c src/vnstat.h \
   src/ifinfo.c src/ifinfo.h \
+  src/iflist.c src/iflist.h \
   src/dbsql.c src/dbsql.h \
   src/dbxml.c src/dbxml.h \
   src/dbjson.c src/dbjson.h \
@@ -643,6 +649,7 @@ vnstat_SOURCES = src/vnstat.c src/vnstat.h \
 
 vnstatd_SOURCES = src/vnstatd.c src/vnstatd.h \
   src/ifinfo.c src/ifinfo.h \
+  src/iflist.c src/iflist.h \
   src/dbsql.c src/dbsql.h \
   src/dbaccess.c src/dbaccess.h \
   src/datacache.c src/datacache.h \
@@ -655,6 +662,7 @@ vnstatd_SOURCES = src/vnstatd.c src/vnstatd.h \
   src/daemon.c src/daemon.h
 
 vnstati_SOURCES = src/vnstati.c src/vnstati.h \
+  src/iflist.c src/iflist.h \
   src/image.c src/image.h \
   src/dbsql.c src/dbsql.h \
   src/common.c src/common.h \
@@ -689,8 +697,9 @@ vnstati_SOURCES = src/vnstati.c src/vnstati.h \
 @HAVE_CHECK_TRUE@	src/datacache.h src/dbshow.c src/dbshow.h \
 @HAVE_CHECK_TRUE@	src/dbjson.c src/dbjson.h src/dbxml.c \
 @HAVE_CHECK_TRUE@	src/dbxml.h src/ibw.c src/ibw.h src/ifinfo.c \
-@HAVE_CHECK_TRUE@	src/ifinfo.h src/misc.c src/misc.h src/fs.c \
-@HAVE_CHECK_TRUE@	src/fs.h src/id.c src/id.h $(am__append_4)
+@HAVE_CHECK_TRUE@	src/ifinfo.h src/iflist.c src/iflist.h \
+@HAVE_CHECK_TRUE@	src/misc.c src/misc.h src/fs.c src/fs.h \
+@HAVE_CHECK_TRUE@	src/id.c src/id.h $(am__append_4)
 all: all-recursive
 
 .SUFFIXES:
@@ -920,6 +929,8 @@ src/check_vnstat-ibw.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/check_vnstat-ifinfo.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
+src/check_vnstat-iflist.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
 src/check_vnstat-misc.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/check_vnstat-fs.$(OBJEXT): src/$(am__dirstamp) \
@@ -937,6 +948,8 @@ check_vnstat$(EXEEXT): $(check_vnstat_OBJECTS) $(check_vnstat_DEPENDENCIES) $(EX
 src/vnstat.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/ifinfo.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/iflist.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/dbsql.$(OBJEXT): src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 src/dbxml.$(OBJEXT): src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
@@ -1003,6 +1016,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-ibw.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-id.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-ifinfo.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-iflist.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-image.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-misc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/common.Po@am__quote@
@@ -1017,6 +1031,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/ibw.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/id.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/ifinfo.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/iflist.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/image.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/misc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/traffic.Po@am__quote@
@@ -1373,6 +1388,20 @@ src/check_vnstat-ifinfo.obj: src/ifinfo.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/ifinfo.c' object='src/check_vnstat-ifinfo.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o src/check_vnstat-ifinfo.obj `if test -f 'src/ifinfo.c'; then $(CYGPATH_W) 'src/ifinfo.c'; else $(CYGPATH_W) '$(srcdir)/src/ifinfo.c'; fi`
+
+src/check_vnstat-iflist.o: src/iflist.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT src/check_vnstat-iflist.o -MD -MP -MF src/$(DEPDIR)/check_vnstat-iflist.Tpo -c -o src/check_vnstat-iflist.o `test -f 'src/iflist.c' || echo '$(srcdir)/'`src/iflist.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/check_vnstat-iflist.Tpo src/$(DEPDIR)/check_vnstat-iflist.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/iflist.c' object='src/check_vnstat-iflist.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o src/check_vnstat-iflist.o `test -f 'src/iflist.c' || echo '$(srcdir)/'`src/iflist.c
+
+src/check_vnstat-iflist.obj: src/iflist.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT src/check_vnstat-iflist.obj -MD -MP -MF src/$(DEPDIR)/check_vnstat-iflist.Tpo -c -o src/check_vnstat-iflist.obj `if test -f 'src/iflist.c'; then $(CYGPATH_W) 'src/iflist.c'; else $(CYGPATH_W) '$(srcdir)/src/iflist.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/check_vnstat-iflist.Tpo src/$(DEPDIR)/check_vnstat-iflist.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/iflist.c' object='src/check_vnstat-iflist.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o src/check_vnstat-iflist.obj `if test -f 'src/iflist.c'; then $(CYGPATH_W) 'src/iflist.c'; else $(CYGPATH_W) '$(srcdir)/src/iflist.c'; fi`
 
 src/check_vnstat-misc.o: src/misc.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT src/check_vnstat-misc.o -MD -MP -MF src/$(DEPDIR)/check_vnstat-misc.Tpo -c -o src/check_vnstat-misc.o `test -f 'src/misc.c' || echo '$(srcdir)/'`src/misc.c
