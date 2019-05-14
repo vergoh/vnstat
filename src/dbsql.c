@@ -682,7 +682,7 @@ char *db_getinfo(const char *name)
 	return buffer;
 }
 
-int db_getiflist(dbiflist **dbifl)
+int db_getiflist(iflist **ifl)
 {
 	int rc;
 	char *sql;
@@ -703,7 +703,7 @@ int db_getiflist(dbiflist **dbifl)
 		if (sqlite3_column_text(sqlstmt, 0) == NULL) {
 			continue;
 		}
-		if (!dbiflistadd(dbifl, (const char *)sqlite3_column_text(sqlstmt, 0))) {
+		if (!iflistadd(ifl, (const char *)sqlite3_column_text(sqlstmt, 0), -1)) {
 			break;
 		}
 		rc++;
@@ -963,7 +963,7 @@ int db_removeoldentries_top(void)
 {
 	int errorcount = 0;
 	char sql[512];
-	dbiflist *dbifl = NULL, *dbifl_iterator = NULL;
+	iflist *dbifl = NULL, *dbifl_iterator = NULL;
 	sqlite3_int64 ifaceid = 0;
 
 	if (cfg.topdayentries <= 0) {
@@ -999,7 +999,7 @@ int db_removeoldentries_top(void)
 		dbifl_iterator = dbifl_iterator->next;
 	}
 
-	dbiflistfree(&dbifl);
+	iflistfree(&dbifl);
 
 	if (errorcount) {
 		return 0;
@@ -1094,33 +1094,6 @@ void db_walcheckpoint(void)
 	}
 }
 #endif
-
-int dbiflistadd(dbiflist **dbifl, const char *iface)
-{
-	dbiflist *newif;
-
-	newif = malloc(sizeof(dbiflist));
-	if (newif == NULL) {
-		return 0;
-	}
-
-	newif->next = *dbifl;
-	*dbifl = newif;
-	strncpy_nt(newif->interface, iface, 32);
-
-	return 1;
-}
-
-void dbiflistfree(dbiflist **dbifl)
-{
-	dbiflist *dbifl_prev;
-
-	while (*dbifl != NULL) {
-		dbifl_prev = *dbifl;
-		*dbifl = (*dbifl)->next;
-		free(dbifl_prev);
-	}
-}
 
 int db_getdata(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface, const char *table, const uint32_t resultlimit)
 {

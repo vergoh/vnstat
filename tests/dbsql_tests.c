@@ -2,6 +2,7 @@
 #include "vnstat_tests.h"
 #include "dbsql_tests.h"
 #include "dbsql.h"
+#include "misc.h"
 #include "cfg.h"
 
 START_TEST(db_close_does_no_harm_when_db_is_already_closed)
@@ -695,8 +696,7 @@ END_TEST
 START_TEST(db_getiflist_lists_interfaces)
 {
 	int ret;
-	dbiflist *dbifl = NULL, *dbifl_i = NULL;
-	;
+	iflist *dbifl = NULL, *dbifl_i = NULL;
 
 	defaultcfg();
 
@@ -734,7 +734,7 @@ START_TEST(db_getiflist_lists_interfaces)
 	ck_assert_str_eq(dbifl_i->interface, "eth1");
 	ck_assert_ptr_eq(dbifl_i->next, NULL);
 
-	dbiflistfree(&dbifl);
+	iflistfree(&dbifl);
 	ck_assert_ptr_eq(dbifl, NULL);
 }
 END_TEST

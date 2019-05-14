@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 	int currentarg;
 	DIR *dir = NULL;
 	PARAMS p;
-	dbiflist *dbifl = NULL;
+	iflist *dbifl = NULL;
 
 	initparams(&p);
 
@@ -444,7 +444,7 @@ int main(int argc, char *argv[])
 				if (debug) {
 					printf("Using \"%s\" as interface, default \"%s\" not found in database.\n", p.interface, p.definterface);
 				}
-				dbiflistfree(&dbifl);
+				iflistfree(&dbifl);
 			}
 		}
 	}
@@ -696,7 +696,7 @@ void handlesetalias(PARAMS *p)
 void handleshowdatabases(PARAMS *p)
 {
 	int ifcount = 0;
-	dbiflist *dbifl = NULL, *dbifl_i = NULL;
+	iflist *dbifl = NULL, *dbifl_i = NULL;
 
 	if (!p->query) {
 		return;
@@ -746,7 +746,7 @@ void handleshowdatabases(PARAMS *p)
 			ifcount++;
 			dbifl_i = dbifl_i->next;
 		}
-		dbiflistfree(&dbifl);
+		iflistfree(&dbifl);
 
 		if (cfg.qmode == 8) {
 			xmlfooter();

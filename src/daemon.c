@@ -361,7 +361,7 @@ void setsignaltraps(void)
 
 void filldatabaselist(DSTATE *s)
 {
-	dbiflist *dbifl = NULL, *dbifl_iterator = NULL;
+	iflist *dbifl = NULL, *dbifl_iterator = NULL;
 
 	timeused_debug(__func__, 1);
 
@@ -384,7 +384,7 @@ void filldatabaselist(DSTATE *s)
 		dbifl_iterator = dbifl_iterator->next;
 	}
 
-	dbiflistfree(&dbifl);
+	iflistfree(&dbifl);
 	s->sync = 0;
 
 	/* disable update interval check for one loop if database list was refreshed */
@@ -705,13 +705,13 @@ void handledatabaseerror(DSTATE *s)
 void cleanremovedinterfaces(DSTATE *s)
 {
 	datacache *iterator = s->dcache;
-	dbiflist *dbifl = NULL, *dbifl_iterator = NULL;
+	iflist *dbifl = NULL, *dbifl_iterator = NULL;
 
 	timeused_debug(__func__, 1);
 
 	while (iterator != NULL) {
 		if (!db_getinterfacecountbyname(iterator->interface)) {
-			dbiflistadd(&dbifl, iterator->interface);
+			iflistadd(&dbifl, iterator->interface, -1);
 		}
 		iterator = iterator->next;
 	}
@@ -726,7 +726,7 @@ void cleanremovedinterfaces(DSTATE *s)
 			dbifl_iterator = dbifl_iterator->next;
 		}
 		datacache_status(&s->dcache);
-		dbiflistfree(&dbifl);
+		iflistfree(&dbifl);
 	}
 	timeused_debug(__func__, 0);
 }

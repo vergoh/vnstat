@@ -2,11 +2,7 @@
 #define DBSQL_H
 
 #include <sqlite3.h>
-
-typedef struct dbiflist {
-	char interface[32];
-	struct dbiflist *next;
-} dbiflist;
+#include "misc.h"
 
 typedef struct dbdatalist {
 	time_t timestamp;
@@ -54,7 +50,7 @@ int db_getinterfaceinfo(const char *iface, interfaceinfo *info);
 int db_setalias(const char *iface, const char *alias);
 int db_setinfo(const char *name, const char *value, const int createifnotfound);
 char *db_getinfo(const char *name);
-int db_getiflist(dbiflist **dbifl);
+int db_getiflist(iflist **ifl);
 char *db_get_date_generator(const int range, const short direct, const char *nowdate);
 int db_addtraffic(const char *iface, const uint64_t rx, const uint64_t tx);
 int db_addtraffic_dated(const char *iface, const uint64_t rx, const uint64_t tx, const uint64_t timestamp);
@@ -71,9 +67,6 @@ int db_iserrcodefatal(int errcode);
 #if HAVE_DECL_SQLITE_CHECKPOINT_RESTART
 void db_walcheckpoint(void);
 #endif
-
-int dbiflistadd(dbiflist **dbifl, const char *iface);
-void dbiflistfree(dbiflist **dbifl);
 
 int db_getdata(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface, const char *table, const uint32_t resultlimit);
 int db_getdata_range(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface, const char *table, const uint32_t resultlimit, const char *databegin, const char *dataend);
