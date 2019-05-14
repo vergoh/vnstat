@@ -116,74 +116,84 @@ void daemonize(void)
 
 unsigned int addinterfaces(DSTATE *s)
 {
-	char *ifacelist, interface[32];
-	unsigned int index = 0, count = 0;
+	iflist *ifl = NULL, *ifl_iterator = NULL;
+	unsigned int count = 0;
 	uint32_t bwlimit = 0;
 
 	timeused_debug(__func__, 1);
 
 	/* get list of currently visible interfaces */
-	if (getifliststring(&ifacelist, 0) == 0) {
-		free(ifacelist);
+	if (getiflist(&ifl, 0) == 0) {
+		iflistfree(&ifl);
 		return 0;
 	}
 
-	if (strlen(ifacelist) < 2) {
-		free(ifacelist);
+	if (ifl == NULL) {
 		return 0;
 	}
 
-	if (debug)
-		printf("Interface list: \"%s\"\n", ifacelist);
+	if (debug) {
+		printf("Interface list:");
+		ifl_iterator = ifl;
+		while (ifl_iterator != NULL) {
+			printf(" \"%s\"", ifl_iterator->interface);
+			ifl_iterator = ifl_iterator->next;
+		}
+		printf("\n");
+	}
 
-	// TODO: refactor to use list structure
-	while (sscanf(ifacelist + index, "%31s", interface) != EOF) {
+	ifl_iterator = ifl;
+	while (ifl_iterator != NULL) {
 		if (debug)
-			printf("Processing: \"%s\"\n", interface);
-
-		index += strlen(interface) + 1;
+			printf("Processing: \"%s\"\n", ifl_iterator->interface);
 
 		/* skip local interfaces */
-		if ((strcmp(interface, "lo") == 0) || (strcmp(interface, "lo0") == 0) || (strcmp(interface, "sit0") == 0)) {
+		if ((strcmp(ifl_iterator->interface, "lo") == 0) || (strcmp(ifl_iterator->interface, "lo0") == 0) || (strcmp(ifl_iterator->interface, "sit0") == 0)) {
 			if (debug)
 				printf("skip\n");
+			ifl_iterator = ifl_iterator->next;
 			continue;
 		}
 
 		/* skip already known interfaces */
-		if (db_getinterfacecountbyname(interface)) {
+		if (db_getinterfacecountbyname(ifl_iterator->interface)) {
 			if (debug)
 				printf("already known\n");
+			ifl_iterator = ifl_iterator->next;
 			continue;
 		}
 
 		/* create database for interface */
-		if (!db_addinterface(interface)) {
+		if (!db_addinterface(ifl_iterator->interface)) {
 			if (debug)
 				printf("add failed, skip\n");
-		}
-
-		if (!getifinfo(interface)) {
-			if (debug)
-				printf("getifinfo failed, skip\n");
-			/* remove empty entry from database since the interface can't provide data */
-			db_removeinterface(interface);
+			ifl_iterator = ifl_iterator->next;
 			continue;
 		}
 
-		db_setcounters(interface, ifinfo.rx, ifinfo.tx);
+		if (!getifinfo(ifl_iterator->interface)) {
+			if (debug)
+				printf("getifinfo failed, skip\n");
+			/* remove empty entry from database since the interface can't provide data */
+			db_removeinterface(ifl_iterator->interface);
+			ifl_iterator = ifl_iterator->next;
+			continue;
+		}
+
+		db_setcounters(ifl_iterator->interface, ifinfo.rx, ifinfo.tx);
 
 		count++;
-		ibwget(interface, &bwlimit);
+		ibwget(ifl_iterator->interface, &bwlimit);
 		if (bwlimit > 0) {
-			snprintf(errorstring, 1024, "Interface \"%s\" added with %" PRIu32 " Mbit bandwidth limit.", interface, bwlimit);
+			snprintf(errorstring, 1024, "Interface \"%s\" added with %" PRIu32 " Mbit bandwidth limit.", ifl_iterator->interface, bwlimit);
 		} else {
-			snprintf(errorstring, 1024, "Interface \"%s\" added. Warning: no bandwidth limit has been set.", interface);
+			snprintf(errorstring, 1024, "Interface \"%s\" added. Warning: no bandwidth limit has been set.", ifl_iterator->interface);
 		}
 		printe(PT_Infoless);
 		if (s->running) {
-			datacache_add(&s->dcache, interface, 1);
+			datacache_add(&s->dcache, ifl_iterator->interface, 1);
 		}
+		ifl_iterator = ifl_iterator->next;
 	}
 
 	if (count && !s->running) {
@@ -197,7 +207,7 @@ unsigned int addinterfaces(DSTATE *s)
 		printf("Unwanted interfaces can be removed from monitoring with \"vnstat --remove\".\n");
 	}
 
-	free(ifacelist);
+	iflistfree(&ifl);
 	timeused_debug(__func__, 0);
 	return count;
 }
