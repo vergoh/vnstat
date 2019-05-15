@@ -1,9 +1,4 @@
 #include "common.h"
-#include "misc.h"
-#include "dbaccess.h"
-#include "dbsql.h"
-#include "cfg.h"
-#include "ibw.h"
 #include "ifinfo.h"
 
 int getifinfo(const char *iface)

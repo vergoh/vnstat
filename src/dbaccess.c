@@ -1,6 +1,5 @@
 #include "common.h"
 #include "dbsql.h"
-#include "fs.h"
 #include "dbaccess.h"
 
 int importlegacydb(const char *iface, const char *dirname)
