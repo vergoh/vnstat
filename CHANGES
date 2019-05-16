@@ -1,4 +1,5 @@
 2.3 / <not released yet>
+
  - Fixed
    - Traffic rate wasn't being shown for the last entry of most lists during
      the first update of the next period (first SaveInterval minutes of each
@@ -6,6 +7,7 @@
    - Systemd example service file could result in database file write issues
      if the used systemd version supported ProtectSystem=strict but didn't
      support StateDirectory (issue seen at least with systemd 232 in Debian 9)
+   - Debian and Red Hat init.d example files had wrong path for the pid file
  - New
    - Add configuration option DatabaseWriteAheadLogging to enable SQLite
      Write-Ahead Logging mode which may provide some disk i/o benefits,

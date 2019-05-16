@@ -23,7 +23,7 @@ VNSTATD_BIN=/usr/sbin/vnstatd
 
 RETVAL=0
 prog=vnstatd
-pidfile=/var/run/vnstat.pid
+pidfile=/var/run/vnstat/vnstat.pid
 
 start()
 {
