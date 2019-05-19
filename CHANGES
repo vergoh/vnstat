@@ -19,6 +19,8 @@
    - Show warning in log if writing cached data to database is slow
    - Try database query for up to 5 seconds when database is busy or locked
      instead of giving up immediately
+   - Continue daemon process execution with data caching if database writes
+     fail due to disk being full
 
 
 2.2 / 28-Apr-2018

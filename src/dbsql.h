@@ -64,6 +64,7 @@ int db_begintransaction(void);
 int db_committransaction(void);
 int db_rollbacktransaction(void);
 int db_iserrcodefatal(int errcode);
+int db_isdiskfull(int errcode);
 #if HAVE_DECL_SQLITE_CHECKPOINT_RESTART
 void db_walcheckpoint(void);
 #endif

@@ -1075,6 +1075,15 @@ int db_iserrcodefatal(int errcode)
 	}
 }
 
+int db_isdiskfull(int errcode)
+{
+	if (errcode == SQLITE_FULL) {
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
 #if HAVE_DECL_SQLITE_CHECKPOINT_RESTART
 void db_walcheckpoint(void)
 {

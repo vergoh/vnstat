@@ -705,11 +705,16 @@ void handledatabaseerror(DSTATE *s)
 		printe(PT_Error);
 		errorexitdaemon(s, 1);
 	} else {
-		s->dbretrycount++;
-		if (s->dbretrycount >= DBRETRYLIMIT) {
-			snprintf(errorstring, 1024, "Database error retry limit %d reached, exiting.", DBRETRYLIMIT);
+		if (db_isdiskfull(db_errcode)) {
+			snprintf(errorstring, 1024, "Disk is full, continuing with data caching.");
 			printe(PT_Error);
-			errorexitdaemon(s, 1);
+		} else {
+			s->dbretrycount++;
+			if (s->dbretrycount >= DBRETRYLIMIT) {
+				snprintf(errorstring, 1024, "Database error retry limit %d reached, exiting.", DBRETRYLIMIT);
+				printe(PT_Error);
+				errorexitdaemon(s, 1);
+			}
 		}
 	}
 }
