@@ -172,7 +172,6 @@ int getiflist_linux(iflist **ifl, const int getspeed)
 #elif defined(BSD_VNSTAT)
 int getiflist_bsd(iflist **ifl, const int getspeed)
 {
-	char temp[64];
 	struct ifaddrs *ifap, *ifa;
 
 	if (getifaddrs(&ifap) >= 0) {
