@@ -123,7 +123,7 @@ unsigned int addinterfaces(DSTATE *s)
 	timeused_debug(__func__, 1);
 
 	/* get list of currently visible interfaces */
-	if (getiflist(&ifl, 0) == 0) {
+	if (getiflist(&ifl, 0, 1) == 0) {
 		iflistfree(&ifl);
 		return 0;
 	}
@@ -146,14 +146,6 @@ unsigned int addinterfaces(DSTATE *s)
 	while (ifl_iterator != NULL) {
 		if (debug)
 			printf("Processing: \"%s\"\n", ifl_iterator->interface);
-
-		/* skip local interfaces */
-		if ((strcmp(ifl_iterator->interface, "lo") == 0) || (strcmp(ifl_iterator->interface, "lo0") == 0) || (strcmp(ifl_iterator->interface, "sit0") == 0)) {
-			if (debug)
-				printf("skip\n");
-			ifl_iterator = ifl_iterator->next;
-			continue;
-		}
 
 		/* skip already known interfaces */
 		if (db_getinterfacecountbyname(ifl_iterator->interface)) {

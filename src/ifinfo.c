@@ -72,7 +72,7 @@ int getifliststring(char **ifacelist, int showspeed)
 	}
 	*ifacelist[0] = '\0';
 
-	if (getiflist(&ifl, showspeed) > 0) {
+	if (getiflist(&ifl, showspeed, 1) > 0) {
 
 		ifl_iterator = ifl;
 
@@ -109,17 +109,17 @@ int getifliststring(char **ifacelist, int showspeed)
 	return 0;
 }
 
-int getiflist(iflist **ifl, const int getspeed)
+int getiflist(iflist **ifl, const int getspeed, const int validate)
 {
 #if defined(__linux__) || defined(CHECK_VNSTAT)
-	return getiflist_linux(ifl, getspeed);
+	return getiflist_linux(ifl, getspeed, validate);
 #elif defined(BSD_VNSTAT)
-	return getiflist_bsd(ifl, getspeed);
+	return getiflist_bsd(ifl, getspeed, validate);
 #endif
 }
 
 #if defined(__linux__) || defined(CHECK_VNSTAT)
-int getiflist_linux(iflist **ifl, const int getspeed)
+int getiflist_linux(iflist **ifl, const int getspeed, const int validate)
 {
 	char temp[64];
 	char interface[32];
@@ -135,6 +135,9 @@ int getiflist_linux(iflist **ifl, const int getspeed)
 			sscanf(procline, "%63s", temp);
 			if (strlen(temp) > 0 && (isdigit(temp[(strlen(temp) - 1)]) || temp[(strlen(temp) - 1)] == ':')) {
 				sscanf(temp, "%31[^':']s", interface);
+				if (validate && !isifvalid(interface)) {
+					continue;
+				}
 				if (getspeed) {
 					iflistadd(ifl, interface, getifspeed(interface));
 				} else {
@@ -155,6 +158,9 @@ int getiflist_linux(iflist **ifl, const int getspeed)
 				if (di->d_name[0] == '.' || strlen(di->d_name) > 31) {
 					continue;
 				}
+				if (validate && !isifvalid(di->d_name)) {
+					continue;
+				}
 				if (getspeed) {
 					iflistadd(ifl, di->d_name, getifspeed(di->d_name));
 				} else {
@@ -170,7 +176,7 @@ int getiflist_linux(iflist **ifl, const int getspeed)
 	return 0;
 }
 #elif defined(BSD_VNSTAT)
-int getiflist_bsd(iflist **ifl, const int getspeed)
+int getiflist_bsd(iflist **ifl, const int getspeed, const int validate)
 {
 	struct ifaddrs *ifap, *ifa;
 
@@ -179,6 +185,9 @@ int getiflist_bsd(iflist **ifl, const int getspeed)
 		/* make list of interfaces */
 		for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
 			if (ifa->ifa_addr->sa_family != AF_LINK || strlen(ifa->ifa_name) > 31) {
+				continue;
+			}
+			if (validate && !isifvalid(ifa->ifa_name)) {
 				continue;
 			}
 			if (getspeed) {
@@ -449,4 +458,18 @@ int isifavailable(const char *iface)
 	disableprints = printstatus;
 
 	return ret;
+}
+
+int isifvalid(const char *iface)
+{
+	if (strstr(iface, ":") != NULL) {
+		return 0;
+	} else if (strcmp(iface, "lo") == 0) {
+		return 0;
+	} else if (strcmp(iface, "lo0") == 0) {
+		return 0;
+	} else if (strcmp(iface, "sit0") == 0) {
+		return 0;
+	}
+	return 1;
 }

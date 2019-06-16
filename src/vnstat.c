@@ -390,7 +390,11 @@ int main(int argc, char *argv[])
 			}
 		} else if (strcmp(argv[currentarg], "--iflist") == 0) {
 			getifliststring(&p.ifacelist, 1);
-			printf("Available interfaces: %s\n", p.ifacelist);
+			if (strlen(p.ifacelist)) {
+				printf("Available interfaces: %s\n", p.ifacelist);
+			} else {
+				printf("No usable interfaces found.\n");
+			}
 			free(p.ifacelist);
 			return 0;
 		} else if ((strcmp(argv[currentarg], "-v") == 0) || (strcmp(argv[currentarg], "--version") == 0)) {
@@ -842,7 +846,7 @@ void handleifselection(PARAMS *p)
 	}
 
 	if (p->traffic || p->livetraffic) {
-		ifcount = getiflist(&ifl, 0);
+		ifcount = getiflist(&ifl, 0, 1);
 
 		/* try to open database for extra information */
 		if (db == NULL) {

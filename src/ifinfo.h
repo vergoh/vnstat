@@ -9,11 +9,11 @@
 
 int getifinfo(const char *iface);
 int getifliststring(char **ifacelist, int showspeed);
-int getiflist(iflist **ifl, int getspeed);
+int getiflist(iflist **ifl, const int getspeed, const int validate);
 #if defined(__linux__) || defined(CHECK_VNSTAT)
-int getiflist_linux(iflist **ifl, const int getspeed);
+int getiflist_linux(iflist **ifl, const int getspeed, const int validate);
 #elif defined(BSD_VNSTAT)
-int getiflist_bsd(iflist **ifl, const int getspeed);
+int getiflist_bsd(iflist **ifl, const int getspeed, const int validate);
 #endif
 int readproc(const char *iface);
 int readsysclassnet(const char *iface);
@@ -23,5 +23,6 @@ int readifaddrs(const char *iface);
 #endif
 uint32_t getifspeed(const char *iface);
 int isifavailable(const char *iface);
+int isifvalid(const char *iface);
 
 #endif
