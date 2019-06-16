@@ -1,4 +1,4 @@
-#if !defined(__FreeBSD__) && !defined(__NetBSD__) && !defined(__OpenBSD__) && !defined(__APPLE__) && !defined(__FreeBSD_kernel__)
+#if !defined(BSD_VNSTAT)
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wreserved-id-macro"
@@ -127,7 +127,7 @@ uint64_t getbtime(void)
 
 	result = strtoull(statline + 6, (char **)NULL, 0);
 
-#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__FreeBSD_kernel__)
+#elif defined(BSD_VNSTAT)
 	struct timeval btm;
 	size_t len = sizeof(btm);
 	int mib[2] = {CTL_KERN, KERN_BOOTTIME};

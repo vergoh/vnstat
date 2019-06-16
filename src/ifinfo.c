@@ -48,7 +48,7 @@ int getifinfo(const char *iface)
 		return 1;
 	}
 
-#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__FreeBSD_kernel__)
+#elif defined(BSD_VNSTAT)
 	if (readifaddrs(inface) == 1) {
 		ifinfo.timestamp = time(NULL);
 		return 1;
@@ -109,20 +109,25 @@ int getifliststring(char **ifacelist, int showspeed)
 	return 0;
 }
 
-int getiflist(iflist **ifl, int getspeed)
+int getiflist(iflist **ifl, const int getspeed)
+{
+#if defined(__linux__) || defined(CHECK_VNSTAT)
+	return getiflist_linux(ifl, getspeed);
+#elif defined(BSD_VNSTAT)
+	return getiflist_bsd(ifl, getspeed);
+#endif
+}
+
+#if defined(__linux__) || defined(CHECK_VNSTAT)
+int getiflist_linux(iflist **ifl, const int getspeed)
 {
 	char temp[64];
-#if defined(__linux__) || defined(CHECK_VNSTAT)
 	char interface[32];
 	FILE *fp;
 	DIR *dp;
 	struct dirent *di;
 	char procline[512];
-#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__FreeBSD_kernel__)
-	struct ifaddrs *ifap, *ifa;
-#endif
 
-#if defined(__linux__) || defined(CHECK_VNSTAT)
 	if ((fp = fopen(PROCNETDEV, "r")) != NULL) {
 
 		/* make list of interfaces */
@@ -162,7 +167,14 @@ int getiflist(iflist **ifl, int getspeed)
 		}
 	}
 
-#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__FreeBSD_kernel__)
+	return 0;
+}
+#elif defined(BSD_VNSTAT)
+int getiflist_bsd(iflist **ifl, const int getspeed)
+{
+	char temp[64];
+	struct ifaddrs *ifap, *ifa;
+
 	if (getifaddrs(&ifap) >= 0) {
 
 		/* make list of interfaces */
@@ -181,10 +193,9 @@ int getiflist(iflist **ifl, int getspeed)
 		return 1;
 	}
 
-#endif
-
 	return 0;
 }
+#endif
 
 int readproc(const char *iface)
 {
@@ -325,7 +336,7 @@ int readsysclassnet(const char *iface)
 	return 1;
 }
 
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__FreeBSD_kernel__)
+#if defined(BSD_VNSTAT)
 int getifdata(const char *iface, struct if_data *ifd)
 {
 	struct ifaddrs *ifap, *ifa;
@@ -382,6 +393,7 @@ int readifaddrs(const char *iface)
 uint32_t getifspeed(const char *iface)
 {
 	uint64_t speed = 0;
+
 #if defined(__linux__)
 
 	FILE *fp;
@@ -405,7 +417,7 @@ uint32_t getifspeed(const char *iface)
 	}
 	fclose(fp);
 
-#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__FreeBSD_kernel__)
+#elif defined(BSD_VNSTAT)
 
 	struct if_data ifd;
 
@@ -418,6 +430,7 @@ uint32_t getifspeed(const char *iface)
 	}
 
 #endif
+
 	if (debug)
 		printf("getifspeed: \"%s\": %" PRIu64 "\n", iface, speed);
 

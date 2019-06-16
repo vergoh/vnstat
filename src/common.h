@@ -33,6 +33,7 @@
 #include <sys/sysctl.h>
 #include <net/if.h>
 #include <ifaddrs.h>
+#define BSD_VNSTAT
 #endif
 
 /* OpenBSD and NetBSD don't support the ' character (decimal conversion) in printf formatting */
