@@ -247,6 +247,11 @@ int db_setpragmas(void)
 int db_close(void)
 {
 	int rc;
+
+	if (db == NULL) {
+		return 1;
+	}
+
 	rc = sqlite3_close(db);
 	if (rc == SQLITE_OK) {
 		db = NULL;
