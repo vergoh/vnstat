@@ -10,6 +10,7 @@
 #include "datacache_tests.h"
 #include "fs_tests.h"
 #include "id_tests.h"
+#include "iflist_tests.h"
 #if defined(HAVE_IMAGE)
 #include "image_tests.h"
 #endif
@@ -48,6 +49,7 @@ Suite *test_suite(void)
 	add_datacache_tests(s);
 	add_fs_tests(s);
 	add_id_tests(s);
+	add_iflist_tests(s);
 #if defined(HAVE_IMAGE)
 	add_image_tests(s);
 #endif

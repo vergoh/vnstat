@@ -73,6 +73,7 @@ check_vnstat_SOURCES = tests/vnstat_tests.c tests/vnstat_tests.h \
   tests/misc_tests.c tests/misc_tests.h \
   tests/fs_tests.c tests/fs_tests.h \
   tests/id_tests.c tests/id_tests.h \
+  tests/iflist_tests.c tests/iflist_tests.h \
   tests/daemon_tests.c tests/daemon_tests.h
 
 check_vnstat_SOURCES += src/cfg.c src/cfg.h \
