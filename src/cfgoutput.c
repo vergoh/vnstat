@@ -9,7 +9,7 @@ void printcfgfile(void)
 	printf("# vnStat %s config file\n", getversion());
 	printf("##\n\n");
 
-	printf("# default interface\n");
+	printf("# default interface (leave empty for automatic selection)\n");
 	printf("Interface \"%s\"\n\n", cfg.iface);
 
 	printf("# location of the database directory\n");

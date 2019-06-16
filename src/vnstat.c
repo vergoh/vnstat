@@ -36,7 +36,6 @@ int main(int argc, char *argv[])
 	int currentarg;
 	DIR *dir = NULL;
 	PARAMS p;
-	iflist *dbifl = NULL;
 
 	initparams(&p);
 
@@ -94,9 +93,13 @@ int main(int argc, char *argv[])
 					return 1;
 				}
 				strncpy_nt(p.interface, argv[currentarg + 1], 32);
-				p.defaultiface = 0;
+				if (strlen(p.interface)) {
+					p.defaultiface = 0;
+				} else {
+					strncpy_nt(p.definterface, p.interface, 32);
+				}
 				if (debug)
-					printf("Used interface: %s\n", p.interface);
+					printf("Used interface: \"%s\"\n", p.interface);
 				currentarg++;
 				continue;
 			} else {
@@ -111,7 +114,7 @@ int main(int argc, char *argv[])
 			if (currentarg + 1 < argc) {
 				strncpy_nt(p.alias, argv[currentarg + 1], 32);
 				if (debug)
-					printf("Used alias: %s\n", p.alias);
+					printf("Used alias: \"%s\"\n", p.alias);
 				p.setalias = 1;
 				currentarg++;
 				continue;
@@ -414,11 +417,11 @@ int main(int argc, char *argv[])
 				}
 				return 1;
 			}
-			p.ifcount = db_getinterfacecount();
+			p.dbifcount = db_getinterfacecount();
 			if (debug)
-				printf("%" PRIu64 " interface(s) found\n", p.ifcount);
+				printf("%" PRIu64 " interface(s) found\n", p.dbifcount);
 
-			if (p.ifcount > 1) {
+			if (p.dbifcount > 1) {
 				strncpy_nt(p.definterface, cfg.iface, 32);
 			}
 		} else {
@@ -434,22 +437,8 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	/* set used interface if none specified and make sure it's null terminated */
-	if (p.defaultiface) {
-		strncpy_nt(p.interface, p.definterface, 32);
-
-		/* ensure that some usable interface is default */
-		if (p.ifcount > 0 && !db_getinterfacecountbyname(p.interface)) {
-			if (db_getiflist(&dbifl) > 0) {
-				strncpy_nt(p.interface, dbifl->interface, 32);
-				if (debug) {
-					printf("Using \"%s\" as interface, default \"%s\" not found in database.\n", p.interface, p.definterface);
-				}
-				iflistfree(&dbifl);
-			}
-		}
-	}
-	p.interface[31] = '\0';
+	/* set used interface if none specified */
+	handleifselection(&p);
 
 	/* parameter handlers */
 	handleremoveinterface(&p);
@@ -462,7 +451,7 @@ int main(int argc, char *argv[])
 	if (!p.query && !p.traffic && !p.livetraffic) {
 
 		/* give more help if there's no database */
-		if (p.ifcount == 0) {
+		if (p.dbifcount == 0) {
 			getifliststring(&p.ifacelist, 1);
 			printf("No interfaces found in the database, nothing to do. Use --help for help.\n\n");
 			printf("Interfaces can be added to the database with the following command:\n");
@@ -488,6 +477,7 @@ int main(int argc, char *argv[])
 
 void initparams(PARAMS *p)
 {
+	db = NULL;
 	noexit = 0;		   /* allow functions to exit in case of error */
 	debug = 0;		   /* debug disabled by default */
 	disableprints = 0; /* let prints be visible */
@@ -495,7 +485,7 @@ void initparams(PARAMS *p)
 	p->addiface = 0;
 	p->query = 1;
 	p->setalias = 0;
-	p->ifcount = 0;
+	p->dbifcount = 0;
 	p->force = 0;
 	p->traffic = 0;
 	p->livetraffic = 0;
@@ -531,7 +521,11 @@ void showhelp(PARAMS *p)
 
 	printf("      -tr, --traffic [time]        calculate traffic\n");
 	printf("      -l,  --live [mode]           show transfer rate in real time\n");
-	printf("      -i,  --iface <interface>     select interface (default: %s)\n\n", p->definterface);
+	printf("      -i,  --iface <interface>     select interface");
+	if (strlen(p->definterface)) {
+		printf(" (default: %s)", p->definterface);
+	}
+	printf("\n\n");
 
 	printf("Use \"--longhelp\" or \"man vnstat\" for complete list of options.\n");
 }
@@ -565,7 +559,11 @@ void showlonghelp(PARAMS *p)
 
 	printf("Misc:\n");
 
-	printf("      -i,  --iface <interface>     select interface (default: %s)\n", p->definterface);
+	printf("      -i,  --iface <interface>     select interface");
+	if (strlen(p->definterface)) {
+		printf(" (default: %s)", p->definterface);
+	}
+	printf("\n");
 	printf("      -?,  --help                  show short help\n");
 	printf("      -D,  --debug                 show some additional debug information\n");
 	printf("      -v,  --version               show version\n");
@@ -710,10 +708,9 @@ void handleshowdatabases(PARAMS *p)
 	}
 
 	/* show all interfaces if -i isn't specified */
-	if (p->ifcount == 0) {
-		/* printf("No database found.\n"); */
+	if (p->dbifcount == 0) {
 		p->query = 0;
-	} else if ((cfg.qmode == 0 || cfg.qmode == 8 || cfg.qmode == 10) && (p->ifcount > 1)) {
+	} else if ((cfg.qmode == 0 || cfg.qmode == 8 || cfg.qmode == 10) && (p->dbifcount > 1)) {
 
 		if (cfg.qmode == 0) {
 			if (cfg.ostyle != 0) {
@@ -827,4 +824,80 @@ void handletrafficmeters(PARAMS *p)
 	if (p->livetraffic) {
 		livetrafficmeter(p->interface, p->livemode);
 	}
+}
+
+void handleifselection(PARAMS *p)
+{
+	int ifcount = 0, dbifcount = 0, iffound = 0, dbopened = 0;
+	iflist *ifl = NULL;
+	iflist *dbifl = NULL, *dbifl_iterator = NULL;
+
+	if (!p->defaultiface) {
+		return;
+	}
+
+	if (strlen(p->definterface)) {
+		strncpy_nt(p->interface, p->definterface, 32);
+		return;
+	}
+
+	if (p->traffic || p->livetraffic) {
+		ifcount = getiflist(&ifl, 0);
+
+		/* try to open database for extra information */
+		if (db == NULL) {
+			if (!db_open_ro()) {
+				db = NULL;
+			} else {
+				dbopened = 1;
+			}
+		}
+
+		if (db != NULL) {
+			dbifcount = db_getiflist_sorted(&dbifl, 1);
+			if (dbopened) {
+				db_close();
+			}
+		}
+
+		if (dbifcount > 0 && ifcount > 0) {
+			dbifl_iterator = dbifl;
+			while (dbifl_iterator != NULL) {
+				if (iflistsearch(&ifl, dbifl_iterator->interface)) {
+					strncpy_nt(p->interface, dbifl_iterator->interface, 32);
+					iffound = 1;
+					if (debug)
+						printf("Automatically selected interface with db: \"%s\"\n", p->interface);
+					break;
+				}
+				dbifl_iterator = dbifl_iterator->next;
+			}
+		}
+
+		if (!iffound) {
+			if (ifcount > 0) {
+				strncpy_nt(p->interface, ifl->interface, 32);
+				if (debug)
+					printf("Automatically selected interface without db: \"%s\"\n", p->interface);
+			} else {
+				printf("Error: Unable to find any suitable interface.\n");
+				iflistfree(&ifl);
+				iflistfree(&dbifl);
+				exit(EXIT_FAILURE);
+			}
+		}
+
+		iflistfree(&ifl);
+	} else {
+		if (db_getiflist_sorted(&dbifl, 1) <= 0) {
+			printf("Error: Unable to discover suitable interface from database.\n");
+			iflistfree(&dbifl);
+			exit(EXIT_FAILURE);
+		}
+		strncpy_nt(p->interface, dbifl->interface, 32);
+		if (debug)
+			printf("Automatically selected interface from db: \"%s\"\n", p->interface);
+	}
+
+	iflistfree(&dbifl);
 }

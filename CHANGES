@@ -9,6 +9,8 @@
      support StateDirectory (issue seen at least with systemd 232 in Debian 9)
    - Debian and Red Hat init.d example files had wrong path for the pid file
  - New
+   - Automatic interface selection when the Interface configuration setting
+     is left empty (new default)
    - Add configuration option DatabaseWriteAheadLogging to enable SQLite
      Write-Ahead Logging mode which may provide some disk i/o benefits,
      see https://www.sqlite.org/wal.html for more details and note that
@@ -23,7 +25,7 @@
      fail due to disk being full
 
 
-2.2 / 28-Apr-2018
+2.2 / 28-Apr-2019
 
  - Fixed
    - O_CLOEXEC undeclared error when compiling with glibc older than 2.12

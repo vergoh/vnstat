@@ -124,7 +124,7 @@ and most can be changed later from the config file.
 
 /* default interface */
 #ifndef DEFIFACE
-#define DEFIFACE "eth0"
+#define DEFIFACE ""
 #endif
 
 /* default locale */

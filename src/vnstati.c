@@ -16,6 +16,7 @@ vnStat image output - Copyright (c) 2007-2019 Teemu Toivola <tst@iki.fi>
 */
 
 #include "common.h"
+#include "iflist.h"
 #include "dbsql.h"
 #include "image.h"
 #include "cfg.h"
@@ -329,9 +330,11 @@ int main(int argc, char *argv[])
 
 void initiparams(IPARAMS *p)
 {
+	db = NULL;
 	noexit = 0;		   /* allow functions to exit in case of error */
 	debug = 0;		   /* debug disabled by default */
 	disableprints = 0; /* let prints be visible */
+
 	p->interface[0] = '\0';
 	p->filename[0] = '\0';
 	p->cfgfile[0] = '\0';
@@ -359,7 +362,11 @@ void showihelp(IPARAMS *p)
 	printf("      -ru, --rateunit [mode]       swap configured rate unit\n");
 	printf("      -o,  --output <file>         select output filename\n");
 	printf("      -c,  --cache <minutes>       update output only when too old\n");
-	printf("      -i,  --iface <interface>     select interface (default: %s)\n", p->interface);
+	printf("      -i,  --iface <interface>     select interface");
+	if (strlen(p->interface)) {
+		printf(" (default: %s)", p->interface);
+	}
+	printf("\n");
 	printf("      -b,  --begin <date>          set list begin date\n");
 	printf("      -e,  --end <date>            set list end date\n");
 	printf("      -?,  --help                  this help\n");
@@ -410,17 +417,30 @@ void handlecaching(IPARAMS *p, IMAGECONTENT *ic)
 
 void handledatabase(IPARAMS *p, IMAGECONTENT *ic)
 {
+	iflist *dbifl = NULL;
+
 	if (!db_open_ro()) {
 		printf("Error: Failed to open database \"%s/%s\" in read-only mode.\n", cfg.dbdir, DATABASEFILE);
 		exit(EXIT_FAILURE);
 	}
-	if (!db_getinterfacecountbyname(p->interface)) {
-		if (strchr(p->interface, '+') == NULL) {
-			printf("Error: Interface \"%s\" not found in database.\n", p->interface);
-		} else {
-			printf("Error: Not all requested interfaces found in database or given interfaces aren't unique.\n");
+	if (strlen(p->interface)) {
+		if (!db_getinterfacecountbyname(p->interface)) {
+			if (strchr(p->interface, '+') == NULL) {
+				printf("Error: Interface \"%s\" not found in database.\n", p->interface);
+			} else {
+				printf("Error: Not all requested interfaces found in database or given interfaces aren't unique.\n");
+			}
+			exit(EXIT_FAILURE);
 		}
-		exit(EXIT_FAILURE);
+	} else {
+		if (db_getiflist_sorted(&dbifl, 1) <= 0) {
+			printf("Error: Unable to discover suitable interface from database.\n");
+			exit(EXIT_FAILURE);
+		}
+		strncpy_nt(p->interface, dbifl->interface, 32);
+		iflistfree(&dbifl);
+		if (debug)
+			printf("Automatically selected interface: \"%s\"\n", p->interface);
 	}
 	if (!db_getinterfaceinfo(p->interface, &ic->interface)) {
 		printf("Error: Failed to fetch interface \"%s\" info from database.\n", p->interface);

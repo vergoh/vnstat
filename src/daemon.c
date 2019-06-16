@@ -252,6 +252,7 @@ void debugtimestamp(void)
 
 void initdstate(DSTATE *s)
 {
+	db = NULL;
 	noexit = 1;		   /* disable exits in functions */
 	debug = 0;		   /* debug disabled by default */
 	disableprints = 0; /* let prints be visible */

@@ -30,6 +30,10 @@ int db_open(const int createifnotfound, const int readonly)
 #else
 	struct stat filestat;
 
+	if (db != NULL) {
+		return 1;
+	}
+
 	snprintf(dbfilename, 530, "%s/%s", cfg.dbdir, DATABASEFILE);
 
 	/* create database if file doesn't exist */
@@ -245,6 +249,9 @@ int db_close(void)
 	int rc;
 	rc = sqlite3_close(db);
 	if (rc == SQLITE_OK) {
+		db = NULL;
+		if (debug)
+			printf("Database closed\n");
 		return 1;
 	} else {
 		db_errcode = rc;
@@ -685,11 +692,21 @@ char *db_getinfo(const char *name)
 
 int db_getiflist(iflist **ifl)
 {
+	return db_getiflist_sorted(ifl, 0);
+}
+
+int db_getiflist_sorted(iflist **ifl, const int orderbytraffic)
+{
 	int rc;
 	char *sql;
 	sqlite3_stmt *sqlstmt;
 
-	sql = "select name from interface order by name desc";
+	/* last entry added to list is the first entry when the list is read */
+	if (!orderbytraffic) {
+		sql = "select name from interface order by name desc";
+	} else {
+		sql = "select name from interface order by rxtotal+txtotal asc";
+	}
 
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
 	if (rc != SQLITE_OK) {

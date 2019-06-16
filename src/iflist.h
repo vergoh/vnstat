@@ -9,6 +9,7 @@ typedef struct iflist {
 } iflist;
 
 int iflistadd(iflist **ifl, const char *iface, const uint32_t bandwidth);
+int iflistsearch(iflist **ifl, const char *iface);
 void iflistfree(iflist **ifl);
 
 #endif

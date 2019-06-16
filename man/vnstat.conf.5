@@ -58,8 +58,14 @@ hourly graph output. 0 = none, 1 = '|', 2 = '][', 3 = '[ ]'.
 
 .TP
 .B Interface
-Default interface used when no other interface is specified on
-the command line. (vnstat and vnstati only)
+Default interface used when no other interface is specified on the command
+line. Leave empty for automatic selection. The automatic selection will
+prioritize the interface with most traffic for outputs doing database queries.
+
+Queries not using the database will first check if the database is available
+and select the interface with most traffic out those that are currently
+visible in the system. If no database can be read then the first available
+interface will be used. (vnstat and vnstati only)
 
 .TP
 .B "List5Mins, ListHours, ListDays, ListMonths, ListYears, ListTop"
