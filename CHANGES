@@ -8,6 +8,9 @@
      if the used systemd version supported ProtectSystem=strict but didn't
      support StateDirectory (issue seen at least with systemd 232 in Debian 9)
    - Debian and Red Hat init.d example files had wrong path for the pid file
+   - Interfaces could end up staying marked as 'disabled' in the database even
+     after becoming back active and monitored, only the shown status was wrong
+     without resulting in any data loss
  - New
    - Automatic interface selection when the Interface configuration setting
      is left empty (new default)

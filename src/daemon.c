@@ -636,12 +636,6 @@ void flushcachetodisk(DSTATE *s)
 			}
 		}
 
-		/* update interface timestamp in database */
-		if (!db_setupdated(iterator->interface, iterator->updated)) {
-			handledatabaseerror(s);
-			break;
-		}
-
 		if (!iterator->active && !logcount) {
 			/* throw away if interface hasn't seen any data and is disabled */
 			if (!iterator->currx && !iterator->curtx) {
@@ -657,12 +651,18 @@ void flushcachetodisk(DSTATE *s)
 					break;
 				}
 			}
+		}
 
-			/* update interface activity status in database if changed */
-			if (!db_setactive(iterator->interface, iterator->active)) {
-				handledatabaseerror(s);
-				break;
-			}
+		/* update interface timestamp in database */
+		if (!db_setupdated(iterator->interface, iterator->updated)) {
+			handledatabaseerror(s);
+			break;
+		}
+
+		/* update interface activity status in database */
+		if (!db_setactive(iterator->interface, iterator->active)) {
+			handledatabaseerror(s);
+			break;
 		}
 
 		iterator = iterator->next;

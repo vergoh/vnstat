@@ -807,17 +807,6 @@ int db_addtraffic_dated(const char *iface, const uint64_t rx, const uint64_t tx,
 		}
 	}
 
-	/* change updated only if more recent than previous when timestamp provided */
-	if (timestamp > 0) {
-		sqlite3_snprintf(1024, sql, "update interface set active=1, updated=datetime(%s, 'localtime') where id=%" PRId64 " and updated < datetime(%s, 'localtime')", nowdate, (int64_t)ifaceid, nowdate);
-	} else {
-		sqlite3_snprintf(1024, sql, "update interface set active=1, updated=datetime(%s, 'localtime') where id=%" PRId64 "", nowdate, (int64_t)ifaceid);
-	}
-	if (!db_exec(sql)) {
-		/* no transaction rollback needed here as failure of the first step results in no transaction being active */
-		return 0;
-	}
-
 	/* total */
 	if (rx > 0 || tx > 0) {
 		sqlite3_snprintf(1024, sql, "update interface set rxtotal=rxtotal+%" PRIu64 ", txtotal=txtotal+%" PRIu64 " where id=%" PRId64 "", rx, tx, (int64_t)ifaceid);
