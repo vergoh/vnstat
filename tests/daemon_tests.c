@@ -210,7 +210,7 @@ START_TEST(preparedatabases_exits_with_no_databases)
 	defaultcfg();
 	initdstate(&s);
 	suppress_output();
-	strncpy_nt(s.dirname, TESTDBDIR, 512);
+	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	ck_assert_int_eq(clean_testdbdir(), 1);
 
@@ -226,7 +226,7 @@ START_TEST(preparedatabases_exits_with_no_databases_and_noadd)
 	initdstate(&s);
 	s.noadd = 1;
 	suppress_output();
-	strncpy_nt(s.dirname, TESTDBDIR, 512);
+	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	ck_assert_int_eq(clean_testdbdir(), 1);
 
@@ -242,7 +242,7 @@ START_TEST(preparedatabases_with_no_databases_creates_databases)
 	defaultcfg();
 	initdstate(&s);
 	suppress_output();
-	strncpy_nt(s.dirname, TESTDBDIR, 512);
+	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	ck_assert_int_eq(clean_testdbdir(), 1);
 	fake_proc_net_dev("w", "ethone", 1, 2, 3, 4);
@@ -281,7 +281,7 @@ START_TEST(filldatabaselist_exits_with_no_database_dir)
 	defaultcfg();
 	initdstate(&s);
 	disable_logprints();
-	strncpy_nt(s.dirname, TESTDBDIR, 512);
+	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 
 	filldatabaselist(&s);
@@ -317,7 +317,7 @@ START_TEST(filldatabaselist_adds_databases)
 	initdstate(&s);
 	disable_logprints();
 	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
-	strncpy_nt(s.dirname, TESTDBDIR, 512);
+	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
 	s.sync = 1;
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	ck_assert_int_eq(clean_testdbdir(), 1);
@@ -600,7 +600,7 @@ START_TEST(handleintsignals_handles_sighup)
 
 	s.running = 1;
 	intsignal = SIGHUP;
-	strncpy_nt(s.dirname, TESTDBDIR, 512);
+	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
 	handleintsignals(&s);
 	ck_assert_int_eq(intsignal, 0);
 	ck_assert_int_eq(s.running, 1);
@@ -620,7 +620,7 @@ START_TEST(preparedirs_with_no_dir)
 	defaultcfg();
 	cfg.uselogging = 1;
 	s.rundaemon = 1;
-	strncpy_nt(s.dirname, TESTDBDIR, 512);
+	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
 	snprintf(logdir, 500, "%s/log/vnstat", TESTDIR);
 	snprintf(piddir, 500, "%s/pid/vnstat", TESTDIR);
 	snprintf(cfg.logfile, 512, "%s/vnstat.log", logdir);
@@ -646,7 +646,7 @@ START_TEST(preparedirs_with_dir)
 	defaultcfg();
 	cfg.uselogging = 1;
 	s.rundaemon = 1;
-	strncpy_nt(s.dirname, TESTDBDIR, 512);
+	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
 	snprintf(logdir, 500, "%s/log/vnstat", TESTDIR);
 	snprintf(piddir, 500, "%s/pid/vnstat", TESTDIR);
 	snprintf(cfg.logfile, 512, "%s/vnstat.log", logdir);

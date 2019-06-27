@@ -8,7 +8,7 @@ typedef struct {
 	short alwaysadd, bootdetected, cleanuphour, dbretrycount;
 	uint32_t iflisthash;
 	uint64_t dbifcount;
-	char cfgfile[512], dirname[512];
+	char cfgfile[512];
 	char user[33], group[33];
 	time_t current, prevdbupdate, prevdbsave, prevwaldbcheckpoint;
 	datacache *dcache;

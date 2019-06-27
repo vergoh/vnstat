@@ -259,7 +259,6 @@ void initdstate(DSTATE *s)
 	s->alwaysadd = 0;
 	s->iflisthash = 0;
 	s->cfgfile[0] = '\0';
-	s->dirname[0] = '\0';
 	s->user[0] = '\0';
 	s->group[0] = '\0';
 	s->prevdbupdate = 0;
@@ -291,7 +290,7 @@ void preparedatabases(DSTATE *s)
 		exit(EXIT_FAILURE);
 	}
 
-	if (!spacecheck(s->dirname)) {
+	if (!spacecheck(cfg.dbdir)) {
 		printf("Error: Not enough free diskspace available, exiting.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -322,8 +321,8 @@ unsigned int importlegacydbs(DSTATE *s)
 	struct dirent *di;
 	unsigned int importcount = 0;
 
-	if ((dir = opendir(s->dirname)) == NULL) {
-		printf("Error: Unable to open database directory \"%s\": %s\n", s->dirname, strerror(errno));
+	if ((dir = opendir(cfg.dbdir)) == NULL) {
+		printf("Error: Unable to open database directory \"%s\": %s\n", cfg.dbdir, strerror(errno));
 		printf("Make sure it exists and is at least read enabled for current user.\n");
 		printf("Exiting...\n");
 		exit(EXIT_FAILURE);
@@ -336,7 +335,7 @@ unsigned int importlegacydbs(DSTATE *s)
 			if (db_getinterfacecountbyname(di->d_name)) {
 				continue;
 			}
-			if (importlegacydb(di->d_name, s->dirname)) {
+			if (importlegacydb(di->d_name, cfg.dbdir)) {
 				importcount++;
 			}
 		}
@@ -753,9 +752,7 @@ void handleintsignals(DSTATE *s)
 			s->dbifcount = 0;
 			ibwflush();
 			db_close();
-			if (loadcfg(s->cfgfile)) {
-				strncpy_nt(s->dirname, cfg.dbdir, 512);
-			}
+			loadcfg(s->cfgfile);
 			ibwloadcfg(s->cfgfile);
 			if (!db_open_rw(1)) {
 				snprintf(errorstring, 1024, "Opening database after SIGHUP failed (%s), exiting.", strerror(errno));
@@ -799,8 +796,8 @@ void handleintsignals(DSTATE *s)
 void preparedirs(DSTATE *s)
 {
 	/* database directory */
-	if (mkpath(s->dirname, 0775)) {
-		updatedirowner(s->dirname, s->user, s->group);
+	if (mkpath(cfg.dbdir, 0775)) {
+		updatedirowner(cfg.dbdir, s->user, s->group);
 	}
 
 	if (!cfg.createdirs || !s->rundaemon) {

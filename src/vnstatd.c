@@ -64,8 +64,7 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	/* init dirname and other config settings */
-	strncpy_nt(s.dirname, cfg.dbdir, 512);
+	/* init config settings */
 	strncpy_nt(s.user, cfg.daemonuser, 33);
 	strncpy_nt(s.group, cfg.daemongroup, 33);
 	s.updateinterval = cfg.updateinterval;
@@ -160,7 +159,7 @@ int main(int argc, char *argv[])
 	setuser(s.user);
 
 	if (!db_open_rw(1)) {
-		printf("Error: Failed to open database \"%s/%s\" in read/write mode.\n", s.dirname, DATABASEFILE);
+		printf("Error: Failed to open database \"%s/%s\" in read/write mode.\n", cfg.dbdir, DATABASEFILE);
 		printf("Exiting...\n");
 		exit(EXIT_FAILURE);
 	}
@@ -169,7 +168,7 @@ int main(int argc, char *argv[])
 	preparedatabases(&s);
 
 	if (!db_removeoldentries()) {
-		printf("Error: Database \"%s/%s\" cleanup failed: %s\n", s.dirname, DATABASEFILE, strerror(errno));
+		printf("Error: Database \"%s/%s\" cleanup failed: %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
 		printf("Exiting...\n");
 		exit(EXIT_FAILURE);
 	}
@@ -179,14 +178,14 @@ int main(int argc, char *argv[])
 	/* start as daemon if requested, debug can't be enabled at the same time */
 	if (s.rundaemon && !debug) {
 		if (!db_close()) {
-			printf("Error: Failed to close database \"%s/%s\" before starting daemon: %s\n", s.dirname, DATABASEFILE, strerror(errno));
+			printf("Error: Failed to close database \"%s/%s\" before starting daemon: %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
 			printf("Exiting...\n");
 			exit(EXIT_FAILURE);
 		}
 		noexit++;
 		daemonize();
 		if (!db_open_rw(0)) {
-			snprintf(errorstring, 1024, "Failed to reopen database \"%s/%s\": %s", s.dirname, DATABASEFILE, strerror(errno));
+			snprintf(errorstring, 1024, "Failed to reopen database \"%s/%s\": %s", cfg.dbdir, DATABASEFILE, strerror(errno));
 			printe(PT_Error);
 			exit(EXIT_FAILURE);
 		}

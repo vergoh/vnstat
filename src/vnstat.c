@@ -73,9 +73,6 @@ int main(int argc, char *argv[])
 	strncpy_nt(p.definterface, cfg.iface, 32);
 	strncpy_nt(p.alias, "none", 32);
 
-	/* init dirname */
-	strncpy_nt(p.dirname, cfg.dbdir, 512);
-
 	/* parse parameters, maybe not the best way but... */
 	for (currentarg = 1; currentarg < argc; currentarg++) {
 		if (debug)
@@ -153,9 +150,9 @@ int main(int argc, char *argv[])
 			}
 		} else if ((strcmp(argv[currentarg], "--dbdir")) == 0) {
 			if (currentarg + 1 < argc) {
-				strncpy_nt(p.dirname, argv[currentarg + 1], 512);
+				strncpy_nt(cfg.dbdir, argv[currentarg + 1], 512);
 				if (debug)
-					printf("DatabaseDir: \"%s\"\n", p.dirname);
+					printf("DatabaseDir: \"%s\"\n", cfg.dbdir);
 				currentarg++;
 				continue;
 			} else {
@@ -408,13 +405,12 @@ int main(int argc, char *argv[])
 
 	/* open database and see if it contains any interfaces */
 	if (!p.traffic && !p.livetraffic) {
-		if ((dir = opendir(p.dirname)) != NULL) {
+		if ((dir = opendir(cfg.dbdir)) != NULL) {
 			if (debug)
 				printf("Dir OK\n");
 			closedir(dir);
-			strncpy_nt(cfg.dbdir, p.dirname, 512);
 			if (!db_open_ro()) {
-				printf("Error: Failed to open database \"%s/%s\" in read-only mode.\n", p.dirname, DATABASEFILE);
+				printf("Error: Failed to open database \"%s/%s\" in read-only mode.\n", cfg.dbdir, DATABASEFILE);
 				if (errno == ENOENT) {
 					printf("The vnStat daemon should have created the database when started.\n");
 					printf("Check that it is configured and running. See also \"man vnstatd\".\n");
@@ -429,7 +425,7 @@ int main(int argc, char *argv[])
 				strncpy_nt(p.definterface, cfg.iface, 32);
 			}
 		} else {
-			printf("Error: Unable to open database directory \"%s\": %s\n", p.dirname, strerror(errno));
+			printf("Error: Unable to open database directory \"%s\": %s\n", cfg.dbdir, strerror(errno));
 			if (errno == ENOENT) {
 				printf("The vnStat daemon should have created this directory when started.\n");
 				printf("Check that it is configured and running. See also \"man vnstatd\".\n");
@@ -603,7 +599,7 @@ void handleremoveinterface(PARAMS *p)
 	}
 
 	if (!db_close() || !db_open_rw(0)) {
-		printf("Error: Handling database \"%s/%s\" failing: %s\n", p->dirname, DATABASEFILE, strerror(errno));
+		printf("Error: Handling database \"%s/%s\" failing: %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
@@ -646,13 +642,13 @@ void handleaddinterface(PARAMS *p)
 		exit(EXIT_FAILURE);
 	}
 
-	if (!p->force && !spacecheck(p->dirname)) {
+	if (!p->force && !spacecheck(cfg.dbdir)) {
 		printf("Error: Not enough free diskspace available.\n");
 		exit(EXIT_FAILURE);
 	}
 
 	if (!db_close() || !db_open_rw(0)) {
-		printf("Error: Handling database \"%s/%s\" failing: %s\n", p->dirname, DATABASEFILE, strerror(errno));
+		printf("Error: Handling database \"%s/%s\" failing: %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
@@ -683,7 +679,7 @@ void handlesetalias(PARAMS *p)
 	}
 
 	if (!db_close() || !db_open_rw(0)) {
-		printf("Error: Handling database \"%s/%s\" failing: %s\n", p->dirname, DATABASEFILE, strerror(errno));
+		printf("Error: Handling database \"%s/%s\" failing: %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
