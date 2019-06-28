@@ -42,7 +42,7 @@ int db_open(const int createifnotfound, const int readonly)
 			createdb = 1;
 		} else {
 			if (debug)
-				printf("Error: Handling database \"%s\" failed: %s\n", dbfilename, strerror(errno));
+				printf("Error (debug): Handling database \"%s\" failed: %s\n", dbfilename, strerror(errno));
 			return 0;
 		}
 	} else {
@@ -67,7 +67,7 @@ int db_open(const int createifnotfound, const int readonly)
 	if (rc) {
 		db_errcode = rc;
 		if (debug)
-			printf("Error: Can't open database \"%s\": %s\n", dbfilename, sqlite3_errmsg(db));
+			printf("Error (debug): Can't open database \"%s\": %s\n", dbfilename, sqlite3_errmsg(db));
 		return 0;
 	} else {
 		if (debug)
@@ -84,7 +84,7 @@ int db_open(const int createifnotfound, const int readonly)
 #endif
 		if (!db_create()) {
 			if (debug)
-				printf("Error: Creating database \"%s\" structure failed\n", dbfilename);
+				printf("Error (debug): Creating database \"%s\" structure failed\n", dbfilename);
 			db_close();
 			return 0;
 		} else {
@@ -92,7 +92,7 @@ int db_open(const int createifnotfound, const int readonly)
 				printf("Database \"%s\" structure created\n", dbfilename);
 			if (!db_setinfo("dbversion", SQLDBVERSION, 1)) {
 				if (debug)
-					printf("Error: Writing version info to database \"%s\" failed\n", dbfilename);
+					printf("Error (debug): Writing version info to database \"%s\" failed\n", dbfilename);
 				db_close();
 				return 0;
 			}
@@ -261,7 +261,7 @@ int db_close(void)
 	} else {
 		db_errcode = rc;
 		if (debug)
-			printf("Error: Closing database failed (%d): %s\n", rc, sqlite3_errmsg(db));
+			printf("Error (debug): Closing database failed (%d): %s\n", rc, sqlite3_errmsg(db));
 		return 0;
 	}
 }

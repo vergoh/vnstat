@@ -16,7 +16,7 @@ int fileexists(const char *file)
 			return 0;
 		}
 		if (debug)
-			printf("Error: stat() \"%s\": %s\n", file, strerror(errno));
+			printf("Error (debug): stat() \"%s\": %s\n", file, strerror(errno));
 	}
 	return 1;
 }
@@ -29,7 +29,7 @@ int mkpath(const char *dir, const mode_t mode)
 
 	if (!strlen(dir)) {
 		if (debug)
-			printf("Error: mkpath(), no directory given\n");
+			printf("Error (debug): mkpath(), no directory given\n");
 		return 0;
 	}
 
@@ -63,7 +63,7 @@ int mkpath(const char *dir, const mode_t mode)
 			if (!direxists(tmp)) {
 				if (mkdir(tmp, mode) != 0) {
 					if (debug)
-						printf("Error: mkdir() \"%s\": %s\n", tmp, strerror(errno));
+						printf("Error (debug): mkdir() \"%s\": %s\n", tmp, strerror(errno));
 					ret = 0;
 					break;
 				}
@@ -74,7 +74,7 @@ int mkpath(const char *dir, const mode_t mode)
 	if (ret) {
 		if (mkdir(tmp, mode) != 0) {
 			if (debug)
-				printf("Error: mkdir() \"%s\": %s\n", tmp, strerror(errno));
+				printf("Error (debug): mkdir() \"%s\": %s\n", tmp, strerror(errno));
 			ret = 0;
 		} else if (debug) {
 			printf("created: %s\n", tmp);
@@ -189,7 +189,7 @@ void updatedirownerid(const char *dir, const uid_t uid, const gid_t gid)
 	if (statbuf.st_uid != uid || statbuf.st_gid != gid) {
 		if (fchown(dir_fd, uid, gid) != 0) {
 			if (debug)
-				printf("Error: updatedirowner() chown() \"%s\": %s\n", dir, strerror(errno));
+				printf("Error (debug): updatedirowner() chown() \"%s\": %s\n", dir, strerror(errno));
 			close(dir_fd);
 			return;
 		} else {
@@ -200,7 +200,7 @@ void updatedirownerid(const char *dir, const uid_t uid, const gid_t gid)
 
 	if ((d = fdopendir(dir_fd)) == NULL) {
 		if (debug)
-			printf("Error: updatedirowner() diropen() \"%s\": %s\n", dir, strerror(errno));
+			printf("Error (debug): updatedirowner() diropen() \"%s\": %s\n", dir, strerror(errno));
 		close(dir_fd);
 		return;
 	}
@@ -219,7 +219,7 @@ void updatedirownerid(const char *dir, const uid_t uid, const gid_t gid)
 		if (statbuf.st_uid != uid || statbuf.st_gid != gid) {
 			if (fchown(file_fd, uid, gid) != 0) {
 				if (debug)
-					printf("Error: chown() \"%s\": %s\n", entryname, strerror(errno));
+					printf("Error (debug): chown() \"%s\": %s\n", entryname, strerror(errno));
 			} else {
 				if (debug)
 					printf("\"%s\" chown completed\n", entryname);
@@ -273,7 +273,7 @@ int getdirowner(const char *dir, uid_t *uid, gid_t *gid)
 
 	if (stat(dir, &statbuf) != 0) {
 		if (debug)
-			printf("Error: stat() \"%s\": %s\n", dir, strerror(errno));
+			printf("Error (debug): stat() \"%s\": %s\n", dir, strerror(errno));
 		return 0;
 	}
 

@@ -213,7 +213,7 @@ int readproc(const char *iface)
 
 	if ((fp = fopen(PROCNETDEV, "r")) == NULL) {
 		if (debug)
-			printf("Error: Unable to read %s: %s\n", PROCNETDEV, strerror(errno));
+			printf("Error (debug): Unable to read %s: %s\n", PROCNETDEV, strerror(errno));
 		return 0;
 	}
 
