@@ -18,31 +18,28 @@ START_TEST(iflistadd_can_add)
 
     ret = iflistadd(&ifl, "eth0", 0);
     ck_assert_int_eq(ret, 1);
-    ck_assert_int_eq(ifl->bandwidth, 0);
     ck_assert_str_eq(ifl->interface, "eth0");
+    ck_assert_int_eq(ifl->bandwidth, 0);
     ck_assert_ptr_eq(ifl->next, NULL);
-    ck_assert_ptr_eq(ifl->prev, NULL);
 
     ret = iflistadd(&ifl, "eth1", 1);
     ck_assert_int_eq(ret, 1);
-    ck_assert_int_eq(ifl->bandwidth, 1);
-    ck_assert_str_eq(ifl->interface, "eth1");
+    ck_assert_str_eq(ifl->interface, "eth0");
+    ck_assert_int_eq(ifl->bandwidth, 0);
     ck_assert_ptr_ne(ifl->next, NULL);
-    ck_assert_ptr_eq(ifl->prev, NULL);
+    ck_assert_str_eq(ifl->next->interface, "eth1");
+    ck_assert_int_eq(ifl->next->bandwidth, 1);
 
     ret = iflistadd(&ifl, "eth0", 2);
     ck_assert_int_eq(ret, 1);
-    ck_assert_int_eq(ifl->bandwidth, 2);
     ck_assert_str_eq(ifl->interface, "eth0");
+    ck_assert_int_eq(ifl->bandwidth, 0);
     ck_assert_ptr_ne(ifl->next, NULL);
-    ck_assert_ptr_eq(ifl->prev, NULL);
-
-    ret = iflistadd(&ifl, "eth2", 10);
-    ck_assert_int_eq(ret, 1);
-    ck_assert_int_eq(ifl->bandwidth, 10);
-    ck_assert_str_eq(ifl->interface, "eth2");
-    ck_assert_ptr_ne(ifl->next, NULL);
-    ck_assert_ptr_eq(ifl->prev, NULL);
+    ck_assert_str_eq(ifl->next->interface, "eth1");
+    ck_assert_int_eq(ifl->next->bandwidth, 1);
+    ck_assert_ptr_ne(ifl->next->next, NULL);
+    ck_assert_str_eq(ifl->next->next->interface, "eth0");
+    ck_assert_int_eq(ifl->next->next->bandwidth, 2);
 
     iflistfree(&ifl);
     ck_assert_ptr_eq(ifl, NULL);

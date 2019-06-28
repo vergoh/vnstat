@@ -706,11 +706,10 @@ int db_getiflist_sorted(iflist **ifl, const int orderbytraffic)
 	char *sql;
 	sqlite3_stmt *sqlstmt;
 
-	/* last entry added to list is the first entry when the list is read */
 	if (!orderbytraffic) {
-		sql = "select name from interface order by name desc";
+		sql = "select name from interface order by name asc";
 	} else {
-		sql = "select name from interface order by rxtotal+txtotal asc";
+		sql = "select name from interface order by rxtotal+txtotal desc";
 	}
 
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);

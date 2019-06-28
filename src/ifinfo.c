@@ -76,11 +76,6 @@ int getifliststring(char **ifacelist, int showspeed)
 
 		ifl_iterator = ifl;
 
-		/* seek to end of list to show entries in original input order */
-		while (ifl_iterator->next != NULL) {
-			ifl_iterator = ifl_iterator->next;
-		}
-
 		while (ifl_iterator != NULL) {
 			*ifacelist = (char *)realloc(*ifacelist, ((strlen(*ifacelist) + strlen(ifl_iterator->interface) + 2) * sizeof(char)));
 			if (*ifacelist == NULL) {
@@ -98,7 +93,7 @@ int getifliststring(char **ifacelist, int showspeed)
 				strcat(*ifacelist, temp);
 			}
 
-			ifl_iterator = ifl_iterator->prev;
+			ifl_iterator = ifl_iterator->next;
 		}
 
 		iflistfree(&ifl);
