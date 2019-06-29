@@ -69,9 +69,17 @@ END_TEST
 START_TEST(setuser_with_current_user)
 {
 	char temp[16];
-	suppress_output();
-	snprintf(temp, 16, "%d", getuser(""));
-	setuser(temp);
+	struct passwd *pw;
+
+	pw = getpwuid(getuid());
+
+	if (pw != NULL) {
+		suppress_output();
+		snprintf(temp, 16, "%d", getuser(""));
+		setuser(temp);
+	} else {
+		printf("Note: skipping test setuser_with_current_user due to non-existing user\n");
+	}
 }
 END_TEST
 
@@ -85,9 +93,17 @@ END_TEST
 START_TEST(setgroup_with_current_group)
 {
 	char temp[16];
-	suppress_output();
-	snprintf(temp, 16, "%d", getgroup(""));
-	setgroup(temp);
+	struct group *gr;
+
+	gr = getgrgid(getgid());
+
+	if (gr != NULL) {
+		suppress_output();
+		snprintf(temp, 16, "%d", getgroup(""));
+		setgroup(temp);
+	} else {
+		printf("Note: skipping test setgroup_with_current_group due to non-existing group\n");
+	}
 }
 END_TEST
 
