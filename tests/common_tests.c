@@ -140,10 +140,10 @@ START_TEST(mosecs_does_not_change_struct_tm_pointer_content)
 
 	defaultcfg();
 	ck_assert_int_eq(cfg.monthrotate, 1);
-	ck_assert_int_eq(current, timelocal(stm));
+	ck_assert_int_eq(current, mktime(stm));
 	ck_assert_int_ne(mosecs(1, 2), 0);
 	ck_assert_int_ne(mosecs(1, 2), 1);
-	ck_assert_int_eq(current, timelocal(stm));
+	ck_assert_int_eq(current, mktime(stm));
 }
 END_TEST
 
