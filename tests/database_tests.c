@@ -22,43 +22,6 @@ START_TEST(initdb_activates_database)
 }
 END_TEST
 
-START_TEST(removedb_with_existing_files)
-{
-	int ret;
-
-	ck_assert_int_eq(clean_testdbdir(), 1);
-	ck_assert_int_eq(create_zerosize_dbfile("ethall"), 1);
-	ck_assert_int_eq(create_zerosize_dbfile(".ethall"), 1);
-
-	ck_assert_int_eq(check_dbfile_exists("ethall", 0), 1);
-	ck_assert_int_eq(check_dbfile_exists(".ethall", 0), 1);
-
-	/* variable needed due to bug in old versions of check
-	   framework: http://sourceforge.net/p/check/bugs/71/ */
-	ret = removedb("ethall", TESTDBDIR);
-	ck_assert_int_eq(ret, 1);
-
-	ck_assert_int_eq(check_dbfile_exists("ethall", 0), 0);
-	ck_assert_int_eq(check_dbfile_exists(".ethall", 0), 0);
-}
-END_TEST
-
-START_TEST(removedb_with_nonexisting_file)
-{
-	ck_assert_int_eq(clean_testdbdir(), 1);
-	ck_assert_int_eq(create_zerosize_dbfile("ethall"), 1);
-	ck_assert_int_eq(create_zerosize_dbfile(".ethall"), 1);
-
-	ck_assert_int_eq(check_dbfile_exists("ethall", 0), 1);
-	ck_assert_int_eq(check_dbfile_exists(".ethall", 0), 1);
-
-	ck_assert_int_eq(removedb("ethnone", TESTDBDIR), 0);
-
-	ck_assert_int_eq(check_dbfile_exists("ethall", 0), 1);
-	ck_assert_int_eq(check_dbfile_exists(".ethall", 0), 1);
-}
-END_TEST
-
 START_TEST(readdb_with_empty_file)
 {
 	DATA data;
@@ -768,8 +731,6 @@ void add_database_tests(Suite *s)
 {
 	TCase *tc_db = tcase_create("Database");
 	tcase_add_test(tc_db, initdb_activates_database);
-	tcase_add_test(tc_db, removedb_with_existing_files);
-	tcase_add_test(tc_db, removedb_with_nonexisting_file);
 	tcase_add_test(tc_db, readdb_with_empty_file);
 	tcase_add_test(tc_db, readdb_with_empty_file_and_backup);
 	tcase_add_test(tc_db, readdb_with_nonexisting_file);
@@ -842,7 +803,6 @@ int writedb(DATA *data, const char *iface, const char *dirname, int newdb)
 		if ((newdb) && (noexit == 0)) {
 			snprintf(errorstring, 1024, "-> A new database has been created.");
 			printe(PT_Info);
-			matchdbownerwithdirowner(dirname);
 		}
 	}
 

@@ -113,52 +113,6 @@ START_TEST(datacache_knows_how_to_count)
 }
 END_TEST
 
-START_TEST(datacache_can_seek)
-{
-	int ret;
-	datacache *dc = NULL;
-	datacache *iter = NULL;
-
-	ret = datacache_add(&dc, "eth0", 0);
-	ck_assert_int_eq(ret, 1);
-
-	ret = datacache_add(&dc, "eth1", 0);
-	ck_assert_int_eq(ret, 1);
-
-	ret = datacache_add(&dc, "eth2", 0);
-	ck_assert_int_eq(ret, 1);
-
-	ret = datacache_add(&dc, "eth3", 0);
-	ck_assert_int_eq(ret, 1);
-
-	iter = dc;
-	ck_assert_str_eq(iter->interface, "eth3");
-	ret = datacache_seek(&iter, "eth3");
-	ck_assert_int_eq(ret, 1);
-	ck_assert_str_eq(iter->interface, "eth3");
-
-	iter = dc;
-	ck_assert_str_eq(iter->interface, "eth3");
-	ret = datacache_seek(&iter, "eth1");
-	ck_assert_int_eq(ret, 1);
-	ck_assert_str_eq(iter->interface, "eth1");
-
-	iter = dc;
-	ck_assert_str_eq(iter->interface, "eth3");
-	ret = datacache_seek(&iter, "eth0");
-	ck_assert_int_eq(ret, 1);
-	ck_assert_str_eq(iter->interface, "eth0");
-
-	iter = dc;
-	ck_assert_str_eq(iter->interface, "eth3");
-	ret = datacache_seek(&iter, "eth");
-	ck_assert_int_eq(ret, 0);
-
-	datacache_clear(&dc);
-	ck_assert_ptr_eq(dc, NULL);
-}
-END_TEST
-
 START_TEST(datacache_can_remove)
 {
 	int ret;
@@ -214,9 +168,8 @@ END_TEST
 
 START_TEST(datacache_can_do_stuff)
 {
-	int ret, i;
+	int ret;
 	datacache *dc = NULL;
-	datacache *iter = NULL;
 
 	ret = datacache_add(&dc, "eth0", 0);
 	ck_assert_int_eq(ret, 1);
@@ -241,48 +194,6 @@ START_TEST(datacache_can_do_stuff)
 
 	ret = datacache_count(&dc);
 	ck_assert_int_eq(ret, 4);
-
-	iter = dc;
-	ret = datacache_seek(&iter, "eth1");
-	ck_assert_int_eq(ret, 1);
-	ck_assert_int_eq(iter->log->timestamp, 2);
-	ck_assert_int_eq(iter->log->rx, 11);
-	ck_assert_int_eq(iter->log->tx, 17);
-	ret = xferlog_add(&iter->log, 2, 10, 20);
-	ck_assert_int_eq(ret, 1);
-	ck_assert_int_eq(iter->log->rx, 21);
-	ck_assert_int_eq(iter->log->tx, 37);
-
-	iter = dc;
-	ret = datacache_seek(&iter, "eth0");
-	ck_assert_ptr_eq(iter->log, NULL);
-	ret = xferlog_add(&iter->log, 2, 12, 34);
-	ck_assert_int_eq(ret, 1);
-	ck_assert_int_eq(iter->log->timestamp, 2);
-	ck_assert_int_eq(iter->log->rx, 12);
-	ck_assert_int_eq(iter->log->tx, 34);
-
-	iter = dc;
-	ret = datacache_seek(&iter, "eth1");
-	ck_assert_int_eq(ret, 1);
-	ck_assert_int_eq(iter->log->timestamp, 2);
-	ck_assert_int_eq(iter->log->rx, 21);
-	ck_assert_int_eq(iter->log->tx, 37);
-	ret = xferlog_add(&iter->log, 10, 12, 34);
-	ck_assert_int_eq(ret, 1);
-	ck_assert_int_eq(iter->log->timestamp, 10);
-	ck_assert_int_eq(iter->log->rx, 12);
-	ck_assert_int_eq(iter->log->tx, 34);
-
-	iter = dc;
-	ret = datacache_seek(&iter, "eth3");
-	for (i = 1; i <= 10; i++) {
-		ret = xferlog_add(&iter->log, (time_t)i, (uint64_t)i * 10, (uint64_t)i * 20);
-		ck_assert_int_eq(ret, 1);
-	}
-	ck_assert_int_eq(iter->log->timestamp, 10);
-	ck_assert_int_eq(iter->log->rx, 100);
-	ck_assert_int_eq(iter->log->tx, 200);
 
 	/* suppress output to validate that debug function doesn't cause a crash */
 	suppress_output();
@@ -384,7 +295,6 @@ void add_datacache_tests(Suite *s)
 	tcase_add_test(tc_datacache, datacache_can_add_to_cache);
 	tcase_add_test(tc_datacache, datacache_can_add_to_cache_consistently);
 	tcase_add_test(tc_datacache, datacache_knows_how_to_count);
-	tcase_add_test(tc_datacache, datacache_can_seek);
 	tcase_add_test(tc_datacache, datacache_can_remove);
 	tcase_add_test(tc_datacache, datacache_can_do_stuff);
 	tcase_add_test(tc_datacache, xferlog_can_clear_empty_log);

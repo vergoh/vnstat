@@ -232,37 +232,6 @@ void updatedirownerid(const char *dir, const uid_t uid, const gid_t gid)
 	close(dir_fd);
 }
 
-void matchdbownerwithdirowner(const char *dir)
-{
-	uid_t uid;
-	gid_t gid;
-
-	if (!cfg.updatefileowner) {
-		if (debug)
-			printf("db owner: UpdateFileOwner disabled\n");
-		return;
-	}
-
-	if (!direxists(dir)) {
-		return;
-	}
-
-	if (!hasroot()) {
-		if (debug)
-			printf("db owner: user not root, skipping chmod\n");
-		return;
-	}
-
-	if (!getdirowner(dir, &uid, &gid)) {
-		return;
-	}
-
-	if (debug)
-		printf("db owner: \"%s\" user/group: %d/%d\n", dir, (int)uid, (int)gid);
-
-	updatedirownerid(dir, uid, gid);
-}
-
 int getdirowner(const char *dir, uid_t *uid, gid_t *gid)
 {
 	struct stat statbuf;

@@ -24,17 +24,6 @@ int datacache_add(datacache **dc, const char *interface, const short sync)
 	return 1;
 }
 
-int datacache_seek(datacache **dc, const char *interface)
-{
-	while (*dc != NULL) {
-		if (strcmp((*dc)->interface, interface) == 0) {
-			return 1;
-		}
-		*dc = (*dc)->next;
-	}
-	return 0;
-}
-
 int datacache_remove(datacache **dc, const char *interface)
 {
 	int ret = 0;

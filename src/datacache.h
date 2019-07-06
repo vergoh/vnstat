@@ -19,7 +19,6 @@ typedef struct xferlog {
 } xferlog;
 
 int datacache_add(datacache **dc, const char *interface, const short sync);
-int datacache_seek(datacache **dc, const char *interface);
 int datacache_remove(datacache **dc, const char *interface);
 void datacache_clear(datacache **dc);
 int datacache_count(datacache **dc);

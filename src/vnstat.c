@@ -828,7 +828,7 @@ void handletrafficmeters(PARAMS *p)
 
 void handleifselection(PARAMS *p)
 {
-	int ifcount = 0, dbifcount = 0, iffound = 0, dbopened = 0;
+	int ifcount, dbifcount = 0, iffound = 0, dbopened = 0;
 	iflist *ifl = NULL;
 	iflist *dbifl = NULL, *dbifl_iterator = NULL;
 

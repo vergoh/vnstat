@@ -585,7 +585,7 @@ int db_getinterfaceinfo(const char *iface, interfaceinfo *info)
 {
 	int rc;
 	char sql[512], *ifaceidin = NULL;
-	sqlite3_int64 ifaceid = 0;
+	sqlite3_int64 ifaceid;
 	sqlite3_stmt *sqlstmt;
 
 	if (strchr(iface, '+') == NULL) {
@@ -975,7 +975,7 @@ int db_removeoldentries_top(void)
 	int errorcount = 0;
 	char sql[512];
 	iflist *dbifl = NULL, *dbifl_iterator = NULL;
-	sqlite3_int64 ifaceid = 0;
+	sqlite3_int64 ifaceid;
 
 	if (cfg.topdayentries <= 0) {
 		return 1;
