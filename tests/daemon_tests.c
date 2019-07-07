@@ -17,6 +17,15 @@ START_TEST(debugtimestamp_does_not_exit)
 }
 END_TEST
 
+
+START_TEST(initdstate_does_not_crash)
+{
+	DSTATE s;
+	defaultcfg();
+	initdstate(&s);
+}
+END_TEST
+
 START_TEST(addinterfaces_does_nothing_with_no_files)
 {
 	DSTATE s;
@@ -179,14 +188,6 @@ START_TEST(addinterfaces_adds_to_cache_when_running)
 
 	ret = db_close();
 	ck_assert_int_eq(ret, 1);
-}
-END_TEST
-
-START_TEST(initdstate_does_not_crash)
-{
-	DSTATE s;
-	defaultcfg();
-	initdstate(&s);
 }
 END_TEST
 
@@ -1433,21 +1434,27 @@ START_TEST(datacache_status_has_no_issues_with_large_number_of_interfaces)
 }
 END_TEST
 
-void add_daemon_tests(Suite *s)
+void add_daemon_tests(Suite *s, const int can_fork)
 {
 	TCase *tc_daemon = tcase_create("Daemon");
+	tcase_add_checked_fixture(tc_daemon, setup, teardown);
+	tcase_add_unchecked_fixture(tc_daemon, setup, teardown);
 	tcase_add_test(tc_daemon, debugtimestamp_does_not_exit);
 	tcase_add_test(tc_daemon, initdstate_does_not_crash);
 	tcase_add_test(tc_daemon, addinterfaces_does_nothing_with_no_files);
 	tcase_add_test(tc_daemon, addinterfaces_adds_interfaces);
 	tcase_add_test(tc_daemon, addinterfaces_adds_only_new_interfaces);
 	tcase_add_test(tc_daemon, addinterfaces_adds_to_cache_when_running);
-	tcase_add_exit_test(tc_daemon, preparedatabases_exits_with_no_database_dir, 1);
-	tcase_add_exit_test(tc_daemon, preparedatabases_exits_with_no_databases, 1);
-	tcase_add_exit_test(tc_daemon, preparedatabases_exits_with_no_databases_and_noadd, 1);
+	if (can_fork) {
+		tcase_add_exit_test(tc_daemon, preparedatabases_exits_with_no_database_dir, 1);
+		tcase_add_exit_test(tc_daemon, preparedatabases_exits_with_no_databases, 1);
+		tcase_add_exit_test(tc_daemon, preparedatabases_exits_with_no_databases_and_noadd, 1);
+	}
 	tcase_add_test(tc_daemon, preparedatabases_with_no_databases_creates_databases);
 	tcase_add_test(tc_daemon, setsignaltraps_does_not_exit);
-	tcase_add_exit_test(tc_daemon, filldatabaselist_exits_with_no_database_dir, 1);
+	if (can_fork) {
+		tcase_add_exit_test(tc_daemon, filldatabaselist_exits_with_no_database_dir, 1);
+	}
 	tcase_add_test(tc_daemon, filldatabaselist_does_not_exit_with_empty_database_dir);
 	tcase_add_test(tc_daemon, filldatabaselist_adds_databases);
 	tcase_add_test(tc_daemon, adjustsaveinterval_with_empty_cache);
@@ -1482,13 +1489,19 @@ void add_daemon_tests(Suite *s)
 	tcase_add_test(tc_daemon, detectboot_sets_btime_if_missing_from_database);
 	tcase_add_test(tc_daemon, detectboot_sets_btime_for_new_database);
 	tcase_add_test(tc_daemon, detectboot_can_detect_boot);
-	tcase_add_exit_test(tc_daemon, handledatabaseerror_exits_on_fatal_error, 1);
+	if (can_fork) {
+		tcase_add_exit_test(tc_daemon, handledatabaseerror_exits_on_fatal_error, 1);
+	}
 	tcase_add_test(tc_daemon, handledatabaseerror_does_not_exit_if_limit_is_not_reached);
-	tcase_add_exit_test(tc_daemon, handledatabaseerror_exits_if_limit_is_reached, 1);
+	if (can_fork) {
+		tcase_add_exit_test(tc_daemon, handledatabaseerror_exits_if_limit_is_reached, 1);
+	}
 	tcase_add_test(tc_daemon, cleanremovedinterfaces_allows_interfaces_to_be_removed);
 	tcase_add_test(tc_daemon, processifinfo_syncs_when_needed);
 	tcase_add_test(tc_daemon, processifinfo_skips_update_if_timestamps_make_no_sense);
-	tcase_add_exit_test(tc_daemon, processifinfo_exits_if_timestamps_really_make_no_sense, 1);
+	if (can_fork) {
+		tcase_add_exit_test(tc_daemon, processifinfo_exits_if_timestamps_really_make_no_sense, 1);
+	}
 	tcase_add_test(tc_daemon, processifinfo_syncs_if_timestamps_match);
 	tcase_add_test(tc_daemon, processifinfo_adds_traffic);
 	tcase_add_test(tc_daemon, processifinfo_does_not_add_traffic_when_over_limit);

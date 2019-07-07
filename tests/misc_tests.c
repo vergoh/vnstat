@@ -708,6 +708,8 @@ END_TEST
 void add_misc_tests(Suite *s)
 {
 	TCase *tc_misc = tcase_create("Misc");
+	tcase_add_checked_fixture(tc_misc, setup, teardown);
+	tcase_add_unchecked_fixture(tc_misc, setup, teardown);
 	tcase_add_test(tc_misc, getbtime_does_not_return_zero);
 	tcase_add_loop_test(tc_misc, getunitprefix_returns_something_with_all_cfg_combinations, 0, 2);
 	tcase_add_loop_test(tc_misc, getrateunitprefix_returns_something_with_all_cfg_combinations, 0, 3);

@@ -130,6 +130,7 @@ START_TEST(ibwget_with_empty_list_and_no_maxbw)
 {
 	uint32_t limit;
 	cfg.maxbw = 0;
+	ibwflush();
 	ck_assert_int_eq(ibwget("does_not_exist", &limit), 0);
 }
 END_TEST
@@ -139,6 +140,7 @@ START_TEST(ibwget_with_empty_list_and_maxbw)
 	int ret;
 	uint32_t limit;
 	cfg.maxbw = 10;
+	ibwflush();
 	ret = ibwget("does_not_exist", &limit);
 	ck_assert_int_eq(ret, 1);
 	ck_assert_int_eq(limit, 10);
@@ -518,6 +520,8 @@ END_TEST
 void add_config_tests(Suite *s)
 {
 	TCase *tc_config = tcase_create("Config");
+	tcase_add_checked_fixture(tc_config, setup, teardown);
+	tcase_add_unchecked_fixture(tc_config, setup, teardown);
 	tcase_add_test(tc_config, validatecfg_default);
 	tcase_add_test(tc_config, validatecfg_does_not_modify_valid_changes);
 	tcase_add_test(tc_config, validatecfg_restores_invalid_values_back_to_default);

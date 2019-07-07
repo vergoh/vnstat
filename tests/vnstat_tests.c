@@ -15,12 +15,14 @@
 #include "image_tests.h"
 #endif
 
+int output_suppressed = 0;
+
 int main(void)
 {
 	int number_failed = 0;
 	debug = 0;
 
-	Suite *s = test_suite();
+	Suite *s = test_suite(get_fork_status());
 	SRunner *sr = srunner_create(s);
 	srunner_set_log(sr, "test.log");
 	srunner_set_xml(sr, "test.xml");
@@ -35,20 +37,20 @@ int main(void)
 	return number_failed;
 }
 
-Suite *test_suite(void)
+Suite *test_suite(const int can_fork)
 {
 	Suite *s = suite_create("vnStat");
 
-	add_common_tests(s);
+	add_common_tests(s, can_fork);
 	add_dbsql_tests(s);
 	add_database_tests(s);
 	add_config_tests(s);
 	add_ifinfo_tests(s);
 	add_misc_tests(s);
-	add_daemon_tests(s);
+	add_daemon_tests(s, can_fork);
 	add_datacache_tests(s);
 	add_fs_tests(s);
-	add_id_tests(s);
+	add_id_tests(s, can_fork);
 	add_iflist_tests(s);
 #if defined(HAVE_IMAGE)
 	add_image_tests(s);
@@ -57,9 +59,42 @@ Suite *test_suite(void)
 	return s;
 }
 
+/* exit tests can't be executed if check doesn't have forking enabled */
+/* and only SRunner knows that so a dummy runner needs to be created */
+int get_fork_status(void)
+{
+	int can_fork = 0;
+	Suite *s = suite_create("fork status check");
+	SRunner *sr = srunner_create(s);
+	if (srunner_fork_status(sr) != CK_NOFORK) {
+		can_fork = 1;
+	}
+	srunner_free(sr);
+	return can_fork;
+}
+
+void setup(void) {
+	debug = 0;
+}
+
+void teardown(void) {
+	restore_output();
+}
+
 void suppress_output(void)
 {
-	fclose(stdout);
+	if (!output_suppressed) {
+		fclose(stdout);
+		output_suppressed = 1;
+	}
+}
+
+void restore_output(void)
+{
+	if (output_suppressed) {
+		freopen("/dev/tty", "w", stdout);
+		output_suppressed = 0;
+	}
 }
 
 int pipe_output(void)
@@ -70,9 +105,12 @@ int pipe_output(void)
 		ck_abort_msg("error \"%s\" while creating pipe", strerror(errno));
 	}
 
-	dup2(out_pipe[1], STDOUT_FILENO);
-	close(out_pipe[1]);
+	if (out_pipe[1] != STDOUT_FILENO) {
+		dup2(out_pipe[1], STDOUT_FILENO);
+		close(out_pipe[1]);
+	}
 
+	output_suppressed = 1;
 	return out_pipe[0];
 }
 

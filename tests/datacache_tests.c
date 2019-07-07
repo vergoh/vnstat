@@ -291,6 +291,8 @@ END_TEST
 void add_datacache_tests(Suite *s)
 {
 	TCase *tc_datacache = tcase_create("Datacache");
+	tcase_add_checked_fixture(tc_datacache, setup, teardown);
+	tcase_add_unchecked_fixture(tc_datacache, setup, teardown);
 	tcase_add_test(tc_datacache, datacache_can_clear_empty_cache);
 	tcase_add_test(tc_datacache, datacache_can_add_to_cache);
 	tcase_add_test(tc_datacache, datacache_can_add_to_cache_consistently);

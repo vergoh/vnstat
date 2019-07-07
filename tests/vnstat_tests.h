@@ -3,8 +3,14 @@
 
 #include <check.h>
 
-Suite *test_suite(void);
+extern int output_suppressed;
+
+Suite *test_suite(const int can_fork);
+int get_fork_status(void);
+void setup(void);
+void teardown(void);
 void suppress_output(void);
+void restore_output(void);
 int pipe_output(void);
 void disable_logprints(void);
 int clean_testdbdir(void);

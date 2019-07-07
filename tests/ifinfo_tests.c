@@ -241,6 +241,7 @@ START_TEST(readproc_success)
 {
 	linuxonly;
 
+	noexit = 0;
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	fake_proc_net_dev("w", "ethwrong", 10, 20, 30, 40);
 	fake_proc_net_dev("a", "ethunusual", 1, 2, 3, 4);
@@ -270,6 +271,7 @@ START_TEST(readsysclassnet_success)
 {
 	linuxonly;
 
+	noexit = 0;
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	fake_sys_class_net("ethwrong", 10, 20, 30, 40, 50);
 	fake_sys_class_net("ethunusual", 1, 2, 3, 4, 5);
@@ -288,9 +290,10 @@ START_TEST(getifinfo_not_found)
 {
 	linuxonly;
 
-	suppress_output();
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	fake_proc_net_dev("w", "ethwrong", 10, 20, 30, 40);
+
+	suppress_output();
 
 	ck_assert_int_eq(getifinfo("ethunusual"), 0);
 }
@@ -300,11 +303,12 @@ START_TEST(getifinfo_success)
 {
 	linuxonly;
 
-	suppress_output();
-
+	noexit = 0;
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	fake_proc_net_dev("w", "ethwrong", 10, 20, 30, 40);
 	fake_proc_net_dev("a", "ethunusual", 1, 2, 3, 4);
+
+	suppress_output();
 
 	ck_assert_int_eq(getifinfo("ethunusual"), 1);
 	ck_assert_str_eq(ifinfo.name, "ethunusual");
@@ -320,11 +324,11 @@ START_TEST(isifavailable_knows_interface_availability)
 {
 	linuxonly;
 
-	suppress_output();
-
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	fake_proc_net_dev("w", "eth0", 10, 20, 30, 40);
 	fake_proc_net_dev("a", "eth1", 1, 2, 3, 4);
+
+	suppress_output();
 
 	ck_assert_int_eq(isifavailable("eth0"), 1);
 	ck_assert_int_eq(isifavailable("eth1"), 1);
@@ -335,6 +339,8 @@ END_TEST
 void add_ifinfo_tests(Suite *s)
 {
 	TCase *tc_ifinfo = tcase_create("Ifinfo");
+	tcase_add_checked_fixture(tc_ifinfo, setup, teardown);
+	tcase_add_unchecked_fixture(tc_ifinfo, setup, teardown);
 	tcase_add_test(tc_ifinfo, getifliststring_no_source);
 	tcase_add_test(tc_ifinfo, getifliststring_proc_one_interface);
 	tcase_add_test(tc_ifinfo, getifliststring_proc_one_interface_with_speed);

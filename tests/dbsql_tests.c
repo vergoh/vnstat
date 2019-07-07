@@ -883,7 +883,6 @@ START_TEST(db_validate_with_valid_version)
 	int ret;
 	defaultcfg();
 	suppress_output();
-	debug = 1;
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -2186,6 +2185,8 @@ END_TEST
 void add_dbsql_tests(Suite *s)
 {
 	TCase *tc_dbsql = tcase_create("DB SQL");
+	tcase_add_checked_fixture(tc_dbsql, setup, teardown);
+	tcase_add_unchecked_fixture(tc_dbsql, setup, teardown);
 	tcase_add_test(tc_dbsql, db_close_does_no_harm_when_db_is_already_closed);
 	tcase_add_test(tc_dbsql, db_open_rw_can_create_database_if_file_does_not_exist);
 	tcase_add_test(tc_dbsql, db_open_ro_cannot_create_a_database);

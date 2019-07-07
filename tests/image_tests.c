@@ -94,6 +94,7 @@ END_TEST
 
 START_TEST(getimagescale_zero)
 {
+	cfg.rateunit = 0;
 	ck_assert_str_eq(getimagescale(0, 0), "--");
 	ck_assert_str_eq(getimagescale(0, 1), "--");
 }
@@ -101,6 +102,7 @@ END_TEST
 
 START_TEST(getimagescale_normal)
 {
+	cfg.rateunit = 0;
 	ck_assert_str_eq(getimagescale(1, 0), "B");
 	ck_assert_str_eq(getimagescale(2, 0), "B");
 	ck_assert_str_eq(getimagescale(10, 0), "B");
@@ -116,6 +118,7 @@ END_TEST
 
 START_TEST(getimagescale_rate)
 {
+	cfg.rateunit = 0;
 	ck_assert_str_eq(getimagescale(1, 1), "B/s");
 	ck_assert_str_eq(getimagescale(2, 1), "B/s");
 	ck_assert_str_eq(getimagescale(10, 1), "B/s");
@@ -695,6 +698,8 @@ END_TEST
 void add_image_tests(Suite *s)
 {
 	TCase *tc_image = tcase_create("Image");
+	tcase_add_checked_fixture(tc_image, setup, teardown);
+	tcase_add_unchecked_fixture(tc_image, setup, teardown);
 	tcase_set_timeout(tc_image, 10);
 	tcase_add_test(tc_image, initimagecontent_does_not_crash);
 	tcase_add_test(tc_image, colorinit_does_not_crash);

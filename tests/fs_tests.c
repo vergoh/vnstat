@@ -129,6 +129,8 @@ END_TEST
 void add_fs_tests(Suite *s)
 {
 	TCase *tc_fs = tcase_create("FS");
+	tcase_add_checked_fixture(tc_fs, setup, teardown);
+	tcase_add_unchecked_fixture(tc_fs, setup, teardown);
 	tcase_add_test(tc_fs, fileexists_with_no_file);
 	tcase_add_test(tc_fs, fileexists_with_file);
 	tcase_add_test(tc_fs, direxists_with_no_dir);

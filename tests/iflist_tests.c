@@ -111,6 +111,8 @@ END_TEST
 void add_iflist_tests(Suite *s)
 {
 	TCase *tc_iflist = tcase_create("Iflist");
+	tcase_add_checked_fixture(tc_iflist, setup, teardown);
+	tcase_add_unchecked_fixture(tc_iflist, setup, teardown);
 	tcase_add_test(tc_iflist, iflistfree_can_free_null);
     tcase_add_test(tc_iflist, iflistadd_can_add);
     tcase_add_test(tc_iflist, iflistsearch_can_search);
