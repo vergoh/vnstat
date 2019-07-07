@@ -54,7 +54,7 @@ before_install:
  - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then brew install gd sqlite check ; fi
 
 script:
- - ./configure ${CPARAMS} && make check || ( cat test.log ; exit 1 ) && egrep '^[0-9]+%' test.log && CK_FORK=no ./check_vnstat || ( cat test.log ; exit 1 ) && ./vnstat --version
+ - ./configure ${CPARAMS} && make check || ( cat test.log ; exit 1 ) && egrep '^[0-9]+%' test.log && ./vnstat --version
 
 notifications:
   email:
