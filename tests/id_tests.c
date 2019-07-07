@@ -107,23 +107,19 @@ START_TEST(setgroup_with_current_group)
 }
 END_TEST
 
-void add_id_tests(Suite *s, const int can_fork)
+void add_id_tests(Suite *s)
 {
 	TCase *tc_id = tcase_create("ID");
 	tcase_add_checked_fixture(tc_id, setup, teardown);
 	tcase_add_unchecked_fixture(tc_id, setup, teardown);
 	tcase_add_test(tc_id, getuser_root_string);
 	tcase_add_test(tc_id, getuser_root_numeric);
-	if (can_fork) {
-		tcase_add_exit_test(tc_id, getuser_no_such_user_string, 1);
-		tcase_add_exit_test(tc_id, getuser_no_such_user_numeric, 1);
-	}
+	tcase_add_exit_test(tc_id, getuser_no_such_user_string, 1);
+	tcase_add_exit_test(tc_id, getuser_no_such_user_numeric, 1);
 	tcase_add_test(tc_id, getgroup_root_string);
 	tcase_add_test(tc_id, getgroup_root_numeric);
-	if (can_fork) {
-		tcase_add_exit_test(tc_id, getgroup_no_such_user_string, 1);
-		tcase_add_exit_test(tc_id, getgroup_no_such_user_numeric, 1);
-	}
+	tcase_add_exit_test(tc_id, getgroup_no_such_user_string, 1);
+	tcase_add_exit_test(tc_id, getgroup_no_such_user_numeric, 1);
 	tcase_add_test(tc_id, setuser_with_empty_user);
 	tcase_add_test(tc_id, setuser_with_current_user);
 	tcase_add_test(tc_id, setgroup_with_empty_group);

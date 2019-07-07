@@ -19,11 +19,13 @@ int output_suppressed = 0;
 
 int main(void)
 {
+	Suite *s;
+	SRunner *sr;
 	int number_failed = 0;
-	debug = 0;
 
-	Suite *s = test_suite(get_fork_status());
-	SRunner *sr = srunner_create(s);
+	verify_fork_status();
+	s = test_suite();
+	sr = srunner_create(s);
 	srunner_set_log(sr, "test.log");
 	srunner_set_xml(sr, "test.xml");
 	srunner_run_all(sr, CK_NORMAL);
@@ -37,20 +39,20 @@ int main(void)
 	return number_failed;
 }
 
-Suite *test_suite(const int can_fork)
+Suite *test_suite(void)
 {
 	Suite *s = suite_create("vnStat");
 
-	add_common_tests(s, can_fork);
+	add_common_tests(s);
 	add_dbsql_tests(s);
 	add_database_tests(s);
 	add_config_tests(s);
 	add_ifinfo_tests(s);
 	add_misc_tests(s);
-	add_daemon_tests(s, can_fork);
+	add_daemon_tests(s);
 	add_datacache_tests(s);
 	add_fs_tests(s);
-	add_id_tests(s, can_fork);
+	add_id_tests(s);
 	add_iflist_tests(s);
 #if defined(HAVE_IMAGE)
 	add_image_tests(s);
@@ -59,18 +61,17 @@ Suite *test_suite(const int can_fork)
 	return s;
 }
 
-/* exit tests can't be executed if check doesn't have forking enabled */
+/* tests can't reliably be executed if check doesn't have forking enabled */
 /* and only SRunner knows that so a dummy runner needs to be created */
-int get_fork_status(void)
+void verify_fork_status(void)
 {
-	int can_fork = 0;
 	Suite *s = suite_create("fork status check");
 	SRunner *sr = srunner_create(s);
-	if (srunner_fork_status(sr) != CK_NOFORK) {
-		can_fork = 1;
+	if (srunner_fork_status(sr) == CK_NOFORK) {
+		printf("Error: Tests require Check to have fork mode enabled.\n");
+		exit(1);
 	}
 	srunner_free(sr);
-	return can_fork;
 }
 
 void setup(void) {
@@ -78,7 +79,7 @@ void setup(void) {
 }
 
 void teardown(void) {
-	restore_output();
+	;
 }
 
 void suppress_output(void)
@@ -86,14 +87,6 @@ void suppress_output(void)
 	if (!output_suppressed) {
 		fclose(stdout);
 		output_suppressed = 1;
-	}
-}
-
-void restore_output(void)
-{
-	if (output_suppressed) {
-		freopen("/dev/tty", "w", stdout);
-		output_suppressed = 0;
 	}
 }
 

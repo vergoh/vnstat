@@ -444,8 +444,6 @@ START_TEST(showbar_with_all_rx)
 	fflush(stdout);
 
 	len = (int)read(pipe, buffer, 512);
-	close(STDOUT_FILENO);
-	close(pipe);
 	ck_assert_str_eq(buffer, "  rrrrrrrrrr");
 }
 END_TEST
@@ -465,8 +463,6 @@ START_TEST(showbar_with_all_tx)
 	fflush(stdout);
 
 	len = (int)read(pipe, buffer, 512);
-	close(STDOUT_FILENO);
-	close(pipe);
 	ck_assert_str_eq(buffer, "  tttttttttt");
 }
 END_TEST
@@ -486,8 +482,6 @@ START_TEST(showbar_with_half_and_half)
 	fflush(stdout);
 
 	len = (int)read(pipe, buffer, 512);
-	close(STDOUT_FILENO);
-	close(pipe);
 	ck_assert_str_eq(buffer, "  rrrrrttttt");
 }
 END_TEST
@@ -507,8 +501,6 @@ START_TEST(showbar_with_one_tenth)
 	fflush(stdout);
 
 	len = (int)read(pipe, buffer, 512);
-	close(STDOUT_FILENO);
-	close(pipe);
 	ck_assert_str_eq(buffer, "  rttttttttt");
 }
 END_TEST
@@ -528,8 +520,6 @@ START_TEST(showbar_with_small_rx_shows_all_tx)
 	fflush(stdout);
 
 	len = (int)read(pipe, buffer, 512);
-	close(STDOUT_FILENO);
-	close(pipe);
 	ck_assert_str_eq(buffer, "  tttttttttt");
 }
 END_TEST
@@ -558,8 +548,6 @@ START_TEST(showbar_with_half_and_half_of_half)
 	fflush(stdout);
 
 	len = (int)read(pipe, buffer, 512);
-	close(STDOUT_FILENO);
-	close(pipe);
 	ck_assert_str_eq(buffer, "  rrrttt");
 }
 END_TEST

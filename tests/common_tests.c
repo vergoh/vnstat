@@ -359,9 +359,6 @@ START_TEST(timeused_debug_outputs_something_expected_when_debug_is_enabled)
 	fflush(stdout);
 
 	len = (int)read(pipe, buffer, 512);
-	close(STDOUT_FILENO);
-	close(pipe);
-
 	ck_assert_int_gt(len, 1);
 	ck_assert_ptr_ne(strstr(buffer, "that_func() in 0"), NULL);
 }
@@ -385,9 +382,6 @@ START_TEST(timeused_debug_does_not_output_anything_when_debug_is_disabled)
 	fflush(stdout);
 
 	len = (int)read(pipe, buffer, 512);
-	close(STDOUT_FILENO);
-	close(pipe);
-
 	ck_assert_int_eq(len, 1);
 }
 END_TEST
@@ -421,7 +415,7 @@ START_TEST(can_panic)
 }
 END_TEST
 
-void add_common_tests(Suite *s, const int can_fork)
+void add_common_tests(Suite *s)
 {
 	TCase *tc_common = tcase_create("Common");
 	tcase_add_checked_fixture(tc_common, setup, teardown);
@@ -454,8 +448,6 @@ void add_common_tests(Suite *s, const int can_fork)
 	tcase_add_test(tc_common, timeused_debug_outputs_something_expected_when_debug_is_enabled);
 	tcase_add_test(tc_common, timeused_debug_does_not_output_anything_when_debug_is_disabled);
 	tcase_add_test(tc_common, timeused_tracks_used_time);
-	if (can_fork) {
-		tcase_add_exit_test(tc_common, can_panic, 1);
-	}
+	tcase_add_exit_test(tc_common, can_panic, 1);
 	suite_add_tcase(s, tc_common);
 }

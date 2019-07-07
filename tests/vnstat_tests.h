@@ -5,8 +5,8 @@
 
 extern int output_suppressed;
 
-Suite *test_suite(const int can_fork);
-int get_fork_status(void);
+Suite *test_suite(void);
+void verify_fork_status(void);
 void setup(void);
 void teardown(void);
 void suppress_output(void);
