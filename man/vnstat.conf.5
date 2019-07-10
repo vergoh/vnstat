@@ -1,4 +1,4 @@
-.TH VNSTAT.CONF 5 "APRIL 2019" "version 2.2" "User Manuals"
+.TH VNSTAT.CONF 5 "JULY 2019" "version 2.3" "User Manuals"
 .SH NAME
 vnstat.conf \- vnStat configuration file
 
@@ -61,7 +61,6 @@ hourly graph output. 0 = none, 1 = '|', 2 = '][', 3 = '[ ]'.
 Default interface used when no other interface is specified on the command
 line. Leave empty for automatic selection. The automatic selection will
 prioritize the interface with most traffic for outputs doing database queries.
-
 Queries not using the database will first check if the database is available
 and select the interface with most traffic out those that are currently
 visible in the system. If no database can be read then the first available
@@ -234,7 +233,7 @@ to 3. Value range: -1..3
 .B DatabaseWriteAheadLogging
 Enable or disable SQLite Write-Ahead Logging mode for the database. See SQLite
 documentation for more details and note that support for read-only operations
-isn't available in older versions. 1 = enabled, 0 = disabled.
+isn't available in older SQLite versions. 1 = enabled, 0 = disabled.
 
 .TP
 .B HourlyDays
