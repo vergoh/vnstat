@@ -34,10 +34,10 @@ void drawimage(IMAGECONTENT *ic)
 			drawsummary(ic, 0, 0);
 			break;
 		case 51:
-			drawsummary(ic, 1, cfg.hourlyrate);
+			drawsummary(ic, 1, cfg.hourlyrate); // horizontal
 			break;
 		case 52:
-			drawsummary(ic, 2, cfg.hourlyrate);
+			drawsummary(ic, 2, cfg.hourlyrate); // vertical
 			break;
 		case 7:
 			drawhourly(ic, cfg.hourlyrate);
@@ -574,14 +574,23 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	rowcount += datainfo.count;
 
 	width = 500;
-	if ((listtype == LT_Day || listtype == LT_Month || listtype == LT_Year || listtype == LT_Top) && (datainfo.count < 2 || strlen(ic->dataend) == 0 || listtype == LT_Top)) { // less space needed when no estimate or sum is shown
+	height = 98;
+
+	// less space needed when no estimate or sum is shown (Top, 5min and Hour never have estimate)
+	if ((listtype == LT_Day || listtype == LT_Month || listtype == LT_Year || listtype == LT_Top || listtype == LT_5min || listtype == LT_Hour) &&
+		(datainfo.count < 2 || listtype == LT_Top || listtype == LT_5min || listtype == LT_Hour)) {
 		height = 86;
 		offsety = -16;
-	} else {
-		height = 98;
 	}
+	// exception for 5min and Hour when having sum shown
+	if ((listtype == LT_5min || listtype == LT_Hour) && datainfo.count > 1 && strlen(ic->dataend) > 0) {
+		height = 98;
+		offsety = 0;
+	}
+
 	height += 12 * rowcount;
 
+	// "no data available"
 	if (!datainfo.count) {
 		height = 98;
 		offsety = -24;
@@ -823,14 +832,17 @@ void drawsummary(IMAGECONTENT *ic, int type, int rate)
 	dbdatalistinfo datainfo;
 
 	switch (type) {
+		// horizontal
 		case 1:
 			width = 980;
 			height = 200;
 			break;
+		// vertical
 		case 2:
 			width = 500;
 			height = 370;
 			break;
+		// no hours
 		default:
 			width = 500;
 			height = 200;
@@ -1026,10 +1038,10 @@ void drawsummary(IMAGECONTENT *ic, int type, int rate)
 		offset = 0;
 	}
 
-	drawdonut(ic, 150 + offset, 163 - headermod, rxp, txp);
+	drawdonut(ic, 150 + offset, 158 - headermod, rxp, txp);
 
 	textx = 100 + offset;
-	texty = 118 - headermod;
+	texty = 113 - headermod;
 
 	d = localtime(&data_current->timestamp);
 	strftime(daytemp, 16, cfg.mformat, d);
@@ -1070,10 +1082,10 @@ void drawsummary(IMAGECONTENT *ic, int type, int rate)
 			txp = txp * mod;
 		}
 
-		drawdonut(ic, 330, 163 - headermod, rxp, txp);
+		drawdonut(ic, 330, 158 - headermod, rxp, txp);
 
 		textx = 280;
-		texty = 118 - headermod;
+		texty = 113 - headermod;
 
 		d = localtime(&data_previous->timestamp);
 		strftime(daytemp, 16, cfg.mformat, d);
@@ -1127,9 +1139,11 @@ void drawsummary(IMAGECONTENT *ic, int type, int rate)
 
 	/* hours if requested */
 	switch (type) {
+		// horizontal
 		case 1:
 			drawhours(ic, 500, 46 - headermod, rate);
 			break;
+		// vertical
 		case 2:
 			drawhours(ic, 12, 215 - headermod, rate);
 			break;

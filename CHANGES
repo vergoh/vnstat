@@ -11,6 +11,8 @@
    - Interfaces could end up staying marked as 'disabled' in the database even
      after becoming back active and monitored, only the shown status was wrong
      without resulting in any data loss
+   - Some image outputs didn't allocate enough height for the image resulting
+     in the last row having less space below it than intended
  - New
    - Automatic interface selection when the Interface configuration setting
      is left empty (new default)
