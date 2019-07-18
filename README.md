@@ -37,7 +37,8 @@ Development version
 In both cases, continue with instructions from the [INSTALL](INSTALL.md) or
 [INSTALL_BSD](INSTALL_BSD.md) file depending on used operating system.
 Instructions for upgrading from a previous version are included in the
-[UPGRADE](UPGRADE.md) file.
+[UPGRADE](UPGRADE.md) file. Release notes can be found from the [CHANGES](CHANGES)
+file.
 
 ## Contacting the author
 

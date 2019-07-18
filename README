@@ -24,7 +24,8 @@ See the webpage https://humdi.net/vnstat/ for output examples.
 vnStat works best when installed. See the INSTALL or INSTALL_BSD file
 depending on used operating system. These files contain all needed
 information for the installing process. Instructions for upgrading from
-a previous version are included in the UPGRADE file.
+a previous version are included in the UPGRADE file. Release notes
+can be found from the CHANGES file.
 
 
 # Available options and documentation
