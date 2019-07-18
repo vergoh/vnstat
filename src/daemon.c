@@ -16,10 +16,6 @@ void daemonize(void)
 	int i;
 	char str[10];
 
-	if (getppid() == 1) {
-		return; /* already a daemon */
-	}
-
 	i = (int)fork();
 
 	if (i < 0) { /* fork error */
