@@ -3,6 +3,7 @@
  - Fixed
    - Daemon didn't fork() even when requested to with --daemon when started
      by PID 1 (issue seen at least in Docker containers)
+   - Move vnstatd man page from section 1 to section 8
 
 
 2.3 / 10-Jul-2019

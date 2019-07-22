@@ -1,7 +1,7 @@
 SUBDIRS = .
 AM_CFLAGS = @CFLAG_EXTRAS@
 
-dist_man_MANS = man/vnstat.1 man/vnstat.conf.5 man/vnstatd.1 man/vnstati.1
+dist_man_MANS = man/vnstat.1 man/vnstat.conf.5 man/vnstatd.8 man/vnstati.1
 
 EXTRA_DIST = cfg examples UPGRADE CHANGES FAQ INSTALL_BSD UNINSTALL
 
@@ -139,6 +139,7 @@ release: distcheck
 	ls -l $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.gz
 
 install-data-hook: install-exec
+	if [ -f $(DESTDIR)$(man1dir)/vnstatd.1 ]; then rm -f $(DESTDIR)$(man1dir)/vnstatd.1; fi
 	$(MKDIR_P) $(DESTDIR)$(sysconfdir)
 if IS_CROSSCOMPILED
 	if [ ! -f $(DESTDIR)$(sysconfdir)/vnstat.conf ]; \
