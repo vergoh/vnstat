@@ -318,10 +318,9 @@ int main(int argc, char *argv[])
 		printf("Qmode: %d\n", cfg.qmode);
 
 	drawimage(&ic);
+	db_close();
 	writeoutput(&p, &ic);
 
-	/* cleanup */
-	db_close();
 	if (debug)
 		printf("all done\n");
 

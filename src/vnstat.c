@@ -469,8 +469,8 @@ int main(int argc, char *argv[])
 	}
 
 	/* cleanup */
-	ibwflush();
 	db_close();
+	ibwflush();
 
 	return 0;
 }
