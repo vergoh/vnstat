@@ -101,6 +101,7 @@ int db_open(const int createifnotfound, const int readonly)
 
 	/* set pragmas */
 	if (!readonly) {
+		sqlite3_busy_timeout(db, cfg.updateinterval * 1000);
 		if (!db_setpragmas()) {
 			db_close();
 			return 0;
@@ -1045,9 +1046,13 @@ int db_committransaction(void)
 
 	rc = sqlite3_exec(db, "COMMIT", 0, 0, 0);
 	if (rc) {
-		db_errcode = rc;
 		snprintf(errorstring, 1024, "Commit transaction to database failed (%d): %s", rc, sqlite3_errmsg(db));
 		printe(PT_Error);
+		/* execute rollback if commit failure left the transaction open */
+		if (!sqlite3_get_autocommit(db)) {
+			db_rollbacktransaction();
+		}
+		db_errcode = rc;
 		db_intransaction = 0;
 		return 0;
 	}
