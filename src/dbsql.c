@@ -905,11 +905,12 @@ int db_removeoldentries(void)
 		printf("db: removing old entries\n");
 	}
 
-	if (!db_removeoldentries_top()) {
+	if (!db_begintransaction()) {
 		return 0;
 	}
 
-	if (!db_begintransaction()) {
+	if (!db_removeoldentries_top()) {
+		db_rollbacktransaction();
 		return 0;
 	}
 
@@ -1022,12 +1023,19 @@ int db_removeoldentries_top(void)
 
 int db_vacuum(void)
 {
+	if (debug) {
+		printf("db: vacuum\n");
+	}
 	return db_exec("VACUUM");
 }
 
 int db_begintransaction(void)
 {
 	int rc;
+
+	if (debug) {
+		printf("db: begin transaction\n");
+	}
 
 	rc = sqlite3_exec(db, "BEGIN IMMEDIATE", 0, 0, 0);
 	if (rc) {
@@ -1043,6 +1051,10 @@ int db_begintransaction(void)
 int db_committransaction(void)
 {
 	int rc;
+
+	if (debug) {
+		printf("db: commit transaction\n");
+	}
 
 	rc = sqlite3_exec(db, "COMMIT", 0, 0, 0);
 	if (rc) {
@@ -1063,6 +1075,10 @@ int db_committransaction(void)
 int db_rollbacktransaction(void)
 {
 	int rc;
+
+	if (debug) {
+		printf("db: rollback transaction\n");
+	}
 
 	rc = sqlite3_exec(db, "ROLLBACK", 0, 0, 0);
 	if (rc) {
