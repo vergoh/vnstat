@@ -191,7 +191,7 @@ START_TEST(addinterfaces_adds_to_cache_when_running)
 }
 END_TEST
 
-START_TEST(preparedatabases_exits_with_no_database_dir)
+START_TEST(preparedatabase_exits_with_no_database_dir)
 {
 	DSTATE s;
 
@@ -200,11 +200,11 @@ START_TEST(preparedatabases_exits_with_no_database_dir)
 	suppress_output();
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 
-	preparedatabases(&s);
+	preparedatabase(&s);
 }
 END_TEST
 
-START_TEST(preparedatabases_exits_with_no_databases)
+START_TEST(preparedatabase_exits_with_no_database)
 {
 	DSTATE s;
 
@@ -215,11 +215,11 @@ START_TEST(preparedatabases_exits_with_no_databases)
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	ck_assert_int_eq(clean_testdbdir(), 1);
 
-	preparedatabases(&s);
+	preparedatabase(&s);
 }
 END_TEST
 
-START_TEST(preparedatabases_exits_with_no_databases_and_noadd)
+START_TEST(preparedatabase_exits_with_no_database_and_noadd)
 {
 	DSTATE s;
 
@@ -231,11 +231,11 @@ START_TEST(preparedatabases_exits_with_no_databases_and_noadd)
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	ck_assert_int_eq(clean_testdbdir(), 1);
 
-	preparedatabases(&s);
+	preparedatabase(&s);
 }
 END_TEST
 
-START_TEST(preparedatabases_with_no_databases_creates_databases)
+START_TEST(preparedatabase_with_no_database_creates_database)
 {
 	int ret;
 	DSTATE s;
@@ -253,7 +253,7 @@ START_TEST(preparedatabases_with_no_databases_creates_databases)
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
-	preparedatabases(&s);
+	preparedatabase(&s);
 
 	ck_assert_int_eq(db_getinterfacecountbyname("ethone"), 1);
 	ck_assert_int_eq(db_getinterfacecountbyname("ethtwo"), 1);
@@ -1445,10 +1445,10 @@ void add_daemon_tests(Suite *s)
 	tcase_add_test(tc_daemon, addinterfaces_adds_interfaces);
 	tcase_add_test(tc_daemon, addinterfaces_adds_only_new_interfaces);
 	tcase_add_test(tc_daemon, addinterfaces_adds_to_cache_when_running);
-	tcase_add_exit_test(tc_daemon, preparedatabases_exits_with_no_database_dir, 1);
-	tcase_add_exit_test(tc_daemon, preparedatabases_exits_with_no_databases, 1);
-	tcase_add_exit_test(tc_daemon, preparedatabases_exits_with_no_databases_and_noadd, 1);
-	tcase_add_test(tc_daemon, preparedatabases_with_no_databases_creates_databases);
+	tcase_add_exit_test(tc_daemon, preparedatabase_exits_with_no_database_dir, 1);
+	tcase_add_exit_test(tc_daemon, preparedatabase_exits_with_no_database, 1);
+	tcase_add_exit_test(tc_daemon, preparedatabase_exits_with_no_database_and_noadd, 1);
+	tcase_add_test(tc_daemon, preparedatabase_with_no_database_creates_database);
 	tcase_add_test(tc_daemon, setsignaltraps_does_not_exit);
 	tcase_add_exit_test(tc_daemon, filldatabaselist_exits_with_no_database_dir, 1);
 	tcase_add_test(tc_daemon, filldatabaselist_does_not_exit_with_empty_database_dir);

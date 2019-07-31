@@ -165,7 +165,7 @@ int main(int argc, char *argv[])
 	}
 
 	detectboot(&s);
-	preparedatabases(&s);
+	preparedatabase(&s);
 
 	if (!db_removeoldentries()) {
 		printf("Error: Database \"%s/%s\" cleanup failed: %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));

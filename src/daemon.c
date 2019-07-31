@@ -268,7 +268,7 @@ void initdstate(DSTATE *s)
 	s->prevwaldbcheckpoint = time(NULL);
 }
 
-void preparedatabases(DSTATE *s)
+void preparedatabase(DSTATE *s)
 {
 	s->dbifcount = db_getinterfacecount();
 
