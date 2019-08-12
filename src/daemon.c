@@ -666,7 +666,6 @@ void flushcachetodisk(DSTATE *s)
 	if (db_intransaction && !db_errcode) {
 		if (!db_committransaction()) {
 			handledatabaseerror(s);
-			db_rollbacktransaction();
 		} else {
 			/* clear xferlog now that everything is in database */
 			iterator = s->dcache;

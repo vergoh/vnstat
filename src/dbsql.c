@@ -1056,6 +1056,8 @@ int db_committransaction(void)
 		printf("db: commit transaction\n");
 	}
 
+	db_intransaction = 0;
+
 	rc = sqlite3_exec(db, "COMMIT", 0, 0, 0);
 	if (rc) {
 		snprintf(errorstring, 1024, "Commit transaction to database failed (%d): %s", rc, sqlite3_errmsg(db));
@@ -1065,10 +1067,8 @@ int db_committransaction(void)
 			db_rollbacktransaction();
 		}
 		db_errcode = rc;
-		db_intransaction = 0;
 		return 0;
 	}
-	db_intransaction = 0;
 	return 1;
 }
 
@@ -1080,15 +1080,15 @@ int db_rollbacktransaction(void)
 		printf("db: rollback transaction\n");
 	}
 
+	db_intransaction = 0;
+
 	rc = sqlite3_exec(db, "ROLLBACK", 0, 0, 0);
 	if (rc) {
 		db_errcode = rc;
 		snprintf(errorstring, 1024, "Transaction rollback failed (%d): %s", rc, sqlite3_errmsg(db));
 		printe(PT_Error);
-		db_intransaction = 0;
 		return 0;
 	}
-	db_intransaction = 0;
 	return 1;
 }
 
