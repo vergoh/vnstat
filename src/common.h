@@ -257,8 +257,10 @@ and most can be changed later from the config file.
 #define CTX "606060"
 #define CTXD "-"
 
-/* number of retries for non-fatal database errors */
-#define DBRETRYLIMIT 3
+/* number of retries after non-fatal database errors, */
+/* will result in given number + 1 tries in total before exit, */
+/* a full disk (as reported by sqlite) will no cause retries or exit */
+#define DBRETRYLIMIT 5
 
 /* internal config structure */
 typedef struct {
