@@ -1073,30 +1073,7 @@ START_TEST(handledatabaseerror_exits_on_fatal_error)
 }
 END_TEST
 
-START_TEST(handledatabaseerror_does_not_exit_if_limit_is_not_reached)
-{
-	int i;
-	DSTATE s;
-	defaultcfg();
-	initdstate(&s);
-	disable_logprints();
-
-	ck_assert_int_eq(s.dbretrycount, 0);
-
-	db_errcode = SQLITE_BUSY;
-	handledatabaseerror(&s);
-
-	ck_assert_int_eq(s.dbretrycount, 1);
-
-	for (i = 1; i < DBRETRYLIMIT - 1; i++) {
-		handledatabaseerror(&s);
-	}
-
-	ck_assert_int_eq(s.dbretrycount, DBRETRYLIMIT - 1);
-}
-END_TEST
-
-START_TEST(handledatabaseerror_exits_if_limit_is_reached)
+START_TEST(handledatabaseerror_does_not_exit_if_limit_is_not_exceeded)
 {
 	int i;
 	DSTATE s;
@@ -1112,6 +1089,29 @@ START_TEST(handledatabaseerror_exits_if_limit_is_reached)
 	ck_assert_int_eq(s.dbretrycount, 1);
 
 	for (i = 1; i < DBRETRYLIMIT; i++) {
+		handledatabaseerror(&s);
+	}
+
+	ck_assert_int_eq(s.dbretrycount, DBRETRYLIMIT);
+}
+END_TEST
+
+START_TEST(handledatabaseerror_exits_if_limit_is_exceeded)
+{
+	int i;
+	DSTATE s;
+	defaultcfg();
+	initdstate(&s);
+	disable_logprints();
+
+	ck_assert_int_eq(s.dbretrycount, 0);
+
+	db_errcode = SQLITE_BUSY;
+	handledatabaseerror(&s);
+
+	ck_assert_int_eq(s.dbretrycount, 1);
+
+	for (i = 1; i < DBRETRYLIMIT + 1; i++) {
 		handledatabaseerror(&s);
 	}
 }
@@ -1486,8 +1486,8 @@ void add_daemon_tests(Suite *s)
 	tcase_add_test(tc_daemon, detectboot_sets_btime_for_new_database);
 	tcase_add_test(tc_daemon, detectboot_can_detect_boot);
 	tcase_add_exit_test(tc_daemon, handledatabaseerror_exits_on_fatal_error, 1);
-	tcase_add_test(tc_daemon, handledatabaseerror_does_not_exit_if_limit_is_not_reached);
-	tcase_add_exit_test(tc_daemon, handledatabaseerror_exits_if_limit_is_reached, 1);
+	tcase_add_test(tc_daemon, handledatabaseerror_does_not_exit_if_limit_is_not_exceeded);
+	tcase_add_exit_test(tc_daemon, handledatabaseerror_exits_if_limit_is_exceeded, 1);
 	tcase_add_test(tc_daemon, cleanremovedinterfaces_allows_interfaces_to_be_removed);
 	tcase_add_test(tc_daemon, processifinfo_syncs_when_needed);
 	tcase_add_test(tc_daemon, processifinfo_skips_update_if_timestamps_make_no_sense);
