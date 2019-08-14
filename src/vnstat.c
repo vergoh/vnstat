@@ -361,6 +361,19 @@ int main(int argc, char *argv[])
 		} else if (strcmp(argv[currentarg], "--remove") == 0) {
 			p.removeiface = 1;
 			p.query = 0;
+		} else if (strcmp(argv[currentarg], "--rename") == 0) {
+			if (currentarg + 1 < argc) {
+				strncpy_nt(p.newifname, argv[currentarg + 1], 32);
+				if (debug)
+					printf("Given new interface name: \"%s\"\n", p.newifname);
+				p.renameiface = 1;
+				p.query = 0;
+				currentarg++;
+				continue;
+			} else {
+				printf("Error: New interface name for %s missing.\n", argv[currentarg]);
+				return 1;
+			}
 		} else if ((strcmp(argv[currentarg], "-b") == 0) || (strcmp(argv[currentarg], "--begin") == 0)) {
 			if (currentarg + 1 < argc) {
 				if (!validatedatetime(argv[currentarg + 1])) {
@@ -442,6 +455,7 @@ int main(int argc, char *argv[])
 
 	/* parameter handlers */
 	handleremoveinterface(&p);
+	handlerenameinterface(&p);
 	handleaddinterface(&p);
 	handlesetalias(&p);
 	handleshowdatabases(&p);
@@ -491,8 +505,14 @@ void initparams(PARAMS *p)
 	p->livetraffic = 0;
 	p->defaultiface = 1;
 	p->removeiface = 0;
+	p->renameiface = 0;
 	p->livemode = 0;
 	p->ifacelist = NULL;
+	p->interface[0] = '\0';
+	p->alias[0] = '\0';
+	p->newifname[0] = '\0';
+	p->filename[0] = '\0';
+	p->definterface[0] = '\0';
 	p->cfgfile[0] = '\0';
 	p->jsonmode = 'a';
 	p->xmlmode = 'a';
@@ -555,6 +575,7 @@ void showlonghelp(PARAMS *p)
 
 	printf("      --add                        add interface to database\n");
 	printf("      --remove                     remove interface from database\n");
+	printf("      --rename <name>              rename interface in database\n");
 	printf("      --setalias <alias>           set alias for interface\n\n");
 
 	printf("Misc:\n");
@@ -587,6 +608,11 @@ void handleremoveinterface(PARAMS *p)
 		return;
 	}
 
+	if (p->defaultiface) {
+		printf("Error: Use -i parameter to specify an interface.\n");
+		exit(EXIT_FAILURE);
+	}
+
 	if (!db_getinterfacecountbyname(p->interface)) {
 		printf("Error: Interface \"%s\" not found in database.\n", p->interface);
 		exit(EXIT_FAILURE);
@@ -610,6 +636,52 @@ void handleremoveinterface(PARAMS *p)
 		exit(EXIT_SUCCESS);
 	} else {
 		printf("Error: Removing interface \"%s\" from database failed.\n", p->interface);
+		exit(EXIT_FAILURE);
+	}
+}
+
+void handlerenameinterface(PARAMS *p)
+{
+	if (!p->renameiface) {
+		return;
+	}
+
+	if (p->defaultiface) {
+		printf("Error: Use -i parameter to specify an interface.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (!strlen(p->newifname)) {
+		printf("Error: New interface name must be at least one character long.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (!db_getinterfacecountbyname(p->interface)) {
+		printf("Error: Interface \"%s\" not found in database.\n", p->interface);
+		exit(EXIT_FAILURE);
+	}
+
+	if (db_getinterfacecountbyname(p->newifname)) {
+		printf("Error: Interface \"%s\" already exists in database.\n", p->interface);
+		exit(EXIT_FAILURE);
+	}
+
+	if (!p->force) {
+		printf("Warning:\nThe current option would rename\ninterface \"%s\" -> \"%s\" in the database.\n", p->interface, p->newifname);
+		printf("Use --force in order to really do that.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (!db_close() || !db_open_rw(0)) {
+		printf("Error: Handling database \"%s/%s\" failing: %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
+	if (db_renameinterface(p->interface, p->newifname)) {
+		printf("Interface \"%s\" has been renamed \"%s\".\n", p->interface, p->newifname);
+		exit(EXIT_SUCCESS);
+	} else {
+		printf("Error: Renaming interface \"%s\" -> \"%s\" failed.\n", p->interface, p->newifname);
 		exit(EXIT_FAILURE);
 	}
 }
@@ -657,7 +729,7 @@ void handleaddinterface(PARAMS *p)
 		printf("\nRestart the vnStat daemon if it is currently running in order to start monitoring \"%s\".\n", p->interface);
 		exit(EXIT_SUCCESS);
 	} else {
-		printf("Error: Adding interface \"%s\" to database failed: %s\n", p->interface, strerror(errno));
+		printf("Error: Adding interface \"%s\" to database failed.\n", p->interface);
 		exit(EXIT_FAILURE);
 	}
 }
@@ -687,7 +759,7 @@ void handlesetalias(PARAMS *p)
 		printf("Alias of interface \"%s\" set to \"%s\".\n", p->interface, p->alias);
 		exit(EXIT_SUCCESS);
 	} else {
-		printf("Error: Changing interface \"%s\" alias failed: %s\n", p->interface, strerror(errno));
+		printf("Error: Setting interface \"%s\" alias failed.\n", p->interface);
 		exit(EXIT_FAILURE);
 	}
 }
@@ -832,7 +904,7 @@ void handleifselection(PARAMS *p)
 	iflist *ifl = NULL;
 	iflist *dbifl = NULL, *dbifl_iterator = NULL;
 
-	if (!p->defaultiface) {
+	if (!p->defaultiface || !p->query) {
 		return;
 	}
 

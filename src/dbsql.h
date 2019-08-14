@@ -38,6 +38,7 @@ int db_exec(const char *sql);
 int db_create(void);
 int db_addinterface(const char *iface);
 int db_removeinterface(const char *iface);
+int db_renameinterface(const char *iface, const char *newifname);
 uint64_t db_getinterfacecount(void);
 uint64_t db_getinterfacecountbyname(const char *iface);
 sqlite3_int64 db_getinterfaceid(const char *iface, const int createifnotfound);

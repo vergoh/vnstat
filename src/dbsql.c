@@ -392,6 +392,24 @@ int db_removeinterface(const char *iface)
 	return db_exec(sql);
 }
 
+int db_renameinterface(const char *iface, const char *newifname)
+{
+	char sql[128];
+	sqlite3_int64 ifaceid = 0;
+
+	if (!strlen(newifname)) {
+		return 0;
+	}
+
+	ifaceid = db_getinterfaceid(iface, 0);
+	if (ifaceid == 0) {
+		return 0;
+	}
+
+	sqlite3_snprintf(128, sql, "update interface set name='%q' where id=%" PRId64 "", newifname, (int64_t)ifaceid);
+	return db_exec(sql);
+}
+
 uint64_t db_getinterfacecount(void)
 {
 	return db_getinterfacecountbyname("");

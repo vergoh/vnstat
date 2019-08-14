@@ -46,6 +46,8 @@ vnstat \- a console-based network traffic monitor
 .RB [ \-\-rateunit
 .RI [ mode ]]
 .RB [ \-\-remove ]
+.RB [ \-\-rename
+.IR name ]
 .RB [ \-ru
 .RI [ mode ]]
 .RB [ \-\-setalias
@@ -97,7 +99,8 @@ Create database entry for interface specified with
 .B \-i
 or
 .B \-\-iface
-option.
+option. The daemon can be running during this operation but will not
+automatically detect the addition without a restart.
 
 .TP
 .BI "-b, --begin " date
@@ -283,7 +286,19 @@ Delete the database entry for the interface specified with
 .B \-i
 or
 .B \-\-iface
-and stop monitoring it.
+and stop monitoring it. The daemon can be running during this operation
+and will automatically detect the change.
+
+.TP
+.BI "--rename " name
+Rename the interface specified with
+.B \-i
+or
+.B \-\-iface
+in the database with new name
+.BR name .
+The new name cannot already exist in the database. This operation doesn't
+cause any data loss. The daemon should not be running during this operation.
 
 .TP
 .BI "-ru, --rateunit " [mode]
@@ -299,7 +314,8 @@ select between bytes (0) and bits (1) regardless of the configuration file setti
 .BI "--setalias " alias
 Set the selected interface
 .I alias
-as an alias that will be displayed in queries.
+as an alias that will be displayed in queries. The daemon can be running during
+this operation.
 
 .TP
 .B "-s, --short"
