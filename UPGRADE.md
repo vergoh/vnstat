@@ -1,6 +1,8 @@
 
 # New configuration settings
 
+ * 2.4: (none)
+
  * 2.3: DatabaseWriteAheadLogging, DatabaseSynchronous
 
  * 2.2: 64bitInterfaceCounters
