@@ -14,6 +14,7 @@ typedef struct {
 void initparams(PARAMS *p);
 void showhelp(PARAMS *p);
 void showlonghelp(PARAMS *p);
+void parseargs(PARAMS *p, int argc, char **argv);
 void handleremoveinterface(PARAMS *p);
 void handlerenameinterface(PARAMS *p);
 void handleaddinterface(PARAMS *p);
