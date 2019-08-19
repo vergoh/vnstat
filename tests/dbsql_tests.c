@@ -531,6 +531,8 @@ START_TEST(db_renameinterface_can_rename_interfaces)
 	ck_assert_int_eq(db_getinterfacecountbyname("eth2"), 1);
 	ck_assert_int_eq(db_getinterfacecountbyname("eth3"), 0);
 
+	suppress_output();
+
 	ret = db_renameinterface("eth0", "eth1");
 	ck_assert_int_eq(ret, 0);
 	ret = db_renameinterface("eth2", "eth3");
