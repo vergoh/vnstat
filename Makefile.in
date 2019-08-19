@@ -172,12 +172,12 @@ am__DEPENDENCIES_1 =
 @HAVE_CHECK_TRUE@check_vnstat_DEPENDENCIES = $(am__DEPENDENCIES_1)
 check_vnstat_LINK = $(CCLD) $(check_vnstat_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-am_vnstat_OBJECTS = src/vnstat.$(OBJEXT) src/ifinfo.$(OBJEXT) \
-	src/iflist.$(OBJEXT) src/dbsql.$(OBJEXT) src/dbxml.$(OBJEXT) \
-	src/dbjson.$(OBJEXT) src/dbshow.$(OBJEXT) src/common.$(OBJEXT) \
-	src/misc.$(OBJEXT) src/cfg.$(OBJEXT) src/cfgoutput.$(OBJEXT) \
-	src/ibw.$(OBJEXT) src/fs.$(OBJEXT) src/id.$(OBJEXT) \
-	src/traffic.$(OBJEXT)
+am_vnstat_OBJECTS = src/vnstat.$(OBJEXT) src/vnstat_func.$(OBJEXT) \
+	src/ifinfo.$(OBJEXT) src/iflist.$(OBJEXT) src/dbsql.$(OBJEXT) \
+	src/dbxml.$(OBJEXT) src/dbjson.$(OBJEXT) src/dbshow.$(OBJEXT) \
+	src/common.$(OBJEXT) src/misc.$(OBJEXT) src/cfg.$(OBJEXT) \
+	src/cfgoutput.$(OBJEXT) src/ibw.$(OBJEXT) src/fs.$(OBJEXT) \
+	src/id.$(OBJEXT) src/traffic.$(OBJEXT)
 vnstat_OBJECTS = $(am_vnstat_OBJECTS)
 vnstat_LDADD = $(LDADD)
 am_vnstatd_OBJECTS = src/vnstatd.$(OBJEXT) src/ifinfo.$(OBJEXT) \
@@ -634,7 +634,8 @@ AM_CFLAGS = @CFLAG_EXTRAS@
 dist_man_MANS = man/vnstat.1 man/vnstat.conf.5 man/vnstatd.8 man/vnstati.1
 EXTRA_DIST = cfg examples UPGRADE CHANGES FAQ INSTALL_BSD UNINSTALL
 vnstati_LDADD = @IMAGELIBS@
-vnstat_SOURCES = src/vnstat.c src/vnstat.h \
+vnstat_SOURCES = src/vnstat.c \
+  src/vnstat_func.c src/vnstat_func.h \
   src/ifinfo.c src/ifinfo.h \
   src/iflist.c src/iflist.h \
   src/dbsql.c src/dbsql.h \
@@ -953,6 +954,8 @@ check_vnstat$(EXEEXT): $(check_vnstat_OBJECTS) $(check_vnstat_DEPENDENCIES) $(EX
 	$(AM_V_CCLD)$(check_vnstat_LINK) $(check_vnstat_OBJECTS) $(check_vnstat_LDADD) $(LIBS)
 src/vnstat.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
+src/vnstat_func.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
 src/ifinfo.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/iflist.$(OBJEXT): src/$(am__dirstamp) \
@@ -1042,6 +1045,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/misc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/traffic.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/vnstat.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/vnstat_func.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/vnstatd.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/vnstati.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/check_vnstat-common_tests.Po@am__quote@

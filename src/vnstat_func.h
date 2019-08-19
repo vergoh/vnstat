@@ -1,5 +1,5 @@
-#ifndef VNSTAT_H
-#define VNSTAT_H
+#ifndef VNSTAT_FUNC__H
+#define VNSTAT_FUNC__H
 
 typedef struct {
 	int query, setalias;

@@ -12,7 +12,8 @@ bin_PROGRAMS += vnstati
 endif
 vnstati_LDADD = @IMAGELIBS@
 
-vnstat_SOURCES = src/vnstat.c src/vnstat.h \
+vnstat_SOURCES = src/vnstat.c \
+  src/vnstat_func.c src/vnstat_func.h \
   src/ifinfo.c src/ifinfo.h \
   src/iflist.c src/iflist.h \
   src/dbsql.c src/dbsql.h \
