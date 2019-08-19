@@ -19,7 +19,7 @@ void handleremoveinterface(PARAMS *p);
 void handlerenameinterface(PARAMS *p);
 void handleaddinterface(PARAMS *p);
 void handlesetalias(PARAMS *p);
-void handleshowdatabases(PARAMS *p);
+void handleshowdata(PARAMS *p);
 void showoneinterface(PARAMS *p, const char *interface);
 void handletrafficmeters(PARAMS *p);
 void handleifselection(PARAMS *p);

@@ -634,7 +634,7 @@ void handlesetalias(PARAMS *p)
 	}
 }
 
-void handleshowdatabases(PARAMS *p)
+void handleshowdata(PARAMS *p)
 {
 	int ifcount = 0;
 	iflist *dbifl = NULL, *dbifl_i = NULL;

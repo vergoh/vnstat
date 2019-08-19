@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
 	handlerenameinterface(&p);
 	handleaddinterface(&p);
 	handlesetalias(&p);
-	handleshowdatabases(&p);
+	handleshowdata(&p);
 	handletrafficmeters(&p);
 
 	/* show something if nothing was shown previously */
