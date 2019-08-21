@@ -75,6 +75,7 @@ check_vnstat_SOURCES = tests/vnstat_tests.c tests/vnstat_tests.h \
   tests/fs_tests.c tests/fs_tests.h \
   tests/id_tests.c tests/id_tests.h \
   tests/iflist_tests.c tests/iflist_tests.h \
+  tests/cli_tests.c tests/cli_tests.h \
   tests/daemon_tests.c tests/daemon_tests.h
 
 check_vnstat_SOURCES += src/cfg.c src/cfg.h \
@@ -92,7 +93,9 @@ check_vnstat_SOURCES += src/cfg.c src/cfg.h \
   src/iflist.c src/iflist.h \
   src/misc.c src/misc.h \
   src/fs.c src/fs.h \
-  src/id.c src/id.h
+  src/id.c src/id.h \
+  src/vnstat_func.c src/vnstat_func.h \
+  src/traffic.c src/traffic.h
 
 if HAVE_LIBGD
 check_vnstat_CFLAGS += -DHAVE_IMAGE
