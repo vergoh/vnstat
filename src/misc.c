@@ -11,6 +11,7 @@
 /* enable wcswidth on kFreeBSD */
 #if defined(__FreeBSD_kernel__) && defined(__GLIBC__)
 #define __USE_XOPEN
+#define _XOPEN_SOURCE
 #endif
 #include "common.h"
 #include "misc.h"
