@@ -265,6 +265,7 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 					exit(EXIT_FAILURE);
 				}
 				currentarg++;
+				continue;
 			}
 		} else if ((strcmp(argv[currentarg], "-m") == 0) || (strcmp(argv[currentarg], "--months")) == 0) {
 			cfg.qmode = 2;
@@ -275,6 +276,7 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 					exit(EXIT_FAILURE);
 				}
 				currentarg++;
+				continue;
 			}
 		} else if ((strcmp(argv[currentarg], "-t") == 0) || (strcmp(argv[currentarg], "--top")) == 0) {
 			cfg.qmode = 3;
@@ -285,6 +287,7 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 					exit(EXIT_FAILURE);
 				}
 				currentarg++;
+				continue;
 			}
 		} else if ((strcmp(argv[currentarg], "-y") == 0) || (strcmp(argv[currentarg], "--years")) == 0) {
 			cfg.qmode = 4;
@@ -295,6 +298,7 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 					exit(EXIT_FAILURE);
 				}
 				currentarg++;
+				continue;
 			}
 		} else if ((strcmp(argv[currentarg], "-h") == 0) || (strcmp(argv[currentarg], "--hours")) == 0) {
 			cfg.qmode = 8;
@@ -305,6 +309,7 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 					exit(EXIT_FAILURE);
 				}
 				currentarg++;
+				continue;
 			}
 		} else if ((strcmp(argv[currentarg], "-5") == 0) || (strcmp(argv[currentarg], "--fiveminutes")) == 0) {
 			cfg.qmode = 9;
@@ -315,6 +320,7 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 					exit(EXIT_FAILURE);
 				}
 				currentarg++;
+				continue;
 			}
 		} else if ((strcmp(argv[currentarg], "-s") == 0) || (strcmp(argv[currentarg], "--summary")) == 0) {
 			cfg.qmode = 5;
@@ -357,6 +363,7 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 				}
 				strncpy_nt(ic->databegin, argv[currentarg + 1], 18);
 				currentarg++;
+				continue;
 			} else {
 				printf("Error: Date of format YYYY-MM-DD HH:MM or YYYY-MM-DD for %s missing.\n", argv[currentarg]);
 				exit(EXIT_FAILURE);
@@ -369,6 +376,7 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 				}
 				strncpy_nt(ic->dataend, argv[currentarg + 1], 18);
 				currentarg++;
+				continue;
 			} else {
 				printf("Error: Date of format YYYY-MM-DD HH:MM or YYYY-MM-DD for %s missing.\n", argv[currentarg]);
 				exit(EXIT_FAILURE);
