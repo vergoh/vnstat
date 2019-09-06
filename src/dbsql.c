@@ -616,6 +616,7 @@ int db_getinterfaceinfo(const char *iface, interfaceinfo *info)
 	} else {
 		ifaceidin = db_getinterfaceidin(iface);
 		if (ifaceidin == NULL || strlen(ifaceidin) < 1) {
+			free(ifaceidin);
 			return 0;
 		}
 		sqlite3_snprintf(512, sql, "select \"%q\", NULL, max(active), max(strftime('%%s', created, 'utc')), min(strftime('%%s', updated, 'utc')), 0, 0, sum(rxtotal), sum(txtotal) from interface where id in (%q)", iface, ifaceidin);
