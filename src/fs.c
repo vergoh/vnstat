@@ -229,7 +229,6 @@ void updatedirownerid(const char *dir, const uid_t uid, const gid_t gid)
 	}
 
 	closedir(d);
-	close(dir_fd);
 }
 
 int getdirowner(const char *dir, uid_t *uid, gid_t *gid)
