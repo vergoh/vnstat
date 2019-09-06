@@ -1171,11 +1171,6 @@ int db_getdata_range(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *
 
 	listinfo->count = 0;
 
-	ifaceidin = db_getinterfaceidin(iface);
-	if (ifaceidin == NULL) {
-		return 0;
-	}
-
 	ret = 0;
 	for (i = 0; i < 6; i++) {
 		if (strcmp(table, datatables[i]) == 0) {
@@ -1184,6 +1179,11 @@ int db_getdata_range(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *
 		}
 	}
 	if (!ret) {
+		return 0;
+	}
+
+	ifaceidin = db_getinterfaceidin(iface);
+	if (ifaceidin == NULL) {
 		return 0;
 	}
 
