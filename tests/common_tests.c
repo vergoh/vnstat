@@ -388,18 +388,17 @@ END_TEST
 
 START_TEST(timeused_tracks_used_time)
 {
-	int i, j = 0;
 	double used;
+	struct timespec ts;
 
 	defaultcfg();
 
 	used = timeused("quick_func", 1);
 	ck_assert(used == 0.0);
 
-	/* assume that this spends some non-zero time */
-	for (i = 0; i < 10000; i++) {
-		j = j + 2;
-	}
+	ts.tv_sec = 0;
+	ts.tv_nsec = 100000000; // 0.1 s
+	nanosleep(&ts, NULL);
 
 	used = timeused("quick_func", 0);
 	ck_assert(used > 0.0);
