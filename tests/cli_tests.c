@@ -533,6 +533,9 @@ START_TEST(vnstat_handlerenameinterface_exits_if_new_interface_name_already_exis
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
+	ret = db_addinterface("oldname");
+	ck_assert_int_eq(ret, 1);
+
 	ret = db_addinterface("newname");
 	ck_assert_int_eq(ret, 1);
 
