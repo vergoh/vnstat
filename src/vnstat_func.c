@@ -506,15 +506,18 @@ void handleremoveinterface(PARAMS *p)
 		exit(EXIT_FAILURE);
 	}
 
+#ifndef CHECK_VNSTAT
 	if (!db_close() || !db_open_rw(0)) {
 		printf("Error: Handling database \"%s/%s\" failing: %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
+#endif
 
 	if (db_removeinterface(p->interface)) {
 		printf("Interface \"%s\" removed from database.\n", p->interface);
 		printf("The interface will no longer be monitored. Use --add\n");
 		printf("if monitoring the interface is again needed.\n");
+		db_close();
 		exit(EXIT_SUCCESS);
 	} else {
 		printf("Error: Removing interface \"%s\" from database failed.\n", p->interface);
@@ -554,13 +557,16 @@ void handlerenameinterface(PARAMS *p)
 		exit(EXIT_FAILURE);
 	}
 
+#ifndef CHECK_VNSTAT
 	if (!db_close() || !db_open_rw(0)) {
 		printf("Error: Handling database \"%s/%s\" failing: %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
+#endif
 
 	if (db_renameinterface(p->interface, p->newifname)) {
 		printf("Interface \"%s\" has been renamed \"%s\".\n", p->interface, p->newifname);
+		db_close();
 		exit(EXIT_SUCCESS);
 	} else {
 		printf("Error: Renaming interface \"%s\" -> \"%s\" failed.\n", p->interface, p->newifname);
@@ -601,14 +607,17 @@ void handleaddinterface(PARAMS *p)
 		exit(EXIT_FAILURE);
 	}
 
+#ifndef CHECK_VNSTAT
 	if (!db_close() || !db_open_rw(0)) {
 		printf("Error: Handling database \"%s/%s\" failing: %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
+#endif
 
 	printf("Adding interface \"%s\" for monitoring to database...\n", p->interface);
 	if (db_addinterface(p->interface)) {
 		printf("\nRestart the vnStat daemon if it is currently running in order to start monitoring \"%s\".\n", p->interface);
+		db_close();
 		exit(EXIT_SUCCESS);
 	} else {
 		printf("Error: Adding interface \"%s\" to database failed.\n", p->interface);
@@ -632,13 +641,16 @@ void handlesetalias(PARAMS *p)
 		exit(EXIT_FAILURE);
 	}
 
+#ifndef CHECK_VNSTAT
 	if (!db_close() || !db_open_rw(0)) {
 		printf("Error: Handling database \"%s/%s\" failing: %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
+#endif
 
 	if (db_setalias(p->interface, p->alias)) {
 		printf("Alias of interface \"%s\" set to \"%s\".\n", p->interface, p->alias);
+		db_close();
 		exit(EXIT_SUCCESS);
 	} else {
 		printf("Error: Setting interface \"%s\" alias failed.\n", p->interface);

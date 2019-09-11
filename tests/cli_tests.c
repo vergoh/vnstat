@@ -2,6 +2,7 @@
 #include "vnstat_tests.h"
 #include "vnstat_func.h"
 #include "cfg.h"
+#include "dbsql.h"
 #include "cli_tests.h"
 
 START_TEST(vnstat_can_init_params)
@@ -398,6 +399,90 @@ START_TEST(vnstat_parseargs_rename_requires_parameter)
 }
 END_TEST
 
+START_TEST(vnstat_handleremoveinterface_does_nothing_when_nothing_needs_to_be_removed)
+{
+    PARAMS p;
+    initparams(&p);
+
+    handleremoveinterface(&p);
+}
+END_TEST
+
+START_TEST(vnstat_handleremoveinterface_exits_if_no_interface_has_been_specified)
+{
+    PARAMS p;
+    initparams(&p);
+    p.removeiface = 1;
+
+    handleremoveinterface(&p);
+}
+END_TEST
+
+START_TEST(vnstat_handleremoveinterface_exits_if_given_interface_does_not_exist)
+{
+    int ret;
+    PARAMS p;
+
+    defaultcfg();
+    initparams(&p);
+    p.removeiface = 1;
+    p.defaultiface = 0;
+    strncpy_nt(p.interface, "unknown", 32);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("known");
+	ck_assert_int_eq(ret, 1);
+
+    handleremoveinterface(&p);
+}
+END_TEST
+
+START_TEST(vnstat_handleremoveinterface_exits_if_force_is_not_used)
+{
+    int ret;
+    PARAMS p;
+
+    defaultcfg();
+    initparams(&p);
+    p.removeiface = 1;
+    p.defaultiface = 0;
+    p.force = 0;
+    strncpy_nt(p.interface, "known", 32);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("known");
+	ck_assert_int_eq(ret, 1);
+
+    handleremoveinterface(&p);
+}
+END_TEST
+
+START_TEST(vnstat_handleremoveinterface_exits_after_interface_removal)
+{
+    int ret;
+    PARAMS p;
+
+    defaultcfg();
+    initparams(&p);
+    p.removeiface = 1;
+    p.defaultiface = 0;
+    p.force = 1;
+    strncpy_nt(p.interface, "known", 32);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("known");
+	ck_assert_int_eq(ret, 1);
+
+    handleremoveinterface(&p);
+}
+END_TEST
+
 void add_cli_tests(Suite *s)
 {
 	TCase *tc_cli = tcase_create("CLI");
@@ -433,5 +518,10 @@ void add_cli_tests(Suite *s)
     tcase_add_exit_test(tc_cli, vnstat_parseargs_locale_requires_parameter, 1);
     tcase_add_exit_test(tc_cli, vnstat_parseargs_setalias_requires_parameter, 1);
     tcase_add_exit_test(tc_cli, vnstat_parseargs_rename_requires_parameter, 1);
+    tcase_add_test(tc_cli, vnstat_handleremoveinterface_does_nothing_when_nothing_needs_to_be_removed);
+    tcase_add_exit_test(tc_cli, vnstat_handleremoveinterface_exits_if_no_interface_has_been_specified, 1);
+    tcase_add_exit_test(tc_cli, vnstat_handleremoveinterface_exits_if_given_interface_does_not_exist, 1);
+    tcase_add_exit_test(tc_cli, vnstat_handleremoveinterface_exits_if_force_is_not_used, 1);
+    tcase_add_exit_test(tc_cli, vnstat_handleremoveinterface_exits_after_interface_removal, 0);
     suite_add_tcase(s, tc_cli);
 }
