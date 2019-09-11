@@ -399,15 +399,6 @@ START_TEST(vnstat_parseargs_rename_requires_parameter)
 }
 END_TEST
 
-START_TEST(vnstat_handleremoveinterface_does_nothing_when_nothing_needs_to_be_removed)
-{
-    PARAMS p;
-    initparams(&p);
-
-    handleremoveinterface(&p);
-}
-END_TEST
-
 START_TEST(vnstat_handleremoveinterface_exits_if_no_interface_has_been_specified)
 {
     PARAMS p;
@@ -480,6 +471,119 @@ START_TEST(vnstat_handleremoveinterface_exits_after_interface_removal)
 	ck_assert_int_eq(ret, 1);
 
     handleremoveinterface(&p);
+    /* TODO: add way to check that removal did happen */
+}
+END_TEST
+
+START_TEST(vnstat_handlerenameinterface_exits_if_no_interface_has_been_specified)
+{
+    PARAMS p;
+    initparams(&p);
+    p.renameiface = 1;
+
+    handlerenameinterface(&p);
+}
+END_TEST
+
+START_TEST(vnstat_handlerenameinterface_exits_if_new_interface_name_is_not_given)
+{
+    PARAMS p;
+    initparams(&p);
+    p.renameiface = 1;
+    p.defaultiface = 0;
+
+    handlerenameinterface(&p);
+}
+END_TEST
+
+START_TEST(vnstat_handlerenameinterface_exits_if_given_interface_does_not_exist)
+{
+    int ret;
+    PARAMS p;
+
+    defaultcfg();
+    initparams(&p);
+    p.renameiface = 1;
+    p.defaultiface = 0;
+    strncpy_nt(p.interface, "oldname", 32);
+    strncpy_nt(p.newifname, "newname", 32);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("somename");
+	ck_assert_int_eq(ret, 1);
+
+    handlerenameinterface(&p);
+}
+END_TEST
+
+START_TEST(vnstat_handlerenameinterface_exits_if_new_interface_name_already_exist)
+{
+    int ret;
+    PARAMS p;
+
+    defaultcfg();
+    initparams(&p);
+    p.renameiface = 1;
+    p.defaultiface = 0;
+    strncpy_nt(p.interface, "oldname", 32);
+    strncpy_nt(p.newifname, "newname", 32);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("newname");
+	ck_assert_int_eq(ret, 1);
+
+    handlerenameinterface(&p);
+}
+END_TEST
+
+START_TEST(vnstat_handlerenameinterface_exits_if_force_is_not_used)
+{
+    int ret;
+    PARAMS p;
+
+    defaultcfg();
+    initparams(&p);
+    p.renameiface = 1;
+    p.defaultiface = 0;
+    p.force = 0;
+    strncpy_nt(p.interface, "oldname", 32);
+    strncpy_nt(p.newifname, "newname", 32);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("oldname");
+	ck_assert_int_eq(ret, 1);
+
+    handlerenameinterface(&p);
+}
+END_TEST
+
+START_TEST(vnstat_handlerenameinterface_exits_after_interface_removal)
+{
+    int ret;
+    PARAMS p;
+
+    defaultcfg();
+    initparams(&p);
+    p.renameiface = 1;
+    p.defaultiface = 0;
+    p.force = 1;
+    strncpy_nt(p.interface, "oldname", 32);
+    strncpy_nt(p.newifname, "newname", 32);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("oldname");
+	ck_assert_int_eq(ret, 1);
+
+    handlerenameinterface(&p);
+    /* TODO: add way to check that rename did happen */
 }
 END_TEST
 
@@ -518,10 +622,15 @@ void add_cli_tests(Suite *s)
     tcase_add_exit_test(tc_cli, vnstat_parseargs_locale_requires_parameter, 1);
     tcase_add_exit_test(tc_cli, vnstat_parseargs_setalias_requires_parameter, 1);
     tcase_add_exit_test(tc_cli, vnstat_parseargs_rename_requires_parameter, 1);
-    tcase_add_test(tc_cli, vnstat_handleremoveinterface_does_nothing_when_nothing_needs_to_be_removed);
     tcase_add_exit_test(tc_cli, vnstat_handleremoveinterface_exits_if_no_interface_has_been_specified, 1);
     tcase_add_exit_test(tc_cli, vnstat_handleremoveinterface_exits_if_given_interface_does_not_exist, 1);
     tcase_add_exit_test(tc_cli, vnstat_handleremoveinterface_exits_if_force_is_not_used, 1);
     tcase_add_exit_test(tc_cli, vnstat_handleremoveinterface_exits_after_interface_removal, 0);
+    tcase_add_exit_test(tc_cli, vnstat_handlerenameinterface_exits_if_no_interface_has_been_specified, 1);
+    tcase_add_exit_test(tc_cli, vnstat_handlerenameinterface_exits_if_new_interface_name_is_not_given, 1);
+    tcase_add_exit_test(tc_cli, vnstat_handlerenameinterface_exits_if_given_interface_does_not_exist, 1);
+    tcase_add_exit_test(tc_cli, vnstat_handlerenameinterface_exits_if_new_interface_name_already_exist, 1);
+    tcase_add_exit_test(tc_cli, vnstat_handlerenameinterface_exits_if_force_is_not_used, 1);
+    tcase_add_exit_test(tc_cli, vnstat_handlerenameinterface_exits_after_interface_removal, 0);
     suite_add_tcase(s, tc_cli);
 }
