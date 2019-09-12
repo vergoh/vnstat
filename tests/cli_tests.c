@@ -405,6 +405,7 @@ START_TEST(vnstat_handleremoveinterface_exits_if_no_interface_has_been_specified
     initparams(&p);
     p.removeiface = 1;
 
+    suppress_output();
     handleremoveinterface(&p);
 }
 END_TEST
@@ -426,6 +427,7 @@ START_TEST(vnstat_handleremoveinterface_exits_if_given_interface_does_not_exist)
 	ret = db_addinterface("known");
 	ck_assert_int_eq(ret, 1);
 
+    suppress_output();
     handleremoveinterface(&p);
 }
 END_TEST
@@ -448,6 +450,7 @@ START_TEST(vnstat_handleremoveinterface_exits_if_force_is_not_used)
 	ret = db_addinterface("known");
 	ck_assert_int_eq(ret, 1);
 
+    suppress_output();
     handleremoveinterface(&p);
 }
 END_TEST
@@ -470,6 +473,7 @@ START_TEST(vnstat_handleremoveinterface_exits_after_interface_removal)
 	ret = db_addinterface("known");
 	ck_assert_int_eq(ret, 1);
 
+    suppress_output();
     handleremoveinterface(&p);
     /* TODO: add way to check that removal did happen */
 }
@@ -481,6 +485,7 @@ START_TEST(vnstat_handlerenameinterface_exits_if_no_interface_has_been_specified
     initparams(&p);
     p.renameiface = 1;
 
+    suppress_output();
     handlerenameinterface(&p);
 }
 END_TEST
@@ -492,6 +497,7 @@ START_TEST(vnstat_handlerenameinterface_exits_if_new_interface_name_is_not_given
     p.renameiface = 1;
     p.defaultiface = 0;
 
+    suppress_output();
     handlerenameinterface(&p);
 }
 END_TEST
@@ -514,6 +520,7 @@ START_TEST(vnstat_handlerenameinterface_exits_if_given_interface_does_not_exist)
 	ret = db_addinterface("somename");
 	ck_assert_int_eq(ret, 1);
 
+    suppress_output();
     handlerenameinterface(&p);
 }
 END_TEST
@@ -539,6 +546,7 @@ START_TEST(vnstat_handlerenameinterface_exits_if_new_interface_name_already_exis
 	ret = db_addinterface("newname");
 	ck_assert_int_eq(ret, 1);
 
+    suppress_output();
     handlerenameinterface(&p);
 }
 END_TEST
@@ -550,6 +558,7 @@ START_TEST(vnstat_handlerenameinterface_exits_if_force_is_not_used)
 
     defaultcfg();
     initparams(&p);
+
     p.renameiface = 1;
     p.defaultiface = 0;
     p.force = 0;
@@ -562,6 +571,7 @@ START_TEST(vnstat_handlerenameinterface_exits_if_force_is_not_used)
 	ret = db_addinterface("oldname");
 	ck_assert_int_eq(ret, 1);
 
+    suppress_output();
     handlerenameinterface(&p);
 }
 END_TEST
@@ -585,6 +595,7 @@ START_TEST(vnstat_handlerenameinterface_exits_after_interface_removal)
 	ret = db_addinterface("oldname");
 	ck_assert_int_eq(ret, 1);
 
+    suppress_output();
     handlerenameinterface(&p);
     /* TODO: add way to check that rename did happen */
 }
