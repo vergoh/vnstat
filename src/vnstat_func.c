@@ -798,7 +798,7 @@ void handleifselection(PARAMS *p)
 	iflist *ifl = NULL;
 	iflist *dbifl = NULL, *dbifl_iterator = NULL;
 
-	if (!p->defaultiface || !p->query) {
+	if (!p->defaultiface) {
 		return;
 	}
 
@@ -854,7 +854,7 @@ void handleifselection(PARAMS *p)
 		}
 
 		iflistfree(&ifl);
-	} else {
+	} else if (p->query) {
 		if (db_getiflist_sorted(&dbifl, 1) <= 0) {
 			printf("Error: Unable to discover suitable interface from database.\n");
 			iflistfree(&dbifl);

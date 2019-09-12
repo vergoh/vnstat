@@ -1,5 +1,9 @@
 2.5 / <not released yet>
 
+ - Fixed
+   - Automatic interface selection wasn't done for --traffic and --live when
+     the Interface configuration setting was left empty
+
 
 2.4 / 18-Aug-2019
 
