@@ -676,6 +676,7 @@ START_TEST(vnstat_handleaddinterface_exits_after_interface_is_added)
 
 	suppress_output();
 	handleaddinterface(&p);
+	/* TODO: add way to check that addition did happen */
 }
 END_TEST
 
@@ -700,6 +701,85 @@ START_TEST(vnstat_handleaddinterface_can_be_forced_to_add_interface_that_does_no
 
 	suppress_output();
 	handleaddinterface(&p);
+	/* TODO: add way to check that addition did happen */
+}
+END_TEST
+
+START_TEST(vnstat_handlesetalias_exits_if_no_interface_has_been_specified)
+{
+	PARAMS p;
+	initparams(&p);
+	p.setalias = 1;
+
+	suppress_output();
+	handlesetalias(&p);
+}
+END_TEST
+
+START_TEST(vnstat_handlesetalias_exits_if_given_interface_does_not_exist)
+{
+	int ret;
+	PARAMS p;
+	defaultcfg();
+	initparams(&p);
+	p.setalias = 1;
+	p.defaultiface = 0;
+	strncpy_nt(p.interface, "ethiface", 32);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("somename");
+	ck_assert_int_eq(ret, 1);
+
+	suppress_output();
+	handlesetalias(&p);
+}
+END_TEST
+
+START_TEST(vnstat_handlesetalias_exits_after_setting_alias)
+{
+	int ret;
+	PARAMS p;
+	defaultcfg();
+	initparams(&p);
+	p.setalias = 1;
+	p.defaultiface = 0;
+	strncpy_nt(p.interface, "ethiface", 32);
+	strncpy_nt(p.alias, "The Internet", 32);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("ethiface");
+	ck_assert_int_eq(ret, 1);
+
+	suppress_output();
+	handlesetalias(&p);
+	/* TODO: add way to check that alias change did happen */
+}
+END_TEST
+
+START_TEST(vnstat_handlesetalias_exits_after_clearing_alias)
+{
+	int ret;
+	PARAMS p;
+	defaultcfg();
+	initparams(&p);
+	p.setalias = 1;
+	p.defaultiface = 0;
+	strncpy_nt(p.interface, "ethiface", 32);
+	strncpy_nt(p.alias, "", 32);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("ethiface");
+	ck_assert_int_eq(ret, 1);
+
+	suppress_output();
+	handlesetalias(&p);
+	/* TODO: add way to check that alias change did happen */
 }
 END_TEST
 
@@ -753,5 +833,9 @@ void add_cli_tests(Suite *s)
 	tcase_add_exit_test(tc_cli, vnstat_handleaddinterface_exits_if_interface_does_not_exist, 1);
 	tcase_add_exit_test(tc_cli, vnstat_handleaddinterface_exits_after_interface_is_added, 0);
 	tcase_add_exit_test(tc_cli, vnstat_handleaddinterface_can_be_forced_to_add_interface_that_does_not_exist, 0);
+	tcase_add_exit_test(tc_cli, vnstat_handlesetalias_exits_if_no_interface_has_been_specified, 1);
+	tcase_add_exit_test(tc_cli, vnstat_handlesetalias_exits_if_given_interface_does_not_exist, 1);
+	tcase_add_exit_test(tc_cli, vnstat_handlesetalias_exits_after_setting_alias, 0);
+	tcase_add_exit_test(tc_cli, vnstat_handlesetalias_exits_after_clearing_alias, 0);
 	suite_add_tcase(s, tc_cli);
 }
