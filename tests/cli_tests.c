@@ -601,6 +601,108 @@ START_TEST(vnstat_handlerenameinterface_exits_after_interface_removal)
 }
 END_TEST
 
+START_TEST(vnstat_handleaddinterface_exits_if_no_interface_has_been_specified)
+{
+	PARAMS p;
+	initparams(&p);
+	p.addiface = 1;
+
+	suppress_output();
+	handleaddinterface(&p);
+}
+END_TEST
+
+START_TEST(vnstat_handleaddinterface_exits_if_interface_already_exist_in_database)
+{
+	int ret;
+	PARAMS p;
+
+	defaultcfg();
+	initparams(&p);
+	p.addiface = 1;
+	p.defaultiface = 0;
+	strncpy_nt(p.interface, "newiface", 32);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("newiface");
+	ck_assert_int_eq(ret, 1);
+
+	suppress_output();
+	handleaddinterface(&p);
+}
+END_TEST
+
+START_TEST(vnstat_handleaddinterface_exits_if_interface_does_not_exist)
+{
+	int ret;
+	PARAMS p;
+
+	defaultcfg();
+	initparams(&p);
+	p.addiface = 1;
+	p.defaultiface = 0;
+	strncpy_nt(p.interface, "newiface", 32);
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_proc_net_dev("w", "notnewiface", 0, 0, 0, 0);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	suppress_output();
+	handleaddinterface(&p);
+}
+END_TEST
+
+START_TEST(vnstat_handleaddinterface_exits_after_interface_is_added)
+{
+	int ret;
+	PARAMS p;
+
+	defaultcfg();
+	initparams(&p);
+	p.addiface = 1;
+	p.defaultiface = 0;
+	cfg.spacecheck = 0;
+	strncpy_nt(p.interface, "newiface", 32);
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_proc_net_dev("w", "newiface", 0, 0, 0, 0);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	suppress_output();
+	handleaddinterface(&p);
+}
+END_TEST
+
+START_TEST(vnstat_handleaddinterface_can_be_forced_to_add_interface_that_does_not_exist)
+{
+	int ret;
+	PARAMS p;
+
+	defaultcfg();
+	initparams(&p);
+	p.addiface = 1;
+	p.defaultiface = 0;
+	p.force = 1;
+	cfg.spacecheck = 0;
+	strncpy_nt(p.interface, "newiface", 32);
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_proc_net_dev("w", "notnewiface", 0, 0, 0, 0);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	suppress_output();
+	handleaddinterface(&p);
+}
+END_TEST
+
 void add_cli_tests(Suite *s)
 {
 	TCase *tc_cli = tcase_create("CLI");
@@ -646,5 +748,10 @@ void add_cli_tests(Suite *s)
 	tcase_add_exit_test(tc_cli, vnstat_handlerenameinterface_exits_if_new_interface_name_already_exist, 1);
 	tcase_add_exit_test(tc_cli, vnstat_handlerenameinterface_exits_if_force_is_not_used, 1);
 	tcase_add_exit_test(tc_cli, vnstat_handlerenameinterface_exits_after_interface_removal, 0);
+	tcase_add_exit_test(tc_cli, vnstat_handleaddinterface_exits_if_no_interface_has_been_specified, 1);
+	tcase_add_exit_test(tc_cli, vnstat_handleaddinterface_exits_if_interface_already_exist_in_database, 1);
+	tcase_add_exit_test(tc_cli, vnstat_handleaddinterface_exits_if_interface_does_not_exist, 1);
+	tcase_add_exit_test(tc_cli, vnstat_handleaddinterface_exits_after_interface_is_added, 0);
+	tcase_add_exit_test(tc_cli, vnstat_handleaddinterface_can_be_forced_to_add_interface_that_does_not_exist, 0);
 	suite_add_tcase(s, tc_cli);
 }
