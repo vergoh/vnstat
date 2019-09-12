@@ -3,7 +3,7 @@
 #include "misc.h"
 #include "traffic.h"
 
-void trafficmeter(char iface[], unsigned int sampletime)
+void trafficmeter(const char *iface, unsigned int sampletime)
 {
 	/* received bytes packets errs drop fifo frame compressed multicast */
 	/* transmitted bytes packets errs drop fifo colls carrier compressed */
@@ -16,11 +16,13 @@ void trafficmeter(char iface[], unsigned int sampletime)
 		json = 1;
 	}
 
+#ifndef CHECK_VNSTAT
 	/* less than 2 seconds doesn't produce good results */
 	if (sampletime < 2) {
 		printf("Error: Time for sampling too short.\n");
 		exit(EXIT_FAILURE);
 	}
+#endif
 
 	/* read interface info and get values to the first list */
 	if (!getifinfo(iface)) {
@@ -56,6 +58,10 @@ void trafficmeter(char iface[], unsigned int sampletime)
 	} else {
 		sleep(sampletime);
 	}
+
+#ifdef CHECK_VNSTAT
+	sampletime = 1;
+#endif
 
 	/* read those values again... */
 	if (!getifinfo(iface)) {
@@ -97,7 +103,7 @@ void trafficmeter(char iface[], unsigned int sampletime)
 	}
 }
 
-void livetrafficmeter(char iface[32], int mode)
+void livetrafficmeter(const char *iface, const int mode)
 {
 	/* received bytes packets errs drop fifo frame compressed multicast */
 	/* transmitted bytes packets errs drop fifo colls carrier compressed */

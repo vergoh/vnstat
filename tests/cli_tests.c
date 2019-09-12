@@ -783,6 +783,96 @@ START_TEST(vnstat_handlesetalias_exits_after_clearing_alias)
 }
 END_TEST
 
+START_TEST(vnstat_handletrafficmeters_exits_when_interface_is_not_available)
+{
+	PARAMS p;
+	defaultcfg();
+	initparams(&p);
+	p.traffic = 1;
+	p.defaultiface = 1;
+	strncpy_nt(p.interface, "someiface", 32);
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_proc_net_dev("w", "otheriface", 0, 0, 0, 0);
+
+	suppress_output();
+	handletrafficmeters(&p);
+}
+END_TEST
+
+START_TEST(vnstat_handletrafficmeters_exits_when_interface_is_not_available_with_configuration_tips)
+{
+	PARAMS p;
+	defaultcfg();
+	initparams(&p);
+	p.traffic = 1;
+	p.defaultiface = 1;
+	strncpy_nt(p.interface, "someiface", 32);
+	strncpy_nt(cfg.cfgfile, "I_do_not_have_a_config_file_here.something", 512);
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_proc_net_dev("w", "otheriface", 0, 0, 0, 0);
+
+	suppress_output();
+	handletrafficmeters(&p);
+}
+END_TEST
+
+START_TEST(vnstat_handletrafficmeters_exits_when_specific_interface_is_not_available)
+{
+	PARAMS p;
+	defaultcfg();
+	initparams(&p);
+	p.traffic = 1;
+	p.defaultiface = 0;
+	strncpy_nt(p.interface, "someiface", 32);
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_proc_net_dev("w", "otheriface", 0, 0, 0, 0);
+
+	suppress_output();
+	handletrafficmeters(&p);
+}
+END_TEST
+
+START_TEST(vnstat_handletrafficmeters_can_calculate_traffic)
+{
+	PARAMS p;
+	defaultcfg();
+	initparams(&p);
+	p.traffic = 1;
+	p.defaultiface = 0;
+	cfg.qmode = 1;
+	cfg.sampletime = 0;
+	strncpy_nt(p.interface, "someiface", 32);
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_proc_net_dev("w", "someiface", 0, 0, 0, 0);
+
+	suppress_output();
+	handletrafficmeters(&p);
+}
+END_TEST
+
+START_TEST(vnstat_handletrafficmeters_can_calculate_traffic_and_output_json)
+{
+	PARAMS p;
+	defaultcfg();
+	initparams(&p);
+	p.traffic = 1;
+	p.defaultiface = 0;
+	cfg.qmode = 10;
+	cfg.sampletime = 0;
+	strncpy_nt(p.interface, "someiface", 32);
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_proc_net_dev("w", "someiface", 0, 0, 0, 0);
+
+	suppress_output();
+	handletrafficmeters(&p);
+}
+END_TEST
+
 void add_cli_tests(Suite *s)
 {
 	TCase *tc_cli = tcase_create("CLI");
@@ -837,5 +927,10 @@ void add_cli_tests(Suite *s)
 	tcase_add_exit_test(tc_cli, vnstat_handlesetalias_exits_if_given_interface_does_not_exist, 1);
 	tcase_add_exit_test(tc_cli, vnstat_handlesetalias_exits_after_setting_alias, 0);
 	tcase_add_exit_test(tc_cli, vnstat_handlesetalias_exits_after_clearing_alias, 0);
+	tcase_add_exit_test(tc_cli, vnstat_handletrafficmeters_exits_when_interface_is_not_available, 1);
+	tcase_add_exit_test(tc_cli, vnstat_handletrafficmeters_exits_when_interface_is_not_available_with_configuration_tips, 1);
+	tcase_add_exit_test(tc_cli, vnstat_handletrafficmeters_exits_when_specific_interface_is_not_available, 1);
+	tcase_add_test(tc_cli, vnstat_handletrafficmeters_can_calculate_traffic);
+	tcase_add_test(tc_cli, vnstat_handletrafficmeters_can_calculate_traffic_and_output_json);
 	suite_add_tcase(s, tc_cli);
 }
