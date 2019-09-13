@@ -296,9 +296,6 @@ void preparedatabase(DSTATE *s)
 			s->dbifcount = 0;
 			return;
 		}
-	}
-
-	if (s->dbifcount == 0) {
 		printf("No interfaces found in database, adding available interfaces...\n");
 	}
 
