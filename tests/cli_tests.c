@@ -873,6 +873,268 @@ START_TEST(vnstat_handletrafficmeters_can_calculate_traffic_and_output_json)
 }
 END_TEST
 
+START_TEST(handleifselection_does_nothing_when_interface_has_already_been_selected)
+{
+	PARAMS p;
+	defaultcfg();
+	initparams(&p);
+
+	p.defaultiface = 0;
+	strncpy_nt(p.interface, "myiface", 32);
+
+	handleifselection(&p);
+
+	ck_assert_str_eq(p.interface, "myiface");
+}
+END_TEST
+
+START_TEST(handleifselection_selects_default_interface_if_field_is_filled)
+{
+	PARAMS p;
+	defaultcfg();
+	initparams(&p);
+
+	p.defaultiface = 1;
+	strncpy_nt(p.interface, "default", 32);
+	strncpy_nt(p.definterface, "myiface", 32);
+
+	handleifselection(&p);
+
+	ck_assert_str_eq(p.interface, "myiface");
+	ck_assert_str_eq(p.definterface, "myiface");
+}
+END_TEST
+
+START_TEST(handleifselection_exits_when_no_suitable_interface_is_available_for_query)
+{
+	int ret;
+	PARAMS p;
+	defaultcfg();
+	initparams(&p);
+
+	p.defaultiface = 1;
+	p.query = 1;
+	strncpy_nt(p.interface, "default", 32);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	/* no interfaces added to database */
+
+	suppress_output();
+	handleifselection(&p);
+}
+END_TEST
+
+START_TEST(handleifselection_selects_only_interface_from_database_for_query)
+{
+	int ret;
+	PARAMS p;
+	defaultcfg();
+	initparams(&p);
+
+	p.defaultiface = 1;
+	p.query = 1;
+	strncpy_nt(p.interface, "default", 32);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("lettherebemagic");
+	ck_assert_int_eq(ret, 1);
+
+	handleifselection(&p);
+
+	ck_assert_str_eq(p.interface, "lettherebemagic");
+}
+END_TEST
+
+START_TEST(handleifselection_selects_highest_traffic_interface_from_database_for_query)
+{
+	int ret;
+	PARAMS p;
+	defaultcfg();
+	initparams(&p);
+
+	p.defaultiface = 1;
+	p.query = 1;
+	strncpy_nt(p.interface, "default", 32);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("ethslow");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("ethfast");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("ethone");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_settotal("ethslow", 100, 200);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_settotal("ethfast", 80, 9001);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_settotal("ethone", 1, 1);
+	ck_assert_int_eq(ret, 1);
+
+	handleifselection(&p);
+
+	/* interface with most traffic in database is selected */
+	ck_assert_str_eq(p.interface, "ethfast");
+}
+END_TEST
+
+START_TEST(handleifselection_exits_when_no_suitable_interface_is_available_for_traffic)
+{
+	PARAMS p;
+	defaultcfg();
+	initparams(&p);
+
+	p.defaultiface = 1;
+	p.query = 0;
+	p.traffic = 1;
+	strncpy_nt(p.interface, "default", 32);
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+
+	/* database not available and interface listing provides nothing */
+
+	suppress_output();
+	handleifselection(&p);
+}
+END_TEST
+
+START_TEST(handleifselection_can_select_interface_without_database_for_traffic)
+{
+	PARAMS p;
+	defaultcfg();
+	initparams(&p);
+
+	p.defaultiface = 1;
+	p.query = 0;
+	p.traffic = 1;
+	strncpy_nt(p.interface, "default", 32);
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_proc_net_dev("w", "firstinterface", 0, 0, 0, 0);
+	fake_proc_net_dev("a", "secondinterface", 0, 0, 0, 0);
+
+	suppress_output();
+	handleifselection(&p);
+
+	/* first available interface is selected */
+	ck_assert_str_eq(p.interface, "firstinterface");
+}
+END_TEST
+
+START_TEST(handleifselection_exits_if_only_database_shows_interfaces_for_traffic)
+{
+	int ret;
+	PARAMS p;
+	defaultcfg();
+	initparams(&p);
+
+	p.defaultiface = 1;
+	p.query = 0;
+	p.traffic = 1;
+	strncpy_nt(p.interface, "default", 32);
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("ethsomething");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("ethnothing");
+	ck_assert_int_eq(ret, 1);
+
+	suppress_output();
+	handleifselection(&p);
+}
+END_TEST
+
+START_TEST(handleifselection_selects_only_available_interfaces_for_traffic)
+{
+	int ret;
+	PARAMS p;
+	defaultcfg();
+	initparams(&p);
+
+	p.defaultiface = 1;
+	p.query = 0;
+	p.traffic = 1;
+	strncpy_nt(p.interface, "default", 32);
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_proc_net_dev("w", "ethnone", 0, 0, 0, 0);
+	fake_proc_net_dev("a", "ethslow", 0, 0, 0, 0);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("ethslow");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("ethfast");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_settotal("ethslow", 100, 200);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_settotal("ethfast", 80, 9001);
+	ck_assert_int_eq(ret, 1);
+
+	handleifselection(&p);
+
+	/* interface with most traffic in database the is also available is selected */
+	ck_assert_str_eq(p.interface, "ethslow");
+}
+END_TEST
+
+START_TEST(handleifselection_selects_only_available_interfaces_and_can_ignore_database_for_traffic)
+{
+	int ret;
+	PARAMS p;
+	defaultcfg();
+	initparams(&p);
+
+	p.defaultiface = 1;
+	p.query = 0;
+	p.traffic = 1;
+	strncpy_nt(p.interface, "default", 32);
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_proc_net_dev("w", "ethnone", 0, 0, 0, 0);
+	fake_proc_net_dev("a", "ethall", 0, 0, 0, 0);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("ethslow");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("ethfast");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_settotal("ethslow", 100, 200);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_settotal("ethfast", 80, 9001);
+	ck_assert_int_eq(ret, 1);
+
+	handleifselection(&p);
+
+	/* first available interface is selected if none of the interfaces in database are available */
+	ck_assert_str_eq(p.interface, "ethnone");
+}
+END_TEST
+
 void add_cli_tests(Suite *s)
 {
 	TCase *tc_cli = tcase_create("CLI");
@@ -932,5 +1194,15 @@ void add_cli_tests(Suite *s)
 	tcase_add_exit_test(tc_cli, vnstat_handletrafficmeters_exits_when_specific_interface_is_not_available, 1);
 	tcase_add_test(tc_cli, vnstat_handletrafficmeters_can_calculate_traffic);
 	tcase_add_test(tc_cli, vnstat_handletrafficmeters_can_calculate_traffic_and_output_json);
+	tcase_add_test(tc_cli, handleifselection_does_nothing_when_interface_has_already_been_selected);
+	tcase_add_test(tc_cli, handleifselection_selects_default_interface_if_field_is_filled);
+	tcase_add_exit_test(tc_cli, handleifselection_exits_when_no_suitable_interface_is_available_for_query, 1);
+	tcase_add_test(tc_cli, handleifselection_selects_only_interface_from_database_for_query);
+	tcase_add_test(tc_cli, handleifselection_selects_highest_traffic_interface_from_database_for_query);
+	tcase_add_exit_test(tc_cli, handleifselection_exits_when_no_suitable_interface_is_available_for_traffic, 1);
+	tcase_add_test(tc_cli, handleifselection_can_select_interface_without_database_for_traffic);
+	tcase_add_exit_test(tc_cli, handleifselection_exits_if_only_database_shows_interfaces_for_traffic, 1);
+	tcase_add_test(tc_cli, handleifselection_selects_only_available_interfaces_for_traffic);
+	tcase_add_test(tc_cli, handleifselection_selects_only_available_interfaces_and_can_ignore_database_for_traffic);
 	suite_add_tcase(s, tc_cli);
 }
