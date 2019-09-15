@@ -669,7 +669,7 @@ void handleshowdata(PARAMS *p)
 
 	/* show only specified file */
 	if (!p->defaultiface) {
-		showoneinterface(p, p->interface);
+		showoneinterface(p);
 		return;
 	}
 
@@ -718,13 +718,13 @@ void handleshowdata(PARAMS *p)
 			jsonfooter();
 		}
 
-		/* show in qmode if there's only one file or qmode!=0 */
+		/* show in qmode if there's only one interface or qmode!=0 */
 	} else {
-		showoneinterface(p, p->interface);
+		showoneinterface(p);
 	}
 }
 
-void showoneinterface(PARAMS *p, const char *interface)
+void showoneinterface(PARAMS *p)
 {
 	if (!db_getinterfacecountbyname(p->interface)) {
 		if (strchr(p->interface, '+') == NULL) {
@@ -743,7 +743,7 @@ void showoneinterface(PARAMS *p, const char *interface)
 		}
 	}
 	if (cfg.qmode != 8 && cfg.qmode != 10) {
-		showdb(interface, cfg.qmode, p->databegin, p->dataend);
+		showdb(p->interface, cfg.qmode, p->databegin, p->dataend);
 	} else if (cfg.qmode == 8) {
 		xmlheader();
 		showxml(p->interface, p->xmlmode, p->databegin, p->dataend);
