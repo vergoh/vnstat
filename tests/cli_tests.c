@@ -541,6 +541,45 @@ START_TEST(vnstat_handletrafficmeters_can_calculate_traffic_and_output_json)
 }
 END_TEST
 
+START_TEST(vnstat_handletrafficmeters_livetraffic_does_not_crash)
+{
+	PARAMS p;
+	defaultcfg();
+	initparams(&p);
+	p.livetraffic = 1;
+	p.defaultiface = 0;
+	cfg.qmode = 1;
+	cfg.ostyle = 0;
+	cfg.sampletime = 0;
+	strncpy_nt(p.interface, "someiface", 32);
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_proc_net_dev("w", "someiface", 0, 0, 0, 0);
+
+	suppress_output();
+	handletrafficmeters(&p);
+}
+END_TEST
+
+START_TEST(vnstat_handletrafficmeters_livetraffic_does_not_crash_with_json)
+{
+	PARAMS p;
+	defaultcfg();
+	initparams(&p);
+	p.livetraffic = 1;
+	p.defaultiface = 0;
+	cfg.qmode = 10;
+	cfg.sampletime = 0;
+	strncpy_nt(p.interface, "someiface", 32);
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_proc_net_dev("w", "someiface", 0, 0, 0, 0);
+
+	suppress_output();
+	handletrafficmeters(&p);
+}
+END_TEST
+
 START_TEST(handleifselection_does_nothing_when_interface_has_already_been_selected)
 {
 	PARAMS p;
@@ -837,6 +876,8 @@ void add_cli_tests(Suite *s)
 	tcase_add_exit_test(tc_cli, vnstat_handletrafficmeters_exits_when_specific_interface_is_not_available, 1);
 	tcase_add_test(tc_cli, vnstat_handletrafficmeters_can_calculate_traffic);
 	tcase_add_test(tc_cli, vnstat_handletrafficmeters_can_calculate_traffic_and_output_json);
+	tcase_add_test(tc_cli, vnstat_handletrafficmeters_livetraffic_does_not_crash);
+	tcase_add_test(tc_cli, vnstat_handletrafficmeters_livetraffic_does_not_crash_with_json);
 	tcase_add_test(tc_cli, handleifselection_does_nothing_when_interface_has_already_been_selected);
 	tcase_add_test(tc_cli, handleifselection_selects_default_interface_if_field_is_filled);
 	tcase_add_exit_test(tc_cli, handleifselection_exits_when_no_suitable_interface_is_available_for_query, 1);

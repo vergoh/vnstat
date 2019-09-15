@@ -174,8 +174,10 @@ void livetrafficmeter(const char *iface, const int mode)
 
 		timeslept = (uint64_t)time(NULL);
 
+#ifndef CHECK_VNSTAT
 		/* wait 2 seconds for more traffic */
 		sleep(LIVETIME);
+#endif
 
 		timeslept = (uint64_t)time(NULL) - timeslept;
 
@@ -281,9 +283,16 @@ void livetrafficmeter(const char *iface, const int mode)
 			printf("}}\n");
 			index++;
 		}
+#ifdef CHECK_VNSTAT
+		break;
+#endif
 	}
 
 	timespent = (uint64_t)time(NULL) - timespent - timeslept;
+
+#ifdef CHECK_VNSTAT
+	timespent = 10;
+#endif
 
 	if (!json) {
 		cursorshow();
