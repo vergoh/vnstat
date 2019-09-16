@@ -230,23 +230,3 @@ void updatedirownerid(const char *dir, const uid_t uid, const gid_t gid)
 
 	closedir(d);
 }
-
-int getdirowner(const char *dir, uid_t *uid, gid_t *gid)
-{
-	struct stat statbuf;
-
-	if (!direxists(dir)) {
-		return 0;
-	}
-
-	if (stat(dir, &statbuf) != 0) {
-		if (debug)
-			printf("Error (debug): stat() \"%s\": %s\n", dir, strerror(errno));
-		return 0;
-	}
-
-	*uid = statbuf.st_uid;
-	*gid = statbuf.st_gid;
-
-	return 1;
-}
