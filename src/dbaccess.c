@@ -345,22 +345,6 @@ void initdb(DATA *data)
 	data->btime = MAX32;
 }
 
-int removedb(const char *iface, const char *dirname)
-{
-	char file[512];
-
-	/* remove backup first */
-	snprintf(file, 512, "%s/.%s", dirname, iface);
-	unlink(file);
-
-	snprintf(file, 512, "%s/%s", dirname, iface);
-	if (unlink(file) != 0) {
-		return 0;
-	}
-
-	return 1;
-}
-
 int validatedb(DATA *data)
 {
 	int i, used;
