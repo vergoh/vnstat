@@ -39,7 +39,9 @@ void drawlegend(IMAGECONTENT *ic, const int x, const int y);
 void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max);
 void drawpole(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max);
 void drawdonut(IMAGECONTENT *ic, const int x, const int y, const float rxp, const float txp);
+#ifdef CHECK_VNSTAT
 void drawdonut_libgd_native(IMAGECONTENT *ic, const int x, const int y, const float rxp, const float txp);
+#endif
 void drawhours(IMAGECONTENT *ic, int x, int y, int rate);
 void drawhourly(IMAGECONTENT *ic, int rate);
 void drawlist(IMAGECONTENT *ic, const char *listname);

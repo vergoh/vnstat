@@ -273,6 +273,7 @@ void drawdonut(IMAGECONTENT *ic, const int x, const int y, const float rxp, cons
 	gdImageFilledArc(ic->im, x, y, DINRAD - 2, DINRAD - 2, 0, 360, ic->cbackground, 0);
 }
 
+#ifdef CHECK_VNSTAT
 void drawdonut_libgd_native(IMAGECONTENT *ic, const int x, const int y, const float rxp, const float txp)
 {
 	int rxarc = 0, txarc = 0;
@@ -304,6 +305,7 @@ void drawdonut_libgd_native(IMAGECONTENT *ic, const int x, const int y, const fl
 	// remove center from background filled circle, making it a donut
 	gdImageFilledArc(ic->im, x, y, DINRAD - 2, DINRAD - 2, 0, 360, ic->cbackground, 0);
 }
+#endif
 
 void drawhours(IMAGECONTENT *ic, const int x, const int y, const int rate)
 {
