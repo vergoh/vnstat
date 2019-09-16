@@ -336,7 +336,6 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 	}
 
 	daybuff[0] = '\0';
-	e_rx = e_tx = e_secs = 0;
 
 	if (!db_getdata_range(&datalist, &datainfo, interface->name, listname, (uint32_t)limit, databegin, dataend)) {
 		printf("Error: Failed to fetch %s data.\n", titlename);
@@ -452,6 +451,7 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 		printf(" | %s", getvalue(datalist_i->tx, 11, RT_Normal));
 		printf(" | %s", getvalue(datalist_i->rx + datalist_i->tx, 11, RT_Normal));
 		if (cfg.ostyle == 3) {
+			e_secs = 0;
 			if (datalist_i->next == NULL && issametimeslot(listtype, datalist_i->timestamp, interface->updated)) {
 				d = localtime(&interface->updated);
 				if (listtype == LT_Day) {

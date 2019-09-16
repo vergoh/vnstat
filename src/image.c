@@ -485,7 +485,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	int textx, texty, offsetx = 0, offsety = 0;
 	int width, height, headermod, i = 1, rowcount = 0;
 	int32_t limit;
-	uint64_t e_rx, e_tx, e_secs = 86400, div, mult;
+	uint64_t e_rx, e_tx, e_secs, div, mult;
 	char buffer[512], datebuff[16], daybuff[16];
 	char stampformat[64], titlename[16], colname[8];
 	struct tm *d;
@@ -538,7 +538,6 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	}
 
 	daybuff[0] = '\0';
-	e_rx = e_tx = 0;
 
 	if (!db_getdata_range(&datalist, &datainfo, ic->interface.name, listname, (uint32_t)limit, ic->databegin, ic->dataend)) {
 		printf("Error: Failed to fetch %s data.\n", "day");
@@ -700,6 +699,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		strncat(buffer, getvalue(datalist_i->rx + datalist_i->tx, 10, RT_Normal), 32);
 		if (cfg.ostyle > 2) {
 			strcat(buffer, "  ");
+			e_secs = 0;
 			if (datalist_i->next == NULL && issametimeslot(listtype, datalist_i->timestamp, ic->interface.updated)) {
 				d = localtime(&ic->interface.updated);
 				if (listtype == LT_Day) {
