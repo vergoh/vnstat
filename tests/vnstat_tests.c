@@ -213,6 +213,23 @@ int remove_directory(const char *directory)
 					return 0;
 				}
 				break;
+			case DT_UNKNOWN:
+				if (strcmp(di->d_name, ".") == 0 || strcmp(di->d_name, "..") == 0) {
+					continue;
+				}
+				snprintf(entryname, 512, "%s/%s", directory, di->d_name);
+				if (unlink(entryname) != 0) {
+					if (errno == EISDIR) {
+						if (!remove_directory(entryname)) {
+							closedir(dir);
+							return 0;
+						}
+					} else {
+						closedir(dir);
+						return 0;
+					}
+				}
+				break;
 			default:
 				continue;
 		}
