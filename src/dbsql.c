@@ -1347,7 +1347,7 @@ unsigned int getqueryinterfacecount(const char *input)
 {
 	unsigned int i, ifacecount = 1;
 
-	if (input[0] == '+' || input[strlen(input) - 1] == '+' || !strlen(input)) {
+	if (!strlen(input) || input[0] == '+' || input[strlen(input) - 1] == '+') {
 		return 0;
 	}
 
