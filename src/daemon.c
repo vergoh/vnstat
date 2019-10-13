@@ -268,6 +268,15 @@ void initdstate(DSTATE *s)
 	s->prevwaldbcheckpoint = time(NULL);
 }
 
+#ifdef CHECK_VNSTAT
+void destroystate(DSTATE *s)
+{
+	if (s->dcache) {
+		datacache_clear(&s->dcache);
+	}
+}
+#endif
+
 void preparedatabase(DSTATE *s)
 {
 	s->dbifcount = db_getinterfacecount();

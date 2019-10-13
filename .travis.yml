@@ -35,6 +35,13 @@ matrix:
       env:
         - CFLAGS='-Weverything -Wno-padded'
         - CPARAMS='--enable-werror'
+    - name: "Ubuntu 18.04 / Clang + Sanitizers"
+      os: linux
+      dist: bionic
+      compiler: clang
+      env:
+        - CFLAGS='-O1 -g -fsanitize=address -fno-omit-frame-pointer -fsanitize=undefined -fsanitize=nullability -fsanitize=implicit-conversion -fsanitize=integer'
+        - CPARAMS='--enable-werror'
     - name: "OS X / Clang"
       os: osx
       compiler: clang
@@ -54,7 +61,7 @@ before_install:
  - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then brew install gd sqlite check ; fi
 
 script:
- - ./configure ${CPARAMS} && make check || ( cat test.log ; exit 1 ) && egrep '^[0-9]+%' test.log && ./vnstat --version
+ - ./configure ${CPARAMS} && make check || ( cat test.log ; cat test-suite.log ; exit 1 ) && egrep '^[0-9]+%' test.log && ./vnstat --version
 
 notifications:
   email:
