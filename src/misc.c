@@ -192,7 +192,7 @@ int getunitspacing(const int len, const int index)
 
 	/* tune spacing according to unit */
 	/* +1 for space between number and unit */
-	l -= (int) strlen(getunitprefix(index)) + 1;
+	l -= (int)strlen(getunitprefix(index)) + 1;
 	if (l < 0) {
 		l = 1;
 	}
@@ -309,7 +309,7 @@ int getratespacing(const int len, const int unitmode, const int unitindex)
 {
 	int l = len;
 
-	l -= (int) strlen(getrateunitprefix(unitmode, unitindex)) + 1;
+	l -= (int)strlen(getrateunitprefix(unitmode, unitindex)) + 1;
 	if (l < 0) {
 		l = 1;
 	}

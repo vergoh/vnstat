@@ -19,9 +19,6 @@ void debugtimestamp(void);
 
 unsigned int addinterfaces(DSTATE *s);
 void initdstate(DSTATE *s);
-#ifdef CHECK_VNSTAT
-void destroystate(DSTATE *s);
-#endif
 void preparedatabase(DSTATE *s);
 unsigned int importlegacydbs(DSTATE *s);
 void setsignaltraps(void);

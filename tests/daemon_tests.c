@@ -189,7 +189,7 @@ START_TEST(addinterfaces_adds_to_cache_when_running)
 	ret = db_close();
 	ck_assert_int_eq(ret, 1);
 
-	destroystate(&s);
+	datacache_clear(&s.dcache);
 }
 END_TEST
 
@@ -353,7 +353,7 @@ START_TEST(filldatabaselist_adds_databases)
 	ret = db_close();
 	ck_assert_int_eq(ret, 1);
 
-	destroystate(&s);
+	datacache_clear(&s.dcache);
 }
 END_TEST
 
@@ -387,7 +387,7 @@ START_TEST(adjustsaveinterval_with_filled_cache)
 
 	ck_assert_int_eq(s.saveinterval, cfg.saveinterval * 60);
 
-	destroystate(&s);
+	datacache_clear(&s.dcache);
 }
 END_TEST
 
@@ -497,7 +497,7 @@ START_TEST(processdatacache_can_process_things)
 	ret = db_close();
 	ck_assert_int_eq(ret, 1);
 
-	destroystate(&s);
+	datacache_clear(&s.dcache);
 }
 END_TEST
 
@@ -759,7 +759,7 @@ START_TEST(interfacechangecheck_with_filled_cache)
 	ck_assert_int_eq(datacache_count(&s.dcache), 2);
 	ck_assert_int_eq(datacache_activecount(&s.dcache), 1);
 
-	destroystate(&s);
+	datacache_clear(&s.dcache);
 }
 END_TEST
 
@@ -793,7 +793,7 @@ START_TEST(initcachevalues_does_not_init_without_database)
 	ret = initcachevalues(&s, &s.dcache);
 	ck_assert_int_eq(ret, 0);
 
-	destroystate(&s);
+	datacache_clear(&s.dcache);
 }
 END_TEST
 
@@ -830,7 +830,7 @@ START_TEST(initcachevalues_does_init)
 	ret = db_close();
 	ck_assert_int_eq(ret, 1);
 
-	destroystate(&s);
+	datacache_clear(&s.dcache);
 }
 END_TEST
 
@@ -904,7 +904,7 @@ START_TEST(waittimesync_does_not_wait_with_new_interfaces)
 	ret = db_close();
 	ck_assert_int_eq(ret, 1);
 
-	destroystate(&s);
+	datacache_clear(&s.dcache);
 }
 END_TEST
 
@@ -940,7 +940,7 @@ START_TEST(waittimesync_knows_when_to_wait)
 	ret = db_close();
 	ck_assert_int_eq(ret, 1);
 
-	destroystate(&s);
+	datacache_clear(&s.dcache);
 }
 END_TEST
 
@@ -976,7 +976,7 @@ START_TEST(waittimesync_knows_when_to_give_up)
 	ret = db_close();
 	ck_assert_int_eq(ret, 1);
 
-	destroystate(&s);
+	datacache_clear(&s.dcache);
 }
 END_TEST
 
@@ -1182,7 +1182,7 @@ START_TEST(cleanremovedinterfaces_allows_interfaces_to_be_removed)
 	ret = db_close();
 	ck_assert_int_eq(ret, 1);
 
-	destroystate(&s);
+	datacache_clear(&s.dcache);
 }
 END_TEST
 
@@ -1210,7 +1210,7 @@ START_TEST(processifinfo_syncs_when_needed)
 	ck_assert_int_eq(s.dcache->currx, 11);
 	ck_assert_int_eq(s.dcache->curtx, 22);
 
-	destroystate(&s);
+	datacache_clear(&s.dcache);
 }
 END_TEST
 
@@ -1240,7 +1240,7 @@ START_TEST(processifinfo_skips_update_if_timestamps_make_no_sense)
 	ck_assert_int_eq(s.dcache->currx, 0);
 	ck_assert_int_eq(s.dcache->curtx, 0);
 
-	destroystate(&s);
+	datacache_clear(&s.dcache);
 }
 END_TEST
 
@@ -1295,7 +1295,7 @@ START_TEST(processifinfo_syncs_if_timestamps_match)
 	ck_assert_int_eq(s.dcache->curtx, 22);
 	ck_assert_ptr_eq(s.dcache->log, NULL);
 
-	destroystate(&s);
+	datacache_clear(&s.dcache);
 }
 END_TEST
 
@@ -1331,7 +1331,7 @@ START_TEST(processifinfo_adds_traffic)
 	ck_assert_int_eq(s.dcache->curtx, 22);
 	ck_assert_ptr_ne(s.dcache->log, NULL);
 
-	destroystate(&s);
+	datacache_clear(&s.dcache);
 }
 END_TEST
 
@@ -1368,7 +1368,7 @@ START_TEST(processifinfo_does_not_add_traffic_when_over_limit)
 	ck_assert_int_eq(s.dcache->curtx, 2222222);
 	ck_assert_ptr_eq(s.dcache->log, NULL);
 
-	destroystate(&s);
+	datacache_clear(&s.dcache);
 }
 END_TEST
 
@@ -1407,7 +1407,7 @@ START_TEST(processifinfo_adds_zero_traffic_when_over_limit)
 	ck_assert_int_eq(s.dcache->log->rx, 0);
 	ck_assert_int_eq(s.dcache->log->tx, 0);
 
-	destroystate(&s);
+	datacache_clear(&s.dcache);
 }
 END_TEST
 
