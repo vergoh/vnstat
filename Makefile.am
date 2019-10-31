@@ -143,7 +143,7 @@ release: distcheck
 	rm -fr $(PACKAGE_NAME)-$(PACKAGE_VERSION)
 	ls -l $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.gz
 
-install-data-hook: install-exec
+install-data-hook:
 	if [ -f $(DESTDIR)$(man1dir)/vnstatd.1 ]; then rm -f $(DESTDIR)$(man1dir)/vnstatd.1; fi
 	$(MKDIR_P) $(DESTDIR)$(sysconfdir)
 if IS_CROSSCOMPILED
