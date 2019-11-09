@@ -179,4 +179,4 @@ clean-local:
 	-rm -fr coverage *.lcov *.gz test*.log test*.xml src/*.gc* tests/*.gc* *.old *.new *check.png INSTALL INSTALL_BSD UPGRADE UNINSTALL
 
 check-local: check-TESTS
-	-tail -n 2 test.log
+	tail -n 2 test.log
