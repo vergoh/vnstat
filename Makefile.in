@@ -2387,8 +2387,8 @@ uninstall-hook:
 clean-local:
 	-rm -fr coverage *.lcov *.gz test*.log test*.xml src/*.gc* tests/*.gc* *.old *.new *check.png INSTALL INSTALL_BSD UPGRADE UNINSTALL
 
-check-local:
-	-tail -n 2 test.log
+check-local: check-TESTS
+	tail -n 2 test.log
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
