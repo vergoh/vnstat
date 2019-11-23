@@ -44,6 +44,7 @@ matrix:
         - CPARAMS='--enable-werror'
     - name: "OS X / Clang"
       os: osx
+      osx_image: xcode11
       compiler: clang
       env:
         - CFLAGS='-Weverything -Wno-padded -Wno-reserved-id-macro -Wno-gnu-zero-variadic-macro-arguments -Wno-sign-conversion -Wno-unreachable-code -Wno-missing-noreturn'
@@ -56,9 +57,11 @@ addons:
       - libgd3
       - libgd-dev
       - check
-
-before_install:
- - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then brew install gd sqlite check ; fi
+  homebrew:
+    packages:
+    - gd
+    - sqlite
+    - check
 
 script:
  - ./configure ${CPARAMS} && make check || ( cat test.log ; cat test-suite.log ; exit 1 ) && egrep '^[0-9]+%' test.log && ./vnstat --version
