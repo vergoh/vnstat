@@ -163,6 +163,9 @@ void parseargs(PARAMS *p, int argc, char **argv)
 			currentarg++;
 			continue;
 		} else if (strcmp(argv[currentarg], "--setalias") == 0 || strcmp(argv[currentarg], "--nick") == 0) {
+			if (strcmp(argv[currentarg], "--nick") == 0) {
+				printf("Warning: --nick is deprecated and will be removed in a future release. Use --setalias instead.\n");
+			}
 			if (currentarg + 1 < argc) {
 				strncpy_nt(p->alias, argv[currentarg + 1], 32);
 				if (debug)
@@ -617,6 +620,7 @@ void handleaddinterface(PARAMS *p)
 	printf("Adding interface \"%s\" for monitoring to database...\n", p->interface);
 	if (db_addinterface(p->interface)) {
 		printf("\nRestart the vnStat daemon if it is currently running in order to start monitoring \"%s\".\n", p->interface);
+		handlesetalias(p);
 		db_close();
 		exit(EXIT_SUCCESS);
 	} else {

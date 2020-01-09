@@ -71,7 +71,7 @@ int db_open(const int createifnotfound, const int readonly)
 		return 0;
 	} else {
 		if (debug)
-			printf("Database \"%s\" open\n", dbfilename);
+			printf("Database \"%s\" open (ro: %d)\n", dbfilename, readonly);
 	}
 
 	if (createdb) {

@@ -312,10 +312,12 @@ select between bytes (0) and bits (1) regardless of the configuration file setti
 
 .TP
 .BI "--setalias " alias
-Set the selected interface
+Set
 .I alias
-as an alias that will be displayed in queries. The daemon can be running during
-this operation.
+as an alias for the selected interface to be shown in queries. The set
+alias can be removed by specifying an empty string for
+.IR alias .
+The daemon can be running during this operation.
 
 .TP
 .B "-s, --short"

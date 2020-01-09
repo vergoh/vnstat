@@ -3,6 +3,7 @@
  - Fixed
    - Automatic interface selection wasn't done for --traffic and --live when
      the Interface configuration setting was left empty
+   - --setalias didn't do anything when used in combination with --add
 
 
 2.4 / 18-Aug-2019
