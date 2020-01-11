@@ -761,8 +761,22 @@ void showoneinterface(PARAMS *p)
 
 void handletrafficmeters(PARAMS *p)
 {
+	int i;
+
 	if (!p->traffic && !p->livetraffic) {
 		return;
+	}
+
+	if (strstr(p->interface, "+") != NULL) {
+		printf("This feature doesn't support interface merges (\"%s\"). ", p->interface);
+		for (i = 0; i < (int)strlen(p->interface); i++) {
+			if (p->interface[i] == '+') {
+				p->interface[i] = '\0';
+				break;
+			}
+		}
+		p->defaultiface = 0;
+		printf("Using \"%s\" instead.\n", p->interface);
 	}
 
 	if (!isifavailable(p->interface)) {

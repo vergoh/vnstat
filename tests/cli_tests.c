@@ -522,6 +522,25 @@ START_TEST(vnstat_handletrafficmeters_can_calculate_traffic)
 }
 END_TEST
 
+START_TEST(vnstat_handletrafficmeters_can_handle_interface_merge_using_first_interface)
+{
+	PARAMS p;
+	defaultcfg();
+	initparams(&p);
+	p.traffic = 1;
+	p.defaultiface = 0;
+	cfg.qmode = 1;
+	cfg.sampletime = 0;
+	strncpy_nt(p.interface, "someiface+anotherinterface", 32);
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_proc_net_dev("w", "someiface", 0, 0, 0, 0);
+
+	suppress_output();
+	handletrafficmeters(&p);
+}
+END_TEST
+
 START_TEST(vnstat_handletrafficmeters_can_calculate_traffic_and_output_json)
 {
 	PARAMS p;
@@ -552,6 +571,26 @@ START_TEST(vnstat_handletrafficmeters_livetraffic_does_not_crash)
 	cfg.ostyle = 0;
 	cfg.sampletime = 0;
 	strncpy_nt(p.interface, "someiface", 32);
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_proc_net_dev("w", "someiface", 0, 0, 0, 0);
+
+	suppress_output();
+	handletrafficmeters(&p);
+}
+END_TEST
+
+START_TEST(vnstat_handletrafficmeters_livetraffic_does_not_crash_with_interface_merge)
+{
+	PARAMS p;
+	defaultcfg();
+	initparams(&p);
+	p.livetraffic = 1;
+	p.defaultiface = 0;
+	cfg.qmode = 1;
+	cfg.ostyle = 0;
+	cfg.sampletime = 0;
+	strncpy_nt(p.interface, "someiface+anotherinterface", 32);
 
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
 	fake_proc_net_dev("w", "someiface", 0, 0, 0, 0);
@@ -875,8 +914,10 @@ void add_cli_tests(Suite *s)
 	tcase_add_exit_test(tc_cli, vnstat_handletrafficmeters_exits_when_interface_is_not_available_with_configuration_tips, 1);
 	tcase_add_exit_test(tc_cli, vnstat_handletrafficmeters_exits_when_specific_interface_is_not_available, 1);
 	tcase_add_test(tc_cli, vnstat_handletrafficmeters_can_calculate_traffic);
+	tcase_add_test(tc_cli, vnstat_handletrafficmeters_can_handle_interface_merge_using_first_interface);
 	tcase_add_test(tc_cli, vnstat_handletrafficmeters_can_calculate_traffic_and_output_json);
 	tcase_add_test(tc_cli, vnstat_handletrafficmeters_livetraffic_does_not_crash);
+	tcase_add_test(tc_cli, vnstat_handletrafficmeters_livetraffic_does_not_crash_with_interface_merge);
 	tcase_add_test(tc_cli, vnstat_handletrafficmeters_livetraffic_does_not_crash_with_json);
 	tcase_add_test(tc_cli, handleifselection_does_nothing_when_interface_has_already_been_selected);
 	tcase_add_test(tc_cli, handleifselection_selects_default_interface_if_field_is_filled);
