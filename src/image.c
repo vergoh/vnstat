@@ -264,7 +264,7 @@ void drawdonut(IMAGECONTENT *ic, const int x, const int y, const float rxp, cons
 	if (rxarc) {
 		gdImageFilledArc(ic->im, x, y, DOUTRAD, DOUTRAD, 270 + txarc, 270 + txarc + rxarc, ic->crxd, gdEdged | gdNoFill);
 		if (rxarc >= 5) {
-			gdImageFill(ic->im, (int)(x + (DOUTRAD / 2 - 3) * cos(((270 * 2 + 2 * txarc + rxarc) / 2) * M_PI / 180)), (int)(y + (DOUTRAD / 2 - 3) * sin(((270 * 2 + 2 * txarc + rxarc) / 2) * M_PI / 180)), ic->crx);
+			gdImageFill(ic->im, (int)(x + (DOUTRAD / 2 - 3) * cos((int)((270 * 2 + 2 * txarc + rxarc) / 2) * M_PI / 180)), (int)(y + (DOUTRAD / 2 - 3) * sin((int)((270 * 2 + 2 * txarc + rxarc) / 2) * M_PI / 180)), ic->crx);
 		}
 		gdImageFilledArc(ic->im, x, y, DINRAD, DINRAD, 270 + txarc, 270 + txarc + rxarc, ic->crxd, gdEdged | gdNoFill);
 	}
