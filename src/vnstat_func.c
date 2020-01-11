@@ -520,8 +520,10 @@ void handleremoveinterface(PARAMS *p)
 		printf("Interface \"%s\" removed from database.\n", p->interface);
 		printf("The interface will no longer be monitored. Use --add\n");
 		printf("if monitoring the interface is again needed.\n");
+#ifndef CHECK_VNSTAT
 		db_close();
 		exit(EXIT_SUCCESS);
+#endif
 	} else {
 		printf("Error: Removing interface \"%s\" from database failed.\n", p->interface);
 		exit(EXIT_FAILURE);
@@ -569,8 +571,10 @@ void handlerenameinterface(PARAMS *p)
 
 	if (db_renameinterface(p->interface, p->newifname)) {
 		printf("Interface \"%s\" has been renamed \"%s\".\n", p->interface, p->newifname);
+#ifndef CHECK_VNSTAT
 		db_close();
 		exit(EXIT_SUCCESS);
+#endif
 	} else {
 		printf("Error: Renaming interface \"%s\" -> \"%s\" failed.\n", p->interface, p->newifname);
 		exit(EXIT_FAILURE);
@@ -621,8 +625,10 @@ void handleaddinterface(PARAMS *p)
 	if (db_addinterface(p->interface)) {
 		printf("\nRestart the vnStat daemon if it is currently running in order to start monitoring \"%s\".\n", p->interface);
 		handlesetalias(p);
+#ifndef CHECK_VNSTAT
 		db_close();
 		exit(EXIT_SUCCESS);
+#endif
 	} else {
 		printf("Error: Adding interface \"%s\" to database failed.\n", p->interface);
 		exit(EXIT_FAILURE);
@@ -654,8 +660,10 @@ void handlesetalias(PARAMS *p)
 
 	if (db_setalias(p->interface, p->alias)) {
 		printf("Alias of interface \"%s\" set to \"%s\".\n", p->interface, p->alias);
+#ifndef CHECK_VNSTAT
 		db_close();
 		exit(EXIT_SUCCESS);
+#endif
 	} else {
 		printf("Error: Setting interface \"%s\" alias failed.\n", p->interface);
 		exit(EXIT_FAILURE);
@@ -767,8 +775,8 @@ void handletrafficmeters(PARAMS *p)
 		return;
 	}
 
-	if (strstr(p->interface, "+") != NULL) {
-		printf("This feature doesn't support interface merges (\"%s\"). ", p->interface);
+	if (strchr(p->interface, '+') != NULL) {
+		printf("This feature doesn't support interface merges (\"%s\"), ", p->interface);
 		for (i = 0; i < (int)strlen(p->interface); i++) {
 			if (p->interface[i] == '+') {
 				p->interface[i] = '\0';
@@ -776,7 +784,7 @@ void handletrafficmeters(PARAMS *p)
 			}
 		}
 		p->defaultiface = 0;
-		printf("Using \"%s\" instead.\n", p->interface);
+		printf("using \"%s\" instead.\n", p->interface);
 	}
 
 	if (!isifavailable(p->interface)) {
