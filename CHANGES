@@ -1,4 +1,4 @@
-2.5 / <not released yet>
+2.5 / 14-Jan-2020
 
  - Fixed
    - Automatic interface selection wasn't done for --traffic and --live when

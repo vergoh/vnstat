@@ -1,7 +1,7 @@
 
 # New configuration settings
 
- * 2.4: (none)
+ * 2.4 - 2.5: (none)
 
  * 2.3: DatabaseWriteAheadLogging, DatabaseSynchronous
 
