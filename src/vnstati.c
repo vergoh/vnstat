@@ -44,7 +44,6 @@ int main(int argc, char *argv[])
 					if (debug)
 						printf("Used config file: %s\n", p.cfgfile);
 					currentarg++;
-					continue;
 				} else {
 					printf("Error: File for --config missing.\n");
 					return 1;
@@ -157,7 +156,6 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 				if (debug)
 					printf("Used interface: \"%s\"\n", p->interface);
 				currentarg++;
-				continue;
 			} else {
 				printf("Error: Interface for -i missing.\n");
 				exit(EXIT_FAILURE);
@@ -168,7 +166,6 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 				if (debug)
 					printf("Output file: \"%s\"\n", p->filename);
 				currentarg++;
-				continue;
 			} else {
 				printf("Error: Filename for -o missing.\n");
 				exit(EXIT_FAILURE);
@@ -179,7 +176,6 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 				if (debug)
 					printf("Cache time: %d minutes\n", p->cache);
 				currentarg++;
-				continue;
 			} else {
 				printf("Error: Parameter for -c missing or invalid.\n");
 				exit(EXIT_FAILURE);
@@ -194,7 +190,6 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 				if (debug)
 					printf("Style changed: %d\n", cfg.ostyle);
 				currentarg++;
-				continue;
 			} else {
 				printf("Error: Style parameter for --style missing.\n");
 				exit(EXIT_FAILURE);
@@ -209,7 +204,6 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 				if (debug)
 					printf("Transparency changed: %d\n", cfg.transbg);
 				currentarg++;
-				continue;
 			} else {
 				cfg.transbg = !cfg.transbg;
 				if (debug)
@@ -221,7 +215,6 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 				if (debug)
 					printf("DatabaseDir: \"%s\"\n", cfg.dbdir);
 				currentarg++;
-				continue;
 			} else {
 				printf("Error: Directory for --dbdir missing.\n");
 				exit(EXIT_FAILURE);
@@ -232,7 +225,6 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 				if (debug)
 					printf("Locale: \"%s\"\n", argv[currentarg + 1]);
 				currentarg++;
-				continue;
 			} else {
 				printf("Error: Locale for --locale missing.\n");
 				exit(EXIT_FAILURE);
@@ -240,14 +232,12 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 		} else if (strcmp(argv[currentarg], "--config") == 0) {
 			/* config has already been parsed earlier so nothing to do here */
 			currentarg++;
-			continue;
 		} else if ((strcmp(argv[currentarg], "--headertext")) == 0) {
 			if (currentarg + 1 < argc) {
 				strncpy_nt(ic->headertext, argv[currentarg + 1], 65);
 				if (debug)
 					printf("Header text: \"%s\"\n", ic->headertext);
 				currentarg++;
-				continue;
 			} else {
 				printf("Error: Text string parameter for --headertext missing.\n");
 				exit(EXIT_FAILURE);
@@ -265,7 +255,6 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 					exit(EXIT_FAILURE);
 				}
 				currentarg++;
-				continue;
 			}
 		} else if ((strcmp(argv[currentarg], "-m") == 0) || (strcmp(argv[currentarg], "--months")) == 0) {
 			cfg.qmode = 2;
@@ -276,7 +265,6 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 					exit(EXIT_FAILURE);
 				}
 				currentarg++;
-				continue;
 			}
 		} else if ((strcmp(argv[currentarg], "-t") == 0) || (strcmp(argv[currentarg], "--top")) == 0) {
 			cfg.qmode = 3;
@@ -287,7 +275,6 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 					exit(EXIT_FAILURE);
 				}
 				currentarg++;
-				continue;
 			}
 		} else if ((strcmp(argv[currentarg], "-y") == 0) || (strcmp(argv[currentarg], "--years")) == 0) {
 			cfg.qmode = 4;
@@ -298,7 +285,6 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 					exit(EXIT_FAILURE);
 				}
 				currentarg++;
-				continue;
 			}
 		} else if ((strcmp(argv[currentarg], "-h") == 0) || (strcmp(argv[currentarg], "--hours")) == 0) {
 			cfg.qmode = 8;
@@ -309,7 +295,6 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 					exit(EXIT_FAILURE);
 				}
 				currentarg++;
-				continue;
 			}
 		} else if ((strcmp(argv[currentarg], "-5") == 0) || (strcmp(argv[currentarg], "--fiveminutes")) == 0) {
 			cfg.qmode = 9;
@@ -320,7 +305,6 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 					exit(EXIT_FAILURE);
 				}
 				currentarg++;
-				continue;
 			}
 		} else if ((strcmp(argv[currentarg], "-s") == 0) || (strcmp(argv[currentarg], "--summary")) == 0) {
 			cfg.qmode = 5;
@@ -349,7 +333,6 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 				if (debug)
 					printf("Rateunit changed: %d\n", cfg.rateunit);
 				currentarg++;
-				continue;
 			} else {
 				cfg.rateunit = !cfg.rateunit;
 				if (debug)
@@ -363,7 +346,6 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 				}
 				strncpy_nt(ic->databegin, argv[currentarg + 1], 18);
 				currentarg++;
-				continue;
 			} else {
 				printf("Error: Date of format YYYY-MM-DD HH:MM or YYYY-MM-DD for %s missing.\n", argv[currentarg]);
 				exit(EXIT_FAILURE);
@@ -376,7 +358,6 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 				}
 				strncpy_nt(ic->dataend, argv[currentarg + 1], 18);
 				currentarg++;
-				continue;
 			} else {
 				printf("Error: Date of format YYYY-MM-DD HH:MM or YYYY-MM-DD for %s missing.\n", argv[currentarg]);
 				exit(EXIT_FAILURE);

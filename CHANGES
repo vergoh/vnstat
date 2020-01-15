@@ -1,5 +1,9 @@
 2.6 / <not released yet>
 
+ - Fixed
+   - --json and --xml didn't support having both mode and limit parameters
+     defined at the same time as documented, broken since previous release
+
 
 2.5 / 14-Jan-2020
 

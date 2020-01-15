@@ -70,7 +70,7 @@ START_TEST(vnstat_parseargs_can_modify_settings)
 	char *argv[] = {"vnstat", "--debug", "--traffic", "12", "--add", "--rename", "aname", "--config",
 					"does_nothing", "-l", "1", "--remove", "-i", "ethsomething", "--style", "0", "--dbdir",
 					"dbsomewhere", "-q", "-d", "1", "-m", "2", "-t", "3", "-s", "-y", "4", "-hg", "-h", "5", "-5", "6",
-					"--oneline", "b", "--xml", "h", "--json", "d", "-ru", "--rateunit", "0",
+					"--oneline", "b", "--xml", "h", "7", "--json", "d", "7", "-ru", "--rateunit", "0",
 					"--force", "--setalias", "super", "--begin", "2000-01-01",
 					"--end", "2001-01-01", NULL};
 	int argc = sizeof(argv) / sizeof(char *) - 1;
@@ -105,6 +105,9 @@ START_TEST(vnstat_parseargs_can_modify_settings)
 	ck_assert_int_eq(cfg.listyears, 4);
 	ck_assert_int_eq(cfg.listhours, 5);
 	ck_assert_int_eq(cfg.listfivemins, 6);
+	ck_assert_int_eq(cfg.listjsonxml, 7);
+	ck_assert_str_eq(p.databegin, "2000-01-01");
+	ck_assert_str_eq(p.dataend, "2001-01-01");
 }
 END_TEST
 
@@ -192,6 +195,70 @@ START_TEST(vnstat_parseargs_xml_gives_help)
 }
 END_TEST
 
+START_TEST(vnstat_parseargs_xml_without_extra_params)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--xml", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	cfg.qmode = 0;
+	initparams(&p);
+	suppress_output();
+	parseargs(&p, argc, argv);
+	ck_assert_int_eq(cfg.qmode, 8);
+	ck_assert_int_eq(p.xmlmode, 'a');
+	ck_assert_int_eq(cfg.listjsonxml, 0);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_xml_with_mode)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--xml", "m", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	cfg.qmode = 0;
+	initparams(&p);
+	suppress_output();
+	parseargs(&p, argc, argv);
+	ck_assert_int_eq(cfg.qmode, 8);
+	ck_assert_int_eq(p.xmlmode, 'm');
+	ck_assert_int_eq(cfg.listjsonxml, 0);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_xml_with_limit)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--xml", "1231", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	cfg.qmode = 0;
+	initparams(&p);
+	suppress_output();
+	parseargs(&p, argc, argv);
+	ck_assert_int_eq(cfg.qmode, 8);
+	ck_assert_int_eq(p.xmlmode, 'a');
+	ck_assert_int_eq(cfg.listjsonxml, 1231);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_xml_with_mode_and_limit)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--xml", "t", "2", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	cfg.qmode = 0;
+	initparams(&p);
+	suppress_output();
+	parseargs(&p, argc, argv);
+	ck_assert_int_eq(cfg.qmode, 8);
+	ck_assert_int_eq(p.xmlmode, 't');
+	ck_assert_int_eq(cfg.listjsonxml, 2);
+}
+END_TEST
+
 START_TEST(vnstat_parseargs_json_gives_help)
 {
 	PARAMS p;
@@ -201,6 +268,70 @@ START_TEST(vnstat_parseargs_json_gives_help)
 	initparams(&p);
 	suppress_output();
 	parseargs(&p, argc, argv);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_json_without_extra_params)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--json", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	cfg.qmode = 0;
+	initparams(&p);
+	suppress_output();
+	parseargs(&p, argc, argv);
+	ck_assert_int_eq(cfg.qmode, 10);
+	ck_assert_int_eq(p.jsonmode, 'a');
+	ck_assert_int_eq(cfg.listjsonxml, 0);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_json_with_mode)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--json", "m", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	cfg.qmode = 0;
+	initparams(&p);
+	suppress_output();
+	parseargs(&p, argc, argv);
+	ck_assert_int_eq(cfg.qmode, 10);
+	ck_assert_int_eq(p.jsonmode, 'm');
+	ck_assert_int_eq(cfg.listjsonxml, 0);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_json_with_limit)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--json", "1232", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	cfg.qmode = 0;
+	initparams(&p);
+	suppress_output();
+	parseargs(&p, argc, argv);
+	ck_assert_int_eq(cfg.qmode, 10);
+	ck_assert_int_eq(p.jsonmode, 'a');
+	ck_assert_int_eq(cfg.listjsonxml, 1232);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_json_with_mode_and_limit)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--json", "d", "3", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	cfg.qmode = 0;
+	initparams(&p);
+	suppress_output();
+	parseargs(&p, argc, argv);
+	ck_assert_int_eq(cfg.qmode, 10);
+	ck_assert_int_eq(p.jsonmode, 'd');
+	ck_assert_int_eq(cfg.listjsonxml, 3);
 }
 END_TEST
 
@@ -324,6 +455,20 @@ START_TEST(vnstat_parseargs_setalias_requires_parameter)
 }
 END_TEST
 
+START_TEST(vnstat_parseargs_setalias_still_supports_nick)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--nick", "Underground", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	initparams(&p);
+	suppress_output();
+	parseargs(&p, argc, argv);
+	ck_assert_int_eq(p.setalias, 1);
+	ck_assert_str_eq(p.alias, "Underground");
+}
+END_TEST
+
 START_TEST(vnstat_parseargs_rename_requires_parameter)
 {
 	PARAMS p;
@@ -354,7 +499,15 @@ void add_parseargs_tests(Suite *s)
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_dbdir_requires_a_directory, 1);
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_oneline_gives_help, 1);
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_xml_gives_help, 1);
+	tcase_add_test(tc_pa, vnstat_parseargs_xml_without_extra_params);
+	tcase_add_test(tc_pa, vnstat_parseargs_xml_with_mode);
+	tcase_add_test(tc_pa, vnstat_parseargs_xml_with_limit);
+	tcase_add_test(tc_pa, vnstat_parseargs_xml_with_mode_and_limit);
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_json_gives_help, 1);
+	tcase_add_test(tc_pa, vnstat_parseargs_json_without_extra_params);
+	tcase_add_test(tc_pa, vnstat_parseargs_json_with_mode);
+	tcase_add_test(tc_pa, vnstat_parseargs_json_with_limit);
+	tcase_add_test(tc_pa, vnstat_parseargs_json_with_mode_and_limit);
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_rateunit_gives_help, 1);
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_live_gives_help, 1);
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_begin_gives_help, 1);
@@ -365,6 +518,7 @@ void add_parseargs_tests(Suite *s)
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_iface_requires_parameter, 1);
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_locale_requires_parameter, 1);
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_setalias_requires_parameter, 1);
+	tcase_add_test(tc_pa, vnstat_parseargs_setalias_still_supports_nick);
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_rename_requires_parameter, 1);
-    suite_add_tcase(s, tc_pa);
+	suite_add_tcase(s, tc_pa);
 }

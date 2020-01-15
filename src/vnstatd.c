@@ -45,7 +45,6 @@ int main(int argc, char *argv[])
 					if (debug)
 						printf("Used config file: %s\n", s.cfgfile);
 					currentarg++;
-					continue;
 				} else {
 					printf("Error: File for --config missing.\n");
 					return 1;
@@ -257,7 +256,6 @@ void parseargs(DSTATE *s, int argc, char **argv)
 		} else if (strcmp(argv[currentarg], "--config") == 0) {
 			/* config has already been parsed earlier so nothing to do here */
 			currentarg++;
-			continue;
 		} else if ((strcmp(argv[currentarg], "-D") == 0) || (strcmp(argv[currentarg], "--debug") == 0)) {
 			debug = 1;
 		} else if ((strcmp(argv[currentarg], "-d") == 0) || (strcmp(argv[currentarg], "--daemon") == 0)) {
@@ -273,7 +271,6 @@ void parseargs(DSTATE *s, int argc, char **argv)
 				if (debug)
 					printf("Requested user: \"%s\"\n", s->user);
 				currentarg++;
-				continue;
 			} else {
 				printf("Error: User for --user missing.\n");
 				exit(EXIT_FAILURE);
@@ -284,7 +281,6 @@ void parseargs(DSTATE *s, int argc, char **argv)
 				if (debug)
 					printf("Requested group: \"%s\"\n", s->group);
 				currentarg++;
-				continue;
 			} else {
 				printf("Error: Group for --group missing.\n");
 				exit(EXIT_FAILURE);
@@ -303,7 +299,6 @@ void parseargs(DSTATE *s, int argc, char **argv)
 				if (debug)
 					printf("Used pid file: %s\n", cfg.pidfile);
 				currentarg++;
-				continue;
 			} else {
 				printf("Error: File for --pidfile missing.\n");
 				exit(EXIT_FAILURE);

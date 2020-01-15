@@ -43,7 +43,6 @@ int main(int argc, char *argv[])
 					if (debug)
 						printf("Used config file: %s\n", p.cfgfile);
 					currentarg++;
-					continue;
 				} else {
 					printf("Error: File for --config missing.\n");
 					return 1;

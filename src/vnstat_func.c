@@ -153,7 +153,6 @@ void parseargs(PARAMS *p, int argc, char **argv)
 				if (debug)
 					printf("Used interface: \"%s\"\n", p->interface);
 				currentarg++;
-				continue;
 			} else {
 				printf("Error: Interface for %s missing.\n", argv[currentarg]);
 				exit(EXIT_FAILURE);
@@ -161,7 +160,6 @@ void parseargs(PARAMS *p, int argc, char **argv)
 		} else if (strcmp(argv[currentarg], "--config") == 0) {
 			/* config has already been parsed earlier so nothing to do here */
 			currentarg++;
-			continue;
 		} else if (strcmp(argv[currentarg], "--setalias") == 0 || strcmp(argv[currentarg], "--nick") == 0) {
 			if (strcmp(argv[currentarg], "--nick") == 0) {
 				printf("Warning: --nick is deprecated and will be removed in a future release. Use --setalias instead.\n");
@@ -172,7 +170,6 @@ void parseargs(PARAMS *p, int argc, char **argv)
 					printf("Used alias: \"%s\"\n", p->alias);
 				p->setalias = 1;
 				currentarg++;
-				continue;
 			} else {
 				printf("Error: Alias for %s missing.\n", argv[currentarg]);
 				exit(EXIT_FAILURE);
@@ -194,7 +191,6 @@ void parseargs(PARAMS *p, int argc, char **argv)
 				if (debug)
 					printf("Style changed: %d\n", cfg.ostyle);
 				currentarg++;
-				continue;
 			} else {
 				printf("Error: Style parameter for --style missing.\n");
 				printf(" Valid parameters:\n");
@@ -212,7 +208,6 @@ void parseargs(PARAMS *p, int argc, char **argv)
 				if (debug)
 					printf("DatabaseDir: \"%s\"\n", cfg.dbdir);
 				currentarg++;
-				continue;
 			} else {
 				printf("Error: Directory for %s missing.\n", argv[currentarg]);
 				exit(EXIT_FAILURE);
@@ -223,7 +218,6 @@ void parseargs(PARAMS *p, int argc, char **argv)
 				if (debug)
 					printf("Locale: \"%s\"\n", argv[currentarg + 1]);
 				currentarg++;
-				continue;
 			} else {
 				printf("Error: Locale for %s missing.\n", argv[currentarg]);
 				exit(EXIT_FAILURE);
@@ -247,7 +241,6 @@ void parseargs(PARAMS *p, int argc, char **argv)
 					exit(EXIT_FAILURE);
 				}
 				currentarg++;
-				continue;
 			}
 		} else if ((strcmp(argv[currentarg], "-m") == 0) || (strcmp(argv[currentarg], "--months") == 0)) {
 			cfg.qmode = 2;
@@ -258,7 +251,6 @@ void parseargs(PARAMS *p, int argc, char **argv)
 					exit(EXIT_FAILURE);
 				}
 				currentarg++;
-				continue;
 			}
 		} else if ((strcmp(argv[currentarg], "-t") == 0) || (strcmp(argv[currentarg], "--top") == 0)) {
 			cfg.qmode = 3;
@@ -269,7 +261,6 @@ void parseargs(PARAMS *p, int argc, char **argv)
 					exit(EXIT_FAILURE);
 				}
 				currentarg++;
-				continue;
 			}
 		} else if ((strcmp(argv[currentarg], "-s") == 0) || (strcmp(argv[currentarg], "--short") == 0)) {
 			cfg.qmode = 5;
@@ -282,7 +273,6 @@ void parseargs(PARAMS *p, int argc, char **argv)
 					exit(EXIT_FAILURE);
 				}
 				currentarg++;
-				continue;
 			}
 		} else if ((strcmp(argv[currentarg], "-hg") == 0) || (strcmp(argv[currentarg], "--hoursgraph") == 0)) {
 			cfg.qmode = 7;
@@ -295,7 +285,6 @@ void parseargs(PARAMS *p, int argc, char **argv)
 					exit(EXIT_FAILURE);
 				}
 				currentarg++;
-				continue;
 			}
 		} else if ((strcmp(argv[currentarg], "-5") == 0) || (strcmp(argv[currentarg], "--fiveminutes") == 0)) {
 			cfg.qmode = 12;
@@ -306,7 +295,6 @@ void parseargs(PARAMS *p, int argc, char **argv)
 					exit(EXIT_FAILURE);
 				}
 				currentarg++;
-				continue;
 			}
 		} else if (strcmp(argv[currentarg], "--oneline") == 0) {
 			cfg.qmode = 9;
@@ -314,7 +302,6 @@ void parseargs(PARAMS *p, int argc, char **argv)
 				if (argv[currentarg + 1][0] == 'b') {
 					cfg.ostyle = 4;
 					currentarg++;
-					continue;
 				} else {
 					printf("Error: Invalid mode parameter \"%s\" for --oneline.\n", argv[currentarg + 1]);
 					printf(" Valid parameters:\n");
@@ -340,7 +327,6 @@ void parseargs(PARAMS *p, int argc, char **argv)
 					exit(EXIT_FAILURE);
 				}
 				currentarg++;
-				continue;
 			}
 			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {
 				cfg.listjsonxml = atoi(argv[currentarg + 1]);
@@ -349,7 +335,6 @@ void parseargs(PARAMS *p, int argc, char **argv)
 					exit(EXIT_FAILURE);
 				}
 				currentarg++;
-				continue;
 			}
 		} else if (strcmp(argv[currentarg], "--json") == 0) {
 			cfg.qmode = 10;
@@ -368,7 +353,6 @@ void parseargs(PARAMS *p, int argc, char **argv)
 					exit(EXIT_FAILURE);
 				}
 				currentarg++;
-				continue;
 			}
 			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {
 				cfg.listjsonxml = atoi(argv[currentarg + 1]);
@@ -377,7 +361,6 @@ void parseargs(PARAMS *p, int argc, char **argv)
 					exit(EXIT_FAILURE);
 				}
 				currentarg++;
-				continue;
 			}
 		} else if ((strcmp(argv[currentarg], "-ru") == 0) || (strcmp(argv[currentarg], "--rateunit")) == 0) {
 			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {
@@ -392,7 +375,6 @@ void parseargs(PARAMS *p, int argc, char **argv)
 				if (debug)
 					printf("Rateunit changed: %d\n", cfg.rateunit);
 				currentarg++;
-				continue;
 			} else {
 				cfg.rateunit = !cfg.rateunit;
 				if (debug)
@@ -405,7 +387,6 @@ void parseargs(PARAMS *p, int argc, char **argv)
 			}
 			p->traffic = 1;
 			p->query = 0;
-			continue;
 		} else if ((strcmp(argv[currentarg], "-l") == 0) || (strcmp(argv[currentarg], "--live") == 0)) {
 			if (currentarg + 1 < argc && argv[currentarg + 1][0] != '-') {
 				if (!isdigit(argv[currentarg + 1][0]) || atoi(argv[currentarg + 1]) > 1 || atoi(argv[currentarg + 1]) < 0) {
@@ -420,7 +401,6 @@ void parseargs(PARAMS *p, int argc, char **argv)
 			}
 			p->livetraffic = 1;
 			p->query = 0;
-			continue;
 		} else if (strcmp(argv[currentarg], "--force") == 0) {
 			p->force = 1;
 		} else if (strcmp(argv[currentarg], "--showconfig") == 0) {
@@ -437,7 +417,6 @@ void parseargs(PARAMS *p, int argc, char **argv)
 				p->renameiface = 1;
 				p->query = 0;
 				currentarg++;
-				continue;
 			} else {
 				printf("Error: New interface name for %s missing.\n", argv[currentarg]);
 				exit(EXIT_FAILURE);
@@ -450,7 +429,6 @@ void parseargs(PARAMS *p, int argc, char **argv)
 				}
 				strncpy_nt(p->databegin, argv[currentarg + 1], 18);
 				currentarg++;
-				continue;
 			} else {
 				printf("Error: Date of format YYYY-MM-DD HH:MM or YYYY-MM-DD for %s missing.\n", argv[currentarg]);
 				exit(EXIT_FAILURE);
@@ -463,7 +441,6 @@ void parseargs(PARAMS *p, int argc, char **argv)
 				}
 				strncpy_nt(p->dataend, argv[currentarg + 1], 18);
 				currentarg++;
-				continue;
 			} else {
 				printf("Error: Date of format YYYY-MM-DD HH:MM or YYYY-MM-DD for %s missing.\n", argv[currentarg]);
 				exit(EXIT_FAILURE);
