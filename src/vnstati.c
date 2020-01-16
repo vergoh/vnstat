@@ -99,13 +99,13 @@ void showihelp(IPARAMS *p)
 {
 	printf("vnStat image output %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
 
-	printf("      -5,  --fiveminutes [count]   output 5 minutes\n");
-	printf("      -h,  --hours [count]         output hours\n");
+	printf("      -5,  --fiveminutes [limit]   output 5 minutes\n");
+	printf("      -h,  --hours [limit]         output hours\n");
 	printf("      -hg, --hoursgraph            output hours graph\n");
-	printf("      -d,  --days [count]          output days\n");
-	printf("      -m,  --months [count]        output months\n");
-	printf("      -y,  --years [count]         output years\n");
-	printf("      -t,  --top [count]           output top days\n");
+	printf("      -d,  --days [limit]          output days\n");
+	printf("      -m,  --months [limit]        output months\n");
+	printf("      -y,  --years [limit]         output years\n");
+	printf("      -t,  --top [limit]           output top days\n");
 	printf("      -s,  --summary               output summary\n");
 	printf("      -hs, --hsummary              output horizontal summary with hours\n");
 	printf("      -vs, --vsummary              output vertical summary with hours\n");

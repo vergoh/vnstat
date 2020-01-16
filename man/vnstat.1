@@ -12,18 +12,18 @@ vnstat \- a console-based network traffic monitor
 .RB [ \-\-config
 .IR file ]
 .RB [ \-\-days
-.RI [ count ]]
+.RI [ limit ]]
 .RB [ \-\-dbdir
 .RI [ directory ]]
 .RB [ \-\-debug ]
 .RB [ \-\-end
 .IR date ]
 .RB [ \-\-fiveminutes
-.RI [ count ]]
+.RI [ limit ]]
 .RB [ \-\-help ]
 .RB [ \-hg ]
 .RB [ \-\-hours
-.RI [ count ]]
+.RI [ limit ]]
 .RB [ \-\-hoursgraph ]
 .RB [ \-i
 .IR interface ]
@@ -39,7 +39,7 @@ vnstat \- a console-based network traffic monitor
 .IR locale ]
 .RB [ \-\-longhelp ]
 .RB [ \-\-months
-.RI [ count ]]
+.RI [ limit ]]
 .RB [ \-\-oneline
 .RI [ mode ]]
 .RB [ \-\-query ]
@@ -57,7 +57,7 @@ vnstat \- a console-based network traffic monitor
 .RB [ \-\-style
 .IR number ]
 .RB [ \-\-top
-.RI [ count ]]
+.RI [ limit ]]
 .RB [ \-tr
 .RI [ time ]]
 .RB [ \-\-traffic
@@ -67,7 +67,7 @@ vnstat \- a console-based network traffic monitor
 .RI [ mode ]
 .RI [ limit ]]
 .RB [ \-\-years
-.RI [ count ]]
+.RI [ limit ]]
 
 .SH DESCRIPTION
 
@@ -126,12 +126,12 @@ as configuration file instead of using automatic configuration file search
 functionality.
 
 .TP
-.BI "-d, --days " [count]
+.BI "-d, --days " [limit]
 Show traffic statistics on a daily basis for the last days. The length of the list
-will default to 30 entries unless configured otherwise or unless the optional
-.I count
+will be limited to 30 entries unless configured otherwise or unless the optional
+.I limit
 parameter is used. All entries stored in the database will be shown if
-.I count
+.I limit
 is set to 0.
 
 .TP
@@ -163,21 +163,21 @@ and list outputs. The top list also requires
 to be used at the same time with this option.
 
 .TP
-.BI "-5, --fiveminutes " [count]
+.BI "-5, --fiveminutes " [limit]
 Show traffic statistics with a 5 minute resolution for the last hours.  The length of the list
-will default to 24 entries unless configured otherwise or unless the optional
-.I count
+will be limited to 24 entries unless configured otherwise or unless the optional
+.I limit
 parameter is used. All entries stored in the database will be shown if
-.I count
+.I limit
 is set to 0.
 
 .TP
-.BI "-h, --hours "  [count]
-Show traffic statistics on a hourly basis. The length of the list will default
+.BI "-h, --hours "  [limit]
+Show traffic statistics on a hourly basis. The length of the list will be limited
 to 24 entries unless configured otherwise or unless the optional
-.I count
+.I limit
 parameter is used. All entries store in the database will be shown if the
-.I count
+.I limit
 is set to 0.
 
 .TP
@@ -208,10 +208,11 @@ parameter can be used for limiting the output to only selected information.
 Everything is shown by default. Setting
 .I mode
 to 'f' will output only 5 minute resolution entries, 'h' hours, 'd' days, 'm' months, 'y'
-years and 't' the top days. An optional
+years and 't' the top days. Alternatively or in combination with
+.I mode
+an optional
 .I limit
-parameter can be used to limit the number results to a given number of most recent
-entries. The
+parameter can be used to limit the number of entries in the output. The
 .BI "--json"
 option can be used in combination with
 .B "-l, --live"
@@ -219,12 +220,14 @@ and
 .B "-tr"
 options without
 .I mode
+or
+.I limit
 having any effect to the output. The
 .B "jsonversion"
 field in the output contains the API version information. It will be changed only when the
 names or structures of previously existing content gets changed. In comparison, the
 .B "vnstatversion"
-field exists mainly as extra information.
+field exists only as extra information.
 
 .TP
 .BI "-l, --live " [mode]
@@ -252,12 +255,12 @@ default if no configuration file is available.
 Show complete options list.
 
 .TP
-.BI "-m, --months " [count]
+.BI "-m, --months " [limit]
 Show traffic statistics on a monthly basis for the last months. The length of the list
-will default to 12 entries unless configured otherwise or unless the optional
-.I count
+will be limited to 12 entries unless configured otherwise or unless the optional
+.I limit
 parameter is used. All entries stored in the database will be shown if
-.I count
+.I limit
 is set to 0.
 
 .TP
@@ -341,12 +344,12 @@ supported. 4 disables the use of terminal control characters in
 mode.
 
 .TP
-.BI "-t, --top " [count]
-Show all time top traffic days.   The length of the list
-will default to 10 entries unless configured otherwise or unless the optional
-.I count
+.BI "-t, --top " [limit]
+Show all time top traffic days. The length of the list will be limited to 10
+entries unless configured otherwise or unless the optional
+.I limit
 parameter is used. All entries stored in the database will be shown if
-.I count
+.I limit
 is set to 0. When used with
 .B "--begin"
 and optionally with
@@ -380,23 +383,24 @@ parameter can be used for limiting the output to only selected information.
 Everything is shown by default. Setting
 .I mode
 to 'f' will output only 5 minute resolution entries, 'h' hours, 'd' days, 'm' months, 'y'
-years and 't' the top days. An optional
+years and 't' the top days. Alternatively or in combination with
+.I mode
+an optional
 .I limit
-parameter can be used to limit the number results to a given number of most recent
-entries. The
+parameter can be used to limit the number of entries in the output. The
 .B "xmlversion"
 field in the output contains the API version information. It will be changed only when the
 names or structures of previously existing content gets changed. In comparison, the
 .B "vnstatversion"
-field exists mainly as extra information.
+field exists only as extra information.
 
 .TP
-.BI "-y, --years " [count]
+.BI "-y, --years " [limit]
 Show traffic statistics on a yearly basis for the last years. The list will show all
 entries by default unless configured otherwise or unless the optional
-.I count
+.I limit
 parameter is used. All entries stored in the database will also be shown if
-.I count
+.I limit
 is set to 0.
 
 .TP

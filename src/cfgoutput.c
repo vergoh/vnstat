@@ -64,7 +64,7 @@ void printcfgfile(void)
 	printf("# 7 = hours, 8 = xml, 9 = one line, 10 = json\n");
 	printf("QueryMode %d\n\n", cfg.qmode);
 
-	printf("# default list output entry count (0 = all)\n");
+	printf("# default list output entry limits (0 = all)\n");
 	printf("List5Mins      %2d\n", cfg.listfivemins);
 	printf("ListHours      %2d\n", cfg.listhours);
 	printf("ListDays       %2d\n", cfg.listdays);

@@ -3,6 +3,8 @@
  - Fixed
    - --json and --xml didn't support having both mode and limit parameters
      defined at the same time as documented, broken since previous release
+   - Documentation was using a mix of "count" and "limit" for the option
+     of limiting the maximum number of shown entries in queries
 
 
 2.5 / 14-Jan-2020

@@ -46,13 +46,13 @@ void showhelp(PARAMS *p)
 {
 	printf("vnStat %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
 
-	printf("      -5,  --fiveminutes [count]   show 5 minutes\n");
-	printf("      -h,  --hours [count]         show hours\n");
+	printf("      -5,  --fiveminutes [limit]   show 5 minutes\n");
+	printf("      -h,  --hours [limit]         show hours\n");
 	printf("      -hg, --hoursgraph            show hours graph\n");
-	printf("      -d,  --days [count]          show days\n");
-	printf("      -m,  --months [count]        show months\n");
-	printf("      -y,  --years [count]         show years\n");
-	printf("      -t,  --top [count]           show top days\n\n");
+	printf("      -d,  --days [limit]          show days\n");
+	printf("      -m,  --months [limit]        show months\n");
+	printf("      -y,  --years [limit]         show years\n");
+	printf("      -t,  --top [limit]           show top days\n\n");
 
 	printf("      -b, --begin <date>           set list begin date\n");
 	printf("      -e, --end <date>             set list end date\n\n");
@@ -80,13 +80,13 @@ void showlonghelp(PARAMS *p)
 
 	printf("      -q,  --query                 query database\n");
 	printf("      -s,  --short                 use short output\n");
-	printf("      -5,  --fiveminutes [count]   show 5 minutes\n");
-	printf("      -h,  --hours [count]         show hours\n");
+	printf("      -5,  --fiveminutes [limit]   show 5 minutes\n");
+	printf("      -h,  --hours [limit]         show hours\n");
 	printf("      -hg, --hoursgraph            show hours graph\n");
-	printf("      -d,  --days [count]          show days\n");
-	printf("      -m,  --months [count]        show months\n");
-	printf("      -y,  --years [count]         show years\n");
-	printf("      -t,  --top [count]           show top days\n");
+	printf("      -d,  --days [limit]          show days\n");
+	printf("      -m,  --months [limit]        show months\n");
+	printf("      -y,  --years [limit]         show years\n");
+	printf("      -t,  --top [limit]           show top days\n");
 	printf("      -b,  --begin <date>          set list begin date\n");
 	printf("      -e,  --end <date>            set list end date\n");
 	printf("      --oneline [mode]             show simple parsable format\n");

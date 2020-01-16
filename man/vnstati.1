@@ -14,20 +14,20 @@ vnstati \- png image output support for vnStat
 .RB [ \-\-config
 .IR file ]
 .RB [ \-\-days
-.RI [ count ]]
+.RI [ limit ]]
 .RB [ \-\-dbdir
 .IR directory ]
 .RB [ \-\-debug ]
 .RB [ \-\-end
 .IR date ]
 .RB [ \-\-fiveminutes
-.RI [ count ]]
+.RI [ limit ]]
 .RB [ \-\-headertext
 .IR text ]
 .RB [ \-\-help ]
 .RB [ \-hg ]
 .RB [ \-\-hours
-.RI [ count ]]
+.RI [ limit ]]
 .RB [ \-\-hoursgraph ]
 .RB [ \-hs ]
 .RB [ \-\-hsummary ]
@@ -38,7 +38,7 @@ vnstati \- png image output support for vnStat
 .RB [ \-\-locale
 .IR locale ]
 .RB [ \-\-months
-.RI [ count ]]
+.RI [ limit ]]
 .RB [ \-ne ]
 .RB [ \-nh ]
 .RB [ \-nl ]
@@ -55,13 +55,13 @@ vnstati \- png image output support for vnStat
 .IR number ]
 .RB [ \-\-summary ]
 .RB [ \-\-top
-.RI [ count ]]
+.RI [ limit ]]
 .RB [ \-\-transparent ]
 .RB [ \-\-version ]
 .RB [ \-vs ]
 .RB [ \-\-vsummary ]
 .RB [ \-\-months
-.RI [ count ]]
+.RI [ limit ]]
 
 .SH DESCRIPTION
 
@@ -110,12 +110,12 @@ as configuration file instead of using automatic configuration file search
 functionality.
 
 .TP
-.BI "-d, --days " [count]
+.BI "-d, --days " [limit]
 Output traffic statistics on a daily basis for the last days. The length of the list
-will default to 30 entries unless configured otherwise or unless the optional
-.I count
+will be limited to 30 entries unless configured otherwise or unless the optional
+.I limit
 parameter is used. All entries stored in the database will be shown if
-.I count
+.I limit
 is set to 0.
 
 .TP
@@ -143,12 +143,12 @@ This option can only be used with list outputs. The top list also requires
 to be used at the same time with this option.
 
 .TP
-.BI "-5, --fiveminutes " [count]
+.BI "-5, --fiveminutes " [limit]
 Output traffic statistics with a 5 minute resolution for the last hours.  The length of the list
-will default to 24 entries unless configured otherwise or unless the optional
-.I count
+will be limited to 24 entries unless configured otherwise or unless the optional
+.I limit
 parameter is used. All entries stored in the database will be shown if
-.I count
+.I limit
 is set to 0.
 
 .TP
@@ -165,12 +165,12 @@ if maximal space is needed. This option will have no effect if
 has been selected.
 
 .TP
-.BI "-h, --hours "  [count]
-Output traffic statistics on a hourly basis. The length of the list will default
+.BI "-h, --hours "  [limit]
+Output traffic statistics on a hourly basis. The length of the list will be limited
 to 24 entries unless configured otherwise or unless the optional
-.I count
+.I limit
 parameter is used. All entries store in the database will be shown if the
-.I count
+.I limit
 is set to 0.
 
 .TP
@@ -199,12 +199,12 @@ instead of using the locale setting specified in the configuration file or the s
 default if no configuration file is available.
 
 .TP
-.BI "-m, --months " [count]
+.BI "-m, --months " [limit]
 Output traffic statistics on a monthly basis for the last months. The length of the list
-will default to 12 entries unless configured otherwise or unless the optional
-.I count
+will be limited to 12 entries unless configured otherwise or unless the optional
+.I limit
 parameter is used. All entries stored in the database will be shown if
-.I count
+.I limit
 is set to 0.
 
 .TP
@@ -248,12 +248,12 @@ Other values will show bar graphics instead.
 Output traffic statistics summary.
 
 .TP
-.BI "-t, --top " [count]
+.BI "-t, --top " [limit]
 Output all time top traffic days. The length of the list
-will default to 10 entries unless configured otherwise or unless the optional
-.I count
+will be limited to 10 entries unless configured otherwise or unless the optional
+.I limit
 parameter is used. All entries stored in the database will be shown if
-.I count
+.I limit
 is set to 0. When used with
 .B "--begin"
 and optionally with
@@ -279,12 +279,12 @@ Show current version.
 Output traffic summary including hourly data bar graph using a vertical layout.
 
 .TP
-.BI "-y, --years " [count]
+.BI "-y, --years " [limit]
 Output traffic statistics on a yearly basis for the last years. The list will show all
 entries by default unless configured otherwise or unless the optional
-.I count
+.I limit
 parameter is used. All entries stored in the database will also be shown if
-.I count
+.I limit
 is set to 0.
 
 .TP
