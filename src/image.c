@@ -825,19 +825,12 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	dbdatalistfree(&datalist);
 }
 
-void drawsummary(IMAGECONTENT *ic, int type, int rate)
+void drawsummary(IMAGECONTENT *ic, const int layout, const int rate)
 {
-	int textx, texty, offset = 0;
-	int width, height, headermod;
-	float rxp = 50, txp = 50, mod;
-	char buffer[512], datebuff[16], daytemp[32];
-	time_t yesterday;
-	struct tm *d;
-	dbdatalist *datalist = NULL;
-	dbdatalist *data_current = NULL, *data_previous = NULL;
-	dbdatalistinfo datainfo;
+	int width, height, headermod, offset = 0;
+	char buffer[512];
 
-	switch (type) {
+	switch (layout) {
 		// horizontal
 		case 1:
 			width = 980;
@@ -862,8 +855,6 @@ void drawsummary(IMAGECONTENT *ic, int type, int rate)
 		headermod = 0;
 	}
 
-	yesterday = ic->current - 86400;
-
 	ic->im = gdImageCreate(width, height);
 
 	colorinit(ic);
@@ -885,27 +876,60 @@ void drawsummary(IMAGECONTENT *ic, int type, int rate)
 		return;
 	}
 
-	/* all time */
-	textx = 385;
-	texty = 57 - headermod;
+	drawsummary_alltime(ic, 385, 57 - headermod);
+	drawlegend(ic, 410, 155 - headermod);
 
-	gdImageString(ic->im, gdFontGetLarge(), textx + 12, texty, (unsigned char *)"all time", ic->ctext);
+	drawsummary_days(ic, 100, 30, headermod, offset);
+	drawsummary_months(ic, 100, 113, headermod, offset);
+
+	switch (layout) {
+		// horizontal
+		case 1:
+			drawhours(ic, 500, 46 - headermod, rate);
+			break;
+		// vertical
+		case 2:
+			drawhours(ic, 12, 215 - headermod, rate);
+			break;
+		default:
+			break;
+	}
+}
+
+void drawsummary_alltime(IMAGECONTENT *ic, const int x, const int y)
+{
+	struct tm *d;
+	char buffer[512], datebuff[16], daytemp[32];
+
+	gdImageString(ic->im, gdFontGetLarge(), x + 12, y, (unsigned char *)"all time", ic->ctext);
 	snprintf(buffer, 4, "rx ");
 	strncat(buffer, getvalue(ic->interface.rxtotal, 12, RT_Normal), 32);
-	gdImageString(ic->im, gdFontGetSmall(), textx, texty + 24, (unsigned char *)buffer, ic->ctext);
+	gdImageString(ic->im, gdFontGetSmall(), x, y + 24, (unsigned char *)buffer, ic->ctext);
 	snprintf(buffer, 4, "tx ");
 	strncat(buffer, getvalue(ic->interface.txtotal, 12, RT_Normal), 32);
-	gdImageString(ic->im, gdFontGetSmall(), textx, texty + 36, (unsigned char *)buffer, ic->ctext);
+	gdImageString(ic->im, gdFontGetSmall(), x, y + 36, (unsigned char *)buffer, ic->ctext);
 	snprintf(buffer, 4, " = ");
 	strncat(buffer, getvalue(ic->interface.rxtotal + ic->interface.txtotal, 12, RT_Normal), 32);
-	gdImageString(ic->im, gdFontGetSmall(), textx, texty + 50, (unsigned char *)buffer, ic->ctext);
+	gdImageString(ic->im, gdFontGetSmall(), x, y + 50, (unsigned char *)buffer, ic->ctext);
 	d = localtime(&ic->interface.created);
 	strftime(datebuff, 16, cfg.tformat, d);
 	snprintf(daytemp, 24, "since %s", datebuff);
 	snprintf(buffer, 32, "%23s", daytemp);
-	gdImageString(ic->im, gdFontGetSmall(), textx - 48, texty + 70, (unsigned char *)buffer, ic->ctext);
+	gdImageString(ic->im, gdFontGetSmall(), x - 48, y + 70, (unsigned char *)buffer, ic->ctext);
+}
 
-	drawlegend(ic, 410, 155 - headermod);
+void drawsummary_days(IMAGECONTENT *ic, const int x, const int y, const int headermod, int offset)
+{
+	int textx, texty;
+	float rxp = 50, txp = 50, mod;
+	char buffer[512], datebuff[16], daytemp[32];
+	time_t yesterday;
+	struct tm *d;
+	dbdatalist *datalist = NULL;
+	dbdatalist *data_current = NULL, *data_previous = NULL;
+	dbdatalistinfo datainfo;
+
+	yesterday = ic->current - 86400;
 
 	if (!db_getdata(&datalist, &datainfo, ic->interface.name, "day", 2)) {
 		printf("Error: Failed to fetch day data.\n");
@@ -913,7 +937,7 @@ void drawsummary(IMAGECONTENT *ic, int type, int rate)
 	}
 
 	if (datalist == NULL) {
-		gdImageString(ic->im, gdFontGetSmall(), 150, 100, (unsigned char *)"no data available", ic->ctext);
+		gdImageString(ic->im, gdFontGetSmall(), 150, y + 30, (unsigned char *)"no data available", ic->ctext);
 		return;
 	} else if (datalist->next == NULL) {
 		data_current = datalist;
@@ -942,10 +966,10 @@ void drawsummary(IMAGECONTENT *ic, int type, int rate)
 		offset = 85;
 	}
 
-	drawdonut(ic, 150 + offset, 75 - headermod, rxp, txp);
+	textx = x + offset;
+	texty = y - headermod;
 
-	textx = 100 + offset;
-	texty = 30 - headermod;
+	drawdonut(ic, textx + 50, texty + 45, rxp, txp);
 
 	/* get formated date for today */
 	d = localtime(&ic->current);
@@ -997,10 +1021,9 @@ void drawsummary(IMAGECONTENT *ic, int type, int rate)
 			txp = txp * mod;
 		}
 
-		drawdonut(ic, 330, 75 - headermod, rxp, txp);
+		textx += 180;
 
-		textx = 280;
-		texty = 30 - headermod;
+		drawdonut(ic, textx + 50, texty + 45, rxp, txp);
 
 		/* get formated date for yesterday */
 		d = localtime(&yesterday);
@@ -1039,6 +1062,17 @@ void drawsummary(IMAGECONTENT *ic, int type, int rate)
 	data_current = NULL;
 	data_previous = NULL;
 	dbdatalistfree(&datalist);
+}
+
+void drawsummary_months(IMAGECONTENT *ic, const int x, const int y, const int headermod, int offset)
+{
+	int textx, texty;
+	float rxp = 50, txp = 50, mod;
+	char buffer[512], daytemp[32];
+	struct tm *d;
+	dbdatalist *datalist = NULL;
+	dbdatalist *data_current = NULL, *data_previous = NULL;
+	dbdatalistinfo datainfo;
 
 	if (!db_getdata(&datalist, &datainfo, ic->interface.name, "month", 2)) {
 		printf("Error: Failed to fetch month data.\n");
@@ -1046,6 +1080,7 @@ void drawsummary(IMAGECONTENT *ic, int type, int rate)
 	}
 
 	if (datalist == NULL) {
+		gdImageString(ic->im, gdFontGetSmall(), 150, y + 30, (unsigned char *)"no data available", ic->ctext);
 		return;
 	} else if (datalist->next == NULL) {
 		data_current = datalist;
@@ -1076,10 +1111,10 @@ void drawsummary(IMAGECONTENT *ic, int type, int rate)
 		offset = 0;
 	}
 
-	drawdonut(ic, 150 + offset, 158 - headermod, rxp, txp);
+	textx = x + offset;
+	texty = y - headermod;
 
-	textx = 100 + offset;
-	texty = 113 - headermod;
+	drawdonut(ic, textx + 50, texty + 45, rxp, txp);
 
 	d = localtime(&data_current->timestamp);
 	strftime(daytemp, 16, cfg.mformat, d);
@@ -1120,10 +1155,9 @@ void drawsummary(IMAGECONTENT *ic, int type, int rate)
 			txp = txp * mod;
 		}
 
-		drawdonut(ic, 330, 158 - headermod, rxp, txp);
+		textx += 180;
 
-		textx = 280;
-		texty = 113 - headermod;
+		drawdonut(ic, textx + 50, texty + 45, rxp, txp);
 
 		d = localtime(&data_previous->timestamp);
 		strftime(daytemp, 16, cfg.mformat, d);
@@ -1152,20 +1186,6 @@ void drawsummary(IMAGECONTENT *ic, int type, int rate)
 	data_current = NULL;
 	data_previous = NULL;
 	dbdatalistfree(&datalist);
-
-	/* hours if requested */
-	switch (type) {
-		// horizontal
-		case 1:
-			drawhours(ic, 500, 46 - headermod, rate);
-			break;
-		// vertical
-		case 2:
-			drawhours(ic, 12, 215 - headermod, rate);
-			break;
-		default:
-			break;
-	}
 }
 
 void hextorgb(char *input, int *rgb)

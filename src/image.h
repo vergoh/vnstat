@@ -42,10 +42,13 @@ void drawdonut(IMAGECONTENT *ic, const int x, const int y, const float rxp, cons
 #ifdef CHECK_VNSTAT
 void drawdonut_libgd_native(IMAGECONTENT *ic, const int x, const int y, const float rxp, const float txp);
 #endif
-int drawhours(IMAGECONTENT *ic, int x, int y, int rate);
-void drawhourly(IMAGECONTENT *ic, int rate);
+int drawhours(IMAGECONTENT *ic, const int x, const int y, const int rate);
+void drawhourly(IMAGECONTENT *ic, const int rate);
 void drawlist(IMAGECONTENT *ic, const char *listname);
-void drawsummary(IMAGECONTENT *ic, int type, int rate);
+void drawsummary(IMAGECONTENT *ic, const int layout, const int rate);
+void drawsummary_alltime(IMAGECONTENT *ic, const int x, const int y);
+void drawsummary_days(IMAGECONTENT *ic, const int x, const int y, const int headermod, int offset);
+void drawsummary_months(IMAGECONTENT *ic, const int x, const int y, const int headermod, int offset);
 void hextorgb(char *input, int *rgb);
 void modcolor(int *rgb, const int offset, const int force);
 char *getimagevalue(const uint64_t b, const int len, const int rate);
