@@ -879,8 +879,8 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int rate)
 	drawsummary_alltime(ic, 385, 57 - headermod);
 	drawlegend(ic, 410, 155 - headermod);
 
-	drawsummary_days(ic, 100, 30 - headermod);
-	drawsummary_months(ic, 100, 113 - headermod);
+	drawsummary_digest(ic, 100, 30 - headermod, "day");
+	drawsummary_digest(ic, 100, 113 - headermod, "month");
 
 	switch (layout) {
 		// horizontal
@@ -918,21 +918,31 @@ void drawsummary_alltime(IMAGECONTENT *ic, const int x, const int y)
 	gdImageString(ic->im, gdFontGetSmall(), x - 48, y + 70, (unsigned char *)buffer, ic->ctext);
 }
 
-void drawsummary_days(IMAGECONTENT *ic, const int x, const int y)
+void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *mode)
 {
 	int textx, texty, offset = 0;
 	float rxp = 50, txp = 50, mod;
 	char buffer[512], datebuff[16], daytemp[32];
 	time_t yesterday;
-	struct tm *d;
+	struct tm *d = NULL;
 	dbdatalist *datalist = NULL;
 	dbdatalist *data_current = NULL, *data_previous = NULL;
 	dbdatalistinfo datainfo;
 
 	yesterday = ic->current - 86400;
 
-	if (!db_getdata(&datalist, &datainfo, ic->interface.name, "day", 2)) {
-		printf("Error: Failed to fetch day data.\n");
+	switch(mode[0]) {
+		case 'd':
+			break;
+		case 'm':
+			break;
+		default:
+			printf("Error: Unsupported mode %s for summary digest\n", mode);
+			return;
+	}
+
+	if (!db_getdata(&datalist, &datainfo, ic->interface.name, mode, 2)) {
+		printf("Error: Failed to fetch %s data.\n", mode);
 		return;
 	}
 
@@ -946,7 +956,7 @@ void drawsummary_days(IMAGECONTENT *ic, const int x, const int y)
 		data_current = datalist->next;
 	}
 
-	/* today / latest day */
+	/* latest entry */
 	if (data_current->rx + data_current->tx == 0) {
 		rxp = txp = 0;
 	} else {
@@ -971,17 +981,22 @@ void drawsummary_days(IMAGECONTENT *ic, const int x, const int y)
 
 	drawdonut(ic, textx + 50, texty + 45, rxp, txp);
 
-	/* get formated date for today */
-	d = localtime(&ic->current);
-	strftime(datebuff, 16, cfg.dformat, d);
+	if (mode[0] == 'd') {
+		/* get formated date for today */
+		d = localtime(&ic->current);
+		strftime(datebuff, 16, cfg.dformat, d);
 
-	/* get formated date for current day in database */
-	d = localtime(&data_current->timestamp);
-	strftime(daytemp, 16, cfg.dformat, d);
+		/* get formated date for current day in database */
+		d = localtime(&data_current->timestamp);
+		strftime(daytemp, 16, cfg.dformat, d);
 
-	/* change daytemp to today if formated days match */
-	if (strcmp(datebuff, daytemp) == 0) {
-		strncpy_nt(daytemp, "today", 32);
+		/* change daytemp to today if formated days match */
+		if (strcmp(datebuff, daytemp) == 0) {
+			strncpy_nt(daytemp, "today", 32);
+		}
+	} else if (mode[0] == 'm') {
+		d = localtime(&data_current->timestamp);
+		strftime(daytemp, 16, cfg.mformat, d);
 	}
 
 	snprintf(buffer, 32, "%*s", getpadding(12, daytemp), daytemp);
@@ -989,7 +1004,11 @@ void drawsummary_days(IMAGECONTENT *ic, const int x, const int y)
 
 	if (cfg.summaryrate) {
 		d = localtime(&ic->interface.updated);
-		snprintf(buffer, 16, "%15s", gettrafficrate(data_current->rx + data_current->tx, d->tm_sec + (d->tm_min * 60) + (d->tm_hour * 3600), 15));
+		if (mode[0] == 'd') {
+			snprintf(buffer, 16, "%15s", gettrafficrate(data_current->rx + data_current->tx, d->tm_sec + (d->tm_min * 60) + (d->tm_hour * 3600), 15));
+		} else if (mode[0] == 'm') {
+			snprintf(buffer, 16, "%15s", gettrafficrate(data_current->rx + data_current->tx, mosecs(data_current->timestamp, ic->interface.updated), 15));
+		}
 		gdImageString(ic->im, gdFontGetSmall(), textx - 74, texty + 58, (unsigned char *)buffer, ic->ctext);
 	} else {
 		texty += 7;
@@ -1005,7 +1024,7 @@ void drawsummary_days(IMAGECONTENT *ic, const int x, const int y)
 	strncat(buffer, getvalue(data_current->rx + data_current->tx, 12, RT_Normal), 32);
 	gdImageString(ic->im, gdFontGetSmall(), textx - 74, texty + 44, (unsigned char *)buffer, ic->ctext);
 
-	/* yesterday */
+	/* previous entry */
 	if (data_previous != NULL) {
 		if (data_previous->rx + data_previous->tx == 0) {
 			rxp = txp = 0;
@@ -1025,146 +1044,33 @@ void drawsummary_days(IMAGECONTENT *ic, const int x, const int y)
 
 		drawdonut(ic, textx + 50, texty + 45, rxp, txp);
 
-		/* get formated date for yesterday */
-		d = localtime(&yesterday);
-		strftime(datebuff, 16, cfg.dformat, d);
+		if (mode[0] == 'd') {
+			/* get formated date for yesterday */
+			d = localtime(&yesterday);
+			strftime(datebuff, 16, cfg.dformat, d);
 
-		/* get formated date for previous day in database */
-		d = localtime(&data_previous->timestamp);
-		strftime(daytemp, 16, cfg.dformat, d);
+			/* get formated date for previous day in database */
+			d = localtime(&data_previous->timestamp);
+			strftime(daytemp, 16, cfg.dformat, d);
 
-		/* change daytemp to yesterday if formated days match */
-		if (strcmp(datebuff, daytemp) == 0) {
-			strncpy_nt(daytemp, "yesterday", 32);
+			/* change daytemp to yesterday if formated days match */
+			if (strcmp(datebuff, daytemp) == 0) {
+				strncpy_nt(daytemp, "yesterday", 32);
+			}
+		} else if (mode[0] == 'm') {
+			d = localtime(&data_previous->timestamp);
+			strftime(daytemp, 16, cfg.mformat, d);
 		}
 
 		snprintf(buffer, 32, "%*s", getpadding(12, daytemp), daytemp);
 		gdImageString(ic->im, gdFontGetLarge(), textx - 54, texty - 1, (unsigned char *)buffer, ic->ctext);
 
 		if (cfg.summaryrate) {
-			snprintf(buffer, 16, "%15s", gettrafficrate(data_previous->rx + data_previous->tx, 86400, 15));
-			gdImageString(ic->im, gdFontGetSmall(), textx - 74, texty + 58, (unsigned char *)buffer, ic->ctext);
-		} else {
-			texty += 7;
-		}
-
-		snprintf(buffer, 4, "rx ");
-		strncat(buffer, getvalue(data_previous->rx, 12, RT_Normal), 32);
-		gdImageString(ic->im, gdFontGetSmall(), textx - 74, texty + 18, (unsigned char *)buffer, ic->ctext);
-		snprintf(buffer, 4, "tx ");
-		strncat(buffer, getvalue(data_previous->tx, 12, RT_Normal), 32);
-		gdImageString(ic->im, gdFontGetSmall(), textx - 74, texty + 30, (unsigned char *)buffer, ic->ctext);
-		snprintf(buffer, 4, " = ");
-		strncat(buffer, getvalue(data_previous->rx + data_previous->tx, 12, RT_Normal), 32);
-		gdImageString(ic->im, gdFontGetSmall(), textx - 74, texty + 44, (unsigned char *)buffer, ic->ctext);
-	}
-
-	data_current = NULL;
-	data_previous = NULL;
-	dbdatalistfree(&datalist);
-}
-
-void drawsummary_months(IMAGECONTENT *ic, const int x, const int y)
-{
-	int textx, texty, offset = 0;
-	float rxp = 50, txp = 50, mod;
-	char buffer[512], daytemp[32];
-	struct tm *d;
-	dbdatalist *datalist = NULL;
-	dbdatalist *data_current = NULL, *data_previous = NULL;
-	dbdatalistinfo datainfo;
-
-	if (!db_getdata(&datalist, &datainfo, ic->interface.name, "month", 2)) {
-		printf("Error: Failed to fetch month data.\n");
-		return;
-	}
-
-	if (datalist == NULL) {
-		gdImageString(ic->im, gdFontGetSmall(), 150, y + 30, (unsigned char *)"no data available", ic->ctext);
-		return;
-	} else if (datalist->next == NULL) {
-		data_current = datalist;
-	} else {
-		data_previous = datalist;
-		data_current = datalist->next;
-	}
-
-	/* current month */
-	if (data_current->rx + data_current->tx == 0) {
-		rxp = txp = 0;
-	} else {
-		rxp = data_current->rx / (float)(data_current->rx + data_current->tx) * 100;
-		txp = (float)100 - rxp;
-	}
-
-	/* do scaling if needed */
-	if (data_previous != NULL && (data_current->rx + data_current->tx) < (data_previous->rx + data_previous->tx)) {
-		mod = (data_current->rx + data_current->tx) / (float)(data_previous->rx + data_previous->tx);
-		rxp = rxp * mod;
-		txp = txp * mod;
-	}
-
-	/* move graph to center if there's only one to draw for this line */
-	if (data_previous == NULL) {
-		offset = 85;
-	}
-
-	textx = x + offset;
-	texty = y;
-
-	drawdonut(ic, textx + 50, texty + 45, rxp, txp);
-
-	d = localtime(&data_current->timestamp);
-	strftime(daytemp, 16, cfg.mformat, d);
-
-	snprintf(buffer, 32, "%*s", getpadding(12, daytemp), daytemp);
-	gdImageString(ic->im, gdFontGetLarge(), textx - 54, texty - 1, (unsigned char *)buffer, ic->ctext);
-
-	if (cfg.summaryrate) {
-		snprintf(buffer, 16, "%15s", gettrafficrate(data_current->rx + data_current->tx, mosecs(data_current->timestamp, ic->interface.updated), 15));
-		gdImageString(ic->im, gdFontGetSmall(), textx - 74, texty + 58, (unsigned char *)buffer, ic->ctext);
-	} else {
-		texty += 7;
-	}
-
-	snprintf(buffer, 4, "rx ");
-	strncat(buffer, getvalue(data_current->rx, 12, RT_Normal), 32);
-	gdImageString(ic->im, gdFontGetSmall(), textx - 74, texty + 18, (unsigned char *)buffer, ic->ctext);
-	snprintf(buffer, 4, "tx ");
-	strncat(buffer, getvalue(data_current->tx, 12, RT_Normal), 32);
-	gdImageString(ic->im, gdFontGetSmall(), textx - 74, texty + 30, (unsigned char *)buffer, ic->ctext);
-	snprintf(buffer, 4, " = ");
-	strncat(buffer, getvalue(data_current->rx + data_current->tx, 12, RT_Normal), 32);
-	gdImageString(ic->im, gdFontGetSmall(), textx - 74, texty + 44, (unsigned char *)buffer, ic->ctext);
-
-	/* previous month */
-	if (data_previous != NULL) {
-		if (data_previous->rx + data_previous->tx == 0) {
-			rxp = txp = 0;
-		} else {
-			rxp = data_previous->rx / (float)(data_previous->rx + data_previous->tx) * 100;
-			txp = (float)100 - rxp;
-		}
-
-		/* do scaling if needed */
-		if ((data_previous->rx + data_previous->tx) < (data_current->rx + data_current->tx)) {
-			mod = (data_previous->rx + data_previous->tx) / (float)(data_current->rx + data_current->tx);
-			rxp = rxp * mod;
-			txp = txp * mod;
-		}
-
-		textx += 180;
-
-		drawdonut(ic, textx + 50, texty + 45, rxp, txp);
-
-		d = localtime(&data_previous->timestamp);
-		strftime(daytemp, 16, cfg.mformat, d);
-
-		snprintf(buffer, 32, "%*s", getpadding(12, daytemp), daytemp);
-		gdImageString(ic->im, gdFontGetLarge(), textx - 54, texty - 1, (unsigned char *)buffer, ic->ctext);
-
-		if (cfg.summaryrate) {
-			snprintf(buffer, 16, "%15s", gettrafficrate(data_previous->rx + data_previous->tx, dmonth(d->tm_mon) * 86400, 15));
+			if (mode[0] == 'd') {
+				snprintf(buffer, 16, "%15s", gettrafficrate(data_previous->rx + data_previous->tx, 86400, 15));
+			} else if (mode[0] == 'm') {
+				snprintf(buffer, 16, "%15s", gettrafficrate(data_previous->rx + data_previous->tx, dmonth(d->tm_mon) * 86400, 15));
+			}
 			gdImageString(ic->im, gdFontGetSmall(), textx - 74, texty + 58, (unsigned char *)buffer, ic->ctext);
 		} else {
 			texty += 7;
