@@ -42,7 +42,7 @@ void drawdonut(IMAGECONTENT *ic, const int x, const int y, const float rxp, cons
 #ifdef CHECK_VNSTAT
 void drawdonut_libgd_native(IMAGECONTENT *ic, const int x, const int y, const float rxp, const float txp);
 #endif
-void drawhours(IMAGECONTENT *ic, int x, int y, int rate);
+int drawhours(IMAGECONTENT *ic, int x, int y, int rate);
 void drawhourly(IMAGECONTENT *ic, int rate);
 void drawlist(IMAGECONTENT *ic, const char *listname);
 void drawsummary(IMAGECONTENT *ic, int type, int rate);

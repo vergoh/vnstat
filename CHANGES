@@ -5,6 +5,8 @@
      defined at the same time as documented, broken since previous release
    - Documentation was using a mix of "count" and "limit" for the option
      of limiting the maximum number of shown entries in queries
+   - Summary image output would segmentation fault when database existed but
+     didn't yet contain any daily or monthly data for the selected interface
 
 
 2.5 / 14-Jan-2020
