@@ -827,7 +827,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 
 void drawsummary(IMAGECONTENT *ic, const int layout, const int rate)
 {
-	int width, height, headermod, offset = 0;
+	int width, height, headermod;
 	char buffer[512];
 
 	switch (layout) {
@@ -879,8 +879,8 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int rate)
 	drawsummary_alltime(ic, 385, 57 - headermod);
 	drawlegend(ic, 410, 155 - headermod);
 
-	drawsummary_days(ic, 100, 30, headermod, offset);
-	drawsummary_months(ic, 100, 113, headermod, offset);
+	drawsummary_days(ic, 100, 30 - headermod);
+	drawsummary_months(ic, 100, 113 - headermod);
 
 	switch (layout) {
 		// horizontal
@@ -918,9 +918,9 @@ void drawsummary_alltime(IMAGECONTENT *ic, const int x, const int y)
 	gdImageString(ic->im, gdFontGetSmall(), x - 48, y + 70, (unsigned char *)buffer, ic->ctext);
 }
 
-void drawsummary_days(IMAGECONTENT *ic, const int x, const int y, const int headermod, int offset)
+void drawsummary_days(IMAGECONTENT *ic, const int x, const int y)
 {
-	int textx, texty;
+	int textx, texty, offset = 0;
 	float rxp = 50, txp = 50, mod;
 	char buffer[512], datebuff[16], daytemp[32];
 	time_t yesterday;
@@ -967,7 +967,7 @@ void drawsummary_days(IMAGECONTENT *ic, const int x, const int y, const int head
 	}
 
 	textx = x + offset;
-	texty = y - headermod;
+	texty = y;
 
 	drawdonut(ic, textx + 50, texty + 45, rxp, txp);
 
@@ -1064,9 +1064,9 @@ void drawsummary_days(IMAGECONTENT *ic, const int x, const int y, const int head
 	dbdatalistfree(&datalist);
 }
 
-void drawsummary_months(IMAGECONTENT *ic, const int x, const int y, const int headermod, int offset)
+void drawsummary_months(IMAGECONTENT *ic, const int x, const int y)
 {
-	int textx, texty;
+	int textx, texty, offset = 0;
 	float rxp = 50, txp = 50, mod;
 	char buffer[512], daytemp[32];
 	struct tm *d;
@@ -1107,12 +1107,10 @@ void drawsummary_months(IMAGECONTENT *ic, const int x, const int y, const int he
 	/* move graph to center if there's only one to draw for this line */
 	if (data_previous == NULL) {
 		offset = 85;
-	} else {
-		offset = 0;
 	}
 
 	textx = x + offset;
-	texty = y - headermod;
+	texty = y;
 
 	drawdonut(ic, textx + 50, texty + 45, rxp, txp);
 
