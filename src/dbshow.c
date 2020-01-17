@@ -312,6 +312,7 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 	} else if (strcmp(listname, "top") == 0) {
 		listtype = LT_Top;
 		snprintf(colname, 8, "day");
+		snprintf(titlename, 16, "top days");
 		strncpy_nt(stampformat, cfg.tformat, 64);
 		limit = cfg.listtop;
 		offset = 6;
