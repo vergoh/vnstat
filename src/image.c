@@ -881,6 +881,11 @@ void drawsummary(IMAGECONTENT *ic, int type, int rate)
 		return;
 	}
 
+	if (datainfo.count == 0) {
+		printf("Warning: No data fetched.\n");
+		return;
+	}
+
 	if (datalist->next == NULL) {
 		data_current = datalist;
 	} else {
@@ -1008,6 +1013,11 @@ void drawsummary(IMAGECONTENT *ic, int type, int rate)
 
 	if (!db_getdata(&datalist, &datainfo, ic->interface.name, "month", 2)) {
 		printf("Error: Failed to fetch month data.\n");
+		return;
+	}
+
+	if (datainfo.count == 0) {
+		printf("Warning: No data fetched.\n");
 		return;
 	}
 
