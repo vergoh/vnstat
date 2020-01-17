@@ -311,7 +311,8 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 		limit = cfg.listyears;
 	} else if (strcmp(listname, "top") == 0) {
 		listtype = LT_Top;
-		snprintf(colname, 8, "day");
+		strncpy_nt(colname, listname, 8);
+		snprintf(titlename, 16, "top");
 		strncpy_nt(stampformat, cfg.tformat, 64);
 		limit = cfg.listtop;
 		offset = 6;
