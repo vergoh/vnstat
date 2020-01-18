@@ -329,7 +329,7 @@ int drawhours(IMAGECONTENT *ic, const int x, const int y, const int rate)
 	}
 
 	if (datainfo.count == 0) {
-		gdImageString(ic->im, gdFontGetSmall(), 200, 100, (unsigned char *)"no data available", ic->ctext);
+		gdImageString(ic->im, gdFontGetSmall(), x + 188, y + 54, (unsigned char *)"no data available", ic->ctext);
 		return 0;
 	}
 

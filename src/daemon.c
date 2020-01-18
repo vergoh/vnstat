@@ -723,7 +723,9 @@ void cleanremovedinterfaces(DSTATE *s)
 			snprintf(errorstring, 1024, "Removing interface \"%s\" from update list.", dbifl_iterator->interface);
 			printe(PT_Info);
 			datacache_remove(&s->dcache, dbifl_iterator->interface);
-			s->dbifcount--;
+			if (s->dbifcount > 0) {
+				s->dbifcount--;
+			}
 			dbifl_iterator = dbifl_iterator->next;
 		}
 		datacache_status(&s->dcache);

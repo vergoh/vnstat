@@ -468,6 +468,7 @@ START_TEST(processdatacache_can_process_things)
 	s.bootdetected = 1;
 	s.dodbsave = 1;
 	s.cleanuphour = getcurrenthour() + 1;
+	s.dbifcount = 3;
 
 	ck_assert_int_eq(datacache_count(&s.dcache), 0);
 	ret = datacache_add(&s.dcache, "ethnotindb", 0);
