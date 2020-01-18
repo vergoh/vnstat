@@ -93,6 +93,7 @@ void initiparams(IPARAMS *p)
 	p->cfgfile[0] = '\0';
 	p->cache = 0;
 	p->help = 0;
+	p->limit = -1;
 }
 
 void showihelp(IPARAMS *p)
@@ -125,6 +126,7 @@ void showihelp(IPARAMS *p)
 	printf("      -?,  --help                  this help\n");
 	printf("      -D,  --debug                 show some additional debug information\n");
 	printf("      -v,  --version               show version\n");
+	printf("      --limit <limit>              set list entry limit\n");
 	printf("      --dbdir <directory>          select database directory\n");
 	printf("      --style <mode>               select output style (0-3)\n");
 	printf("      --locale <locale>            set locale\n");
@@ -362,6 +364,18 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 				printf("Error: Date of format YYYY-MM-DD HH:MM or YYYY-MM-DD for %s missing.\n", argv[currentarg]);
 				exit(EXIT_FAILURE);
 			}
+		} else if (strcmp(argv[currentarg], "--limit") == 0) {
+			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {
+				p->limit = atoi(argv[currentarg + 1]);
+				if (p->limit < 0) {
+					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg + 1], argv[currentarg]);
+					exit(EXIT_FAILURE);
+				}
+				currentarg++;
+			} else {
+				printf("Error: Invalid or missing parameter for %s.\n", argv[currentarg]);
+				exit(EXIT_FAILURE);
+			}
 		} else if ((strcmp(argv[currentarg], "-v") == 0) || (strcmp(argv[currentarg], "--version")) == 0) {
 			printf("vnStat image output %s by Teemu Toivola <tst at iki dot fi>\n", getversion());
 			exit(EXIT_SUCCESS);
@@ -374,6 +388,10 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 	if (p->help || argc == 1) {
 		showihelp(p);
 		exit(EXIT_SUCCESS);
+	}
+
+	if (p->limit != -1) {
+		cfg.listfivemins = cfg.listhours = cfg.listdays = cfg.listmonths = cfg.listyears = cfg.listtop = cfg.listjsonxml = p->limit;
 	}
 }
 

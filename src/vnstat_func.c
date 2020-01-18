@@ -29,6 +29,7 @@ void initparams(PARAMS *p)
 	p->removeiface = 0;
 	p->renameiface = 0;
 	p->livemode = 0;
+	p->limit = -1;
 	p->ifacelist = NULL;
 	p->interface[0] = '\0';
 	p->alias[0] = '\0';
@@ -113,6 +114,7 @@ void showlonghelp(PARAMS *p)
 	printf("      -tr, --traffic [time]        calculate traffic\n");
 	printf("      -l,  --live [mode]           show transfer rate in real time\n");
 	printf("      -ru, --rateunit [mode]       swap configured rate unit\n");
+	printf("      --limit <limit>              set output entry limit\n");
 	printf("      --style <mode>               select output style (0-4)\n");
 	printf("      --iflist                     show list of available interfaces\n");
 	printf("      --dbdir <directory>          select database directory\n");
@@ -454,6 +456,18 @@ void parseargs(PARAMS *p, int argc, char **argv)
 			}
 			free(p->ifacelist);
 			exit(EXIT_SUCCESS);
+		} else if (strcmp(argv[currentarg], "--limit") == 0) {
+			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {
+				p->limit = atoi(argv[currentarg + 1]);
+				if (p->limit < 0) {
+					printf("Error: Invalid limit parameter \"%s\" for %s. Only a zero and positive numbers are allowed.\n", argv[currentarg + 1], argv[currentarg]);
+					exit(EXIT_FAILURE);
+				}
+				currentarg++;
+			} else {
+				printf("Error: Invalid or missing parameter for %s.\n", argv[currentarg]);
+				exit(EXIT_FAILURE);
+			}
 		} else if ((strcmp(argv[currentarg], "-v") == 0) || (strcmp(argv[currentarg], "--version") == 0)) {
 			printf("vnStat %s by Teemu Toivola <tst at iki dot fi>\n", getversion());
 			exit(EXIT_SUCCESS);
@@ -461,6 +475,10 @@ void parseargs(PARAMS *p, int argc, char **argv)
 			printf("Unknown parameter \"%s\". Use --help for help.\n", argv[currentarg]);
 			exit(EXIT_FAILURE);
 		}
+	}
+
+	if (p->limit != -1) {
+		cfg.listfivemins = cfg.listhours = cfg.listdays = cfg.listmonths = cfg.listyears = cfg.listtop = cfg.listjsonxml = p->limit;
 	}
 }
 

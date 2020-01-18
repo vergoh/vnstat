@@ -481,6 +481,93 @@ START_TEST(vnstat_parseargs_rename_requires_parameter)
 }
 END_TEST
 
+START_TEST(vnstat_parseargs_limit_requires_parameter)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--limit", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	initparams(&p);
+	suppress_output();
+	parseargs(&p, argc, argv);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_limit_cannot_be_negative)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--limit", "-1", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	initparams(&p);
+	suppress_output();
+	parseargs(&p, argc, argv);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_limit_changes_defaults)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--limit", "1234", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	defaultcfg();
+	initparams(&p);
+	suppress_output();
+	parseargs(&p, argc, argv);
+
+	ck_assert_int_eq(cfg.listfivemins, 1234);
+	ck_assert_int_eq(cfg.listhours, 1234);
+	ck_assert_int_eq(cfg.listdays, 1234);
+	ck_assert_int_eq(cfg.listmonths, 1234);
+	ck_assert_int_eq(cfg.listyears, 1234);
+	ck_assert_int_eq(cfg.listtop, 1234);
+	ck_assert_int_eq(cfg.listjsonxml, 1234);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_limit_overrides)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "-d", "5", "--limit", "234", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	defaultcfg();
+	initparams(&p);
+	suppress_output();
+	parseargs(&p, argc, argv);
+
+	ck_assert_int_eq(cfg.listfivemins, 234);
+	ck_assert_int_eq(cfg.listhours, 234);
+	ck_assert_int_eq(cfg.listdays, 234);
+	ck_assert_int_eq(cfg.listmonths, 234);
+	ck_assert_int_eq(cfg.listyears, 234);
+	ck_assert_int_eq(cfg.listtop, 234);
+	ck_assert_int_eq(cfg.listjsonxml, 234);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_limit_overrides_regardless_of_position)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--limit", "345", "-d", "5", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	defaultcfg();
+	initparams(&p);
+	suppress_output();
+	parseargs(&p, argc, argv);
+
+	ck_assert_int_eq(cfg.listfivemins, 345);
+	ck_assert_int_eq(cfg.listhours, 345);
+	ck_assert_int_eq(cfg.listdays, 345);
+	ck_assert_int_eq(cfg.listmonths, 345);
+	ck_assert_int_eq(cfg.listyears, 345);
+	ck_assert_int_eq(cfg.listtop, 345);
+	ck_assert_int_eq(cfg.listjsonxml, 345);
+}
+END_TEST
+
 void add_parseargs_tests(Suite *s)
 {
 	TCase *tc_pa = tcase_create("ParseArgs");
@@ -520,5 +607,10 @@ void add_parseargs_tests(Suite *s)
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_setalias_requires_parameter, 1);
 	tcase_add_test(tc_pa, vnstat_parseargs_setalias_still_supports_nick);
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_rename_requires_parameter, 1);
+	tcase_add_exit_test(tc_pa, vnstat_parseargs_limit_requires_parameter, 1);
+	tcase_add_exit_test(tc_pa, vnstat_parseargs_limit_cannot_be_negative, 1);
+	tcase_add_test(tc_pa, vnstat_parseargs_limit_changes_defaults);
+	tcase_add_test(tc_pa, vnstat_parseargs_limit_overrides);
+	tcase_add_test(tc_pa, vnstat_parseargs_limit_overrides_regardless_of_position);
 	suite_add_tcase(s, tc_pa);
 }

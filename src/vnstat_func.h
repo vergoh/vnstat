@@ -5,6 +5,7 @@ typedef struct {
 	int query, setalias;
 	int addiface, force, traffic;
 	int livetraffic, defaultiface, removeiface, renameiface, livemode;
+	int32_t limit;
 	uint64_t dbifcount;
 	char interface[32], alias[32], newifname[32], filename[512];
 	char definterface[32], cfgfile[512], *ifacelist, jsonmode, xmlmode;

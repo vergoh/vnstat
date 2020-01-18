@@ -7,6 +7,8 @@
      of limiting the maximum number of shown entries in queries
    - Summary image output would segmentation fault when database existed but
      didn't yet contain any daily or monthly data for the selected interface
+ - New
+   - Add --limit as an alternative way for controlling the length of outputs
 
 
 2.5 / 14-Jan-2020

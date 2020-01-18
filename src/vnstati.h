@@ -3,6 +3,7 @@
 
 typedef struct {
 	int cache, help;
+	int32_t limit;
 	char interface[32], filename[512], cfgfile[512];
 	FILE *pngout;
 } IPARAMS;

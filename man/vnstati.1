@@ -35,6 +35,8 @@ vnstati \- png image output support for vnStat
 .IR interface ]
 .RB [ \-\-iface
 .IR interface ]
+.RB [ \-\-limit
+.IR limit ]
 .RB [ \-\-locale
 .IR locale ]
 .RB [ \-\-months
@@ -190,6 +192,18 @@ information of two or more interfaces using the
 .I interface1+interface2+...
 syntax.  All provided interfaces must be unique and must exist in the database
 when the merge syntax is used.
+
+.TP
+.BI "--limit " limit
+Set the maximum number of entries in list outputs to
+.IR limit .
+Usage of
+.B "--limit"
+overrides the default list entry limit values and the optional
+.I limit
+parameter given directly for a list query. All entries stored in the database will be shown if
+.I limit
+is set to 0.
 
 .TP
 .BI "--locale " locale

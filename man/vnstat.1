@@ -33,6 +33,8 @@ vnstat \- a console-based network traffic monitor
 .RB [ \-\-json
 .RI [ mode ]
 .RI [ limit ]]
+.RB [ \-\-limit
+.IR limit ]
 .RB [ \-\-live
 .RI [ mode ]]
 .RB [ \-\-locale
@@ -228,6 +230,24 @@ field in the output contains the API version information. It will be changed onl
 names or structures of previously existing content gets changed. In comparison, the
 .B "vnstatversion"
 field exists only as extra information.
+
+.TP
+.BI "--limit " limit
+Set the maximum number of entries in list outputs to
+.IR limit .
+Usage of
+.B "--limit"
+overrides the default list entry limit values and the optional
+.I limit
+parameter given directly for a list query. All entries stored in the database will be shown if
+.I limit
+is set to 0.
+.B "--limit"
+can also be used to control the length of
+.B "--json"
+and
+.B "--xml"
+outputs.
 
 .TP
 .BI "-l, --live " [mode]
