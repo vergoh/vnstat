@@ -1,12 +1,13 @@
-2.6 / <not released yet>
+2.6 / 20-Jan-2020
 
  - Fixed
    - --json and --xml didn't support having both mode and limit parameters
      defined at the same time as documented, broken since previous release
-   - Documentation was using a mix of "count" and "limit" for the option
-     of limiting the maximum number of shown entries in queries
-   - Summary image output would segmentation fault when database existed but
-     didn't yet contain any daily or monthly data for the selected interface
+   - Documentation was using a mix of "count" and "limit" for the option of
+     limiting the maximum number of shown entries in queries
+   - Summary image output would segmentation fault when the database existed
+     but didn't yet contain any daily or monthly data for the selected
+     interface
  - New
    - Add --limit as an alternative way for controlling the length of outputs
 
