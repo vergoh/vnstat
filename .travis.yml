@@ -5,22 +5,6 @@ language: c
 
 matrix:
   include:
-    - name: "Ubuntu 14.04 / GCC"
-      os: linux
-      dist: trusty
-      sudo: required
-      compiler: gcc
-      env:
-        - CFLAGS='-Wall -Wextra'
-        - CPARAMS='--enable-werror'
-    - name: "Ubuntu 14.04 / Clang"
-      os: linux
-      dist: trusty
-      sudo: required
-      compiler: clang
-      env:
-        - CFLAGS='-Weverything -Wno-padded'
-        - CPARAMS='--enable-werror'
     - name: "Ubuntu 16.04 / GCC"
       os: linux
       dist: xenial
@@ -35,7 +19,21 @@ matrix:
       env:
         - CFLAGS='-Weverything -Wno-padded'
         - CPARAMS='--enable-werror'
-    - name: "Ubuntu 18.04 / Clang + Sanitizers"
+    - name: "Ubuntu 18.04 / GCC"
+      os: linux
+      dist: bionic
+      compiler: gcc
+      env:
+        - CFLAGS='-Wall -Wextra'
+        - CPARAMS='--enable-werror'
+    - name: "Ubuntu 18.04 / Clang"
+      os: linux
+      dist: bionic
+      compiler: clang
+      env:
+        - CFLAGS='-Weverything -Wno-padded
+        - CPARAMS='--enable-werror'
+    - name: "Ubuntu 18.04 / Clang Sanitizers"
       os: linux
       dist: bionic
       compiler: clang
@@ -64,7 +62,7 @@ addons:
     - check
 
 script:
- - ./configure ${CPARAMS} && make check || ( cat test.log ; cat test-suite.log ; exit 1 ) && egrep '^[0-9]+%' test.log && ./vnstat --version
+ - ./configure ${CPARAMS} && make check || ( cat test.log ; cat test-suite.log ; exit 1 ) && ./vnstat --version && grep -iP 'sanitizer|runtime error' check_vnstat.log && exit 1 || true
 
 notifications:
   email:
