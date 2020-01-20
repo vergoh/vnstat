@@ -31,7 +31,7 @@ matrix:
       dist: bionic
       compiler: clang
       env:
-        - CFLAGS='-Weverything -Wno-padded
+        - CFLAGS='-Weverything -Wno-padded'
         - CPARAMS='--enable-werror'
     - name: "Ubuntu 18.04 / Clang Sanitizers"
       os: linux
