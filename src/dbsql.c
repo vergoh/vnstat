@@ -303,8 +303,8 @@ int db_exec(const char *sql)
 int db_create(void)
 {
 	int i;
-	const char *sql1;
-	char *sql2;
+	const char *constsql;
+	char *sql;
 	char buffer[32];
 	const char *datatables[] = {"fiveminute", "hour", "day", "month", "year", "top"};
 
@@ -312,17 +312,17 @@ int db_create(void)
 		return 0;
 	}
 
-	sql1 = "CREATE TABLE info(\n"
+	constsql = "CREATE TABLE info(\n"
 		  "  id       INTEGER PRIMARY KEY,\n"
 		  "  name     TEXT UNIQUE NOT NULL,\n"
 		  "  value    TEXT NOT NULL)";
 
-	if (!db_exec(sql1)) {
+	if (!db_exec(constsql)) {
 		db_rollbacktransaction();
 		return 0;
 	}
 
-	sql1 = "CREATE TABLE interface(\n"
+	constsql = "CREATE TABLE interface(\n"
 		  "  id           INTEGER PRIMARY KEY,\n"
 		  "  name         TEXT UNIQUE NOT NULL,\n"
 		  "  alias        TEXT,\n"
@@ -334,14 +334,14 @@ int db_create(void)
 		  "  rxtotal      INTEGER NOT NULL,\n"
 		  "  txtotal      INTEGER NOT NULL)";
 
-	if (!db_exec(sql1)) {
+	if (!db_exec(constsql)) {
 		db_rollbacktransaction();
 		return 0;
 	}
 
-	sql2 = malloc(sizeof(char) * 512);
+	sql = malloc(sizeof(char) * 512);
 	for (i = 0; i < 6; i++) {
-		sqlite3_snprintf(512, sql2, "CREATE TABLE %s(\n"
+		sqlite3_snprintf(512, sql, "CREATE TABLE %s(\n"
 								   "  id           INTEGER PRIMARY KEY,\n"
 								   "  interface    INTEGER REFERENCES interface(id) ON DELETE CASCADE,\n"
 								   "  date         DATE NOT NULL,\n"
@@ -350,13 +350,13 @@ int db_create(void)
 								   "  CONSTRAINT u UNIQUE (interface, date))",
 						 datatables[i]);
 
-		if (!db_exec(sql2)) {
-			free(sql2);
+		if (!db_exec(sql)) {
+			free(sql);
 			db_rollbacktransaction();
 			return 0;
 		}
 	}
-	free(sql2);
+	free(sql);
 
 	snprintf(buffer, 32, "%" PRIu64 "", (uint64_t)MAX32);
 	if (!db_setinfo("btime", buffer, 1)) {
@@ -724,16 +724,16 @@ int db_getiflist(iflist **ifl)
 int db_getiflist_sorted(iflist **ifl, const int orderbytraffic)
 {
 	int rc;
-	const char *sql;
+	const char *constsql;
 	sqlite3_stmt *sqlstmt;
 
 	if (!orderbytraffic) {
-		sql = "select name from interface order by name asc";
+		constsql = "select name from interface order by name asc";
 	} else {
-		sql = "select name from interface order by rxtotal+txtotal desc";
+		constsql = "select name from interface order by rxtotal+txtotal desc";
 	}
 
-	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
+	rc = sqlite3_prepare_v2(db, constsql, -1, &sqlstmt, NULL);
 	if (rc != SQLITE_OK) {
 		db_errcode = rc;
 		snprintf(errorstring, 1024, "Failed to get interface list from database (%d): %s", rc, sqlite3_errmsg(db));
