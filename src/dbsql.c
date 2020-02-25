@@ -303,7 +303,8 @@ int db_exec(const char *sql)
 int db_create(void)
 {
 	int i;
-	char *sql;
+	const char *sql1;
+	char *sql2;
 	char buffer[32];
 	const char *datatables[] = {"fiveminute", "hour", "day", "month", "year", "top"};
 
@@ -311,17 +312,17 @@ int db_create(void)
 		return 0;
 	}
 
-	sql = "CREATE TABLE info(\n"
+	sql1 = "CREATE TABLE info(\n"
 		  "  id       INTEGER PRIMARY KEY,\n"
 		  "  name     TEXT UNIQUE NOT NULL,\n"
 		  "  value    TEXT NOT NULL)";
 
-	if (!db_exec(sql)) {
+	if (!db_exec(sql1)) {
 		db_rollbacktransaction();
 		return 0;
 	}
 
-	sql = "CREATE TABLE interface(\n"
+	sql1 = "CREATE TABLE interface(\n"
 		  "  id           INTEGER PRIMARY KEY,\n"
 		  "  name         TEXT UNIQUE NOT NULL,\n"
 		  "  alias        TEXT,\n"
@@ -333,14 +334,14 @@ int db_create(void)
 		  "  rxtotal      INTEGER NOT NULL,\n"
 		  "  txtotal      INTEGER NOT NULL)";
 
-	if (!db_exec(sql)) {
+	if (!db_exec(sql1)) {
 		db_rollbacktransaction();
 		return 0;
 	}
 
-	sql = malloc(sizeof(char) * 512);
+	sql2 = malloc(sizeof(char) * 512);
 	for (i = 0; i < 6; i++) {
-		sqlite3_snprintf(512, sql, "CREATE TABLE %s(\n"
+		sqlite3_snprintf(512, sql2, "CREATE TABLE %s(\n"
 								   "  id           INTEGER PRIMARY KEY,\n"
 								   "  interface    INTEGER REFERENCES interface(id) ON DELETE CASCADE,\n"
 								   "  date         DATE NOT NULL,\n"
@@ -349,13 +350,13 @@ int db_create(void)
 								   "  CONSTRAINT u UNIQUE (interface, date))",
 						 datatables[i]);
 
-		if (!db_exec(sql)) {
-			free(sql);
+		if (!db_exec(sql2)) {
+			free(sql2);
 			db_rollbacktransaction();
 			return 0;
 		}
 	}
-	free(sql);
+	free(sql2);
 
 	snprintf(buffer, 32, "%" PRIu64 "", (uint64_t)MAX32);
 	if (!db_setinfo("btime", buffer, 1)) {
@@ -723,7 +724,7 @@ int db_getiflist(iflist **ifl)
 int db_getiflist_sorted(iflist **ifl, const int orderbytraffic)
 {
 	int rc;
-	char *sql;
+	const char *sql;
 	sqlite3_stmt *sqlstmt;
 
 	if (!orderbytraffic) {
