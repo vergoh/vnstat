@@ -152,8 +152,8 @@ Next, locate the following lines:
 and replace them with
 
     UseLogging 1
-    LogFile "/pathtomyhomedir/.vnstat/.log"
-    PidFile "/pathtomyhomedir/.vnstat/.pid"
+    LogFile "/pathtomyhomedir/.vnstat/vnstat.log"
+    PidFile "/pathtomyhomedir/.vnstat/vnstat.pid"
 
 Finally, save the file. If you are unsure about your home directory path, execute
 
