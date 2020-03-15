@@ -110,6 +110,8 @@ int getiflist(iflist **ifl, const int getspeed, const int validate)
 	return getiflist_linux(ifl, getspeed, validate);
 #elif defined(BSD_VNSTAT)
 	return getiflist_bsd(ifl, getspeed, validate);
+#else
+#error vnStat only supports Linux and BSD like systems
 #endif
 }
 
