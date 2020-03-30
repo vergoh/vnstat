@@ -1379,6 +1379,10 @@ char *getifaceinquery(const char *input)
 	/* each interface requires two quotes and comma or \0 so 3 extra chars */
 	j = (unsigned int)strlen(input) + ifacecount * 3;
 	result = malloc(sizeof(char) * j);
+	if (result == NULL) {
+		panicexit(__FILE__, __LINE__);
+	}
+
 	memset(result, '\0', j);
 
 	result[0] = '"';
