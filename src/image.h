@@ -32,6 +32,7 @@ typedef struct {
 
 void initimagecontent(IMAGECONTENT *ic);
 void drawimage(IMAGECONTENT *ic);
+void scaleimage(IMAGECONTENT *ic);
 void colorinit(IMAGECONTENT *ic);
 void colorinitcheck(const char *color, const int value, const char *cfgtext, const int *rgb);
 void layoutinit(IMAGECONTENT *ic, char *title, const int width, const int height);

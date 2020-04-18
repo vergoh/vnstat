@@ -243,6 +243,9 @@ and most can be changed later from the config file.
 /* no transparency by default */
 #define TRANSBG 0
 
+/* no image scaling by default */
+#define IMAGESCALE 100
+
 /* default colors */
 #define CBACKGROUND "FFFFFF"
 #define CEDGE "AEAEAE"
@@ -273,7 +276,7 @@ typedef struct {
 	char cline[8], clinel[8], cvnstat[8], crx[8], crxd[8], ctx[8], ctxd[8];
 	int32_t unitmode, rateunitmode, rateunit, bvar, qmode, sampletime, hourlyrate, summaryrate;
 	int32_t monthrotate, monthrotateyears, maxbw, spacecheck, trafficlessentries, transbg, ostyle;
-	int32_t defaultdecimals, hourlydecimals, hourlystyle, is64bit, waldb, dbsynchronous;
+	int32_t defaultdecimals, hourlydecimals, hourlystyle, is64bit, waldb, dbsynchronous, imagescale;
 	char cfgfile[512], logfile[512], pidfile[512];
 	char daemonuser[33], daemongroup[33];
 	int32_t timesyncwait, updateinterval, pollinterval, saveinterval, offsaveinterval, savestatus;

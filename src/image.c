@@ -59,6 +59,40 @@ void drawimage(IMAGECONTENT *ic)
 	}
 }
 
+void scaleimage(IMAGECONTENT *ic)
+{
+	gdImagePtr im_scaled;
+	unsigned int width = 0, height = 0;
+
+	if (cfg.imagescale == 100) {
+		return;
+	}
+
+	width = (unsigned int)(gdImageSX(ic->im) * (cfg.imagescale / (float)100));
+	height = (unsigned int)(gdImageSY(ic->im) * (cfg.imagescale / (float)100));
+
+	if (width < 100 || height < 100) {
+		return;
+	}
+
+	if (width > 5000 || height > 5000) {
+		return;
+	}
+
+	/* keep output sharp when percent is an exact multiplier */
+	if (cfg.imagescale % 100 == 0) {
+		gdImageSetInterpolationMethod(ic->im, GD_NEAREST_NEIGHBOUR);
+	}
+
+	im_scaled = gdImageScale(ic->im, width, height);
+	if (im_scaled == NULL) {
+		return;
+	}
+
+	gdImageDestroy(ic->im);
+	ic->im = im_scaled;
+}
+
 void colorinit(IMAGECONTENT *ic)
 {
 	int rgb[3];

@@ -53,6 +53,8 @@ vnstati \- png image output support for vnStat
 .RI [ mode ]]
 .RB [ \-\-rateunit
 .RI [ mode ]]
+.RB [ \-\-scale
+.IR percent ]
 .RB [ \-\-style
 .IR number ]
 .RB [ \-\-summary ]
@@ -251,6 +253,12 @@ with either 0 or 1 can be used as parameter for this option in order to
 select between bytes (0) and bits (1) regardless of the configuration file setting.
 
 .TP
+.BI "--scale " percent
+Scale output to given
+.I percent
+resulting in the image being either smaller or larger than the default size.
+
+.TP
 .BI "--style " number
 Modify the content and style of outputs. Setting
 .I number
@@ -352,6 +360,9 @@ may end up shown correctly when a UTF-8 locale is used.
 .PP
 Using long date output formats may cause misalignment in shown columns if the
 length of the date exceeds the fixed size allocation.
+.PP
+Scaling an image when background transparency is enabled may not result in
+transparency being retained.
 
 .SH AUTHOR
 

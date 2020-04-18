@@ -73,6 +73,7 @@ int main(int argc, char *argv[])
 
 	drawimage(&ic);
 	db_close();
+	scaleimage(&ic);
 	writeoutput(&p, &ic);
 
 	if (debug)
@@ -133,6 +134,7 @@ void showihelp(IPARAMS *p)
 	printf("      --config <config file>       select config file\n");
 	printf("      --altdate                    use alternative date location\n");
 	printf("      --headertext <text>          specify header text string\n");
+	printf("      --scale <percent>            change image size by scaling it\n");
 	printf("      --transparent [enabled]      toggle background transparency\n\n");
 
 	printf("See also \"man vnstati\".\n");
@@ -194,6 +196,20 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 				currentarg++;
 			} else {
 				printf("Error: Style parameter for --style missing.\n");
+				exit(EXIT_FAILURE);
+			}
+		} else if ((strcmp(argv[currentarg], "--scale")) == 0) {
+			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {
+				cfg.imagescale = atoi(argv[currentarg + 1]);
+				if (cfg.imagescale > 500 || cfg.imagescale < 50) {
+					printf("Error: Invalid parameter \"%d\" for --scale. Supported value range: 50 <= N <= 500\n", cfg.imagescale);
+					exit(EXIT_FAILURE);
+				}
+				if (debug)
+					printf("Scale changed: %d\n", cfg.imagescale);
+				currentarg++;
+			} else {
+				printf("Error: Percent parameter for --scale missing.\n");
 				exit(EXIT_FAILURE);
 			}
 		} else if ((strcmp(argv[currentarg], "--transparent")) == 0) {

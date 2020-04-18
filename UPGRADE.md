@@ -1,6 +1,8 @@
 
 # New configuration settings
 
+ * 2.7: ImageScale
+
  * 2.4 - 2.6: (none)
 
  * 2.3: DatabaseWriteAheadLogging, DatabaseSynchronous

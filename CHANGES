@@ -1,6 +1,7 @@
 2.7 / <not released yet>
 
- - no significant changes yet
+ - New
+   - Add --scale for scaling the image output to a given percent
 
 
 2.6 / 20-Jan-2020

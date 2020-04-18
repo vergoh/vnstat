@@ -187,6 +187,9 @@ void printcfgfile(void)
 	printf("# transparent background (1 = enabled, 0 = disabled)\n");
 	printf("TransparentBg %d\n\n", cfg.transbg);
 
+	printf("# image scale (percent)\n");
+	printf("ImageScale %d\n\n", cfg.imagescale);
+
 	printf("# image colors\n");
 	printf("CBackground     \"%s\"\n", cfg.cbg);
 	printf("CEdge           \"%s\"\n", cfg.cedge);
