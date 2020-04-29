@@ -12,17 +12,23 @@ Restart=on-failure
 RestartSec=2
 
 # Hardening
+CapabilityBoundingSet=
+LockPersonality=yes
 MemoryDenyWriteExecute=yes
+NoNewPrivileges=yes
 PrivateDevices=yes
 PrivateTmp=yes
+ProtectClock=yes
 ProtectControlGroups=yes
 ProtectHome=yes
+ProtectKernelLogs=yes
 ProtectKernelModules=yes
 ProtectKernelTunables=yes
 ProtectSystem=strict
 ReadWritePaths=/var/lib
 RestrictNamespaces=yes
 RestrictRealtime=yes
+RestrictSUIDSGID=yes
 StateDirectory=vnstat
 
 [Install]
