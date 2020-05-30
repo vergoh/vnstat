@@ -513,7 +513,7 @@ int processifinfo(DSTATE *s, datacache **dc)
 
 	if ((*dc)->updated > ifinfo.timestamp) {
 		/* skip update if previous update is less than a day in the future */
-		/* otherwise exit with error message since the clock is problably messed */
+		/* otherwise exit with error message since the clock is probably messed */
 		if ((*dc)->updated > (ifinfo.timestamp + 86400)) {
 			snprintf(errorstring, 1024, "Interface \"%s\" has previous update date too much in the future, exiting. (%u / %u)", (*dc)->interface, (unsigned int)(*dc)->updated, (unsigned int)ifinfo.timestamp);
 			printe(PT_Error);

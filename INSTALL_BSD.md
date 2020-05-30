@@ -108,7 +108,7 @@ Finally, save the file. If you are unsure about your home directory path, execut
 
     cd ; pwd
 
-The ouput should tell your home directory.
+The output should tell your home directory.
 
 Now it's time to add a crontab entry for vnStat. Do that by executing the
 command `crontab -e` and add the following line (without leading spaces,

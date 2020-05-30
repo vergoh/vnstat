@@ -169,7 +169,7 @@
  - Add --json support for -l / --live and -tr outputs
  - Number of decimals used in outputs can be configured using DefaultDecimals
    and HourlyDecimals
- - Add section separators for improving readabilty of the vnstat -h output,
+ - Add section separators for improving readability of the vnstat -h output,
    configurable using HourlySectionStyle
 
 

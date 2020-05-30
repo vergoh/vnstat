@@ -28,7 +28,7 @@ How do I uninstall vnStat?
   You only need to run 'make uninstall' in the directory that comes when the
   .tar.gz is extracted. Just make sure it's the same version you have
   installed. If you've used a binary package included with the distribution
-  then refer to intructions provided by the package manager.
+  then refer to instructions provided by the package manager.
 
 
 What is this KiB/MiB/GiB/TiB thing?
