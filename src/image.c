@@ -1018,15 +1018,15 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 	drawdonut(ic, textx + 50, texty + 45, rxp, txp);
 
 	if (mode[0] == 'd') {
-		/* get formated date for today */
+		/* get formatted date for today */
 		d = localtime(&ic->current);
 		strftime(datebuff, 16, cfg.dformat, d);
 
-		/* get formated date for current day in database */
+		/* get formatted date for current day in database */
 		d = localtime(&data_current->timestamp);
 		strftime(daytemp, 16, cfg.dformat, d);
 
-		/* change daytemp to today if formated days match */
+		/* change daytemp to today if formatted days match */
 		if (strcmp(datebuff, daytemp) == 0) {
 			strncpy_nt(daytemp, "today", 32);
 		}
@@ -1081,15 +1081,15 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 		drawdonut(ic, textx + 50, texty + 45, rxp, txp);
 
 		if (mode[0] == 'd') {
-			/* get formated date for yesterday */
+			/* get formatted date for yesterday */
 			d = localtime(&yesterday);
 			strftime(datebuff, 16, cfg.dformat, d);
 
-			/* get formated date for previous day in database */
+			/* get formatted date for previous day in database */
 			d = localtime(&data_previous->timestamp);
 			strftime(daytemp, 16, cfg.dformat, d);
 
-			/* change daytemp to yesterday if formated days match */
+			/* change daytemp to yesterday if formatted days match */
 			if (strcmp(datebuff, daytemp) == 0) {
 				strncpy_nt(daytemp, "yesterday", 32);
 			}
