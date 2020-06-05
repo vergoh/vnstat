@@ -59,6 +59,7 @@ void drawimage(IMAGECONTENT *ic)
 	}
 }
 
+#if HAVE_DECL_GD_NEAREST_NEIGHBOUR
 void scaleimage(IMAGECONTENT *ic)
 {
 	gdImagePtr im_scaled;
@@ -92,6 +93,7 @@ void scaleimage(IMAGECONTENT *ic)
 	gdImageDestroy(ic->im);
 	ic->im = im_scaled;
 }
+#endif
 
 void colorinit(IMAGECONTENT *ic)
 {
