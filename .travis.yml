@@ -38,7 +38,9 @@ matrix:
       dist: bionic
       compiler: clang
       env:
-        - CFLAGS='-O1 -g -fsanitize=address -fno-omit-frame-pointer -fsanitize=undefined -fsanitize=nullability -fsanitize=implicit-conversion -fsanitize=integer'
+        - CFLAGS='-O1 -g -fsanitize=address -fsanitize-address-use-after-scope -fno-omit-frame-pointer -fsanitize=undefined -fsanitize=nullability -fsanitize=implicit-conversion -fsanitize=integer -fsanitize=float-divide-by-zero -fsanitize=local-bounds'
+        - ASAN_OPTIONS=strict_string_checks=1:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1
+        - UBSAN_OPTIONS=print_stacktrace=1:print_summary=1:halt_on_error=1
         - CPARAMS='--enable-werror'
     - name: "OS X / Clang"
       os: osx
