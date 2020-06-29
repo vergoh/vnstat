@@ -581,7 +581,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 
 	daybuff[0] = '\0';
 
-	if (!db_getdata_range(&datalist, &datainfo, ic->interface.name, listname, (uint32_t)limit, ic->databegin, ic->dataend)) {
+	if (!db_getdata_range(&datalist, &datainfo, ic->interface.name, listname, (uint32_t)limit, ic->databegin, ic->dataend) || !datalist) {
 		printf("Error: Failed to fetch %s data.\n", "day");
 		return;
 	}

@@ -338,7 +338,7 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 
 	daybuff[0] = '\0';
 
-	if (!db_getdata_range(&datalist, &datainfo, interface->name, listname, (uint32_t)limit, databegin, dataend)) {
+	if (!db_getdata_range(&datalist, &datainfo, interface->name, listname, (uint32_t)limit, databegin, dataend) || !datalist) {
 		printf("Error: Failed to fetch %s data.\n", titlename);
 		return;
 	}
