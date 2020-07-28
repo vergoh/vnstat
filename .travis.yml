@@ -38,8 +38,29 @@ matrix:
       dist: bionic
       compiler: clang
       env:
-        - CFLAGS='-O1 -g -fsanitize=address -fno-omit-frame-pointer -fsanitize=undefined -fsanitize=nullability -fsanitize=implicit-conversion -fsanitize=integer'
+        - CFLAGS='-O1 -g -fsanitize=address -fsanitize-address-use-after-scope -fno-omit-frame-pointer -fsanitize=undefined -fsanitize=nullability -fsanitize=implicit-conversion -fsanitize=integer -fsanitize=float-divide-by-zero -fsanitize=local-bounds'
+        - ASAN_OPTIONS=strict_string_checks=1:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1
+        - UBSAN_OPTIONS=print_stacktrace=1:print_summary=1:halt_on_error=1
         - CPARAMS='--enable-werror'
+    - name: "Ubuntu 18.04 / Clang Analyzer"
+      os: linux
+      dist: bionic
+      compiler: clang
+      env:
+        - COMPILER=scan-build-10
+      addons:
+        apt:
+          sources:
+            - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main'
+              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+          packages:
+            - clang-10
+            - clang-tools-10
+            - libsqlite3-0
+            - libsqlite3-dev
+            - libgd3
+            - libgd-dev
+            - check
     - name: "OS X / Clang"
       os: osx
       osx_image: xcode11
@@ -62,7 +83,14 @@ addons:
     - check
 
 script:
- - ./configure ${CPARAMS} && make check || ( cat test.log ; cat test-suite.log ; exit 1 ) && ./vnstat --version && grep -iP 'sanitizer|runtime error' check_vnstat.log && exit 1 || true
+  - |
+    if [[ "${COMPILER}" =~ ^scan-build.* ]]; then
+      ${COMPILER} -analyze-headers --status-bugs ./configure --enable-werror --disable-silent-rules
+      ${COMPILER} -analyze-headers --status-bugs make
+      export TRAVIS_TEST_RESULT=$?
+      travis_terminate $TRAVIS_TEST_RESULT;
+    fi
+  - ./configure ${CPARAMS} && make check || ( cat test.log ; cat test-suite.log ; exit 1 ) && ./vnstat --version && grep -iP 'sanitizer|runtime error' check_vnstat.log && exit 1 || true
 
 notifications:
   email:
