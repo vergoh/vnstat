@@ -42,7 +42,7 @@ matrix:
         - ASAN_OPTIONS=strict_string_checks=1:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1
         - UBSAN_OPTIONS=print_stacktrace=1:print_summary=1:halt_on_error=1
         - CPARAMS='--enable-werror'
-    - name: "Ubuntu 18.04 / Clang analyzer"
+    - name: "Ubuntu 18.04 / Clang Analyzer"
       os: linux
       dist: bionic
       compiler: clang
