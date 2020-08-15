@@ -33,29 +33,41 @@ matrix:
       env:
         - CFLAGS='-Weverything -Wno-padded'
         - CPARAMS='--enable-werror'
-    - name: "Ubuntu 18.04 / Clang Sanitizers"
+    - name: "Ubuntu 18.04 / Clang 11 Sanitizers"
       os: linux
       dist: bionic
-      compiler: clang
+      compiler: clang-11
       env:
         - CFLAGS='-O1 -g -fsanitize=address -fsanitize-address-use-after-scope -fno-omit-frame-pointer -fsanitize=undefined -fsanitize=nullability -fsanitize=implicit-conversion -fsanitize=integer -fsanitize=float-divide-by-zero -fsanitize=local-bounds'
         - ASAN_OPTIONS=strict_string_checks=1:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1
         - UBSAN_OPTIONS=print_stacktrace=1:print_summary=1:halt_on_error=1
         - CPARAMS='--enable-werror'
-    - name: "Ubuntu 18.04 / Clang Analyzer"
-      os: linux
-      dist: bionic
-      compiler: clang
-      env:
-        - COMPILER=scan-build-10
       addons:
         apt:
           sources:
-            - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main'
+            - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-11 main'
               key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
           packages:
-            - clang-10
-            - clang-tools-10
+            - clang-11
+            - libsqlite3-0
+            - libsqlite3-dev
+            - libgd3
+            - libgd-dev
+            - check
+    - name: "Ubuntu 18.04 / Clang 11 Analyzer"
+      os: linux
+      dist: bionic
+      compiler: clang-11
+      env:
+        - COMPILER=scan-build-11
+      addons:
+        apt:
+          sources:
+            - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-11 main'
+              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+          packages:
+            - clang-11
+            - clang-tools-11
             - libsqlite3-0
             - libsqlite3-dev
             - libgd3
