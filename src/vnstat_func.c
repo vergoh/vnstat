@@ -547,7 +547,7 @@ void handlerenameinterface(PARAMS *p)
 	}
 
 	if (db_getinterfacecountbyname(p->newifname)) {
-		printf("Error: Interface \"%s\" already exists in database.\n", p->interface);
+		printf("Error: Interface \"%s\" already exists in database.\n", p->newifname);
 		exit(EXIT_FAILURE);
 	}
 
