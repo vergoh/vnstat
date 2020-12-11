@@ -102,7 +102,10 @@ script:
       export TRAVIS_TEST_RESULT=$?
       travis_terminate $TRAVIS_TEST_RESULT;
     fi
-  - ./configure ${CPARAMS} && make check || ( cat test.log ; cat test-suite.log ; exit 1 ) && ./vnstat --version && grep -iP 'sanitizer|runtime error' check_vnstat.log && exit 1 || true
+  - ./configure ${CPARAMS}
+  - make check || ( cat test.log ; cat test-suite.log ; exit 1 )
+  - ./vnstat --version
+  - grep -iE 'sanitizer|runtime error' check_vnstat.log; test $? -eq 1
 
 notifications:
   email:
