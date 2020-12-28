@@ -121,7 +121,7 @@ jobs:
       - name: configure
         run: |
           clang --version
-          scan-build-10 -analyze-headers --status-bugs ./configure --disable-silent-rules
+          scan-build -analyze-headers --status-bugs ./configure --disable-silent-rules
 
       - name: scan-build
-        run: scan-build-10 -analyze-headers --status-bugs make
+        run: scan-build -analyze-headers --status-bugs make
