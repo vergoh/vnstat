@@ -107,7 +107,7 @@ jobs:
     runs-on: macos-10.15
     env:
       CC: clang
-      CFLAGS: '-Weverything -Wno-padded'
+      CFLAGS: '-Weverything -Wno-padded -Wno-poison-system-directories'
     steps:
       - uses: actions/checkout@v2
 
@@ -117,7 +117,7 @@ jobs:
       - name: configure
         run: |
           clang --version
-          ./configure --enable-werror
+          ./configure
 
       - name: make check
         run: make check
