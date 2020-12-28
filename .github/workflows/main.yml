@@ -1,0 +1,29 @@
+name: CI
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # one scheduled build every month
+    - cron: '5 3 1 * *'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: dependencies
+        run: |
+          sudo apt update
+          sudo apt install libsqlite3-0 libsqlite3-dev libgd3 libgd-dev check
+
+      - name: configure
+        run: ./configure
+
+      - name: make check
+        run: make check
+
+      - name: version
+        run: ./vnstat --version
