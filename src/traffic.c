@@ -241,8 +241,8 @@ void livetrafficmeter(const char *iface, const int mode)
 		if (!json) {
 			if (mode == 0) {
 				/* packets per second visible */
-				snprintf(buffer, 128, "   rx: %s %*" PRIu64 " p/s", gettrafficrate(rx, LIVETIME, ratewidth), ppswidth, (uint64_t)rxp / LIVETIME);
-				snprintf(buffer2, 128, " %*s tx: %s %*" PRIu64 " p/s", paddingwidth, " ", gettrafficrate(tx, LIVETIME, ratewidth), ppswidth, (uint64_t)txp / LIVETIME);
+				snprintf(buffer, 128, "   rx: %s %*" PRIu64 " p/s", gettrafficrate(rx, LIVETIME, ratewidth), ppswidth, rxp / LIVETIME);
+				snprintf(buffer2, 128, " %*s tx: %s %*" PRIu64 " p/s", paddingwidth, " ", gettrafficrate(tx, LIVETIME, ratewidth), ppswidth, txp / LIVETIME);
 			} else {
 				/* total transfer amount visible */
 				snprintf(buffer, 128, "   rx: %s   %s", gettrafficrate(rx, LIVETIME, ratewidth), getvalue(rxtotal, 1, RT_Normal));
