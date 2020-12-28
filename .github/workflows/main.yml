@@ -126,4 +126,4 @@ jobs:
         run: ./vnstat --version
 
       - name: verify log
-        run: grep -iP 'runtime error' check_vnstat.log && exit 1 || true
+        run: grep -i 'runtime error' check_vnstat.log && exit 1 || true
