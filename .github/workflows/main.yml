@@ -103,25 +103,27 @@ jobs:
       - name: verify log
         run: grep -iP 'sanitizer|runtime error' check_vnstat.log && exit 1 || true
 
-  ubuntu_clang_analyzer:
-    runs-on: ubuntu-20.04
+  macos_clang:
+    runs-on: macos-10.15
     env:
       CC: clang
-      CFLAGS: '-Weverything -Wno-padded -Wno-reserved-id-macro -Wno-gnu-zero-variadic-macro-arguments -Wno-sign-conversion -Wno-unreachable-code -Wno-missing-noreturn'
+      CFLAGS: '-Weverything -Wno-padded'
     steps:
       - uses: actions/checkout@v2
 
-      # libgd3 removal needed due to https://github.com/actions/virtual-environments/issues/2139
       - name: dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get remove libgd3
-          sudo apt-get -y install libsqlite3-dev libgd-dev check clang-tools-10
+        run: brew install sqlite gd check
 
       - name: configure
         run: |
           clang --version
-          scan-build -analyze-headers --status-bugs ./configure --disable-silent-rules
+          ./configure --enable-werror
 
-      - name: scan-build
-        run: scan-build -analyze-headers --status-bugs make
+      - name: make check
+        run: make check
+
+      - name: version
+        run: ./vnstat --version
+
+      - name: verify log
+        run: grep -iP 'runtime error' check_vnstat.log && exit 1 || true
