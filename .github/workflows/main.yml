@@ -20,10 +20,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      # libgd3 removal needed due to https://github.com/actions/virtual-environments/issues/2139
       - name: dependencies
         run: |
           sudo apt-get update
-          sudo apt-get -y install libsqlite3-0 libsqlite3-dev libgd3 libgd-dev check
+          sudo apt-get remove libgd3
+          sudo apt-get -y install libsqlite3-dev libgd-dev check
 
       - name: configure
         run: ./configure
