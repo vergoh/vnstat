@@ -28,7 +28,39 @@ jobs:
           sudo apt-get -y install libsqlite3-dev libgd-dev check
 
       - name: configure
-        run: ./configure
+        run: |
+          gcc --version
+          ./configure
+
+      - name: make check
+        run: make check
+
+      - name: version
+        run: ./vnstat --version
+
+  ubuntu_clang:
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, ubuntu-18.04]
+    runs-on: ${{ matrix.os }}
+    env:
+      CC: clang
+      CFLAGS: '-Weverything -Wno-padded'
+      CPARAMS: '--enable-werror'
+    steps:
+      - uses: actions/checkout@v2
+
+      # libgd3 removal needed due to https://github.com/actions/virtual-environments/issues/2139
+      - name: dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get remove libgd3
+          sudo apt-get -y install libsqlite3-dev libgd-dev check
+
+      - name: configure
+        run: |
+          clang --version
+          ./configure
 
       - name: make check
         run: make check
