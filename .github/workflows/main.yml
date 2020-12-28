@@ -8,16 +8,22 @@ on:
     - cron: '5 3 1 * *'
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
+  ubuntu_gcc:
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, ubuntu-18.04]
+    runs-on: ${{ matrix.os }}
+    env:
+      CC: gcc
+      CFLAGS: '-Wall -Wextra'
+      CPARAMS: '--enable-werror'
     steps:
       - uses: actions/checkout@v2
 
       - name: dependencies
         run: |
-          sudo apt update
-          sudo apt install libsqlite3-0 libsqlite3-dev libgd3 libgd-dev check
+          sudo apt-get update
+          sudo apt-get -y install libsqlite3-0 libsqlite3-dev libgd3 libgd-dev check
 
       - name: configure
         run: ./configure
