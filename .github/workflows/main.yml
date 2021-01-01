@@ -97,6 +97,29 @@ jobs:
       - name: verify log
         run: grep -iP 'sanitizer|runtime error' check_vnstat.log && exit 1 || true
 
+  ubuntu_clang_analyzer:
+    runs-on: ubuntu-20.04
+    env:
+      CC: clang
+      CFLAGS: '-Wall -Wextra'
+    steps:
+      - uses: actions/checkout@v2
+
+      # libgd3 removal needed due to https://github.com/actions/virtual-environments/issues/2139
+      - name: dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get remove libgd3
+          sudo apt-get -y install libsqlite3-dev libgd-dev check clang-tools
+
+      - name: configure
+        run: |
+          clang --version
+          scan-build -analyze-headers --status-bugs ./configure --enable-werror
+
+      - name: make
+        run: scan-build -analyze-headers --status-bugs make
+
   macos_clang:
     runs-on: macos-10.15
     env:
