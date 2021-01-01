@@ -37,9 +37,6 @@ jobs:
       - name: version
         run: ./vnstat --version
 
-      - name: verify log
-        run: grep -iP 'sanitizer|runtime error' check_vnstat.log && exit 1 || true
-
   ubuntu_clang:
     strategy:
       matrix:
@@ -68,9 +65,6 @@ jobs:
 
       - name: version
         run: ./vnstat --version
-
-      - name: verify log
-        run: grep -iP 'sanitizer|runtime error' check_vnstat.log && exit 1 || true
 
   ubuntu_clang_sanitizers:
     runs-on: ubuntu-20.04
@@ -124,6 +118,3 @@ jobs:
 
       - name: version
         run: ./vnstat --version
-
-      - name: verify log
-        run: grep -i 'runtime error' check_vnstat.log && exit 1 || true
