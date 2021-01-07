@@ -22,7 +22,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: dependencies
-        run: sudo make -f .github/Makefile.CI dependencies_linux
+        run: sudo make -f .github/Makefile.CI dependencies_ubuntu
 
       - name: configure
         run: |
@@ -46,7 +46,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: dependencies
-        run: sudo make -f .github/Makefile.CI dependencies_linux
+        run: sudo make -f .github/Makefile.CI dependencies_ubuntu
 
       - name: configure
         run: |
@@ -71,7 +71,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: dependencies
-        run: sudo make -f .github/Makefile.CI dependencies_linux_analyzer
+        run: sudo make -f .github/Makefile.CI dependencies_ubuntu_analyzer
 
       - name: configure
         run: |
