@@ -4,61 +4,30 @@ on:
   pull_request:
   workflow_dispatch:
   schedule:
-    # one scheduled build every month
+    # one scheduled build on the first day of every month at 3:05
     - cron: '5 3 1 * *'
 
 jobs:
-  ubuntu_gcc:
+  ubuntu:
     strategy:
       matrix:
         os: [ubuntu-20.04, ubuntu-18.04]
+        compiler: [gcc, clang]
     runs-on: ${{ matrix.os }}
     env:
-      CC: gcc
-      CFLAGS: '-Wall -Wextra'
+      CC: ${{ matrix.compiler }}
+      CFLAGS: "${{ matrix.compiler == 'gcc' && '-Wall -Wextra' || '-Weverything -Wno-padded' }}"
+      CPARAMS: "${{ matrix.compiler == 'gcc' && '--enable-werror' || ' ' }}"
     steps:
       - uses: actions/checkout@v2
 
-      # libgd3 removal needed due to https://github.com/actions/virtual-environments/issues/2139
       - name: dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get remove libgd3
-          sudo apt-get -y install libsqlite3-dev libgd-dev check
+        run: sudo make -f .github/Makefile.CI dependencies_ubuntu
 
       - name: configure
         run: |
-          gcc --version
-          ./configure --enable-werror
-
-      - name: make check
-        run: make check
-
-      - name: version
-        run: ./vnstat --version
-
-  ubuntu_clang:
-    strategy:
-      matrix:
-        os: [ubuntu-20.04, ubuntu-18.04]
-    runs-on: ${{ matrix.os }}
-    env:
-      CC: clang
-      CFLAGS: '-Weverything -Wno-padded'
-    steps:
-      - uses: actions/checkout@v2
-
-      # libgd3 removal needed due to https://github.com/actions/virtual-environments/issues/2139
-      - name: dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get remove libgd3
-          sudo apt-get -y install libsqlite3-dev libgd-dev check
-
-      - name: configure
-        run: |
-          clang --version
-          ./configure
+          $CC --version
+          ./configure $CPARAMS
 
       - name: make check
         run: make check
@@ -76,16 +45,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      # libgd3 removal needed due to https://github.com/actions/virtual-environments/issues/2139
       - name: dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get remove libgd3
-          sudo apt-get -y install libsqlite3-dev libgd-dev check
+        run: sudo make -f .github/Makefile.CI dependencies_ubuntu
 
       - name: configure
         run: |
-          clang --version
+          $CC --version
           ./configure --enable-werror
 
       - name: make check
@@ -105,16 +70,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      # libgd3 removal needed due to https://github.com/actions/virtual-environments/issues/2139
       - name: dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get remove libgd3
-          sudo apt-get -y install libsqlite3-dev libgd-dev check clang-tools
+        run: sudo make -f .github/Makefile.CI dependencies_ubuntu_analyzer
 
       - name: configure
         run: |
-          clang --version
+          $CC --version
           scan-build -analyze-headers --status-bugs ./configure --enable-werror
 
       - name: make
@@ -129,11 +90,11 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: dependencies
-        run: brew install sqlite gd check
+        run: make -f .github/Makefile.CI dependencies_macos
 
       - name: configure
         run: |
-          clang --version
+          $CC --version
           ./configure
 
       - name: make check
