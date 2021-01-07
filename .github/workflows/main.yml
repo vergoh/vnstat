@@ -37,9 +37,6 @@ jobs:
       - name: version
         run: ./vnstat --version
 
-      - name: verify log
-        run: grep -iP 'sanitizer|runtime error' check_vnstat.log && exit 1 || true
-
   ubuntu_clang:
     strategy:
       matrix:
@@ -69,14 +66,11 @@ jobs:
       - name: version
         run: ./vnstat --version
 
-      - name: verify log
-        run: grep -iP 'sanitizer|runtime error' check_vnstat.log && exit 1 || true
-
   ubuntu_clang_sanitizers:
     runs-on: ubuntu-20.04
     env:
       CC: clang
-      CFLAGS: '-O1 -g -fsanitize=address -fsanitize-address-use-after-scope -fno-omit-frame-pointer -fsanitize=undefined -fsanitize=nullability -fsanitize=implicit-conversion -fsanitize=integer -fsanitize=float-divide-by-zero -fsanitize=local-bounds'
+      CFLAGS: '-Wall -Wextra -O1 -g -fsanitize=address -fsanitize-address-use-after-scope -fno-omit-frame-pointer -fsanitize=undefined -fsanitize=nullability -fsanitize=implicit-conversion -fsanitize=integer -fsanitize=float-divide-by-zero -fsanitize=local-bounds'
       ASAN_OPTIONS: strict_string_checks=1:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1
       UBSAN_OPTIONS: print_stacktrace=1:print_summary=1:halt_on_error=1
     steps:
@@ -92,7 +86,7 @@ jobs:
       - name: configure
         run: |
           clang --version
-          ./configure
+          ./configure --enable-werror
 
       - name: make check
         run: make check
@@ -102,6 +96,29 @@ jobs:
 
       - name: verify log
         run: grep -iP 'sanitizer|runtime error' check_vnstat.log && exit 1 || true
+
+  ubuntu_clang_analyzer:
+    runs-on: ubuntu-20.04
+    env:
+      CC: clang
+      CFLAGS: '-Wall -Wextra'
+    steps:
+      - uses: actions/checkout@v2
+
+      # libgd3 removal needed due to https://github.com/actions/virtual-environments/issues/2139
+      - name: dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get remove libgd3
+          sudo apt-get -y install libsqlite3-dev libgd-dev check clang-tools
+
+      - name: configure
+        run: |
+          clang --version
+          scan-build -analyze-headers --status-bugs ./configure --enable-werror
+
+      - name: make
+        run: scan-build -analyze-headers --status-bugs make
 
   macos_clang:
     runs-on: macos-10.15
@@ -124,6 +141,3 @@ jobs:
 
       - name: version
         run: ./vnstat --version
-
-      - name: verify log
-        run: grep -i 'runtime error' check_vnstat.log && exit 1 || true
