@@ -1,0 +1,13 @@
+.PHONY: dependencies_linux dependencies_linux_analyzer dependencies_macos
+
+# libgd3 removal needed due to https://github.com/actions/virtual-environments/issues/2139
+dependencies_linux:
+	apt-get update
+	apt-get remove libgd3
+	apt-get -y install libsqlite3-dev libgd-dev check
+
+dependencies_linux_analyzer: dependencies_linux
+	apt-get -y install clang-tools
+
+dependencies_macos:
+	brew install sqlite gd check
