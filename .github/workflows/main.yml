@@ -15,7 +15,7 @@ jobs:
         compiler: [gcc, clang]
     runs-on: ${{ matrix.os }}
     env:
-      CC: "${{ matrix.compiler == 'gcc' && 'gcc' || 'clang' }}"
+      CC: ${{ matrix.compiler }}
       CFLAGS: "${{ matrix.compiler == 'gcc' && '-Wall -Wextra' || '-Weverything -Wno-padded' }}"
       CPARAMS: "${{ matrix.compiler == 'gcc' && '--enable-werror' || ' ' }}"
     steps:
