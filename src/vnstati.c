@@ -73,6 +73,11 @@ int main(int argc, char *argv[])
 
 	drawimage(&ic);
 	db_close();
+
+	if (ic.im == NULL) {
+		return 1;
+	}
+
 #if HAVE_DECL_GD_NEAREST_NEIGHBOUR
 	scaleimage(&ic);
 #endif
@@ -487,15 +492,15 @@ void handledatabase(IPARAMS *p, IMAGECONTENT *ic)
 
 void openoutput(IPARAMS *p)
 {
-	if (p->filename[0] != '-') {
-		if ((p->pngout = fopen(p->filename, "w")) == NULL) {
-			printf("Error: Opening file \"%s\" for output failed: %s\n", p->filename, strerror(errno));
-			exit(EXIT_FAILURE);
-		}
-	} else {
+	if (strlen(p->filename) == 1 && p->filename[0] == '-') {
 		/* output to stdout */
 		if ((p->pngout = fdopen(1, "w")) == NULL) {
 			printf("Error: Opening stdout for output failed: %s\n", strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+	} else {
+		if ((p->pngout = fopen(p->filename, "w")) == NULL) {
+			printf("Error: Opening file \"%s\" for output failed: %s\n", p->filename, strerror(errno));
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -503,6 +508,10 @@ void openoutput(IPARAMS *p)
 
 void writeoutput(IPARAMS *p, IMAGECONTENT *ic)
 {
+	if (ic->im == NULL) {
+		return;
+	}
+
 	gdImagePng(ic->im, p->pngout);
 	fclose(p->pngout);
 	gdImageDestroy(ic->im);

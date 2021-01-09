@@ -6,6 +6,7 @@
 
 void initimagecontent(IMAGECONTENT *ic)
 {
+	ic->im = NULL;
 	ic->showheader = 1;
 	ic->showedge = 1;
 	ic->showlegend = 1;
@@ -65,7 +66,7 @@ void scaleimage(IMAGECONTENT *ic)
 	gdImagePtr im_scaled;
 	unsigned int width = 0, height = 0;
 
-	if (cfg.imagescale == 100) {
+	if (cfg.imagescale == 100 || ic->im == NULL) {
 		return;
 	}
 
@@ -359,12 +360,7 @@ int drawhours(IMAGECONTENT *ic, const int x, const int y, const int rate)
 		hourdata[i].date = 0;
 	}
 
-	if (!db_getdata(&datalist, &datainfo, ic->interface.name, "hour", 24)) {
-		printf("Error: Failed to fetch hour data.\n");
-		return 0;
-	}
-
-	if (datainfo.count == 0) {
+	if (!db_getdata(&datalist, &datainfo, ic->interface.name, "hour", 24) || datainfo.count == 0) {
 		gdImageString(ic->im, gdFontGetSmall(), x + 188, y + 54, (unsigned char *)"no data available", ic->ctext);
 		return 0;
 	}
@@ -581,10 +577,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 
 	daybuff[0] = '\0';
 
-	if (!db_getdata_range(&datalist, &datainfo, ic->interface.name, listname, (uint32_t)limit, ic->databegin, ic->dataend) || !datalist) {
-		printf("Error: Failed to fetch %s data.\n", "day");
-		return;
-	}
+	db_getdata_range(&datalist, &datainfo, ic->interface.name, listname, (uint32_t)limit, ic->databegin, ic->dataend);
 
 	datalist_i = datalist;
 
@@ -977,12 +970,7 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 			return;
 	}
 
-	if (!db_getdata(&datalist, &datainfo, ic->interface.name, mode, 2)) {
-		printf("Error: Failed to fetch %s data.\n", mode);
-		return;
-	}
-
-	if (datalist == NULL) {
+	if (!db_getdata(&datalist, &datainfo, ic->interface.name, mode, 2) || datalist == NULL) {
 		gdImageString(ic->im, gdFontGetSmall(), 150, y + 30, (unsigned char *)"no data available", ic->ctext);
 		return;
 	} else if (datalist->next == NULL) {
