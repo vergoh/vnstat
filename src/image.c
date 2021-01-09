@@ -802,7 +802,8 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		gdImageLine(ic->im, textx + 2, texty + 5, textx + 296 + offsetx, texty + 5, ic->cline);
 	}
 
-	if ((strlen(ic->dataend) == 0 && datainfo.count > 0 && (listtype == LT_Day || listtype == LT_Month || listtype == LT_Year)) || (strlen(ic->dataend) > 0 && datainfo.count > 1 && listtype != LT_Top)) {
+	if ( (datalist_i != NULL && strlen(ic->dataend) == 0 && datainfo.count > 0 && (listtype == LT_Day || listtype == LT_Month || listtype == LT_Year)) ||
+		(datalist_i != NULL && strlen(ic->dataend) > 0 && datainfo.count > 1 && listtype != LT_Top) ) {
 
 		d = localtime(&ic->interface.updated);
 		if (datalist_i->rx == 0 || datalist_i->tx == 0 || strlen(ic->dataend) > 0) {
