@@ -242,14 +242,12 @@ char *hourly_imagescale_logic(const uint64_t max, const int rate)
 	}
 
 	for (i = step; (uint64_t)(scaleunit * (unsigned int)i) <= max; i = i + step) {
-		s = (int)(121 * ((scaleunit * (unsigned int)i) / (float)max));
+		s = (int)(121 * (((double)scaleunit * (unsigned int)i) / (double)max));
 		prev = s;
 	}
 
-	s = (int)(121 * ((scaleunit * (unsigned int)i) / (float)max));
-	if (((s + prev) / 2) <= 128) {
-		;
-	} else {
+	s = (int)(121 * (((double)scaleunit * (unsigned int)i) / (double)max));
+	if (((s + prev) / 2) > 128) {
 		i = i - step;
 	}
 

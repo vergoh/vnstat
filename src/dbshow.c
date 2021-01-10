@@ -148,8 +148,8 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 				if (datalist_i->rx == 0 || datalist_i->tx == 0 || (interface->updated - datalist_i->timestamp) == 0) {
 					e_rx = e_tx = 0;
 				} else {
-					e_rx = (uint64_t)(datalist_i->rx / (float)(mosecs(datalist_i->timestamp, interface->updated))) * (uint64_t)(dmonth(d->tm_mon) * 86400);
-					e_tx = (uint64_t)(datalist_i->tx / (float)(mosecs(datalist_i->timestamp, interface->updated))) * (uint64_t)(dmonth(d->tm_mon) * 86400);
+					e_rx = (uint64_t)((double)datalist_i->rx / (double)(mosecs(datalist_i->timestamp, interface->updated))) * (uint64_t)(dmonth(d->tm_mon) * 86400);
+					e_tx = (uint64_t)((double)datalist_i->tx / (double)(mosecs(datalist_i->timestamp, interface->updated))) * (uint64_t)(dmonth(d->tm_mon) * 86400);
 				}
 				if (shortmode && cfg.ostyle != 0) {
 					printf("%s%s", fieldseparator, getvalue(e_rx + e_tx, 11, RT_Estimate));
@@ -236,8 +236,8 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 				if (datalist_i->rx == 0 || datalist_i->tx == 0 || (d->tm_hour * 60 + d->tm_min) == 0) {
 					e_rx = e_tx = 0;
 				} else {
-					e_rx = (uint64_t)((datalist_i->rx) / (float)(d->tm_hour * 60 + d->tm_min)) * 1440;
-					e_tx = (uint64_t)((datalist_i->tx) / (float)(d->tm_hour * 60 + d->tm_min)) * 1440;
+					e_rx = (uint64_t)((double)datalist_i->rx / (double)(d->tm_hour * 60 + d->tm_min)) * 1440;
+					e_tx = (uint64_t)((double)datalist_i->tx / (double)(d->tm_hour * 60 + d->tm_min)) * 1440;
 				}
 				if (shortmode && cfg.ostyle != 0) {
 					printf("%s%s", fieldseparator, getvalue(e_rx + e_tx, 11, RT_Estimate));
@@ -538,8 +538,8 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 				mult = (uint64_t)(1440 * (365 + isleapyear(d->tm_year + 1900)));
 			}
 			if (div > 0) {
-				e_rx = (uint64_t)((datalist_i->rx) / (float)div) * mult;
-				e_tx = (uint64_t)((datalist_i->tx) / (float)div) * mult;
+				e_rx = (uint64_t)((double)datalist_i->rx / (double)div) * mult;
+				e_tx = (uint64_t)((double)datalist_i->tx / (double)div) * mult;
 			} else {
 				e_rx = e_tx = 0;
 			}
@@ -741,7 +741,7 @@ void showhours(const interfaceinfo *interface)
 	}
 
 	/* unit selection */
-	while (max / (pow(1024, div)) >= 100 && div < UNITPREFIXCOUNT) {
+	while ((double)max / (pow(1024, div)) >= 100 && div < UNITPREFIXCOUNT) {
 		div++;
 	}
 	strncpy_nt(unit, getunitprefix(div), 4);
@@ -785,11 +785,11 @@ void showhours(const interfaceinfo *interface)
 
 		snprintf(matrix[12] + k, 81 - k, "%02d ", s);
 
-		dots = (unsigned int)(10 * (hourdata[s].rx / (float)max));
+		dots = (unsigned int)(10 * ((double)hourdata[s].rx / (double)max));
 		for (j = 0; j < dots; j++)
 			matrix[10 - j][k] = cfg.rxhourchar[0];
 
-		dots = (unsigned int)(10 * (hourdata[s].tx / (float)max));
+		dots = (unsigned int)(10 * ((double)hourdata[s].tx / (double)max));
 		for (j = 0; j < dots; j++)
 			matrix[10 - j][k + 1] = cfg.txhourchar[0];
 
@@ -801,8 +801,8 @@ void showhours(const interfaceinfo *interface)
 		s = (int)tmax + i + 1;
 		for (j = 0; j < 3; j++) {
 			snprintf(matrix[15 + i] + (j * 28), 25, "%02d %" DECCONV "10.*f %" DECCONV "10.*f",
-					 ((unsigned int)s + (j * 8)) % 24, declen, hourdata[((unsigned int)s + (j * 8)) % 24].rx / (double)div,
-					 declen, hourdata[((unsigned int)s + (j * 8)) % 24].tx / (double)div);
+					 ((unsigned int)s + (j * 8)) % 24, declen, (double)hourdata[((unsigned int)s + (j * 8)) % 24].rx / (double)div,
+					 declen, (double)hourdata[((unsigned int)s + (j * 8)) % 24].tx / (double)div);
 		}
 	}
 
@@ -848,7 +848,7 @@ int showbar(const uint64_t rx, const uint64_t tx, const uint64_t max, const int 
 	int i, l, width = len;
 
 	if ((rx + tx) < max) {
-		width = (int)(((rx + tx) / (float)max) * len);
+		width = (int)(((double)(rx + tx) / (double)max) * len);
 	} else if ((rx + tx) > max || max == 0) {
 		return 0;
 	}
@@ -860,7 +860,7 @@ int showbar(const uint64_t rx, const uint64_t tx, const uint64_t max, const int 
 	printf("  ");
 
 	if (tx > rx) {
-		l = (int)(rintf((rx / (float)(rx + tx) * width)));
+		l = (int)(rint(((double)rx / (double)(rx + tx) * width)));
 
 		for (i = 0; i < l; i++) {
 			printf("%c", cfg.rxchar[0]);
@@ -869,7 +869,7 @@ int showbar(const uint64_t rx, const uint64_t tx, const uint64_t max, const int 
 			printf("%c", cfg.txchar[0]);
 		}
 	} else {
-		l = (int)(rintf((tx / (float)(rx + tx) * width)));
+		l = (int)(rint(((double)tx / (double)(rx + tx) * width)));
 
 		for (i = 0; i < (width - l); i++) {
 			printf("%c", cfg.rxchar[0]);

@@ -83,7 +83,7 @@ void setup(void) {
 }
 
 void teardown(void) {
-	;
+	return;
 }
 
 void suppress_output(void)

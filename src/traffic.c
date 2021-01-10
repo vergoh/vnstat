@@ -327,7 +327,7 @@ void livetrafficmeter(const char *iface, const int mode)
 		if (timespent <= 60) {
 			printf("  time             %9" PRIu64 " seconds\n", timespent);
 		} else {
-			printf("  time               %7.2f minutes\n", timespent / (double)60);
+			printf("  time               %7.2f minutes\n", (double)timespent / (double)60);
 		}
 
 		printf("\n");

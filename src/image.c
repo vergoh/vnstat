@@ -70,8 +70,8 @@ void scaleimage(IMAGECONTENT *ic)
 		return;
 	}
 
-	width = (unsigned int)(gdImageSX(ic->im) * (cfg.imagescale / (float)100));
-	height = (unsigned int)(gdImageSY(ic->im) * (cfg.imagescale / (float)100));
+	width = (unsigned int)((float)gdImageSX(ic->im) * ((float)cfg.imagescale / (float)100));
+	height = (unsigned int)((float)gdImageSY(ic->im) * ((float)cfg.imagescale / (float)100));
 
 	if (width < 100 || height < 100) {
 		return;
@@ -226,7 +226,7 @@ void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const ui
 	int l, width = len;
 
 	if ((rx + tx) < max) {
-		width = (int)(((rx + tx) / (float)max) * len);
+		width = (int)(((double)(rx + tx) / (double)max) * len);
 	} else if ((rx + tx) > max || max == 0) {
 		return;
 	}
@@ -236,7 +236,7 @@ void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const ui
 	}
 
 	if (tx > rx) {
-		l = (int)(rintf((rx / (float)(rx + tx) * width)));
+		l = (int)(rint(((double)rx / (double)(rx + tx) * width)));
 
 		if (l > 0) {
 			gdImageFilledRectangle(ic->im, x, y + YBEGINOFFSET, x + l, y + YENDOFFSET, ic->crx);
@@ -247,7 +247,7 @@ void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const ui
 		gdImageRectangle(ic->im, x + l, y + YBEGINOFFSET, x + width, y + YENDOFFSET, ic->ctxd);
 
 	} else {
-		l = (int)(rintf((tx / (float)(rx + tx) * width)));
+		l = (int)(rint(((double)tx / (double)(rx + tx) * width)));
 
 		gdImageFilledRectangle(ic->im, x, y + YBEGINOFFSET, x + (width - l), y + YENDOFFSET, ic->crx);
 		gdImageRectangle(ic->im, x, y + YBEGINOFFSET, x + (width - l), y + YENDOFFSET, ic->crxd);
@@ -263,12 +263,12 @@ void drawpole(IMAGECONTENT *ic, const int x, const int y, const int len, const u
 {
 	int l;
 
-	l = (int)((rx / (float)max) * len);
+	l = (int)(((double)rx / (double)max) * len);
 	if (l > 0) {
 		gdImageFilledRectangle(ic->im, x, y + (len - l), x + 7, y + len, ic->crx);
 	}
 
-	l = (int)((tx / (float)max) * len);
+	l = (int)(((double)tx / (double)max) * len);
 	if (l > 0) {
 		gdImageFilledRectangle(ic->im, x + 5, y + (len - l), x + 12, y + len, ic->ctx);
 	}
@@ -347,7 +347,7 @@ void drawdonut_libgd_native(IMAGECONTENT *ic, const int x, const int y, const fl
 int drawhours(IMAGECONTENT *ic, const int x, const int y, const int rate)
 {
 	int i, tmax = 0, s = 0, step, prev = 0, diff = 0, chour;
-	float ratediv;
+	double ratediv;
 	uint64_t max = 1, scaleunit = 0;
 	char buffer[32];
 	struct tm *d;
@@ -396,13 +396,13 @@ int drawhours(IMAGECONTENT *ic, const int x, const int y, const int rate)
 		/* convert hourly transfer to hourly rate if needed */
 		if (rate) {
 			if ((ic->current - hourdata[i].date) > 3600) {
-				hourdata[i].rx = (uint64_t)(hourdata[i].rx / ratediv);
-				hourdata[i].tx = (uint64_t)(hourdata[i].tx / ratediv);
+				hourdata[i].rx = (uint64_t)((double)hourdata[i].rx / ratediv);
+				hourdata[i].tx = (uint64_t)((double)hourdata[i].tx / ratediv);
 			} else {
 				/* scale ongoing hour properly */
 				if (chour != i) {
-					hourdata[i].rx = (uint64_t)(hourdata[i].rx / ratediv);
-					hourdata[i].tx = (uint64_t)(hourdata[i].tx / ratediv);
+					hourdata[i].rx = (uint64_t)((double)hourdata[i].rx / ratediv);
+					hourdata[i].tx = (uint64_t)((double)hourdata[i].tx / ratediv);
 				} else {
 					d = localtime(&ic->current);
 					diff = d->tm_min * 60;
@@ -410,12 +410,11 @@ int drawhours(IMAGECONTENT *ic, const int x, const int y, const int rate)
 						diff = 60;
 					}
 					if (cfg.rateunit == 1) {
-						hourdata[i].rx = (uint64_t)(hourdata[i].rx * 8 / (float)diff);
-						hourdata[i].tx = (uint64_t)(hourdata[i].tx * 8 / (float)diff);
-					} else {
-						hourdata[i].rx = (uint64_t)(hourdata[i].rx / (float)diff);
-						hourdata[i].tx = (uint64_t)(hourdata[i].tx / (float)diff);
+						hourdata[i].rx *=  8;
+						hourdata[i].tx *=  8;
 					}
+					hourdata[i].rx = (uint64_t)((double)hourdata[i].rx / (double)diff);
+					hourdata[i].tx = (uint64_t)((double)hourdata[i].tx / (double)diff);
 				}
 			}
 		}
@@ -440,13 +439,13 @@ int drawhours(IMAGECONTENT *ic, const int x, const int y, const int rate)
 	}
 
 	for (i = step; (uint64_t)(scaleunit * (unsigned int)i) <= max; i = i + step) {
-		s = (int)(121 * ((scaleunit * (unsigned int)i) / (float)max));
+		s = (int)(121 * (((double)scaleunit * (unsigned int)i) / (double)max));
 		gdImageLine(ic->im, x + 36, y + 124 - s, x + 460, y + 124 - s, ic->cline);
 		gdImageLine(ic->im, x + 36, y + 124 - ((s + prev) / 2), x + 460, y + 124 - ((s + prev) / 2), ic->clinel);
 		gdImageString(ic->im, gdFontGetTiny(), x + 16, y + 121 - s, (unsigned char *)getimagevalue(scaleunit * (unsigned int)i, 3, rate), ic->ctext);
 		prev = s;
 	}
-	s = (int)(121 * ((scaleunit * (unsigned int)i) / (float)max));
+	s = (int)(121 * (((double)scaleunit * (unsigned int)i) / (double)max));
 	if (((s + prev) / 2) <= 128) {
 		gdImageLine(ic->im, x + 36, y + 124 - ((s + prev) / 2), x + 460, y + 124 - ((s + prev) / 2), ic->clinel);
 	} else {
@@ -822,8 +821,8 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 				mult = (uint64_t)(1440 * (365 + isleapyear(d->tm_year + 1900)));
 			}
 			if (div > 0) {
-				e_rx = (uint64_t)((datalist_i->rx) / (float)div) * mult;
-				e_tx = (uint64_t)((datalist_i->tx) / (float)div) * mult;
+				e_rx = (uint64_t)((double)datalist_i->rx / (double)div) * mult;
+				e_tx = (uint64_t)((double)datalist_i->tx / (double)div) * mult;
 			} else {
 				e_rx = e_tx = 0;
 			}
@@ -951,7 +950,7 @@ void drawsummary_alltime(IMAGECONTENT *ic, const int x, const int y)
 void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *mode)
 {
 	int textx, texty, offset = 0;
-	float rxp = 50, txp = 50, mod;
+	double rxp = 50, txp = 50, mod;
 	char buffer[512], datebuff[16], daytemp[32];
 	time_t yesterday;
 	struct tm *d = NULL;
@@ -985,13 +984,13 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 	if (data_current->rx + data_current->tx == 0) {
 		rxp = txp = 0;
 	} else {
-		rxp = data_current->rx / (float)(data_current->rx + data_current->tx) * 100;
-		txp = (float)100 - rxp;
+		rxp = (double)data_current->rx / (double)(data_current->rx + data_current->tx) * 100;
+		txp = (double)100 - rxp;
 	}
 
 	/* do scaling if needed */
 	if (data_previous != NULL && (data_current->rx + data_current->tx) < (data_previous->rx + data_previous->tx)) {
-		mod = (data_current->rx + data_current->tx) / (float)(data_previous->rx + data_previous->tx);
+		mod = (double)(data_current->rx + data_current->tx) / (double)(data_previous->rx + data_previous->tx);
 		rxp = rxp * mod;
 		txp = txp * mod;
 	}
@@ -1004,7 +1003,7 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 	textx = x + offset;
 	texty = y;
 
-	drawdonut(ic, textx + 50, texty + 45, rxp, txp);
+	drawdonut(ic, textx + 50, texty + 45, (float)rxp, (float)txp);
 
 	if (mode[0] == 'd') {
 		/* get formatted date for today */
@@ -1054,20 +1053,20 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 		if (data_previous->rx + data_previous->tx == 0) {
 			rxp = txp = 0;
 		} else {
-			rxp = data_previous->rx / (float)(data_previous->rx + data_previous->tx) * 100;
-			txp = (float)100 - rxp;
+			rxp = (double)data_previous->rx / (double)(data_previous->rx + data_previous->tx) * 100;
+			txp = (double)100 - rxp;
 		}
 
 		/* do scaling if needed */
 		if ((data_previous->rx + data_previous->tx) < (data_current->rx + data_current->tx)) {
-			mod = (data_previous->rx + data_previous->tx) / (float)(data_current->rx + data_current->tx);
+			mod = (double)(data_previous->rx + data_previous->tx) / (double)(data_current->rx + data_current->tx);
 			rxp = rxp * mod;
 			txp = txp * mod;
 		}
 
 		textx += 180;
 
-		drawdonut(ic, textx + 50, texty + 45, rxp, txp);
+		drawdonut(ic, textx + 50, texty + 45, (float)rxp, (float)txp);
 
 		if (mode[0] == 'd') {
 			/* get formatted date for yesterday */
@@ -1200,7 +1199,7 @@ char *getimagevalue(const uint64_t b, const int len, const int rate)
 		for (i = UNITPREFIXCOUNT - 1; i > 0; i--) {
 			limit = (uint64_t)(pow(p, i - 1)) * 1000;
 			if (b >= limit) {
-				snprintf(buffer, 64, "%*.*f", len, declen, b / (double)(getunitdivisor(unit, i + 1)));
+				snprintf(buffer, 64, "%*.*f", len, declen, (double)b / (double)(getunitdivisor(unit, i + 1)));
 				return buffer;
 			}
 		}
@@ -1224,12 +1223,12 @@ char *getimagescale(const uint64_t b, const int rate)
 			if (unit == 2 || unit == 4) {
 				p = 1000;
 			}
-			while (div < UNITPREFIXCOUNT && b >= (pow(p, div - 1) * 1000)) {
+			while (div < UNITPREFIXCOUNT && (double)b >= (pow(p, div - 1) * 1000)) {
 				div++;
 			}
 			snprintf(buffer, 8, "%s", getrateunitprefix(unit, div));
 		} else {
-			while (div < UNITPREFIXCOUNT && b >= (pow(p, div - 1) * 1000)) {
+			while (div < UNITPREFIXCOUNT && (double)b >= (pow(p, div - 1) * 1000)) {
 				div++;
 			}
 			snprintf(buffer, 8, "%s", getunitprefix(div));

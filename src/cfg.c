@@ -267,7 +267,7 @@ void validatecfg(void)
 	/* 1.02 is the same 2% safety buffer as used in processifinfo() in daemon.c */
 	/* noexit check results in warning being shown only when the daemon is started */
 	if (noexit && cfg.maxbw > 0) {
-		rolloversecs = (uint32_t)((float)MAX32 / (cfg.maxbw * 1024 * 1024 * (float)1.02 / 8));
+		rolloversecs = (uint32_t)((float)MAX32 / ((float)cfg.maxbw * 1024 * 1024 * (float)1.02 / 8));
 		if (rolloversecs <= (uint32_t)cfg.updateinterval) {
 			cfg.updateinterval = UPDATEINTERVAL;
 			if (rolloversecs <= (uint32_t)cfg.updateinterval) {

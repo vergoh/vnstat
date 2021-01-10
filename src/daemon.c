@@ -552,7 +552,7 @@ int processifinfo(DSTATE *s, datacache **dc)
 
 			/* calculate maximum possible transfer since last update based on set maximum rate */
 			/* and add 2% in order to be on the safe side */
-			maxtransfer = (uint64_t)(ceilf((maxbw / (float)8) * interval * (float)1.02)) * 1024 * 1024;
+			maxtransfer = (uint64_t)(ceilf(((float)maxbw / (float)8) * (float)interval * (float)1.02)) * 1024 * 1024;
 
 			if (debug)
 				printf("interval: %" PRIu64 "  maxbw: %" PRIu32 "  maxrate: %" PRIu64 "  rxc: %" PRIu64 "  txc: %" PRIu64 "\n", (uint64_t)interval, maxbw, maxtransfer, rxchange, txchange);

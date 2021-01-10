@@ -37,7 +37,7 @@ int spacecheck(const char *path)
 		}
 	}
 
-	free = (uint64_t)(buf.f_bavail / (float)1024) * buf.f_bsize;
+	free = (uint64_t)((double)buf.f_bavail / (double)1024) * buf.f_bsize;
 
 	if (debug) {
 		printf("bsize %d\n", (int)buf.f_bsize);
@@ -170,12 +170,12 @@ char *getvalue(const uint64_t bytes, const int len, const RequestType type)
 			limit = (uint64_t)(pow(p, i - 1)) * 1000;
 			if (bytes >= limit) {
 				if (i > 1) {
-					snprintf(buffer, 64, "%" DECCONV "*.*f %s", getunitspacing(len, 5), declen, bytes / (double)(getunitdivisor(cfg.unitmode, i + 1)), getunitprefix(i + 1));
+					snprintf(buffer, 64, "%" DECCONV "*.*f %s", getunitspacing(len, 5), declen, (double)bytes / (double)(getunitdivisor(cfg.unitmode, i + 1)), getunitprefix(i + 1));
 				} else {
 					if (type == RT_Estimate) {
 						declen = 0;
 					}
-					snprintf(buffer, 64, "%" DECCONV "*.*f %s", getunitspacing(len, 2), declen, bytes / (double)(getunitdivisor(cfg.unitmode, i + 1)), getunitprefix(i + 1));
+					snprintf(buffer, 64, "%" DECCONV "*.*f %s", getunitspacing(len, 2), declen, (double)bytes / (double)(getunitdivisor(cfg.unitmode, i + 1)), getunitprefix(i + 1));
 				}
 				return buffer;
 			}
@@ -295,13 +295,13 @@ char *getratestring(const uint64_t rate, const int len, const int declen)
 		limit = (uint64_t)(pow(p, i - 1)) * 1000;
 		if (rate >= limit) {
 			l = getratespacing(len, unit, i + 1);
-			snprintf(buffer, 64, "%" DECCONV "*.*f %s", l, declen, rate / (double)(getunitdivisor(unit, i + 1)), getrateunitprefix(unit, i + 1));
+			snprintf(buffer, 64, "%" DECCONV "*.*f %s", l, declen, (double)rate / (double)(getunitdivisor(unit, i + 1)), getrateunitprefix(unit, i + 1));
 			return buffer;
 		}
 	}
 
 	l = getratespacing(len, unit, 1);
-	snprintf(buffer, 64, "%" DECCONV "*.0f %s", l, rate / (double)(getunitdivisor(unit, 1)), getrateunitprefix(unit, 1));
+	snprintf(buffer, 64, "%" DECCONV "*.0f %s", l, (double)rate / (double)(getunitdivisor(unit, 1)), getrateunitprefix(unit, 1));
 	return buffer;
 }
 
