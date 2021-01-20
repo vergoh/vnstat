@@ -10,6 +10,7 @@ ExecStart=/usr/sbin/vnstatd -n
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=on-failure
 RestartSec=2
+User=vnstat
 
 # Hardening
 CapabilityBoundingSet=
