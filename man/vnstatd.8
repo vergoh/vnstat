@@ -114,7 +114,10 @@ Write the process id to
 and use it for locking so that another instance of the daemon cannot
 be started if the same
 .I file
-is specified.
+is specified. This option has no effect if combined with
+.B -n
+or
+.BR --nodaemon .
 
 .TP
 .B "-s, --sync"
@@ -240,8 +243,9 @@ is specified in the config file.
 
 .TP
 .I /var/run/vnstat/vnstat.pid
-File used for storing the process id if no other file is specified in the
-configuration file or using the command line parameter.
+File used for storing the process id when running as a background process and
+if no other file is specified in the configuration file or using the command
+line parameter.
 
 .SH RESTRICTIONS
 
