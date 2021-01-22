@@ -73,6 +73,26 @@ AC_CHECK_FUNCS([dup2 localtime_r memset mkdir pow rmdir setlocale strcasecmp str
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 
+# Resolve install paths for output.
+msg_bindir=$bindir
+while expr match "${msg_bindir}" '^.*\$.*$' 1>/dev/null;
+do
+    msg_bindir="$(eval echo ${msg_bindir})"
+done
+
+msg_sbindir=$sbindir
+while expr match "${msg_sbindir}" '^.*\$.*$' 1>/dev/null;
+do
+    msg_sbindir="$(eval echo ${msg_sbindir})"
+done
+
+msg_sysconfdir=$sysconfdir
+while expr match "${msg_sysconfdir}" '^.*\$.*$' 1>/dev/null;
+do
+    msg_sysconfdir="$(eval echo ${msg_sysconfdir})"
+done
+
+# Output configuration.
 AC_MSG_NOTICE()
 AC_MSG_NOTICE([ ============================================== ])
 AC_MSG_NOTICE()
@@ -87,13 +107,13 @@ AC_MSG_NOTICE([   sysconfdir: $sysconfdir  ])
 AC_MSG_NOTICE()
 AC_MSG_NOTICE([   Install paths ])
 AC_MSG_NOTICE()
-AC_MSG_NOTICE([    vnstat: $bindir/vnstat ])
+AC_MSG_NOTICE([    vnstat: $msg_bindir/vnstat ])
 
 AM_COND_IF([HAVE_LIBGD], [
-AC_MSG_NOTICE([   vnstati: $bindir/vnstati ])])
+AC_MSG_NOTICE([   vnstati: $msg_bindir/vnstati ])])
 
-AC_MSG_NOTICE([   vnstatd: $sbindir/vnstatd ])
-AC_MSG_NOTICE([    config: $sysconfdir/vnstat.conf ])
+AC_MSG_NOTICE([   vnstatd: $msg_sbindir/vnstatd ])
+AC_MSG_NOTICE([    config: $msg_sysconfdir/vnstat.conf ])
 AC_MSG_NOTICE()
 AM_COND_IF([HAVE_CHECK], [
 AC_MSG_NOTICE([          Tests: available ])], [

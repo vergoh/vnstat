@@ -7245,6 +7245,26 @@ $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
 
 
+# Resolve install paths for output.
+msg_bindir=$bindir
+while expr match "${msg_bindir}" '^.*\$.*$' 1>/dev/null;
+do
+    msg_bindir="$(eval echo ${msg_bindir})"
+done
+
+msg_sbindir=$sbindir
+while expr match "${msg_sbindir}" '^.*\$.*$' 1>/dev/null;
+do
+    msg_sbindir="$(eval echo ${msg_sbindir})"
+done
+
+msg_sysconfdir=$sysconfdir
+while expr match "${msg_sysconfdir}" '^.*\$.*$' 1>/dev/null;
+do
+    msg_sysconfdir="$(eval echo ${msg_sysconfdir})"
+done
+
+# Output configuration.
 { $as_echo "$as_me:${as_lineno-$LINENO}: " >&5
 $as_echo "$as_me: " >&6;}
 { $as_echo "$as_me:${as_lineno-$LINENO}:  ============================================== " >&5
@@ -7257,29 +7277,35 @@ $as_echo "$as_me:          host: $host " >&6;}
 $as_echo "$as_me:         build: $build " >&6;}
 { $as_echo "$as_me:${as_lineno-$LINENO}: " >&5
 $as_echo "$as_me: " >&6;}
-{ $as_echo "$as_me:${as_lineno-$LINENO}:        prefix: $prefix     " >&5
-$as_echo "$as_me:        prefix: $prefix     " >&6;}
-{ $as_echo "$as_me:${as_lineno-$LINENO}:    sysconfdir: $sysconfdir " >&5
-$as_echo "$as_me:    sysconfdir: $sysconfdir " >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}:        prefix: $prefix      " >&5
+$as_echo "$as_me:        prefix: $prefix      " >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}:   exec_prefix: $exec_prefix " >&5
+$as_echo "$as_me:   exec_prefix: $exec_prefix " >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}:        bindir: $bindir      " >&5
+$as_echo "$as_me:        bindir: $bindir      " >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}:       sbindir: $sbindir     " >&5
+$as_echo "$as_me:       sbindir: $sbindir     " >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}:    sysconfdir: $sysconfdir  " >&5
+$as_echo "$as_me:    sysconfdir: $sysconfdir  " >&6;}
 { $as_echo "$as_me:${as_lineno-$LINENO}: " >&5
 $as_echo "$as_me: " >&6;}
 { $as_echo "$as_me:${as_lineno-$LINENO}:    Install paths " >&5
 $as_echo "$as_me:    Install paths " >&6;}
 { $as_echo "$as_me:${as_lineno-$LINENO}: " >&5
 $as_echo "$as_me: " >&6;}
-{ $as_echo "$as_me:${as_lineno-$LINENO}:     vnstat: $prefix/bin/vnstat " >&5
-$as_echo "$as_me:     vnstat: $prefix/bin/vnstat " >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}:     vnstat: $msg_bindir/vnstat " >&5
+$as_echo "$as_me:     vnstat: $msg_bindir/vnstat " >&6;}
 
 if test -z "$HAVE_LIBGD_TRUE"; then :
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}:    vnstati: $prefix/bin/vnstati " >&5
-$as_echo "$as_me:    vnstati: $prefix/bin/vnstati " >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}:    vnstati: $msg_bindir/vnstati " >&5
+$as_echo "$as_me:    vnstati: $msg_bindir/vnstati " >&6;}
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}:    vnstatd: $prefix/sbin/vnstatd " >&5
-$as_echo "$as_me:    vnstatd: $prefix/sbin/vnstatd " >&6;}
-{ $as_echo "$as_me:${as_lineno-$LINENO}:     config: $sysconfdir/vnstat.conf " >&5
-$as_echo "$as_me:     config: $sysconfdir/vnstat.conf " >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}:    vnstatd: $msg_sbindir/vnstatd " >&5
+$as_echo "$as_me:    vnstatd: $msg_sbindir/vnstatd " >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}:     config: $msg_sysconfdir/vnstat.conf " >&5
+$as_echo "$as_me:     config: $msg_sysconfdir/vnstat.conf " >&6;}
 { $as_echo "$as_me:${as_lineno-$LINENO}: " >&5
 $as_echo "$as_me: " >&6;}
 if test -z "$HAVE_CHECK_TRUE"; then :
