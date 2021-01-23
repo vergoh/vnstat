@@ -140,6 +140,10 @@ void colorinit(IMAGECONTENT *ic)
 	modcolor(rgb, -15, 0);
 	ic->cbgoffset = gdImageColorAllocate(ic->im, rgb[0], rgb[1], rgb[2]);
 	colorinitcheck("cbgoffset", ic->cbgoffset, cfg.cbg, rgb);
+	hextorgb(cfg.cbg, rgb);
+	modcolor(rgb, -40, 0);
+	ic->cbgoffsetmore = gdImageColorAllocate(ic->im, rgb[0], rgb[1], rgb[2]);
+	colorinitcheck("cbgoffsetmore", ic->cbgoffsetmore, cfg.cbg, rgb);
 
 	/* rx */
 	hextorgb(cfg.crx, rgb);
@@ -221,9 +225,40 @@ void drawlegend(IMAGECONTENT *ic, const int x, const int y)
 	gdImageRectangle(ic->im, x + 30, y + 4, x + 36, y + 10, ic->ctext);
 }
 
-void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max)
+void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max, const short isestimate)
 {
 	int l, width = len;
+	int crx = ic->crx, ctx = ic->ctx, crxd = ic->crxd, ctxd = ic->ctxd;
+	int ybeginoffset = YBEGINOFFSET, yendoffset = YENDOFFSET;
+
+	if (isestimate) {
+
+		// TODO: remove when once no longer experimental
+		if (!cfg.experimental) {
+			return;
+		}
+
+		switch (cfg.estimatestyle) {
+			case 0:
+				return;
+			case 1:
+				crx = ic->cbgoffsetmore;
+				ctx = ic->cbgoffsetmore;
+				crxd = ic->cbgoffsetmore;
+				ctxd = ic->cbgoffsetmore;
+				break;
+			case 2:
+				ybeginoffset += 19;
+				yendoffset += 19;
+				crxd = ic->crx;
+				ctxd = ic->ctx;
+				crx = ic->cbgoffset;
+				ctx = ic->cbgoffset;
+				break;
+			default:
+				return;
+		}
+	}
 
 	if ((rx + tx) < max) {
 		width = (int)(((double)(rx + tx) / (double)max) * len);
@@ -239,22 +274,22 @@ void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const ui
 		l = (int)(rint(((double)rx / (double)(rx + tx) * width)));
 
 		if (l > 0) {
-			gdImageFilledRectangle(ic->im, x, y + YBEGINOFFSET, x + l, y + YENDOFFSET, ic->crx);
-			gdImageRectangle(ic->im, x, y + YBEGINOFFSET, x + l, y + YENDOFFSET, ic->crxd);
+			gdImageFilledRectangle(ic->im, x, y + ybeginoffset, x + l, y + yendoffset, crx);
+			gdImageRectangle(ic->im, x, y + ybeginoffset, x + l, y + yendoffset, crxd);
 		}
 
-		gdImageFilledRectangle(ic->im, x + l, y + YBEGINOFFSET, x + width, y + YENDOFFSET, ic->ctx);
-		gdImageRectangle(ic->im, x + l, y + YBEGINOFFSET, x + width, y + YENDOFFSET, ic->ctxd);
+		gdImageFilledRectangle(ic->im, x + l, y + ybeginoffset, x + width, y + yendoffset, ctx);
+		gdImageRectangle(ic->im, x + l, y + ybeginoffset, x + width, y + yendoffset, ctxd);
 
 	} else {
 		l = (int)(rint(((double)tx / (double)(rx + tx) * width)));
 
-		gdImageFilledRectangle(ic->im, x, y + YBEGINOFFSET, x + (width - l), y + YENDOFFSET, ic->crx);
-		gdImageRectangle(ic->im, x, y + YBEGINOFFSET, x + (width - l), y + YENDOFFSET, ic->crxd);
+		gdImageFilledRectangle(ic->im, x, y + ybeginoffset, x + (width - l), y + yendoffset, crx);
+		gdImageRectangle(ic->im, x, y + ybeginoffset, x + (width - l), y + yendoffset, crxd);
 
 		if (l > 0) {
-			gdImageFilledRectangle(ic->im, x + (width - l), y + YBEGINOFFSET, x + width, y + YENDOFFSET, ic->ctx);
-			gdImageRectangle(ic->im, x + (width - l), y + YBEGINOFFSET, x + width, y + YENDOFFSET, ic->ctxd);
+			gdImageFilledRectangle(ic->im, x + (width - l), y + ybeginoffset, x + width, y + yendoffset, ctx);
+			gdImageRectangle(ic->im, x + (width - l), y + ybeginoffset, x + width, y + yendoffset, ctxd);
 		}
 	}
 }
@@ -767,15 +802,15 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		gdImageString(ic->im, gdFontGetSmall(), textx, texty, (unsigned char *)buffer, ic->ctext);
 		if (listtype == LT_Top) {
 			if (cfg.ostyle > 2) {
-				drawbar(ic, textx + 428, texty + 4, 52, datalist_i->rx, datalist_i->tx, datainfo.max);
+				drawbar(ic, textx + 428, texty + 4, 52, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 			} else {
-				drawbar(ic, textx + 336, texty + 4, 140, datalist_i->rx, datalist_i->tx, datainfo.max);
+				drawbar(ic, textx + 336, texty + 4, 140, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 			}
 		} else { // everything else
 			if (cfg.ostyle > 2) {
-				drawbar(ic, textx + 400, texty + 4, 78, datalist_i->rx, datalist_i->tx, datainfo.max);
+				drawbar(ic, textx + 400, texty + 4, 78, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 			} else {
-				drawbar(ic, textx + 304, texty + 4, 170, datalist_i->rx, datalist_i->tx, datainfo.max);
+				drawbar(ic, textx + 304, texty + 4, 170, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 			}
 		}
 		texty += 12;
@@ -834,6 +869,18 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 			strncat(buffer, getvalue(e_tx, 10, RT_Estimate), 32);
 			strcat(buffer, "   ");
 			strncat(buffer, getvalue(e_rx + e_tx, 10, RT_Estimate), 32);
+
+			// TODO: remove experimental flag
+			if (cfg.experimental && cfg.estimatestyle) {
+				if (cfg.ostyle > 2) {
+					drawbar(ic, textx + 400, texty - 8, 78, e_rx, e_tx, datainfo.max, 1);
+					drawbar(ic, textx + 400, texty - 8, 78, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+				} else {
+					drawbar(ic, textx + 304, texty - 8, 170, e_rx, e_tx, datainfo.max, 1);
+					drawbar(ic, textx + 304, texty - 8, 170, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+				}
+			}
+
 		} else {
 			if (datainfo.count < 100) {
 				snprintf(datebuff, 16, "sum of %" PRIu32 "", datainfo.count);

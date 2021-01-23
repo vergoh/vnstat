@@ -20,7 +20,7 @@ typedef struct {
 	gdImagePtr im;
 	interfaceinfo interface;
 	int cbackground, cedge, cheader, cheadertitle, cheaderdate, ctext, cline, clinel, cvnstat;
-	int crx, crxd, ctx, ctxd, cbgoffset, showheader, showedge, showlegend, altdate;
+	int crx, crxd, ctx, ctxd, cbgoffset, cbgoffsetmore, showheader, showedge, showlegend, altdate;
 	char headertext[65], databegin[18], dataend[18];
 	time_t current;
 } IMAGECONTENT;
@@ -39,7 +39,7 @@ void colorinit(IMAGECONTENT *ic);
 void colorinitcheck(const char *color, const int value, const char *cfgtext, const int *rgb);
 void layoutinit(IMAGECONTENT *ic, char *title, const int width, const int height);
 void drawlegend(IMAGECONTENT *ic, const int x, const int y);
-void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max);
+void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max, const short isestimate);
 void drawpole(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max);
 void drawdonut(IMAGECONTENT *ic, const int x, const int y, const float rxp, const float txp);
 #ifdef CHECK_VNSTAT

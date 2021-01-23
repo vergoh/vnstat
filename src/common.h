@@ -246,6 +246,10 @@ and most can be changed later from the config file.
 /* no image scaling by default */
 #define IMAGESCALE 100
 
+/* estimate bar style */
+/* 0 = not shown, 1 = one color continuation of existing, 2 = separate */
+#define ESTIMATESTYLE 1
+
 /* default colors */
 #define CBACKGROUND "FFFFFF"
 #define CEDGE "AEAEAE"
@@ -283,7 +287,7 @@ typedef struct {
 	int32_t uselogging, createdirs, updatefileowner, bwdetection, bwdetectioninterval, utflocale;
 	int32_t fiveminutehours, hourlydays, dailydays, monthlymonths, yearlyyears, topdayentries;
 	int32_t listfivemins, listhours, listdays, listmonths, listyears, listtop, listjsonxml;
-	int32_t experimental;
+	int32_t estimatestyle, experimental;
 } CFG;
 
 /* internal interface information structure */

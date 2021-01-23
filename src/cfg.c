@@ -71,6 +71,7 @@ int loadcfg(const char *cfgfile)
 		 {"SummaryRate", 0, &cfg.summaryrate, 0, 0},
 		 {"TransparentBg", 0, &cfg.transbg, 0, 0},
 		 {"ImageScale", 0, &cfg.imagescale, 0, 0},
+		 {"EstimateStyle", 0, &cfg.estimatestyle, 0, 0},
 		 {"CBackground", cfg.cbg, 0, 8, 0},
 		 {"CEdge", cfg.cedge, 0, 8, 0},
 		 {"CHeader", cfg.cheader, 0, 8, 0},
@@ -198,6 +199,7 @@ void validatecfg(void)
 	validateint("DatabaseSynchronous", &cfg.dbsynchronous, DBSYNCHRONOUS, -1, 3);
 	validatebool("TransparentBg", &cfg.transbg, TRANSBG);
 	validateint("ImageScale", &cfg.imagescale, IMAGESCALE, 50, 500);
+	validateint("EstimateStyle", &cfg.estimatestyle, ESTIMATESTYLE, 0, 2);
 	validatebool("HourlyRate", &cfg.hourlyrate, HOURLYRATE);
 	validatebool("SummaryRate", &cfg.summaryrate, SUMMARYRATE);
 	validatebool("TrafficlessEntries", &cfg.trafficlessentries, TRAFFICLESSENTRIES);
@@ -352,6 +354,7 @@ void defaultcfg(void)
 
 	cfg.transbg = TRANSBG;
 	cfg.imagescale = IMAGESCALE;
+	cfg.estimatestyle = ESTIMATESTYLE; // TODO: add to configuration file and documentation once working
 	strncpy_nt(cfg.cbg, CBACKGROUND, 8);
 	strncpy_nt(cfg.cedge, CEDGE, 8);
 	strncpy_nt(cfg.cheader, CHEADER, 8);
