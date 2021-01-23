@@ -83,6 +83,7 @@ int loadcfg(const char *cfgfile)
 		 {"CRxD", cfg.crxd, 0, 8, 0},
 		 {"CTx", cfg.ctx, 0, 8, 0},
 		 {"CTxD", cfg.ctxd, 0, 8, 0},
+		 {"Experimental", 0, &cfg.experimental, 0, 0},
 		 {0, 0, 0, 0, 0}};
 
 	/* load default config */
@@ -214,6 +215,7 @@ void validatecfg(void)
 	validateint("TopDayEntries", &cfg.topdayentries, TOPDAYENTRIES, -1, -1);
 	validatebool("BandwidthDetection", &cfg.bwdetection, BWDETECT);
 	validateint("BandwidthDetectionInterval", &cfg.bwdetectioninterval, BWDETECTINTERVAL, 0, 30);
+	validatebool("Experimental", &cfg.experimental, 0);
 
 	if (cfg.dbdir[0] != '/') {
 		strncpy_nt(cfg.dbdir, DATABASEDIR, 512);
@@ -362,6 +364,8 @@ void defaultcfg(void)
 	strncpy_nt(cfg.crxd, CRXD, 8);
 	strncpy_nt(cfg.ctx, CTX, 8);
 	strncpy_nt(cfg.ctxd, CTXD, 8);
+
+	cfg.experimental = 0;
 }
 
 int opencfgfile(const char *cfgfile, FILE **fd)
