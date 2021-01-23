@@ -495,7 +495,8 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 		}
 		printf("\n");
 	}
-	if ((strlen(dataend) == 0 && datainfo.count > 0 && (listtype == LT_Day || listtype == LT_Month || listtype == LT_Year)) || (strlen(dataend) > 0 && datainfo.count > 1 && listtype != LT_Top)) {
+	if ( (datalist_i != NULL && strlen(dataend) == 0 && datainfo.count > 0 && (listtype == LT_Day || listtype == LT_Month || listtype == LT_Year)) ||
+	     (datalist_i != NULL && strlen(dataend) > 0 && datainfo.count > 1 && listtype != LT_Top) ) {
 		/* use database update time for estimates */
 		d = localtime(&interface->updated);
 		if (datalist_i->rx == 0 || datalist_i->tx == 0 || strlen(dataend) > 0) {
