@@ -452,34 +452,10 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 		printf(" | %s", getvalue(datalist_i->tx, 11, RT_Normal));
 		printf(" | %s", getvalue(datalist_i->rx + datalist_i->tx, 11, RT_Normal));
 		if (cfg.ostyle == 3) {
-			e_secs = 0;
 			if (datalist_i->next == NULL && issametimeslot(listtype, datalist_i->timestamp, interface->updated)) {
-				d = localtime(&interface->updated);
-				if (listtype == LT_Day) {
-					e_secs = (uint64_t)(d->tm_sec + (d->tm_min * 60) + (d->tm_hour * 3600));
-				} else if (listtype == LT_Month) {
-					e_secs = (uint64_t)mosecs(datalist_i->timestamp, interface->updated);
-				} else if (listtype == LT_Year) {
-					e_secs = (uint64_t)(d->tm_yday * 86400 + d->tm_sec + (d->tm_min * 60) + (d->tm_hour * 3600));
-				} else if (listtype == LT_Top) {
-					e_secs = 86400;
-				} else if (listtype == LT_Hour) {
-					e_secs = (uint64_t)(d->tm_sec + (d->tm_min * 60));
-				} else if (listtype == LT_5min) {
-					e_secs = (uint64_t)(d->tm_sec + (d->tm_min % 5 * 60));
-				}
+				e_secs = getperiodseconds(listtype, datalist_i->timestamp, interface->updated, 1);
 			} else {
-				if (listtype == LT_Day || listtype == LT_Top) {
-					e_secs = 86400;
-				} else if (listtype == LT_Month) {
-					e_secs = (uint64_t)(dmonth(d->tm_mon) * 86400);
-				} else if (listtype == LT_Year) {
-					e_secs = (uint64_t)((365 + isleapyear(d->tm_year + 1900)) * 86400);
-				} else if (listtype == LT_Hour) {
-					e_secs = 3600;
-				} else if (listtype == LT_5min) {
-					e_secs = 300;
-				}
+				e_secs = getperiodseconds(listtype, datalist_i->timestamp, interface->updated, 0);
 			}
 			printf(" | %s", gettrafficrate(datalist_i->rx + datalist_i->tx, (time_t)e_secs, 14));
 		} else if (cfg.ostyle != 0) {

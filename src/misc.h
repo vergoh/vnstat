@@ -38,5 +38,6 @@ void cursorshow(void);
 void eraseline(void);
 int validatedatetime(const char *str);
 int issametimeslot(const ListType listtype, const time_t entry, const time_t updated);
+uint64_t getperiodseconds(const ListType listtype, const time_t entry, const time_t updated, const short isongoing);
 
 #endif

@@ -445,3 +445,43 @@ int issametimeslot(const ListType listtype, const time_t entry, const time_t upd
 
 	return 0;
 }
+
+uint64_t getperiodseconds(const ListType listtype, const time_t entry, const time_t updated, const short isongoing)
+{
+	struct tm e, u;
+	uint64_t seconds = 0;
+
+	if (localtime_r(&entry, &e) == NULL || localtime_r(&updated, &u) == NULL) {
+		return 0;
+	}
+
+	if (isongoing) {
+		if (listtype == LT_Day) {
+			seconds = (uint64_t)(u.tm_sec + (u.tm_min * 60) + (u.tm_hour * 3600));
+		} else if (listtype == LT_Month) {
+			seconds = (uint64_t)mosecs(entry, updated);
+		} else if (listtype == LT_Year) {
+			seconds = (uint64_t)(u.tm_yday * 86400 + u.tm_sec + (u.tm_min * 60) + (u.tm_hour * 3600));
+		} else if (listtype == LT_Top) {
+			seconds = 86400;
+		} else if (listtype == LT_Hour) {
+			seconds = (uint64_t)(u.tm_sec + (u.tm_min * 60));
+		} else if (listtype == LT_5min) {
+			seconds = (uint64_t)(u.tm_sec + (u.tm_min % 5 * 60));
+		}
+	} else {
+		if (listtype == LT_Day || listtype == LT_Top) {
+			seconds = 86400;
+		} else if (listtype == LT_Month) {
+			seconds = (uint64_t)(dmonth(e.tm_mon) * 86400);
+		} else if (listtype == LT_Year) {
+			seconds = (uint64_t)((365 + isleapyear(e.tm_year + 1900)) * 86400);
+		} else if (listtype == LT_Hour) {
+			seconds = 3600;
+		} else if (listtype == LT_5min) {
+			seconds = 300;
+		}
+	}
+
+	return seconds;
+}
