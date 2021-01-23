@@ -556,8 +556,9 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	ListType listtype = LT_None;
 	int textx, texty, offsetx = 0, offsety = 0;
 	int width, height, headermod, i = 1, rowcount = 0;
+	int estimatevisible = 0;
 	int32_t limit;
-	uint64_t e_rx, e_tx, e_secs, div, mult;
+	uint64_t e_rx = 0, e_tx = 0, e_secs = 0;
 	char buffer[512], datebuff[16], daybuff[16];
 	char stampformat[64], titlename[16], colname[8];
 	struct tm *d;
@@ -614,6 +615,15 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	db_getdata_range(&datalist, &datainfo, ic->interface.name, listname, (uint32_t)limit, ic->databegin, ic->dataend);
 
 	datalist_i = datalist;
+
+	if (strlen(ic->dataend) == 0 && datainfo.count > 0 && (listtype == LT_Day || listtype == LT_Month || listtype == LT_Year)) {
+		estimatevisible = 1;
+		getestimates(&e_rx, &e_tx, listtype, ic->interface.updated, &datalist);
+		// TODO: remove experimental flag
+		if (cfg.experimental && cfg.estimatestyle > 0 && e_rx + e_tx > datainfo.max) {
+			datainfo.max = e_rx + e_tx;
+		}
+	}
 
 	if (listtype == LT_Top) {
 		if (limit > 0 && datainfo.count < (uint32_t)limit) {
@@ -812,65 +822,44 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		gdImageLine(ic->im, textx + 2, texty + 5, textx + 296 + offsetx, texty + 5, ic->cline);
 	}
 
-	if ( (datalist_i != NULL && strlen(ic->dataend) == 0 && datainfo.count > 0 && (listtype == LT_Day || listtype == LT_Month || listtype == LT_Year)) ||
-		(datalist_i != NULL && strlen(ic->dataend) > 0 && datainfo.count > 1 && listtype != LT_Top) ) {
+	buffer[0] = '\0';
 
-		d = localtime(&ic->interface.updated);
-		if (datalist_i->rx == 0 || datalist_i->tx == 0 || strlen(ic->dataend) > 0) {
-			e_rx = e_tx = 0;
-		} else {
-			div = 0;
-			mult = 0;
-			if (listtype == LT_Day) {
-				div = (uint64_t)(d->tm_hour * 60 + d->tm_min);
-				mult = 1440;
-			} else if (listtype == LT_Month) {
-				div = (uint64_t)mosecs(datalist_i->timestamp, ic->interface.updated);
-				mult = (uint64_t)(dmonth(d->tm_mon) * 86400);
-			} else if (listtype == LT_Year) {
-				div = (uint64_t)(d->tm_yday * 1440 + d->tm_hour * 60 + d->tm_min);
-				mult = (uint64_t)(1440 * (365 + isleapyear(d->tm_year + 1900)));
-			}
-			if (div > 0) {
-				e_rx = (uint64_t)((double)datalist_i->rx / (double)div) * mult;
-				e_tx = (uint64_t)((double)datalist_i->tx / (double)div) * mult;
+	/* estimate visible */
+	if (estimatevisible) {
+		snprintf(buffer, 32, " estimated   ");
+		strncat(buffer, getvalue(e_rx, 10, RT_Estimate), 32);
+		strcat(buffer, "   ");
+		strncat(buffer, getvalue(e_tx, 10, RT_Estimate), 32);
+		strcat(buffer, "   ");
+		strncat(buffer, getvalue(e_rx + e_tx, 10, RT_Estimate), 32);
+
+		// TODO: remove experimental flag
+		if (cfg.experimental && cfg.estimatestyle) {
+			if (cfg.ostyle > 2) {
+				drawbar(ic, textx + 400, texty - 8, 78, e_rx, e_tx, datainfo.max, 1);
+				drawbar(ic, textx + 400, texty - 8, 78, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 			} else {
-				e_rx = e_tx = 0;
+				drawbar(ic, textx + 304, texty - 8, 170, e_rx, e_tx, datainfo.max, 1);
+				drawbar(ic, textx + 304, texty - 8, 170, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 			}
 		}
-		if (strlen(ic->dataend) == 0) {
-			snprintf(buffer, 32, " estimated   ");
-			strncat(buffer, getvalue(e_rx, 10, RT_Estimate), 32);
-			strcat(buffer, "   ");
-			strncat(buffer, getvalue(e_tx, 10, RT_Estimate), 32);
-			strcat(buffer, "   ");
-			strncat(buffer, getvalue(e_rx + e_tx, 10, RT_Estimate), 32);
 
-			// TODO: remove experimental flag
-			if (cfg.experimental && cfg.estimatestyle) {
-				if (cfg.ostyle > 2) {
-					drawbar(ic, textx + 400, texty - 8, 78, e_rx, e_tx, datainfo.max, 1);
-					drawbar(ic, textx + 400, texty - 8, 78, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
-				} else {
-					drawbar(ic, textx + 304, texty - 8, 170, e_rx, e_tx, datainfo.max, 1);
-					drawbar(ic, textx + 304, texty - 8, 170, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
-				}
-			}
-
+	/* sum visible */
+	} else if (strlen(ic->dataend) > 0 && datainfo.count > 1 && listtype != LT_Top) {
+		if (datainfo.count < 100) {
+			snprintf(datebuff, 16, "sum of %" PRIu32 "", datainfo.count);
 		} else {
-			if (datainfo.count < 100) {
-				snprintf(datebuff, 16, "sum of %" PRIu32 "", datainfo.count);
-			} else {
-				snprintf(datebuff, 16, "sum");
-			}
-			snprintf(buffer, 32, " %9s   ", datebuff);
-			strncat(buffer, getvalue(datainfo.sumrx, 10, RT_Normal), 32);
-			strcat(buffer, "   ");
-			strncat(buffer, getvalue(datainfo.sumtx, 10, RT_Normal), 32);
-			strcat(buffer, "   ");
-			strncat(buffer, getvalue(datainfo.sumrx + datainfo.sumtx, 10, RT_Normal), 32);
+			snprintf(datebuff, 16, "sum");
 		}
+		snprintf(buffer, 32, " %9s   ", datebuff);
+		strncat(buffer, getvalue(datainfo.sumrx, 10, RT_Normal), 32);
+		strcat(buffer, "   ");
+		strncat(buffer, getvalue(datainfo.sumtx, 10, RT_Normal), 32);
+		strcat(buffer, "   ");
+		strncat(buffer, getvalue(datainfo.sumrx + datainfo.sumtx, 10, RT_Normal), 32);
+	}
 
+	if (strlen(buffer) > 0) {
 		gdImageString(ic->im, gdFontGetSmall(), textx, texty + 8, (unsigned char *)buffer, ic->ctext);
 	}
 

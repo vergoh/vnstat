@@ -485,3 +485,44 @@ uint64_t getperiodseconds(const ListType listtype, const time_t entry, const tim
 
 	return seconds;
 }
+
+void getestimates(uint64_t *rx, uint64_t *tx, const ListType listtype, const time_t updated, dbdatalist **dbdata)
+{
+	struct tm u;
+	uint64_t div = 0, mult = 0;
+	dbdatalist *datalist_i = *dbdata;
+
+	*rx = *tx = 0;
+
+	if (datalist_i == NULL) {
+		return;
+	}
+
+	if (localtime_r(&updated, &u) == NULL) {
+		return;
+	}
+
+	/* last entry on the list is the most recent entry */
+	while (datalist_i->next != NULL) {
+		datalist_i = datalist_i->next;
+	}
+
+	if (datalist_i->rx == 0 || datalist_i->tx == 0) {
+		return;
+	}
+
+	if (listtype == LT_Day) {
+		div = (uint64_t)(u.tm_hour * 60 + u.tm_min);
+		mult = 1440;
+	} else if (listtype == LT_Month) {
+		div = (uint64_t)mosecs(datalist_i->timestamp, updated);
+		mult = (uint64_t)(dmonth(u.tm_mon) * 86400);
+	} else if (listtype == LT_Year) {
+		div = (uint64_t)(u.tm_yday * 1440 + u.tm_hour * 60 + u.tm_min);
+		mult = (uint64_t)(1440 * (365 + isleapyear(u.tm_year + 1900)));
+	}
+	if (div > 0) {
+		*rx = (uint64_t)((double)datalist_i->rx / (double)div) * mult;
+		*tx = (uint64_t)((double)datalist_i->tx / (double)div) * mult;
+	}
+}

@@ -3,6 +3,8 @@
 
 #define UNITPREFIXCOUNT 7
 
+#include "dbsql.h"
+
 typedef enum RequestType {
 	RT_Normal = 1,
 	RT_Estimate,
@@ -39,5 +41,6 @@ void eraseline(void);
 int validatedatetime(const char *str);
 int issametimeslot(const ListType listtype, const time_t entry, const time_t updated);
 uint64_t getperiodseconds(const ListType listtype, const time_t entry, const time_t updated, const short isongoing);
+void getestimates(uint64_t *rx, uint64_t *tx, const ListType listtype, const time_t updated, dbdatalist **dbdata);
 
 #endif

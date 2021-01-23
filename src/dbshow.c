@@ -281,11 +281,12 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 	int32_t limit;
 	ListType listtype = LT_None;
 	int offset = 0, i = 1;
+	int estimatevisible = 0;
 	struct tm *d;
 	time_t current;
 	char datebuff[DATEBUFFLEN], daybuff[DATEBUFFLEN];
 	char titlename[16], colname[8], stampformat[64];
-	uint64_t e_rx, e_tx, e_secs, div, mult;
+	uint64_t e_rx = 0, e_tx = 0, e_secs = 0;
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
 
@@ -341,6 +342,14 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 	if (!db_getdata_range(&datalist, &datainfo, interface->name, listname, (uint32_t)limit, databegin, dataend) || !datalist) {
 		printf("Error: Failed to fetch %s data.\n", titlename);
 		return;
+	}
+
+	datalist_i = datalist;
+
+	if (strlen(dataend) == 0 && datainfo.count > 0 && (listtype == LT_Day || listtype == LT_Month || listtype == LT_Year)) {
+		estimatevisible = 1;
+		getestimates(&e_rx, &e_tx, listtype, interface->updated, &datalist);
+		// TODO: should an estimate bar be shown?
 	}
 
 	if (listtype == LT_Top) {
@@ -411,8 +420,6 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 		}
 		printf("\n");
 	}
-
-	datalist_i = datalist;
 
 	while (datalist_i != NULL) {
 		d = localtime(&datalist_i->timestamp);
@@ -495,32 +502,11 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 		}
 		printf("\n");
 	}
-	if ( (datalist_i != NULL && strlen(dataend) == 0 && datainfo.count > 0 && (listtype == LT_Day || listtype == LT_Month || listtype == LT_Year)) ||
-	     (datalist_i != NULL && strlen(dataend) > 0 && datainfo.count > 1 && listtype != LT_Top) ) {
-		/* use database update time for estimates */
-		d = localtime(&interface->updated);
-		if (datalist_i->rx == 0 || datalist_i->tx == 0 || strlen(dataend) > 0) {
-			e_rx = e_tx = 0;
-		} else {
-			div = 0;
-			mult = 0;
-			if (listtype == LT_Day) {
-				div = (uint64_t)(d->tm_hour * 60 + d->tm_min);
-				mult = 1440;
-			} else if (listtype == LT_Month) {
-				div = (uint64_t)mosecs(datalist_i->timestamp, interface->updated);
-				mult = (uint64_t)(dmonth(d->tm_mon) * 86400);
-			} else if (listtype == LT_Year) {
-				div = (uint64_t)(d->tm_yday * 1440 + d->tm_hour * 60 + d->tm_min);
-				mult = (uint64_t)(1440 * (365 + isleapyear(d->tm_year + 1900)));
-			}
-			if (div > 0) {
-				e_rx = (uint64_t)((double)datalist_i->rx / (double)div) * mult;
-				e_tx = (uint64_t)((double)datalist_i->tx / (double)div) * mult;
-			} else {
-				e_rx = e_tx = 0;
-			}
-		}
+
+	/* estimate or sum visible */
+	if ( (estimatevisible) ||
+	     (strlen(dataend) > 0 && datainfo.count > 1 && listtype != LT_Top) ) {
+
 		if (cfg.ostyle == 3) {
 			printf("    ");
 		}
@@ -543,6 +529,7 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 		}
 		printf("\n");
 	}
+
 	dbdatalistfree(&datalist);
 	timeused_debug(__func__, 0);
 }
