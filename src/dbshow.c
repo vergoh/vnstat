@@ -349,7 +349,9 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 	if (strlen(dataend) == 0 && datainfo.count > 0 && (listtype == LT_Day || listtype == LT_Month || listtype == LT_Year)) {
 		estimatevisible = 1;
 		getestimates(&e_rx, &e_tx, listtype, interface->updated, &datalist);
-		// TODO: should an estimate bar be shown?
+		if (cfg.estimatebarvisible && e_rx + e_tx > datainfo.max) {
+			datainfo.max = e_rx + e_tx;
+		}
 	}
 
 	if (listtype == LT_Top) {
@@ -526,6 +528,8 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 		}
 		if (cfg.ostyle == 3) {
 			printf(" |");
+		} else if (cfg.ostyle != 0 && estimatevisible && cfg.estimatebarvisible) {
+			showbar(e_rx, e_tx, datainfo.max, 24 - offset);
 		}
 		printf("\n");
 	}

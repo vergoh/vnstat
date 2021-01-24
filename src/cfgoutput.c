@@ -47,7 +47,8 @@ void printcfgfile(void)
 	printf("# 0 = minimal & narrow, 1 = bar column visible\n");
 	printf("# 2 = same as 1 except rate in summary\n");
 	printf("# 3 = rate column visible\n");
-	printf("OutputStyle %d\n\n", cfg.ostyle);
+	printf("OutputStyle %d\n", cfg.ostyle);
+	printf("EstimateBarVisible %d\n\n", cfg.estimatebarvisible);
 
 	printf("# number of decimals to use in outputs\n");
 	printf("DefaultDecimals %d\n", cfg.defaultdecimals);
@@ -189,6 +190,10 @@ void printcfgfile(void)
 
 	printf("# image scale (percent)\n");
 	printf("ImageScale %d\n\n", cfg.imagescale);
+
+	printf("# traffic estimate bar style\n");
+	printf("# (0 = not shown, 1 = continuation of existing bar, 2 = separate bar)\n");
+	printf("EstimateStyle %d\n\n", cfg.estimatestyle);
 
 	printf("# image colors\n");
 	printf("CBackground     \"%s\"\n", cfg.cbg);

@@ -233,11 +233,6 @@ void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const ui
 
 	if (isestimate) {
 
-		// TODO: remove when once no longer experimental
-		if (!cfg.experimental) {
-			return;
-		}
-
 		switch (cfg.estimatestyle) {
 			case 0:
 				return;
@@ -619,8 +614,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	if (strlen(ic->dataend) == 0 && datainfo.count > 0 && (listtype == LT_Day || listtype == LT_Month || listtype == LT_Year)) {
 		estimatevisible = 1;
 		getestimates(&e_rx, &e_tx, listtype, ic->interface.updated, &datalist);
-		// TODO: remove experimental flag
-		if (cfg.experimental && cfg.estimatestyle > 0 && e_rx + e_tx > datainfo.max) {
+		if (cfg.estimatestyle > 0 && e_rx + e_tx > datainfo.max) {
 			datainfo.max = e_rx + e_tx;
 		}
 	}
@@ -833,8 +827,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		strcat(buffer, "   ");
 		strncat(buffer, getvalue(e_rx + e_tx, 10, RT_Estimate), 32);
 
-		// TODO: remove experimental flag
-		if (cfg.experimental && cfg.estimatestyle) {
+		if (cfg.estimatestyle) {
 			if (cfg.ostyle > 2) {
 				drawbar(ic, textx + 400, texty - 8, 78, e_rx, e_tx, datainfo.max, 1);
 				drawbar(ic, textx + 400, texty - 8, 78, datalist_i->rx, datalist_i->tx, datainfo.max, 0);

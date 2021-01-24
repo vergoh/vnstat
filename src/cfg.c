@@ -26,6 +26,7 @@ int loadcfg(const char *cfgfile)
 		 {"UnitMode", 0, &cfg.unitmode, 0, 0},
 		 {"RateUnitMode", 0, &cfg.rateunitmode, 0, 0},
 		 {"OutputStyle", 0, &cfg.ostyle, 0, 0},
+		 {"EstimateBarVisible", 0, &cfg.estimatebarvisible, 0, 0},
 		 {"RateUnit", 0, &cfg.rateunit, 0, 0},
 		 {"DefaultDecimals", 0, &cfg.defaultdecimals, 0, 0},
 		 {"HourlyDecimals", 0, &cfg.hourlydecimals, 0, 0},
@@ -179,6 +180,7 @@ void validatecfg(void)
 	validateint("UnitMode", &cfg.unitmode, UNITMODE, 0, 2);
 	validatebool("RateUnitMode", &cfg.rateunitmode, RATEUNITMODE);
 	validateint("OutputStyle", &cfg.ostyle, OSTYLE, 0, 3);
+	validatebool("EstimateBarVisible", &cfg.estimatebarvisible, ESTIMATEBARVISIBLE);
 	validateint("DefaultDecimals", &cfg.defaultdecimals, DEFAULTDECIMALS, 0, 2);
 	validateint("HourlyDecimals", &cfg.hourlydecimals, HOURLYDECIMALS, 0, 2);
 	validateint("HourlySectionStyle", &cfg.hourlystyle, HOURLYSTYLE, 0, 3);
@@ -295,6 +297,7 @@ void defaultcfg(void)
 	cfg.unitmode = UNITMODE;
 	cfg.rateunitmode = RATEUNITMODE;
 	cfg.ostyle = OSTYLE;
+	cfg.estimatebarvisible = ESTIMATEBARVISIBLE;
 	cfg.rateunit = RATEUNIT;
 	cfg.defaultdecimals = DEFAULTDECIMALS;
 	cfg.hourlydecimals = HOURLYDECIMALS;
@@ -354,7 +357,7 @@ void defaultcfg(void)
 
 	cfg.transbg = TRANSBG;
 	cfg.imagescale = IMAGESCALE;
-	cfg.estimatestyle = ESTIMATESTYLE; // TODO: add to configuration file and documentation once working
+	cfg.estimatestyle = ESTIMATESTYLE;
 	strncpy_nt(cfg.cbg, CBACKGROUND, 8);
 	strncpy_nt(cfg.cedge, CEDGE, 8);
 	strncpy_nt(cfg.cheader, CHEADER, 8);

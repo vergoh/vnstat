@@ -1,7 +1,7 @@
 
 # New configuration settings
 
- * 2.7: ImageScale
+ * 2.7: EstimateBarVisible, EstimateStyle, ImageScale
 
  * 2.4 - 2.6: (none)
 
@@ -35,7 +35,6 @@
  * 1.8: ShowRate, RateUnit, TrafficlessDays, HourlyRate, TransparentBg
 
  * 1.7: UnitMode + all settings under vnstatd and vnstati
-
 
 # Upgrading from versions 1.3 and later
 

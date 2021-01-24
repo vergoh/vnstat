@@ -1,7 +1,14 @@
 2.7 / <not released yet>
 
+ - Fixed
+   - Possibility of segmentation fault with image list output when
+     database existed but no data was available
+   - ./configure output could show invalid install paths with some
+     parameter combinations (pull request by Severin Glöckner)
  - New
    - Add --scale for scaling the image output to a given percent
+   - Add bar visualizations for traffic estimations
+   - Allow writing image output to a filename starting with -
 
 
 2.6 / 20-Jan-2020

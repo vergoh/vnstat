@@ -21,6 +21,7 @@ vnStat works best when installed. It's possible to either use the latest
 stable release or get the current development version from git.
 
 Stable version
+
   1. `wget https://humdi.net/vnstat/vnstat-latest.tar.gz`
   2. optional steps for verifying the file signature
      1. `wget https://humdi.net/vnstat/vnstat-latest.tar.gz.asc`
@@ -31,6 +32,7 @@ Stable version
   4. `cd vnstat-*`
 
 Development version
+
   1. `git clone https://github.com/vergoh/vnstat`
   2. `cd vnstat`
 

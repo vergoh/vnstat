@@ -46,6 +46,16 @@ Number of decimals to use in outputs. Value range: 0..2
 (vnstat and vnstati only)
 
 .TP
+.B EstimateBarVisible
+Show a visual representation of the traffic estimation if
+.B OutputStyle
+has been configured with a value of 1 or 2 to make the bar column visible.
+1 = enabled, 0 = disabled.
+(vnstat only, see
+.B EstimateStyle
+for vnstati)
+
+.TP
 .B HourlyDecimals
 Number of decimals to use in hourly graph output. Value range: 0..2
 (vnstat only)
@@ -414,6 +424,11 @@ Color for transmitted data.
 Darker version of transmitted data color. Set to '-' in order to use
 a calculated value based on
 .BR CTx .
+
+.TP
+.B EstimateStyle
+Show a visual representation of the traffic estimation.
+0 = not shown, 1 = continuation of existing bar, 2 = separate bar.
 
 .TP
 .B HeaderFormat

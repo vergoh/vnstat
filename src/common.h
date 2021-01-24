@@ -105,6 +105,7 @@ and most can be changed later from the config file.
 /* 2 = same as 1 + rate in summary */
 /* 3 = rate everywhere */
 #define OSTYLE 3
+#define ESTIMATEBARVISIBLE 1
 
 /* rate in vnstati summary output */
 #define SUMMARYRATE 1
@@ -246,8 +247,8 @@ and most can be changed later from the config file.
 /* no image scaling by default */
 #define IMAGESCALE 100
 
-/* estimate bar style */
-/* 0 = not shown, 1 = one color continuation of existing, 2 = separate */
+/* image output estimate bar style */
+/* 0 = not shown, 1 = continuation of existing bar, 2 = separate bar */
 #define ESTIMATESTYLE 1
 
 /* default colors */
@@ -281,13 +282,14 @@ typedef struct {
 	int32_t unitmode, rateunitmode, rateunit, bvar, qmode, sampletime, hourlyrate, summaryrate;
 	int32_t monthrotate, monthrotateyears, maxbw, spacecheck, trafficlessentries, transbg, ostyle;
 	int32_t defaultdecimals, hourlydecimals, hourlystyle, is64bit, waldb, dbsynchronous, imagescale;
+	int32_t estimatebarvisible, estimatestyle;
 	char cfgfile[512], logfile[512], pidfile[512];
 	char daemonuser[33], daemongroup[33];
 	int32_t timesyncwait, updateinterval, pollinterval, saveinterval, offsaveinterval, savestatus;
 	int32_t uselogging, createdirs, updatefileowner, bwdetection, bwdetectioninterval, utflocale;
 	int32_t fiveminutehours, hourlydays, dailydays, monthlymonths, yearlyyears, topdayentries;
 	int32_t listfivemins, listhours, listdays, listmonths, listyears, listtop, listjsonxml;
-	int32_t estimatestyle, experimental;
+	int32_t experimental;
 } CFG;
 
 /* internal interface information structure */
