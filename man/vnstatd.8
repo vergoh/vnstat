@@ -66,10 +66,9 @@ of the time sleeping between updates.
 .TP
 .B "--alwaysadd"
 Enable automatic creation of new database entries for previously unseen interfaces
-even if the database directory already contains a database when the daemon
-is started. New database entries will also get created for new interfaces seen while
-the daemon is running. Pseudo interfaces lo, lo0 and sit0 are excluded from
-getting added.
+even if the database already exists when the daemon is started. New database entries
+will also get created for new interfaces seen while the daemon is running. Pseudo
+interfaces lo, lo0 and sit0 are always excluded from getting added.
 
 .TP
 .BI "--config " file
@@ -98,9 +97,12 @@ can only be used when the process is started as root.
 
 .TP
 .B "--noadd"
-Disable automatic creation of new database entries for all available interfaces
-if the daemon is started with no database found. Pseudo interfaces
-lo, lo0 and sit0 are excluded from getting added.
+Disable the automatic creation of new database entries for all available
+interfaces if the daemon is started with no database found or with a database
+without any interfaces. The daemon will fail to start if this option is used when
+the database contains no interfaces or doesn't exist. The daemon will create an
+empty database if one doesn't already exist. Pseudo interfaces lo, lo0 and sit0
+are always excluded from getting added regardless of this option.
 
 .TP
 .B "-n, --nodaemon"

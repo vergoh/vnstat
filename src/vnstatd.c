@@ -237,8 +237,8 @@ void showhelp(void)
 	printf("      -u, --user <user>        set daemon process user\n");
 	printf("      -g, --group <group>      set daemon process group\n");
 	printf("      --config <config file>   select used config file\n");
-	printf("      --noadd                  don't add found interfaces if no dbs are found\n");
-	printf("      --alwaysadd              always add new interfaces even when some dbs exist\n\n");
+	printf("      --noadd                  prevent startup if database has no interfaces\n");
+	printf("      --alwaysadd              automatically start monitoring all new interfaces\n\n");
 
 	printf("See also \"man vnstatd\".\n");
 }
