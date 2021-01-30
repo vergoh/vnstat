@@ -253,6 +253,7 @@ void initdstate(DSTATE *s)
 	s->forcesave = 0;
 	s->noadd = 0;
 	s->alwaysadd = 0;
+	s->initdb = 0;
 	s->iflisthash = 0;
 	s->cfgfile[0] = '\0';
 	s->user[0] = '\0';

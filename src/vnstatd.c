@@ -83,6 +83,14 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
+	if (s.initdb) {
+		db_close();
+		if (debug) {
+			printf("--initdb complete, exiting...\n");
+		}
+		exit(EXIT_SUCCESS);
+	}
+
 	detectboot(&s);
 	preparedatabase(&s);
 
@@ -238,7 +246,8 @@ void showhelp(void)
 	printf("      -g, --group <group>      set daemon process group\n");
 	printf("      --config <config file>   select used config file\n");
 	printf("      --noadd                  prevent startup if database has no interfaces\n");
-	printf("      --alwaysadd              automatically start monitoring all new interfaces\n\n");
+	printf("      --alwaysadd              automatically start monitoring all new interfaces\n");
+	printf("      --initdb                 create empty database and exit\n\n");
 
 	printf("See also \"man vnstatd\".\n");
 }
@@ -289,6 +298,9 @@ void parseargs(DSTATE *s, int argc, char **argv)
 			s->noadd = 1;
 		} else if (strcmp(argv[currentarg], "--alwaysadd") == 0) {
 			s->alwaysadd = 1;
+		} else if (strcmp(argv[currentarg], "--initdb") == 0) {
+			s->initdb = 1;
+			s->showhelp = 0;
 		} else if ((strcmp(argv[currentarg], "-v") == 0) || (strcmp(argv[currentarg], "--version") == 0)) {
 			printf("vnStat daemon %s by Teemu Toivola <tst at iki dot fi>\n", getversion());
 			exit(EXIT_SUCCESS);
@@ -317,6 +329,11 @@ void parseargs(DSTATE *s, int argc, char **argv)
 
 	if (s->rundaemon && debug) {
 		printf("Error: --daemon and --debug can't both be used at the same time.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (s->rundaemon && s->initdb) {
+		printf("Error: --daemon and --initdb can't both be used at the same time.\n");
 		exit(EXIT_FAILURE);
 	}
 

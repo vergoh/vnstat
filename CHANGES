@@ -9,6 +9,9 @@
    - Add --scale for scaling the image output to a given percent
    - Add bar visualizations for traffic estimations
    - Allow writing image output to a filename starting with -
+   - Add --initdb to daemon for creating a new empty database without
+     having the daemon process staying running, doesn't discard data
+     if a database already exists
 
 
 2.6 / 20-Jan-2020
