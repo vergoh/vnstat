@@ -245,7 +245,7 @@ void showhelp(void)
 
 void parseargs(DSTATE *s, int argc, char **argv)
 {
-	int currentarg;
+	int currentarg, pidfiledefined = 0;
 
 	/* parse parameters, maybe not the best way but... */
 	for (currentarg = 1; currentarg < argc; currentarg++) {
@@ -293,16 +293,13 @@ void parseargs(DSTATE *s, int argc, char **argv)
 			printf("vnStat daemon %s by Teemu Toivola <tst at iki dot fi>\n", getversion());
 			exit(EXIT_SUCCESS);
 		} else if ((strcmp(argv[currentarg], "-p") == 0) || (strcmp(argv[currentarg], "--pidfile") == 0)) {
-			if (!s->rundaemon) {
-				printf("Error: --pidfile can only be used together with --daemon\n");
-				exit(EXIT_FAILURE);
-			}
 			if (currentarg + 1 < argc) {
 				strncpy_nt(cfg.pidfile, argv[currentarg + 1], 512);
 				cfg.pidfile[511] = '\0';
 				if (debug)
 					printf("Used pid file: %s\n", cfg.pidfile);
 				currentarg++;
+				pidfiledefined = 1;
 			} else {
 				printf("Error: File for --pidfile missing.\n");
 				exit(EXIT_FAILURE);
@@ -327,5 +324,10 @@ void parseargs(DSTATE *s, int argc, char **argv)
 	if (s->showhelp) {
 		showhelp();
 		exit(EXIT_SUCCESS);
+	}
+
+	if (!s->rundaemon && pidfiledefined) {
+		printf("Error: --pidfile can only be used together with --daemon\n");
+		exit(EXIT_FAILURE);
 	}
 }
