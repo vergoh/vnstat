@@ -172,7 +172,6 @@ void validateint(const char *cfgname, int32_t *cfgptr, const int32_t defaultvalu
 
 void validatecfg(void)
 {
-	uint32_t rolloversecs;
 	const char *invalidvalue = "Invalid value for";
 	const char *resettingto = "resetting to";
 	const char *noslashstart = "doesn't start with \"/\", resetting to default.";
@@ -274,7 +273,7 @@ void validatecfg(void)
 	/* 1.02 is the same 2% safety buffer as used in processifinfo() in daemon.c */
 	/* noexit check results in warning being shown only when the daemon is started */
 	if (noexit && cfg.maxbw > 0) {
-		rolloversecs = (uint32_t)((float)MAX32 / ((float)cfg.maxbw * 1024 * 1024 * (float)1.02 / 8));
+		uint32_t rolloversecs = (uint32_t)((float)MAX32 / ((float)cfg.maxbw * 1024 * 1024 * (float)1.02 / 8));
 		if (rolloversecs <= (uint32_t)cfg.updateinterval) {
 			cfg.updateinterval = UPDATEINTERVAL;
 			if (rolloversecs <= (uint32_t)cfg.updateinterval) {
