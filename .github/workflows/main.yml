@@ -30,7 +30,7 @@ jobs:
           ./configure $CPARAMS
 
       - name: make check
-        run: make check
+        run: make check || ( cat test.log test-suite.log ; exit 1 )
 
       - name: version
         run: ./vnstat --version
@@ -54,7 +54,7 @@ jobs:
           ./configure --enable-werror
 
       - name: make check
-        run: make check
+        run: make check || ( cat test.log test-suite.log ; exit 1 )
 
       - name: version
         run: ./vnstat --version
@@ -98,7 +98,7 @@ jobs:
           ./configure
 
       - name: make check
-        run: make check
+        run: make check || ( cat test.log test-suite.log ; exit 1 )
 
       - name: version
         run: ./vnstat --version
