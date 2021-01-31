@@ -269,6 +269,7 @@ void validatecfg(void)
 		printe(PT_Config);
 	}
 
+#if !( defined(__linux__) && HAVE_DECL_IFLA_STATS64 )
 	/* enforce update interval to be short enough that 32-bit interface counter rollover can be detected */
 	/* 1.02 is the same 2% safety buffer as used in processifinfo() in daemon.c */
 	/* noexit check results in warning being shown only when the daemon is started */
@@ -283,6 +284,7 @@ void validatecfg(void)
 			printe(PT_Config);
 		}
 	}
+#endif
 }
 
 void defaultcfg(void)
