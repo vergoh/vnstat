@@ -12,6 +12,9 @@
    - Add --initdb to daemon for creating a new empty database without
      having the daemon process staying running, doesn't discard data
      if a database already exists
+   - Add configuration option BarColumnShowsRate to have the bar column
+     in image list outputs be scaled according to the average rate column
+     values when those values are visible, disabled by default
 
 
 2.6 / 20-Jan-2020

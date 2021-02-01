@@ -1,7 +1,7 @@
 
 # New configuration settings
 
- * 2.7: EstimateBarVisible, EstimateStyle, ImageScale
+ * 2.7: BarColumnShowsRate, EstimateBarVisible, EstimateStyle, ImageScale
 
  * 2.4 - 2.6: (none)
 

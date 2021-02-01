@@ -446,6 +446,7 @@ int issametimeslot(const ListType listtype, const time_t entry, const time_t upd
 	return 0;
 }
 
+// TODO: tests
 uint64_t getperiodseconds(const ListType listtype, const time_t entry, const time_t updated, const short isongoing)
 {
 	struct tm e, u;
@@ -486,6 +487,7 @@ uint64_t getperiodseconds(const ListType listtype, const time_t entry, const tim
 	return seconds;
 }
 
+// TODO: tests
 void getestimates(uint64_t *rx, uint64_t *tx, const ListType listtype, const time_t updated, dbdatalist **dbdata)
 {
 	struct tm u;
@@ -511,9 +513,28 @@ void getestimates(uint64_t *rx, uint64_t *tx, const ListType listtype, const tim
 		return;
 	}
 
-	if (listtype == LT_Day) {
-		div = (uint64_t)(u.tm_hour * 60 + u.tm_min);
-		mult = 1440;
+	/* LT_5min and LT_Hour don't have the estimate line visible in outputs */
+	/* but are used by BarColumnShowsRate which requires "past" values for */
+	/* full hours / 5 minutes for the bar to show correctly */
+	if (listtype == LT_5min) {
+		div = (uint64_t)((u.tm_min % 5 * 60) + u.tm_sec);
+		if (div == 0) {
+			div = 1;
+			mult = 1;
+		} else {
+			mult = 300;
+		}
+	} else if (listtype == LT_Hour) {
+		div = (uint64_t)(u.tm_min * 60 + u.tm_sec);
+		if (div == 0) {
+			div = 1;
+			mult = 1;
+		} else {
+			mult = 3600;
+		}
+	} else if (listtype == LT_Day) {
+		div = (uint64_t)(u.tm_hour * 3600 + u.tm_min * 60 + u.tm_sec);
+		mult = 86400;
 	} else if (listtype == LT_Month) {
 		div = (uint64_t)mosecs(datalist_i->timestamp, updated);
 		mult = (uint64_t)(dmonth(u.tm_mon) * 86400);

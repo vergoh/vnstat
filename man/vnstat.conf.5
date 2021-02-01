@@ -1,4 +1,4 @@
-.TH VNSTAT.CONF 5 "JANUARY 2020" "version 2.6" "User Manuals"
+.TH VNSTAT.CONF 5 "FEBRUARY 2021" "version 2.7" "User Manuals"
 .SH NAME
 vnstat.conf \- vnStat configuration file
 
@@ -371,6 +371,18 @@ unlimited entries or to 0 to disable the data collection of this
 resolution.
 
 .SH IMAGE OUTPUT RELATED KEYWORDS
+
+.TP
+.B BarColumnShowsRate
+The bar column represents traffic rate in list outputs when enabled. Requires
+also that
+.B OutputStyle
+has been configured to show the traffic rate column by using the value 3.
+Enabling this option will automatically cause
+.B EstimateStyle
+to have the value 0. Visually this option affects only the color legend text and
+the last line on the list if that line represents the currently ongoing time
+period. 1 = enabled, 0 = disabled.
 
 .TP
 .B CBackground

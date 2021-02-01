@@ -211,18 +211,25 @@ void layoutinit(IMAGECONTENT *ic, char *title, const int width, const int height
 	gdImageString(ic->im, gdFontGetTiny(), width - 114 - ic->showedge, height - 12 - ic->showedge, (unsigned char *)"vnStat / Teemu Toivola", ic->cvnstat);
 }
 
-void drawlegend(IMAGECONTENT *ic, const int x, const int y)
+void drawlegend(IMAGECONTENT *ic, const int x, const int y, const short israte)
 {
 	if (!ic->showlegend) {
 		return;
 	}
 
-	/* color legend */
-	gdImageString(ic->im, gdFontGetSmall(), x, y, (unsigned char *)"rx     tx", ic->ctext);
-	gdImageFilledRectangle(ic->im, x - 12, y + 4, x - 6, y + 10, ic->crx);
-	gdImageRectangle(ic->im, x - 12, y + 4, x - 6, y + 10, ic->ctext);
-	gdImageFilledRectangle(ic->im, x + 30, y + 4, x + 36, y + 10, ic->ctx);
-	gdImageRectangle(ic->im, x + 30, y + 4, x + 36, y + 10, ic->ctext);
+	if (!israte) {
+		gdImageString(ic->im, gdFontGetSmall(), x, y, (unsigned char *)"rx     tx", ic->ctext);
+		gdImageFilledRectangle(ic->im, x - 12, y + 4, x - 6, y + 10, ic->crx);
+		gdImageRectangle(ic->im, x - 12, y + 4, x - 6, y + 10, ic->ctext);
+		gdImageFilledRectangle(ic->im, x + 30, y + 4, x + 36, y + 10, ic->ctx);
+		gdImageRectangle(ic->im, x + 30, y + 4, x + 36, y + 10, ic->ctext);
+	} else {
+		gdImageString(ic->im, gdFontGetSmall(), x - 12, y, (unsigned char *)"rx   tx rate", ic->ctext);
+		gdImageFilledRectangle(ic->im, x - 22, y + 4, x - 16, y + 10, ic->crx);
+		gdImageRectangle(ic->im, x - 22, y + 4, x - 16, y + 10, ic->ctext);
+		gdImageFilledRectangle(ic->im, x + 8, y + 4, x + 14, y + 10, ic->ctx);
+		gdImageRectangle(ic->im, x + 8, y + 4, x + 14, y + 10, ic->ctext);
+	}
 }
 
 void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max, const short isestimate)
@@ -542,7 +549,7 @@ void drawhourly(IMAGECONTENT *ic, const int rate)
 
 	layoutinit(ic, buffer, width, height);
 	if (drawhours(ic, 12, 46 - headermod, rate)) {
-		drawlegend(ic, 242, 183 - headermod);
+		drawlegend(ic, 242, 183 - headermod, 0);
 	}
 }
 
@@ -551,7 +558,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	ListType listtype = LT_None;
 	int textx, texty, offsetx = 0, offsety = 0;
 	int width, height, headermod, i = 1, rowcount = 0;
-	int estimatevisible = 0;
+	int estimateavailable = 0, estimatevisible = 0;
 	int32_t limit;
 	uint64_t e_rx = 0, e_tx = 0, e_secs = 0;
 	char buffer[512], datebuff[16], daybuff[16];
@@ -611,11 +618,14 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 
 	datalist_i = datalist;
 
-	if (strlen(ic->dataend) == 0 && datainfo.count > 0 && (listtype == LT_Day || listtype == LT_Month || listtype == LT_Year)) {
-		estimatevisible = 1;
+	if (strlen(ic->dataend) == 0 && datainfo.count > 0 && listtype != LT_Top) {
 		getestimates(&e_rx, &e_tx, listtype, ic->interface.updated, &datalist);
 		if (cfg.estimatestyle > 0 && e_rx + e_tx > datainfo.max) {
 			datainfo.max = e_rx + e_tx;
+		}
+		estimateavailable = 1;
+		if (listtype == LT_Day || listtype == LT_Month || listtype == LT_Year) {
+			estimatevisible = 1;
 		}
 	}
 
@@ -694,16 +704,20 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	if (datainfo.count) {
 		if (listtype == LT_Top) {
 			if (cfg.ostyle <= 2) {
-				drawlegend(ic, 398, 40 - headermod);
+				drawlegend(ic, 398, 40 - headermod, 0);
 			}
 			current = time(NULL);
 			d = localtime(&current);
 			strftime(daybuff, 16, stampformat, d);
 		} else { // everything else
 			if (cfg.ostyle > 2) {
-				drawlegend(ic, 432, 40 - headermod);
+				if (estimateavailable && cfg.barshowsrate) {
+					drawlegend(ic, 432, 40 - headermod, 1);
+				} else {
+					drawlegend(ic, 432, 40 - headermod, 0);
+				}
 			} else {
-				drawlegend(ic, 385, 40 - headermod);
+				drawlegend(ic, 385, 40 - headermod, 0);
 			}
 		}
 	}
@@ -788,7 +802,11 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 			}
 		} else { // everything else
 			if (cfg.ostyle > 2) {
-				drawbar(ic, textx + 400, texty + 4, 78, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+				if (datalist_i->next == NULL && estimateavailable && cfg.barshowsrate) {
+					drawbar(ic, textx + 400, texty + 4, 78, e_rx, e_tx, datainfo.max, 0);
+				} else {
+					drawbar(ic, textx + 400, texty + 4, 78, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+				}
 			} else {
 				drawbar(ic, textx + 304, texty + 4, 170, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 			}
@@ -911,7 +929,7 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int rate)
 	}
 
 	drawsummary_alltime(ic, 385, 57 - headermod);
-	drawlegend(ic, 410, 155 - headermod);
+	drawlegend(ic, 410, 155 - headermod, 0);
 
 	drawsummary_digest(ic, 100, 30 - headermod, "day");
 	drawsummary_digest(ic, 100, 113 - headermod, "month");

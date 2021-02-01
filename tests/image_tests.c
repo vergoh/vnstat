@@ -420,7 +420,8 @@ START_TEST(libgd_output_comparison)
 	pngout = fopen("vnstati_libgd_comparison_check.png", "w");
 	ck_assert_ptr_ne(pngout, NULL);
 
-	drawlegend(&ic, 40, 30);
+	drawlegend(&ic, 40, 30, 0);
+	drawlegend(&ic, 240, 30, 1);
 
 	/* line 1 */
 	x = 40;
@@ -645,7 +646,8 @@ START_TEST(element_output_check)
 	gdImageString(ic.im, gdFontGetSmall(), 1020, 100, (unsigned char *)"Small - The quick brown fox jumps over the lazy dog", ic.ctext);
 	gdImageString(ic.im, gdFontGetTiny(), 1020, 120, (unsigned char *)"Tiny - The quick brown fox jumps over the lazy dog", ic.ctext);
 
-	drawlegend(&ic, 1230, 140);
+	drawlegend(&ic, 1130, 140, 0);
+	drawlegend(&ic, 1330, 140, 1);
 
 	drawbar(&ic, 1050, 160, 400, 50, 50, 100, 0);
 	drawbar(&ic, 1050, 180, 400, 25, 75, 100, 0);

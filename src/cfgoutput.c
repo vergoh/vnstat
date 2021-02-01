@@ -195,6 +195,10 @@ void printcfgfile(void)
 	printf("# (0 = not shown, 1 = continuation of existing bar, 2 = separate bar)\n");
 	printf("EstimateStyle %d\n\n", cfg.estimatestyle);
 
+	printf("# bar column in list outputs shows rate if OutputStyle is 3\n");
+	printf("# (1 = enabled, 0 = disabled)\n");
+	printf("BarColumnShowsRate %d\n\n", cfg.barshowsrate);
+
 	printf("# image colors\n");
 	printf("CBackground     \"%s\"\n", cfg.cbg);
 	printf("CEdge           \"%s\"\n", cfg.cedge);
