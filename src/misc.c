@@ -446,7 +446,6 @@ int issametimeslot(const ListType listtype, const time_t entry, const time_t upd
 	return 0;
 }
 
-// TODO: tests
 uint64_t getperiodseconds(const ListType listtype, const time_t entry, const time_t updated, const short isongoing)
 {
 	struct tm e, u;

@@ -618,7 +618,7 @@ START_TEST(issametimeslot_knows_its_slots)
 	entry = (time_t)get_timestamp(2019, 4, 15, 12, 30);
 
 	/* the database has the entry timestamp stored with the first possible */
-	/* time of the specific range resulting in many the following scenarios */
+	/* time of the specific range resulting in many of the following scenarios */
 	/* never happening during normal usage */
 
 	updated = (time_t)get_timestamp(2019, 4, 15, 12, 32);
@@ -705,6 +705,85 @@ START_TEST(issametimeslot_knows_its_slots)
 }
 END_TEST
 
+START_TEST(getperiodseconds_knows_fixed_not_ongoing_periods)
+{
+	time_t entry, updated;
+
+	entry = (time_t)get_timestamp(2021, 1, 1, 18, 0);
+	updated = entry;
+
+	ck_assert_int_eq(getperiodseconds(LT_None, entry, updated, 0), 0);
+	ck_assert_int_eq(getperiodseconds(LT_5min, entry, updated, 0), 300);
+	ck_assert_int_eq(getperiodseconds(LT_Hour, entry, updated, 0), 3600);
+	ck_assert_int_eq(getperiodseconds(LT_Day, entry, updated, 0), 86400);
+	ck_assert_int_eq(getperiodseconds(LT_Top, entry, updated, 0), 86400);
+}
+END_TEST
+
+START_TEST(getperiodseconds_knows_dynamic_not_ongoing_periods)
+{
+	time_t entry, updated;
+
+	entry = (time_t)get_timestamp(2021, 1, 1, 18, 0);
+	updated = entry;
+
+	ck_assert_int_eq(getperiodseconds(LT_Month, entry, updated, 0), 2678400);
+
+	/* 2021 isn't a leap year */
+	ck_assert_int_eq(getperiodseconds(LT_Year, entry, updated, 0), 31536000);
+
+	entry = (time_t)get_timestamp(2020, 1, 1, 18, 0);
+	updated = entry;
+
+	/* 2020 is a leap year */
+	ck_assert_int_eq(getperiodseconds(LT_Year, entry, updated, 0), 31622400);
+}
+END_TEST
+
+START_TEST(getperiodseconds_returns_zero_when_there_is_no_time_spent)
+{
+	time_t entry, updated;
+
+	cfg.monthrotate = 1;
+	entry = (time_t)get_timestamp(2021, 1, 1, 0, 0);
+	updated = entry;
+
+	ck_assert_int_eq(getperiodseconds(LT_None, entry, updated, 1), 0);
+	ck_assert_int_eq(getperiodseconds(LT_5min, entry, updated, 1), 0);
+	ck_assert_int_eq(getperiodseconds(LT_Hour, entry, updated, 1), 0);
+	ck_assert_int_eq(getperiodseconds(LT_Day, entry, updated, 1), 0);
+	ck_assert_int_eq(getperiodseconds(LT_Year, entry, updated, 1), 0);
+
+	/* months are special due to cfg.monthrotate */
+	ck_assert_int_eq(getperiodseconds(LT_Month, entry, updated, 1), 1);
+
+	/* LT_Top always returns the same value */
+	ck_assert_int_eq(getperiodseconds(LT_Top, entry, updated, 1), 86400);
+}
+END_TEST
+
+START_TEST(getperiodseconds_knows_spent_ongoing_time)
+{
+	time_t entry, updated;
+
+	cfg.monthrotate = 1;
+	entry = (time_t)get_timestamp(2021, 1, 2, 3, 46);
+	updated = entry;
+
+	ck_assert_int_eq(getperiodseconds(LT_None, entry, updated, 1), 0);
+	ck_assert_int_eq(getperiodseconds(LT_5min, entry, updated, 1), 60);
+	ck_assert_int_eq(getperiodseconds(LT_Hour, entry, updated, 1), 2760);
+	ck_assert_int_eq(getperiodseconds(LT_Day, entry, updated, 1), 13560);
+	ck_assert_int_eq(getperiodseconds(LT_Year, entry, updated, 1), 99960);
+
+	/* months are special due to cfg.monthrotate */
+	ck_assert_int_eq(getperiodseconds(LT_Month, entry, updated, 1), 1);
+
+	/* LT_Top always returns the same value */
+	ck_assert_int_eq(getperiodseconds(LT_Top, entry, updated, 1), 86400);
+}
+END_TEST
+
 void add_misc_tests(Suite *s)
 {
 	TCase *tc_misc = tcase_create("Misc");
@@ -736,5 +815,9 @@ void add_misc_tests(Suite *s)
 	tcase_add_test(tc_misc, issametimeslot_handles_updates_before_the_entry_time);
 	tcase_add_test(tc_misc, issametimeslot_knows_simple_slots);
 	tcase_add_test(tc_misc, issametimeslot_knows_its_slots);
+	tcase_add_test(tc_misc, getperiodseconds_knows_fixed_not_ongoing_periods);
+	tcase_add_test(tc_misc, getperiodseconds_knows_dynamic_not_ongoing_periods);
+	tcase_add_test(tc_misc, getperiodseconds_returns_zero_when_there_is_no_time_spent);
+	tcase_add_test(tc_misc, getperiodseconds_knows_spent_ongoing_time);
 	suite_add_tcase(s, tc_misc);
 }
