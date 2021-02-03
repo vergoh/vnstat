@@ -2,6 +2,7 @@
 #include "vnstat_tests.h"
 #include "misc_tests.h"
 #include "misc.h"
+#include "dbsql.h"
 
 START_TEST(getbtime_does_not_return_zero)
 {
@@ -784,6 +785,114 @@ START_TEST(getperiodseconds_knows_spent_ongoing_time)
 }
 END_TEST
 
+START_TEST(getestimates_has_error_handling)
+{
+	time_t updated;
+	uint64_t rx = 1, tx = 2;
+	dbdatalist *datalist = NULL;
+
+	updated = (time_t)get_timestamp(2021, 1, 2, 3, 46);
+
+	getestimates(&rx, &tx, LT_None, updated, &datalist);
+	ck_assert_int_eq(rx, 0);
+	ck_assert_int_eq(tx, 0);
+
+	rx = 1;
+	tx = 2;
+	ck_assert_int_eq(dbdatalistadd(&datalist, 0, 0, 0, 1), 1);
+	getestimates(&rx, &tx, LT_Day, updated, &datalist);
+	ck_assert_int_eq(rx, 0);
+	ck_assert_int_eq(tx, 0);
+	dbdatalistfree(&datalist);
+
+	rx = 1;
+	tx = 2;
+	ck_assert_int_eq(dbdatalistadd(&datalist, 1000000, 0, 0, 1), 1);
+	getestimates(&rx, &tx, LT_Day, updated, &datalist);
+	ck_assert_int_eq(rx, 0);
+	ck_assert_int_eq(tx, 0);
+	dbdatalistfree(&datalist);
+
+	rx = 1;
+	tx = 2;
+	ck_assert_int_eq(dbdatalistadd(&datalist, 0, 1000000, 0, 1), 1);
+	getestimates(&rx, &tx, LT_Day, updated, &datalist);
+	ck_assert_int_eq(rx, 0);
+	ck_assert_int_eq(tx, 0);
+	dbdatalistfree(&datalist);
+
+	rx = 1;
+	tx = 2;
+	ck_assert_int_eq(dbdatalistadd(&datalist, 1000000, 1000000, 0, 1), 1);
+	getestimates(&rx, &tx, LT_None, updated, &datalist);
+	ck_assert_int_eq(rx, 0);
+	ck_assert_int_eq(tx, 0);
+	dbdatalistfree(&datalist);
+}
+END_TEST
+
+START_TEST(getestimates_has_a_crystal_ball)
+{
+	time_t updated;
+	uint64_t rx = 1, tx = 2;
+	dbdatalist *datalist = NULL;
+
+	cfg.monthrotate = 1;
+	updated = (time_t)get_timestamp(2021, 1, 1, 3, 45);
+	ck_assert_int_eq(dbdatalistadd(&datalist, 100000, 200000, updated, 1), 1);
+
+	rx = 1;
+	tx = 2;
+	/* on the 5 minute so there's no calculation done */
+	getestimates(&rx, &tx, LT_5min, updated, &datalist);
+	ck_assert_int_eq(rx, 100000);
+	ck_assert_int_eq(tx, 200000);
+
+	updated = (time_t)get_timestamp(2021, 1, 1, 3, 46);
+
+	rx = 1;
+	tx = 2;
+	getestimates(&rx, &tx, LT_5min, updated, &datalist);
+	ck_assert_int_eq(rx, 499800);
+	ck_assert_int_eq(tx, 999900);
+
+	rx = 1;
+	tx = 2;
+	getestimates(&rx, &tx, LT_Hour, updated, &datalist);
+	ck_assert_int_eq(rx, 129600);
+	ck_assert_int_eq(tx, 259200);
+
+	updated = (time_t)get_timestamp(2021, 1, 2, 3, 0);
+
+	rx = 1;
+	tx = 2;
+	/* on the hour so there's no calculation done */
+	getestimates(&rx, &tx, LT_Hour, updated, &datalist);
+	ck_assert_int_eq(rx, 100000);
+	ck_assert_int_eq(tx, 200000);
+
+	rx = 1;
+	tx = 2;
+	getestimates(&rx, &tx, LT_Day, updated, &datalist);
+	ck_assert_int_eq(rx, 777600);
+	ck_assert_int_eq(tx, 1555200);
+
+	rx = 1;
+	tx = 2;
+	getestimates(&rx, &tx, LT_Month, updated, &datalist);
+	ck_assert_int_eq(rx, 2678400);
+	ck_assert_int_eq(tx, 5356800);
+
+	rx = 1;
+	tx = 2;
+	getestimates(&rx, &tx, LT_Year, updated, &datalist);
+	ck_assert_int_eq(rx, 32061600);
+	ck_assert_int_eq(tx, 64648800);
+
+	dbdatalistfree(&datalist);
+}
+END_TEST
+
 void add_misc_tests(Suite *s)
 {
 	TCase *tc_misc = tcase_create("Misc");
@@ -819,5 +928,7 @@ void add_misc_tests(Suite *s)
 	tcase_add_test(tc_misc, getperiodseconds_knows_dynamic_not_ongoing_periods);
 	tcase_add_test(tc_misc, getperiodseconds_returns_zero_when_there_is_no_time_spent);
 	tcase_add_test(tc_misc, getperiodseconds_knows_spent_ongoing_time);
+	tcase_add_test(tc_misc, getestimates_has_error_handling);
+	tcase_add_test(tc_misc, getestimates_has_a_crystal_ball);
 	suite_add_tcase(s, tc_misc);
 }

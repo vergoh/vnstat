@@ -486,7 +486,6 @@ uint64_t getperiodseconds(const ListType listtype, const time_t entry, const tim
 	return seconds;
 }
 
-// TODO: tests
 void getestimates(uint64_t *rx, uint64_t *tx, const ListType listtype, const time_t updated, dbdatalist **dbdata)
 {
 	struct tm u;
