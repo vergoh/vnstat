@@ -122,6 +122,9 @@ void showihelp(IPARAMS *p)
 	printf("      -ne, --noedge                remove edge from output\n");
 	printf("      -nl, --nolegend              remove legend from output\n");
 	printf("      -ru, --rateunit [mode]       swap configured rate unit\n");
+	if (cfg.experimental) {
+		printf("      -B,  --big                    use bigger fonts\n");
+	}
 	printf("      -o,  --output <file>         select output filename\n");
 	printf("      -c,  --cache <minutes>       update output only when too old\n");
 	printf("      -i,  --iface <interface>     select interface");
@@ -276,6 +279,9 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 			}
 		} else if (strcmp(argv[currentarg], "--altdate") == 0) {
 			ic->altdate = 1;
+		} else if ((strcmp(argv[currentarg], "-B") == 0) || (strcmp(argv[currentarg], "--big")) == 0 && cfg.experimental) {
+			ic->font = gdFontGetLarge();
+			ic->lineheight = 16;
 		} else if ((strcmp(argv[currentarg], "-D") == 0) || (strcmp(argv[currentarg], "--debug")) == 0) {
 			debug = 1;
 		} else if ((strcmp(argv[currentarg], "-d") == 0) || (strcmp(argv[currentarg], "--days")) == 0) {

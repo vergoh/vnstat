@@ -7,6 +7,8 @@
 void initimagecontent(IMAGECONTENT *ic)
 {
 	ic->im = NULL;
+	ic->font = gdFontGetSmall();
+	ic->lineheight = 12;
 	ic->showheader = 1;
 	ic->showedge = 1;
 	ic->showlegend = 1;
@@ -218,13 +220,13 @@ void drawlegend(IMAGECONTENT *ic, const int x, const int y, const short israte)
 	}
 
 	if (!israte) {
-		gdImageString(ic->im, gdFontGetSmall(), x, y, (unsigned char *)"rx     tx", ic->ctext);
+		gdImageString(ic->im, ic->font, x, y, (unsigned char *)"rx     tx", ic->ctext);
 		gdImageFilledRectangle(ic->im, x - 12, y + 4, x - 6, y + 10, ic->crx);
 		gdImageRectangle(ic->im, x - 12, y + 4, x - 6, y + 10, ic->ctext);
 		gdImageFilledRectangle(ic->im, x + 30, y + 4, x + 36, y + 10, ic->ctx);
 		gdImageRectangle(ic->im, x + 30, y + 4, x + 36, y + 10, ic->ctext);
 	} else {
-		gdImageString(ic->im, gdFontGetSmall(), x - 12, y, (unsigned char *)"rx   tx rate", ic->ctext);
+		gdImageString(ic->im, ic->font, x - 12, y, (unsigned char *)"rx   tx rate", ic->ctext);
 		gdImageFilledRectangle(ic->im, x - 22, y + 4, x - 16, y + 10, ic->crx);
 		gdImageRectangle(ic->im, x - 22, y + 4, x - 16, y + 10, ic->ctext);
 		gdImageFilledRectangle(ic->im, x + 8, y + 4, x + 14, y + 10, ic->ctx);
@@ -655,7 +657,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	}
 	rowcount += datainfo.count;
 
-	width = 500;
+	width = 83 * ic->font->w + 4;
 	height = 98;
 
 	// less space needed when no estimate or sum is shown (Top, 5min and Hour never have estimate)
@@ -670,7 +672,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		offsety = 0;
 	}
 
-	height += 12 * rowcount;
+	height += ic->lineheight * rowcount;
 
 	// "no data available"
 	if (!datainfo.count) {
@@ -704,7 +706,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	if (datainfo.count) {
 		if (listtype == LT_Top) {
 			if (cfg.ostyle <= 2) {
-				drawlegend(ic, 398, 40 - headermod, 0);
+				drawlegend(ic, 66 * ic->font->w, 40 - headermod, 0);
 			}
 			current = time(NULL);
 			d = localtime(&current);
@@ -712,12 +714,12 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		} else { // everything else
 			if (cfg.ostyle > 2) {
 				if (estimateavailable && cfg.barshowsrate) {
-					drawlegend(ic, 432, 40 - headermod, 1);
+					drawlegend(ic, 72 * ic->font->w, 40 - headermod, 1);
 				} else {
-					drawlegend(ic, 432, 40 - headermod, 0);
+					drawlegend(ic, 72 * ic->font->w, 40 - headermod, 0);
 				}
 			} else {
-				drawlegend(ic, 385, 40 - headermod, 0);
+				drawlegend(ic, 64 * ic->font->w, 40 - headermod, 0);
 			}
 		}
 	}
@@ -732,17 +734,17 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	}
 	if (cfg.ostyle > 2) {
 		strcat(buffer, "       avg. rate");
-		gdImageString(ic->im, gdFontGetSmall(), textx, texty, (unsigned char *)buffer, ic->ctext);
-		gdImageLine(ic->im, textx + 2, texty + 16, textx + 392 + offsetx, texty + 16, ic->cline);
-		gdImageLine(ic->im, textx + 300 + offsetx, texty + 2, textx + 300 + offsetx, texty + 40 + offsety + (12 * rowcount), ic->cline);
+		gdImageString(ic->im, ic->font, textx, texty, (unsigned char *)buffer, ic->ctext);
+		gdImageLine(ic->im, textx + 2, texty + ic->lineheight + 4, textx + (65 * ic->font->w) + offsetx, texty + ic->lineheight + 4, ic->cline);
+		gdImageLine(ic->im, textx + (50 * ic->font->w) + offsetx, texty + 2, textx + (50 * ic->font->w) + offsetx, texty + 40 + offsety + (ic->lineheight * rowcount), ic->cline);
 	} else {
-		gdImageString(ic->im, gdFontGetSmall(), textx, texty, (unsigned char *)buffer, ic->ctext);
-		gdImageLine(ic->im, textx + 2, texty + 16, textx + 296 + offsetx, texty + 16, ic->cline);
+		gdImageString(ic->im, ic->font, textx, texty, (unsigned char *)buffer, ic->ctext);
+		gdImageLine(ic->im, textx + 2, texty + ic->lineheight + 4, textx + (50 * ic->font->w) + offsetx, texty + ic->lineheight + 4, ic->cline);
 	}
-	gdImageLine(ic->im, textx + 144 + offsetx, texty + 2, textx + 144 + offsetx, texty + 40 + offsety + (12 * rowcount), ic->cline);
-	gdImageLine(ic->im, textx + 222 + offsetx, texty + 2, textx + 222 + offsetx, texty + 40 + offsety + (12 * rowcount), ic->cline);
+	gdImageLine(ic->im, textx + (24 * ic->font->w) + offsetx, texty + 2, textx + (24 * ic->font->w) + offsetx, texty + 28 + ic->lineheight + offsety + (ic->lineheight * rowcount), ic->cline);
+	gdImageLine(ic->im, textx + (37 * ic->font->w) + offsetx, texty + 2, textx + (37 * ic->font->w) + offsetx, texty + 28 + ic->lineheight + offsety + (ic->lineheight * rowcount), ic->cline);
 
-	texty += 20;
+	texty += ic->lineheight + 8;
 
 	while (datalist_i != NULL) {
 		d = localtime(&datalist_i->timestamp);
@@ -751,8 +753,8 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 			strftime(datebuff, 16, cfg.dformat, d);
 			if (strcmp(daybuff, datebuff) != 0) {
 				snprintf(buffer, 32, " %s", datebuff);
-				gdImageString(ic->im, gdFontGetSmall(), textx, texty, (unsigned char *)buffer, ic->ctext);
-				texty += 12;
+				gdImageString(ic->im, ic->font, textx, texty, (unsigned char *)buffer, ic->ctext);
+				texty += ic->lineheight;
 				strcpy(daybuff, datebuff);
 			}
 		}
@@ -793,25 +795,25 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 			}
 			strncat(buffer, gettrafficrate(datalist_i->rx + datalist_i->tx, (time_t)e_secs, 14), 32);
 		}
-		gdImageString(ic->im, gdFontGetSmall(), textx, texty, (unsigned char *)buffer, ic->ctext);
+		gdImageString(ic->im, ic->font, textx, texty, (unsigned char *)buffer, ic->ctext);
 		if (listtype == LT_Top) {
 			if (cfg.ostyle > 2) {
-				drawbar(ic, textx + 428, texty + 4, 52, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+				drawbar(ic, textx + (71 * ic->font->w), texty + 4, 9 * ic->font->w, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 			} else {
-				drawbar(ic, textx + 336, texty + 4, 140, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+				drawbar(ic, textx + (56 * ic->font->w), texty + 4, 23 * ic->font->w, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 			}
 		} else { // everything else
 			if (cfg.ostyle > 2) {
 				if (datalist_i->next == NULL && estimateavailable && cfg.barshowsrate) {
-					drawbar(ic, textx + 400, texty + 4, 78, e_rx, e_tx, datainfo.max, 0);
+					drawbar(ic, textx + (67 * ic->font->w), texty + 4, 13 * ic->font->w, e_rx, e_tx, datainfo.max, 0);
 				} else {
-					drawbar(ic, textx + 400, texty + 4, 78, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+					drawbar(ic, textx + (67 * ic->font->w), texty + 4, 13 * ic->font->w, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 				}
 			} else {
-				drawbar(ic, textx + 304, texty + 4, 170, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+				drawbar(ic, textx + (51 * ic->font->w), texty + 4, 28 * ic->font->w, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 			}
 		}
-		texty += 12;
+		texty += ic->lineheight;
 		if (datalist_i->next == NULL) {
 			break;
 		}
@@ -824,14 +826,14 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		if (cfg.ostyle > 2) {
 			i += 46;
 		}
-		gdImageString(ic->im, gdFontGetSmall(), textx + i, texty, (unsigned char *)"no data available", ic->ctext);
-		texty += 12;
+		gdImageString(ic->im, ic->font, textx + i, texty, (unsigned char *)"no data available", ic->ctext);
+		texty += ic->lineheight;
 	}
 
 	if (cfg.ostyle > 2) {
-		gdImageLine(ic->im, textx + 2, texty + 5, textx + 392 + offsetx, texty + 5, ic->cline);
+		gdImageLine(ic->im, textx + 2, texty + 5, textx + (65 * ic->font->w) + offsetx, texty + 5, ic->cline);
 	} else {
-		gdImageLine(ic->im, textx + 2, texty + 5, textx + 296 + offsetx, texty + 5, ic->cline);
+		gdImageLine(ic->im, textx + 2, texty + 5, textx + (50 * ic->font->w) + offsetx, texty + 5, ic->cline);
 	}
 
 	buffer[0] = '\0';
@@ -871,7 +873,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	}
 
 	if (strlen(buffer) > 0) {
-		gdImageString(ic->im, gdFontGetSmall(), textx, texty + 8, (unsigned char *)buffer, ic->ctext);
+		gdImageString(ic->im, ic->font, textx, texty + 8, (unsigned char *)buffer, ic->ctext);
 	}
 
 	dbdatalistfree(&datalist);
