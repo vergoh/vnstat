@@ -3,7 +3,7 @@
 # libgd3 removal needed due to https://github.com/actions/virtual-environments/issues/2139
 dependencies_ubuntu:
 	apt-get update
-	apt-get remove libgd3
+	apt-get remove nginx libgd3
 	apt-get -y install libsqlite3-dev libgd-dev check
 
 dependencies_ubuntu_analyzer: dependencies_ubuntu
