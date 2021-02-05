@@ -279,7 +279,7 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 			}
 		} else if (strcmp(argv[currentarg], "--altdate") == 0) {
 			ic->altdate = 1;
-		} else if ((strcmp(argv[currentarg], "-B") == 0) || (strcmp(argv[currentarg], "--big")) == 0 && cfg.experimental) {
+		} else if (((strcmp(argv[currentarg], "-B") == 0) || (strcmp(argv[currentarg], "--big"))) == 0 && cfg.experimental) {
 			ic->font = gdFontGetLarge();
 			ic->lineheight = 16;
 		} else if ((strcmp(argv[currentarg], "-D") == 0) || (strcmp(argv[currentarg], "--debug")) == 0) {
