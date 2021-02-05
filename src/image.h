@@ -22,7 +22,7 @@ typedef struct {
 	interfaceinfo interface;
 	int cbackground, cedge, cheader, cheadertitle, cheaderdate, ctext, cline, clinel, cvnstat;
 	int crx, crxd, ctx, ctxd, cbgoffset, cbgoffsetmore, showheader, showedge, showlegend, altdate;
-	int lineheight;
+	int lineheight, large;
 	char headertext[65], databegin[18], dataend[18];
 	time_t current;
 } IMAGECONTENT;

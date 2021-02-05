@@ -9,6 +9,7 @@ void initimagecontent(IMAGECONTENT *ic)
 	ic->im = NULL;
 	ic->font = gdFontGetSmall();
 	ic->lineheight = 12;
+	ic->large = 0;
 	ic->showheader = 1;
 	ic->showedge = 1;
 	ic->showlegend = 1;

@@ -123,7 +123,8 @@ void showihelp(IPARAMS *p)
 	printf("      -nl, --nolegend              remove legend from output\n");
 	printf("      -ru, --rateunit [mode]       swap configured rate unit\n");
 	if (cfg.experimental) {
-		printf("      -B,  --big                    use bigger fonts\n");
+		printf("      -S,  --small                 use small fonts\n");
+		printf("      -L,  --large                 use large fonts\n");
 	}
 	printf("      -o,  --output <file>         select output filename\n");
 	printf("      -c,  --cache <minutes>       update output only when too old\n");
@@ -279,9 +280,14 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 			}
 		} else if (strcmp(argv[currentarg], "--altdate") == 0) {
 			ic->altdate = 1;
-		} else if (((strcmp(argv[currentarg], "-B") == 0) || (strcmp(argv[currentarg], "--big"))) == 0 && cfg.experimental) {
+		} else if (((strcmp(argv[currentarg], "-L") == 0) || (strcmp(argv[currentarg], "--large")) == 0) && cfg.experimental) {
 			ic->font = gdFontGetLarge();
 			ic->lineheight = 16;
+			ic->large = 1;
+		} else if (((strcmp(argv[currentarg], "-S") == 0) || (strcmp(argv[currentarg], "--small")) == 0) && cfg.experimental) {
+			ic->font = gdFontGetSmall();
+			ic->lineheight = 12;
+			ic->large = 0;
 		} else if ((strcmp(argv[currentarg], "-D") == 0) || (strcmp(argv[currentarg], "--debug")) == 0) {
 			debug = 1;
 		} else if ((strcmp(argv[currentarg], "-d") == 0) || (strcmp(argv[currentarg], "--days")) == 0) {
