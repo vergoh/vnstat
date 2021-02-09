@@ -238,11 +238,11 @@ void drawlegend(IMAGECONTENT *ic, const int x, const int y, const short israte)
 	} else {
 		gdImageString(ic->im, ic->font, x - 12, y, (unsigned char *)"rx   tx rate", ic->ctext);
 
-		gdImageFilledRectangle(ic->im, x - 22, y + 4, x - 22 + ic->font->w, y + 4 + ic->font->w, ic->crx);
-		gdImageRectangle(ic->im, x - 22, y + 4, x - 22 + ic->font->w, y + 4 + ic->font->w, ic->ctext);
+		gdImageFilledRectangle(ic->im, x - 22 - (ic->large * 3), y + 4, x - 22 + ic->font->w - (ic->large * 3), y + 4 + ic->font->w, ic->crx);
+		gdImageRectangle(ic->im, x - 22 - (ic->large * 3), y + 4, x - 22 + ic->font->w - (ic->large * 3), y + 4 + ic->font->w, ic->ctext);
 
-		gdImageFilledRectangle(ic->im, x + 8, y + 4, x + 8 + ic->font->w, y + 4 + ic->font->w, ic->ctx);
-		gdImageRectangle(ic->im, x + 8, y + 4, x + 8 + ic->font->w, y + 4 + ic->font->w, ic->ctext);
+		gdImageFilledRectangle(ic->im, x + 8 + (ic->large * 7), y + 4, x + 8 + ic->font->w + (ic->large * 7), y + 4 + ic->font->w, ic->ctx);
+		gdImageRectangle(ic->im, x + 8 + (ic->large * 7), y + 4, x + 8 + ic->font->w + (ic->large * 7), y + 4 + ic->font->w, ic->ctext);
 	}
 }
 
