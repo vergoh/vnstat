@@ -700,7 +700,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 
 	height += ic->lineheight * rowcount;
 
-	if (rowcount == 1 && (listtype != LT_5min || listtype != LT_Hour)) {
+	if (rowcount == 1 && listtype != LT_5min && listtype != LT_Hour) {
 		height += ic->lineheight;
 	}
 
