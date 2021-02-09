@@ -264,7 +264,7 @@ void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const ui
 				ctxd = ic->cbgoffsetmore;
 				break;
 			case 2:
-				ybeginoffset += 19; // TODO: needs to be dynamic unless adjusted when during the call
+				ybeginoffset += 19;
 				yendoffset += 19;
 				crxd = ic->crx;
 				ctxd = ic->ctx;
@@ -684,21 +684,25 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	rowcount += datainfo.count;
 
 	width = 83 * ic->font->w + 2 + (ic->large * 2);
-	height = 98;
+	height = 62 + 3 * ic->lineheight;
 
 	// less space needed when no estimate or sum is shown (Top, 5min and Hour never have estimate)
 	if ((listtype == LT_Day || listtype == LT_Month || listtype == LT_Year || listtype == LT_Top || listtype == LT_5min || listtype == LT_Hour) &&
 		(datainfo.count < 2 || listtype == LT_Top || listtype == LT_5min || listtype == LT_Hour)) {
-		height = 86;
+		height = 62 + 2 * ic->lineheight;
 		offsety = -16;
 	}
 	// exception for 5min and Hour when having sum shown
 	if ((listtype == LT_5min || listtype == LT_Hour) && datainfo.count > 1 && strlen(ic->dataend) > 0) {
-		height = 98;
+		height = 62 + 3 * ic->lineheight;
 		offsety = 0;
 	}
 
 	height += ic->lineheight * rowcount;
+
+	if (rowcount == 1 && (listtype != LT_5min || listtype != LT_Hour)) {
+		height += ic->lineheight;
+	}
 
 	// "no data available"
 	if (!datainfo.count) {
@@ -708,7 +712,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 
 	if (!ic->showheader) {
 		headermod = 26;
-		height -= 22 - (ic->large * 6);
+		height -= 22;
 	} else {
 		headermod = 0;
 	}
@@ -1062,7 +1066,7 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 
 	/* move graph to center if there's only one to draw for this line */
 	if (data_previous == NULL) {
-		offset = 85; // TODO: this isn't the center for large
+		offset = 85 + (ic->large * 25);
 	}
 
 	textx = x + offset;
