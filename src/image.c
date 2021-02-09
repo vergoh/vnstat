@@ -420,7 +420,7 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate)
 	}
 
 	if (!db_getdata(&datalist, &datainfo, ic->interface.name, "hour", 24) || datainfo.count == 0) {
-		gdImageString(ic->im, ic->font, x + 188, y + 54, (unsigned char *)"no data available", ic->ctext);
+		gdImageString(ic->im, ic->font, x + (32 * ic->font->w), y + 54, (unsigned char *)"no data available", ic->ctext);
 		return 0;
 	}
 
@@ -702,7 +702,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 
 	// "no data available"
 	if (!datainfo.count) {
-		height = 98;
+		height = 98 + (ic->large * 12);
 		offsety = -24;
 	}
 
@@ -848,9 +848,9 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	}
 
 	if (!datainfo.count) {
-		i = 102;
+		i = 17 * ic->font->w;
 		if (cfg.ostyle > 2) {
-			i += 46;
+			i += 8 * ic->font->w;
 		}
 		gdImageString(ic->im, ic->font, textx + i, texty, (unsigned char *)"no data available", ic->ctext);
 		texty += ic->lineheight;
@@ -952,7 +952,7 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int rate)
 	layoutinit(ic, buffer, width, height);
 
 	if (ic->interface.rxtotal == 0 && ic->interface.txtotal == 0) {
-		gdImageString(ic->im, ic->font, 200, 100, (unsigned char *)"no data available", ic->ctext);
+		gdImageString(ic->im, ic->font, 33 * ic->font->w, 100, (unsigned char *)"no data available", ic->ctext);
 		return;
 	}
 
@@ -1036,7 +1036,7 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 	}
 
 	if (!db_getdata(&datalist, &datainfo, ic->interface.name, mode, 2) || datalist == NULL) {
-		gdImageString(ic->im, ic->font, 150, y + 30, (unsigned char *)"no data available", ic->ctext);
+		gdImageString(ic->im, ic->font, 25 * ic->font->w, y + 30, (unsigned char *)"no data available", ic->ctext);
 		return;
 	} else if (datalist->next == NULL) {
 		data_current = datalist;
