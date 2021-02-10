@@ -687,22 +687,26 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	height = 62 + 3 * ic->lineheight;
 
 	// less space needed when no estimate or sum is shown (Top, 5min and Hour never have estimate)
-	if ((listtype == LT_Day || listtype == LT_Month || listtype == LT_Year || listtype == LT_Top || listtype == LT_5min || listtype == LT_Hour) &&
-		(datainfo.count < 2 || listtype == LT_Top || listtype == LT_5min || listtype == LT_Hour)) {
+	if ((!estimatevisible && datainfo.count < 2) || (listtype == LT_Top || listtype == LT_Hour || listtype == LT_5min)) {
 		height = 62 + 2 * ic->lineheight;
 		offsety = -16;
 	}
+
 	// exception for 5min and Hour when having sum shown
 	if ((listtype == LT_5min || listtype == LT_Hour) && datainfo.count > 1 && strlen(ic->dataend) > 0) {
 		height = 62 + 3 * ic->lineheight;
 		offsety = 0;
 	}
 
-	height += ic->lineheight * rowcount;
-
-	if (rowcount == 1 && listtype != LT_5min && listtype != LT_Hour) {
-		height += ic->lineheight;
+	if (ic->large) {
+		if (estimatevisible) {
+			offsety += 2;
+		} else {
+			offsety -= 1;
+		}
 	}
+
+	height += ic->lineheight * rowcount;
 
 	// "no data available"
 	if (!datainfo.count) {
@@ -861,9 +865,9 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	}
 
 	if (cfg.ostyle > 2) {
-		gdImageLine(ic->im, textx + 2, texty + 5, textx + (65 * ic->font->w) + offsetx + 2, texty + 5, ic->cline);
+		gdImageLine(ic->im, textx + 2, texty + 5 - (ic->large * 2), textx + (65 * ic->font->w) + offsetx + 2, texty + 5 - (ic->large * 2), ic->cline);
 	} else {
-		gdImageLine(ic->im, textx + 2, texty + 5, textx + (50 * ic->font->w) + offsetx - 4, texty + 5, ic->cline);
+		gdImageLine(ic->im, textx + 2, texty + 5 - (ic->large * 2), textx + (50 * ic->font->w) + offsetx - 4, texty + 5 - (ic->large * 2), ic->cline);
 	}
 
 	buffer[0] = '\0';

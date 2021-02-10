@@ -188,7 +188,8 @@ void printcfgfile(void)
 	printf("# transparent background (1 = enabled, 0 = disabled)\n");
 	printf("TransparentBg %d\n\n", cfg.transbg);
 
-	printf("# image scale (percent)\n");
+	printf("# image fonts and scale (percent)\n");
+	printf("LargeFonts %d\n", cfg.largefonts);
 	printf("ImageScale %d\n\n", cfg.imagescale);
 
 	printf("# traffic estimate bar style\n");

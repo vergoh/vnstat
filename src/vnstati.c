@@ -122,10 +122,16 @@ void showihelp(IPARAMS *p)
 	printf("      -ne, --noedge                remove edge from output\n");
 	printf("      -nl, --nolegend              remove legend from output\n");
 	printf("      -ru, --rateunit [mode]       swap configured rate unit\n");
-	if (cfg.experimental) {
-		printf("      -S,  --small                 use small fonts\n");
-		printf("      -L,  --large                 use large fonts\n");
+	printf("      -S,  --small                 use small fonts");
+	if (!cfg.largefonts) {
+		printf(" (default)");
 	}
+	printf("\n");
+	printf("      -L,  --large                 use large fonts");
+	if (cfg.largefonts) {
+		printf(" (default)");
+	}
+	printf("\n");
 	printf("      -o,  --output <file>         select output filename\n");
 	printf("      -c,  --cache <minutes>       update output only when too old\n");
 	printf("      -i,  --iface <interface>     select interface");
@@ -280,14 +286,10 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 			}
 		} else if (strcmp(argv[currentarg], "--altdate") == 0) {
 			ic->altdate = 1;
-		} else if (((strcmp(argv[currentarg], "-L") == 0) || (strcmp(argv[currentarg], "--large")) == 0) && cfg.experimental) {
-			ic->font = gdFontGetLarge();
-			ic->lineheight = 16;
-			ic->large = 1;
-		} else if (((strcmp(argv[currentarg], "-S") == 0) || (strcmp(argv[currentarg], "--small")) == 0) && cfg.experimental) {
-			ic->font = gdFontGetSmall();
-			ic->lineheight = 12;
-			ic->large = 0;
+		} else if ((strcmp(argv[currentarg], "-L") == 0) || (strcmp(argv[currentarg], "--large")) == 0) {
+			cfg.largefonts = 1;
+		} else if ((strcmp(argv[currentarg], "-S") == 0) || (strcmp(argv[currentarg], "--small")) == 0) {
+			cfg.largefonts = 0;
 		} else if ((strcmp(argv[currentarg], "-D") == 0) || (strcmp(argv[currentarg], "--debug")) == 0) {
 			debug = 1;
 		} else if ((strcmp(argv[currentarg], "-d") == 0) || (strcmp(argv[currentarg], "--days")) == 0) {
@@ -434,6 +436,16 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 
 	if (p->limit != -1) {
 		cfg.listfivemins = cfg.listhours = cfg.listdays = cfg.listmonths = cfg.listyears = cfg.listtop = cfg.listjsonxml = p->limit;
+	}
+
+	if (cfg.largefonts) {
+		ic->font = gdFontGetLarge();
+		ic->lineheight = 16;
+		ic->large = 1;
+	} else {
+		ic->font = gdFontGetSmall();
+		ic->lineheight = 12;
+		ic->large = 0;
 	}
 }
 

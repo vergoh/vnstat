@@ -1,11 +1,11 @@
-.TH VNSTATI 1 "JANUARY 2020" "version 2.6" "User Manuals"
+.TH VNSTATI 1 "FEBRUARY 2021" "version 2.7" "User Manuals"
 .SH NAME
 vnstati \- png image output support for vnStat
 
 .SH SYNOPSIS
 
 .B vnstati
-.RB [ \-5bcdDehimostvy? ]
+.RB [ \-5bcdDehiLmosStvy? ]
 .RB [ \-\-altdate ]
 .RB [ \-\-begin
 .IR date ]
@@ -35,6 +35,7 @@ vnstati \- png image output support for vnStat
 .IR interface ]
 .RB [ \-\-iface
 .IR interface ]
+.RB [ \-\-large ]
 .RB [ \-\-limit
 .IR limit ]
 .RB [ \-\-locale
@@ -55,6 +56,7 @@ vnstati \- png image output support for vnStat
 .RI [ mode ]]
 .RB [ \-\-scale
 .IR percent ]
+.RB [ \-\-small ]
 .RB [ \-\-style
 .IR number ]
 .RB [ \-\-summary ]
@@ -196,6 +198,10 @@ syntax.  All provided interfaces must be unique and must exist in the database
 when the merge syntax is used.
 
 .TP
+.B "-L, --large"
+Use large fonts in output.
+
+.TP
 .BI "--limit " limit
 Set the maximum number of shown entries in list outputs to
 .IR limit .
@@ -257,6 +263,10 @@ select between bytes (0) and bits (1) regardless of the configuration file setti
 Scale output to given
 .I percent
 resulting in the image being either smaller or larger than the default size.
+
+.TP
+.B "-S, --small"
+Use small fonts in output.
 
 .TP
 .BI "--style " number

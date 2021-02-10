@@ -244,6 +244,9 @@ and most can be changed later from the config file.
 /* no transparency by default */
 #define TRANSBG 0
 
+/* small fonts by default */
+#define LARGEFONTS 0
+
 /* no image scaling by default */
 #define IMAGESCALE 100
 
@@ -285,7 +288,7 @@ typedef struct {
 	int32_t unitmode, rateunitmode, rateunit, bvar, qmode, sampletime, hourlyrate, summaryrate;
 	int32_t monthrotate, monthrotateyears, maxbw, spacecheck, trafficlessentries, transbg, ostyle;
 	int32_t defaultdecimals, hourlydecimals, hourlystyle, is64bit, waldb, dbsynchronous, imagescale;
-	int32_t estimatebarvisible, estimatestyle, barshowsrate;
+	int32_t largefonts, estimatebarvisible, estimatestyle, barshowsrate;
 	char cfgfile[512], logfile[512], pidfile[512];
 	char daemonuser[33], daemongroup[33];
 	int32_t timesyncwait, updateinterval, pollinterval, saveinterval, offsaveinterval, savestatus;

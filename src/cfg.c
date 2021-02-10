@@ -71,6 +71,7 @@ int loadcfg(const char *cfgfile)
 		 {"HourlyRate", 0, &cfg.hourlyrate, 0, 0},
 		 {"SummaryRate", 0, &cfg.summaryrate, 0, 0},
 		 {"TransparentBg", 0, &cfg.transbg, 0, 0},
+		 {"LargeFonts", 0, &cfg.largefonts, 0, 0},
 		 {"ImageScale", 0, &cfg.imagescale, 0, 0},
 		 {"EstimateStyle", 0, &cfg.estimatestyle, 0, 0},
 		 {"BarColumnShowsRate", 0, &cfg.barshowsrate, 0, 0},
@@ -201,6 +202,7 @@ void validatecfg(void)
 	validatebool("DatabaseWriteAheadLogging", &cfg.waldb, WALDB);
 	validateint("DatabaseSynchronous", &cfg.dbsynchronous, DBSYNCHRONOUS, -1, 3);
 	validatebool("TransparentBg", &cfg.transbg, TRANSBG);
+	validatebool("LargeFonts", &cfg.largefonts, LARGEFONTS);
 	validateint("ImageScale", &cfg.imagescale, IMAGESCALE, 50, 500);
 	validateint("EstimateStyle", &cfg.estimatestyle, ESTIMATESTYLE, 0, 2);
 	validatebool("BarColumnShowsRate", &cfg.barshowsrate, BARSHOWSRATE);
@@ -366,6 +368,7 @@ void defaultcfg(void)
 	cfg.dbsynchronous = DBSYNCHRONOUS;
 
 	cfg.transbg = TRANSBG;
+	cfg.largefonts = LARGEFONTS;
 	cfg.imagescale = IMAGESCALE;
 	cfg.estimatestyle = ESTIMATESTYLE;
 	cfg.barshowsrate = BARSHOWSRATE;
