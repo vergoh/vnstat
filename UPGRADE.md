@@ -2,7 +2,7 @@
 # New configuration settings
 
  * 2.7: BarColumnShowsRate, EstimateBarVisible, EstimateStyle, ImageScale,
-        LargeFonts
+        LargeFonts, LineSpacingAdjustment
 
  * 2.4 - 2.6: (none)
 

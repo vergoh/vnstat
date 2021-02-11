@@ -9,6 +9,8 @@
    - Add --large / --small options to image output and LargeFonts
      configuration option for controlling the output font size
    - Add --scale for scaling the image output to a given percent
+   - Add configuration option LineSpacingAdjustment for adjusting
+     the line spacing of list format image outputs
    - Add bar visualizations for traffic estimations
    - Allow writing image output to a filename starting with -
    - Add --initdb to daemon for creating a new empty database without
