@@ -1,4 +1,4 @@
-.TH VNSTAT 1 "JANUARY 2020" "version 2.6" "User Manuals"
+.TH VNSTAT 1 "FEBRUARY 2021" "version 2.7" "User Manuals"
 .SH NAME
 vnstat \- a console-based network traffic monitor
 
@@ -15,6 +15,8 @@ vnstat \- a console-based network traffic monitor
 .RI [ limit ]]
 .RB [ \-\-dbdir
 .RI [ directory ]]
+.RB [ \-\-dbiflist
+.RI [ mode ]]
 .RB [ \-\-debug ]
 .RB [ \-\-end
 .IR date ]
@@ -29,7 +31,8 @@ vnstat \- a console-based network traffic monitor
 .IR interface ]
 .RB [ \-\-iface
 .IR interface ]
-.RB [ \-\-iflist ]
+.RB [ \-\-iflist
+.RI [ mode ]]
 .RB [ \-\-json
 .RI [ mode ]
 .RI [ limit ]]
@@ -144,6 +147,15 @@ as database directory instead of using the directory specified in the configurat
 file or the hardcoded default if no configuration file is available.
 
 .TP
+.BI "--dbiflist " [mode]
+Show list of currently available interfaces. If
+.I mode
+is not defined or is set to 0 then the output will use one line verbose format. If
+.I mode
+is set to 1 then the output will show one interface per line. See also
+.BR "--iflist" .
+
+.TP
 .B "-D, --debug"
 Show additional debug output.
 
@@ -198,8 +210,13 @@ syntax. All provided interfaces must be unique and must exist in the database
 when the merge syntax is used.
 
 .TP
-.B "--iflist"
-Show list of currently available interfaces.
+.BI "--iflist " [mode]
+Show list of interfaces currently in the database. If
+.I mode
+is not defined or is set to 0 then the output will use one line verbose format. If
+.I mode
+is set to 1 then the output will show one interface per line. See also
+.BR "--dbiflist" .
 
 .TP
 .BI "--json " "[mode] [limit]"

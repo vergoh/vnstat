@@ -448,13 +448,34 @@ void parseargs(PARAMS *p, int argc, char **argv)
 				exit(EXIT_FAILURE);
 			}
 		} else if (strcmp(argv[currentarg], "--iflist") == 0) {
-			getifliststring(&p->ifacelist, 1);
-			if (strlen(p->ifacelist)) {
-				printf("Available interfaces: %s\n", p->ifacelist);
-			} else {
-				printf("No usable interfaces found.\n");
+			p->query = 0;
+			if (currentarg + 1 < argc && argv[currentarg + 1][0] != '-') {
+				if (!isdigit(argv[currentarg + 1][0]) || atoi(argv[currentarg + 1]) > 1 || atoi(argv[currentarg + 1]) < 0) {
+					printf("Error: Invalid mode parameter \"%s\" for --iflist.\n", argv[currentarg + 1]);
+					printf(" Valid parameters:\n");
+					printf("    0 - show verbose (default)\n");
+					printf("    1 - show one interface per line\n");
+					exit(EXIT_FAILURE);
+				}
+				p->query = atoi(argv[currentarg + 1]);
+				currentarg++;
 			}
-			free(p->ifacelist);
+			showiflist(p->query);
+			exit(EXIT_SUCCESS);
+		} else if (strcmp(argv[currentarg], "--dbiflist") == 0) {
+			p->query = 0;
+			if (currentarg + 1 < argc && argv[currentarg + 1][0] != '-') {
+				if (!isdigit(argv[currentarg + 1][0]) || atoi(argv[currentarg + 1]) > 1 || atoi(argv[currentarg + 1]) < 0) {
+					printf("Error: Invalid mode parameter \"%s\" for --dbiflist.\n", argv[currentarg + 1]);
+					printf(" Valid parameters:\n");
+					printf("    0 - show verbose (default)\n");
+					printf("    1 - show one interface per line\n");
+					exit(EXIT_FAILURE);
+				}
+				p->query = atoi(argv[currentarg + 1]);
+				currentarg++;
+			}
+			showdbiflist(p->query);
 			exit(EXIT_SUCCESS);
 		} else if (strcmp(argv[currentarg], "--limit") == 0) {
 			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {
@@ -887,4 +908,72 @@ void handleifselection(PARAMS *p)
 	}
 
 	iflistfree(&dbifl);
+}
+
+void showiflist(const int parseable)
+{
+	char *ifacelist = NULL;
+	iflist *ifl = NULL, *ifl_iterator = NULL;
+
+	if (!parseable) {
+		if (!getifliststring(&ifacelist, 1)) {
+			exit(EXIT_FAILURE);
+		}
+		if (strlen(ifacelist)) {
+			printf("Available interfaces: %s\n", ifacelist);
+		} else {
+			printf("No usable interfaces found.\n");
+		}
+		free(ifacelist);
+	} else {
+		if (!getiflist(&ifl, 0, 1)) {
+			exit(EXIT_FAILURE);
+		}
+		ifl_iterator = ifl;
+		while (ifl_iterator != NULL) {
+			printf("%s\n", ifl_iterator->interface);
+			ifl_iterator = ifl_iterator->next;
+		}
+		iflistfree(&ifl);
+	}
+}
+
+void showdbiflist(const int parseable)
+{
+	int dbifcount;
+	iflist *dbifl = NULL, *dbifl_i = NULL;
+
+	if (!db_open_ro()) {
+		printf("Error: Failed to open database \"%s/%s\" in read-only mode.\n", cfg.dbdir, DATABASEFILE);
+		exit(EXIT_FAILURE);
+	}
+
+	dbifcount = db_getiflist(&dbifl);
+	if (dbifcount < 0) {
+		printf("Error: Failed to get interface list from database \"%s/%s\".\n", cfg.dbdir, DATABASEFILE);
+		exit(EXIT_FAILURE);
+	}
+
+	if (dbifcount == 0 && !parseable) {
+		printf("Database is empty.");
+	} else {
+		dbifl_i = dbifl;
+
+		if (!parseable) {
+			printf("Interfaces in database:");
+			while (dbifl_i != NULL) {
+				printf(" %s", dbifl_i->interface);
+				dbifl_i = dbifl_i->next;
+			}
+			printf("\n");
+		} else {
+			while (dbifl_i != NULL) {
+				printf("%s\n", dbifl_i->interface);
+				dbifl_i = dbifl_i->next;
+			}
+		}
+	}
+
+	iflistfree(&dbifl);
+	db_close();
 }

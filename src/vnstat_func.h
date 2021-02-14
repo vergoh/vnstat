@@ -24,5 +24,7 @@ void handleshowdata(PARAMS *p);
 void showoneinterface(PARAMS *p);
 void handletrafficmeters(PARAMS *p);
 void handleifselection(PARAMS *p);
+void showiflist(const int parseable);
+void showdbiflist(const int parseable);
 
 #endif

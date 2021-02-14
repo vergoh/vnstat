@@ -1,24 +1,26 @@
 2.7 / <not released yet>
 
  - Fixed
-   - Possibility of segmentation fault with image list output when
-     database existed but no data was available
-   - ./configure output could show invalid install paths with some
-     parameter combinations (pull request by Severin Glöckner)
+   - Possibility of segmentation fault with image list output when database
+     existed but no data was available
+   - ./configure output could show invalid install paths with some parameter
+     combinations (pull request by Severin Glöckner)
  - New
    - Add --large / --small options to image output and LargeFonts
      configuration option for controlling the output font size
    - Add --scale for scaling the image output to a given percent
-   - Add configuration option LineSpacingAdjustment for adjusting
-     the line spacing of list format image outputs
+   - Add configuration option LineSpacingAdjustment for adjusting the line
+     spacing of list format image outputs
    - Add bar visualizations for traffic estimations
    - Allow writing image output to a filename starting with -
-   - Add --initdb to daemon for creating a new empty database without
-     having the daemon process staying running, doesn't discard data
-     if a database already exists
-   - Add configuration option BarColumnShowsRate to have the bar column
-     in image list outputs be scaled according to the average rate column
-     values when those values are visible, disabled by default
+   - Add --initdb to daemon for creating a new empty database without having
+     the daemon process staying running, doesn't discard data if a database
+     already exists
+   - Add configuration option BarColumnShowsRate to have the bar column in
+     image list outputs be scaled according to the average rate column values
+     when those values are visible, disabled by default
+   - Add --dbiflist for getting a list of interfaces in the database, both
+     --iflist and --dbiflist also get alternative more parseable outputs
 
 
 2.6 / 20-Jan-2020
