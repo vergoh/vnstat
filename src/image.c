@@ -1176,7 +1176,7 @@ void drawfivegraph(IMAGECONTENT *ic, const int rate)
 {
 	int width, height, headermod = 0;
 
-	width = 660;
+	width = 660; // TODO: use same width as hourly graph?
 	height = 300; // TODO: this could probably be made configurable
 
 	if (!ic->showheader) {
@@ -1196,6 +1196,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 {
 	int x = xpos, y = ypos, i = 0, t = 0, rxh = 0, txh = 0, step, s = 0, prev = 0;
 	uint64_t scaleunit, max;
+	time_t timestamp;
 	double ratediv;
 	char buffer[32];
 	struct tm *d;
@@ -1215,6 +1216,8 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 		gdImageString(ic->im, ic->font, x + (32 * ic->font->w), y + 54, (unsigned char *)"no data available", ic->ctext);
 		return 0;
 	}
+
+	// TODO: "no data" situation not handled
 
 	datalist_i = datalist;
 
@@ -1270,6 +1273,8 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 		printf("max divided: %lu\n", max);
 		printf("scaleunit:   %lu\nstep: %d\n", scaleunit, step);
 		printf("pixels per step: %d\n", s);
+		printf("mintime: %lu\nmaxtime: %lu\n", (uint64_t)datainfo.mintime, (uint64_t)datainfo.maxtime);
+		printf("count: %u\n", datainfo.count);
 	}
 
 	/* upper part scale values */
@@ -1304,12 +1309,21 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	gdImageStringUp(ic->im, font, x - 40 - (ic->large * 5), ypos - height / 2 + (rate * 10), (unsigned char *)getimagescale(scaleunit * (unsigned int)i, rate), ic->ctext);
 
 	/* TODO
-		- timestamps need to be checked in case not all slots have been filled
+	    - fix incorrect rendering if ratio between rx and tx results in smaller side being less than FIVEMINHEIGHTOFFSET
 		- last value needs to be scaled if not full 5 minute has passed
+		- indicate somehow areas where the database didn't provide any data?
 	*/
-	i = 0;
-	while (datalist_i != NULL) {
-		d = localtime(&datalist_i->timestamp);
+
+	timestamp = datainfo.maxtime - (576 * 300);
+
+	for (i = 0; i < 576; i++) {
+
+		if (datalist_i == NULL) {
+			break;
+		}
+
+		timestamp += 300;
+		d = localtime(&timestamp);
 
 		if (d->tm_min == 0 && i > 2) {
 			if (d->tm_hour % 2 == 0) {
@@ -1328,14 +1342,17 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 			}
 		}
 
+		if (datalist_i->timestamp > timestamp) {
+			continue;
+		}
+
 		t = (int)(((double)datalist_i->rx / (double)datainfo.maxrx) * (rxh - FIVEMINHEIGHTOFFSET));
-		drawpole(ic, x + i, y - 1, t, ic->crx);
+		drawpole(ic, x + i, y - 1, t, 1, ic->crx);
 
 		t = (int)(((double)datalist_i->tx / (double)datainfo.maxtx) * (txh - FIVEMINHEIGHTOFFSET));
-		drawpole(ic, x + i, y + 1, -1 * t, ic->ctx);
+		drawpole(ic, x + i, y + 1, t, 2, ic->ctx);
 
 		datalist_i = datalist_i->next;
-		i++;
 	}
 
 	dbdatalistfree(&datalist);
@@ -1347,10 +1364,22 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	return 1;
 }
 
-void drawpole(IMAGECONTENT *ic, const int x, const int y, const int length, const int color)
+void drawpole(IMAGECONTENT *ic, const int x, const int y, const int length, const int direction, const int color)
 {
-	if (length != 0) {
-		gdImageLine(ic->im, x, y, x, y - length, color);
+	int len = length;
+
+	if (length > 0) {
+		len--;
+		switch (direction) {
+			case 1:
+				gdImageLine(ic->im, x, y, x, y - len, color);
+				break;
+			case 2:
+				gdImageLine(ic->im, x, y, x, y + len, color);
+				break;
+			default:
+				break;
+		}
 	}
 }
 

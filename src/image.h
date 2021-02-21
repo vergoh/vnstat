@@ -56,7 +56,7 @@ void drawsummary_alltime(IMAGECONTENT *ic, const int x, const int y);
 void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *mode);
 void drawfivegraph(IMAGECONTENT *ic, const int rate);
 int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate, const int height);
-void drawpole(IMAGECONTENT *ic, const int x, const int y, const int length, const int maincolor);
+void drawpole(IMAGECONTENT *ic, const int x, const int y, const int length, const int direction, const int maincolor);
 void drawarrowup(IMAGECONTENT *ic, const int x, const int y);
 void drawarrowright(IMAGECONTENT *ic, const int x, const int y);
 void hextorgb(char *input, int *rgb);
