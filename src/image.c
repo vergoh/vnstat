@@ -21,6 +21,7 @@ void initimagecontent(IMAGECONTENT *ic)
 
 void drawimage(IMAGECONTENT *ic)
 {
+	// TODO: add checks somewhere that configuration has suitable retention times for selected output?
 	switch (cfg.qmode) {
 		case 1:
 			drawlist(ic, "day");
@@ -51,6 +52,9 @@ void drawimage(IMAGECONTENT *ic)
 			break;
 		case 9:
 			drawlist(ic, "fiveminute");
+			break;
+		case 10:
+			drawfivegraph(ic, cfg.hourlyrate);
 			break;
 		default:
 			printf("Error: No such query mode: %d\n", cfg.qmode);
@@ -310,7 +314,7 @@ void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const ui
 	}
 }
 
-void drawpole(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max)
+void drawpoles(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max)
 {
 	int l;
 
@@ -505,6 +509,7 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate)
 
 	for (i = step; (uint64_t)(scaleunit * (unsigned int)i) <= max; i = i + step) {
 		s = (int)((121 + extray) * (((double)scaleunit * (unsigned int)i) / (double)max));
+		// TODO: change to use dashed lines?
 		gdImageLine(ic->im, x + 36, y + 124 - s, x + 460 + extrax, y + 124 - s, ic->cline);
 		gdImageLine(ic->im, x + 36, y + 124 - ((s + prev) / 2), x + 460 + extrax, y + 124 - ((s + prev) / 2), ic->clinel);
 		gdImageString(ic->im, font, x + 16 - (ic->large * 3), y + 121 - s - (ic->large * 3), (unsigned char *)getimagevalue(scaleunit * (unsigned int)i, 3, rate), ic->ctext);
@@ -528,7 +533,7 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate)
 		}
 		snprintf(buffer, 32, "%02d ", s);
 		gdImageString(ic->im, font, x + 440 - (i * (17 + ic->large * 6)) + extrax, y + 128, (unsigned char *)buffer, ic->ctext);
-		drawpole(ic, x + 438 - (i * (17 + ic->large * 6)) + extrax, y - extray, 124 + extray, hourdata[s].rx, hourdata[s].tx, max);
+		drawpoles(ic, x + 438 - (i * (17 + ic->large * 6)) + extrax, y - extray, 124 + extray, hourdata[s].rx, hourdata[s].tx, max);
 	}
 
 	/* axis */
@@ -536,6 +541,7 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate)
 	gdImageLine(ic->im, x + 36, y - 10 - extray, x + 36, y + 124 + 4, ic->ctext);
 
 	/* arrows */
+	// TODO: use arrow functions
 	gdImageLine(ic->im, x + 465 + extrax, y + 124, x + 462 + extrax, y + 122, ic->ctext);
 	gdImageLine(ic->im, x + 465 + extrax, y + 124, x + 462 + extrax, y + 126, ic->ctext);
 	gdImageLine(ic->im, x + 462 + extrax, y + 122, x + 462 + extrax, y + 126, ic->ctext);
@@ -548,7 +554,7 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate)
 
 void drawhourly(IMAGECONTENT *ic, const int rate)
 {
-	int width, height, headermod;
+	int width, height, headermod = 0;
 	char buffer[512];
 
 	width = 500 + (ic->large * 168);
@@ -557,8 +563,6 @@ void drawhourly(IMAGECONTENT *ic, const int rate)
 	if (!ic->showheader) {
 		headermod = 26;
 		height -= 22;
-	} else {
-		headermod = 0;
 	}
 
 	ic->im = gdImageCreate(width, height);
@@ -1195,6 +1199,217 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 	data_current = NULL;
 	data_previous = NULL;
 	dbdatalistfree(&datalist);
+}
+
+void drawfivegraph(IMAGECONTENT *ic, const int rate)
+{
+	int width, height, headermod = 0;
+	char buffer[512];
+
+	width = 660;
+	height = 300; // TODO: this could probably be made configurable
+
+	if (!ic->showheader) {
+		headermod = 26;
+		height -= 22;
+	}
+
+	ic->im = gdImageCreate(width, height);
+
+	colorinit(ic); // TODO: this could be done in drawimage and deduplicated from other places too
+
+	// TODO: more things to deduplicate
+	if (strlen(ic->headertext)) {
+		strncpy_nt(buffer, ic->headertext, 65);
+	} else {
+		if (strcmp(ic->interface.name, ic->interface.alias) == 0 || strlen(ic->interface.alias) == 0) {
+			snprintf(buffer, 512, "%s / 5 minute", ic->interface.name);
+		} else {
+			snprintf(buffer, 512, "%s (%s) / 5 minute", ic->interface.alias, ic->interface.name);
+		}
+	}
+
+	layoutinit(ic, buffer, width, height);
+
+	if (drawfiveminutes(ic, 12, height - 35 - headermod, rate, height - 80)) {
+		drawlegend(ic, width / 2 - (ic->large * 10), height - 18 - headermod, 0);
+	}
+}
+
+int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate, const int height)
+{
+	int x = xpos, y = ypos, i = 0, t = 0, rxh = 0, txh = 0, step, s = 0, prev = 0;
+	uint64_t scaleunit, max;
+	double ratediv;
+	char buffer[32];
+	struct tm *d;
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+	gdFontPtr font;
+
+	if (ic->large) {
+		font = gdFontGetSmall();
+	} else {
+		font = gdFontGetTiny();
+	}
+
+	// TODO: possibly need to use db_getdata_range here for getting the last 48 hours instead
+	// of taking the last N entries, 576 = 60 minutes / 5 minutes * 48 hours (12 measurements per hour)
+	if (!db_getdata(&datalist, &datainfo, ic->interface.name, "fiveminute", 576) || datainfo.count == 0) {
+		gdImageString(ic->im, ic->font, x + (32 * ic->font->w), y + 54, (unsigned char *)"no data available", ic->ctext);
+		return 0;
+	}
+
+	datalist_i = datalist;
+
+	if (cfg.rateunit) {
+		ratediv = 37.5; /* x * 8 / 300 */
+	} else {
+		ratediv = 300;
+	}
+
+	/* axis */
+	x += 36;
+	gdImageLine(ic->im, x, y, x + FIVEMINWIDTHFULL, y, ic->ctext);
+	gdImageLine(ic->im, x + 4, y + 4, x + 4, y - height, ic->ctext);
+
+	/* arrows */
+	drawarrowup(ic, x + 4, y - height);
+	drawarrowright(ic, x + FIVEMINWIDTHFULL, y);
+
+	max = datainfo.maxrx + datainfo.maxtx;
+
+	if (datainfo.maxrx > datainfo.maxtx) {
+		txh = (int)(((double)datainfo.maxtx / (double)max) * height);
+		rxh = height - txh;
+		max = (uint64_t)((double)datainfo.maxrx / ratediv);
+		t = rxh;
+	} else {
+		rxh = (int)(((double)datainfo.maxrx / (double)max) * height);
+		txh = height - rxh;
+		max = (uint64_t)((double)datainfo.maxtx / ratediv);
+		t = txh;
+	}
+
+	/* center line */
+	x += 5;
+	y -= txh;
+	gdImageLine(ic->im, x, y, x + FIVEMINWIDTH - 1, y, ic->ctext);
+	gdImageString(ic->im, font, x - 22 - (ic->large * 3), y - 4 - (ic->large * 3), (unsigned char *)"  0", ic->ctext);
+
+	/* scale values */
+	scaleunit = getscale(max, rate);
+
+	s = (int)(((double)scaleunit / (double)max) * (t - FIVEMINHEIGHTOFFSET));
+	if (s < FIVEMINSCALEMINPIXELS) {
+		step = 2;
+	} else {
+		step = 1;
+	}
+
+	if (debug) {
+		printf("maxrx: %lu\n", datainfo.maxrx);
+		printf("maxtx: %lu\n", datainfo.maxtx);
+		printf("rxh: %d     txh: %d\n", rxh, txh);
+		printf("max divided: %lu\n", max);
+		printf("scaleunit:   %lu\nstep: %d\n", scaleunit, step);
+		printf("pixels per step: %d\n", s);
+	}
+
+	/* upper part scale values */
+	y--; // adjust to start above center line
+	for (i = 1 * step; i * s < rxh; i = i + step) {
+		gdImageDashedLine(ic->im, x, y - (i * s), x + FIVEMINWIDTH - 1, y - (i * s), ic->cline);
+		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + FIVEMINWIDTH - 1, y - prev - (step * s) / 2, ic->clinel);
+		gdImageString(ic->im, font, x - 22 - (ic->large * 3), y - 3 - (i * s) - (ic->large * 3), (unsigned char *)getimagevalue(scaleunit * (unsigned int)i, 3, rate), ic->ctext);
+		prev = i * s;
+	}
+	if ((prev + (step * s) / 2) < (rxh - FIVEMINHEIGHTOFFSET)) {
+		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + FIVEMINWIDTH - 1, y - prev - (step * s) / 2, ic->clinel);
+	}
+
+	y += 2; // adjust to start below center line
+	prev = 0;
+
+	/* lower part scale values */
+	for (i = 1 * step; i * s < txh; i = i + step) {
+		gdImageDashedLine(ic->im, x, y + (i * s), x + FIVEMINWIDTH - 1, y + (i * s), ic->cline);
+		gdImageDashedLine(ic->im, x, y + prev + (step * s) / 2, x + FIVEMINWIDTH - 1, y + prev + (step * s) / 2, ic->clinel);
+		gdImageString(ic->im, font, x - 22 - (ic->large * 3), y - 3 + (i * s) - (ic->large * 3), (unsigned char *)getimagevalue(scaleunit * (unsigned int)i, 3, rate), ic->ctext);
+		prev = i * s;
+	}
+	if ((prev + (step * s) / 2) < (txh - FIVEMINHEIGHTOFFSET)) {
+		gdImageDashedLine(ic->im, x, y + prev + (step * s) / 2, x + FIVEMINWIDTH - 1, y + prev + (step * s) / 2, ic->clinel);
+	}
+
+	y--; // y is now back on center line
+
+	/* scale text */
+	gdImageStringUp(ic->im, font, x - 40 - (ic->large * 5), ypos - height / 2 + (rate * 10), (unsigned char *)getimagescale(scaleunit * (unsigned int)i, rate), ic->ctext);
+
+	/* TODO
+		- timestamps need to be checked in case not all slots have been filled
+		- last value needs to be scaled if not full 5 minute has passed
+	*/
+	i = 0;
+	while (datalist_i != NULL) {
+		d = localtime(&datalist_i->timestamp);
+
+		if (d->tm_min == 0 && i > 2) {
+			if (d->tm_hour % 2 == 0) {
+				if (d->tm_hour == 0) {
+					gdImageLine(ic->im, x + i, y + txh - 1, x + i, y - rxh - 1, ic->cline);
+				} else {
+					gdImageLine(ic->im, x + i, y + txh - 1, x + i, y - rxh - 1, ic->cbgoffset);
+				}
+
+				if (i > 2 * font->w) {
+					snprintf(buffer, 32, "%02d", d->tm_hour);
+					gdImageString(ic->im, font, x + i - font->w + 1, y + txh - FIVEMINHEIGHTOFFSET + font->h - (ic->large * 6), (unsigned char *)buffer, ic->ctext);
+				}
+			} else {
+				gdImageLine(ic->im, x + i, y + txh - 1, x + i, y - rxh - 1, ic->cbgoffset);
+			}
+		}
+
+		t = (int)(((double)datalist_i->rx / (double)datainfo.maxrx) * (rxh - FIVEMINHEIGHTOFFSET));
+		drawpole(ic, x + i, y - 1, t, ic->crx);
+
+		t = (int)(((double)datalist_i->tx / (double)datainfo.maxtx) * (txh - FIVEMINHEIGHTOFFSET));
+		drawpole(ic, x + i, y + 1, -1 * t, ic->ctx);
+
+		datalist_i = datalist_i->next;
+		i++;
+	}
+
+	dbdatalistfree(&datalist);
+
+	/* redraw center line */
+	x = xpos + 40;
+	gdImageLine(ic->im, x, y, x + FIVEMINWIDTH, y, ic->ctext);
+
+	return 1;
+}
+
+void drawpole(IMAGECONTENT *ic, const int x, const int y, const int length, const int color)
+{
+	if (length != 0) {
+		gdImageLine(ic->im, x, y, x, y - length, color);
+	}
+}
+
+void drawarrowup(IMAGECONTENT *ic, const int x, const int y)
+{
+	gdImageLine(ic->im, x, y - 1, x + 2, y + 2, ic->ctext);
+	gdImageLine(ic->im, x, y - 1, x - 2, y + 2, ic->ctext);
+	gdImageLine(ic->im, x - 2, y + 2, x + 2, y + 2, ic->ctext);
+}
+
+void drawarrowright(IMAGECONTENT *ic, const int x, const int y)
+{
+	gdImageLine(ic->im, x + 1, y, x - 2, y - 2, ic->ctext);
+	gdImageLine(ic->im, x + 1, y, x - 2, y + 2, ic->ctext);
+	gdImageLine(ic->im, x - 2, y - 2, x - 2, y + 2, ic->ctext);
 }
 
 void hextorgb(char *input, int *rgb)

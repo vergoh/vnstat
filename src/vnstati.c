@@ -109,6 +109,9 @@ void showihelp(IPARAMS *p)
 	printf("vnStat image output %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
 
 	printf("      -5,  --fiveminutes [limit]   output 5 minutes\n");
+	if (cfg.experimental) {
+		printf("      -5g, --fivegraph            output 5 minutes graph\n");
+	}
 	printf("      -h,  --hours [limit]         output hours\n");
 	printf("      -hg, --hoursgraph            output hours graph\n");
 	printf("      -d,  --days [limit]          output days\n");
@@ -356,6 +359,10 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 			cfg.qmode = 5;
 		} else if ((strcmp(argv[currentarg], "-hg") == 0) || (strcmp(argv[currentarg], "--hoursgraph")) == 0) {
 			cfg.qmode = 7;
+		} else if ((strcmp(argv[currentarg], "-5g") == 0) || (strcmp(argv[currentarg], "--fivegraph")) == 0) {
+			if (cfg.experimental) {
+				cfg.qmode = 10;
+			}
 		} else if ((strcmp(argv[currentarg], "-hs") == 0) || (strcmp(argv[currentarg], "--hsummary")) == 0) {
 			cfg.qmode = 51;
 		} else if ((strcmp(argv[currentarg], "-vs") == 0) || (strcmp(argv[currentarg], "--vsummary")) == 0) {

@@ -661,17 +661,17 @@ START_TEST(element_output_check)
 	drawbar(&ic, 1050, 320, 400, 0, 100, 130, 0);
 	drawbar(&ic, 1050, 340, 400, 100, 0, 130, 0);
 
-	drawpole(&ic, 1050, 360, 400, 50, 50, 100);
-	drawpole(&ic, 1070, 360, 400, 25, 75, 100);
-	drawpole(&ic, 1090, 360, 400, 75, 25, 100);
-	drawpole(&ic, 1110, 360, 400, 0, 100, 100);
-	drawpole(&ic, 1130, 360, 400, 100, 0, 100);
+	drawpoles(&ic, 1050, 360, 400, 50, 50, 100);
+	drawpoles(&ic, 1070, 360, 400, 25, 75, 100);
+	drawpoles(&ic, 1090, 360, 400, 75, 25, 100);
+	drawpoles(&ic, 1110, 360, 400, 0, 100, 100);
+	drawpoles(&ic, 1130, 360, 400, 100, 0, 100);
 
-	drawpole(&ic, 1150, 360, 400, 50, 50, 130);
-	drawpole(&ic, 1170, 360, 400, 25, 75, 130);
-	drawpole(&ic, 1190, 360, 400, 75, 25, 130);
-	drawpole(&ic, 1210, 360, 400, 0, 100, 130);
-	drawpole(&ic, 1230, 360, 400, 100, 0, 130);
+	drawpoles(&ic, 1150, 360, 400, 50, 50, 130);
+	drawpoles(&ic, 1170, 360, 400, 25, 75, 130);
+	drawpoles(&ic, 1190, 360, 400, 75, 25, 130);
+	drawpoles(&ic, 1210, 360, 400, 0, 100, 130);
+	drawpoles(&ic, 1230, 360, 400, 100, 0, 130);
 
 	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 400, (unsigned char *)"Color: ctext", ic.ctext);
 	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 420, (unsigned char *)"Color: cedge", ic.cedge);
