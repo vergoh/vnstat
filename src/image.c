@@ -509,15 +509,14 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate)
 
 	for (i = step; (uint64_t)(scaleunit * (unsigned int)i) <= max; i = i + step) {
 		s = (int)((121 + extray) * (((double)scaleunit * (unsigned int)i) / (double)max));
-		// TODO: change to use dashed lines?
-		gdImageLine(ic->im, x + 36, y + 124 - s, x + 460 + extrax, y + 124 - s, ic->cline);
-		gdImageLine(ic->im, x + 36, y + 124 - ((s + prev) / 2), x + 460 + extrax, y + 124 - ((s + prev) / 2), ic->clinel);
+		gdImageDashedLine(ic->im, x + 36, y + 124 - s, x + 460 + extrax, y + 124 - s, ic->cline);
+		gdImageDashedLine(ic->im, x + 36, y + 124 - ((s + prev) / 2), x + 460 + extrax, y + 124 - ((s + prev) / 2), ic->clinel);
 		gdImageString(ic->im, font, x + 16 - (ic->large * 3), y + 121 - s - (ic->large * 3), (unsigned char *)getimagevalue(scaleunit * (unsigned int)i, 3, rate), ic->ctext);
 		prev = s;
 	}
 	s = (int)((121 + extray) * (((double)scaleunit * (unsigned int)i) / (double)max));
 	if (((s + prev) / 2) <= (128 + extray)) {
-		gdImageLine(ic->im, x + 36, y + 124 - ((s + prev) / 2), x + 460 + extrax, y + 124 - ((s + prev) / 2), ic->clinel);
+		gdImageDashedLine(ic->im, x + 36, y + 124 - ((s + prev) / 2), x + 460 + extrax, y + 124 - ((s + prev) / 2), ic->clinel);
 	} else {
 		i = i - step;
 	}
