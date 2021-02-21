@@ -540,13 +540,8 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate)
 	gdImageLine(ic->im, x + 36, y - 10 - extray, x + 36, y + 124 + 4, ic->ctext);
 
 	/* arrows */
-	// TODO: use arrow functions
-	gdImageLine(ic->im, x + 465 + extrax, y + 124, x + 462 + extrax, y + 122, ic->ctext);
-	gdImageLine(ic->im, x + 465 + extrax, y + 124, x + 462 + extrax, y + 126, ic->ctext);
-	gdImageLine(ic->im, x + 462 + extrax, y + 122, x + 462 + extrax, y + 126, ic->ctext);
-	gdImageLine(ic->im, x + 36, y - 9 - extray, x + 38, y - 6 - extray, ic->ctext);
-	gdImageLine(ic->im, x + 36, y - 9 - extray, x + 34, y - 6 - extray, ic->ctext);
-	gdImageLine(ic->im, x + 34, y - 6 - extray, x + 38, y - 6 - extray, ic->ctext);
+	drawarrowup(ic, x + 36, y - 9 - extray);
+	drawarrowright(ic, x + 465 + extrax, y + 124);
 
 	return 1;
 }
@@ -1273,8 +1268,8 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	gdImageLine(ic->im, x + 4, y + 4, x + 4, y - height, ic->ctext);
 
 	/* arrows */
-	drawarrowup(ic, x + 4, y - height);
-	drawarrowright(ic, x + FIVEMINWIDTHFULL, y);
+	drawarrowup(ic, x + 4, y - 1 - height);
+	drawarrowright(ic, x + 1 + FIVEMINWIDTHFULL, y);
 
 	max = datainfo.maxrx + datainfo.maxtx;
 
@@ -1399,16 +1394,18 @@ void drawpole(IMAGECONTENT *ic, const int x, const int y, const int length, cons
 
 void drawarrowup(IMAGECONTENT *ic, const int x, const int y)
 {
-	gdImageLine(ic->im, x, y - 1, x + 2, y + 2, ic->ctext);
-	gdImageLine(ic->im, x, y - 1, x - 2, y + 2, ic->ctext);
-	gdImageLine(ic->im, x - 2, y + 2, x + 2, y + 2, ic->ctext);
+	gdImageLine(ic->im, x, y, x + 2, y + 3, ic->ctext);
+	gdImageLine(ic->im, x, y, x - 2, y + 3, ic->ctext);
+	gdImageLine(ic->im, x - 2, y + 3, x + 2, y + 3, ic->ctext);
+	gdImageLine(ic->im, x, y + 1, x, y - 1, ic->ctext);
 }
 
 void drawarrowright(IMAGECONTENT *ic, const int x, const int y)
 {
-	gdImageLine(ic->im, x + 1, y, x - 2, y - 2, ic->ctext);
-	gdImageLine(ic->im, x + 1, y, x - 2, y + 2, ic->ctext);
-	gdImageLine(ic->im, x - 2, y - 2, x - 2, y + 2, ic->ctext);
+	gdImageLine(ic->im, x, y, x - 3, y - 2, ic->ctext);
+	gdImageLine(ic->im, x, y, x - 3, y + 2, ic->ctext);
+	gdImageLine(ic->im, x - 3, y - 2, x - 3, y + 2, ic->ctext);
+	gdImageLine(ic->im, x + 1, y, x - 1, y, ic->ctext);
 }
 
 void hextorgb(char *input, int *rgb)
