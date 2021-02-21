@@ -17,6 +17,8 @@ void initimagecontent(IMAGECONTENT *ic)
 	ic->headertext[0] = '\0';
 	ic->databegin[0] = '\0';
 	ic->dataend[0] = '\0';
+	ic->interface.name[0] = '\0';
+	ic->interface.alias[0] = '\0';
 }
 
 void drawimage(IMAGECONTENT *ic)
@@ -191,7 +193,7 @@ void colorinitcheck(const char *color, const int value, const char *cfgtext, con
 void layoutinit(IMAGECONTENT *ic, char *title, const int width, const int height)
 {
 	struct tm *d;
-	char datestring[64];
+	char datestring[64], buffer[512];
 	gdFontPtr datefont;
 
 	if (ic->large) {
@@ -212,8 +214,19 @@ void layoutinit(IMAGECONTENT *ic, char *title, const int width, const int height
 
 	/* titlebox with title */
 	if (ic->showheader) {
+
+		if (strlen(ic->headertext)) {
+			strncpy_nt(buffer, ic->headertext, 65);
+		} else {
+			if (strcmp(ic->interface.name, ic->interface.alias) == 0 || strlen(ic->interface.alias) == 0) {
+				snprintf(buffer, 512, "%s%s", ic->interface.name, title);
+			} else {
+				snprintf(buffer, 512, "%s (%s)%s", ic->interface.alias, ic->interface.name, title);
+			}
+		}
+
 		gdImageFilledRectangle(ic->im, 2 + ic->showedge, 2 + ic->showedge, width - 3 - ic->showedge, 24, ic->cheader);
-		gdImageString(ic->im, gdFontGetGiant(), 12, 5 + ic->showedge, (unsigned char *)title, ic->cheadertitle);
+		gdImageString(ic->im, gdFontGetGiant(), 12, 5 + ic->showedge, (unsigned char *)buffer, ic->cheadertitle);
 	}
 
 	/* date */
@@ -551,7 +564,6 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate)
 void drawhourly(IMAGECONTENT *ic, const int rate)
 {
 	int width, height, headermod = 0;
-	char buffer[512];
 
 	width = 500 + (ic->large * 168);
 	height = 200 + (ic->large * 48);
@@ -562,18 +574,8 @@ void drawhourly(IMAGECONTENT *ic, const int rate)
 	}
 
 	imageinit(ic, width, height);
+	layoutinit(ic, " / hourly", width, height);
 
-	if (strlen(ic->headertext)) {
-		strncpy_nt(buffer, ic->headertext, 65);
-	} else {
-		if (strcmp(ic->interface.name, ic->interface.alias) == 0 || strlen(ic->interface.alias) == 0) {
-			snprintf(buffer, 512, "%s / hourly", ic->interface.name);
-		} else {
-			snprintf(buffer, 512, "%s (%s) / hourly", ic->interface.alias, ic->interface.name);
-		}
-	}
-
-	layoutinit(ic, buffer, width, height);
 	if (drawhours(ic, 12, 46 - headermod + (ic->large * 40), rate)) {
 		drawlegend(ic, 242 + (ic->large * 84), 183 - headermod + (ic->large * 46), 0);
 	}
@@ -708,18 +710,9 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		headermod = 0;
 	}
 
+	snprintf(buffer, 512, " / %s", titlename);
+
 	imageinit(ic, width, height);
-
-	if (strlen(ic->headertext)) {
-		strncpy_nt(buffer, ic->headertext, 65);
-	} else {
-		if (strcmp(ic->interface.name, ic->interface.alias) == 0 || strlen(ic->interface.alias) == 0) {
-			snprintf(buffer, 512, "%s / %s", ic->interface.name, titlename);
-		} else {
-			snprintf(buffer, 512, "%s (%s) / %s", ic->interface.alias, ic->interface.name, titlename);
-		}
-	}
-
 	layoutinit(ic, buffer, width, height);
 
 	if (datainfo.count) {
@@ -920,7 +913,6 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 void drawsummary(IMAGECONTENT *ic, const int layout, const int rate)
 {
 	int width, height, headermod;
-	char buffer[512];
 
 	switch (layout) {
 		// horizontal
@@ -948,18 +940,7 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int rate)
 	}
 
 	imageinit(ic, width, height);
-
-	if (strlen(ic->headertext)) {
-		strncpy_nt(buffer, ic->headertext, 65);
-	} else {
-		if (strcmp(ic->interface.name, ic->interface.alias) == 0 || strlen(ic->interface.alias) == 0) {
-			snprintf(buffer, 512, "%s", ic->interface.name);
-		} else {
-			snprintf(buffer, 512, "%s (%s)", ic->interface.alias, ic->interface.name);
-		}
-	}
-
-	layoutinit(ic, buffer, width, height);
+	layoutinit(ic, "", width, height);
 
 	if (ic->interface.rxtotal == 0 && ic->interface.txtotal == 0) {
 		gdImageString(ic->im, ic->font, 33 * ic->font->w, 100, (unsigned char *)"no data available", ic->ctext);
@@ -1194,7 +1175,6 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 void drawfivegraph(IMAGECONTENT *ic, const int rate)
 {
 	int width, height, headermod = 0;
-	char buffer[512];
 
 	width = 660;
 	height = 300; // TODO: this could probably be made configurable
@@ -1205,19 +1185,7 @@ void drawfivegraph(IMAGECONTENT *ic, const int rate)
 	}
 
 	imageinit(ic, width, height);
-
-	// TODO: more things to deduplicate
-	if (strlen(ic->headertext)) {
-		strncpy_nt(buffer, ic->headertext, 65);
-	} else {
-		if (strcmp(ic->interface.name, ic->interface.alias) == 0 || strlen(ic->interface.alias) == 0) {
-			snprintf(buffer, 512, "%s / 5 minute", ic->interface.name);
-		} else {
-			snprintf(buffer, 512, "%s (%s) / 5 minute", ic->interface.alias, ic->interface.name);
-		}
-	}
-
-	layoutinit(ic, buffer, width, height);
+	layoutinit(ic, " / 5 minute", width, height);
 
 	if (drawfiveminutes(ic, 12, height - 35 - headermod, rate, height - 80)) {
 		drawlegend(ic, width / 2 - (ic->large * 10), height - 18 - headermod, 0);
