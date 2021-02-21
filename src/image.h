@@ -38,7 +38,7 @@ void drawimage(IMAGECONTENT *ic);
 #if HAVE_DECL_GD_NEAREST_NEIGHBOUR
 void scaleimage(IMAGECONTENT *ic);
 #endif
-void colorinit(IMAGECONTENT *ic);
+void imageinit(IMAGECONTENT *ic, const int width, const int height);
 void colorinitcheck(const char *color, const int value, const char *cfgtext, const int *rgb);
 void layoutinit(IMAGECONTENT *ic, char *title, const int width, const int height);
 void drawlegend(IMAGECONTENT *ic, const int x, const int y, const short israte);

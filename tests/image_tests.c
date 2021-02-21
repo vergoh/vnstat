@@ -12,12 +12,11 @@ START_TEST(initimagecontent_does_not_crash)
 }
 END_TEST
 
-START_TEST(colorinit_does_not_crash)
+START_TEST(imageinit_does_not_crash)
 {
 	IMAGECONTENT ic;
 	defaultcfg();
-	ic.im = gdImageCreate(2, 2);
-	colorinit(&ic);
+	imageinit(&ic, 2, 2);
 	gdImageDestroy(ic.im);
 }
 END_TEST
@@ -27,8 +26,7 @@ START_TEST(layoutinit_does_not_crash)
 	IMAGECONTENT ic;
 	defaultcfg();
 	initimagecontent(&ic);
-	ic.im = gdImageCreate(640, 480);
-	colorinit(&ic);
+	imageinit(&ic, 640, 480);
 	ic.interface.updated = time(NULL);
 	layoutinit(&ic, "testing 123", 640, 480);
 	gdImageDestroy(ic.im);
@@ -412,8 +410,7 @@ START_TEST(libgd_output_comparison)
 
 	defaultcfg();
 	initimagecontent(&ic);
-	ic.im = gdImageCreate(x, y);
-	colorinit(&ic);
+	imageinit(&ic, x, y);
 	ic.interface.updated = (time_t)get_timestamp(2001, 2, 3, 4, 5);
 	layoutinit(&ic, "vnstati libgd output comparison", x, y);
 
@@ -613,8 +610,7 @@ START_TEST(element_output_check)
 
 	defaultcfg();
 	initimagecontent(&ic);
-	ic.im = gdImageCreate(x, y);
-	colorinit(&ic);
+	imageinit(&ic, x, y);
 	ic.interface.updated = (time_t)get_timestamp(2012, 3, 4, 5, 6);
 	layoutinit(&ic, "donut with 0.2% input steps and other elements", x, y);
 
@@ -702,7 +698,7 @@ void add_image_tests(Suite *s)
 	tcase_add_unchecked_fixture(tc_image, setup, teardown);
 	tcase_set_timeout(tc_image, 10);
 	tcase_add_test(tc_image, initimagecontent_does_not_crash);
-	tcase_add_test(tc_image, colorinit_does_not_crash);
+	tcase_add_test(tc_image, imageinit_does_not_crash);
 	tcase_add_test(tc_image, layoutinit_does_not_crash);
 	tcase_add_test(tc_image, getimagevalue_zeropadding);
 	tcase_add_test(tc_image, getimagevalue_normal);

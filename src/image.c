@@ -103,9 +103,11 @@ void scaleimage(IMAGECONTENT *ic)
 }
 #endif
 
-void colorinit(IMAGECONTENT *ic)
+void imageinit(IMAGECONTENT *ic, const int width, const int height)
 {
 	int rgb[3];
+
+	ic->im = gdImageCreate(width, height);
 
 	/* text, edge and header colors */
 	hextorgb(cfg.ctext, rgb);
@@ -559,9 +561,7 @@ void drawhourly(IMAGECONTENT *ic, const int rate)
 		height -= 22;
 	}
 
-	ic->im = gdImageCreate(width, height);
-
-	colorinit(ic);
+	imageinit(ic, width, height);
 
 	if (strlen(ic->headertext)) {
 		strncpy_nt(buffer, ic->headertext, 65);
@@ -708,9 +708,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		headermod = 0;
 	}
 
-	ic->im = gdImageCreate(width, height);
-
-	colorinit(ic);
+	imageinit(ic, width, height);
 
 	if (strlen(ic->headertext)) {
 		strncpy_nt(buffer, ic->headertext, 65);
@@ -949,9 +947,7 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int rate)
 		headermod = 0;
 	}
 
-	ic->im = gdImageCreate(width, height);
-
-	colorinit(ic);
+	imageinit(ic, width, height);
 
 	if (strlen(ic->headertext)) {
 		strncpy_nt(buffer, ic->headertext, 65);
@@ -1208,9 +1204,7 @@ void drawfivegraph(IMAGECONTENT *ic, const int rate)
 		height -= 22;
 	}
 
-	ic->im = gdImageCreate(width, height);
-
-	colorinit(ic); // TODO: this could be done in drawimage and deduplicated from other places too
+	imageinit(ic, width, height);
 
 	// TODO: more things to deduplicate
 	if (strlen(ic->headertext)) {
