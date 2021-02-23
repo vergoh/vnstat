@@ -1176,7 +1176,7 @@ void drawfivegraph(IMAGECONTENT *ic, const int rate)
 {
 	int width, height, headermod = 0;
 
-	width = 660; // TODO: use same width as hourly graph?
+	width = 668;
 	height = 300; // TODO: this could probably be made configurable
 
 	if (!ic->showheader) {
@@ -1187,8 +1187,8 @@ void drawfivegraph(IMAGECONTENT *ic, const int rate)
 	imageinit(ic, width, height);
 	layoutinit(ic, " / 5 minute", width, height);
 
-	if (drawfiveminutes(ic, 12, height - 35 - headermod, rate, height - 80)) {
-		drawlegend(ic, width / 2 - (ic->large * 10), height - 18 - headermod, 0);
+	if (drawfiveminutes(ic, 16, height - 37 - headermod, rate, height - 80)) {
+		drawlegend(ic, width / 2 - (ic->large * 10), height - 19 - headermod, 0);
 	}
 }
 
@@ -1239,12 +1239,12 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	max = datainfo.maxrx + datainfo.maxtx;
 
 	if (datainfo.maxrx > datainfo.maxtx) {
-		txh = (int)(((double)datainfo.maxtx / (double)max) * height);
+		txh = (int)round(((double)datainfo.maxtx / (double)max) * height);
 		rxh = height - txh;
 		max = (uint64_t)((double)datainfo.maxrx / ratediv);
 		t = rxh;
 	} else {
-		rxh = (int)(((double)datainfo.maxrx / (double)max) * height);
+		rxh = (int)round(((double)datainfo.maxrx / (double)max) * height);
 		txh = height - rxh;
 		max = (uint64_t)((double)datainfo.maxtx / ratediv);
 		t = txh;
@@ -1254,7 +1254,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	x += 5;
 	y -= txh;
 	gdImageLine(ic->im, x, y, x + FIVEMINWIDTH - 1, y, ic->ctext);
-	gdImageString(ic->im, font, x - 22 - (ic->large * 3), y - 4 - (ic->large * 3), (unsigned char *)"  0", ic->ctext);
+	gdImageString(ic->im, font, x - 21 - (ic->large * 3), y - 4 - (ic->large * 3), (unsigned char *)"  0", ic->ctext);
 
 	/* scale values */
 	scaleunit = getscale(max, rate);
@@ -1282,7 +1282,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	for (i = 1 * step; i * s < rxh; i = i + step) {
 		gdImageDashedLine(ic->im, x, y - (i * s), x + FIVEMINWIDTH - 1, y - (i * s), ic->cline);
 		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + FIVEMINWIDTH - 1, y - prev - (step * s) / 2, ic->clinel);
-		gdImageString(ic->im, font, x - 22 - (ic->large * 3), y - 3 - (i * s) - (ic->large * 3), (unsigned char *)getimagevalue(scaleunit * (unsigned int)i, 3, rate), ic->ctext);
+		gdImageString(ic->im, font, x - 21 - (ic->large * 3), y - 3 - (i * s) - (ic->large * 3), (unsigned char *)getimagevalue(scaleunit * (unsigned int)i, 3, rate), ic->ctext);
 		prev = i * s;
 	}
 	if ((prev + (step * s) / 2) < (rxh - FIVEMINHEIGHTOFFSET)) {
@@ -1296,7 +1296,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	for (i = 1 * step; i * s < txh; i = i + step) {
 		gdImageDashedLine(ic->im, x, y + (i * s), x + FIVEMINWIDTH - 1, y + (i * s), ic->cline);
 		gdImageDashedLine(ic->im, x, y + prev + (step * s) / 2, x + FIVEMINWIDTH - 1, y + prev + (step * s) / 2, ic->clinel);
-		gdImageString(ic->im, font, x - 22 - (ic->large * 3), y - 3 + (i * s) - (ic->large * 3), (unsigned char *)getimagevalue(scaleunit * (unsigned int)i, 3, rate), ic->ctext);
+		gdImageString(ic->im, font, x - 21 - (ic->large * 3), y - 3 + (i * s) - (ic->large * 3), (unsigned char *)getimagevalue(scaleunit * (unsigned int)i, 3, rate), ic->ctext);
 		prev = i * s;
 	}
 	if ((prev + (step * s) / 2) < (txh - FIVEMINHEIGHTOFFSET)) {
@@ -1306,7 +1306,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	y--; // y is now back on center line
 
 	/* scale text */
-	gdImageStringUp(ic->im, font, x - 40 - (ic->large * 5), ypos - height / 2 + (rate * 10), (unsigned char *)getimagescale(scaleunit * (unsigned int)i, rate), ic->ctext);
+	gdImageStringUp(ic->im, font, x - 44 - (ic->large * 5), ypos - height / 2 + (rate * 10), (unsigned char *)getimagescale(scaleunit * (unsigned int)i, rate), ic->ctext);
 
 	/* TODO
 	    - fix incorrect rendering if ratio between rx and tx results in smaller side being less than FIVEMINHEIGHTOFFSET
@@ -1333,9 +1333,9 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 					gdImageLine(ic->im, x + i, y + txh - 1, x + i, y - rxh - 1, ic->cbgoffset);
 				}
 
-				if (i > 2 * font->w) {
+				if (i > font->w) {
 					snprintf(buffer, 32, "%02d", d->tm_hour);
-					gdImageString(ic->im, font, x + i - font->w + 1, y + txh - FIVEMINHEIGHTOFFSET + font->h - (ic->large * 6), (unsigned char *)buffer, ic->ctext);
+					gdImageString(ic->im, font, x + i - font->w + 1, y + txh - FIVEMINHEIGHTOFFSET + font->h - (ic->large * 5), (unsigned char *)buffer, ic->ctext);
 				}
 			} else {
 				gdImageLine(ic->im, x + i, y + txh - 1, x + i, y - rxh - 1, ic->cbgoffset);
