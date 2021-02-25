@@ -116,7 +116,8 @@ void showlonghelp(PARAMS *p)
 	printf("      -ru, --rateunit [mode]       swap configured rate unit\n");
 	printf("      --limit <limit>              set output entry limit\n");
 	printf("      --style <mode>               select output style (0-4)\n");
-	printf("      --iflist                     show list of available interfaces\n");
+	printf("      --iflist [mode]              show list of available interfaces\n");
+	printf("      --dbiflist [mode]            show list of interfaces in database\n");
 	printf("      --dbdir <directory>          select database directory\n");
 	printf("      --locale <locale>            set locale\n");
 	printf("      --config <config file>       select config file\n");
