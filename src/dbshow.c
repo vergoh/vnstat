@@ -828,7 +828,7 @@ int showbar(const uint64_t rx, const uint64_t tx, const uint64_t max, const int 
 	printf("  ");
 
 	if (tx > rx) {
-		l = (int)(rint(((double)rx / (double)(rx + tx) * width)));
+		l = (int)lrint(((double)rx / (double)(rx + tx) * width));
 
 		for (i = 0; i < l; i++) {
 			printf("%c", cfg.rxchar[0]);
@@ -837,7 +837,7 @@ int showbar(const uint64_t rx, const uint64_t tx, const uint64_t max, const int 
 			printf("%c", cfg.txchar[0]);
 		}
 	} else {
-		l = (int)(rint(((double)tx / (double)(rx + tx) * width)));
+		l = (int)lrint(((double)tx / (double)(rx + tx) * width));
 
 		for (i = 0; i < (width - l); i++) {
 			printf("%c", cfg.rxchar[0]);

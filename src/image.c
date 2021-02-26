@@ -296,7 +296,7 @@ void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const ui
 	}
 
 	if ((rx + tx) < max) {
-		width = (int)(((double)(rx + tx) / (double)max) * len);
+		width = (int)lrint(((double)(rx + tx) / (double)max) * len);
 	} else if ((rx + tx) > max || max == 0) {
 		return;
 	}
@@ -306,7 +306,7 @@ void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const ui
 	}
 
 	if (tx > rx) {
-		l = (int)(rint(((double)rx / (double)(rx + tx) * width)));
+		l = (int)lrint(((double)rx / (double)(rx + tx) * width));
 
 		if (l > 0) {
 			gdImageFilledRectangle(ic->im, x, y + ybeginoffset, x + l, y + yendoffset, crx);
@@ -317,7 +317,7 @@ void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const ui
 		gdImageRectangle(ic->im, x + l, y + ybeginoffset, x + width, y + yendoffset, ctxd);
 
 	} else {
-		l = (int)(rint(((double)tx / (double)(rx + tx) * width)));
+		l = (int)(lrint(((double)tx / (double)(rx + tx) * width)));
 
 		gdImageFilledRectangle(ic->im, x, y + ybeginoffset, x + (width - l), y + yendoffset, crx);
 		gdImageRectangle(ic->im, x, y + ybeginoffset, x + (width - l), y + yendoffset, crxd);
@@ -333,12 +333,12 @@ void drawpoles(IMAGECONTENT *ic, const int x, const int y, const int len, const 
 {
 	int l;
 
-	l = (int)(((double)rx / (double)max) * len);
+	l = (int)lrint(((double)rx / (double)max) * len);
 	if (l > 0) {
 		gdImageFilledRectangle(ic->im, x - (ic->large * 2), y + (len - l), x + 7 + (ic->large * 0), y + len, ic->crx);
 	}
 
-	l = (int)(((double)tx / (double)max) * len);
+	l = (int)lrint(((double)tx / (double)max) * len);
 	if (l > 0) {
 		gdImageFilledRectangle(ic->im, x + 5 - (ic->large * 0), y + (len - l), x + 12 + (ic->large * 2), y + len, ic->ctx);
 	}
@@ -349,11 +349,11 @@ void drawdonut(IMAGECONTENT *ic, const int x, const int y, const float rxp, cons
 	int rxarc = 0, txarc = 0;
 
 	if ((int)(rxp + txp) > 0) {
-		rxarc = (int)(360 * (rxp / (float)100));
+		rxarc = (int)lrintf(360 * (rxp / (float)100));
 		if ((int)(rxp + txp) == 100) {
 			txarc = 360 - rxarc;
 		} else {
-			txarc = (int)(360 * (txp / (float)100));
+			txarc = (int)lrintf(360 * (txp / (float)100));
 		}
 	}
 
@@ -1239,12 +1239,12 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	max = datainfo.maxrx + datainfo.maxtx;
 
 	if (datainfo.maxrx > datainfo.maxtx) {
-		txh = (int)round(((double)datainfo.maxtx / (double)max) * height);
+		txh = (int)lrint(((double)datainfo.maxtx / (double)max) * height);
 		rxh = height - txh;
 		max = (uint64_t)((double)datainfo.maxrx / ratediv);
 		t = rxh;
 	} else {
-		rxh = (int)round(((double)datainfo.maxrx / (double)max) * height);
+		rxh = (int)lrint(((double)datainfo.maxrx / (double)max) * height);
 		txh = height - rxh;
 		max = (uint64_t)((double)datainfo.maxtx / ratediv);
 		t = txh;
