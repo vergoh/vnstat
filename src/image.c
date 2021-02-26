@@ -1210,14 +1210,10 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 		font = gdFontGetTiny();
 	}
 
-	// TODO: possibly need to use db_getdata_range here for getting the last 48 hours instead
-	// of taking the last N entries, 576 = 60 minutes / 5 minutes * 48 hours (12 measurements per hour)
-	if (!db_getdata(&datalist, &datainfo, ic->interface.name, "fiveminute", 576) || datainfo.count == 0) {
-		gdImageString(ic->im, ic->font, x + (32 * ic->font->w), y + 54, (unsigned char *)"no data available", ic->ctext);
+	if (!db_getdata(&datalist, &datainfo, ic->interface.name, "fiveminute", FIVEMINRESULTCOUNT) || datainfo.count == 0) {
+		gdImageString(ic->im, ic->font, x + 330 - (8 * ic->font->w), y - (height / 2) - ic->font->h, (unsigned char *)"no data available", ic->ctext);
 		return 0;
 	}
-
-	// TODO: "no data" situation not handled
 
 	datalist_i = datalist;
 
@@ -1314,9 +1310,16 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 		- indicate somehow areas where the database didn't provide any data?
 	*/
 
-	timestamp = datainfo.maxtime - (576 * 300);
+	timestamp = datainfo.maxtime - (FIVEMINRESULTCOUNT * 300);
 
-	for (i = 0; i < 576; i++) {
+	while (datalist_i != NULL && datalist_i->timestamp < timestamp + 300) {
+		if (debug) {
+			printf("Skip data, %lu < %lu\n", datalist_i->timestamp, timestamp + 300);
+		}
+		datalist_i = datalist_i->next;
+	}
+
+	for (i = 0; i < FIVEMINRESULTCOUNT; i++) {
 
 		if (datalist_i == NULL) {
 			break;
