@@ -1235,27 +1235,27 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	max = datainfo.maxrx + datainfo.maxtx;
 
 	if (datainfo.maxrx > datainfo.maxtx) {
-		txh = (int)lrint(((double)datainfo.maxtx / (double)max) * height);
-		rxh = height - txh;
+		txh = (int)lrint(((double)datainfo.maxtx / (double)max) * (height - FIVEMINHEIGHTOFFSET * 2));
+		rxh = height - FIVEMINHEIGHTOFFSET * 2 - txh;
 		max = (uint64_t)((double)datainfo.maxrx / ratediv);
 		t = rxh;
 	} else {
-		rxh = (int)lrint(((double)datainfo.maxrx / (double)max) * height);
-		txh = height - rxh;
+		rxh = (int)lrint(((double)datainfo.maxrx / (double)max) * (height - FIVEMINHEIGHTOFFSET * 2));
+		txh = height - FIVEMINHEIGHTOFFSET * 2 - rxh;
 		max = (uint64_t)((double)datainfo.maxtx / ratediv);
 		t = txh;
 	}
 
 	/* center line */
 	x += 5;
-	y -= txh;
+	y -= txh + FIVEMINHEIGHTOFFSET;
 	gdImageLine(ic->im, x, y, x + FIVEMINWIDTH - 1, y, ic->ctext);
 	gdImageString(ic->im, font, x - 21 - (ic->large * 3), y - 4 - (ic->large * 3), (unsigned char *)"  0", ic->ctext);
 
 	/* scale values */
 	scaleunit = getscale(max, rate);
 
-	s = (int)(((double)scaleunit / (double)max) * (t - FIVEMINHEIGHTOFFSET));
+	s = (int)lrint(((double)scaleunit / (double)max) * t);
 	if (s < FIVEMINSCALEMINPIXELS) {
 		step = 2;
 	} else {
@@ -1275,13 +1275,13 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 
 	/* upper part scale values */
 	y--; // adjust to start above center line
-	for (i = 1 * step; i * s < rxh; i = i + step) {
+	for (i = 1 * step; i * s <= rxh; i = i + step) {
 		gdImageDashedLine(ic->im, x, y - (i * s), x + FIVEMINWIDTH - 1, y - (i * s), ic->cline);
 		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + FIVEMINWIDTH - 1, y - prev - (step * s) / 2, ic->clinel);
 		gdImageString(ic->im, font, x - 21 - (ic->large * 3), y - 3 - (i * s) - (ic->large * 3), (unsigned char *)getimagevalue(scaleunit * (unsigned int)i, 3, rate), ic->ctext);
 		prev = i * s;
 	}
-	if ((prev + (step * s) / 2) < (rxh - FIVEMINHEIGHTOFFSET)) {
+	if ((prev + (step * s) / 2) <= rxh) {
 		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + FIVEMINWIDTH - 1, y - prev - (step * s) / 2, ic->clinel);
 	}
 
@@ -1289,13 +1289,13 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	prev = 0;
 
 	/* lower part scale values */
-	for (i = 1 * step; i * s < txh; i = i + step) {
+	for (i = 1 * step; i * s <= txh; i = i + step) {
 		gdImageDashedLine(ic->im, x, y + (i * s), x + FIVEMINWIDTH - 1, y + (i * s), ic->cline);
 		gdImageDashedLine(ic->im, x, y + prev + (step * s) / 2, x + FIVEMINWIDTH - 1, y + prev + (step * s) / 2, ic->clinel);
 		gdImageString(ic->im, font, x - 21 - (ic->large * 3), y - 3 + (i * s) - (ic->large * 3), (unsigned char *)getimagevalue(scaleunit * (unsigned int)i, 3, rate), ic->ctext);
 		prev = i * s;
 	}
-	if ((prev + (step * s) / 2) < (txh - FIVEMINHEIGHTOFFSET)) {
+	if ((prev + (step * s) / 2) <= txh) {
 		gdImageDashedLine(ic->im, x, y + prev + (step * s) / 2, x + FIVEMINWIDTH - 1, y + prev + (step * s) / 2, ic->clinel);
 	}
 
@@ -1305,7 +1305,6 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	gdImageStringUp(ic->im, font, x - 44 - (ic->large * 5), ypos - height / 2 + (rate * 10), (unsigned char *)getimagescale(scaleunit * (unsigned int)i, rate), ic->ctext);
 
 	/* TODO
-	    - fix incorrect rendering if ratio between rx and tx results in smaller side being less than FIVEMINHEIGHTOFFSET
 		- last value needs to be scaled if not full 5 minute has passed
 		- indicate somehow areas where the database didn't provide any data?
 	*/
@@ -1331,17 +1330,17 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 		if (d->tm_min == 0 && i > 2) {
 			if (d->tm_hour % 2 == 0) {
 				if (d->tm_hour == 0) {
-					gdImageLine(ic->im, x + i, y + txh - 1, x + i, y - rxh - 1, ic->cline);
+					gdImageLine(ic->im, x + i, y + txh - 1 + FIVEMINHEIGHTOFFSET, x + i, y - rxh - 2 - FIVEMINHEIGHTOFFSET, ic->cline);
 				} else {
-					gdImageLine(ic->im, x + i, y + txh - 1, x + i, y - rxh - 1, ic->cbgoffset);
+					gdImageLine(ic->im, x + i, y + txh - 1 + FIVEMINHEIGHTOFFSET, x + i, y - rxh - 2 - FIVEMINHEIGHTOFFSET, ic->cbgoffset);
 				}
 
 				if (i > font->w) {
 					snprintf(buffer, 32, "%02d", d->tm_hour);
-					gdImageString(ic->im, font, x + i - font->w + 1, y + txh - FIVEMINHEIGHTOFFSET + font->h - (ic->large * 5), (unsigned char *)buffer, ic->ctext);
+					gdImageString(ic->im, font, x + i - font->w + 1, y + txh + font->h - (ic->large * 5), (unsigned char *)buffer, ic->ctext);
 				}
 			} else {
-				gdImageLine(ic->im, x + i, y + txh - 1, x + i, y - rxh - 1, ic->cbgoffset);
+				gdImageLine(ic->im, x + i, y + txh - 1 + FIVEMINHEIGHTOFFSET, x + i, y - rxh - 2 - FIVEMINHEIGHTOFFSET, ic->cbgoffset);
 			}
 		}
 
@@ -1349,10 +1348,10 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 			continue;
 		}
 
-		t = (int)(((double)datalist_i->rx / (double)datainfo.maxrx) * (rxh - FIVEMINHEIGHTOFFSET));
+		t = (int)lrint(((double)datalist_i->rx / (double)datainfo.maxrx) * rxh);
 		drawpole(ic, x + i, y - 1, t, 1, ic->crx);
 
-		t = (int)(((double)datalist_i->tx / (double)datainfo.maxtx) * (txh - FIVEMINHEIGHTOFFSET));
+		t = (int)lrint(((double)datalist_i->tx / (double)datainfo.maxtx) * txh);
 		drawpole(ic, x + i, y + 1, t, 2, ic->ctx);
 
 		datalist_i = datalist_i->next;
@@ -1369,10 +1368,9 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 
 void drawpole(IMAGECONTENT *ic, const int x, const int y, const int length, const int direction, const int color)
 {
-	int len = length;
+	int len = length - 1;
 
 	if (length > 0) {
-		len--;
 		switch (direction) {
 			case 1:
 				gdImageLine(ic->im, x, y, x, y - len, color);
