@@ -1,5 +1,5 @@
 /*
-vnStat daemon - Copyright (C) 2008-2020 Teemu Toivola <tst@iki.fi>
+vnStat daemon - Copyright (C) 2008-2021 Teemu Toivola <tst@iki.fi>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
