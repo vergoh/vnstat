@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # vnstat.cgi -- example cgi for vnStat image output
-# copyright (c) 2008-2018 Teemu Toivola <tst at iki dot fi>
+# copyright (c) 2008-2021 Teemu Toivola <tst at iki dot fi>
 #
 # based on mailgraph.cgi
 # copyright (c) 2000-2007 ETH Zurich
@@ -37,13 +37,13 @@ my $bgcolor = "white";
 ################
 
 
-my $VERSION = "1.5";
+my $VERSION = "1.6";
 my $cssbody = "body { background-color: $bgcolor; }";
 
 sub graph($$$)
 {
 	my ($interface, $file, $param) = @_;
-	my $result = `"$vnstati_cmd" -i "$interface" -c $cachetime $param -o "$file"`;
+	my $result = `"$vnstati_cmd" -i "$interface" -c $cachetime $param --small -o "$file"`;
 }
 
 
@@ -108,15 +108,15 @@ $cssbody
 </head>
 HEADER
 
-	print "<table border=\"0\"><tr><td>\n";
-	print "<img src=\"$scriptname?${interface}-s\" border=\"0\" alt=\"${interface} summary\">";
-	print "</td><td>\n";
-	print "<img src=\"$scriptname?${interface}-hg\" border=\"0\" alt=\"${interface} hourly\">";
-	print "</td></tr><tr><td valign=\"top\">\n";
-	print "<img src=\"$scriptname?${interface}-d\" border=\"0\" alt=\"${interface} daily\">";
-	print "</td><td valign=\"top\">\n";
+	print "<table border=\"0\"><tr><td valign=\"top\">\n";
+	print "<img src=\"$scriptname?${interface}-s\" border=\"0\" alt=\"${interface} summary\"><br>";
+	print "<img src=\"$scriptname?${interface}-d\" border=\"0\" alt=\"${interface} daily\" vspace=\"4\"><br>";
 	print "<img src=\"$scriptname?${interface}-t\" border=\"0\" alt=\"${interface} top 10\"><br>\n";
-	print "<img src=\"$scriptname?${interface}-m\" border=\"0\" alt=\"${interface} monthly\" vspace=\"4\">";
+	print "</td><td valign=\"top\">\n";
+	print "<img src=\"$scriptname?${interface}-hg\" border=\"0\" alt=\"${interface} hourly\"><br>";
+	print "<img src=\"$scriptname?${interface}-5g\" border=\"0\" alt=\"${interface} 5 minute\" vspace=\"4\"><br>";
+	print "<img src=\"$scriptname?${interface}-m\" border=\"0\" alt=\"${interface} monthly\"><br>\n";
+	print "<img src=\"$scriptname?${interface}-y\" border=\"0\" alt=\"${interface} yearly\" vspace=\"4\"><br>\n";
 	print "</td></tr>\n</table>\n";
 
 	print <<FOOTER;
@@ -186,6 +186,16 @@ sub main()
 		elsif($img =~ /^(\d+)-hg$/) {
 			my $file = "$tmp_dir/vnstat_$1_hg.png";
 			graph($graphs[$1]{interface}, $file, "-hg");
+			send_image($file);
+		}
+		elsif($img =~ /^(\d+)-5g$/) {
+			my $file = "$tmp_dir/vnstat_$1_5g.png";
+			graph($graphs[$1]{interface}, $file, "-5g 408 250");
+			send_image($file);
+		}
+		elsif($img =~ /^(\d+)-y$/) {
+			my $file = "$tmp_dir/vnstat_$1_y.png";
+			graph($graphs[$1]{interface}, $file, "-y");
 			send_image($file);
 		}
 		elsif($img =~ /^(\d+)-f$/) {
