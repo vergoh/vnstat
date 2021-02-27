@@ -1,8 +1,9 @@
 
 # New configuration settings
 
- * 2.7: BarColumnShowsRate, EstimateBarVisible, EstimateStyle, ImageScale,
-        LargeFonts, LineSpacingAdjustment
+ * 2.7: 5MinuteGraphHeight, 5MinuteGraphResultCount, BarColumnShowsRate,
+        EstimateBarVisible, EstimateStyle, ImageScale, LargeFonts,
+        LineSpacingAdjustment
 
  * 2.4 - 2.6: (none)
 

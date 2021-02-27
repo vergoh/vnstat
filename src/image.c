@@ -23,7 +23,6 @@ void initimagecontent(IMAGECONTENT *ic)
 
 void drawimage(IMAGECONTENT *ic)
 {
-	// TODO: add checks somewhere that configuration has suitable retention times for selected output?
 	switch (cfg.qmode) {
 		case 1:
 			drawlist(ic, "day");
@@ -56,7 +55,7 @@ void drawimage(IMAGECONTENT *ic)
 			drawlist(ic, "fiveminute");
 			break;
 		case 10:
-			drawfivegraph(ic, cfg.hourlyrate);
+			drawfivegraph(ic, cfg.hourlyrate, cfg.fivegresultcount, cfg.fivegheight);
 			break;
 		default:
 			printf("Error: No such query mode: %d\n", cfg.qmode);
@@ -1172,27 +1171,25 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 	dbdatalistfree(&datalist);
 }
 
-void drawfivegraph(IMAGECONTENT *ic, const int rate)
+void drawfivegraph(IMAGECONTENT *ic, const int rate, const int resultcount, const int height)
 {
-	int width, height, headermod = 0;
+	int imagewidth, imageheight = height, headermod = 0;
 
-	width = 668;
-	height = 300; // TODO: this could probably be made configurable
+	imagewidth = resultcount + FIVEMINEXTRASPACE;
 
 	if (!ic->showheader) {
-		headermod = 26;
-		height -= 22;
+		headermod = 22;
 	}
 
-	imageinit(ic, width, height);
-	layoutinit(ic, " / 5 minute", width, height);
+	imageinit(ic, imagewidth, imageheight);
+	layoutinit(ic, " / 5 minute", imagewidth, imageheight);
 
-	if (drawfiveminutes(ic, 16, height - 37 - headermod, rate, height - 80)) {
-		drawlegend(ic, width / 2 - (ic->large * 10), height - 19 - headermod, 0);
+	if (drawfiveminutes(ic, 16, imageheight - 37, rate, resultcount, imageheight - 80 + headermod)) {
+		drawlegend(ic, imagewidth / 2 - (ic->large * 10), imageheight - 19, 0);
 	}
 }
 
-int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate, const int height)
+int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate, const int resultcount, const int height)
 {
 	int x = xpos, y = ypos, i = 0, t = 0, rxh = 0, txh = 0, step, s = 0, prev = 0;
 	uint64_t scaleunit, max;
@@ -1210,7 +1207,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 		font = gdFontGetTiny();
 	}
 
-	if (!db_getdata(&datalist, &datainfo, ic->interface.name, "fiveminute", FIVEMINRESULTCOUNT) || datainfo.count == 0) {
+	if (!db_getdata(&datalist, &datainfo, ic->interface.name, "fiveminute", (uint32_t)resultcount) || datainfo.count == 0) {
 		gdImageString(ic->im, ic->font, x + 330 - (8 * ic->font->w), y - (height / 2) - ic->font->h, (unsigned char *)"no data available", ic->ctext);
 		return 0;
 	}
@@ -1225,12 +1222,12 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 
 	/* axis */
 	x += 36;
-	gdImageLine(ic->im, x, y, x + FIVEMINWIDTHFULL, y, ic->ctext);
+	gdImageLine(ic->im, x, y, x + (resultcount + FIVEMINWIDTHFULLPADDING), y, ic->ctext);
 	gdImageLine(ic->im, x + 4, y + 4, x + 4, y - height, ic->ctext);
 
 	/* arrows */
 	drawarrowup(ic, x + 4, y - 1 - height);
-	drawarrowright(ic, x + 1 + FIVEMINWIDTHFULL, y);
+	drawarrowright(ic, x + 1 + (resultcount + FIVEMINWIDTHFULLPADDING), y);
 
 	max = datainfo.maxrx + datainfo.maxtx;
 
@@ -1249,7 +1246,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	/* center line */
 	x += 5;
 	y -= txh + FIVEMINHEIGHTOFFSET;
-	gdImageLine(ic->im, x, y, x + FIVEMINWIDTH - 1, y, ic->ctext);
+	gdImageLine(ic->im, x, y, x + (resultcount + FIVEMINWIDTHPADDING), y, ic->ctext);
 	gdImageString(ic->im, font, x - 21 - (ic->large * 3), y - 4 - (ic->large * 3), (unsigned char *)"  0", ic->ctext);
 
 	/* scale values */
@@ -1276,13 +1273,13 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	/* upper part scale values */
 	y--; // adjust to start above center line
 	for (i = 1 * step; i * s <= rxh; i = i + step) {
-		gdImageDashedLine(ic->im, x, y - (i * s), x + FIVEMINWIDTH - 1, y - (i * s), ic->cline);
-		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + FIVEMINWIDTH - 1, y - prev - (step * s) / 2, ic->clinel);
+		gdImageDashedLine(ic->im, x, y - (i * s), x + (resultcount + FIVEMINWIDTHPADDING), y - (i * s), ic->cline);
+		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + (resultcount + FIVEMINWIDTHPADDING), y - prev - (step * s) / 2, ic->clinel);
 		gdImageString(ic->im, font, x - 21 - (ic->large * 3), y - 3 - (i * s) - (ic->large * 3), (unsigned char *)getimagevalue(scaleunit * (unsigned int)i, 3, rate), ic->ctext);
 		prev = i * s;
 	}
 	if ((prev + (step * s) / 2) <= rxh) {
-		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + FIVEMINWIDTH - 1, y - prev - (step * s) / 2, ic->clinel);
+		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + (resultcount + FIVEMINWIDTHPADDING), y - prev - (step * s) / 2, ic->clinel);
 	}
 
 	y += 2; // adjust to start below center line
@@ -1290,13 +1287,13 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 
 	/* lower part scale values */
 	for (i = 1 * step; i * s <= txh; i = i + step) {
-		gdImageDashedLine(ic->im, x, y + (i * s), x + FIVEMINWIDTH - 1, y + (i * s), ic->cline);
-		gdImageDashedLine(ic->im, x, y + prev + (step * s) / 2, x + FIVEMINWIDTH - 1, y + prev + (step * s) / 2, ic->clinel);
+		gdImageDashedLine(ic->im, x, y + (i * s), x + (resultcount + FIVEMINWIDTHPADDING), y + (i * s), ic->cline);
+		gdImageDashedLine(ic->im, x, y + prev + (step * s) / 2, x + (resultcount + FIVEMINWIDTHPADDING), y + prev + (step * s) / 2, ic->clinel);
 		gdImageString(ic->im, font, x - 21 - (ic->large * 3), y - 3 + (i * s) - (ic->large * 3), (unsigned char *)getimagevalue(scaleunit * (unsigned int)i, 3, rate), ic->ctext);
 		prev = i * s;
 	}
 	if ((prev + (step * s) / 2) <= txh) {
-		gdImageDashedLine(ic->im, x, y + prev + (step * s) / 2, x + FIVEMINWIDTH - 1, y + prev + (step * s) / 2, ic->clinel);
+		gdImageDashedLine(ic->im, x, y + prev + (step * s) / 2, x + (resultcount + FIVEMINWIDTHPADDING), y + prev + (step * s) / 2, ic->clinel);
 	}
 
 	y--; // y is now back on center line
@@ -1309,7 +1306,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 		- indicate somehow areas where the database didn't provide any data?
 	*/
 
-	timestamp = datainfo.maxtime - (FIVEMINRESULTCOUNT * 300);
+	timestamp = datainfo.maxtime - (resultcount * 300);
 
 	while (datalist_i != NULL && datalist_i->timestamp < timestamp + 300) {
 		if (debug) {
@@ -1318,7 +1315,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 		datalist_i = datalist_i->next;
 	}
 
-	for (i = 0; i < FIVEMINRESULTCOUNT; i++) {
+	for (i = 0; i < resultcount; i++) {
 
 		if (datalist_i == NULL) {
 			break;
@@ -1330,9 +1327,9 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 		if (d->tm_min == 0 && i > 2) {
 			if (d->tm_hour % 2 == 0) {
 				if (d->tm_hour == 0) {
-					gdImageLine(ic->im, x + i, y + txh - 1 + FIVEMINHEIGHTOFFSET, x + i, y - rxh - 2 - FIVEMINHEIGHTOFFSET, ic->cline);
+					gdImageLine(ic->im, x + i, y + txh - 1 + FIVEMINHEIGHTOFFSET, x + i, y - rxh - 1, ic->cline);
 				} else {
-					gdImageLine(ic->im, x + i, y + txh - 1 + FIVEMINHEIGHTOFFSET, x + i, y - rxh - 2 - FIVEMINHEIGHTOFFSET, ic->cbgoffset);
+					gdImageLine(ic->im, x + i, y + txh - 1 + FIVEMINHEIGHTOFFSET, x + i, y - rxh - 1, ic->cbgoffset);
 				}
 
 				if (i > font->w) {
@@ -1340,7 +1337,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 					gdImageString(ic->im, font, x + i - font->w + 1, y + txh + font->h - (ic->large * 5), (unsigned char *)buffer, ic->ctext);
 				}
 			} else {
-				gdImageLine(ic->im, x + i, y + txh - 1 + FIVEMINHEIGHTOFFSET, x + i, y - rxh - 2 - FIVEMINHEIGHTOFFSET, ic->cbgoffset);
+				gdImageLine(ic->im, x + i, y + txh - 1 + FIVEMINHEIGHTOFFSET, x + i, y - rxh - 1, ic->cbgoffset);
 			}
 		}
 
@@ -1361,7 +1358,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 
 	/* redraw center line */
 	x = xpos + 40;
-	gdImageLine(ic->im, x, y, x + FIVEMINWIDTH, y, ic->ctext);
+	gdImageLine(ic->im, x, y, x + (resultcount + FIVEMINWIDTHPADDING), y, ic->ctext);
 
 	return 1;
 }

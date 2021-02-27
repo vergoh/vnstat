@@ -6,6 +6,9 @@ vnstati \- png image output support for vnStat
 
 .B vnstati
 .RB [ \-5bcdDehiLmosStvy? ]
+.RB [ \-5g
+.RI [ limit ]
+.RI [ height ]]
 .RB [ \-\-altdate ]
 .RB [ \-\-begin
 .IR date ]
@@ -20,6 +23,9 @@ vnstati \- png image output support for vnStat
 .RB [ \-\-debug ]
 .RB [ \-\-end
 .IR date ]
+.RB [ \-\-fivegraph
+.RI [ limit ]
+.RI [ height ]]
 .RB [ \-\-fiveminutes
 .RI [ limit ]]
 .RB [ \-\-headertext
@@ -147,6 +153,17 @@ supports the following formats: YYYY-MM-DD HH:MM and YYYY-MM-DD.
 This option can only be used with list outputs. The top list also requires
 .B "--begin"
 to be used at the same time with this option.
+
+.TP
+.BI "-5g, --fivegraph " "[limit] [height]"
+Output traffic statistics with a 5 minute resolution for the last 48 hours
+using a bar graph. The width of the graph can be modified using the optional
+.I limit
+parameter which represents the number of 5 minute entries with 12 entries for
+each hour. The smallest supported value is 288 (last 24 hours). Additionally,
+the height of the graph can be modified using the optional
+.I height
+parameter. The smallest supported height is 150 pixels.
 
 .TP
 .BI "-5, --fiveminutes " [limit]

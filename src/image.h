@@ -14,9 +14,10 @@
 
 #define FIVEMINRESULTCOUNT 576 // = 60 minutes / 5 minutes * 48 hours (12 measurements per hour)
 #define FIVEMINHEIGHTOFFSET 4
-#define FIVEMINWIDTHFULL 586
-#define FIVEMINWIDTH (FIVEMINWIDTHFULL - 7)
+#define FIVEMINWIDTHFULLPADDING 10
+#define FIVEMINWIDTHPADDING 2
 #define FIVEMINSCALEMINPIXELS 25
+#define FIVEMINEXTRASPACE 92
 
 typedef struct {
 	gdImagePtr im;
@@ -55,8 +56,8 @@ void drawlist(IMAGECONTENT *ic, const char *listname);
 void drawsummary(IMAGECONTENT *ic, const int layout, const int rate);
 void drawsummary_alltime(IMAGECONTENT *ic, const int x, const int y);
 void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *mode);
-void drawfivegraph(IMAGECONTENT *ic, const int rate);
-int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate, const int height);
+void drawfivegraph(IMAGECONTENT *ic, const int rate, const int resultcount, const int height);
+int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate, const int resultcount, const int height);
 void drawpole(IMAGECONTENT *ic, const int x, const int y, const int length, const int direction, const int maincolor);
 void drawarrowup(IMAGECONTENT *ic, const int x, const int y);
 void drawarrowright(IMAGECONTENT *ic, const int x, const int y);

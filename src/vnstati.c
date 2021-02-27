@@ -108,56 +108,54 @@ void showihelp(IPARAMS *p)
 {
 	printf("vnStat image output %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
 
-	printf("      -5,  --fiveminutes [limit]   output 5 minutes\n");
-	if (cfg.experimental) {
-		printf("      -5g, --fivegraph            output 5 minutes graph\n");
-	}
-	printf("      -h,  --hours [limit]         output hours\n");
-	printf("      -hg, --hoursgraph            output hours graph\n");
-	printf("      -d,  --days [limit]          output days\n");
-	printf("      -m,  --months [limit]        output months\n");
-	printf("      -y,  --years [limit]         output years\n");
-	printf("      -t,  --top [limit]           output top days\n");
-	printf("      -s,  --summary               output summary\n");
-	printf("      -hs, --hsummary              output horizontal summary with hours\n");
-	printf("      -vs, --vsummary              output vertical summary with hours\n");
-	printf("      -nh, --noheader              remove header from output\n");
-	printf("      -ne, --noedge                remove edge from output\n");
-	printf("      -nl, --nolegend              remove legend from output\n");
-	printf("      -ru, --rateunit [mode]       swap configured rate unit\n");
-	printf("      -S,  --small                 use small fonts");
+	printf("      -5,  --fiveminutes [limit]         output 5 minutes\n");
+	printf("      -5g, --fivegraph [limit] [height]  output 5 minutes graph\n");
+	printf("      -h,  --hours [limit]               output hours\n");
+	printf("      -hg, --hoursgraph                  output hours graph\n");
+	printf("      -d,  --days [limit]                output days\n");
+	printf("      -m,  --months [limit]              output months\n");
+	printf("      -y,  --years [limit]               output years\n");
+	printf("      -t,  --top [limit]                 output top days\n");
+	printf("      -s,  --summary                     output summary\n");
+	printf("      -hs, --hsummary                    output horizontal summary with hours\n");
+	printf("      -vs, --vsummary                    output vertical summary with hours\n\n");
+	printf("      -nh, --noheader                    remove header from output\n");
+	printf("      -ne, --noedge                      remove edge from output\n");
+	printf("      -nl, --nolegend                    remove legend from output\n");
+	printf("      -ru, --rateunit [mode]             swap configured rate unit\n");
+	printf("      -S,  --small                       use small fonts");
 	if (!cfg.largefonts) {
 		printf(" (default)");
 	}
 	printf("\n");
-	printf("      -L,  --large                 use large fonts");
+	printf("      -L,  --large                       use large fonts");
 	if (cfg.largefonts) {
 		printf(" (default)");
 	}
 	printf("\n");
-	printf("      -o,  --output <file>         select output filename\n");
-	printf("      -c,  --cache <minutes>       update output only when too old\n");
-	printf("      -i,  --iface <interface>     select interface");
+	printf("      -o,  --output <file>               select output filename\n");
+	printf("      -c,  --cache <minutes>             update output only when too old\n");
+	printf("      -i,  --iface <interface>           select interface");
 	if (strlen(p->interface)) {
 		printf(" (default: %s)", p->interface);
 	}
 	printf("\n");
-	printf("      -b,  --begin <date>          set list begin date\n");
-	printf("      -e,  --end <date>            set list end date\n");
-	printf("      -?,  --help                  this help\n");
-	printf("      -D,  --debug                 show some additional debug information\n");
-	printf("      -v,  --version               show version\n");
-	printf("      --limit <limit>              set list entry limit\n");
-	printf("      --dbdir <directory>          select database directory\n");
-	printf("      --style <mode>               select output style (0-3)\n");
-	printf("      --locale <locale>            set locale\n");
-	printf("      --config <config file>       select config file\n");
-	printf("      --altdate                    use alternative date location\n");
-	printf("      --headertext <text>          specify header text string\n");
+	printf("      -b,  --begin <date>                set list begin date\n");
+	printf("      -e,  --end <date>                  set list end date\n");
+	printf("      -?,  --help                        this help\n");
+	printf("      -D,  --debug                       show some additional debug information\n");
+	printf("      -v,  --version                     show version\n");
+	printf("      --limit <limit>                    set list entry limit\n");
+	printf("      --dbdir <directory>                select database directory\n");
+	printf("      --style <mode>                     select output style (0-3)\n");
+	printf("      --locale <locale>                  set locale\n");
+	printf("      --config <config file>             select config file\n");
+	printf("      --altdate                          use alternative date location\n");
+	printf("      --headertext <text>                specify header text string\n");
 #if HAVE_DECL_GD_NEAREST_NEIGHBOUR
-	printf("      --scale <percent>            change image size by scaling it\n");
+	printf("      --scale <percent>                  change image size by scaling it\n");
 #endif
-	printf("      --transparent [enabled]      toggle background transparency\n\n");
+	printf("      --transparent [enabled]            toggle background transparency\n\n");
 
 	printf("See also \"man vnstati\".\n");
 }
@@ -360,8 +358,25 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 		} else if ((strcmp(argv[currentarg], "-hg") == 0) || (strcmp(argv[currentarg], "--hoursgraph")) == 0) {
 			cfg.qmode = 7;
 		} else if ((strcmp(argv[currentarg], "-5g") == 0) || (strcmp(argv[currentarg], "--fivegraph")) == 0) {
-			if (cfg.experimental) {
-				cfg.qmode = 10;
+			cfg.qmode = 10;
+			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {
+				cfg.fivegresultcount = atoi(argv[currentarg + 1]);
+				if (cfg.fivegresultcount < FIVEGMINRESULTCOUNT) {
+					printf("Error: Invalid limit parameter \"%s\" for %s. A value equal or over %d is expected.\n", argv[currentarg + 1], argv[currentarg], FIVEGMINRESULTCOUNT);
+					exit(EXIT_FAILURE);
+				} else if (cfg.fivegresultcount > cfg.fiveminutehours * 12) {
+					printf("Error: Invalid limit parameter \"%s\" for %s. Value cannot be larger than configured data retention (5MinuteHours %d * 12 = %d).\n", argv[currentarg + 1], argv[currentarg], cfg.fiveminutehours, cfg.fiveminutehours * 12);
+					exit(EXIT_FAILURE);
+				}
+				currentarg++;
+			}
+			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {
+				cfg.fivegheight = atoi(argv[currentarg + 1]);
+				if (cfg.fivegheight < FIVEGMINHEIGHT) {
+					printf("Error: Invalid height parameter \"%s\" for %s. A value equal or over %d is expected.\n", argv[currentarg + 1], argv[currentarg], FIVEGMINHEIGHT);
+					exit(EXIT_FAILURE);
+				}
+				currentarg++;
 			}
 		} else if ((strcmp(argv[currentarg], "-hs") == 0) || (strcmp(argv[currentarg], "--hsummary")) == 0) {
 			cfg.qmode = 51;

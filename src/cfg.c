@@ -74,6 +74,8 @@ int loadcfg(const char *cfgfile)
 		 {"LargeFonts", 0, &cfg.largefonts, 0, 0},
 		 {"LineSpacingAdjustment", 0, &cfg.linespaceadjust, 0, 0},
 		 {"ImageScale", 0, &cfg.imagescale, 0, 0},
+		 {"5MinuteGraphResultCount", 0, &cfg.fivegresultcount, 0, 0},
+		 {"5MinuteGraphHeight", 0, &cfg.fivegheight, 0, 0},
 		 {"EstimateStyle", 0, &cfg.estimatestyle, 0, 0},
 		 {"BarColumnShowsRate", 0, &cfg.barshowsrate, 0, 0},
 		 {"CBackground", cfg.cbg, 0, 8, 0},
@@ -206,6 +208,8 @@ void validatecfg(void)
 	validatebool("LargeFonts", &cfg.largefonts, LARGEFONTS);
 	validateint("LineSpacingAdjustment", &cfg.linespaceadjust, LINESPACEADJUST, -5, 10);
 	validateint("ImageScale", &cfg.imagescale, IMAGESCALE, 50, 500);
+	validateint("5MinuteGraphResultCount", &cfg.fivegresultcount, FIVEGRESULTCOUNT, FIVEGMINRESULTCOUNT, 2000);
+	validateint("5MinuteGraphHeight", &cfg.fivegheight, FIVEGHEIGHT, FIVEGMINHEIGHT, 2000);
 	validateint("EstimateStyle", &cfg.estimatestyle, ESTIMATESTYLE, 0, 2);
 	validatebool("BarColumnShowsRate", &cfg.barshowsrate, BARSHOWSRATE);
 	validatebool("HourlyRate", &cfg.hourlyrate, HOURLYRATE);
@@ -297,6 +301,15 @@ void validatecfg(void)
 			printf("BarColumnShowsRate and EstimateBarVisible both enabled -> EstimateStyle set to 0\n");
 		}
 	}
+
+	if (cfg.fivegresultcount > cfg.fiveminutehours * 12) {
+		cfg.fivegresultcount = cfg.fiveminutehours * 12;
+		if (cfg.fivegresultcount > FIVEGRESULTCOUNT) {
+			cfg.fivegresultcount = FIVEGRESULTCOUNT;
+		}
+		snprintf(errorstring, 1024, "5MinuteGraphResultCount has been reset to %d due to request being larger than data retention configured with 5MinuteHours.", cfg.fivegresultcount);
+		printe(PT_Config);
+	}
 }
 
 void defaultcfg(void)
@@ -373,6 +386,8 @@ void defaultcfg(void)
 	cfg.largefonts = LARGEFONTS;
 	cfg.linespaceadjust = LINESPACEADJUST;
 	cfg.imagescale = IMAGESCALE;
+	cfg.fivegresultcount = FIVEGRESULTCOUNT;
+	cfg.fivegheight = FIVEGHEIGHT;
 	cfg.estimatestyle = ESTIMATESTYLE;
 	cfg.barshowsrate = BARSHOWSRATE;
 	strncpy_nt(cfg.cbg, CBACKGROUND, 8);

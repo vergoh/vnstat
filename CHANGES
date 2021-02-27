@@ -6,6 +6,8 @@
    - ./configure output could show invalid install paths with some parameter
      combinations (pull request by Severin Glöckner)
  - New
+   - Add -5g / --fivegraph options to image output with sizing related
+     parameters for the output of a 5 minute resolution bar graph
    - Add --large / --small options to image output and LargeFonts
      configuration option for controlling the output font size
    - Add --scale for scaling the image output to a given percent

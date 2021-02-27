@@ -193,6 +193,10 @@ void printcfgfile(void)
 	printf("LineSpacingAdjustment %d\n", cfg.linespaceadjust);
 	printf("ImageScale %d\n\n", cfg.imagescale);
 
+	printf("# 5 minutes graph size control\n");
+	printf("5MinuteGraphResultCount %d\n", cfg.fivegresultcount);
+	printf("5MinuteGraphHeight %d\n\n", cfg.fivegheight);
+
 	printf("# traffic estimate bar style\n");
 	printf("# (0 = not shown, 1 = continuation of existing bar, 2 = separate bar)\n");
 	printf("EstimateStyle %d\n\n", cfg.estimatestyle);
