@@ -30,6 +30,9 @@ my @graphs = (
 # center images on page instead of left alignment, set 0 to disable
 my $aligncenter = '1';
 
+# use large fonts, set 1 to enable
+my $largefonts = '0';
+
 # page background color
 my $bgcolor = "white";
 
@@ -43,7 +46,13 @@ my $cssbody = "body { background-color: $bgcolor; }";
 sub graph($$$)
 {
 	my ($interface, $file, $param) = @_;
-	my $result = `"$vnstati_cmd" -i "$interface" -c $cachetime $param --small -o "$file"`;
+	my $fontparam = '--small';
+
+	if ($largefonts == '1') {
+		$fontparam = '--large';
+	}
+
+	my $result = `"$vnstati_cmd" -i "$interface" -c $cachetime $param $fontparam -o "$file"`;
 }
 
 
@@ -77,6 +86,7 @@ HEADER
 
 	print <<FOOTER;
 <small>Images generated using <a href="http://humdi.net/vnstat/">vnStat</a> image output.</small>
+<br><br>
 </body>
 </html>
 FOOTER
@@ -109,18 +119,19 @@ $cssbody
 HEADER
 
 	print "<table border=\"0\"><tr><td valign=\"top\">\n";
-	print "<img src=\"$scriptname?${interface}-s\" border=\"0\" alt=\"${interface} summary\"><br>";
-	print "<img src=\"$scriptname?${interface}-d\" border=\"0\" alt=\"${interface} daily\" vspace=\"4\"><br>";
+	print "<img src=\"$scriptname?${interface}-s\" border=\"0\" alt=\"${interface} summary\"><br>\n";
+	print "<img src=\"$scriptname?${interface}-d\" border=\"0\" alt=\"${interface} daily\" vspace=\"4\"><br>\n";
 	print "<img src=\"$scriptname?${interface}-t\" border=\"0\" alt=\"${interface} top 10\"><br>\n";
 	print "</td><td valign=\"top\">\n";
-	print "<img src=\"$scriptname?${interface}-hg\" border=\"0\" alt=\"${interface} hourly\"><br>";
-	print "<img src=\"$scriptname?${interface}-5g\" border=\"0\" alt=\"${interface} 5 minute\" vspace=\"4\"><br>";
+	print "<img src=\"$scriptname?${interface}-hg\" border=\"0\" alt=\"${interface} hourly\"><br>\n";
+	print "<img src=\"$scriptname?${interface}-5g\" border=\"0\" alt=\"${interface} 5 minute\" vspace=\"4\"><br>\n";
 	print "<img src=\"$scriptname?${interface}-m\" border=\"0\" alt=\"${interface} monthly\"><br>\n";
 	print "<img src=\"$scriptname?${interface}-y\" border=\"0\" alt=\"${interface} yearly\" vspace=\"4\"><br>\n";
 	print "</td></tr>\n</table>\n";
 
 	print <<FOOTER;
 <small><br>&nbsp;Images generated using <a href="http://humdi.net/vnstat/">vnStat</a> image output.</small>
+<br><br>
 </body>
 </html>
 FOOTER
@@ -190,7 +201,11 @@ sub main()
 		}
 		elsif($img =~ /^(\d+)-5g$/) {
 			my $file = "$tmp_dir/vnstat_$1_5g.png";
-			graph($graphs[$1]{interface}, $file, "-5g 408 250");
+			if ($largefonts == '1') {
+				graph($graphs[$1]{interface}, $file, "-5g 576 300");
+			} else {
+				graph($graphs[$1]{interface}, $file, "-5g 408 250");
+			}
 			send_image($file);
 		}
 		elsif($img =~ /^(\d+)-y$/) {
