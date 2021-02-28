@@ -536,7 +536,7 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate)
 	}
 
 	/* scale text */
-	gdImageStringUp(ic->im, font, x - 2 - (ic->large * 14), y + 60 + (rate * 10) - (extray / 2), (unsigned char *)getimagescale(scaleunit * (unsigned int)i, rate), ic->ctext);
+	gdImageStringUp(ic->im, font, x - 2 - (ic->large * 14), y + 60 + (rate * 10) - (extray / 2), (unsigned char *)getimagescale(scaleunit * (unsigned int)step, rate), ic->ctext);
 
 	/* x-axis values and poles */
 	for (i = 0; i < 24; i++) {
@@ -1299,7 +1299,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	y--; // y is now back on center line
 
 	/* scale text */
-	gdImageStringUp(ic->im, font, x - 44 - (ic->large * 5), ypos - height / 2 + (rate * 10), (unsigned char *)getimagescale(scaleunit * (unsigned int)i, rate), ic->ctext);
+	gdImageStringUp(ic->im, font, x - 44 - (ic->large * 5), ypos - height / 2 + (rate * 10), (unsigned char *)getimagescale(scaleunit * (unsigned int)step, rate), ic->ctext);
 
 	/* TODO
 		- last value needs to be scaled if not full 5 minute has passed
