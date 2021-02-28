@@ -12,12 +12,12 @@
 #define YBEGINOFFSET (-1)
 #define YENDOFFSET 6
 
-#define FIVEMINRESULTCOUNT 576 // = 60 minutes / 5 minutes * 48 hours (12 measurements per hour)
 #define FIVEMINHEIGHTOFFSET 4
 #define FIVEMINWIDTHFULLPADDING 10
 #define FIVEMINWIDTHPADDING 2
-#define FIVEMINSCALEMINPIXELS 25
 #define FIVEMINEXTRASPACE 92
+
+#define SCALEMINPIXELS 25
 
 typedef struct {
 	gdImagePtr im;

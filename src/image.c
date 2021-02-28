@@ -487,8 +487,8 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate)
 						diff = 60;
 					}
 					if (cfg.rateunit == 1) {
-						hourdata[i].rx *=  8;
-						hourdata[i].tx *=  8;
+						hourdata[i].rx *= 8;
+						hourdata[i].tx *= 8;
 					}
 					hourdata[i].rx = (uint64_t)((double)hourdata[i].rx / (double)diff);
 					hourdata[i].tx = (uint64_t)((double)hourdata[i].tx / (double)diff);
@@ -507,32 +507,30 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate)
 		}
 	}
 
-	/* scale values */
-	scaleunit = getscale(max, rate);
-	if (max / scaleunit > 4) {
-		step = 2;
-	} else {
-		step = 1;
-	}
-
 	if (ic->large) {
 		x += 14;
 		extrax = 145;
 		extray = 35;
 	}
 
-	for (i = step; (uint64_t)(scaleunit * (unsigned int)i) <= max; i = i + step) {
-		s = (int)((121 + extray) * (((double)scaleunit * (unsigned int)i) / (double)max));
-		gdImageDashedLine(ic->im, x + 36, y + 124 - s, x + 460 + extrax, y + 124 - s, ic->cline);
-		gdImageDashedLine(ic->im, x + 36, y + 124 - ((s + prev) / 2), x + 460 + extrax, y + 124 - ((s + prev) / 2), ic->clinel);
-		gdImageString(ic->im, font, x + 16 - (ic->large * 3), y + 121 - s - (ic->large * 3), (unsigned char *)getimagevalue(scaleunit * (unsigned int)i, 3, rate), ic->ctext);
-		prev = s;
-	}
-	s = (int)((121 + extray) * (((double)scaleunit * (unsigned int)i) / (double)max));
-	if (((s + prev) / 2) <= (128 + extray)) {
-		gdImageDashedLine(ic->im, x + 36, y + 124 - ((s + prev) / 2), x + 460 + extrax, y + 124 - ((s + prev) / 2), ic->clinel);
+	/* scale values */
+	scaleunit = getscale(max, rate);
+
+	s = (int)lrint(((double)scaleunit / (double)max) * (124 + extray));
+	if (s < SCALEMINPIXELS) {
+		step = 2;
 	} else {
-		i = i - step;
+		step = 1;
+	}
+
+	for (i = 1 * step; i * s <= (124 + extray + 4); i = i + step) {
+		gdImageDashedLine(ic->im, x + 36, y + 124 - (i * s), x + 460 + extrax, y + 124 - (i * s), ic->cline);
+		gdImageDashedLine(ic->im, x + 36, y + 124 - prev - (step * s) / 2, x + 460 + extrax, y + 124 - prev - (step * s) / 2, ic->clinel);
+		gdImageString(ic->im, font, x + 16 - (ic->large * 3), y + 121 - (i * s) - (ic->large * 3), (unsigned char *)getimagevalue(scaleunit * (unsigned int)i, 3, rate), ic->ctext);
+		prev = i * s;
+	}
+	if ((prev + (step * s) / 2) <= (124 + extray + 4)) {
+		gdImageDashedLine(ic->im, x + 36, y + 124 - prev - (step * s) / 2, x + 460 + extrax, y + 124 - prev - (step * s) / 2, ic->clinel);
 	}
 
 	/* scale text */
@@ -1253,7 +1251,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	scaleunit = getscale(max, rate);
 
 	s = (int)lrint(((double)scaleunit / (double)max) * t);
-	if (s < FIVEMINSCALEMINPIXELS) {
+	if (s < SCALEMINPIXELS) {
 		step = 2;
 	} else {
 		step = 1;
