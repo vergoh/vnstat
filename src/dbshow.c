@@ -15,7 +15,7 @@ void showdb(const char *interface, int qmode, const char *databegin, const char 
 		return;
 	}
 
-	if (info.rxtotal == 0 && info.txtotal == 0) {
+	if (info.created == info.updated) {
 		printf(" %s: Not enough data available yet.\n", interface);
 		return;
 	}
