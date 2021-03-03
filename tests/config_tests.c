@@ -76,6 +76,17 @@ START_TEST(printcfgfile_default)
 }
 END_TEST
 
+START_TEST(printcfgfile_experimental)
+{
+	defaultcfg();
+	cfg.experimental = 1;
+	ck_assert_int_eq(ibwadd("name1", 1), 1);
+	ck_assert_int_eq(ibwadd("name2", 2), 1);
+	suppress_output();
+	printcfgfile();
+}
+END_TEST
+
 START_TEST(loadcfg_included_default)
 {
 	ck_assert_int_eq(loadcfg(CFGFILE), 1);
@@ -528,6 +539,7 @@ void add_config_tests(Suite *s)
 	tcase_add_test(tc_config, validatecfg_can_tune_updateinterval_to_avoid_rollover_issues);
 	tcase_add_test(tc_config, validatecfg_has_fallback_for_updateinterval_for_very_fast_interfaces);
 	tcase_add_test(tc_config, printcfgfile_default);
+	tcase_add_test(tc_config, printcfgfile_experimental);
 	tcase_add_test(tc_config, loadcfg_included_default);
 	tcase_add_test(tc_config, loadcfg_no_file);
 	tcase_add_test(tc_config, loadcfg_nonexistent_file);

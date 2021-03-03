@@ -229,38 +229,43 @@ END_TEST
 /* in order to test the right thing */
 char *hourly_imagescale_logic(const uint64_t max, const int rate)
 {
-	int i, step, s, prev = 0;
+	// int i, prev = 0;
+	int step, s, extray = 0;
 	uint64_t scaleunit;
 
 	scaleunit = getscale(max, rate);
-	if (max / scaleunit > 4) {
+
+	s = (int)lrint(((double)scaleunit / (double)max) * (124 + extray));
+	if (s < SCALEMINPIXELS) {
 		step = 2;
 	} else {
 		step = 1;
 	}
-
-	for (i = step; (uint64_t)(scaleunit * (unsigned int)i) <= max; i = i + step) {
-		s = (int)(121 * (((double)scaleunit * (unsigned int)i) / (double)max));
-		prev = s;
+	/*
+	for (i = step; i * s <= (124 + extray + 4); i = i + step) {
+		prev = i * s;
 	}
-
-	s = (int)(121 * (((double)scaleunit * (unsigned int)i) / (double)max));
-	if (((s + prev) / 2) > 128) {
-		i = i - step;
-	}
-
+	*/
 	/* debug for times when things don't appear to make sense */
-	/*printf("\nmax:        %"PRIu64"\n", max);
+	/*printf("\nrate:       %d\n", rate);
+	printf("lines:      %d\n", i-1);
+	printf("max:        %"PRIu64"\n", max);
 	printf("scaleunit:  %"PRIu64"\n", scaleunit);
 	printf("old 2.0:    %"PRIu64" (i: %d, step: %d)\n", scaleunit * (i - step), i, step);
-	printf("now:        %"PRIu64" (i: %d, step: %d)\n", scaleunit * i, i, step);*/
+	printf("old 2.6:    %"PRIu64" (i: %d, step: %d)\n", scaleunit * i, i, step);
+	printf("now:        %"PRIu64" (i: %d, step: %d)\n", scaleunit * step, i, step);
+	fflush(stdout);*/
 
-	return getimagescale(scaleunit * (unsigned int)i, rate);
+	return getimagescale(scaleunit * (unsigned int)step, rate);
 }
 
 START_TEST(hourly_imagescaling_normal)
 {
 	char *unittext;
+
+	cfg.unitmode = 0;
+	cfg.rateunit = 1;
+	cfg.rateunitmode = 1;
 
 	unittext = hourly_imagescale_logic(1, 0);
 	ck_assert_str_eq(unittext, "B");
@@ -272,7 +277,7 @@ START_TEST(hourly_imagescaling_normal)
 	ck_assert_str_eq(unittext, "B");
 
 	unittext = hourly_imagescale_logic(1000, 0);
-	ck_assert_str_eq(unittext, "KiB");
+	ck_assert_str_eq(unittext, "B");
 
 	unittext = hourly_imagescale_logic(1024, 0);
 	ck_assert_str_eq(unittext, "KiB");
@@ -284,7 +289,7 @@ START_TEST(hourly_imagescaling_normal)
 	ck_assert_str_eq(unittext, "KiB");
 
 	unittext = hourly_imagescale_logic(1024000, 0);
-	ck_assert_str_eq(unittext, "MiB");
+	ck_assert_str_eq(unittext, "KiB");
 
 	unittext = hourly_imagescale_logic(1300000, 0);
 	ck_assert_str_eq(unittext, "MiB");
@@ -307,6 +312,7 @@ START_TEST(hourly_imagescaling_rate_1024)
 {
 	char *unittext;
 
+	cfg.unitmode = 0;
 	cfg.rateunit = 0;
 	cfg.rateunitmode = 0;
 
@@ -320,7 +326,7 @@ START_TEST(hourly_imagescaling_rate_1024)
 	ck_assert_str_eq(unittext, "B/s");
 
 	unittext = hourly_imagescale_logic(1000, 1);
-	ck_assert_str_eq(unittext, "KiB/s");
+	ck_assert_str_eq(unittext, "B/s");
 
 	unittext = hourly_imagescale_logic(1024, 1);
 	ck_assert_str_eq(unittext, "KiB/s");
@@ -332,7 +338,7 @@ START_TEST(hourly_imagescaling_rate_1024)
 	ck_assert_str_eq(unittext, "KiB/s");
 
 	unittext = hourly_imagescale_logic(1024000, 1);
-	ck_assert_str_eq(unittext, "MiB/s");
+	ck_assert_str_eq(unittext, "KiB/s");
 
 	unittext = hourly_imagescale_logic(1300000, 1);
 	ck_assert_str_eq(unittext, "MiB/s");
@@ -355,6 +361,7 @@ START_TEST(hourly_imagescaling_rate_1000)
 {
 	char *unittext;
 
+	cfg.unitmode = 0;
 	cfg.rateunit = 1;
 	cfg.rateunitmode = 1;
 
@@ -599,8 +606,8 @@ END_TEST
 
 START_TEST(element_output_check)
 {
-	int ret, x, y;
-	float i;
+	int ret, x, y, i;
+	float f;
 	char buffer[6];
 	IMAGECONTENT ic;
 	FILE *pngout;
@@ -622,16 +629,16 @@ START_TEST(element_output_check)
 
 	gdImageStringUp(ic.im, gdFontGetSmall(), 1, y + 15, (unsigned char *)"50.0%", ic.ctext);
 
-	for (i = 50.0; i >= 0; i -= (float)0.2) {
+	for (f = 50.0; f >= 0; f -= (float)0.2) {
 
-		drawdonut(&ic, x, y, i, i, 49, 15);
+		drawdonut(&ic, x, y, f, f, 49, 15);
 		x += 55;
 
 		if (x > 1000) {
 			x = 40;
 			y += 60;
 
-			snprintf(buffer, 6, "%3.1f%%", (double)i - 0.2);
+			snprintf(buffer, 6, "%3.1f%%", (double)f - 0.2);
 			gdImageStringUp(ic.im, gdFontGetSmall(), 1, y + 15, (unsigned char *)buffer, ic.ctext);
 		}
 	}
@@ -657,6 +664,14 @@ START_TEST(element_output_check)
 	drawbar(&ic, 1050, 320, 400, 0, 100, 130, 0);
 	drawbar(&ic, 1050, 340, 400, 100, 0, 130, 0);
 
+	gdImageLine(ic.im, 1040, 360, 1260, 360, ic.ctext);
+	gdImageLine(ic.im, 1040, 760, 1260, 760, ic.ctext);
+
+	gdImageLine(ic.im, 1250, 350, 1250, 770, ic.ctext);
+
+	drawarrowup(&ic, 1250, 350);
+	drawarrowright(&ic, 1260, 360);
+
 	drawpoles(&ic, 1050, 360, 400, 50, 50, 100);
 	drawpoles(&ic, 1070, 360, 400, 25, 75, 100);
 	drawpoles(&ic, 1090, 360, 400, 75, 25, 100);
@@ -668,6 +683,15 @@ START_TEST(element_output_check)
 	drawpoles(&ic, 1190, 360, 400, 75, 25, 130);
 	drawpoles(&ic, 1210, 360, 400, 0, 100, 130);
 	drawpoles(&ic, 1230, 360, 400, 100, 0, 130);
+
+	gdImageLine(ic.im, 1040, 870, 1160, 870, ic.ctext);
+	gdImageLine(ic.im, 1040, 820, 1160, 820, ic.ctext);
+	gdImageLine(ic.im, 1040, 770, 1160, 770, ic.ctext);
+
+	for (i = 0; i < 100; i++) {
+		drawpole(&ic, 1050 + i, 819, i % 50, 1, ic.crx);
+		drawpole(&ic, 1050 + i, 821, i % 50, 2, ic.ctx);
+	}
 
 	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 400, (unsigned char *)"Color: ctext", ic.ctext);
 	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 420, (unsigned char *)"Color: cedge", ic.cedge);

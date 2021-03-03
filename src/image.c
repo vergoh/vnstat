@@ -523,7 +523,7 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate)
 		step = 1;
 	}
 
-	for (i = 1 * step; i * s <= (124 + extray + 4); i = i + step) {
+	for (i = step; i * s <= (124 + extray + 4); i = i + step) {
 		gdImageDashedLine(ic->im, x + 36, y + 124 - (i * s), x + 460 + extrax, y + 124 - (i * s), ic->cline);
 		gdImageDashedLine(ic->im, x + 36, y + 124 - prev - (step * s) / 2, x + 460 + extrax, y + 124 - prev - (step * s) / 2, ic->clinel);
 		gdImageString(ic->im, font, x + 16 - (ic->large * 3), y + 121 - (i * s) - (ic->large * 3), (unsigned char *)getimagevalue(scaleunit * (unsigned int)i, 3, rate), ic->ctext);
@@ -1270,7 +1270,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 
 	/* upper part scale values */
 	y--; // adjust to start above center line
-	for (i = 1 * step; i * s <= rxh; i = i + step) {
+	for (i = step; i * s <= rxh; i = i + step) {
 		gdImageDashedLine(ic->im, x, y - (i * s), x + (resultcount + FIVEMINWIDTHPADDING), y - (i * s), ic->cline);
 		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + (resultcount + FIVEMINWIDTHPADDING), y - prev - (step * s) / 2, ic->clinel);
 		gdImageString(ic->im, font, x - 21 - (ic->large * 3), y - 3 - (i * s) - (ic->large * 3), (unsigned char *)getimagevalue(scaleunit * (unsigned int)i, 3, rate), ic->ctext);
@@ -1284,7 +1284,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	prev = 0;
 
 	/* lower part scale values */
-	for (i = 1 * step; i * s <= txh; i = i + step) {
+	for (i = step; i * s <= txh; i = i + step) {
 		gdImageDashedLine(ic->im, x, y + (i * s), x + (resultcount + FIVEMINWIDTHPADDING), y + (i * s), ic->cline);
 		gdImageDashedLine(ic->im, x, y + prev + (step * s) / 2, x + (resultcount + FIVEMINWIDTHPADDING), y + prev + (step * s) / 2, ic->clinel);
 		gdImageString(ic->im, font, x - 21 - (ic->large * 3), y - 3 + (i * s) - (ic->large * 3), (unsigned char *)getimagevalue(scaleunit * (unsigned int)i, 3, rate), ic->ctext);
