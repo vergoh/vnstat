@@ -175,6 +175,9 @@ START_TEST(database_outputs_do_not_crash)
 		ck_assert_int_eq(ret, 1);
 	}
 
+	ret = db_setupdated("something", (time_t)i * 85000);
+	ck_assert_int_eq(ret, 1);
+
 	suppress_output();
 
 	for (i = 0; i <= 4; i++) {
@@ -234,6 +237,9 @@ START_TEST(database_outputs_do_not_crash_without_traffic)
 	ck_assert_int_eq(ret, 1);
 
 	ret = db_addtraffic_dated("something", 0, 0, 85000);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setupdated("something", 85000);
 	ck_assert_int_eq(ret, 1);
 
 	suppress_output();
@@ -353,6 +359,9 @@ START_TEST(database_outputs_do_not_crash_without_data_if_totals_are_wrong)
 	ck_assert_int_eq(ret, 1);
 
 	ret = db_settotal("something", 42, 84);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setupdated("something", 85000);
 	ck_assert_int_eq(ret, 1);
 
 	suppress_output();

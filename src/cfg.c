@@ -302,11 +302,8 @@ void validatecfg(void)
 		}
 	}
 
-	if (cfg.fivegresultcount > cfg.fiveminutehours * 12) {
+	if (cfg.fiveminutehours > 0 && cfg.fivegresultcount > cfg.fiveminutehours * 12) {
 		cfg.fivegresultcount = cfg.fiveminutehours * 12;
-		if (cfg.fivegresultcount > FIVEGRESULTCOUNT) {
-			cfg.fivegresultcount = FIVEGRESULTCOUNT;
-		}
 		snprintf(errorstring, 1024, "5MinuteGraphResultCount has been reset to %d due to request being larger than data retention configured with 5MinuteHours.", cfg.fivegresultcount);
 		printe(PT_Config);
 	}
