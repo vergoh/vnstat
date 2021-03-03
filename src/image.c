@@ -1189,7 +1189,7 @@ void drawfivegraph(IMAGECONTENT *ic, const int rate, const int resultcount, cons
 
 int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate, const int resultcount, const int height)
 {
-	int x = xpos, y = ypos, i = 0, t = 0, rxh = 0, txh = 0, step, s = 0, prev = 0;
+	int x = xpos, y = ypos, i = 0, t = 0, rxh = 0, txh = 0, step = 0, s = 0, prev = 0;
 	uint64_t scaleunit, max;
 	time_t timestamp;
 	double ratediv;
