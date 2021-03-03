@@ -230,16 +230,17 @@ END_TEST
 char *hourly_imagescale_logic(const uint64_t max, const int rate)
 {
 	// int i, prev = 0;
-	int step, s, extray = 0;
+	int step = 0, s, extray = 0;
 	uint64_t scaleunit;
 
 	scaleunit = getscale(max, rate);
 
 	s = (int)lrint(((double)scaleunit / (double)max) * (124 + extray));
-	if (s < SCALEMINPIXELS) {
-		step = 2;
-	} else {
-		step = 1;
+	if (s == 0) {
+		s = 1;
+	}
+	while (s * step < SCALEMINPIXELS) {
+		step++;
 	}
 	/*
 	for (i = step; i * s <= (124 + extray + 4); i = i + step) {

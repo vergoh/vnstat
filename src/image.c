@@ -1229,7 +1229,12 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 
 	max = datainfo.maxrx + datainfo.maxtx;
 
-	if (datainfo.maxrx > datainfo.maxtx) {
+	if (datainfo.maxrx == datainfo.maxtx) {
+		txh = (int)((height - FIVEMINHEIGHTOFFSET * 2) / 2);
+		rxh = height - FIVEMINHEIGHTOFFSET * 2 - txh;
+		max = (uint64_t)((double)datainfo.maxrx / ratediv);
+		t = rxh;
+	} else if (datainfo.maxrx > datainfo.maxtx) {
 		txh = (int)lrint(((double)datainfo.maxtx / (double)max) * (height - FIVEMINHEIGHTOFFSET * 2));
 		rxh = height - FIVEMINHEIGHTOFFSET * 2 - txh;
 		max = (uint64_t)((double)datainfo.maxrx / ratediv);
@@ -1251,10 +1256,11 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	scaleunit = getscale(max, rate);
 
 	s = (int)lrint(((double)scaleunit / (double)max) * t);
-	if (s < SCALEMINPIXELS) {
-		step = 2;
-	} else {
-		step = 1;
+	if (s == 0) {
+		s = 1; // force to show something when there's not much or any traffic, scale is likely to be wrong in this case
+	}
+	while (s * step < SCALEMINPIXELS) {
+		step++;
 	}
 
 	if (debug) {
