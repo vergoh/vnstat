@@ -46,6 +46,7 @@ vnstatd_SOURCES = src/vnstatd.c src/vnstatd.h \
 vnstati_SOURCES = src/vnstati.c src/vnstati.h \
   src/iflist.c src/iflist.h \
   src/image.c src/image.h \
+  src/image_support.c src/image_support.h \
   src/dbsql.c src/dbsql.h \
   src/common.c src/common.h \
   src/misc.c src/misc.h \
@@ -102,7 +103,8 @@ if HAVE_LIBGD
 check_vnstat_CFLAGS += -DHAVE_IMAGE
 check_vnstat_LDADD += @IMAGELIBS@
 check_vnstat_SOURCES += tests/image_tests.c tests/image_tests.h \
-  src/image.c src/image.h
+  src/image.c src/image.h \
+  src/image_support.c src/image_support.h
 endif
 endif
 

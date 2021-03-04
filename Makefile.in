@@ -96,7 +96,8 @@ sbin_PROGRAMS = vnstatd$(EXEEXT)
 @HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@am__append_2 = -DHAVE_IMAGE
 @HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@am__append_3 = @IMAGELIBS@
 @HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@am__append_4 = tests/image_tests.c tests/image_tests.h \
-@HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@  src/image.c src/image.h
+@HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@  src/image.c src/image.h \
+@HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@  src/image_support.c src/image_support.h
 
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -136,10 +137,12 @@ am__check_vnstat_SOURCES_DIST = tests/vnstat_tests.c \
 	src/iflist.h src/misc.c src/misc.h src/fs.c src/fs.h src/id.c \
 	src/id.h src/vnstat_func.c src/vnstat_func.h src/traffic.c \
 	src/traffic.h tests/image_tests.c tests/image_tests.h \
-	src/image.c src/image.h
+	src/image.c src/image.h src/image_support.c \
+	src/image_support.h
 am__dirstamp = $(am__leading_dot)dirstamp
 @HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@am__objects_1 = tests/check_vnstat-image_tests.$(OBJEXT) \
-@HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@	src/check_vnstat-image.$(OBJEXT)
+@HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@	src/check_vnstat-image.$(OBJEXT) \
+@HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@	src/check_vnstat-image_support.$(OBJEXT)
 @HAVE_CHECK_TRUE@am_check_vnstat_OBJECTS =  \
 @HAVE_CHECK_TRUE@	tests/check_vnstat-vnstat_tests.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	tests/check_vnstat-common_tests.$(OBJEXT) \
@@ -196,9 +199,9 @@ am_vnstatd_OBJECTS = src/vnstatd.$(OBJEXT) src/ifinfo.$(OBJEXT) \
 vnstatd_OBJECTS = $(am_vnstatd_OBJECTS)
 vnstatd_LDADD = $(LDADD)
 am_vnstati_OBJECTS = src/vnstati.$(OBJEXT) src/iflist.$(OBJEXT) \
-	src/image.$(OBJEXT) src/dbsql.$(OBJEXT) src/common.$(OBJEXT) \
-	src/misc.$(OBJEXT) src/fs.$(OBJEXT) src/id.$(OBJEXT) \
-	src/cfg.$(OBJEXT)
+	src/image.$(OBJEXT) src/image_support.$(OBJEXT) \
+	src/dbsql.$(OBJEXT) src/common.$(OBJEXT) src/misc.$(OBJEXT) \
+	src/fs.$(OBJEXT) src/id.$(OBJEXT) src/cfg.$(OBJEXT)
 vnstati_OBJECTS = $(am_vnstati_OBJECTS)
 vnstati_DEPENDENCIES =
 AM_V_P = $(am__v_P_@AM_V@)
@@ -675,6 +678,7 @@ vnstatd_SOURCES = src/vnstatd.c src/vnstatd.h \
 vnstati_SOURCES = src/vnstati.c src/vnstati.h \
   src/iflist.c src/iflist.h \
   src/image.c src/image.h \
+  src/image_support.c src/image_support.h \
   src/dbsql.c src/dbsql.h \
   src/common.c src/common.h \
   src/misc.c src/misc.h \
@@ -967,6 +971,8 @@ tests/check_vnstat-image_tests.$(OBJEXT): tests/$(am__dirstamp) \
 	tests/$(DEPDIR)/$(am__dirstamp)
 src/check_vnstat-image.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
+src/check_vnstat-image_support.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
 
 check_vnstat$(EXEEXT): $(check_vnstat_OBJECTS) $(check_vnstat_DEPENDENCIES) $(EXTRA_check_vnstat_DEPENDENCIES) 
 	@rm -f check_vnstat$(EXEEXT)
@@ -1015,6 +1021,8 @@ vnstatd$(EXEEXT): $(vnstatd_OBJECTS) $(vnstatd_DEPENDENCIES) $(EXTRA_vnstatd_DEP
 src/vnstati.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/image.$(OBJEXT): src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
+src/image_support.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
 
 vnstati$(EXEEXT): $(vnstati_OBJECTS) $(vnstati_DEPENDENCIES) $(EXTRA_vnstati_DEPENDENCIES) 
 	@rm -f vnstati$(EXEEXT)
@@ -1046,6 +1054,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-ifinfo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-iflist.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-image.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-image_support.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-misc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-traffic.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-vnstat_func.Po@am__quote@
@@ -1063,6 +1072,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/ifinfo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/iflist.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/image.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/image_support.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/misc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/traffic.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/vnstat.Po@am__quote@
@@ -1576,6 +1586,20 @@ src/check_vnstat-image.obj: src/image.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/image.c' object='src/check_vnstat-image.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o src/check_vnstat-image.obj `if test -f 'src/image.c'; then $(CYGPATH_W) 'src/image.c'; else $(CYGPATH_W) '$(srcdir)/src/image.c'; fi`
+
+src/check_vnstat-image_support.o: src/image_support.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT src/check_vnstat-image_support.o -MD -MP -MF src/$(DEPDIR)/check_vnstat-image_support.Tpo -c -o src/check_vnstat-image_support.o `test -f 'src/image_support.c' || echo '$(srcdir)/'`src/image_support.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/check_vnstat-image_support.Tpo src/$(DEPDIR)/check_vnstat-image_support.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/image_support.c' object='src/check_vnstat-image_support.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o src/check_vnstat-image_support.o `test -f 'src/image_support.c' || echo '$(srcdir)/'`src/image_support.c
+
+src/check_vnstat-image_support.obj: src/image_support.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT src/check_vnstat-image_support.obj -MD -MP -MF src/$(DEPDIR)/check_vnstat-image_support.Tpo -c -o src/check_vnstat-image_support.obj `if test -f 'src/image_support.c'; then $(CYGPATH_W) 'src/image_support.c'; else $(CYGPATH_W) '$(srcdir)/src/image_support.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/check_vnstat-image_support.Tpo src/$(DEPDIR)/check_vnstat-image_support.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/image_support.c' object='src/check_vnstat-image_support.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o src/check_vnstat-image_support.obj `if test -f 'src/image_support.c'; then $(CYGPATH_W) 'src/image_support.c'; else $(CYGPATH_W) '$(srcdir)/src/image_support.c'; fi`
 install-man1: $(dist_man_MANS)
 	@$(NORMAL_INSTALL)
 	@list1=''; \

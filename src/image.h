@@ -40,16 +40,6 @@ void drawimage(IMAGECONTENT *ic);
 #if HAVE_DECL_GD_NEAREST_NEIGHBOUR
 void scaleimage(IMAGECONTENT *ic);
 #endif
-void imageinit(IMAGECONTENT *ic, const int width, const int height);
-void colorinitcheck(const char *color, const int value, const char *cfgtext, const int *rgb);
-void layoutinit(IMAGECONTENT *ic, char *title, const int width, const int height);
-void drawlegend(IMAGECONTENT *ic, const int x, const int y, const short israte);
-void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max, const short isestimate);
-void drawpoles(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max);
-void drawdonut(IMAGECONTENT *ic, const int x, const int y, const float rxp, const float txp, const int size, const int holesize);
-#ifdef CHECK_VNSTAT
-void drawdonut_libgd_native(IMAGECONTENT *ic, const int x, const int y, const float rxp, const float txp, const int size, const int holesize);
-#endif
 int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate);
 void drawhourly(IMAGECONTENT *ic, const int rate);
 void drawlist(IMAGECONTENT *ic, const char *listname);
@@ -58,13 +48,5 @@ void drawsummary_alltime(IMAGECONTENT *ic, const int x, const int y);
 void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *mode);
 void drawfivegraph(IMAGECONTENT *ic, const int rate, const int resultcount, const int height);
 int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate, const int resultcount, const int height);
-void drawpole(IMAGECONTENT *ic, const int x, const int y, const int length, const int direction, const int maincolor);
-void drawarrowup(IMAGECONTENT *ic, const int x, const int y);
-void drawarrowright(IMAGECONTENT *ic, const int x, const int y);
-void hextorgb(char *input, int *rgb);
-void modcolor(int *rgb, const int offset, const int force);
-char *getimagevalue(const uint64_t b, const int len, const int rate);
-char *getimagescale(const uint64_t b, const int rate);
-uint64_t getscale(const uint64_t input, const int rate);
 
 #endif

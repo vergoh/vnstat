@@ -4,6 +4,7 @@
 #include "dbsql.h"
 #include "cfg.h"
 #include "image.h"
+#include "image_support.h"
 
 START_TEST(initimagecontent_does_not_crash)
 {
