@@ -2,6 +2,7 @@
 #include "vnstat_tests.h"
 #include "vnstat_func.h"
 #include "cfg.h"
+#include "dbsql.h"
 #include "parseargs_tests.h"
 
 START_TEST(vnstat_parseargs_does_nothing_without_args)
@@ -568,6 +569,190 @@ START_TEST(vnstat_parseargs_limit_overrides_regardless_of_position)
 }
 END_TEST
 
+START_TEST(vnstat_parseargs_iflist_gives_help)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--iflist", "notknown", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	initparams(&p);
+	suppress_output();
+	parseargs(&p, argc, argv);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_iflist_without_parameters_and_no_interfaces)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--iflist", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	initparams(&p);
+	remove_directory(TESTDIR);
+	suppress_output();
+	parseargs(&p, argc, argv);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_iflist_without_parameters_and_only_lo)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--iflist", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	initparams(&p);
+	fake_proc_net_dev("w", "lo", 0, 0, 0, 0);
+	suppress_output();
+	parseargs(&p, argc, argv);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_iflist_without_parameters)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--iflist", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	initparams(&p);
+	fake_proc_net_dev("w", "ethsomething", 0, 0, 0, 0);
+	fake_proc_net_dev("a", "ethanything", 0, 0, 0, 0);
+	suppress_output();
+	parseargs(&p, argc, argv);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_iflist_with_verbose_mode)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--iflist", "0", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	initparams(&p);
+	fake_proc_net_dev("w", "ethsomething", 0, 0, 0, 0);
+	fake_proc_net_dev("a", "ethanything", 0, 0, 0, 0);
+	suppress_output();
+	parseargs(&p, argc, argv);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_iflist_with_parseable_mode)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--iflist", "1", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	initparams(&p);
+	fake_proc_net_dev("w", "ethsomething", 0, 0, 0, 0);
+	fake_proc_net_dev("a", "ethanything", 0, 0, 0, 0);
+	suppress_output();
+	parseargs(&p, argc, argv);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_dbiflist_gives_help)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--dbiflist", "unknown", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	initparams(&p);
+	suppress_output();
+	parseargs(&p, argc, argv);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_dbiflist_with_no_database)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--dbiflist", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	initparams(&p);
+	suppress_output();
+	parseargs(&p, argc, argv);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_dbiflist_without_parameters_and_no_interfaces)
+{
+	int ret;
+	PARAMS p;
+	char *argv[] = {"vnstat", "--dbiflist", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	initparams(&p);
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	suppress_output();
+	parseargs(&p, argc, argv);
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_dbiflist_without_parameters)
+{
+	int ret;
+	PARAMS p;
+	char *argv[] = {"vnstat", "--dbiflist", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	initparams(&p);
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("etheverything");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("ethnothing");
+	ck_assert_int_eq(ret, 1);
+	suppress_output();
+	parseargs(&p, argc, argv);
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_dbiflist_with_verbose_mode)
+{
+	int ret;
+	PARAMS p;
+	char *argv[] = {"vnstat", "--dbiflist", "0", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	initparams(&p);
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("etheverything");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("ethnothing");
+	ck_assert_int_eq(ret, 1);
+	suppress_output();
+	parseargs(&p, argc, argv);
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_dbiflist_with_parseable_mode)
+{
+	int ret;
+	PARAMS p;
+	char *argv[] = {"vnstat", "--dbiflist", "1", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	initparams(&p);
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("etheverything");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("ethnothing");
+	ck_assert_int_eq(ret, 1);
+	suppress_output();
+	parseargs(&p, argc, argv);
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 void add_parseargs_tests(Suite *s)
 {
 	TCase *tc_pa = tcase_create("ParseArgs");
@@ -612,5 +797,17 @@ void add_parseargs_tests(Suite *s)
 	tcase_add_test(tc_pa, vnstat_parseargs_limit_changes_defaults);
 	tcase_add_test(tc_pa, vnstat_parseargs_limit_overrides);
 	tcase_add_test(tc_pa, vnstat_parseargs_limit_overrides_regardless_of_position);
+	tcase_add_exit_test(tc_pa, vnstat_parseargs_iflist_gives_help, 1);
+	tcase_add_exit_test(tc_pa, vnstat_parseargs_iflist_without_parameters_and_no_interfaces, 1);
+	tcase_add_exit_test(tc_pa, vnstat_parseargs_iflist_without_parameters_and_only_lo, 0);
+	tcase_add_exit_test(tc_pa, vnstat_parseargs_iflist_without_parameters, 0);
+	tcase_add_exit_test(tc_pa, vnstat_parseargs_iflist_with_verbose_mode, 0);
+	tcase_add_exit_test(tc_pa, vnstat_parseargs_iflist_with_parseable_mode, 0);
+	tcase_add_exit_test(tc_pa, vnstat_parseargs_dbiflist_gives_help, 1);
+	tcase_add_exit_test(tc_pa, vnstat_parseargs_dbiflist_with_no_database, 1);
+	tcase_add_exit_test(tc_pa, vnstat_parseargs_dbiflist_without_parameters_and_no_interfaces, 0);
+	tcase_add_exit_test(tc_pa, vnstat_parseargs_dbiflist_without_parameters, 0);
+	tcase_add_exit_test(tc_pa, vnstat_parseargs_dbiflist_with_verbose_mode, 0);
+	tcase_add_exit_test(tc_pa, vnstat_parseargs_dbiflist_with_parseable_mode, 0);
 	suite_add_tcase(s, tc_pa);
 }

@@ -944,7 +944,7 @@ void showdbiflist(const int parseable)
 	int dbifcount;
 	iflist *dbifl = NULL, *dbifl_i = NULL;
 
-	if (!db_open_ro()) {
+	if (db == NULL && !db_open_ro()) {
 		printf("Error: Failed to open database \"%s/%s\" in read-only mode.\n", cfg.dbdir, DATABASEFILE);
 		exit(EXIT_FAILURE);
 	}
