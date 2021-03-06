@@ -228,17 +228,6 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate)
 	/* scale text */
 	gdImageStringUp(ic->im, font, x - 2 - (ic->large * 14), y + 60 + (rate * 10) - (extray / 2), (unsigned char *)getimagescale(scaleunit * (unsigned int)step, rate), ic->ctext);
 
-	/* x-axis values and poles */
-	for (i = 0; i < 24; i++) {
-		s = tmax - i;
-		if (s < 0) {
-			s += 24;
-		}
-		snprintf(buffer, 32, "%02d ", s);
-		gdImageString(ic->im, font, x + 440 - (i * (17 + ic->large * 6)) + extrax, y + 128, (unsigned char *)buffer, ic->ctext);
-		drawpoles(ic, x + 438 - (i * (17 + ic->large * 6)) + extrax, y - extray, 124 + extray, hourdata[s].rx, hourdata[s].tx, max);
-	}
-
 	/* axis */
 	gdImageLine(ic->im, x + 36 - 4, y + 124, x + 466 + extrax, y + 124, ic->ctext);
 	gdImageLine(ic->im, x + 36, y - 10 - extray, x + 36, y + 124 + 4, ic->ctext);
@@ -246,6 +235,23 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate)
 	/* arrows */
 	drawarrowup(ic, x + 36, y - 9 - extray);
 	drawarrowright(ic, x + 465 + extrax, y + 124);
+
+	/* x-axis values and poles */
+	for (i = 0; i < 24; i++) {
+		s = tmax - i;
+		if (s < 0) {
+			s += 24;
+		}
+		snprintf(buffer, 32, "%02d ", s);
+		if (hourdata[s].date == 0) {
+			chour = ic->cline;
+		} else {
+			chour = ic->ctext;
+		}
+		gdImageString(ic->im, font, x + 440 - (i * (17 + ic->large * 6)) + extrax, y + 128, (unsigned char *)buffer, chour);
+		drawpoles(ic, x + 438 - (i * (17 + ic->large * 6)) + extrax, y - extray, 124 + extray, hourdata[s].rx, hourdata[s].tx, max);
+		gdImageLine(ic->im, x + 438 - 2 - (i * (17 + ic->large * 6)) + extrax, y + extray + 124, x + 438 + 14 - (i * (17 + ic->large * 6)) + extrax, y + extray + 124, chour);
+	}
 
 	return 1;
 }

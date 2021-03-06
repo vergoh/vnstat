@@ -233,14 +233,18 @@ void drawpoles(IMAGECONTENT *ic, const int x, const int y, const int len, const 
 {
 	int l;
 
-	l = (int)lrint(((double)rx / (double)max) * len);
-	if (l > 0) {
-		gdImageFilledRectangle(ic->im, x - (ic->large * 2), y + (len - l), x + 7 + (ic->large * 0), y + len, ic->crx);
+	if (rx > 0) {
+		l = (int)lrint(((double)rx / (double)max) * len);
+		if (l > 0) {
+			gdImageFilledRectangle(ic->im, x - (ic->large * 2), y + (len - l), x + 7 + (ic->large * 0), y + len, ic->crx);
+		}
 	}
 
-	l = (int)lrint(((double)tx / (double)max) * len);
-	if (l > 0) {
-		gdImageFilledRectangle(ic->im, x + 5 - (ic->large * 0), y + (len - l), x + 12 + (ic->large * 2), y + len, ic->ctx);
+	if (tx > 0) {
+		l = (int)lrint(((double)tx / (double)max) * len);
+		if (l > 0) {
+			gdImageFilledRectangle(ic->im, x + 5 - (ic->large * 0), y + (len - l), x + 12 + (ic->large * 2), y + len, ic->ctx);
+		}
 	}
 }
 
