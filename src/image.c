@@ -884,7 +884,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	int x = xpos, y = ypos, i = 0, t = 0, rxh = 0, txh = 0, step = 0, s = 0, prev = 0;
 	uint64_t scaleunit, max;
 	time_t timestamp;
-	double ratediv;
+	double ratediv, e;
 	char buffer[32];
 	struct tm *d;
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
@@ -998,7 +998,6 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	gdImageStringUp(ic->im, font, x - 44 - (ic->large * 5), ypos - height / 2 + (rate * 10), (unsigned char *)getimagescale(scaleunit * (unsigned int)step, rate), ic->ctext);
 
 	/* TODO
-		- last value needs to be scaled if not full 5 minute has passed
 		- indicate somehow areas where the database didn't provide any data?
 	*/
 
@@ -1041,10 +1040,26 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 			continue;
 		}
 
-		t = (int)lrint(((double)datalist_i->rx / (double)datainfo.maxrx) * rxh);
+		/* only the last entry can be the currently ongoing period that may need scaling */
+		if (datalist_i->next == NULL && issametimeslot(LT_5min, datalist_i->timestamp, ic->interface.updated)) {
+			e = (double)(ic->interface.updated - datalist_i->timestamp) / (double)300;
+			if (e < 0.01) {
+				e = 1;
+			}
+		} else {
+			e = 1;
+		}
+
+		t = (int)lrint(((double)datalist_i->rx / e / (double)datainfo.maxrx) * rxh);
+		if (t > rxh) {
+			t = rxh;
+		}
 		drawpole(ic, x + i, y - 1, t, 1, ic->crx);
 
-		t = (int)lrint(((double)datalist_i->tx / (double)datainfo.maxtx) * txh);
+		t = (int)lrint(((double)datalist_i->tx / e / (double)datainfo.maxtx) * txh);
+		if (t > txh) {
+			t = txh;
+		}
 		drawpole(ic, x + i, y + 1, t, 2, ic->ctx);
 
 		datalist_i = datalist_i->next;
