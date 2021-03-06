@@ -997,10 +997,6 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	/* scale text */
 	gdImageStringUp(ic->im, font, x - 44 - (ic->large * 5), ypos - height / 2 + (rate * 10), (unsigned char *)getimagescale(scaleunit * (unsigned int)step, rate), ic->ctext);
 
-	/* TODO
-		- indicate somehow areas where the database didn't provide any data?
-	*/
-
 	timestamp = datainfo.maxtime - (resultcount * 300);
 
 	while (datalist_i != NULL && datalist_i->timestamp < timestamp + 300) {
@@ -1029,14 +1025,21 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 
 				if (i > font->w) {
 					snprintf(buffer, 32, "%02d", d->tm_hour);
-					gdImageString(ic->im, font, x + i - font->w + 1, y + txh + font->h - (ic->large * 5), (unsigned char *)buffer, ic->ctext);
+					if (datalist_i->timestamp > timestamp) {
+						gdImageString(ic->im, font, x + i - font->w + 1, y + txh + font->h - (ic->large * 5), (unsigned char *)buffer, ic->cline);
+					} else {
+						gdImageString(ic->im, font, x + i - font->w + 1, y + txh + font->h - (ic->large * 5), (unsigned char *)buffer, ic->ctext);
+					}
 				}
 			} else {
 				gdImageLine(ic->im, x + i, y + txh - 1 + FIVEMINHEIGHTOFFSET, x + i, y - rxh - 1, ic->cbgoffset);
 			}
+			gdImageSetPixel(ic->im, x + i, y, ic->ctext);
 		}
 
 		if (datalist_i->timestamp > timestamp) {
+			gdImageSetPixel(ic->im, x + i, y, ic->cline);
+			gdImageSetPixel(ic->im, x + i, y + txh + FIVEMINHEIGHTOFFSET, ic->cline);
 			continue;
 		}
 
@@ -1066,10 +1069,6 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	}
 
 	dbdatalistfree(&datalist);
-
-	/* redraw center line */
-	x = xpos + 40;
-	gdImageLine(ic->im, x, y, x + (resultcount + FIVEMINWIDTHPADDING), y, ic->ctext);
 
 	return 1;
 }
