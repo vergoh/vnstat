@@ -250,7 +250,7 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate)
 		}
 		gdImageString(ic->im, font, x + 440 - (i * (17 + ic->large * 6)) + extrax, y + 128, (unsigned char *)buffer, chour);
 		drawpoles(ic, x + 438 - (i * (17 + ic->large * 6)) + extrax, y - extray, 124 + extray, hourdata[s].rx, hourdata[s].tx, max);
-		gdImageLine(ic->im, x + 438 - 2 - (i * (17 + ic->large * 6)) + extrax, y + extray + 124, x + 438 + 14 - (i * (17 + ic->large * 6)) + extrax, y + extray + 124, chour);
+		gdImageLine(ic->im, x + 438 - 2 - (i * (17 + ic->large * 6)) + extrax, y + 124, x + 438 + 14 - (i * (17 + ic->large * 6)) + extrax, y + 124, chour);
 	}
 
 	return 1;
@@ -272,7 +272,7 @@ void drawhourly(IMAGECONTENT *ic, const int rate)
 	layoutinit(ic, " / hourly", width, height);
 
 	if (drawhours(ic, 12, 46 - headermod + (ic->large * 40), rate)) {
-		drawlegend(ic, 242 + (ic->large * 84), 183 - headermod + (ic->large * 46), 0);
+		drawlegend(ic, width / 2 - (ic->large * 10), 183 - headermod + (ic->large * 46), 0);
 	}
 }
 
@@ -871,7 +871,7 @@ void drawfivegraph(IMAGECONTENT *ic, const int rate, const int resultcount, cons
 {
 	int imagewidth, imageheight = height, headermod = 0;
 
-	imagewidth = resultcount + FIVEMINEXTRASPACE;
+	imagewidth = resultcount + FIVEMINEXTRASPACE + (ic->large * 14);
 
 	if (!ic->showheader) {
 		headermod = 22;
@@ -880,8 +880,8 @@ void drawfivegraph(IMAGECONTENT *ic, const int rate, const int resultcount, cons
 	imageinit(ic, imagewidth, imageheight);
 	layoutinit(ic, " / 5 minute", imagewidth, imageheight);
 
-	if (drawfiveminutes(ic, 16, imageheight - 37, rate, resultcount, imageheight - 80 + headermod)) {
-		drawlegend(ic, imagewidth / 2 - (ic->large * 10), imageheight - 19, 0);
+	if (drawfiveminutes(ic, 8 + (ic->large * 14), imageheight - 30 - (ic->large * 8), rate, resultcount, imageheight - 68 + headermod - (ic->large * 8))) {
+		drawlegend(ic, imagewidth / 2 - (ic->large * 10), imageheight - 17 - (ic->large * 2), 0);
 	}
 }
 
@@ -1001,7 +1001,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	y--; // y is now back on center line
 
 	/* scale text */
-	gdImageStringUp(ic->im, font, x - 44 - (ic->large * 5), ypos - height / 2 + (rate * 10), (unsigned char *)getimagescale(scaleunit * (unsigned int)step, rate), ic->ctext);
+	gdImageStringUp(ic->im, font, x - 39 - (ic->large * 14), ypos - height / 2 + (rate * 10), (unsigned char *)getimagescale(scaleunit * (unsigned int)step, rate), ic->ctext);
 
 	timestamp = datainfo.maxtime - (resultcount * 300);
 

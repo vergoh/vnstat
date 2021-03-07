@@ -204,7 +204,7 @@ sub main()
 			if ($largefonts == '1') {
 				graph($graphs[$1]{interface}, $file, "-5g 576 300");
 			} else {
-				graph($graphs[$1]{interface}, $file, "-5g 408 250");
+				graph($graphs[$1]{interface}, $file, "-5g 422 250");
 			}
 			send_image($file);
 		}
