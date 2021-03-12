@@ -3,7 +3,7 @@
 
  * 2.7: 5MinuteGraphHeight, 5MinuteGraphResultCount, BarColumnShowsRate,
         EstimateBarVisible, EstimateStyle, ImageScale, LargeFonts,
-        LineSpacingAdjustment
+        LineSpacingAdjustment, SummaryGraph
 
  * 2.4 - 2.6: (none)
 

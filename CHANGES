@@ -8,6 +8,9 @@
  - New
    - Add -5g / --fivegraph options to image output with sizing related
      parameters for the output of a 5 minute resolution bar graph
+   - Add configuration option SummaryGraph and optional parameter for
+     --hsummary and --vsummary for selecting which graph is shown next to
+     the summary data in the horizontal and vertical summary outputs
    - Add --large / --small options to image output and LargeFonts
      configuration option for controlling the output font size
    - Add --scale for scaling the image output to a given percent

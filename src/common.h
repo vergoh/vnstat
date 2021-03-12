@@ -266,6 +266,9 @@ and most can be changed later from the config file.
 #define FIVEGMINRESULTCOUNT 288
 #define FIVEGMINHEIGHT 150
 
+/* graph used in extended summary, 0 = hours, 1 = 5 minutes*/
+#define SUMMARYGRAPH 0
+
 /* default colors */
 #define CBACKGROUND "FFFFFF"
 #define CEDGE "AEAEAE"
@@ -298,7 +301,7 @@ typedef struct {
 	int32_t monthrotate, monthrotateyears, maxbw, spacecheck, trafficlessentries, transbg, ostyle;
 	int32_t defaultdecimals, hourlydecimals, hourlystyle, is64bit, waldb, dbsynchronous, imagescale;
 	int32_t largefonts, linespaceadjust, estimatebarvisible, estimatestyle, barshowsrate, fivegresultcount;
-	int32_t fivegheight;
+	int32_t fivegheight, summarygraph;
 	char cfgfile[512], logfile[512], pidfile[512];
 	char daemonuser[33], daemongroup[33];
 	int32_t timesyncwait, updateinterval, pollinterval, saveinterval, offsaveinterval, savestatus;

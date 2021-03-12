@@ -1,4 +1,4 @@
-.TH VNSTATI 1 "FEBRUARY 2021" "version 2.7" "User Manuals"
+.TH VNSTATI 1 "MARCH 2021" "version 2.7" "User Manuals"
 .SH NAME
 vnstati \- png image output support for vnStat
 
@@ -35,8 +35,10 @@ vnstati \- png image output support for vnStat
 .RB [ \-\-hours
 .RI [ limit ]]
 .RB [ \-\-hoursgraph ]
-.RB [ \-hs ]
-.RB [ \-\-hsummary ]
+.RB [ \-hs
+.RI [ graph ]]
+.RB [ \-\-hsummary
+.RI [ graph ]]
 .RB [ \-i
 .IR interface ]
 .RB [ \-\-iface
@@ -68,10 +70,13 @@ vnstati \- png image output support for vnStat
 .RB [ \-\-summary ]
 .RB [ \-\-top
 .RI [ limit ]]
-.RB [ \-\-transparent ]
+.RB [ \-\-transparent
+.RI [ enabled ]]
 .RB [ \-\-version ]
-.RB [ \-vs ]
-.RB [ \-\-vsummary ]
+.RB [ \-vs
+.RI [ graph ]]
+.RB [ \-\-vsummary
+.RI [ graph ]]
 .RB [ \-\-months
 .RI [ limit ]]
 
@@ -201,8 +206,13 @@ is set to 0.
 Output traffic statistics on a hourly basis for the last 24 hours using a bar graph.
 
 .TP
-.B "-hs, --hsummary"
-Output traffic summary including hourly data bar graph using a horizontal layout.
+.BI "-hs, --hsummary " [graph]
+Output traffic summary with the graph selected using the
+.B SummaryGraph
+setting in the configuration file next to it using a horizontal layout. The optional
+.I graph
+parameter can be used to override the configuration file setting. Available graphs:
+0 = hours, 1 = 5 minutes.
 
 .TP
 .BI "-i, --iface " interface
@@ -313,8 +323,9 @@ can access.
 
 .TP
 .BI "--transparent " [enabled]
-Toggle background color transparency depending of the TransparentBg setting
-in the configuration file. Alternatively, 0 or 1 can be given as parameter
+Toggle background color transparency depending of the
+.B TransparentBg
+setting in the configuration file. Alternatively, 0 or 1 can be given as parameter
 .I enabled
 for this option in order to either disable (0) or enable (1) transparency
 regardless of the configuration file setting.
@@ -324,8 +335,13 @@ regardless of the configuration file setting.
 Show current version.
 
 .TP
-.B "-vs, --vsummary"
-Output traffic summary including hourly data bar graph using a vertical layout.
+.BI "-vs, --vsummary " [graph]
+Output traffic summary with the graph selected using the
+.B SummaryGraph
+setting in the configuration file below it using a vertical layout. The optional
+.I graph
+parameter can be used to override the configuration file setting. Available graphs:
+0 = hours, 1 = 5 minutes.
 
 .TP
 .BI "-y, --years " [limit]

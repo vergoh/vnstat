@@ -226,7 +226,7 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate)
 	}
 
 	/* scale text */
-	gdImageStringUp(ic->im, font, x - 2 - (ic->large * 14), y + 60 + (rate * 10) - (extray / 2), (unsigned char *)getimagescale(scaleunit * (unsigned int)step, rate), ic->ctext);
+	gdImageStringUp(ic->im, font, x - 2 - (ic->large * 14), y + 58 + (rate * 10) - (extray / 2), (unsigned char *)getimagescale(scaleunit * (unsigned int)step, rate), ic->ctext);
 
 	/* axis */
 	gdImageLine(ic->im, x + 36 - 4, y + 124, x + 466 + extrax, y + 124, ic->ctext);
@@ -651,11 +651,19 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int rate)
 	switch (layout) {
 		// horizontal
 		case 1:
-			drawhours(ic, 500 + (ic->large * 160), 46 + (ic->large * 40) - headermod, rate);
+			if (cfg.summarygraph == 1) {
+				drawfiveminutes(ic, 496 + (ic->large * 174), height - 30 - (ic->large * 8), rate, 422 + (ic->large * 154), height - 68 + headermod - (ic->large * 8));
+			} else {
+				drawhours(ic, 500 + (ic->large * 160), 46 + (ic->large * 40) - headermod, rate);
+			}
 			break;
 		// vertical
 		case 2:
-			drawhours(ic, 12, 215 + (ic->large * 84) - headermod, rate);
+			if (cfg.summarygraph == 1) {
+				drawfiveminutes(ic, 8 + (ic->large * 14), height - 31 - (ic->large * 6), rate, 422 + (ic->large * 154), 132 + (ic->large * 35));
+			} else {
+				drawhours(ic, 12, 215 + (ic->large * 84) - headermod, rate);
+			}
 			break;
 		default:
 			break;

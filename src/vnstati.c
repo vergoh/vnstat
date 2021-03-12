@@ -117,8 +117,9 @@ void showihelp(IPARAMS *p)
 	printf("      -y,  --years [limit]               output years\n");
 	printf("      -t,  --top [limit]                 output top days\n");
 	printf("      -s,  --summary                     output summary\n");
-	printf("      -hs, --hsummary                    output horizontal summary with hours\n");
-	printf("      -vs, --vsummary                    output vertical summary with hours\n\n");
+	printf("      -hs, --hsummary [graph]            output horizontal summary with graph\n");
+	printf("      -vs, --vsummary [graph]            output vertical summary with graph\n\n");
+
 	printf("      -nh, --noheader                    remove header from output\n");
 	printf("      -ne, --noedge                      remove edge from output\n");
 	printf("      -nl, --nolegend                    remove legend from output\n");
@@ -380,8 +381,34 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 			}
 		} else if ((strcmp(argv[currentarg], "-hs") == 0) || (strcmp(argv[currentarg], "--hsummary")) == 0) {
 			cfg.qmode = 51;
+			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {
+				cfg.summarygraph = atoi(argv[currentarg + 1]);
+				if (cfg.summarygraph > 1 || cfg.summarygraph < 0) {
+					printf("Error: Invalid graph selection \"%d\" for --hsummary.\n", cfg.summarygraph);
+					printf(" Valid graphs:\n");
+					printf("    0 - hours\n");
+					printf("    1 - 5 minutes\n");
+					exit(EXIT_FAILURE);
+				}
+				if (debug)
+					printf("Summary graph changed: %d\n", cfg.summarygraph);
+				currentarg++;
+			}
 		} else if ((strcmp(argv[currentarg], "-vs") == 0) || (strcmp(argv[currentarg], "--vsummary")) == 0) {
 			cfg.qmode = 52;
+			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {
+				cfg.summarygraph = atoi(argv[currentarg + 1]);
+				if (cfg.summarygraph > 1 || cfg.summarygraph < 0) {
+					printf("Error: Invalid graph selection \"%d\" for --vsummary.\n", cfg.summarygraph);
+					printf(" Valid graphs:\n");
+					printf("    0 - hours\n");
+					printf("    1 - 5 minutes\n");
+					exit(EXIT_FAILURE);
+				}
+				if (debug)
+					printf("Summary graph changed: %d\n", cfg.summarygraph);
+				currentarg++;
+			}
 		} else if ((strcmp(argv[currentarg], "-nh") == 0) || (strcmp(argv[currentarg], "--noheader")) == 0) {
 			ic->showheader = 0;
 		} else if ((strcmp(argv[currentarg], "-ne") == 0) || (strcmp(argv[currentarg], "--noedge")) == 0) {

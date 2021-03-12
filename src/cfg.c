@@ -76,6 +76,7 @@ int loadcfg(const char *cfgfile)
 		 {"ImageScale", 0, &cfg.imagescale, 0, 0},
 		 {"5MinuteGraphResultCount", 0, &cfg.fivegresultcount, 0, 0},
 		 {"5MinuteGraphHeight", 0, &cfg.fivegheight, 0, 0},
+		 {"SummaryGraph", 0, &cfg.summarygraph, 0, 0},
 		 {"EstimateStyle", 0, &cfg.estimatestyle, 0, 0},
 		 {"BarColumnShowsRate", 0, &cfg.barshowsrate, 0, 0},
 		 {"CBackground", cfg.cbg, 0, 8, 0},
@@ -210,6 +211,7 @@ void validatecfg(void)
 	validateint("ImageScale", &cfg.imagescale, IMAGESCALE, 50, 500);
 	validateint("5MinuteGraphResultCount", &cfg.fivegresultcount, FIVEGRESULTCOUNT, FIVEGMINRESULTCOUNT, 2000);
 	validateint("5MinuteGraphHeight", &cfg.fivegheight, FIVEGHEIGHT, FIVEGMINHEIGHT, 2000);
+	validatebool("SummaryGraph", &cfg.summarygraph, SUMMARYGRAPH);
 	validateint("EstimateStyle", &cfg.estimatestyle, ESTIMATESTYLE, 0, 2);
 	validatebool("BarColumnShowsRate", &cfg.barshowsrate, BARSHOWSRATE);
 	validatebool("HourlyRate", &cfg.hourlyrate, HOURLYRATE);
@@ -385,6 +387,7 @@ void defaultcfg(void)
 	cfg.imagescale = IMAGESCALE;
 	cfg.fivegresultcount = FIVEGRESULTCOUNT;
 	cfg.fivegheight = FIVEGHEIGHT;
+	cfg.summarygraph = SUMMARYGRAPH;
 	cfg.estimatestyle = ESTIMATESTYLE;
 	cfg.barshowsrate = BARSHOWSRATE;
 	strncpy_nt(cfg.cbg, CBACKGROUND, 8);

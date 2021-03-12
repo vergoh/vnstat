@@ -201,6 +201,9 @@ void printcfgfile(void)
 	printf("5MinuteGraphResultCount %d\n", cfg.fivegresultcount);
 	printf("5MinuteGraphHeight %d\n\n", cfg.fivegheight);
 
+	printf("# horizontal/vertical summary graph (0 = hours, 1 = 5 minutes)\n");
+	printf("SummaryGraph %d\n\n", cfg.summarygraph);
+
 	printf("# traffic estimate bar style\n");
 	printf("# (0 = not shown, 1 = continuation of existing bar, 2 = separate bar)\n");
 	printf("EstimateStyle %d\n\n", cfg.estimatestyle);
