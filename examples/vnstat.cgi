@@ -176,17 +176,17 @@ sub main()
 		}
 		elsif($img =~ /^(\d+)-d$/) {
 			my $file = "$tmp_dir/vnstat_$1_d.png";
-			graph($graphs[$1]{interface}, $file, "-d");
+			graph($graphs[$1]{interface}, $file, "-d 30");
 			send_image($file);
 		}
 		elsif($img =~ /^(\d+)-m$/) {
 			my $file = "$tmp_dir/vnstat_$1_m.png";
-			graph($graphs[$1]{interface}, $file, "-m");
+			graph($graphs[$1]{interface}, $file, "-m 12");
 			send_image($file);
 		}
 		elsif($img =~ /^(\d+)-t$/) {
 			my $file = "$tmp_dir/vnstat_$1_t.png";
-			graph($graphs[$1]{interface}, $file, "-t");
+			graph($graphs[$1]{interface}, $file, "-t 10");
 			send_image($file);
 		}
 		elsif($img =~ /^(\d+)-h$/) {
@@ -210,7 +210,7 @@ sub main()
 		}
 		elsif($img =~ /^(\d+)-y$/) {
 			my $file = "$tmp_dir/vnstat_$1_y.png";
-			graph($graphs[$1]{interface}, $file, "-y");
+			graph($graphs[$1]{interface}, $file, "-y 5");
 			send_image($file);
 		}
 		elsif($img =~ /^(\d+)-f$/) {
