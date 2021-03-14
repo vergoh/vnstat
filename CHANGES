@@ -26,6 +26,8 @@
      when those values are visible, disabled by default
    - Add --dbiflist for getting a list of interfaces in the database, both
      --iflist and --dbiflist also get alternative more parseable outputs
+   - Add configuration option for large font output and make 5 minute
+     resolution graph visible in vnstat.cgi
 
 
 2.6 / 20-Jan-2020
