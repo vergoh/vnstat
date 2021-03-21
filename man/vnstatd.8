@@ -61,6 +61,14 @@ The daemon will proceed to track the availability of monitored interfaces,
 process the interface traffic statistics and write new values to the database
 at a configured interval. As a result, the daemon ends up spending most
 of the time sleeping between updates.
+.PP
+Data is stored in the database using local time based on the daemon's execution
+environment. Any changes in the system timezone configuration will result in the
+data being inserted according to the new timezone but no recalculation will be
+done for already stored data. The daemon and the database in essence aren't
+aware of the used timezone and cannot be configured to offset the timestamps to
+any direction. If a system timezone change results in an already seen time period
+to repeat then the existing database values get incremented with the new data.
 
 .SH OPTIONS
 
