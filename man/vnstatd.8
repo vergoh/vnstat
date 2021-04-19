@@ -1,4 +1,4 @@
-.TH VNSTATD 8 "JANUARY 2021" "version 2.7" "User Manuals"
+.TH VNSTATD 8 "APRIL 2021" "version 2.7" "User Manuals"
 .SH NAME
 vnstatd \- daemon based database updating for vnStat
 
@@ -108,9 +108,9 @@ can only be used when the process is started as root.
 
 .TP
 .B "--initdb"
-Create a new empty database and exit. If the database already exists then
-access to it is verified. The daemon doesn't stay running when this option is
-used. This option cannot be used in combination with
+Create a new empty database without interface data and exit. If the database
+already exists then access to it is only verified. The daemon will not stay
+running when this option is used. This option cannot be used in combination with
 .B "-d, --daemon"
 or
 .BR "-n, --nodaemon" .
@@ -271,9 +271,10 @@ line parameter.
 
 Updates need to be executed at least as often as it is possible for the interface
 to generate enough traffic to overflow the kernel interface traffic counter. Otherwise,
-it is possible that some traffic won't be seen. With 32-bit kernels, the maximum time
-between two updates depends on how fast the interface can transfer 4 GiB. Calculated
-theoretical times are:
+it is possible that some traffic won't be seen. With 32-bit interface traffic counters,
+the maximum time between two updates depends on how fast the interface can transfer 4 GiB.
+Note that there is no guarantee that a 64-bit kernel has 64-bit interface traffic counters
+for all interfaces. Calculated theoretical times are:
 .RS
 .TS
 l l.
@@ -282,10 +283,6 @@ l l.
 1000 Mbit:      30 seconds
 .TE
 .RE
-
-However, for 1000 Mbit interfaces updating once every minute is usually a
-usable solution if a shorter update interval can't be used.
-.PP
 Virtual and aliased interfaces cannot be monitored because the kernel doesn't
 provide traffic information for that type of interfaces. Such interfaces are
 usually named eth0:0, eth0:1, eth0:2 etc. where eth0 is the actual interface

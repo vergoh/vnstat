@@ -1,11 +1,11 @@
-.TH VNSTAT 1 "FEBRUARY 2021" "version 2.7" "User Manuals"
+.TH VNSTAT 1 "APRIL 2021" "version 2.7" "User Manuals"
 .SH NAME
 vnstat \- a console-based network traffic monitor
 
 .SH SYNOPSIS
 
 .B vnstat
-.RB [ \-5bDedhlmqstvwy? ]
+.RB [ \-5bDedhlmqstvy? ]
 .RB [ \-\-add ]
 .RB [ \-\-begin
 .IR date ]
@@ -87,7 +87,7 @@ filesystems depending on availability resulting in light use of system resources
 regardless of network traffic rate. That way vnStat can be used even
 without root permissions on most systems.
 .PP
-The implementation is divided into two commands. The purpose of the
+Functionality is divided into two commands. The purpose of the
 .B vnstat
 command is to provide an interface for querying the traffic information stored
 in the database whereas the daemon
@@ -148,11 +148,11 @@ file or the hardcoded default if no configuration file is available.
 
 .TP
 .BI "--dbiflist " [mode]
-Show list of interfaces currently in the database. If
+List interfaces currently in the database. If
 .I mode
-is not defined or is set to 0 then the output will use one line verbose format. If
+is not defined or is set to 0 then the output will use a one line verbose format. If
 .I mode
-is set to 1 then the output will show one interface per line. See also
+is set to 1 then the output will contain one interface per line. See also
 .BR "--iflist" .
 
 .TP
@@ -211,11 +211,11 @@ when the merge syntax is used.
 
 .TP
 .BI "--iflist " [mode]
-Show list of currently available interfaces. If
+List currently available interfaces. If
 .I mode
-is not defined or is set to 0 then the output will use one line verbose format. If
+is not defined or is set to 0 then the output will use a one line verbose format. If
 .I mode
-is set to 1 then the output will show one interface per line. See also
+is set to 1 then the output will contain one interface per line. See also
 .BR "--dbiflist" .
 
 .TP
@@ -490,9 +490,10 @@ Delete database entries for interface eth2 and stop monitoring it.
 
 Updates need to be executed at least as often as it is possible for the interface
 to generate enough traffic to overflow the kernel interface traffic counter. Otherwise,
-it is possible that some traffic won't be seen. With 32-bit kernels, the maximum time
-between two updates depends on how fast the interface can transfer 4 GiB. Calculated
-theoretical times are:
+it is possible that some traffic won't be seen. With 32-bit interface traffic counters,
+the maximum time between two updates depends on how fast the interface can transfer 4 GiB.
+Note that there is no guarantee that a 64-bit kernel has 64-bit interface traffic counters
+for all interfaces. Calculated theoretical times are:
 .RS
 .TS
 l l.
@@ -501,9 +502,6 @@ l l.
 1000 Mbit:      30 seconds
 .TE
 .RE
-
-However, for 1000 Mbit interfaces updating once every minute is usually a
-usable solution if a shorter update interval can't be used.
 .PP
 Virtual and aliased interfaces cannot be monitored because the kernel doesn't
 provide traffic information for that type of interfaces. Such interfaces are

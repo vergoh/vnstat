@@ -969,7 +969,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 		step++;
 	}
 
-	if (debug) {
+	if (debug) { // TODO: cleanup
 		printf("maxrx: %lu\n", datainfo.maxrx);
 		printf("maxtx: %lu\n", datainfo.maxtx);
 		printf("rxh: %d     txh: %d\n", rxh, txh);
