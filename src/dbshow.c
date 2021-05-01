@@ -644,7 +644,7 @@ void showhours(const interfaceinfo *interface)
 	int i, s = 0, hour, minute, declen = cfg.hourlydecimals, div = 1;
 	unsigned int j, k, tmax = 0, dots = 0;
 	uint64_t max = 1;
-	char matrix[24][81]; /* width is one over 80 so that snprintf can write the end char */
+	char matrix[HGLINES][81]; /* width is one over 80 so that snprintf can write the end char */
 	char unit[4];
 	struct tm *d;
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
@@ -702,7 +702,7 @@ void showhours(const interfaceinfo *interface)
 	}
 
 	/* mr. proper */
-	for (i = 0; i < 24; i++) {
+	for (i = 0; i < HGLINES; i++) {
 		for (j = 0; j < 81; j++) {
 			matrix[i][j] = ' ';
 		}
@@ -764,36 +764,22 @@ void showhours(const interfaceinfo *interface)
 		k = k + 3;
 	}
 
-	/* hours and traffic */
-	for (i = 0; i <= 7; i++) {
-		s = (int)tmax + i + 1;
-		for (j = 0; j < 3; j++) {
-			snprintf(matrix[15 + i] + (j * 28), 25, "%02d %" DECCONV "10.*f %" DECCONV "10.*f",
-					 ((unsigned int)s + (j * 8)) % 24, declen, (double)hourdata[((unsigned int)s + (j * 8)) % 24].rx / (double)div,
-					 declen, (double)hourdata[((unsigned int)s + (j * 8)) % 24].tx / (double)div);
-		}
-	}
-
 	/* section separators */
-	if (cfg.hourlystyle) {
-		for (i = 0; i < 9; i++) {
-			if (cfg.hourlystyle == 1) {
-				matrix[14 + i][26] = '|';
-				matrix[14 + i][54] = '|';
-			} else if (cfg.hourlystyle == 2) {
-				matrix[14 + i][25] = ']';
-				matrix[14 + i][26] = '[';
-				matrix[14 + i][53] = ']';
-				matrix[14 + i][54] = '[';
-			} else if (cfg.hourlystyle == 3) {
-				matrix[14 + i][26] = '[';
-				matrix[14 + i][53] = ']';
-			}
-		}
+	if (cfg.hourlystyle == 1) {
+		matrix[14][26] = '|';
+		matrix[14][54] = '|';
+	} else if (cfg.hourlystyle == 2) {
+		matrix[14][25] = ']';
+		matrix[14][26] = '[';
+		matrix[14][53] = ']';
+		matrix[14][54] = '[';
+	} else if (cfg.hourlystyle == 3) {
+		matrix[14][26] = '[';
+		matrix[14][53] = ']';
 	}
 
 	/* clean \0 */
-	for (i = 0; i < 23; i++) {
+	for (i = 0; i < HGLINES; i++) {
 		for (j = 0; j < 80; j++) {
 			if (matrix[i][j] == '\0') {
 				matrix[i][j] = ' ';
@@ -801,13 +787,41 @@ void showhours(const interfaceinfo *interface)
 		}
 	}
 
-	/* show matrix (yes, the last line isn't shown) */
-	for (i = 0; i < 23; i++) {
+	/* show matrix */
+	for (i = 0; i < HGLINES; i++) {
 		for (j = 0; j < 80; j++) {
 			printf("%c", matrix[i][j]);
 		}
 		printf("\n");
 	}
+
+	/* hours and traffic */
+	for (i = 0; i <= 7; i++) {
+		s = (int)tmax + i + 1;
+		for (j = 0; j < 3; j++) {
+			printf("%02d %" DECCONV "10.*f %" DECCONV "10.*f", ((unsigned int)s + (j * 8)) % 24,
+					 declen, (double)hourdata[((unsigned int)s + (j * 8)) % 24].rx / (double)div,
+					 declen, (double)hourdata[((unsigned int)s + (j * 8)) % 24].tx / (double)div);
+
+			if (j < 2) {
+				if (cfg.hourlystyle == 1) {
+					printf("  | ");
+				} else if (cfg.hourlystyle == 2) {
+					printf(" ][ ");
+				} else if (cfg.hourlystyle == 3) {
+					if (j == 0) {
+						printf("  [ ");
+					} else {
+						printf(" ]  ");
+					}
+				} else {
+					printf("    ");
+				}
+			}
+		}
+		printf("\n");
+	}
+
 	timeused_debug(__func__, 0);
 }
 

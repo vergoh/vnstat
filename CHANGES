@@ -5,6 +5,9 @@
      existed but no data was available
    - ./configure output could show invalid install paths with some parameter
      combinations (pull request by Severin Glöckner)
+   - Columns in text hours graph output could get misaligned if the selected
+     system locale used a UTF-8 sequence for the thousands separator instead
+     of a single character
  - New
    - Add -5g / --fivegraph options to image output with sizing related
      parameters for the output of a 5 minute resolution bar graph

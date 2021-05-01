@@ -2,6 +2,7 @@
 #define DBSHOW_H
 
 #define DATEBUFFLEN 64
+#define HGLINES 15
 
 typedef struct {
 	time_t date;
