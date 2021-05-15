@@ -457,25 +457,25 @@ uint64_t getperiodseconds(const ListType listtype, const time_t entry, const tim
 
 	if (isongoing) {
 		if (listtype == LT_Day) {
-			seconds = (uint64_t)(u.tm_sec + (u.tm_min * 60) + (u.tm_hour * 3600));
+			seconds = (uint64_t)u.tm_sec + (uint64_t)u.tm_min * 60 + (uint64_t)u.tm_hour * 3600;
 		} else if (listtype == LT_Month) {
 			seconds = (uint64_t)mosecs(entry, updated);
 		} else if (listtype == LT_Year) {
-			seconds = (uint64_t)(u.tm_yday * 86400 + u.tm_sec + (u.tm_min * 60) + (u.tm_hour * 3600));
+			seconds = (uint64_t)u.tm_yday * 86400 + (uint64_t)u.tm_sec + (uint64_t)u.tm_min * 60 + (uint64_t)u.tm_hour * 3600;
 		} else if (listtype == LT_Top) {
 			seconds = 86400;
 		} else if (listtype == LT_Hour) {
-			seconds = (uint64_t)(u.tm_sec + (u.tm_min * 60));
+			seconds = (uint64_t)u.tm_sec + (uint64_t)u.tm_min * 60;
 		} else if (listtype == LT_5min) {
-			seconds = (uint64_t)(u.tm_sec + (u.tm_min % 5 * 60));
+			seconds = (uint64_t)u.tm_sec + (uint64_t)u.tm_min % 5 * 60;
 		}
 	} else {
 		if (listtype == LT_Day || listtype == LT_Top) {
 			seconds = 86400;
 		} else if (listtype == LT_Month) {
-			seconds = (uint64_t)(dmonth(e.tm_mon) * 86400);
+			seconds = (uint64_t)dmonth(e.tm_mon) * 86400;
 		} else if (listtype == LT_Year) {
-			seconds = (uint64_t)((365 + isleapyear(e.tm_year + 1900)) * 86400);
+			seconds = (uint64_t)(365 + isleapyear(e.tm_year + 1900)) * 86400;
 		} else if (listtype == LT_Hour) {
 			seconds = 3600;
 		} else if (listtype == LT_5min) {
@@ -515,7 +515,7 @@ void getestimates(uint64_t *rx, uint64_t *tx, const ListType listtype, const tim
 	/* but are used by BarColumnShowsRate which requires "past" values for */
 	/* full hours / 5 minutes for the bar to show correctly */
 	if (listtype == LT_5min) {
-		div = (uint64_t)((u.tm_min % 5 * 60) + u.tm_sec);
+		div = ((uint64_t)u.tm_min % 5 * 60) + (uint64_t)u.tm_sec;
 		if (div == 0) {
 			div = 1;
 			mult = 1;
@@ -523,7 +523,7 @@ void getestimates(uint64_t *rx, uint64_t *tx, const ListType listtype, const tim
 			mult = 300;
 		}
 	} else if (listtype == LT_Hour) {
-		div = (uint64_t)(u.tm_min * 60 + u.tm_sec);
+		div = (uint64_t)u.tm_min * 60 + (uint64_t)u.tm_sec;
 		if (div == 0) {
 			div = 1;
 			mult = 1;
@@ -531,14 +531,14 @@ void getestimates(uint64_t *rx, uint64_t *tx, const ListType listtype, const tim
 			mult = 3600;
 		}
 	} else if (listtype == LT_Day) {
-		div = (uint64_t)(u.tm_hour * 3600 + u.tm_min * 60 + u.tm_sec);
+		div = (uint64_t)u.tm_hour * 3600 + (uint64_t)u.tm_min * 60 + (uint64_t)u.tm_sec;
 		mult = 86400;
 	} else if (listtype == LT_Month) {
 		div = (uint64_t)mosecs(datalist_i->timestamp, updated);
-		mult = (uint64_t)(dmonth(u.tm_mon) * 86400);
+		mult = (uint64_t)dmonth(u.tm_mon) * 86400;
 	} else if (listtype == LT_Year) {
-		div = (uint64_t)(u.tm_yday * 1440 + u.tm_hour * 60 + u.tm_min);
-		mult = (uint64_t)(1440 * (365 + isleapyear(u.tm_year + 1900)));
+		div = (uint64_t)u.tm_yday * 1440 + (uint64_t)u.tm_hour * 60 + (uint64_t)u.tm_min;
+		mult = (uint64_t)(365 + isleapyear(u.tm_year + 1900)) * 1440;
 	}
 	if (div > 0) {
 		*rx = (uint64_t)((double)datalist_i->rx / (double)div) * mult;
