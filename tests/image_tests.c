@@ -717,6 +717,152 @@ START_TEST(element_output_check)
 }
 END_TEST
 
+START_TEST(hextorgb_can_convert)
+{
+	debug = 1;
+	int rgb[3];
+
+	suppress_output();
+
+	rgb[0] = 1;
+	rgb[1] = 2;
+	rgb[2] = 3;
+	hextorgb("000000", rgb);
+	ck_assert_int_eq(rgb[0], 0);
+	ck_assert_int_eq(rgb[1], 0);
+	ck_assert_int_eq(rgb[2], 0);
+
+	rgb[0] = 1;
+	rgb[1] = 2;
+	rgb[2] = 3;
+	hextorgb("#000000", rgb);
+	ck_assert_int_eq(rgb[0], 0);
+	ck_assert_int_eq(rgb[1], 0);
+	ck_assert_int_eq(rgb[2], 0);
+
+	rgb[0] = 1;
+	rgb[1] = 2;
+	rgb[2] = 3;
+	hextorgb("FFFFFF", rgb);
+	ck_assert_int_eq(rgb[0], 255);
+	ck_assert_int_eq(rgb[1], 255);
+	ck_assert_int_eq(rgb[2], 255);
+
+	rgb[0] = 1;
+	rgb[1] = 2;
+	rgb[2] = 3;
+	hextorgb("#FFFFFF", rgb);
+	ck_assert_int_eq(rgb[0], 255);
+	ck_assert_int_eq(rgb[1], 255);
+	ck_assert_int_eq(rgb[2], 255);
+
+	rgb[0] = 1;
+	rgb[1] = 2;
+	rgb[2] = 3;
+	hextorgb("ABCABBA", rgb);
+	ck_assert_int_eq(rgb[0], 171);
+	ck_assert_int_eq(rgb[1], 202);
+	ck_assert_int_eq(rgb[2], 187);
+
+	rgb[0] = 1;
+	rgb[1] = 2;
+	rgb[2] = 3;
+	hextorgb("#ABCABBA", rgb);
+	ck_assert_int_eq(rgb[0], 171);
+	ck_assert_int_eq(rgb[1], 202);
+	ck_assert_int_eq(rgb[2], 187);
+}
+END_TEST
+
+START_TEST(modcolor_mods_colors)
+{
+	debug = 1;
+	int rgb[3];
+
+	suppress_output();
+
+	rgb[0] = 10;
+	rgb[1] = 20;
+	rgb[2] = 30;
+	modcolor(rgb, 10, 0);
+	ck_assert_int_eq(rgb[0], 20);
+	ck_assert_int_eq(rgb[1], 30);
+	ck_assert_int_eq(rgb[2], 40);
+
+	rgb[0] = 10;
+	rgb[1] = 20;
+	rgb[2] = 30;
+	modcolor(rgb, -10, 0);
+	ck_assert_int_eq(rgb[0], 0);
+	ck_assert_int_eq(rgb[1], 10);
+	ck_assert_int_eq(rgb[2], 20);
+
+	rgb[0] = 10;
+	rgb[1] = 20;
+	rgb[2] = 30;
+	modcolor(rgb, -20, 0);
+	ck_assert_int_eq(rgb[0], 0);
+	ck_assert_int_eq(rgb[1], 0);
+	ck_assert_int_eq(rgb[2], 10);
+
+	rgb[0] = 10;
+	rgb[1] = 20;
+	rgb[2] = 30;
+	modcolor(rgb, -30, 0);
+	ck_assert_int_eq(rgb[0], 40);
+	ck_assert_int_eq(rgb[1], 50);
+	ck_assert_int_eq(rgb[2], 60);
+
+	rgb[0] = 10;
+	rgb[1] = 20;
+	rgb[2] = 30;
+	modcolor(rgb, -30, 1);
+	ck_assert_int_eq(rgb[0], 0);
+	ck_assert_int_eq(rgb[1], 0);
+	ck_assert_int_eq(rgb[2], 0);
+
+	rgb[0] = 10;
+	rgb[1] = 250;
+	rgb[2] = 30;
+	modcolor(rgb, 30, 0);
+	ck_assert_int_eq(rgb[0], 40);
+	ck_assert_int_eq(rgb[1], 255);
+	ck_assert_int_eq(rgb[2], 60);
+
+	rgb[0] = 10;
+	rgb[1] = 250;
+	rgb[2] = 30;
+	modcolor(rgb, 30, 1);
+	ck_assert_int_eq(rgb[0], 40);
+	ck_assert_int_eq(rgb[1], 255);
+	ck_assert_int_eq(rgb[2], 60);
+
+	rgb[0] = 10;
+	rgb[1] = 250;
+	rgb[2] = 251;
+	modcolor(rgb, 30, 0);
+	ck_assert_int_eq(rgb[0], 0);
+	ck_assert_int_eq(rgb[1], 220);
+	ck_assert_int_eq(rgb[2], 221);
+
+	rgb[0] = 10;
+	rgb[1] = 250;
+	rgb[2] = 251;
+	modcolor(rgb, 30, 1);
+	ck_assert_int_eq(rgb[0], 40);
+	ck_assert_int_eq(rgb[1], 255);
+	ck_assert_int_eq(rgb[2], 255);
+
+	rgb[0] = 10;
+	rgb[1] = 20;
+	rgb[2] = 251;
+	modcolor(rgb, -30, 0);
+	ck_assert_int_eq(rgb[0], 40);
+	ck_assert_int_eq(rgb[1], 50);
+	ck_assert_int_eq(rgb[2], 255);
+}
+END_TEST
+
 void add_image_tests(Suite *s)
 {
 	TCase *tc_image = tcase_create("Image");
@@ -741,5 +887,7 @@ void add_image_tests(Suite *s)
 	tcase_add_test(tc_image, hourly_imagescaling_rate_1000);
 	tcase_add_test(tc_image, libgd_output_comparison);
 	tcase_add_test(tc_image, element_output_check);
+	tcase_add_test(tc_image, hextorgb_can_convert);
+	tcase_add_test(tc_image, modcolor_mods_colors);
 	suite_add_tcase(s, tc_image);
 }
