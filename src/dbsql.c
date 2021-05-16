@@ -1163,7 +1163,7 @@ int db_getdata(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface,
 
 int db_getdata_range(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface, const char *table, const uint32_t resultlimit, const char *databegin, const char *dataend)
 {
-	int ret = 1, i, rc;
+	int ret, i, rc;
 	const char *datatables[] = {"fiveminute", "hour", "day", "month", "year", "top"};
 	char sql[512], limit[64], dbegin[32], dend[44], *ifaceidin = NULL;
 	sqlite3_stmt *sqlstmt;
@@ -1367,7 +1367,7 @@ unsigned int getqueryinterfacecount(const char *input)
 
 char *getifaceinquery(const char *input)
 {
-	unsigned int i, j, ifacecount = 1;
+	unsigned int i, j, ifacecount;
 	char *result;
 
 	ifacecount = getqueryinterfacecount(input);
