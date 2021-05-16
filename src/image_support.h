@@ -5,7 +5,7 @@
 
 void imageinit(IMAGECONTENT *ic, const int width, const int height);
 void colorinitcheck(const char *color, const int value, const char *cfgtext, const int *rgb);
-void layoutinit(IMAGECONTENT *ic, char *title, const int width, const int height);
+void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int height);
 void drawlegend(IMAGECONTENT *ic, const int x, const int y, const short israte);
 void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max, const short isestimate);
 void drawpoles(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max);
