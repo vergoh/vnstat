@@ -970,13 +970,13 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	}
 
 	if (debug) {
-		printf("maxrx: %lu\n", datainfo.maxrx);
-		printf("maxtx: %lu\n", datainfo.maxtx);
+		printf("maxrx: %" PRIu64 "\n", datainfo.maxrx);
+		printf("maxtx: %" PRIu64 "\n", datainfo.maxtx);
 		printf("rxh: %d     txh: %d\n", rxh, txh);
-		printf("max divided: %lu\n", max);
-		printf("scaleunit:   %lu\nstep: %d\n", scaleunit, step);
+		printf("max divided: %" PRIu64 "\n", max);
+		printf("scaleunit:   %" PRIu64 "\nstep: %d\n", scaleunit, step);
 		printf("pixels per step: %d\n", s);
-		printf("mintime: %lu\nmaxtime: %lu\n", (uint64_t)datainfo.mintime, (uint64_t)datainfo.maxtime);
+		printf("mintime: %" PRIu64 "\nmaxtime: %" PRIu64 "\n", (uint64_t)datainfo.mintime, (uint64_t)datainfo.maxtime);
 		printf("count: %u\n", datainfo.count);
 	}
 
