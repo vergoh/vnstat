@@ -702,7 +702,7 @@ void drawsummary_alltime(IMAGECONTENT *ic, const int x, const int y)
 void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *mode)
 {
 	int textx, texty, offset = 0;
-	double rxp = 50, txp = 50, mod;
+	double rxp, txp, mod;
 	char buffer[512], datebuff[16], daytemp[32];
 	time_t yesterday;
 	struct tm *d = NULL;
