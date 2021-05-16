@@ -1,4 +1,4 @@
-2.7 / <not released yet>
+2.7 / 16-May-2021
 
  - Fixed
    - Possibility of segmentation fault with image list output when database
