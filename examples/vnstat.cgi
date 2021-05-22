@@ -9,23 +9,25 @@
 # released under the GNU General Public License
 
 
-my $servername = 'Some Server';
-my $scriptname = 'vnstat.cgi';
+# server name in page title
+# fill to set, otherwise "hostname" command output is used
+my $servername = '';
 
 # temporary directory where to store the images
 my $tmp_dir = '/tmp/vnstatcgi';
 
-# location of vnstati
+# location of "vnstat" binary
+my $vnstat_cmd = '/usr/bin/vnstat';
+
+# location of "vnstati" binary
 my $vnstati_cmd = '/usr/bin/vnstati';
 
 # image cache time in minutes, set 0 to disable
-my $cachetime = '15';
+my $cachetime = '0';
 
-# shown interfaces, remove unnecessary lines
-my @graphs = (
-        { interface => 'eth0' },
-        { interface => 'eth1' },
-);
+# shown interfaces
+# for static list, uncomment and update the list
+#my @interfaces = ('eth0', 'eth1');
 
 # center images on page instead of left alignment, set 0 to disable
 my $aligncenter = '1';
@@ -40,19 +42,23 @@ my $bgcolor = "white";
 ################
 
 
-my $VERSION = "1.6";
+my $VERSION = "1.8";
 my $cssbody = "body { background-color: $bgcolor; }";
 
 sub graph($$$)
 {
 	my ($interface, $file, $param) = @_;
-	my $fontparam = '--small';
 
+	my $fontparam = '--small';
 	if ($largefonts == '1') {
 		$fontparam = '--large';
 	}
 
-	my $result = `"$vnstati_cmd" -i "$interface" -c $cachetime $param $fontparam -o "$file"`;
+	if (defined $interface and defined $file and defined $param) {
+		my $result = `"$vnstati_cmd" -i "$interface" -c $cachetime $param $fontparam -o "$file"`;
+	} else {
+		show_error("ERROR: invalid input");
+	}
 }
 
 
@@ -80,12 +86,12 @@ $cssbody
 </head>
 HEADER
 
-	for my $n (0..$#graphs) {
-		print "<p><a href=\"$scriptname?${n}-f\"><img src=\"$scriptname?${n}-hs\" border=\"0\" alt=\"$graphs[$n]{interface} summary\"></a></p>\n";
+	for my $i (0..$#interfaces) {
+		print "<p><a href=\"$ENV{SCRIPT_NAME}?${i}-f\"><img src=\"$ENV{SCRIPT_NAME}?${i}-hs\" border=\"0\" alt=\"$interfaces[${i}] summary\"></a></p>\n";
 	}
 
 	print <<FOOTER;
-<small>Images generated using <a href="http://humdi.net/vnstat/">vnStat</a> image output.</small>
+<small>Images generated using <a href="https://humdi.net/vnstat/">vnStat</a> image output.</small>
 <br><br>
 </body>
 </html>
@@ -119,18 +125,18 @@ $cssbody
 HEADER
 
 	print "<table border=\"0\"><tr><td valign=\"top\">\n";
-	print "<img src=\"$scriptname?${interface}-s\" border=\"0\" alt=\"${interface} summary\"><br>\n";
-	print "<img src=\"$scriptname?${interface}-d\" border=\"0\" alt=\"${interface} daily\" vspace=\"4\"><br>\n";
-	print "<img src=\"$scriptname?${interface}-t\" border=\"0\" alt=\"${interface} top 10\"><br>\n";
+	print "<img src=\"$ENV{SCRIPT_NAME}?${interface}-s\" border=\"0\" alt=\"$interfaces[${interface}] summary\"><br>\n";
+	print "<img src=\"$ENV{SCRIPT_NAME}?${interface}-d\" border=\"0\" alt=\"$interfaces[${interface}] daily\" vspace=\"4\"><br>\n";
+	print "<img src=\"$ENV{SCRIPT_NAME}?${interface}-t\" border=\"0\" alt=\"$interfaces[${interface}] top 10\"><br>\n";
 	print "</td><td valign=\"top\">\n";
-	print "<img src=\"$scriptname?${interface}-hg\" border=\"0\" alt=\"${interface} hourly\"><br>\n";
-	print "<img src=\"$scriptname?${interface}-5g\" border=\"0\" alt=\"${interface} 5 minute\" vspace=\"4\"><br>\n";
-	print "<img src=\"$scriptname?${interface}-m\" border=\"0\" alt=\"${interface} monthly\"><br>\n";
-	print "<img src=\"$scriptname?${interface}-y\" border=\"0\" alt=\"${interface} yearly\" vspace=\"4\"><br>\n";
+	print "<img src=\"$ENV{SCRIPT_NAME}?${interface}-hg\" border=\"0\" alt=\"$interfaces[${interface}] hourly\"><br>\n";
+	print "<img src=\"$ENV{SCRIPT_NAME}?${interface}-5g\" border=\"0\" alt=\"$interfaces[${interface}] 5 minute\" vspace=\"4\"><br>\n";
+	print "<img src=\"$ENV{SCRIPT_NAME}?${interface}-m\" border=\"0\" alt=\"$interfaces[${interface}] monthly\"><br>\n";
+	print "<img src=\"$ENV{SCRIPT_NAME}?${interface}-y\" border=\"0\" alt=\"$interfaces[${interface}] yearly\" vspace=\"4\"><br>\n";
 	print "</td></tr>\n</table>\n";
 
 	print <<FOOTER;
-<small><br>&nbsp;Images generated using <a href="http://humdi.net/vnstat/">vnStat</a> image output.</small>
+<small><br>&nbsp;Images generated using <a href="https://humdi.net/vnstat/">vnStat</a> image output.</small>
 <br><br>
 </body>
 </html>
@@ -139,11 +145,10 @@ FOOTER
 
 sub send_image($)
 {
-	my ($file)= @_;
+	my ($file) = @_;
 
 	-r $file or do {
-		print "Content-type: text/plain\n\nERROR: can't find $file\n";
-		exit 1;
+		show_error("ERROR: can't find $file");
 	};
 
 	print "Content-type: image/png\n";
@@ -154,74 +159,90 @@ sub send_image($)
 	print $data while read(IMG, $data, 16384)>0;
 }
 
+sub show_error($)
+{
+	my ($error_msg) = @_;
+	print "Content-type: text/plain\n\n$error_msg\n";
+	exit 1;
+}
+
 sub main()
 {
-	if($aligncenter != '0') {
+	if (not defined $interfaces) {
+		our @interfaces = `$vnstat_cmd --dbiflist 1`;
+	}
+	chomp @interfaces;
+
+	if (length($servername) == 0) {
+		$servername = `hostname`;
+	}
+
+	if ($aligncenter != '0') {
 		$cssbody = "html { display: table; width: 100%; }\nbody { background-color: $bgcolor; display: table-cell; text-align: center; vertical-align: middle; }\ntable {  margin-left: auto; margin-right: auto; margin-top: 10px; }";
 	}
 
 	mkdir $tmp_dir, 0755 unless -d $tmp_dir;
 
 	my $img = $ENV{QUERY_STRING};
-	if(defined $img and $img =~ /\S/) {
-		if($img =~ /^(\d+)-s$/) {
+	if (defined $img and $img =~ /\S/) {
+		if ($img =~ /^(\d+)-s$/) {
 			my $file = "$tmp_dir/vnstat_$1.png";
-			graph($graphs[$1]{interface}, $file, "-s");
+			graph($interfaces[$1], $file, "-s");
 			send_image($file);
 		}
-		elsif($img =~ /^(\d+)-hs$/) {
+		elsif ($img =~ /^(\d+)-hs$/) {
 			my $file = "$tmp_dir/vnstat_$1_hs.png";
-			graph($graphs[$1]{interface}, $file, "-hs");
+			graph($interfaces[$1], $file, "-hs");
 			send_image($file);
 		}
-		elsif($img =~ /^(\d+)-d$/) {
+		elsif ($img =~ /^(\d+)-d$/) {
 			my $file = "$tmp_dir/vnstat_$1_d.png";
-			graph($graphs[$1]{interface}, $file, "-d 30");
+			graph($interfaces[$1], $file, "-d 30");
 			send_image($file);
 		}
-		elsif($img =~ /^(\d+)-m$/) {
+		elsif ($img =~ /^(\d+)-m$/) {
 			my $file = "$tmp_dir/vnstat_$1_m.png";
-			graph($graphs[$1]{interface}, $file, "-m 12");
+			graph($interfaces[$1], $file, "-m 12");
 			send_image($file);
 		}
-		elsif($img =~ /^(\d+)-t$/) {
+		elsif ($img =~ /^(\d+)-t$/) {
 			my $file = "$tmp_dir/vnstat_$1_t.png";
-			graph($graphs[$1]{interface}, $file, "-t 10");
+			graph($interfaces[$1], $file, "-t 10");
 			send_image($file);
 		}
-		elsif($img =~ /^(\d+)-h$/) {
+		elsif ($img =~ /^(\d+)-h$/) {
 			my $file = "$tmp_dir/vnstat_$1_h.png";
-			graph($graphs[$1]{interface}, $file, "-h");
+			graph($interfaces[$1], $file, "-h");
 			send_image($file);
 		}
-		elsif($img =~ /^(\d+)-hg$/) {
+		elsif ($img =~ /^(\d+)-hg$/) {
 			my $file = "$tmp_dir/vnstat_$1_hg.png";
-			graph($graphs[$1]{interface}, $file, "-hg");
+			graph($interfaces[$1], $file, "-hg");
 			send_image($file);
 		}
-		elsif($img =~ /^(\d+)-5g$/) {
+		elsif ($img =~ /^(\d+)-5g$/) {
 			my $file = "$tmp_dir/vnstat_$1_5g.png";
 			if ($largefonts == '1') {
-				graph($graphs[$1]{interface}, $file, "-5g 576 300");
+				graph($interfaces[$1], $file, "-5g 576 300");
 			} else {
-				graph($graphs[$1]{interface}, $file, "-5g 422 250");
+				graph($interfaces[$1], $file, "-5g 422 250");
 			}
 			send_image($file);
 		}
-		elsif($img =~ /^(\d+)-y$/) {
+		elsif ($img =~ /^(\d+)-y$/) {
 			my $file = "$tmp_dir/vnstat_$1_y.png";
-			graph($graphs[$1]{interface}, $file, "-y 5");
+			graph($interfaces[$1], $file, "-y 5");
 			send_image($file);
 		}
-		elsif($img =~ /^(\d+)-f$/) {
+		elsif ($img =~ /^(\d+)-f$/) {
 			print_fullhtml($1);
 		}
 		else {
-			die "ERROR: invalid argument\n";
+			show_error("ERROR: invalid argument");
 		}
 	}
 	else {
-		if ($#graphs == 0) {
+		if (scalar @interfaces == 1) {
 			print_fullhtml(0);
 		} else {
 			print_html();

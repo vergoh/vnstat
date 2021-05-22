@@ -1,6 +1,9 @@
 2.8 / <not released yet>
 
- - no major changes so far
+ - New
+   - Image output example cgi (examples/vnstat.cgi) automatically lists
+     all monitored interfaces instead of requiring the list to be filled
+     manually, server name in page title comes from hostname command
 
 
 2.7 / 16-May-2021
