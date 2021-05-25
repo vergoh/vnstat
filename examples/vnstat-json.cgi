@@ -18,17 +18,21 @@ my @interfaces = `$vnstat_cmd --dbiflist 1`;
 
 
 my $iface = "";
-my $getiface = "";
-my @values = split(/&/,$ENV{'QUERY_STRING'});
-foreach $i (@values) {
-	($varname, $varvalue) = split(/=/,$i);
-	if ($varname == 'interface' && $varvalue =~ /^(\d+)$/) {
-		$getiface = $varvalue;
-	}
-}
+chomp @interfaces;
 
-if (length($getiface) > 0 && $getiface >= 0 && $getiface <= $#interfaces) {
-	$iface = "-i @interfaces[$getiface]";
+if (defined $ENV{'QUERY_STRING'}) {
+	my $getiface = "";
+	my @values = split(/&/, $ENV{'QUERY_STRING'});
+	foreach $i (@values) {
+		($varname, $varvalue) = split(/=/, $i);
+		if ($varname eq 'interface' && $varvalue =~ /^(\d+)$/) {
+			$getiface = $varvalue;
+		}
+	}
+
+	if (length($getiface) > 0 && $getiface >= 0 && $getiface <= $#interfaces) {
+		$iface = "-i @interfaces[int($getiface)]";
+	}
 }
 
 print "Content-Type: application/json\n\n";

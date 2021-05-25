@@ -42,8 +42,9 @@ my $bgcolor = "white";
 ################
 
 
-my $VERSION = "1.8";
+my $VERSION = "1.9";
 my $cssbody = "body { background-color: $bgcolor; }";
+my ($scriptname) = $ENV{SCRIPT_NAME} =~ /([^\/]*)$/;
 
 sub graph($$$)
 {
@@ -60,7 +61,6 @@ sub graph($$$)
 		show_error("ERROR: invalid input");
 	}
 }
-
 
 sub print_html()
 {
@@ -87,7 +87,7 @@ $cssbody
 HEADER
 
 	for my $i (0..$#interfaces) {
-		print "<p><a href=\"$ENV{SCRIPT_NAME}?${i}-f\"><img src=\"$ENV{SCRIPT_NAME}?${i}-hs\" border=\"0\" alt=\"$interfaces[${i}] summary\"></a></p>\n";
+		print "<p><a href=\"${scriptname}?${i}-f\"><img src=\"${scriptname}?${i}-hs\" border=\"0\" alt=\"$interfaces[${i}] summary\"></a></p>\n";
 	}
 
 	print <<FOOTER;
@@ -125,14 +125,14 @@ $cssbody
 HEADER
 
 	print "<table border=\"0\"><tr><td valign=\"top\">\n";
-	print "<img src=\"$ENV{SCRIPT_NAME}?${interface}-s\" border=\"0\" alt=\"$interfaces[${interface}] summary\"><br>\n";
-	print "<img src=\"$ENV{SCRIPT_NAME}?${interface}-d\" border=\"0\" alt=\"$interfaces[${interface}] daily\" vspace=\"4\"><br>\n";
-	print "<img src=\"$ENV{SCRIPT_NAME}?${interface}-t\" border=\"0\" alt=\"$interfaces[${interface}] top 10\"><br>\n";
+	print "<img src=\"${scriptname}?${interface}-s\" border=\"0\" alt=\"$interfaces[${interface}] summary\"><br>\n";
+	print "<img src=\"${scriptname}?${interface}-d\" border=\"0\" alt=\"$interfaces[${interface}] daily\" vspace=\"4\"><br>\n";
+	print "<img src=\"${scriptname}?${interface}-t\" border=\"0\" alt=\"$interfaces[${interface}] top 10\"><br>\n";
 	print "</td><td valign=\"top\">\n";
-	print "<img src=\"$ENV{SCRIPT_NAME}?${interface}-hg\" border=\"0\" alt=\"$interfaces[${interface}] hourly\"><br>\n";
-	print "<img src=\"$ENV{SCRIPT_NAME}?${interface}-5g\" border=\"0\" alt=\"$interfaces[${interface}] 5 minute\" vspace=\"4\"><br>\n";
-	print "<img src=\"$ENV{SCRIPT_NAME}?${interface}-m\" border=\"0\" alt=\"$interfaces[${interface}] monthly\"><br>\n";
-	print "<img src=\"$ENV{SCRIPT_NAME}?${interface}-y\" border=\"0\" alt=\"$interfaces[${interface}] yearly\" vspace=\"4\"><br>\n";
+	print "<img src=\"${scriptname}?${interface}-hg\" border=\"0\" alt=\"$interfaces[${interface}] hourly\"><br>\n";
+	print "<img src=\"${scriptname}?${interface}-5g\" border=\"0\" alt=\"$interfaces[${interface}] 5 minute\" vspace=\"4\"><br>\n";
+	print "<img src=\"${scriptname}?${interface}-m\" border=\"0\" alt=\"$interfaces[${interface}] monthly\"><br>\n";
+	print "<img src=\"${scriptname}?${interface}-y\" border=\"0\" alt=\"$interfaces[${interface}] yearly\" vspace=\"4\"><br>\n";
 	print "</td></tr>\n</table>\n";
 
 	print <<FOOTER;
