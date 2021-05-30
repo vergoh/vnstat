@@ -62,6 +62,16 @@ jobs:
       - name: verify log
         run: grep -iP 'sanitizer|runtime error' check_vnstat.log && exit 1 || true
 
+      - name: trigger dev container build
+        if: ${{ github.ref == 'refs/heads/master' && github.event_name == 'push' && success() }}
+        run: |
+          curl \
+            -X POST \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.DEV_DOCKER_TRIGGER }}" \
+            -d '{"ref":"refs/heads/master"}' \
+            $GITHUB_API_URL/repos/vergoh/vnstat-docker/actions/workflows/dev/dispatches
+
   ubuntu_clang_analyzer:
     runs-on: ubuntu-20.04
     env:
