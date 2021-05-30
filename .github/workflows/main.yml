@@ -70,7 +70,7 @@ jobs:
             -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: token ${{ secrets.DEV_DOCKER_TRIGGER }}" \
             -d '{"ref":"refs/heads/master"}' \
-            $GITHUB_API_URL/repos/vergoh/vnstat-docker/actions/workflows/dev/dispatches
+            $GITHUB_API_URL/repos/vergoh/vnstat-docker/actions/workflows/dev.yml/dispatches
 
   ubuntu_clang_analyzer:
     runs-on: ubuntu-20.04
