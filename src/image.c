@@ -1015,7 +1015,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 
 	while (datalist_i != NULL && datalist_i->timestamp < timestamp + 300) {
 		if (debug) {
-			printf("Skip data, %lu < %lu\n", datalist_i->timestamp, timestamp + 300);
+			printf("Skip data, %" PRIu64 " < %" PRIu64 "\n", (uint64_t)datalist_i->timestamp, (uint64_t)timestamp + 300);
 		}
 		datalist_i = datalist_i->next;
 	}
