@@ -63,7 +63,7 @@ jobs:
         run: grep -iP 'sanitizer|runtime error' check_vnstat.log && exit 1 || true
 
       - name: trigger dev container build
-        if: ${{ github.ref == 'refs/heads/master' && github.event_name == 'push' && success() }}
+        if: ${{ github.ref == 'refs/heads/master' && contains('push workflow_dispatch schedule', github.event_name) && success() }}
         run: |
           curl \
             -X POST \
