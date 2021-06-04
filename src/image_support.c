@@ -252,7 +252,7 @@ void drawdonut(IMAGECONTENT *ic, const int x, const int y, const float rxp, cons
 {
 	// libgd versions 2.2.3 - 2.2.5 have bug in gdImageFilledArc() https://github.com/libgd/libgd/issues/351
 	// so workaround needs to be used, 2.2 version series ends with 2.2.5 and the bug is fixed starting from 2.3.0
-	if (gdMajorVersion() == 2 && gdMinorVersion() == 2 && gdReleaseVersion() >= 3) {
+	if (GD_MAJOR_VERSION == 2 && GD_MINOR_VERSION == 2 && GD_RELEASE_VERSION >= 3) {
 		drawdonut_libgd_bug_workaround(ic, x, y, rxp, txp, size, holesize);
 	} else {
 		drawdonut_libgd_native(ic, x, y, rxp, txp, size, holesize);

@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
 		for (currentarg = 1; currentarg < argc; currentarg++) {
 			if ((strcmp(argv[currentarg], "-D") == 0) || (strcmp(argv[currentarg], "--debug") == 0)) {
 				debug = 1;
-				printf("Debug enabled, vnstati %s, LibGD %d.%d.%d\n", VERSION, gdMajorVersion(), gdMinorVersion(), gdReleaseVersion());
+				printf("Debug enabled, vnstati %s, LibGD %d.%d.%d\n", VERSION, GD_MAJOR_VERSION, GD_MINOR_VERSION, GD_RELEASE_VERSION);
 			} else if (strcmp(argv[currentarg], "--config") == 0) {
 				if (currentarg + 1 < argc) {
 					strncpy_nt(p.cfgfile, argv[currentarg + 1], 512);
@@ -470,7 +470,7 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 				exit(EXIT_FAILURE);
 			}
 		} else if ((strcmp(argv[currentarg], "-v") == 0) || (strcmp(argv[currentarg], "--version")) == 0) {
-			printf("vnStat image output %s by Teemu Toivola <tst at iki dot fi> (LibGD %d.%d.%d)\n", getversion(), gdMajorVersion(), gdMinorVersion(), gdReleaseVersion());
+			printf("vnStat image output %s by Teemu Toivola <tst at iki dot fi> (LibGD %d.%d.%d)\n", getversion(), GD_MAJOR_VERSION, GD_MINOR_VERSION, GD_RELEASE_VERSION);
 			exit(EXIT_SUCCESS);
 		} else {
 			printf("Unknown arg \"%s\". Use --help for help.\n", argv[currentarg]);
