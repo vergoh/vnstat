@@ -10,9 +10,8 @@ void drawlegend(IMAGECONTENT *ic, const int x, const int y, const short israte);
 void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max, const short isestimate);
 void drawpoles(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max);
 void drawdonut(IMAGECONTENT *ic, const int x, const int y, const float rxp, const float txp, const int size, const int holesize);
-#ifdef CHECK_VNSTAT
+void drawdonut_libgd_bug_workaround(IMAGECONTENT *ic, const int x, const int y, const float rxp, const float txp, const int size, const int holesize);
 void drawdonut_libgd_native(IMAGECONTENT *ic, const int x, const int y, const float rxp, const float txp, const int size, const int holesize);
-#endif
 void drawpole(IMAGECONTENT *ic, const int x, const int y, const int length, const int direction, const int maincolor);
 void drawarrowup(IMAGECONTENT *ic, const int x, const int y);
 void drawarrowright(IMAGECONTENT *ic, const int x, const int y);

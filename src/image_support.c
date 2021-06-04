@@ -250,6 +250,17 @@ void drawpoles(IMAGECONTENT *ic, const int x, const int y, const int len, const 
 
 void drawdonut(IMAGECONTENT *ic, const int x, const int y, const float rxp, const float txp, const int size, const int holesize)
 {
+	// libgd versions 2.2.3 - 2.2.5 have bug in gdImageFilledArc() https://github.com/libgd/libgd/issues/351
+	// so workaround needs to be used, 2.2 version series ends with 2.2.5 and the bug is fixed starting from 2.3.0
+	if (gdMajorVersion() == 2 && gdMinorVersion() == 2 && gdReleaseVersion() >= 3) {
+		drawdonut_libgd_bug_workaround(ic, x, y, rxp, txp, size, holesize);
+	} else {
+		drawdonut_libgd_native(ic, x, y, rxp, txp, size, holesize);
+	}
+}
+
+void drawdonut_libgd_bug_workaround(IMAGECONTENT *ic, const int x, const int y, const float rxp, const float txp, const int size, const int holesize)
+{
 	int rxarc = 0, txarc = 0;
 
 	if ((int)(rxp + txp) > 0) {
@@ -284,7 +295,6 @@ void drawdonut(IMAGECONTENT *ic, const int x, const int y, const float rxp, cons
 	gdImageFilledArc(ic->im, x, y, holesize - 2, holesize - 2, 0, 360, ic->cbackground, 0);
 }
 
-#ifdef CHECK_VNSTAT
 void drawdonut_libgd_native(IMAGECONTENT *ic, const int x, const int y, const float rxp, const float txp, const int size, const int holesize)
 {
 	int rxarc = 0, txarc = 0;
@@ -316,8 +326,6 @@ void drawdonut_libgd_native(IMAGECONTENT *ic, const int x, const int y, const fl
 	// remove center from background filled circle, making it a donut
 	gdImageFilledArc(ic->im, x, y, holesize - 2, holesize - 2, 0, 360, ic->cbackground, 0);
 }
-#endif
-
 
 void drawpole(IMAGECONTENT *ic, const int x, const int y, const int length, const int direction, const int color)
 {
