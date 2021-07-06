@@ -38,11 +38,14 @@ my $largefonts = '0';
 # page background color
 my $bgcolor = "white";
 
+# cgi script file name for httpd
+# fill to override automatic detection
+my $scriptname = '';
 
 ################
 
 
-my $VERSION = "1.10";
+my $VERSION = "1.11";
 my $cssbody = "body { background-color: $bgcolor; }";
 my $csscommonstyle = <<CSS;
 a { text-decoration: underline; }
@@ -55,8 +58,6 @@ table { border: 0; }
 table td { vertical-align: top; }
 small { display: block; }
 CSS
-
-my ($scriptname) = $ENV{SCRIPT_NAME} =~ /([^\/]*)$/;
 
 sub graph($$$)
 {
@@ -230,6 +231,17 @@ sub show_error($)
 
 sub main()
 {
+	if (length($scriptname) == 0) {
+		if (defined $ENV{REQUEST_URI}) {
+			($scriptname) = split(/\?/, $ENV{REQUEST_URI});
+		} else {
+			($scriptname) = $ENV{SCRIPT_NAME} =~ /([^\/]*)$/;
+		}
+		if ($scriptname =~ /\/$/) {
+			$scriptname = '';
+		}
+	}
+
 	if (not defined $interfaces) {
 		our @interfaces = `$vnstat_cmd --dbiflist 1`;
 	}
