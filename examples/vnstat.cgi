@@ -25,7 +25,8 @@ my $vnstati_cmd = '/usr/bin/vnstati';
 # image cache time in minutes, set 0 to disable
 my $cachetime = '0';
 
-# shown interfaces
+# shown interfaces, interface specific pages can be accessed directly
+# by using /interfacename as suffix for the cgi if the httpd supports PATH_INFO
 # for static list, uncomment and update the list
 #my @interfaces = ('eth0', 'eth1');
 
@@ -45,7 +46,7 @@ my $scriptname = '';
 ################
 
 
-my $VERSION = "1.11";
+my $VERSION = "1.12";
 my $cssbody = "body { background-color: $bgcolor; }";
 my $csscommonstyle = <<CSS;
 a { text-decoration: underline; }
@@ -345,9 +346,26 @@ sub main()
 		}
 	}
 	else {
-		if (scalar @interfaces == 1) {
+		my $html_shown = 0;
+		if (defined $ENV{PATH_INFO}) {
+			my @fields = split(/\//, $ENV{PATH_INFO});
+			my $interface = $fields[-1];
+			for my $i (0..$#interfaces) {
+				if ($interfaces[${i}] eq $interface) {
+					print_single_interface_html($i);
+					$html_shown = 1;
+					last;
+				}
+			}
+			if ($html_shown == 0) {
+				show_error("ERROR: no such interface: $interface");
+			}
+		}
+
+		if ($html_shown == 0 and scalar @interfaces == 1) {
 			print_single_interface_html(0);
-		} else {
+		}
+		elsif ($html_shown == 0) {
 			print_interface_list_html();
 		}
 	}
