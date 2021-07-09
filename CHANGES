@@ -1,9 +1,19 @@
 2.8 / <not released yet>
 
+ - Fixed
+   - Using a combination of --live and --json wasn't flushing stdout after
+     each line resulting in buffered output if the output was being piped
  - New
    - Image output example cgi (examples/vnstat.cgi) automatically lists
      all monitored interfaces instead of requiring the list to be filled
      manually, server name in page title comes from hostname command
+   - Image output example cgi (examples/vnstat.cgi) provides links for most
+     available images to more detailed or longer versions of each image
+   - Image output example cgi (examples/vnstat.cgi) allows direct interface
+     specific page access with /interfacename suffix for the cgi if the
+     used httpd supports PATH_INFO
+   - Image output uses LibGD filled arc bug workaround only for LibGD
+     versions that are known to be broken
 
 
 2.7 / 16-May-2021
