@@ -256,7 +256,6 @@ void livetrafficmeter(const char *iface, const int mode)
 			}
 			if (cfg.ostyle != 4) {
 				printf("%s", buffer);
-				fflush(stdout);
 			} else {
 				printf("%s\n", buffer);
 			}
@@ -283,6 +282,7 @@ void livetrafficmeter(const char *iface, const int mode)
 			printf("}}\n");
 			index++;
 		}
+		fflush(stdout);
 #ifdef CHECK_VNSTAT
 		break;
 #endif
