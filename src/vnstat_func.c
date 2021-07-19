@@ -301,7 +301,7 @@ void parseargs(PARAMS *p, int argc, char **argv)
 			}
 		} else if (strcmp(argv[currentarg], "--oneline") == 0) {
 			cfg.qmode = 9;
-			if (currentarg + 1 < argc && argv[currentarg + 1][0] != '-') {
+			if (currentarg + 1 < argc && (strlen(argv[currentarg + 1]) == 1 || ishelprequest(argv[currentarg + 1]))) {
 				if (argv[currentarg + 1][0] == 'b') {
 					cfg.ostyle = 4;
 					currentarg++;
@@ -315,7 +315,7 @@ void parseargs(PARAMS *p, int argc, char **argv)
 			}
 		} else if (strcmp(argv[currentarg], "--xml") == 0) {
 			cfg.qmode = 8;
-			if (currentarg + 1 < argc && argv[currentarg + 1][0] != '-' && !isdigit(argv[currentarg + 1][0])) {
+			if (currentarg + 1 < argc && (strlen(argv[currentarg + 1]) == 1 || ishelprequest(argv[currentarg + 1]))) {
 				p->xmlmode = argv[currentarg + 1][0];
 				if (strlen(argv[currentarg + 1]) != 1 || strchr("afhdmyt", p->xmlmode) == NULL) {
 					printf("Error: Invalid mode parameter \"%s\" for --xml.\n", argv[currentarg + 1]);
@@ -341,7 +341,7 @@ void parseargs(PARAMS *p, int argc, char **argv)
 			}
 		} else if (strcmp(argv[currentarg], "--json") == 0) {
 			cfg.qmode = 10;
-			if (currentarg + 1 < argc && argv[currentarg + 1][0] != '-' && !isdigit(argv[currentarg + 1][0])) {
+			if (currentarg + 1 < argc && (strlen(argv[currentarg + 1]) == 1 || ishelprequest(argv[currentarg + 1]))) {
 				p->jsonmode = argv[currentarg + 1][0];
 				if (strlen(argv[currentarg + 1]) != 1 || strchr("afhdmyt", p->jsonmode) == NULL) {
 					printf("Error: Invalid mode parameter \"%s\" for --json.\n", argv[currentarg + 1]);
@@ -391,7 +391,7 @@ void parseargs(PARAMS *p, int argc, char **argv)
 			p->traffic = 1;
 			p->query = 0;
 		} else if ((strcmp(argv[currentarg], "-l") == 0) || (strcmp(argv[currentarg], "--live") == 0)) {
-			if (currentarg + 1 < argc && argv[currentarg + 1][0] != '-') {
+			if (currentarg + 1 < argc && (strlen(argv[currentarg + 1]) == 1 || ishelprequest(argv[currentarg + 1]))) {
 				if (!isdigit(argv[currentarg + 1][0]) || atoi(argv[currentarg + 1]) > 1 || atoi(argv[currentarg + 1]) < 0) {
 					printf("Error: Invalid mode parameter \"%s\" for -l / --live.\n", argv[currentarg + 1]);
 					printf(" Valid parameters:\n");
@@ -494,14 +494,44 @@ void parseargs(PARAMS *p, int argc, char **argv)
 			printf("vnStat %s by Teemu Toivola <tst at iki dot fi>\n", getversion());
 			exit(EXIT_SUCCESS);
 		} else {
-			printf("Unknown parameter \"%s\". Use --help for help.\n", argv[currentarg]);
-			exit(EXIT_FAILURE);
+			if (argv[currentarg][0] == '-') {
+				printf("Unknown parameter \"%s\". Use --help for help.\n", argv[currentarg]);
+				exit(EXIT_FAILURE);
+			} else {
+				if (strlen(argv[currentarg]) > 31) {
+					printf("Error: Interface name is limited to 31 characters.\n");
+					exit(EXIT_FAILURE);
+				}
+				strncpy_nt(p->interface, argv[currentarg], 32);
+				if (strlen(p->interface)) {
+					p->defaultiface = 0;
+				} else {
+					strncpy_nt(p->definterface, p->interface, 32);
+				}
+				if (debug)
+					printf("Used interface: \"%s\"\n", p->interface);
+			}
 		}
 	}
 
 	if (p->limit != -1) {
 		cfg.listfivemins = cfg.listhours = cfg.listdays = cfg.listmonths = cfg.listyears = cfg.listtop = cfg.listjsonxml = p->limit;
 	}
+}
+
+int ishelprequest(const char *arg)
+{
+	if (strlen(arg) == 0) {
+		return 0;
+	}
+
+	if (strlen(arg) == 1 && arg[0] == '?') {
+		return 1;
+	} else if ((strcmp(arg, "-?") == 0) || (strcmp(arg, "--help") == 0)) {
+		return 1;
+	}
+
+	return 0;
 }
 
 void handleremoveinterface(PARAMS *p)

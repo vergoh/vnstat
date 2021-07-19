@@ -753,6 +753,20 @@ START_TEST(vnstat_parseargs_dbiflist_with_parseable_mode)
 }
 END_TEST
 
+START_TEST(vnstat_ishelprequest_knows_what_a_help_request_is)
+{
+	ck_assert_int_eq(ishelprequest("--help"), 1);
+	ck_assert_int_eq(ishelprequest("-?"), 1);
+	ck_assert_int_eq(ishelprequest("?"), 1);
+	ck_assert_int_eq(ishelprequest("help"), 0);
+	ck_assert_int_eq(ishelprequest("-h"), 0);
+	ck_assert_int_eq(ishelprequest("--helpme"), 0);
+	ck_assert_int_eq(ishelprequest(""), 0);
+	ck_assert_int_eq(ishelprequest("1"), 0);
+	ck_assert_int_eq(ishelprequest("a"), 0);
+}
+END_TEST
+
 void add_parseargs_tests(Suite *s)
 {
 	TCase *tc_pa = tcase_create("ParseArgs");
@@ -809,5 +823,6 @@ void add_parseargs_tests(Suite *s)
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_dbiflist_without_parameters, 0);
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_dbiflist_with_verbose_mode, 0);
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_dbiflist_with_parseable_mode, 0);
+	tcase_add_test(tc_pa, vnstat_ishelprequest_knows_what_a_help_request_is);
 	suite_add_tcase(s, tc_pa);
 }

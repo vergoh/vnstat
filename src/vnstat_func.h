@@ -16,6 +16,7 @@ void initparams(PARAMS *p);
 void showhelp(PARAMS *p);
 void showlonghelp(PARAMS *p);
 void parseargs(PARAMS *p, int argc, char **argv);
+int ishelprequest(const char *arg);
 void handleremoveinterface(PARAMS *p);
 void handlerenameinterface(PARAMS *p);
 void handleaddinterface(PARAMS *p);

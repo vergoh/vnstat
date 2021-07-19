@@ -9,6 +9,8 @@
    - Image output didn't correctly horizontally align the "no data available"
      message in 5 minute graph depending on the width of the image
  - New
+   - Add the possibility of specifying an interface without using the
+     -i / --iface options (vnstat and vnstati)
    - Image output example cgi (examples/vnstat.cgi) automatically lists
      all monitored interfaces instead of requiring the list to be filled
      manually, server name in page title comes from hostname command

@@ -473,8 +473,18 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 			printf("vnStat image output %s by Teemu Toivola <tst at iki dot fi> (LibGD %d.%d.%d)\n", getversion(), GD_MAJOR_VERSION, GD_MINOR_VERSION, GD_RELEASE_VERSION);
 			exit(EXIT_SUCCESS);
 		} else {
-			printf("Unknown arg \"%s\". Use --help for help.\n", argv[currentarg]);
-			exit(EXIT_FAILURE);
+			if (argv[currentarg][0] == '-') {
+				printf("Unknown parameter \"%s\". Use --help for help.\n", argv[currentarg]);
+				exit(EXIT_FAILURE);
+			} else {
+				if (strlen(argv[currentarg]) > 31) {
+					printf("Error: Interface name is limited to 31 characters.\n");
+					exit(EXIT_FAILURE);
+				}
+				strncpy_nt(p->interface, argv[currentarg], 32);
+				if (debug)
+					printf("Used interface: \"%s\"\n", p->interface);
+			}
 		}
 	}
 
