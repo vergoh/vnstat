@@ -912,7 +912,8 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	}
 
 	if (!db_getdata(&datalist, &datainfo, ic->interface.name, "fiveminute", (uint32_t)resultcount) || datainfo.count == 0) {
-		gdImageString(ic->im, ic->font, x + 330 - (8 * ic->font->w), y - (height / 2) - ic->font->h, (unsigned char *)"no data available", ic->ctext);
+		x = (resultcount + FIVEMINEXTRASPACE + (ic->large * 14)) / 2 - (8 * ic->font->w + ic->font->w / 2);
+		gdImageString(ic->im, ic->font, x, y - (height / 2) - ic->font->h, (unsigned char *)"no data available", ic->ctext);
 		return 0;
 	}
 

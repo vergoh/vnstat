@@ -6,6 +6,8 @@
    - Image output would fail to show the last line bar graph in list outputs
      if EstimateStyle was 0, BarColumnShowsRate was 1 and the last line had a
      higher traffic rate than other lines
+   - Image output didn't correctly horizontally align the "no data available"
+     message in 5 minute graph depending on the width of the image
  - New
    - Image output example cgi (examples/vnstat.cgi) automatically lists
      all monitored interfaces instead of requiring the list to be filled
