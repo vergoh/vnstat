@@ -198,6 +198,9 @@ void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const ui
 	if ((rx + tx) < max) {
 		width = (int)lrint(((double)(rx + tx) / (double)max) * len);
 	} else if ((rx + tx) > max || max == 0) {
+		if (debug && (rx + tx) > max) {
+			printf("Warning: Bar rx + tx sum exceeds given maximum, no bar shown\n");
+		}
 		return;
 	}
 

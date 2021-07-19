@@ -343,7 +343,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 
 	if (strlen(ic->dataend) == 0 && datainfo.count > 0 && listtype != LT_Top) {
 		getestimates(&e_rx, &e_tx, listtype, ic->interface.updated, &datalist);
-		if (cfg.estimatestyle > 0 && e_rx + e_tx > datainfo.max) {
+		if ((cfg.estimatestyle > 0 || cfg.barshowsrate > 0) && e_rx + e_tx > datainfo.max) {
 			datainfo.max = e_rx + e_tx;
 		}
 		estimateavailable = 1;

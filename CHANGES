@@ -3,6 +3,9 @@
  - Fixed
    - Using a combination of --live and --json wasn't flushing stdout after
      each line resulting in buffered output if the output was being piped
+   - Image output would fail to show the last line bar graph in list outputs
+     if EstimateStyle was 0, BarColumnShowsRate was 1 and the last line had a
+     higher traffic rate than other lines
  - New
    - Image output example cgi (examples/vnstat.cgi) automatically lists
      all monitored interfaces instead of requiring the list to be filled
