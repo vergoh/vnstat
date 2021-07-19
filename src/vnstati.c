@@ -171,7 +171,7 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 			printf("arg %d: \"%s\"\n", currentarg, argv[currentarg]);
 		if ((strcmp(argv[currentarg], "-?") == 0) || (strcmp(argv[currentarg], "--help")) == 0) {
 			p->help = 1;
-		} else if ((strcmp(argv[currentarg], "-i") == 0) || (strcmp(argv[currentarg], "--iface")) == 0) {
+		} else if ((strcmp(argv[currentarg], "-i") == 0) || (strcmp(argv[currentarg], "--iface")) == 0 || (strcmp(argv[currentarg], "--interface") == 0)) {
 			if (currentarg + 1 < argc) {
 				if (strlen(argv[currentarg + 1]) > 31) {
 					printf("Error: Interface name is limited to 31 characters.\n");
