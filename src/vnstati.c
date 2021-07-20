@@ -182,7 +182,7 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 					printf("Used interface: \"%s\"\n", p->interface);
 				currentarg++;
 			} else {
-				printf("Error: Interface for -i missing.\n");
+				printf("Error: Interface for %s missing.\n", argv[currentarg]);
 				exit(EXIT_FAILURE);
 			}
 		} else if ((strcmp(argv[currentarg], "-o") == 0) || (strcmp(argv[currentarg], "--output")) == 0) {
@@ -192,7 +192,7 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 					printf("Output file: \"%s\"\n", p->filename);
 				currentarg++;
 			} else {
-				printf("Error: Filename for -o missing.\n");
+				printf("Error: Filename for %s missing.\n", argv[currentarg]);
 				exit(EXIT_FAILURE);
 			}
 		} else if ((strcmp(argv[currentarg], "-c") == 0) || (strcmp(argv[currentarg], "--cache")) == 0) {
@@ -202,7 +202,7 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 					printf("Cache time: %d minutes\n", p->cache);
 				currentarg++;
 			} else {
-				printf("Error: Parameter for -c missing or invalid.\n");
+				printf("Error: Parameter for %s missing or invalid.\n", argv[currentarg]);
 				exit(EXIT_FAILURE);
 			}
 		} else if ((strcmp(argv[currentarg], "--style")) == 0) {
@@ -235,7 +235,7 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 				exit(EXIT_FAILURE);
 			}
 #else
-			printf("Error: --scale is not supported by used GD graphics library version.\n");
+			printf("Error: Function needed by --scale is not available in used LibGD %d.%d.%d.\n", GD_MAJOR_VERSION, GD_MINOR_VERSION, GD_RELEASE_VERSION);
 			exit(EXIT_FAILURE);
 #endif
 		} else if ((strcmp(argv[currentarg], "--transparent")) == 0) {
@@ -381,30 +381,32 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 			}
 		} else if ((strcmp(argv[currentarg], "-hs") == 0) || (strcmp(argv[currentarg], "--hsummary")) == 0) {
 			cfg.qmode = 51;
-			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {
-				cfg.summarygraph = atoi(argv[currentarg + 1]);
-				if (cfg.summarygraph > 1 || cfg.summarygraph < 0) {
-					printf("Error: Invalid graph selection \"%d\" for --hsummary.\n", cfg.summarygraph);
-					printf(" Valid graphs:\n");
+			if (currentarg + 1 < argc && (strlen(argv[currentarg + 1]) == 1 || ishelprequest(argv[currentarg + 1]))) {
+				if (!isdigit(argv[currentarg + 1][0]) || atoi(argv[currentarg + 1]) > 1 || atoi(argv[currentarg + 1]) < 0) {
+					if (!ishelprequest(argv[currentarg + 1]))
+						printf("Error: Invalid graph selection \"%s\".\n", argv[currentarg + 1]);
+					printf(" Valid graphs for %s:\n", argv[currentarg]);
 					printf("    0 - hours\n");
 					printf("    1 - 5 minutes\n");
 					exit(EXIT_FAILURE);
 				}
+				cfg.summarygraph = atoi(argv[currentarg + 1]);
 				if (debug)
 					printf("Summary graph changed: %d\n", cfg.summarygraph);
 				currentarg++;
 			}
 		} else if ((strcmp(argv[currentarg], "-vs") == 0) || (strcmp(argv[currentarg], "--vsummary")) == 0) {
 			cfg.qmode = 52;
-			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {
-				cfg.summarygraph = atoi(argv[currentarg + 1]);
-				if (cfg.summarygraph > 1 || cfg.summarygraph < 0) {
-					printf("Error: Invalid graph selection \"%d\" for --vsummary.\n", cfg.summarygraph);
-					printf(" Valid graphs:\n");
+			if (currentarg + 1 < argc && (strlen(argv[currentarg + 1]) == 1 || ishelprequest(argv[currentarg + 1]))) {
+				if (!isdigit(argv[currentarg + 1][0]) || atoi(argv[currentarg + 1]) > 1 || atoi(argv[currentarg + 1]) < 0) {
+					if (!ishelprequest(argv[currentarg + 1]))
+						printf("Error: Invalid graph selection \"%s\".\n", argv[currentarg + 1]);
+					printf(" Valid graphs for %s:\n", argv[currentarg]);
 					printf("    0 - hours\n");
 					printf("    1 - 5 minutes\n");
 					exit(EXIT_FAILURE);
 				}
+				cfg.summarygraph = atoi(argv[currentarg + 1]);
 				if (debug)
 					printf("Summary graph changed: %d\n", cfg.summarygraph);
 				currentarg++;
@@ -416,15 +418,16 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 		} else if ((strcmp(argv[currentarg], "-nl") == 0) || (strcmp(argv[currentarg], "--nolegend")) == 0) {
 			ic->showlegend = 0;
 		} else if ((strcmp(argv[currentarg], "-ru") == 0) || (strcmp(argv[currentarg], "--rateunit")) == 0) {
-			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {
-				cfg.rateunit = atoi(argv[currentarg + 1]);
-				if (cfg.rateunit > 1 || cfg.rateunit < 0) {
-					printf("Error: Invalid parameter \"%d\" for --rateunit.\n", cfg.rateunit);
-					printf(" Valid parameters:\n");
+			if (currentarg + 1 < argc && (strlen(argv[currentarg + 1]) == 1 || ishelprequest(argv[currentarg + 1]))) {
+				if (!isdigit(argv[currentarg + 1][0]) || atoi(argv[currentarg + 1]) > 1 || atoi(argv[currentarg + 1]) < 0) {
+					if (!ishelprequest(argv[currentarg + 1]))
+						printf("Error: Invalid parameter \"%s\".\n", argv[currentarg + 1]);
+					printf(" Valid parameters for %s:\n", argv[currentarg]);
 					printf("    0 - bytes\n");
 					printf("    1 - bits\n");
 					exit(EXIT_FAILURE);
 				}
+				cfg.rateunit = atoi(argv[currentarg + 1]);
 				if (debug)
 					printf("Rateunit changed: %d\n", cfg.rateunit);
 				currentarg++;

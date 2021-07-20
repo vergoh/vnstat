@@ -181,14 +181,8 @@ void parseargs(PARAMS *p, int argc, char **argv)
 			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {
 				cfg.ostyle = atoi(argv[currentarg + 1]);
 				if (cfg.ostyle > 4 || cfg.ostyle < 0) {
-					printf("Error: Invalid style parameter \"%d\" for --style.\n", cfg.ostyle);
-					printf(" Valid parameters:\n");
-					printf("    0 - a more narrow output\n");
-					printf("    1 - enable bar column if available\n");
-					printf("    2 - average traffic rate in summary output\n");
-					printf("    3 - average traffic rate in all outputs if available\n");
-					printf("    4 - disable terminal control characters in -l / --live\n");
-					printf("        and show raw values in --oneline\n");
+					printf("Error: Invalid style parameter \"%d\"\n", cfg.ostyle);
+					showstylehelp();
 					exit(EXIT_FAILURE);
 				}
 				if (debug)
@@ -196,13 +190,7 @@ void parseargs(PARAMS *p, int argc, char **argv)
 				currentarg++;
 			} else {
 				printf("Error: Style parameter for --style missing.\n");
-				printf(" Valid parameters:\n");
-				printf("    0 - a more narrow output\n");
-				printf("    1 - enable bar column if available\n");
-				printf("    2 - average traffic rate in summary output\n");
-				printf("    3 - average traffic rate in all outputs if available\n");
-				printf("    4 - disable terminal control characters in -l / --live\n");
-				printf("        and show raw values in --oneline\n");
+				showstylehelp();
 				exit(EXIT_FAILURE);
 			}
 		} else if ((strcmp(argv[currentarg], "--dbdir")) == 0) {
@@ -306,8 +294,9 @@ void parseargs(PARAMS *p, int argc, char **argv)
 					cfg.ostyle = 4;
 					currentarg++;
 				} else {
-					printf("Error: Invalid mode parameter \"%s\" for --oneline.\n", argv[currentarg + 1]);
-					printf(" Valid parameters:\n");
+					if (!ishelprequest(argv[currentarg + 1]))
+						printf("Error: Invalid mode parameter \"%s\".\n", argv[currentarg + 1]);
+					printf(" Valid parameters for --oneline:\n");
 					printf("    (none) - automatically scaled units visible\n");
 					printf("    b      - all values in bytes\n");
 					exit(EXIT_FAILURE);
@@ -318,8 +307,9 @@ void parseargs(PARAMS *p, int argc, char **argv)
 			if (currentarg + 1 < argc && (strlen(argv[currentarg + 1]) == 1 || ishelprequest(argv[currentarg + 1]))) {
 				p->xmlmode = argv[currentarg + 1][0];
 				if (strlen(argv[currentarg + 1]) != 1 || strchr("afhdmyt", p->xmlmode) == NULL) {
-					printf("Error: Invalid mode parameter \"%s\" for --xml.\n", argv[currentarg + 1]);
-					printf(" Valid parameters:\n");
+					if (!ishelprequest(argv[currentarg + 1]))
+						printf("Error: Invalid mode parameter \"%s\".\n", argv[currentarg + 1]);
+					printf(" Valid parameters for --xml:\n");
 					printf("    a - all (default)\n");
 					printf("    f - only 5 minutes\n");
 					printf("    h - only hours\n");
@@ -344,8 +334,9 @@ void parseargs(PARAMS *p, int argc, char **argv)
 			if (currentarg + 1 < argc && (strlen(argv[currentarg + 1]) == 1 || ishelprequest(argv[currentarg + 1]))) {
 				p->jsonmode = argv[currentarg + 1][0];
 				if (strlen(argv[currentarg + 1]) != 1 || strchr("afhdmyt", p->jsonmode) == NULL) {
-					printf("Error: Invalid mode parameter \"%s\" for --json.\n", argv[currentarg + 1]);
-					printf(" Valid parameters:\n");
+					if (!ishelprequest(argv[currentarg + 1]))
+						printf("Error: Invalid mode parameter \"%s\".\n", argv[currentarg + 1]);
+					printf(" Valid parameters for --json:\n");
 					printf("    a - all (default)\n");
 					printf("    f - only 5 minutes\n");
 					printf("    h - only hours\n");
@@ -366,15 +357,16 @@ void parseargs(PARAMS *p, int argc, char **argv)
 				currentarg++;
 			}
 		} else if ((strcmp(argv[currentarg], "-ru") == 0) || (strcmp(argv[currentarg], "--rateunit")) == 0) {
-			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {
-				cfg.rateunit = atoi(argv[currentarg + 1]);
-				if (cfg.rateunit > 1 || cfg.rateunit < 0) {
-					printf("Error: Invalid parameter \"%d\" for --rateunit.\n", cfg.rateunit);
-					printf(" Valid parameters:\n");
+			if (currentarg + 1 < argc && (strlen(argv[currentarg + 1]) == 1 || ishelprequest(argv[currentarg + 1]))) {
+				if (!isdigit(argv[currentarg + 1][0]) || atoi(argv[currentarg + 1]) > 1 || atoi(argv[currentarg + 1]) < 0) {
+					if (!ishelprequest(argv[currentarg + 1]))
+						printf("Error: Invalid parameter \"%s\".\n", argv[currentarg + 1]);
+					printf(" Valid parameters for %s:\n", argv[currentarg]);
 					printf("    0 - bytes\n");
 					printf("    1 - bits\n");
 					exit(EXIT_FAILURE);
 				}
+				cfg.rateunit = atoi(argv[currentarg + 1]);
 				if (debug)
 					printf("Rateunit changed: %d\n", cfg.rateunit);
 				currentarg++;
@@ -393,8 +385,9 @@ void parseargs(PARAMS *p, int argc, char **argv)
 		} else if ((strcmp(argv[currentarg], "-l") == 0) || (strcmp(argv[currentarg], "--live") == 0)) {
 			if (currentarg + 1 < argc && (strlen(argv[currentarg + 1]) == 1 || ishelprequest(argv[currentarg + 1]))) {
 				if (!isdigit(argv[currentarg + 1][0]) || atoi(argv[currentarg + 1]) > 1 || atoi(argv[currentarg + 1]) < 0) {
-					printf("Error: Invalid mode parameter \"%s\" for -l / --live.\n", argv[currentarg + 1]);
-					printf(" Valid parameters:\n");
+					if (!ishelprequest(argv[currentarg + 1]))
+						printf("Error: Invalid mode parameter \"%s\".\n", argv[currentarg + 1]);
+					printf(" Valid parameters for %s:\n", argv[currentarg]);
 					printf("    0 - show packets per second (default)\n");
 					printf("    1 - show transfer counters\n");
 					exit(EXIT_FAILURE);
@@ -450,10 +443,11 @@ void parseargs(PARAMS *p, int argc, char **argv)
 			}
 		} else if (strcmp(argv[currentarg], "--iflist") == 0) {
 			p->query = 0;
-			if (currentarg + 1 < argc && argv[currentarg + 1][0] != '-') {
+			if (currentarg + 1 < argc && (strlen(argv[currentarg + 1]) == 1 || ishelprequest(argv[currentarg + 1]))) {
 				if (!isdigit(argv[currentarg + 1][0]) || atoi(argv[currentarg + 1]) > 1 || atoi(argv[currentarg + 1]) < 0) {
-					printf("Error: Invalid mode parameter \"%s\" for --iflist.\n", argv[currentarg + 1]);
-					printf(" Valid parameters:\n");
+					if (!ishelprequest(argv[currentarg + 1]))
+						printf("Error: Invalid mode parameter \"%s\".\n", argv[currentarg + 1]);
+					printf(" Valid parameters for --iflist:\n");
 					printf("    0 - show verbose (default)\n");
 					printf("    1 - show one interface per line\n");
 					exit(EXIT_FAILURE);
@@ -465,10 +459,11 @@ void parseargs(PARAMS *p, int argc, char **argv)
 			exit(EXIT_SUCCESS);
 		} else if (strcmp(argv[currentarg], "--dbiflist") == 0) {
 			p->query = 0;
-			if (currentarg + 1 < argc && argv[currentarg + 1][0] != '-') {
+			if (currentarg + 1 < argc && (strlen(argv[currentarg + 1]) == 1 || ishelprequest(argv[currentarg + 1]))) {
 				if (!isdigit(argv[currentarg + 1][0]) || atoi(argv[currentarg + 1]) > 1 || atoi(argv[currentarg + 1]) < 0) {
-					printf("Error: Invalid mode parameter \"%s\" for --dbiflist.\n", argv[currentarg + 1]);
-					printf(" Valid parameters:\n");
+					if (!ishelprequest(argv[currentarg + 1]))
+						printf("Error: Invalid mode parameter \"%s\".\n", argv[currentarg + 1]);
+					printf(" Valid parameters for --dbiflist:\n");
 					printf("    0 - show verbose (default)\n");
 					printf("    1 - show one interface per line\n");
 					exit(EXIT_FAILURE);
@@ -494,7 +489,7 @@ void parseargs(PARAMS *p, int argc, char **argv)
 			printf("vnStat %s by Teemu Toivola <tst at iki dot fi>\n", getversion());
 			exit(EXIT_SUCCESS);
 		} else {
-			if (argv[currentarg][0] == '-') {
+			if (argv[currentarg][0] == '-' || strlen(argv[currentarg]) == 1) {
 				printf("Unknown parameter \"%s\". Use --help for help.\n", argv[currentarg]);
 				exit(EXIT_FAILURE);
 			} else {
@@ -519,19 +514,15 @@ void parseargs(PARAMS *p, int argc, char **argv)
 	}
 }
 
-int ishelprequest(const char *arg)
+void showstylehelp(void)
 {
-	if (strlen(arg) == 0) {
-		return 0;
-	}
-
-	if (strlen(arg) == 1 && arg[0] == '?') {
-		return 1;
-	} else if ((strcmp(arg, "-?") == 0) || (strcmp(arg, "--help") == 0)) {
-		return 1;
-	}
-
-	return 0;
+	printf(" Valid parameters for --style.:\n");
+	printf("    0 - a more narrow output\n");
+	printf("    1 - enable bar column if available\n");
+	printf("    2 - average traffic rate in summary output\n");
+	printf("    3 - average traffic rate in all outputs if available\n");
+	printf("    4 - disable terminal control characters in -l / --live\n");
+	printf("        and show raw values in --oneline\n");
 }
 
 void handleremoveinterface(PARAMS *p)

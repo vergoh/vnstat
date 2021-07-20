@@ -545,3 +545,18 @@ void getestimates(uint64_t *rx, uint64_t *tx, const ListType listtype, const tim
 		*tx = (uint64_t)((double)datalist_i->tx / (double)div) * mult;
 	}
 }
+
+int ishelprequest(const char *arg)
+{
+	if (strlen(arg) == 0) {
+		return 0;
+	}
+
+	if (strlen(arg) == 1 && arg[0] == '?') {
+		return 1;
+	} else if ((strcmp(arg, "-?") == 0) || (strcmp(arg, "--help") == 0)) {
+		return 1;
+	}
+
+	return 0;
+}

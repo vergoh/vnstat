@@ -893,6 +893,20 @@ START_TEST(getestimates_has_a_crystal_ball)
 }
 END_TEST
 
+START_TEST(ishelprequest_knows_what_a_help_request_is)
+{
+	ck_assert_int_eq(ishelprequest("--help"), 1);
+	ck_assert_int_eq(ishelprequest("-?"), 1);
+	ck_assert_int_eq(ishelprequest("?"), 1);
+	ck_assert_int_eq(ishelprequest("help"), 0);
+	ck_assert_int_eq(ishelprequest("-h"), 0);
+	ck_assert_int_eq(ishelprequest("--helpme"), 0);
+	ck_assert_int_eq(ishelprequest(""), 0);
+	ck_assert_int_eq(ishelprequest("1"), 0);
+	ck_assert_int_eq(ishelprequest("a"), 0);
+}
+END_TEST
+
 void add_misc_tests(Suite *s)
 {
 	TCase *tc_misc = tcase_create("Misc");
@@ -930,5 +944,6 @@ void add_misc_tests(Suite *s)
 	tcase_add_test(tc_misc, getperiodseconds_knows_spent_ongoing_time);
 	tcase_add_test(tc_misc, getestimates_has_error_handling);
 	tcase_add_test(tc_misc, getestimates_has_a_crystal_ball);
+	tcase_add_test(tc_misc, ishelprequest_knows_what_a_help_request_is);
 	suite_add_tcase(s, tc_misc);
 }
