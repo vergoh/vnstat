@@ -11,6 +11,8 @@
  - New
    - Add the possibility of specifying an interface without using the
      -i / --iface options (vnstat and vnstati)
+   - Add configuration option UseUTC for using UTC as timezone for database
+     entries instead of following the system timezone configuration
    - Image output example cgi (examples/vnstat.cgi) automatically lists
      all monitored interfaces instead of requiring the list to be filled
      manually, server name in page title comes from hostname command

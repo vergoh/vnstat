@@ -364,6 +364,14 @@ How often in seconds the interface data is updated. Value range:
 Enable or disable logging. 0 = disabled, 1 = logfile and 2 = syslog.
 
 .TP
+.B UseUTC
+Enable or disable using UTC as timezone in the database for all entries. When
+enabled, all entries added to the database will use UTC regardless of the
+configured system timezone. When disabled, the configured system timezone
+will be used. Changing this setting will not result in already existing
+data to be modified. 1 = enabled, 0 = disabled.
+
+.TP
 .B YearlyYears
 Data retention duration for the one year resolution entries. The configuration
 defines for how many past years entries will be stored. Set to -1 for

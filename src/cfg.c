@@ -67,6 +67,7 @@ int loadcfg(const char *cfgfile)
 		 {"64bitInterfaceCounters", 0, &cfg.is64bit, 0, 0},
 		 {"DatabaseWriteAheadLogging", 0, &cfg.waldb, 0, 0},
 		 {"DatabaseSynchronous", 0, &cfg.dbsynchronous, 0, 0},
+		 {"UseUTC", 0, &cfg.useutc, 0, 0},
 		 {"HeaderFormat", cfg.hformat, 0, 64, 0},
 		 {"HourlyRate", 0, &cfg.hourlyrate, 0, 0},
 		 {"SummaryRate", 0, &cfg.summaryrate, 0, 0},
@@ -205,6 +206,7 @@ void validatecfg(void)
 	validateint("64bitInterfaceCounters", &cfg.is64bit, IS64BIT, -2, 1);
 	validatebool("DatabaseWriteAheadLogging", &cfg.waldb, WALDB);
 	validateint("DatabaseSynchronous", &cfg.dbsynchronous, DBSYNCHRONOUS, -1, 3);
+	validatebool("UseUTC", &cfg.useutc, USEUTC);
 	validatebool("TransparentBg", &cfg.transbg, TRANSBG);
 	validatebool("LargeFonts", &cfg.largefonts, LARGEFONTS);
 	validateint("LineSpacingAdjustment", &cfg.linespaceadjust, LINESPACEADJUST, -5, 10);
@@ -232,6 +234,12 @@ void validatecfg(void)
 	validatebool("BandwidthDetection", &cfg.bwdetection, BWDETECT);
 	validateint("BandwidthDetectionInterval", &cfg.bwdetectioninterval, BWDETECTINTERVAL, 0, 30);
 	validatebool("Experimental", &cfg.experimental, 0);
+
+	if (cfg.useutc) {
+		strncpy_nt(cfg.dbtzmodifier, "", 14);
+	} else {
+		strncpy_nt(cfg.dbtzmodifier, DATABASELOCALTIMEMODIFIER, 14);
+	}
 
 	if (cfg.dbdir[0] != '/') {
 		strncpy_nt(cfg.dbdir, DATABASEDIR, 512);
@@ -353,6 +361,7 @@ void defaultcfg(void)
 	cfg.topdayentries = TOPDAYENTRIES;
 
 	strncpy_nt(cfg.dbdir, DATABASEDIR, 512);
+	strncpy_nt(cfg.dbtzmodifier, DATABASELOCALTIMEMODIFIER, 14);
 	strncpy_nt(cfg.iface, DEFIFACE, 32);
 	strncpy_nt(cfg.locale, LOCALE, 32);
 	strncpy_nt(cfg.dformat, DFORMAT, 64);
@@ -380,6 +389,7 @@ void defaultcfg(void)
 	cfg.is64bit = IS64BIT;
 	cfg.waldb = WALDB;
 	cfg.dbsynchronous = DBSYNCHRONOUS;
+	cfg.useutc = USEUTC;
 
 	cfg.transbg = TRANSBG;
 	cfg.largefonts = LARGEFONTS;

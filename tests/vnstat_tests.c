@@ -353,5 +353,9 @@ uint64_t get_timestamp(const int year, const int month, const int day, const int
 	stm.tm_min = minute;
 	stm.tm_isdst = -1;
 
-	return (uint64_t)mktime(&stm);
+	if (cfg.useutc) {
+		return (uint64_t)timegm(&stm);
+	} else {
+		return (uint64_t)mktime(&stm);
+	}
 }

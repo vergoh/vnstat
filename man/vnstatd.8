@@ -62,15 +62,18 @@ process the interface traffic statistics and write new values to the database
 at a configured interval. As a result, the daemon ends up spending most
 of the time sleeping between updates.
 .PP
-Data is stored in the database using local time based on the daemon's execution
-environment. Any changes in the system clock or the system timezone configuration
-will result in data being inserted according to the new local time without any
-recalculation being done for already stored data. The daemon and the database in
-essence aren't aware of the used timezone or possible daylight saving time and
-cannot be configured to offset the timestamps to any direction. If a system clock
-or system timezone change or daylight saving time observation ending results in an
-already seen time period to repeat then the existing database values get incremented
-with the new data.
+When the
+.B UseUTC
+configuration option isn't enabled, data is stored in the database using local
+time based on the daemon's execution environment when the configuration option
+isn't enabled. Any changes in the system clock or the system timezone
+configuration will result in data being inserted according to the new local
+time without any recalculation being done for already stored data. The daemon
+and the database in essence aren't aware of the used timezone or possible
+daylight saving time and cannot be configured to offset the timestamps to any
+direction. If a system clock or system timezone change or daylight saving time
+observation ending results in an already seen time period to repeat then the
+existing database values get incremented with the new data.
 
 .SH OPTIONS
 

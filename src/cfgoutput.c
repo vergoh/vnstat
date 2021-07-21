@@ -175,6 +175,9 @@ void printcfgfile(void)
 	printf("# (-1 = auto, 0 = off, 1, = normal, 2 = full, 3 = extra)\n");
 	printf("DatabaseSynchronous %d\n\n", cfg.dbsynchronous);
 
+	printf("# database uses UTC instead of local timezone (1 = enabled, 0 = disabled)\n");
+	printf("UseUTC %d\n\n", cfg.useutc);
+
 	printf("\n");
 
 	/* vnstati section */

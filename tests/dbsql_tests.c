@@ -178,6 +178,26 @@ START_TEST(db_addtraffic_can_add_traffic_and_interfaces)
 }
 END_TEST
 
+START_TEST(db_addtraffic_can_add_traffic_and_interfaces_utc)
+{
+	int ret;
+
+	defaultcfg();
+	cfg.useutc = 1;
+	validatecfg();
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ck_assert_int_eq(db_addtraffic("eth0", 0, 0), 1);
+	ck_assert_int_eq(db_addtraffic("eth0", 12, 34), 1);
+	ck_assert_int_eq(db_addtraffic("eth1", 56, 78), 1);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 START_TEST(db_addtraffic_dated_does_not_touch_updated_time)
 {
 	int ret;
@@ -885,6 +905,110 @@ START_TEST(db_data_can_be_retrieved)
 	dbdatalistinfo datainfo;
 
 	defaultcfg();
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_insertdata("hour", "eth0", 1, 2, 3);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_insertdata("hour", "eth0", 10, 20, 10000);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "hour", 2);
+	ck_assert_int_eq(ret, 1);
+
+	ck_assert_int_eq(datainfo.count, 2);
+	ck_assert_int_eq(datainfo.minrx, 1);
+	ck_assert_int_eq(datainfo.maxrx, 10);
+	ck_assert_int_eq(datainfo.sumrx, 11);
+	ck_assert_int_eq(datainfo.mintx, 2);
+	ck_assert_int_eq(datainfo.maxtx, 20);
+	ck_assert_int_eq(datainfo.sumtx, 22);
+	/* db_insertdata rounds the timestamps to full hours */
+	ck_assert_int_eq((int)datainfo.maxtime, 7200);
+	ck_assert_int_eq((int)datainfo.mintime, 0);
+
+	datalist_iterator = datalist;
+
+	ck_assert_int_eq(datalist_iterator->rx, 1);
+	ck_assert_int_eq(datalist_iterator->tx, 2);
+	ck_assert_int_eq(datalist_iterator->timestamp, 0);
+
+	datalist_iterator = datalist_iterator->next;
+
+	ck_assert_int_eq(datalist_iterator->rx, 10);
+	ck_assert_int_eq(datalist_iterator->tx, 20);
+	ck_assert_int_eq(datalist_iterator->timestamp, 7200);
+
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_data_can_be_inserted_utc)
+{
+	int ret;
+	interfaceinfo info;
+
+	defaultcfg();
+	cfg.useutc = 1;
+	validatecfg();
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_insertdata("foo", "eth0", 1, 2, 3);
+	ck_assert_int_eq(ret, 0);
+
+	ret = db_insertdata("hour", "eth1", 1, 2, 3);
+	ck_assert_int_eq(ret, 0);
+
+	ret = db_insertdata("hour", "eth0", 1, 2, 3);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_insertdata("day", "eth0", 1, 2, 3);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_insertdata("month", "eth0", 1, 2, 3);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_insertdata("year", "eth0", 1, 2, 3);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_insertdata("top", "eth0", 1, 2, 3);
+	ck_assert_int_eq(ret, 1);
+
+	/* verify that totals don't get changed */
+	ret = db_getinterfaceinfo("eth0", &info);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(info.active, 1);
+	ck_assert_int_eq(info.rxcounter, 0);
+	ck_assert_int_eq(info.txcounter, 0);
+	ck_assert_int_eq(info.rxtotal, 0);
+	ck_assert_int_eq(info.txtotal, 0);
+	ck_assert_int_ne(info.created, 0);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_data_can_be_retrieved_utc)
+{
+	int ret;
+	dbdatalist *datalist = NULL, *datalist_iterator = NULL;
+	dbdatalistinfo datainfo;
+
+	defaultcfg();
+	cfg.useutc = 1;
+	validatecfg();
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -1881,6 +2005,104 @@ START_TEST(db_addtraffic_with_monthrotate)
 }
 END_TEST
 
+START_TEST(db_addtraffic_without_monthrotate_utc)
+{
+	int ret, i;
+	char timestamp[64];
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+
+	defaultcfg();
+	cfg.monthrotate = 1;
+	cfg.useutc = 1;
+	validatecfg();
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("ethtest");
+	ck_assert_int_eq(ret, 1);
+
+	for (i = 1; i <= 20; i++) {
+		ret = db_addtraffic_dated("ethtest", 1, 2, get_timestamp(2000, 2, i, 0, 0));
+		ck_assert_int_eq(ret, 1);
+	}
+
+	ret = db_getdata_range(&datalist, &datainfo, "ethtest", "month", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 1);
+	datalist_i = datalist;
+	i = 0;
+	while (datalist_i != NULL) {
+		switch (i) {
+			case 0:
+				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2000-02-01");
+				ck_assert_int_eq(datalist_i->rx, 20);
+				ck_assert_int_eq(datalist_i->tx, 40);
+				break;
+		}
+		datalist_i = datalist_i->next;
+		i++;
+	}
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_addtraffic_with_monthrotate_utc)
+{
+	int ret, i;
+	char timestamp[64];
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+
+	defaultcfg();
+	cfg.monthrotate = 7;
+	cfg.useutc = 1;
+	validatecfg();
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("ethtest");
+	ck_assert_int_eq(ret, 1);
+
+	for (i = 1; i <= 20; i++) {
+		ret = db_addtraffic_dated("ethtest", 1, 2, get_timestamp(2000, 2, i, 0, 0));
+		ck_assert_int_eq(ret, 1);
+	}
+
+	ret = db_getdata_range(&datalist, &datainfo, "ethtest", "month", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 2);
+	datalist_i = datalist;
+	i = 0;
+	while (datalist_i != NULL) {
+		switch (i) {
+			case 0:
+				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2000-01-01");
+				ck_assert_int_eq(datalist_i->rx, 6);
+				ck_assert_int_eq(datalist_i->tx, 12);
+				break;
+			case 1:
+				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2000-02-01");
+				ck_assert_int_eq(datalist_i->rx, 14);
+				ck_assert_int_eq(datalist_i->tx, 28);
+				break;
+		}
+		datalist_i = datalist_i->next;
+		i++;
+	}
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 START_TEST(db_get_date_generator_can_generate_dates)
 {
 	defaultcfg();
@@ -1938,6 +2160,70 @@ START_TEST(db_get_date_generator_can_generate_dates_with_monthrotate)
 	ck_assert_ptr_ne(strstr(db_get_date_generator(5, 1, "foo"), "date(foo, 'localtime')"), NULL);
 	ck_assert_ptr_ne(strstr(db_get_date_generator(3, 1, "foo"), "strftime('%Y-%m-01', foo, 'localtime')"), NULL);
 	ck_assert_ptr_ne(strstr(db_get_date_generator(4, 1, "foo"), "strftime('%Y-01-01', foo, 'localtime')"), NULL);
+}
+END_TEST
+
+START_TEST(db_get_date_generator_can_generate_dates_utc)
+{
+	defaultcfg();
+	cfg.useutc = 1;
+	validatecfg();
+
+	ck_assert_ptr_ne(strstr(db_get_date_generator(0, 0, "foo"), "minutes"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(1, 0, "foo"), "strftime('%Y-%m-%d %H:00:00', foo)"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(2, 0, "foo"), "date(foo)"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(5, 0, "foo"), "date(foo)"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(3, 0, "foo"), "strftime('%Y-%m-01', foo)"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(4, 0, "foo"), "strftime('%Y-01-01', foo)"), NULL);
+
+	ck_assert_ptr_ne(strstr(db_get_date_generator(0, 1, "foo"), "minutes"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(1, 1, "foo"), "strftime('%Y-%m-%d %H:00:00', foo)"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(2, 1, "foo"), "date(foo)"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(5, 1, "foo"), "date(foo)"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(3, 1, "foo"), "strftime('%Y-%m-01', foo)"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(4, 1, "foo"), "strftime('%Y-01-01', foo)"), NULL);
+}
+END_TEST
+
+START_TEST(db_get_date_generator_can_generate_dates_with_monthrotate_utc)
+{
+	defaultcfg();
+	cfg.useutc = 1;
+	validatecfg();
+
+	cfg.monthrotate = 10;
+	cfg.monthrotateyears = 0;
+
+	ck_assert_ptr_ne(strstr(db_get_date_generator(0, 0, "foo"), "minutes"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(1, 0, "foo"), "strftime('%Y-%m-%d %H:00:00', foo)"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(2, 0, "foo"), "date(foo)"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(5, 0, "foo"), "date(foo)"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(3, 0, "foo"), "strftime('%Y-%m-01', datetime(foo, '-9 days'))"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(4, 0, "foo"), "strftime('%Y-01-01', foo)"), NULL);
+
+	ck_assert_ptr_ne(strstr(db_get_date_generator(0, 1, "foo"), "minutes"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(1, 1, "foo"), "strftime('%Y-%m-%d %H:00:00', foo)"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(2, 1, "foo"), "date(foo)"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(5, 1, "foo"), "date(foo)"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(3, 1, "foo"), "strftime('%Y-%m-01', foo)"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(4, 1, "foo"), "strftime('%Y-01-01', foo)"), NULL);
+
+	cfg.monthrotate = 8;
+	cfg.monthrotateyears = 1;
+
+	ck_assert_ptr_ne(strstr(db_get_date_generator(0, 0, "foo"), "minutes"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(1, 0, "foo"), "strftime('%Y-%m-%d %H:00:00', foo)"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(2, 0, "foo"), "date(foo)"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(5, 0, "foo"), "date(foo)"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(3, 0, "foo"), "strftime('%Y-%m-01', datetime(foo, '-7 days'))"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(4, 0, "foo"), "strftime('%Y-01-01', datetime(foo, '-7 days'))"), NULL);
+
+	ck_assert_ptr_ne(strstr(db_get_date_generator(0, 1, "foo"), "minutes"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(1, 1, "foo"), "strftime('%Y-%m-%d %H:00:00', foo)"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(2, 1, "foo"), "date(foo)"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(5, 1, "foo"), "date(foo)"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(3, 1, "foo"), "strftime('%Y-%m-01', foo)"), NULL);
+	ck_assert_ptr_ne(strstr(db_get_date_generator(4, 1, "foo"), "strftime('%Y-01-01', foo)"), NULL);
 }
 END_TEST
 
@@ -2266,6 +2552,7 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_setinfo_can_not_update_nonexisting_name);
 	tcase_add_test(tc_dbsql, db_addtraffic_with_no_traffic_does_nothing);
 	tcase_add_test(tc_dbsql, db_addtraffic_can_add_traffic_and_interfaces);
+	tcase_add_test(tc_dbsql, db_addtraffic_can_add_traffic_and_interfaces_utc);
 	tcase_add_test(tc_dbsql, db_addtraffic_dated_does_not_touch_updated_time);
 	tcase_add_test(tc_dbsql, db_getinterfacecount_counts_interfaces);
 	tcase_add_test(tc_dbsql, db_getinterfacecountbyname_counts_interfaces);
@@ -2292,6 +2579,8 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_maintenance_does_not_fault);
 	tcase_add_test(tc_dbsql, db_data_can_be_inserted);
 	tcase_add_test(tc_dbsql, db_data_can_be_retrieved);
+	tcase_add_test(tc_dbsql, db_data_can_be_inserted_utc);
+	tcase_add_test(tc_dbsql, db_data_can_be_retrieved_utc);
 	tcase_add_test(tc_dbsql, db_fatal_errors_get_detected);
 	tcase_add_test(tc_dbsql, db_validate_with_valid_version);
 	tcase_add_test(tc_dbsql, db_validate_with_no_version);
@@ -2319,8 +2608,12 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_getdata_range_with_merged_interfaces);
 	tcase_add_test(tc_dbsql, db_addtraffic_without_monthrotate);
 	tcase_add_test(tc_dbsql, db_addtraffic_with_monthrotate);
+	tcase_add_test(tc_dbsql, db_addtraffic_without_monthrotate_utc);
+	tcase_add_test(tc_dbsql, db_addtraffic_with_monthrotate_utc);
 	tcase_add_test(tc_dbsql, db_get_date_generator_can_generate_dates);
 	tcase_add_test(tc_dbsql, db_get_date_generator_can_generate_dates_with_monthrotate);
+	tcase_add_test(tc_dbsql, db_get_date_generator_can_generate_dates_utc);
+	tcase_add_test(tc_dbsql, db_get_date_generator_can_generate_dates_with_monthrotate_utc);
 	tcase_add_test(tc_dbsql, getifaceinquery_does_not_mess_regular_interfaces);
 	tcase_add_test(tc_dbsql, getifaceinquery_can_create_merge_queries);
 	tcase_add_test(tc_dbsql, getifaceinquery_does_not_tolerate_nonsense);

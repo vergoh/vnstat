@@ -375,7 +375,7 @@ int db_addinterface(const char *iface)
 		return 0;
 	}
 
-	sqlite3_snprintf(256, sql, "insert into interface (name, active, created, updated, rxcounter, txcounter, rxtotal, txtotal) values ('%q', 1, datetime('now', 'localtime'), datetime('now', 'localtime'), 0, 0, 0, 0)", iface);
+	sqlite3_snprintf(256, sql, "insert into interface (name, active, created, updated, rxcounter, txcounter, rxtotal, txtotal) values ('%q', 1, datetime('now'%s), datetime('now'%s), 0, 0, 0, 0)", iface, cfg.dbtzmodifier, cfg.dbtzmodifier);
 	return db_exec(sql);
 }
 
@@ -548,7 +548,7 @@ int db_setupdated(const char *iface, const time_t timestamp)
 		return 0;
 	}
 
-	sqlite3_snprintf(256, sql, "update interface set updated=datetime(%" PRIu64 ", 'unixepoch', 'localtime') where id=%" PRId64 "", (uint64_t)timestamp, (int64_t)ifaceid);
+	sqlite3_snprintf(256, sql, "update interface set updated=datetime(%" PRIu64 ", 'unixepoch'%s) where id=%" PRId64 "", (uint64_t)timestamp, cfg.dbtzmodifier, (int64_t)ifaceid);
 	return db_exec(sql);
 }
 
@@ -764,27 +764,27 @@ char *db_get_date_generator(const int range, const short direct, const char *now
 
 	switch (range) {
 		case 0: /* 5min */
-			snprintf(dgen, 512, "datetime(%s, ('-' || (strftime('%%M', %s)) || ' minutes'), ('-' || (strftime('%%S', %s)) || ' seconds'), ('+' || (round(strftime('%%M', %s)/5,0)*5) || ' minutes'), 'localtime')", nowdate, nowdate, nowdate, nowdate);
+			snprintf(dgen, 512, "datetime(%s, ('-' || (strftime('%%M', %s)) || ' minutes'), ('-' || (strftime('%%S', %s)) || ' seconds'), ('+' || (round(strftime('%%M', %s)/5,0)*5) || ' minutes')%s)", nowdate, nowdate, nowdate, nowdate, cfg.dbtzmodifier);
 			break;
 		case 1: /* hour */
-			snprintf(dgen, 512, "strftime('%%Y-%%m-%%d %%H:00:00', %s, 'localtime')", nowdate);
+			snprintf(dgen, 512, "strftime('%%Y-%%m-%%d %%H:00:00', %s%s)", nowdate, cfg.dbtzmodifier);
 			break;
 		case 2: /* day */
 		case 5: /* top */
-			snprintf(dgen, 512, "date(%s, 'localtime')", nowdate);
+			snprintf(dgen, 512, "date(%s%s)", nowdate, cfg.dbtzmodifier);
 			break;
 		case 3: /* month */
 			if (direct || cfg.monthrotate == 1) {
-				snprintf(dgen, 512, "strftime('%%Y-%%m-01', %s, 'localtime')", nowdate);
+				snprintf(dgen, 512, "strftime('%%Y-%%m-01', %s%s)", nowdate, cfg.dbtzmodifier);
 			} else {
-				snprintf(dgen, 512, "strftime('%%Y-%%m-01', datetime(%s, '-%d days'), 'localtime')", nowdate, cfg.monthrotate - 1);
+				snprintf(dgen, 512, "strftime('%%Y-%%m-01', datetime(%s, '-%d days')%s)", nowdate, cfg.monthrotate - 1, cfg.dbtzmodifier);
 			}
 			break;
 		case 4: /* year */
 			if (direct || cfg.monthrotate == 1 || cfg.monthrotateyears == 0) {
-				snprintf(dgen, 512, "strftime('%%Y-01-01', %s, 'localtime')", nowdate);
+				snprintf(dgen, 512, "strftime('%%Y-01-01', %s%s)", nowdate, cfg.dbtzmodifier);
 			} else {
-				snprintf(dgen, 512, "strftime('%%Y-01-01', datetime(%s, '-%d days'), 'localtime')", nowdate, cfg.monthrotate - 1);
+				snprintf(dgen, 512, "strftime('%%Y-01-01', datetime(%s, '-%d days')%s)", nowdate, cfg.monthrotate - 1, cfg.dbtzmodifier);
 			}
 			break;
 		default:
@@ -869,7 +869,7 @@ int db_setcreation(const char *iface, const time_t timestamp)
 		return 0;
 	}
 
-	sqlite3_snprintf(256, sql, "update interface set created=datetime(%" PRIu64 ", 'unixepoch', 'localtime') where id=%" PRId64 "", (uint64_t)timestamp, (int64_t)ifaceid);
+	sqlite3_snprintf(256, sql, "update interface set created=datetime(%" PRIu64 ", 'unixepoch'%s) where id=%" PRId64 "", (uint64_t)timestamp, cfg.dbtzmodifier, (int64_t)ifaceid);
 	return db_exec(sql);
 }
 
@@ -887,6 +887,7 @@ int db_settotal(const char *iface, const uint64_t rx, const uint64_t tx)
 	return db_exec(sql);
 }
 
+/* used only for legacy data import */
 int db_insertdata(const char *table, const char *iface, const uint64_t rx, const uint64_t tx, const uint64_t timestamp)
 {
 	int i, index = -1;
@@ -911,7 +912,12 @@ int db_insertdata(const char *table, const char *iface, const uint64_t rx, const
 		return 0;
 	}
 
-	snprintf(nowdate, 64, "datetime(%" PRIu64 ", 'unixepoch')", timestamp);
+	/* legacy data is always local timezone and needs to be enforced here as a result */
+	if (cfg.useutc) {
+		snprintf(nowdate, 64, "datetime(%" PRIu64 ", 'unixepoch', 'localtime')", timestamp);
+	} else {
+		snprintf(nowdate, 64, "datetime(%" PRIu64 ", 'unixepoch')", timestamp);
+	}
 
 	sqlite3_snprintf(1024, sql, "insert or ignore into %s (interface, date, rx, tx) values (%" PRId64 ", %s, %" PRIu64 ", %" PRIu64 ")", table, (int64_t)ifaceid, db_get_date_generator(index + 1, 1, nowdate), rx, tx);
 	return db_exec(sql);
@@ -938,7 +944,7 @@ int db_removeoldentries(void)
 		if (debug) {
 			printf("db: fiveminute cleanup (%dh)\n", cfg.fiveminutehours);
 		}
-		sqlite3_snprintf(256, sql, "delete from fiveminute where date < datetime('now', '-%d hours', 'localtime')", cfg.fiveminutehours);
+		sqlite3_snprintf(256, sql, "delete from fiveminute where date < datetime('now', '-%d hours'%s)", cfg.fiveminutehours, cfg.dbtzmodifier);
 		if (!db_exec(sql)) {
 			db_rollbacktransaction();
 			return 0;
@@ -949,7 +955,7 @@ int db_removeoldentries(void)
 		if (debug) {
 			printf("db: hour cleanup (%dd)\n", cfg.hourlydays);
 		}
-		sqlite3_snprintf(256, sql, "delete from hour where date < datetime('now', '-%d days', 'localtime')", cfg.hourlydays);
+		sqlite3_snprintf(256, sql, "delete from hour where date < datetime('now', '-%d days'%s)", cfg.hourlydays, cfg.dbtzmodifier);
 		if (!db_exec(sql)) {
 			db_rollbacktransaction();
 			return 0;
@@ -960,7 +966,7 @@ int db_removeoldentries(void)
 		if (debug) {
 			printf("db: day cleanup (%dd)\n", cfg.dailydays);
 		}
-		sqlite3_snprintf(256, sql, "delete from day where date < date('now', '-%d days', 'localtime')", cfg.dailydays);
+		sqlite3_snprintf(256, sql, "delete from day where date < date('now', '-%d days'%s)", cfg.dailydays, cfg.dbtzmodifier);
 		if (!db_exec(sql)) {
 			db_rollbacktransaction();
 			return 0;
@@ -971,7 +977,7 @@ int db_removeoldentries(void)
 		if (debug) {
 			printf("db: month cleanup (%dm)\n", cfg.monthlymonths);
 		}
-		sqlite3_snprintf(256, sql, "delete from month where date < date('now', '-%d months', 'localtime')", cfg.monthlymonths);
+		sqlite3_snprintf(256, sql, "delete from month where date < date('now', '-%d months'%s)", cfg.monthlymonths, cfg.dbtzmodifier);
 		if (!db_exec(sql)) {
 			db_rollbacktransaction();
 			return 0;
@@ -982,7 +988,7 @@ int db_removeoldentries(void)
 		if (debug) {
 			printf("db: year cleanup (%dy)\n", cfg.yearlyyears);
 		}
-		sqlite3_snprintf(256, sql, "delete from year where date < date('now', '-%d years', 'localtime')", cfg.yearlyyears);
+		sqlite3_snprintf(256, sql, "delete from year where date < date('now', '-%d years'%s)", cfg.yearlyyears, cfg.dbtzmodifier);
 		if (!db_exec(sql)) {
 			db_rollbacktransaction();
 			return 0;
@@ -1021,7 +1027,7 @@ int db_removeoldentries_top(void)
 			continue;
 		}
 
-		sqlite3_snprintf(512, sql, "delete from top where id in ( select id from top where interface=%" PRId64 " and date!=date('now', 'localtime') order by rx+tx desc limit -1 offset %d )", (int64_t)ifaceid, cfg.topdayentries);
+		sqlite3_snprintf(512, sql, "delete from top where id in ( select id from top where interface=%" PRId64 " and date!=date('now'%s) order by rx+tx desc limit -1 offset %d )", (int64_t)ifaceid, cfg.dbtzmodifier, cfg.topdayentries);
 
 		if (!db_exec(sql)) {
 			errorcount++;

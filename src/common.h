@@ -71,6 +71,9 @@ and most can be changed later from the config file.
 /* database file name */
 #define DATABASEFILE "vnstat.db"
 
+/* modifier used for sqlite date and time functions */
+#define DATABASELOCALTIMEMODIFIER ", 'localtime'"
+
 /* on which day should months change */
 #define MONTHROTATE 1
 #define MONTHROTATEYEARS 0
@@ -237,6 +240,7 @@ and most can be changed later from the config file.
 #define WALDBCHECKPOINTINTERVALMINS 240
 #define SLOWDBWARNLIMIT 4.0 // needs to be less than DBREADTIMEOUTSECS
 #define DBSYNCHRONOUS -1
+#define USEUTC 0
 
 /* database read timeout */
 #define DBREADTIMEOUTSECS 5
@@ -293,13 +297,13 @@ typedef struct {
 	char dformat[64], mformat[64], tformat[64], hformat[64];
 	char iface[32];
 	char locale[32];
-	char dbdir[512];
+	char dbdir[512], dbtzmodifier[14];
 	char rxchar[2], txchar[2], rxhourchar[2], txhourchar[2];
 	char cbg[8], cedge[8], cheader[8], cheadertitle[8], cheaderdate[8], ctext[8];
 	char cline[8], clinel[8], cvnstat[8], crx[8], crxd[8], ctx[8], ctxd[8];
 	int32_t unitmode, rateunitmode, rateunit, bvar, qmode, sampletime, hourlyrate, summaryrate;
 	int32_t monthrotate, monthrotateyears, maxbw, spacecheck, trafficlessentries, transbg, ostyle;
-	int32_t defaultdecimals, hourlydecimals, hourlystyle, is64bit, waldb, dbsynchronous, imagescale;
+	int32_t defaultdecimals, hourlydecimals, hourlystyle, is64bit, waldb, dbsynchronous, useutc, imagescale;
 	int32_t largefonts, linespaceadjust, estimatebarvisible, estimatestyle, barshowsrate, fivegresultcount;
 	int32_t fivegheight, summarygraph;
 	char cfgfile[512], logfile[512], pidfile[512];
