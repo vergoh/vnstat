@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
 	timeused_debug("daemon_startup", 1);
 
 	/* load config if available */
-	if (!loadcfg(s.cfgfile)) {
+	if (!loadcfg(s.cfgfile, CT_Daemon)) {
 		return 1;
 	}
 	if (!ibwloadcfg(s.cfgfile)) {

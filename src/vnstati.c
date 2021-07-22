@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
 	}
 
 	/* load config if available */
-	if (!loadcfg(p.cfgfile)) {
+	if (!loadcfg(p.cfgfile, CT_Image)) {
 		return 1;
 	}
 	cfg.qmode = 0;

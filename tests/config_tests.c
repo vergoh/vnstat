@@ -5,10 +5,31 @@
 #include "cfgoutput.h"
 #include "ibw.h"
 
-START_TEST(validatecfg_default)
+START_TEST(validatecfg_default_all)
 {
 	defaultcfg();
-	validatecfg();
+	validatecfg(CT_All);
+}
+END_TEST
+
+START_TEST(validatecfg_default_cli)
+{
+	defaultcfg();
+	validatecfg(CT_CLI);
+}
+END_TEST
+
+START_TEST(validatecfg_default_daemon)
+{
+	defaultcfg();
+	validatecfg(CT_Daemon);
+}
+END_TEST
+
+START_TEST(validatecfg_default_image)
+{
+	defaultcfg();
+	validatecfg(CT_Image);
 }
 END_TEST
 
@@ -18,7 +39,7 @@ START_TEST(validatecfg_does_not_modify_valid_changes)
 	ck_assert_int_eq(cfg.listhours, LISTHOURS);
 	cfg.listhours = 1;
 	ck_assert_int_ne(cfg.listhours, LISTHOURS);
-	validatecfg();
+	validatecfg(CT_All);
 	ck_assert_int_eq(cfg.listhours, 1);
 }
 END_TEST
@@ -30,7 +51,7 @@ START_TEST(validatecfg_restores_invalid_values_back_to_default)
 	cfg.savestatus = 2;
 	cfg.listhours = -1;
 	suppress_output();
-	validatecfg();
+	validatecfg(CT_All);
 	ck_assert_int_eq(cfg.unitmode, UNITMODE);
 	ck_assert_int_eq(cfg.savestatus, SAVESTATUS);
 	ck_assert_int_eq(cfg.listhours, LISTHOURS);
@@ -45,7 +66,7 @@ START_TEST(validatecfg_can_tune_updateinterval_to_avoid_rollover_issues)
 	cfg.maxbw = 1000;
 	cfg.bwdetection = 1;
 	suppress_output();
-	validatecfg();
+	validatecfg(CT_Daemon);
 	ck_assert_int_ne(cfg.updateinterval, 60);
 	ck_assert_int_eq(cfg.updateinterval, UPDATEINTERVAL);
 }
@@ -59,7 +80,7 @@ START_TEST(validatecfg_has_fallback_for_updateinterval_for_very_fast_interfaces)
 	cfg.maxbw = 2000;
 	cfg.bwdetection = 1;
 	suppress_output();
-	validatecfg();
+	validatecfg(CT_Daemon);
 	ck_assert_int_ne(cfg.updateinterval, 60);
 	ck_assert_int_ne(cfg.updateinterval, UPDATEINTERVAL);
 	ck_assert_int_eq(cfg.updateinterval, (UPDATEINTERVAL / 2));
@@ -76,28 +97,28 @@ START_TEST(validatecfg_can_change_estimatestyle_for_images_depending_on_settings
 	cfg.estimatestyle = 1;
 	suppress_output();
 
-	validatecfg();
+	validatecfg(CT_Image);
 	ck_assert_int_eq(cfg.barshowsrate, 0);
 	ck_assert_int_eq(cfg.estimatebarvisible, 0);
 	ck_assert_int_eq(cfg.estimatestyle, 1);
 
 	cfg.barshowsrate = 1;
 	cfg.estimatebarvisible = 0;
-	validatecfg();
+	validatecfg(CT_Image);
 	ck_assert_int_eq(cfg.barshowsrate, 1);
 	ck_assert_int_eq(cfg.estimatebarvisible, 0);
 	ck_assert_int_eq(cfg.estimatestyle, 1);
 
 	cfg.barshowsrate = 0;
 	cfg.estimatebarvisible = 1;
-	validatecfg();
+	validatecfg(CT_Image);
 	ck_assert_int_eq(cfg.barshowsrate, 0);
 	ck_assert_int_eq(cfg.estimatebarvisible, 1);
 	ck_assert_int_eq(cfg.estimatestyle, 1);
 
 	cfg.barshowsrate = 1;
 	cfg.estimatebarvisible = 1;
-	validatecfg();
+	validatecfg(CT_Image);
 	ck_assert_int_eq(cfg.barshowsrate, 1);
 	ck_assert_int_eq(cfg.estimatebarvisible, 1);
 	ck_assert_int_eq(cfg.estimatestyle, 0);
@@ -111,7 +132,7 @@ START_TEST(validatecfg_limits_5_minute_result_count_to_available_data_amount)
 	cfg.fiveminutehours = 10;
 	cfg.fivegresultcount = 9001;
 	suppress_output();
-	validatecfg();
+	validatecfg(CT_Image);
 	ck_assert_int_eq(cfg.fiveminutehours, 10);
 	ck_assert_int_eq(cfg.fivegresultcount, 120);
 }
@@ -124,7 +145,7 @@ START_TEST(validatecfg_limits_5_minute_result_count_to_not_be_too_much)
 	cfg.fiveminutehours = 9001;
 	cfg.fivegresultcount = 12345;
 	suppress_output();
-	validatecfg();
+	validatecfg(CT_Image);
 	ck_assert_int_eq(cfg.fiveminutehours, 9001);
 	ck_assert_int_eq(cfg.fivegresultcount, FIVEGRESULTCOUNT);
 }
@@ -137,7 +158,7 @@ START_TEST(validatecfg_does_not_touch_5_minute_result_count_if_data_is_not_being
 	cfg.fiveminutehours = 0;
 	cfg.fivegresultcount = 1234;
 	suppress_output();
-	validatecfg();
+	validatecfg(CT_Image);
 	ck_assert_int_eq(cfg.fiveminutehours, 0);
 	ck_assert_int_eq(cfg.fivegresultcount, 1234);
 }
@@ -150,7 +171,7 @@ START_TEST(validatecfg_is_not_stupid_with_5_minute_result_count_if_there_is_no_d
 	cfg.fiveminutehours = -1;
 	cfg.fivegresultcount = 1242;
 	suppress_output();
-	validatecfg();
+	validatecfg(CT_Image);
 	ck_assert_int_eq(cfg.fiveminutehours, -1);
 	ck_assert_int_eq(cfg.fivegresultcount, 1242);
 }
@@ -179,26 +200,26 @@ END_TEST
 
 START_TEST(loadcfg_included_default)
 {
-	ck_assert_int_eq(loadcfg(CFGFILE), 1);
+	ck_assert_int_eq(loadcfg(CFGFILE, CT_All), 1);
 }
 END_TEST
 
 START_TEST(loadcfg_no_file)
 {
-	ck_assert_int_eq(loadcfg(""), 1);
+	ck_assert_int_eq(loadcfg("", CT_All), 1);
 }
 END_TEST
 
 START_TEST(loadcfg_nonexistent_file)
 {
 	suppress_output();
-	ck_assert_int_eq(loadcfg("_nosuchfile_"), 0);
+	ck_assert_int_eq(loadcfg("_nosuchfile_", CT_All), 0);
 }
 END_TEST
 
 START_TEST(loadcfg_not_a_cfgfile)
 {
-	ck_assert_int_eq(loadcfg("Makefile"), 1);
+	ck_assert_int_eq(loadcfg("Makefile", CT_All), 1);
 }
 END_TEST
 
@@ -252,7 +273,7 @@ START_TEST(ibwget_from_config)
 {
 	int ret;
 	uint32_t limit;
-	ck_assert_int_eq(loadcfg(CFGFILE), 1);
+	ck_assert_int_eq(loadcfg(CFGFILE, CT_All), 1);
 	ck_assert_int_eq(ibwloadcfg(CFGFILE), 1);
 	cfg.maxbw = 10;
 	ret = ibwget("ethnone", &limit);
@@ -623,7 +644,10 @@ void add_config_tests(Suite *s)
 	TCase *tc_config = tcase_create("Config");
 	tcase_add_checked_fixture(tc_config, setup, teardown);
 	tcase_add_unchecked_fixture(tc_config, setup, teardown);
-	tcase_add_test(tc_config, validatecfg_default);
+	tcase_add_test(tc_config, validatecfg_default_all);
+	tcase_add_test(tc_config, validatecfg_default_cli);
+	tcase_add_test(tc_config, validatecfg_default_daemon);
+	tcase_add_test(tc_config, validatecfg_default_image);
 	tcase_add_test(tc_config, validatecfg_does_not_modify_valid_changes);
 	tcase_add_test(tc_config, validatecfg_restores_invalid_values_back_to_default);
 	tcase_add_test(tc_config, validatecfg_can_tune_updateinterval_to_avoid_rollover_issues);

@@ -747,7 +747,7 @@ void handleintsignals(DSTATE *s)
 			s->dbifcount = 0;
 			ibwflush();
 			db_close();
-			loadcfg(s->cfgfile);
+			loadcfg(s->cfgfile, CT_Daemon);
 			ibwloadcfg(s->cfgfile);
 			if (!db_open_rw(1)) {
 				snprintf(errorstring, 1024, "Opening database after SIGHUP failed (%s), exiting.", strerror(errno));

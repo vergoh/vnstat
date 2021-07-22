@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 	}
 
 	/* load config if available */
-	if (!loadcfg(p.cfgfile)) {
+	if (!loadcfg(p.cfgfile, CT_CLI)) {
 		return 1;
 	}
 	if (!ibwloadcfg(p.cfgfile)) {

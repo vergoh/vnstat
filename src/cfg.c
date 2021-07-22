@@ -1,7 +1,7 @@
 #include "common.h"
 #include "cfg.h"
 
-int loadcfg(const char *cfgfile)
+int loadcfg(const char *cfgfile, const ConfigType type)
 {
 	FILE *fd;
 	int i;
@@ -150,7 +150,7 @@ int loadcfg(const char *cfgfile)
 	fclose(fd);
 
 	/* validate config */
-	validatecfg();
+	validatecfg(type);
 
 	return 1;
 }
@@ -177,7 +177,7 @@ void validateint(const char *cfgname, int32_t *cfgptr, const int32_t defaultvalu
 	}
 }
 
-void validatecfg(void)
+void validatecfg(const ConfigType type)
 {
 	uint32_t rolloversecs;
 	const char *invalidvalue = "Invalid value for";
@@ -207,17 +207,19 @@ void validatecfg(void)
 	validatebool("DatabaseWriteAheadLogging", &cfg.waldb, WALDB);
 	validateint("DatabaseSynchronous", &cfg.dbsynchronous, DBSYNCHRONOUS, -1, 3);
 	validatebool("UseUTC", &cfg.useutc, USEUTC);
-	validatebool("TransparentBg", &cfg.transbg, TRANSBG);
-	validatebool("LargeFonts", &cfg.largefonts, LARGEFONTS);
-	validateint("LineSpacingAdjustment", &cfg.linespaceadjust, LINESPACEADJUST, -5, 10);
-	validateint("ImageScale", &cfg.imagescale, IMAGESCALE, 50, 500);
-	validateint("5MinuteGraphResultCount", &cfg.fivegresultcount, FIVEGRESULTCOUNT, FIVEGMINRESULTCOUNT, 2000);
-	validateint("5MinuteGraphHeight", &cfg.fivegheight, FIVEGHEIGHT, FIVEGMINHEIGHT, 2000);
-	validatebool("SummaryGraph", &cfg.summarygraph, SUMMARYGRAPH);
-	validateint("EstimateStyle", &cfg.estimatestyle, ESTIMATESTYLE, 0, 2);
-	validatebool("BarColumnShowsRate", &cfg.barshowsrate, BARSHOWSRATE);
-	validatebool("HourlyRate", &cfg.hourlyrate, HOURLYRATE);
-	validatebool("SummaryRate", &cfg.summaryrate, SUMMARYRATE);
+	if (type == CT_Image || type == CT_All) {
+		validatebool("TransparentBg", &cfg.transbg, TRANSBG);
+		validatebool("LargeFonts", &cfg.largefonts, LARGEFONTS);
+		validateint("LineSpacingAdjustment", &cfg.linespaceadjust, LINESPACEADJUST, -5, 10);
+		validateint("ImageScale", &cfg.imagescale, IMAGESCALE, 50, 500);
+		validateint("5MinuteGraphResultCount", &cfg.fivegresultcount, FIVEGRESULTCOUNT, FIVEGMINRESULTCOUNT, 2000);
+		validateint("5MinuteGraphHeight", &cfg.fivegheight, FIVEGHEIGHT, FIVEGMINHEIGHT, 2000);
+		validatebool("SummaryGraph", &cfg.summarygraph, SUMMARYGRAPH);
+		validateint("EstimateStyle", &cfg.estimatestyle, ESTIMATESTYLE, 0, 2);
+		validatebool("BarColumnShowsRate", &cfg.barshowsrate, BARSHOWSRATE);
+		validatebool("HourlyRate", &cfg.hourlyrate, HOURLYRATE);
+		validatebool("SummaryRate", &cfg.summaryrate, SUMMARYRATE);
+	}
 	validatebool("TrafficlessEntries", &cfg.trafficlessentries, TRAFFICLESSENTRIES);
 	validateint("List5Mins", &cfg.listfivemins, LISTFIVEMINS, 0, 0);
 	validateint("ListHours", &cfg.listhours, LISTHOURS, 0, 0);
@@ -259,63 +261,66 @@ void validatecfg(void)
 		printe(PT_Config);
 	}
 
-	if (cfg.updateinterval < cfg.pollinterval || cfg.updateinterval > 300) {
-		if (cfg.pollinterval > UPDATEINTERVAL) {
-			cfg.updateinterval = cfg.pollinterval;
-		} else {
-			cfg.updateinterval = UPDATEINTERVAL;
-		}
-		snprintf(errorstring, 1024, "%s UpdateInterval, %s \"%d\".", invalidvalue, resettingto, cfg.updateinterval);
-		printe(PT_Config);
-	}
-
-	if ((cfg.saveinterval * 60) < cfg.updateinterval || cfg.saveinterval > 60) {
-		if (cfg.updateinterval > (SAVEINTERVAL * 60)) {
-			cfg.saveinterval = cfg.updateinterval;
-		} else {
-			cfg.saveinterval = SAVEINTERVAL;
-		}
-		snprintf(errorstring, 1024, "%s SaveInterval, %s \"%d\".", invalidvalue, resettingto, cfg.saveinterval);
-		printe(PT_Config);
-	}
-
-	if (cfg.offsaveinterval < cfg.saveinterval || cfg.offsaveinterval > 60) {
-		if (cfg.saveinterval > OFFSAVEINTERVAL) {
-			cfg.offsaveinterval = cfg.saveinterval;
-		} else {
-			cfg.offsaveinterval = OFFSAVEINTERVAL;
-		}
-		snprintf(errorstring, 1024, "%s OfflineSaveInterval, %s \"%d\".", invalidvalue, resettingto, cfg.offsaveinterval);
-		printe(PT_Config);
-	}
-
-	/* enforce update interval to be short enough that 32-bit interface counter rollover can be detected */
-	/* 1.02 is the same 2% safety buffer as used in processifinfo() in daemon.c */
-	/* noexit check results in warning being shown only when the daemon is started */
-	if (noexit && cfg.maxbw > 0) {
-		rolloversecs = (uint32_t)((float)MAX32 / ((float)cfg.maxbw * 1024 * 1024 * (float)1.02 / 8));
-		if (rolloversecs <= (uint32_t)cfg.updateinterval) {
-			cfg.updateinterval = UPDATEINTERVAL;
-			if (rolloversecs <= (uint32_t)cfg.updateinterval) {
-				cfg.updateinterval /= 2;
+	if (type == CT_Daemon || type == CT_All) {
+		if (cfg.updateinterval < cfg.pollinterval || cfg.updateinterval > 300) {
+			if (cfg.pollinterval > UPDATEINTERVAL) {
+				cfg.updateinterval = cfg.pollinterval;
+			} else {
+				cfg.updateinterval = UPDATEINTERVAL;
 			}
-			snprintf(errorstring, 1024, "UpdateInterval has been reset to %d seconds in order to ensure correct counter rollover detection at %d Mbit.", cfg.updateinterval, cfg.maxbw);
+			snprintf(errorstring, 1024, "%s UpdateInterval, %s \"%d\".", invalidvalue, resettingto, cfg.updateinterval);
 			printe(PT_Config);
+		}
+
+		if ((cfg.saveinterval * 60) < cfg.updateinterval || cfg.saveinterval > 60) {
+			if (cfg.updateinterval > (SAVEINTERVAL * 60)) {
+				cfg.saveinterval = cfg.updateinterval;
+			} else {
+				cfg.saveinterval = SAVEINTERVAL;
+			}
+			snprintf(errorstring, 1024, "%s SaveInterval, %s \"%d\".", invalidvalue, resettingto, cfg.saveinterval);
+			printe(PT_Config);
+		}
+
+		if (cfg.offsaveinterval < cfg.saveinterval || cfg.offsaveinterval > 60) {
+			if (cfg.saveinterval > OFFSAVEINTERVAL) {
+				cfg.offsaveinterval = cfg.saveinterval;
+			} else {
+				cfg.offsaveinterval = OFFSAVEINTERVAL;
+			}
+			snprintf(errorstring, 1024, "%s OfflineSaveInterval, %s \"%d\".", invalidvalue, resettingto, cfg.offsaveinterval);
+			printe(PT_Config);
+		}
+
+		/* enforce update interval to be short enough that 32-bit interface counter rollover can be detected */
+		/* 1.02 is the same 2% safety buffer as used in processifinfo() in daemon.c */
+		if (cfg.maxbw > 0) {
+			rolloversecs = (uint32_t)((float)MAX32 / ((float)cfg.maxbw * 1024 * 1024 * (float)1.02 / 8));
+			if (rolloversecs <= (uint32_t)cfg.updateinterval) {
+				cfg.updateinterval = UPDATEINTERVAL;
+				if (rolloversecs <= (uint32_t)cfg.updateinterval) {
+					cfg.updateinterval /= 2;
+				}
+				snprintf(errorstring, 1024, "UpdateInterval has been reset to %d seconds in order to ensure correct counter rollover detection at %d Mbit.", cfg.updateinterval, cfg.maxbw);
+				printe(PT_Config);
+			}
 		}
 	}
 
 	/* affects only image output */
-	if (cfg.barshowsrate && cfg.estimatebarvisible) {
-		cfg.estimatestyle = 0;
-		if (debug) {
-			printf("BarColumnShowsRate and EstimateBarVisible both enabled -> EstimateStyle set to 0\n");
+	if (type == CT_Image || type == CT_All) {
+		if (cfg.barshowsrate && cfg.estimatebarvisible) {
+			cfg.estimatestyle = 0;
+			if (debug) {
+				printf("BarColumnShowsRate and EstimateBarVisible both enabled -> EstimateStyle set to 0\n");
+			}
 		}
-	}
 
-	if (cfg.fiveminutehours > 0 && cfg.fivegresultcount > cfg.fiveminutehours * 12) {
-		cfg.fivegresultcount = cfg.fiveminutehours * 12;
-		snprintf(errorstring, 1024, "5MinuteGraphResultCount has been reset to %d due to request being larger than data retention configured with 5MinuteHours.", cfg.fivegresultcount);
-		printe(PT_Config);
+		if (cfg.fiveminutehours > 0 && cfg.fivegresultcount > cfg.fiveminutehours * 12) {
+			cfg.fivegresultcount = cfg.fiveminutehours * 12;
+			snprintf(errorstring, 1024, "5MinuteGraphResultCount has been reset to %d due to request being larger than data retention configured with 5MinuteHours.", cfg.fivegresultcount);
+			printe(PT_Config);
+		}
 	}
 }
 

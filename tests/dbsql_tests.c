@@ -184,7 +184,7 @@ START_TEST(db_addtraffic_can_add_traffic_and_interfaces_utc)
 
 	defaultcfg();
 	cfg.useutc = 1;
-	validatecfg();
+	validatecfg(CT_Daemon);
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -957,7 +957,7 @@ START_TEST(db_data_can_be_inserted_utc)
 
 	defaultcfg();
 	cfg.useutc = 1;
-	validatecfg();
+	validatecfg(CT_Daemon);
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -1008,7 +1008,7 @@ START_TEST(db_data_can_be_retrieved_utc)
 
 	defaultcfg();
 	cfg.useutc = 1;
-	validatecfg();
+	validatecfg(CT_Daemon);
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -2015,7 +2015,7 @@ START_TEST(db_addtraffic_without_monthrotate_utc)
 	defaultcfg();
 	cfg.monthrotate = 1;
 	cfg.useutc = 1;
-	validatecfg();
+	validatecfg(CT_Daemon);
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -2061,7 +2061,7 @@ START_TEST(db_addtraffic_with_monthrotate_utc)
 	defaultcfg();
 	cfg.monthrotate = 7;
 	cfg.useutc = 1;
-	validatecfg();
+	validatecfg(CT_Daemon);
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -2167,7 +2167,7 @@ START_TEST(db_get_date_generator_can_generate_dates_utc)
 {
 	defaultcfg();
 	cfg.useutc = 1;
-	validatecfg();
+	validatecfg(CT_Daemon);
 
 	ck_assert_ptr_ne(strstr(db_get_date_generator(0, 0, "foo"), "minutes"), NULL);
 	ck_assert_ptr_ne(strstr(db_get_date_generator(1, 0, "foo"), "strftime('%Y-%m-%d %H:00:00', foo)"), NULL);
@@ -2189,7 +2189,7 @@ START_TEST(db_get_date_generator_can_generate_dates_with_monthrotate_utc)
 {
 	defaultcfg();
 	cfg.useutc = 1;
-	validatecfg();
+	validatecfg(CT_Daemon);
 
 	cfg.monthrotate = 10;
 	cfg.monthrotateyears = 0;
