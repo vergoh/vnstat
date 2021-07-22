@@ -8,6 +8,10 @@
      higher traffic rate than other lines
    - Image output didn't correctly horizontally align the "no data available"
      message in 5 minute graph depending on the width of the image
+   - Image output related configuration warnings could get shown when image
+     output wasn't being used
+   - Warnings of mismatches between image output and data retention
+     configuration didn't provide relevant details for solving the issues
  - New
    - Add the possibility of specifying an interface without using the
      -i / --iface options (vnstat and vnstati)

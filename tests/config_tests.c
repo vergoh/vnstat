@@ -60,7 +60,6 @@ END_TEST
 
 START_TEST(validatecfg_can_tune_updateinterval_to_avoid_rollover_issues)
 {
-	noexit = 1;
 	defaultcfg();
 	cfg.updateinterval = 60;
 	cfg.maxbw = 1000;
@@ -74,7 +73,6 @@ END_TEST
 
 START_TEST(validatecfg_has_fallback_for_updateinterval_for_very_fast_interfaces)
 {
-	noexit = 1;
 	defaultcfg();
 	cfg.updateinterval = 60;
 	cfg.maxbw = 2000;
@@ -89,7 +87,6 @@ END_TEST
 
 START_TEST(validatecfg_can_change_estimatestyle_for_images_depending_on_settings)
 {
-	noexit = 1;
 	debug = 1;
 	defaultcfg();
 	cfg.barshowsrate = 0;
@@ -127,20 +124,30 @@ END_TEST
 
 START_TEST(validatecfg_limits_5_minute_result_count_to_available_data_amount)
 {
-	noexit = 1;
 	defaultcfg();
-	cfg.fiveminutehours = 10;
+	cfg.fiveminutehours = 26;
 	cfg.fivegresultcount = 9001;
 	suppress_output();
 	validatecfg(CT_Image);
-	ck_assert_int_eq(cfg.fiveminutehours, 10);
-	ck_assert_int_eq(cfg.fivegresultcount, 120);
+	ck_assert_int_eq(cfg.fiveminutehours, 26);
+	ck_assert_int_eq(cfg.fivegresultcount, 312);
+}
+END_TEST
+
+START_TEST(validatecfg_limits_5_minute_result_count_to_minimum_usable)
+{
+	defaultcfg();
+	cfg.fiveminutehours = 12;
+	cfg.fivegresultcount = 9001;
+	suppress_output();
+	validatecfg(CT_Image);
+	ck_assert_int_eq(cfg.fiveminutehours, 12);
+	ck_assert_int_eq(cfg.fivegresultcount, 288);
 }
 END_TEST
 
 START_TEST(validatecfg_limits_5_minute_result_count_to_not_be_too_much)
 {
-	noexit = 1;
 	defaultcfg();
 	cfg.fiveminutehours = 9001;
 	cfg.fivegresultcount = 12345;
@@ -153,7 +160,6 @@ END_TEST
 
 START_TEST(validatecfg_does_not_touch_5_minute_result_count_if_data_is_not_being_created)
 {
-	noexit = 1;
 	defaultcfg();
 	cfg.fiveminutehours = 0;
 	cfg.fivegresultcount = 1234;
@@ -166,7 +172,6 @@ END_TEST
 
 START_TEST(validatecfg_is_not_stupid_with_5_minute_result_count_if_there_is_no_data_limit)
 {
-	noexit = 1;
 	defaultcfg();
 	cfg.fiveminutehours = -1;
 	cfg.fivegresultcount = 1242;
@@ -654,6 +659,7 @@ void add_config_tests(Suite *s)
 	tcase_add_test(tc_config, validatecfg_has_fallback_for_updateinterval_for_very_fast_interfaces);
 	tcase_add_test(tc_config, validatecfg_can_change_estimatestyle_for_images_depending_on_settings);
 	tcase_add_test(tc_config, validatecfg_limits_5_minute_result_count_to_available_data_amount);
+	tcase_add_test(tc_config, validatecfg_limits_5_minute_result_count_to_minimum_usable);
 	tcase_add_test(tc_config, validatecfg_limits_5_minute_result_count_to_not_be_too_much);
 	tcase_add_test(tc_config, validatecfg_does_not_touch_5_minute_result_count_if_data_is_not_being_created);
 	tcase_add_test(tc_config, validatecfg_is_not_stupid_with_5_minute_result_count_if_there_is_no_data_limit);

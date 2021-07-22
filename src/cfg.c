@@ -164,15 +164,15 @@ void validateint(const char *cfgname, int32_t *cfgptr, const int32_t defaultvalu
 {
 	if (maxvalue > minvalue) {
 		if (*cfgptr < minvalue || *cfgptr > maxvalue) {
-			*cfgptr = defaultvalue;
-			snprintf(errorstring, 1024, "Invalid value for %s, resetting to \"%d\".", cfgname, *cfgptr);
+			snprintf(errorstring, 1024, "Invalid value \"%d\" for %s. Value needs to be between %d and %d. Using default value %d.", *cfgptr, cfgname, minvalue, maxvalue, defaultvalue);
 			printe(PT_Config);
+			*cfgptr = defaultvalue;
 		}
 	} else {
 		if (*cfgptr < minvalue) {
-			*cfgptr = defaultvalue;
-			snprintf(errorstring, 1024, "Invalid value for %s, resetting to \"%d\".", cfgname, *cfgptr);
+			snprintf(errorstring, 1024, "Invalid value \"%d\" for %s. Value needs to be at least %d. Using default value %d.", *cfgptr, cfgname, minvalue, defaultvalue);
 			printe(PT_Config);
+			*cfgptr = defaultvalue;
 		}
 	}
 }
@@ -181,8 +181,8 @@ void validatecfg(const ConfigType type)
 {
 	uint32_t rolloversecs;
 	const char *invalidvalue = "Invalid value for";
-	const char *resettingto = "resetting to";
-	const char *noslashstart = "doesn't start with \"/\", resetting to default.";
+	const char *resettingto = "using default value";
+	const char *noslashstart = "doesn't start with \"/\", using default value instead.";
 
 	validateint("UnitMode", &cfg.unitmode, UNITMODE, 0, 2);
 	validatebool("RateUnitMode", &cfg.rateunitmode, RATEUNITMODE);
@@ -268,7 +268,7 @@ void validatecfg(const ConfigType type)
 			} else {
 				cfg.updateinterval = UPDATEINTERVAL;
 			}
-			snprintf(errorstring, 1024, "%s UpdateInterval, %s \"%d\".", invalidvalue, resettingto, cfg.updateinterval);
+			snprintf(errorstring, 1024, "%s UpdateInterval, %s %d.", invalidvalue, resettingto, cfg.updateinterval);
 			printe(PT_Config);
 		}
 
@@ -278,7 +278,7 @@ void validatecfg(const ConfigType type)
 			} else {
 				cfg.saveinterval = SAVEINTERVAL;
 			}
-			snprintf(errorstring, 1024, "%s SaveInterval, %s \"%d\".", invalidvalue, resettingto, cfg.saveinterval);
+			snprintf(errorstring, 1024, "%s SaveInterval, %s %d.", invalidvalue, resettingto, cfg.saveinterval);
 			printe(PT_Config);
 		}
 
@@ -288,7 +288,7 @@ void validatecfg(const ConfigType type)
 			} else {
 				cfg.offsaveinterval = OFFSAVEINTERVAL;
 			}
-			snprintf(errorstring, 1024, "%s OfflineSaveInterval, %s \"%d\".", invalidvalue, resettingto, cfg.offsaveinterval);
+			snprintf(errorstring, 1024, "%s OfflineSaveInterval, %s %d.", invalidvalue, resettingto, cfg.offsaveinterval);
 			printe(PT_Config);
 		}
 
@@ -317,8 +317,13 @@ void validatecfg(const ConfigType type)
 		}
 
 		if (cfg.fiveminutehours > 0 && cfg.fivegresultcount > cfg.fiveminutehours * 12) {
-			cfg.fivegresultcount = cfg.fiveminutehours * 12;
-			snprintf(errorstring, 1024, "5MinuteGraphResultCount has been reset to %d due to request being larger than data retention configured with 5MinuteHours.", cfg.fivegresultcount);
+			if (cfg.fiveminutehours * 12 < FIVEGMINRESULTCOUNT) {
+				snprintf(errorstring, 1024, "Value \"%d\" for 5MinuteHours is too small for 5MinuteGraphResultCount with value \"%d\" (smallest supported value: %d). Value for 5MinuteHours needs to be at least %d if 5MinuteGraphResultCount is set to %d.", cfg.fiveminutehours, cfg.fivegresultcount, FIVEGMINRESULTCOUNT, FIVEGMINRESULTCOUNT / 12, FIVEGMINRESULTCOUNT);
+				cfg.fivegresultcount = FIVEGMINRESULTCOUNT;
+			} else {
+				snprintf(errorstring, 1024, "5MinuteGraphResultCount has been adjusted to %d because requested \"%d\" requires more data than can be available with value %d for 5MinuteHours.", cfg.fiveminutehours * 12, cfg.fivegresultcount, cfg.fiveminutehours);
+				cfg.fivegresultcount = cfg.fiveminutehours * 12;
+			}
 			printe(PT_Config);
 		}
 	}
