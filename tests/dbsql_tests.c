@@ -9,7 +9,6 @@ START_TEST(db_close_does_no_harm_when_db_is_already_closed)
 {
 	int ret;
 
-	defaultcfg();
 
 	ret = db_close();
 	ck_assert_int_eq(ret, 1);
@@ -20,7 +19,6 @@ START_TEST(db_open_rw_can_create_database_if_file_does_not_exist)
 {
 	int ret;
 
-	defaultcfg();
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -33,7 +31,6 @@ START_TEST(db_open_ro_cannot_create_a_database)
 {
 	int ret;
 
-	defaultcfg();
 	suppress_output();
 
 	ret = db_open_ro();
@@ -43,7 +40,6 @@ END_TEST
 
 START_TEST(db_getinfo_fails_with_no_open_db)
 {
-	defaultcfg();
 	suppress_output();
 
 	ck_assert_int_eq(strlen(db_getinfo("foofoo")), 0);
@@ -53,8 +49,6 @@ END_TEST
 START_TEST(db_getinfo_fails_with_nonexisting_name)
 {
 	int ret;
-
-	defaultcfg();
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -70,8 +64,6 @@ START_TEST(db_getinfo_can_get_dbversion)
 {
 	int ret;
 
-	defaultcfg();
-
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
@@ -84,7 +76,6 @@ END_TEST
 
 START_TEST(db_setinfo_fails_with_no_open_db)
 {
-	defaultcfg();
 	suppress_output();
 
 	ck_assert_int_eq(db_setinfo("foo", "bar", 0), 0);
@@ -95,8 +86,6 @@ END_TEST
 START_TEST(db_setinfo_can_set_infos)
 {
 	int ret;
-
-	defaultcfg();
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -112,8 +101,6 @@ END_TEST
 START_TEST(db_setinfo_can_update_infos)
 {
 	int ret;
-
-	defaultcfg();
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -136,8 +123,6 @@ START_TEST(db_setinfo_can_not_update_nonexisting_name)
 {
 	int ret;
 
-	defaultcfg();
-
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
@@ -153,7 +138,6 @@ END_TEST
 
 START_TEST(db_addtraffic_with_no_traffic_does_nothing)
 {
-	defaultcfg();
 	suppress_output();
 
 	ck_assert_int_eq(db_addtraffic("eth0", 0, 0), 0);
@@ -163,8 +147,6 @@ END_TEST
 START_TEST(db_addtraffic_can_add_traffic_and_interfaces)
 {
 	int ret;
-
-	defaultcfg();
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -182,7 +164,6 @@ START_TEST(db_addtraffic_can_add_traffic_and_interfaces_utc)
 {
 	int ret;
 
-	defaultcfg();
 	cfg.useutc = 1;
 	validatecfg(CT_Daemon);
 
@@ -202,8 +183,6 @@ START_TEST(db_addtraffic_dated_does_not_touch_updated_time)
 {
 	int ret;
 	interfaceinfo info;
-
-	defaultcfg();
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -258,7 +237,6 @@ END_TEST
 
 START_TEST(db_setactive_fails_with_no_open_db)
 {
-	defaultcfg();
 	suppress_output();
 
 	ck_assert_int_eq(db_setactive("eth0", 0), 0);
@@ -269,8 +247,6 @@ END_TEST
 START_TEST(db_setactive_fails_if_interface_does_not_exist_in_database)
 {
 	int ret;
-
-	defaultcfg();
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -286,8 +262,6 @@ END_TEST
 START_TEST(db_setactive_can_change_interface_activity_status)
 {
 	int ret;
-
-	defaultcfg();
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -307,7 +281,6 @@ END_TEST
 
 START_TEST(db_setalias_fails_with_no_open_db)
 {
-	defaultcfg();
 	suppress_output();
 
 	ck_assert_int_eq(db_setalias("eth0", "The Internet"), 0);
@@ -317,8 +290,6 @@ END_TEST
 START_TEST(db_setalias_fails_if_interface_does_not_exist_in_database)
 {
 	int ret;
-
-	defaultcfg();
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -333,8 +304,6 @@ END_TEST
 START_TEST(db_setalias_can_change_interface_alias)
 {
 	int ret;
-
-	defaultcfg();
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -352,7 +321,6 @@ END_TEST
 
 START_TEST(db_setupdated_fails_with_no_open_db)
 {
-	defaultcfg();
 	suppress_output();
 
 	ck_assert_int_eq(db_setupdated("eth0", 123456), 0);
@@ -362,8 +330,6 @@ END_TEST
 START_TEST(db_setupdated_fails_if_interface_does_not_exist_in_database)
 {
 	int ret;
-
-	defaultcfg();
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -378,8 +344,6 @@ END_TEST
 START_TEST(db_setupdated_can_change_updated)
 {
 	int ret;
-
-	defaultcfg();
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -396,7 +360,6 @@ START_TEST(db_addinterface_fails_with_no_open_db)
 {
 	int ret;
 
-	defaultcfg();
 	suppress_output();
 
 	ret = db_addinterface("eth0");
@@ -407,8 +370,6 @@ END_TEST
 START_TEST(db_addinterface_can_add_interfaces)
 {
 	int ret;
-
-	defaultcfg();
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -427,7 +388,6 @@ START_TEST(db_addinterface_can_not_add_same_interface_twice)
 {
 	int ret;
 
-	defaultcfg();
 	suppress_output();
 
 	ret = db_open_rw(1);
@@ -451,8 +411,6 @@ START_TEST(db_removeinterface_knows_if_interface_exists)
 {
 	int ret;
 
-	defaultcfg();
-
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
@@ -471,8 +429,6 @@ END_TEST
 START_TEST(db_removeinterface_can_remove_interfaces)
 {
 	int ret;
-
-	defaultcfg();
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -512,8 +468,6 @@ START_TEST(db_renameinterface_knows_if_interface_exists)
 {
 	int ret;
 
-	defaultcfg();
-
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
@@ -532,8 +486,6 @@ END_TEST
 START_TEST(db_renameinterface_can_rename_interfaces)
 {
 	int ret;
-
-	defaultcfg();
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -579,7 +531,6 @@ START_TEST(db_getinterfacecount_counts_interfaces)
 {
 	int ret;
 
-	defaultcfg();
 	suppress_output();
 
 	ret = db_open_rw(1);
@@ -614,8 +565,6 @@ END_TEST
 START_TEST(db_getinterfacecountbyname_counts_interfaces)
 {
 	int ret;
-
-	defaultcfg();
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -663,8 +612,6 @@ START_TEST(db_getcounters_with_no_interface)
 	int ret;
 	uint64_t rx, tx;
 
-	defaultcfg();
-
 	rx = tx = 1;
 
 	ret = db_open_rw(1);
@@ -684,8 +631,6 @@ START_TEST(db_setcounters_with_no_interface)
 {
 	int ret;
 	uint64_t rx, tx;
-
-	defaultcfg();
 
 	rx = tx = 1;
 
@@ -710,8 +655,6 @@ START_TEST(db_interface_info_manipulation)
 	int ret;
 	uint64_t rx, tx, c;
 	interfaceinfo info;
-
-	defaultcfg();
 
 	rx = tx = 1;
 
@@ -785,8 +728,6 @@ START_TEST(db_getiflist_lists_interfaces)
 	int ret;
 	iflist *dbifl = NULL, *dbifl_i = NULL;
 
-	defaultcfg();
-
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 	ret = db_addinterface("a");
@@ -830,8 +771,6 @@ START_TEST(db_maintenance_does_not_fault)
 {
 	int ret;
 
-	defaultcfg();
-
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 	ret = db_addinterface("eth0");
@@ -854,8 +793,6 @@ START_TEST(db_data_can_be_inserted)
 {
 	int ret;
 	interfaceinfo info;
-
-	defaultcfg();
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -903,8 +840,6 @@ START_TEST(db_data_can_be_retrieved)
 	int ret;
 	dbdatalist *datalist = NULL, *datalist_iterator = NULL;
 	dbdatalistinfo datainfo;
-
-	defaultcfg();
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -955,7 +890,6 @@ START_TEST(db_data_can_be_inserted_utc)
 	int ret;
 	interfaceinfo info;
 
-	defaultcfg();
 	cfg.useutc = 1;
 	validatecfg(CT_Daemon);
 
@@ -1006,7 +940,6 @@ START_TEST(db_data_can_be_retrieved_utc)
 	dbdatalist *datalist = NULL, *datalist_iterator = NULL;
 	dbdatalistinfo datainfo;
 
-	defaultcfg();
 	cfg.useutc = 1;
 	validatecfg(CT_Daemon);
 
@@ -1072,7 +1005,6 @@ END_TEST
 START_TEST(db_validate_with_valid_version)
 {
 	int ret;
-	defaultcfg();
 	suppress_output();
 
 	ret = db_open_rw(1);
@@ -1094,7 +1026,6 @@ END_TEST
 START_TEST(db_validate_with_no_version)
 {
 	int ret;
-	defaultcfg();
 	suppress_output();
 
 	ret = db_open_rw(1);
@@ -1119,7 +1050,6 @@ END_TEST
 START_TEST(db_validate_with_low_version)
 {
 	int ret;
-	defaultcfg();
 	suppress_output();
 
 	ret = db_open_rw(1);
@@ -1144,7 +1074,6 @@ END_TEST
 START_TEST(db_validate_with_high_version)
 {
 	int ret;
-	defaultcfg();
 	suppress_output();
 
 	ret = db_open_rw(1);
@@ -1169,7 +1098,6 @@ END_TEST
 void range_test_month_setup(void)
 {
 	int ret, i;
-	defaultcfg();
 	cfg.monthrotate = 2; /* this should have no effect */
 
 	ret = db_open_rw(1);
@@ -1532,7 +1460,6 @@ END_TEST
 void range_test_hour_setup(void)
 {
 	int ret, i, j;
-	defaultcfg();
 	cfg.monthrotate = 2; /* this should have no effect */
 
 	ret = db_open_rw(1);
@@ -1870,7 +1797,6 @@ START_TEST(db_getdata_range_with_merged_interfaces)
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
 
-	defaultcfg();
 	cfg.monthrotate = 1;
 
 	ret = db_open_rw(1);
@@ -1918,7 +1844,6 @@ START_TEST(db_addtraffic_without_monthrotate)
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
 
-	defaultcfg();
 	cfg.monthrotate = 1;
 
 	ret = db_open_rw(1);
@@ -1962,7 +1887,6 @@ START_TEST(db_addtraffic_with_monthrotate)
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
 
-	defaultcfg();
 	cfg.monthrotate = 7;
 
 	ret = db_open_rw(1);
@@ -2012,7 +1936,6 @@ START_TEST(db_addtraffic_without_monthrotate_utc)
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
 
-	defaultcfg();
 	cfg.monthrotate = 1;
 	cfg.useutc = 1;
 	validatecfg(CT_Daemon);
@@ -2058,7 +1981,6 @@ START_TEST(db_addtraffic_with_monthrotate_utc)
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
 
-	defaultcfg();
 	cfg.monthrotate = 7;
 	cfg.useutc = 1;
 	validatecfg(CT_Daemon);
@@ -2105,7 +2027,6 @@ END_TEST
 
 START_TEST(db_get_date_generator_can_generate_dates)
 {
-	defaultcfg();
 
 	ck_assert_ptr_ne(strstr(db_get_date_generator(0, 0, "foo"), "minutes"), NULL);
 	ck_assert_ptr_ne(strstr(db_get_date_generator(1, 0, "foo"), "strftime('%Y-%m-%d %H:00:00', foo, 'localtime')"), NULL);
@@ -2125,7 +2046,6 @@ END_TEST
 
 START_TEST(db_get_date_generator_can_generate_dates_with_monthrotate)
 {
-	defaultcfg();
 
 	cfg.monthrotate = 10;
 	cfg.monthrotateyears = 0;
@@ -2165,7 +2085,6 @@ END_TEST
 
 START_TEST(db_get_date_generator_can_generate_dates_utc)
 {
-	defaultcfg();
 	cfg.useutc = 1;
 	validatecfg(CT_Daemon);
 
@@ -2187,7 +2106,6 @@ END_TEST
 
 START_TEST(db_get_date_generator_can_generate_dates_with_monthrotate_utc)
 {
-	defaultcfg();
 	cfg.useutc = 1;
 	validatecfg(CT_Daemon);
 
@@ -2309,7 +2227,6 @@ START_TEST(db_getinterfaceid_can_get_ids)
 {
 	int ret;
 
-	defaultcfg();
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -2360,7 +2277,6 @@ START_TEST(db_getinterfaceidin_can_get_in_groups)
 	int ret;
 	char *result;
 
-	defaultcfg();
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -2404,7 +2320,6 @@ START_TEST(db_getinterfaceidin_can_handle_error_situations)
 	int ret;
 	char *result;
 
-	defaultcfg();
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -2428,7 +2343,6 @@ START_TEST(db_getinterfaceinfo_can_handle_interface_merges)
 	int ret;
 	interfaceinfo info;
 
-	defaultcfg();
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -2480,7 +2394,6 @@ START_TEST(db_getinterfaceinfo_can_handle_invalid_input)
 	int ret;
 	interfaceinfo info;
 
-	defaultcfg();
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);

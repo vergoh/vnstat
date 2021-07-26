@@ -76,7 +76,6 @@ START_TEST(vnstat_parseargs_can_modify_settings)
 					"--end", "2001-01-01", NULL};
 	int argc = sizeof(argv) / sizeof(char *) - 1;
 
-	defaultcfg();
 	initparams(&p);
 	suppress_output();
 	parseargs(&p, argc, argv);
@@ -512,7 +511,6 @@ START_TEST(vnstat_parseargs_limit_changes_defaults)
 	char *argv[] = {"vnstat", "--limit", "1234", NULL};
 	int argc = sizeof(argv) / sizeof(char *) - 1;
 
-	defaultcfg();
 	initparams(&p);
 	suppress_output();
 	parseargs(&p, argc, argv);
@@ -533,7 +531,6 @@ START_TEST(vnstat_parseargs_limit_overrides)
 	char *argv[] = {"vnstat", "-d", "5", "--limit", "234", NULL};
 	int argc = sizeof(argv) / sizeof(char *) - 1;
 
-	defaultcfg();
 	initparams(&p);
 	suppress_output();
 	parseargs(&p, argc, argv);
@@ -554,7 +551,6 @@ START_TEST(vnstat_parseargs_limit_overrides_regardless_of_position)
 	char *argv[] = {"vnstat", "--limit", "345", "-d", "5", NULL};
 	int argc = sizeof(argv) / sizeof(char *) - 1;
 
-	defaultcfg();
 	initparams(&p);
 	suppress_output();
 	parseargs(&p, argc, argv);

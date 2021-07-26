@@ -95,7 +95,6 @@ END_TEST
 START_TEST(mosecs_return_values)
 {
 	time_t a, b;
-	defaultcfg();
 	cfg.monthrotate = 1;
 	ck_assert_int_eq(mosecs(0, 0), 1);
 
@@ -122,7 +121,6 @@ START_TEST(mosecs_does_not_change_tz)
 	tzset();
 	timezone_before_call = timezone;
 
-	defaultcfg();
 	ck_assert_int_eq(cfg.monthrotate, 1);
 	ck_assert_int_ne(mosecs(1, 2), 0);
 	ck_assert_int_ne(mosecs(1, 2), 1);
@@ -138,7 +136,6 @@ START_TEST(mosecs_does_not_change_struct_tm_pointer_content)
 	current = time(NULL);
 	stm = localtime(&current);
 
-	defaultcfg();
 	ck_assert_int_eq(cfg.monthrotate, 1);
 	ck_assert_int_eq(current, mktime(stm));
 	ck_assert_int_ne(mosecs(1, 2), 0);
@@ -348,7 +345,6 @@ START_TEST(timeused_debug_outputs_something_expected_when_debug_is_enabled)
 	char buffer[512];
 	memset(&buffer, '\0', sizeof(buffer));
 
-	defaultcfg();
 	debug = 1;
 	pipe = pipe_output();
 	/* the assumption here is that the next two steps
@@ -370,7 +366,6 @@ START_TEST(timeused_debug_does_not_output_anything_when_debug_is_disabled)
 	char buffer[512];
 	memset(&buffer, '\0', sizeof(buffer));
 
-	defaultcfg();
 	debug = 0;
 	pipe = pipe_output();
 	/* the assumption here is that the next two steps
@@ -391,7 +386,6 @@ START_TEST(timeused_tracks_used_time)
 	double used;
 	struct timespec ts;
 
-	defaultcfg();
 
 	used = timeused("quick_func", 1);
 	ck_assert(used == 0.0);

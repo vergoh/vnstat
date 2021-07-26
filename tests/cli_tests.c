@@ -55,7 +55,6 @@ START_TEST(vnstat_handletrafficmeters_exists_when_interface_is_not_available)
 	PARAMS p;
 
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
-	defaultcfg();
 	initparams(&p);
 	strncpy_nt(cfg.iface, "ethfoo", 32);
 	strncpy_nt(p.interface, "default", 32);
@@ -83,7 +82,6 @@ START_TEST(vnstat_handleremoveinterface_exits_if_given_interface_does_not_exist)
 	int ret;
 	PARAMS p;
 
-	defaultcfg();
 	initparams(&p);
 	p.removeiface = 1;
 	p.defaultiface = 0;
@@ -105,7 +103,6 @@ START_TEST(vnstat_handleremoveinterface_exits_if_force_is_not_used)
 	int ret;
 	PARAMS p;
 
-	defaultcfg();
 	initparams(&p);
 	p.removeiface = 1;
 	p.defaultiface = 0;
@@ -128,7 +125,6 @@ START_TEST(vnstat_handleremoveinterface_removes_interface)
 	int ret;
 	PARAMS p;
 
-	defaultcfg();
 	initparams(&p);
 	p.removeiface = 1;
 	p.defaultiface = 0;
@@ -180,7 +176,6 @@ START_TEST(vnstat_handlerenameinterface_exits_if_given_interface_does_not_exist)
 	int ret;
 	PARAMS p;
 
-	defaultcfg();
 	initparams(&p);
 	p.renameiface = 1;
 	p.defaultiface = 0;
@@ -203,7 +198,6 @@ START_TEST(vnstat_handlerenameinterface_exits_if_new_interface_name_already_exis
 	int ret;
 	PARAMS p;
 
-	defaultcfg();
 	initparams(&p);
 	p.renameiface = 1;
 	p.defaultiface = 0;
@@ -229,7 +223,6 @@ START_TEST(vnstat_handlerenameinterface_exits_if_force_is_not_used)
 	int ret;
 	PARAMS p;
 
-	defaultcfg();
 	initparams(&p);
 
 	p.renameiface = 1;
@@ -254,7 +247,6 @@ START_TEST(vnstat_handlerenameinterface_renames_interface)
 	int ret;
 	PARAMS p;
 
-	defaultcfg();
 	initparams(&p);
 	p.renameiface = 1;
 	p.defaultiface = 0;
@@ -301,7 +293,6 @@ START_TEST(vnstat_handleaddinterface_exits_if_interface_already_exist_in_databas
 	int ret;
 	PARAMS p;
 
-	defaultcfg();
 	initparams(&p);
 	p.addiface = 1;
 	p.defaultiface = 0;
@@ -323,7 +314,6 @@ START_TEST(vnstat_handleaddinterface_exits_if_interface_does_not_exist)
 	int ret;
 	PARAMS p;
 
-	defaultcfg();
 	initparams(&p);
 	p.addiface = 1;
 	p.defaultiface = 0;
@@ -345,7 +335,6 @@ START_TEST(vnstat_handleaddinterface_adds_interface)
 	int ret;
 	PARAMS p;
 
-	defaultcfg();
 	initparams(&p);
 	p.addiface = 1;
 	p.defaultiface = 0;
@@ -374,7 +363,6 @@ START_TEST(vnstat_handleaddinterface_can_be_forced_to_add_interface_that_does_no
 	int ret;
 	PARAMS p;
 
-	defaultcfg();
 	initparams(&p);
 	p.addiface = 1;
 	p.defaultiface = 0;
@@ -414,7 +402,6 @@ START_TEST(vnstat_handlesetalias_exits_if_given_interface_does_not_exist)
 {
 	int ret;
 	PARAMS p;
-	defaultcfg();
 	initparams(&p);
 	p.setalias = 1;
 	p.defaultiface = 0;
@@ -436,7 +423,6 @@ START_TEST(vnstat_handlesetalias_sets_alias)
 	int ret;
 	PARAMS p;
 	interfaceinfo info;
-	defaultcfg();
 	initparams(&p);
 	p.setalias = 1;
 	p.defaultiface = 0;
@@ -467,7 +453,6 @@ START_TEST(vnstat_handlesetalias_clears_alias)
 	int ret;
 	PARAMS p;
 	interfaceinfo info;
-	defaultcfg();
 	initparams(&p);
 	p.setalias = 1;
 	p.defaultiface = 0;
@@ -502,7 +487,6 @@ START_TEST(vnstat_handleaddinterface_can_also_set_alias_after_adding_interface)
 	PARAMS p;
 	interfaceinfo info;
 
-	defaultcfg();
 	initparams(&p);
 	p.addiface = 1;
 	p.setalias = 1;
@@ -535,7 +519,6 @@ END_TEST
 START_TEST(vnstat_handletrafficmeters_exits_when_interface_is_not_available)
 {
 	PARAMS p;
-	defaultcfg();
 	initparams(&p);
 	p.traffic = 1;
 	p.defaultiface = 1;
@@ -552,7 +535,6 @@ END_TEST
 START_TEST(vnstat_handletrafficmeters_exits_when_interface_is_not_available_with_configuration_tips)
 {
 	PARAMS p;
-	defaultcfg();
 	initparams(&p);
 	p.traffic = 1;
 	p.defaultiface = 1;
@@ -570,7 +552,6 @@ END_TEST
 START_TEST(vnstat_handletrafficmeters_exits_when_specific_interface_is_not_available)
 {
 	PARAMS p;
-	defaultcfg();
 	initparams(&p);
 	p.traffic = 1;
 	p.defaultiface = 0;
@@ -587,7 +568,6 @@ END_TEST
 START_TEST(vnstat_handletrafficmeters_can_calculate_traffic)
 {
 	PARAMS p;
-	defaultcfg();
 	initparams(&p);
 	p.traffic = 1;
 	p.defaultiface = 0;
@@ -606,7 +586,6 @@ END_TEST
 START_TEST(vnstat_handletrafficmeters_can_handle_interface_merge_using_first_interface)
 {
 	PARAMS p;
-	defaultcfg();
 	initparams(&p);
 	p.traffic = 1;
 	p.defaultiface = 0;
@@ -625,7 +604,6 @@ END_TEST
 START_TEST(vnstat_handletrafficmeters_can_calculate_traffic_and_output_json)
 {
 	PARAMS p;
-	defaultcfg();
 	initparams(&p);
 	p.traffic = 1;
 	p.defaultiface = 0;
@@ -644,7 +622,6 @@ END_TEST
 START_TEST(vnstat_handletrafficmeters_livetraffic_does_not_crash)
 {
 	PARAMS p;
-	defaultcfg();
 	initparams(&p);
 	p.livetraffic = 1;
 	p.defaultiface = 0;
@@ -664,7 +641,6 @@ END_TEST
 START_TEST(vnstat_handletrafficmeters_livetraffic_does_not_crash_with_interface_merge)
 {
 	PARAMS p;
-	defaultcfg();
 	initparams(&p);
 	p.livetraffic = 1;
 	p.defaultiface = 0;
@@ -684,7 +660,6 @@ END_TEST
 START_TEST(vnstat_handletrafficmeters_livetraffic_does_not_crash_with_json)
 {
 	PARAMS p;
-	defaultcfg();
 	initparams(&p);
 	p.livetraffic = 1;
 	p.defaultiface = 0;
@@ -703,7 +678,6 @@ END_TEST
 START_TEST(handleifselection_does_nothing_when_interface_has_already_been_selected)
 {
 	PARAMS p;
-	defaultcfg();
 	initparams(&p);
 
 	p.defaultiface = 0;
@@ -718,7 +692,6 @@ END_TEST
 START_TEST(handleifselection_selects_default_interface_if_field_is_filled)
 {
 	PARAMS p;
-	defaultcfg();
 	initparams(&p);
 
 	p.defaultiface = 1;
@@ -736,7 +709,6 @@ START_TEST(handleifselection_exits_when_no_suitable_interface_is_available_for_q
 {
 	int ret;
 	PARAMS p;
-	defaultcfg();
 	initparams(&p);
 
 	p.defaultiface = 1;
@@ -757,7 +729,6 @@ START_TEST(handleifselection_selects_only_interface_from_database_for_query)
 {
 	int ret;
 	PARAMS p;
-	defaultcfg();
 	initparams(&p);
 
 	p.defaultiface = 1;
@@ -780,7 +751,6 @@ START_TEST(handleifselection_selects_highest_traffic_interface_from_database_for
 {
 	int ret;
 	PARAMS p;
-	defaultcfg();
 	initparams(&p);
 
 	p.defaultiface = 1;
@@ -818,7 +788,6 @@ END_TEST
 START_TEST(handleifselection_exits_when_no_suitable_interface_is_available_for_traffic)
 {
 	PARAMS p;
-	defaultcfg();
 	initparams(&p);
 
 	p.defaultiface = 1;
@@ -838,7 +807,6 @@ END_TEST
 START_TEST(handleifselection_can_select_interface_without_database_for_traffic)
 {
 	PARAMS p;
-	defaultcfg();
 	initparams(&p);
 
 	p.defaultiface = 1;
@@ -862,7 +830,6 @@ START_TEST(handleifselection_exits_if_only_database_shows_interfaces_for_traffic
 {
 	int ret;
 	PARAMS p;
-	defaultcfg();
 	initparams(&p);
 
 	p.defaultiface = 1;
@@ -890,7 +857,6 @@ START_TEST(handleifselection_selects_only_available_interfaces_for_traffic)
 {
 	int ret;
 	PARAMS p;
-	defaultcfg();
 	initparams(&p);
 
 	p.defaultiface = 1;
@@ -928,7 +894,6 @@ START_TEST(handleifselection_selects_only_available_interfaces_and_can_ignore_da
 {
 	int ret;
 	PARAMS p;
-	defaultcfg();
 	initparams(&p);
 
 	p.defaultiface = 1;

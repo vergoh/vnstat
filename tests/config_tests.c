@@ -7,35 +7,30 @@
 
 START_TEST(validatecfg_default_all)
 {
-	defaultcfg();
 	validatecfg(CT_All);
 }
 END_TEST
 
 START_TEST(validatecfg_default_cli)
 {
-	defaultcfg();
 	validatecfg(CT_CLI);
 }
 END_TEST
 
 START_TEST(validatecfg_default_daemon)
 {
-	defaultcfg();
 	validatecfg(CT_Daemon);
 }
 END_TEST
 
 START_TEST(validatecfg_default_image)
 {
-	defaultcfg();
 	validatecfg(CT_Image);
 }
 END_TEST
 
 START_TEST(validatecfg_does_not_modify_valid_changes)
 {
-	defaultcfg();
 	ck_assert_int_eq(cfg.listhours, LISTHOURS);
 	cfg.listhours = 1;
 	ck_assert_int_ne(cfg.listhours, LISTHOURS);
@@ -46,7 +41,6 @@ END_TEST
 
 START_TEST(validatecfg_restores_invalid_values_back_to_default)
 {
-	defaultcfg();
 	cfg.unitmode = 3;
 	cfg.savestatus = 2;
 	cfg.listhours = -1;
@@ -60,7 +54,6 @@ END_TEST
 
 START_TEST(validatecfg_can_tune_updateinterval_to_avoid_rollover_issues)
 {
-	defaultcfg();
 	cfg.updateinterval = 60;
 	cfg.maxbw = 1000;
 	cfg.bwdetection = 1;
@@ -73,7 +66,6 @@ END_TEST
 
 START_TEST(validatecfg_has_fallback_for_updateinterval_for_very_fast_interfaces)
 {
-	defaultcfg();
 	cfg.updateinterval = 60;
 	cfg.maxbw = 2000;
 	cfg.bwdetection = 1;
@@ -88,7 +80,6 @@ END_TEST
 START_TEST(validatecfg_can_change_estimatestyle_for_images_depending_on_settings)
 {
 	debug = 1;
-	defaultcfg();
 	cfg.barshowsrate = 0;
 	cfg.estimatebarvisible = 0;
 	cfg.estimatestyle = 1;
@@ -124,7 +115,6 @@ END_TEST
 
 START_TEST(validatecfg_limits_5_minute_result_count_to_available_data_amount)
 {
-	defaultcfg();
 	cfg.fiveminutehours = 26;
 	cfg.fivegresultcount = 9001;
 	suppress_output();
@@ -136,7 +126,6 @@ END_TEST
 
 START_TEST(validatecfg_limits_5_minute_result_count_to_minimum_usable)
 {
-	defaultcfg();
 	cfg.fiveminutehours = 12;
 	cfg.fivegresultcount = 9001;
 	suppress_output();
@@ -148,7 +137,6 @@ END_TEST
 
 START_TEST(validatecfg_limits_5_minute_result_count_to_not_be_too_much)
 {
-	defaultcfg();
 	cfg.fiveminutehours = 9001;
 	cfg.fivegresultcount = 12345;
 	suppress_output();
@@ -160,7 +148,6 @@ END_TEST
 
 START_TEST(validatecfg_does_not_touch_5_minute_result_count_if_data_is_not_being_created)
 {
-	defaultcfg();
 	cfg.fiveminutehours = 0;
 	cfg.fivegresultcount = 1234;
 	suppress_output();
@@ -172,7 +159,6 @@ END_TEST
 
 START_TEST(validatecfg_is_not_stupid_with_5_minute_result_count_if_there_is_no_data_limit)
 {
-	defaultcfg();
 	cfg.fiveminutehours = -1;
 	cfg.fivegresultcount = 1242;
 	suppress_output();
@@ -184,7 +170,6 @@ END_TEST
 
 START_TEST(printcfgfile_default)
 {
-	defaultcfg();
 	ck_assert_int_eq(ibwadd("name1", 1), 1);
 	ck_assert_int_eq(ibwadd("name2", 2), 1);
 	suppress_output();
@@ -194,7 +179,6 @@ END_TEST
 
 START_TEST(printcfgfile_experimental)
 {
-	defaultcfg();
 	cfg.experimental = 1;
 	ck_assert_int_eq(ibwadd("name1", 1), 1);
 	ck_assert_int_eq(ibwadd("name2", 2), 1);
@@ -673,7 +657,6 @@ END_TEST
 
 START_TEST(configlocale_does_not_crash)
 {
-	defaultcfg();
 
 	unsetenv("LC_ALL");
 	snprintf(cfg.locale, 32, "en_US");

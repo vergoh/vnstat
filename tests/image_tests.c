@@ -16,7 +16,6 @@ END_TEST
 START_TEST(imageinit_does_not_crash)
 {
 	IMAGECONTENT ic;
-	defaultcfg();
 	imageinit(&ic, 2, 2);
 	gdImageDestroy(ic.im);
 }
@@ -25,7 +24,6 @@ END_TEST
 START_TEST(layoutinit_does_not_crash)
 {
 	IMAGECONTENT ic;
-	defaultcfg();
 	initimagecontent(&ic);
 	imageinit(&ic, 640, 480);
 	ic.interface.updated = time(NULL);
@@ -417,7 +415,6 @@ START_TEST(libgd_output_comparison)
 	x = 1060;
 	y = 420;
 
-	defaultcfg();
 	initimagecontent(&ic);
 	imageinit(&ic, x, y);
 	ic.interface.updated = (time_t)get_timestamp(2001, 2, 3, 4, 5);
@@ -617,7 +614,6 @@ START_TEST(element_output_check)
 	x = 1500;
 	y = 900;
 
-	defaultcfg();
 	initimagecontent(&ic);
 	imageinit(&ic, x, y);
 	ic.interface.updated = (time_t)get_timestamp(2012, 3, 4, 5, 6);

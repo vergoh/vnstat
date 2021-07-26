@@ -21,7 +21,6 @@ END_TEST
 START_TEST(initdstate_does_not_crash)
 {
 	DSTATE s;
-	defaultcfg();
 	initdstate(&s);
 }
 END_TEST
@@ -30,7 +29,6 @@ START_TEST(addinterfaces_does_nothing_with_no_files)
 {
 	DSTATE s;
 
-	defaultcfg();
 	initdstate(&s);
 	suppress_output();
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
@@ -45,7 +43,6 @@ START_TEST(addinterfaces_adds_interfaces)
 	int ret;
 	DSTATE s;
 
-	defaultcfg();
 	initdstate(&s);
 	suppress_output();
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
@@ -78,7 +75,6 @@ START_TEST(addinterfaces_adds_only_new_interfaces)
 	int ret;
 	DSTATE s;
 
-	defaultcfg();
 	initdstate(&s);
 	suppress_output();
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
@@ -137,7 +133,6 @@ START_TEST(addinterfaces_adds_to_cache_when_running)
 	int ret;
 	DSTATE s;
 
-	defaultcfg();
 	initdstate(&s);
 	suppress_output();
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
@@ -197,7 +192,6 @@ START_TEST(preparedatabase_exits_with_no_database_dir)
 {
 	DSTATE s;
 
-	defaultcfg();
 	initdstate(&s);
 	suppress_output();
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
@@ -210,7 +204,6 @@ START_TEST(preparedatabase_exits_with_no_database)
 {
 	DSTATE s;
 
-	defaultcfg();
 	initdstate(&s);
 	suppress_output();
 	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
@@ -225,7 +218,6 @@ START_TEST(preparedatabase_exits_with_no_database_and_noadd)
 {
 	DSTATE s;
 
-	defaultcfg();
 	initdstate(&s);
 	s.noadd = 1;
 	suppress_output();
@@ -242,7 +234,6 @@ START_TEST(preparedatabase_with_no_database_creates_database)
 	int ret;
 	DSTATE s;
 
-	defaultcfg();
 	initdstate(&s);
 	suppress_output();
 	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
@@ -281,7 +272,6 @@ END_TEST
 START_TEST(filldatabaselist_exits_with_no_database_dir)
 {
 	DSTATE s;
-	defaultcfg();
 	initdstate(&s);
 	disable_logprints();
 	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
@@ -295,7 +285,6 @@ START_TEST(filldatabaselist_does_not_exit_with_empty_database_dir)
 {
 	int ret;
 	DSTATE s;
-	defaultcfg();
 	initdstate(&s);
 	disable_logprints();
 	s.sync = 1;
@@ -316,7 +305,6 @@ START_TEST(filldatabaselist_adds_databases)
 {
 	int ret;
 	DSTATE s;
-	defaultcfg();
 	initdstate(&s);
 	disable_logprints();
 	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
@@ -360,7 +348,6 @@ END_TEST
 START_TEST(adjustsaveinterval_with_empty_cache)
 {
 	DSTATE s;
-	defaultcfg();
 	initdstate(&s);
 	s.saveinterval = 0;
 	ck_assert_int_eq(datacache_activecount(&s.dcache), 0);
@@ -375,7 +362,6 @@ START_TEST(adjustsaveinterval_with_filled_cache)
 {
 	int ret;
 	DSTATE s;
-	defaultcfg();
 	initdstate(&s);
 	s.saveinterval = 0;
 
@@ -457,7 +443,6 @@ START_TEST(processdatacache_can_process_things)
 {
 	int ret;
 	DSTATE s;
-	defaultcfg();
 	initdstate(&s);
 	suppress_output();
 
@@ -505,7 +490,6 @@ END_TEST
 START_TEST(handleintsignals_handles_no_signal)
 {
 	DSTATE s;
-	defaultcfg();
 	initdstate(&s);
 	s.running = 1;
 	s.dbifcount = 1;
@@ -521,7 +505,6 @@ END_TEST
 START_TEST(handleintsignals_handles_42)
 {
 	DSTATE s;
-	defaultcfg();
 	initdstate(&s);
 	s.running = 1;
 	s.dbifcount = 1;
@@ -537,7 +520,6 @@ END_TEST
 START_TEST(handleintsignals_handles_unknown_signal)
 {
 	DSTATE s;
-	defaultcfg();
 	initdstate(&s);
 	s.running = 1;
 	s.dbifcount = 1;
@@ -555,7 +537,6 @@ END_TEST
 START_TEST(handleintsignals_handles_sigterm)
 {
 	DSTATE s;
-	defaultcfg();
 	initdstate(&s);
 	s.running = 1;
 	s.dbifcount = 1;
@@ -573,7 +554,6 @@ END_TEST
 START_TEST(handleintsignals_handles_sigint)
 {
 	DSTATE s;
-	defaultcfg();
 	initdstate(&s);
 	s.running = 1;
 	s.dbifcount = 1;
@@ -593,7 +573,6 @@ START_TEST(handleintsignals_handles_sighup)
 {
 	int ret;
 	DSTATE s;
-	defaultcfg();
 	initdstate(&s);
 	s.running = 1;
 	s.dbifcount = 1;
@@ -627,7 +606,6 @@ START_TEST(preparedirs_with_no_dir)
 
 	DSTATE s;
 	initdstate(&s);
-	defaultcfg();
 	cfg.uselogging = 1;
 	s.rundaemon = 1;
 	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
@@ -653,7 +631,6 @@ START_TEST(preparedirs_with_dir)
 
 	DSTATE s;
 	initdstate(&s);
-	defaultcfg();
 	cfg.uselogging = 1;
 	s.rundaemon = 1;
 	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
@@ -730,7 +707,6 @@ START_TEST(interfacechangecheck_with_filled_cache)
 	DSTATE s;
 	datacache *iterator;
 
-	defaultcfg();
 	initdstate(&s);
 	disable_logprints();
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
@@ -784,7 +760,6 @@ START_TEST(initcachevalues_does_not_init_without_database)
 	int ret;
 	DSTATE s;
 
-	defaultcfg();
 	initdstate(&s);
 	disable_logprints();
 
@@ -803,7 +778,6 @@ START_TEST(initcachevalues_does_init)
 	int ret;
 	DSTATE s;
 
-	defaultcfg();
 	initdstate(&s);
 	disable_logprints();
 	ck_assert_int_eq(remove_directory(TESTDIR), 1);
@@ -850,7 +824,6 @@ START_TEST(waittimesync_does_not_wait_unless_configured_to_do_so)
 	int ret;
 	DSTATE s;
 
-	defaultcfg();
 	initdstate(&s);
 	disable_logprints();
 	cfg.timesyncwait = 0;
@@ -865,7 +838,6 @@ START_TEST(waittimesync_does_not_wait_with_no_interfaces)
 	int ret;
 	DSTATE s;
 
-	defaultcfg();
 	initdstate(&s);
 	suppress_output();
 	debug = 1;
@@ -881,7 +853,6 @@ START_TEST(waittimesync_does_not_wait_with_new_interfaces)
 	int ret;
 	DSTATE s;
 
-	defaultcfg();
 	initdstate(&s);
 	suppress_output();
 	debug = 1;
@@ -914,7 +885,6 @@ START_TEST(waittimesync_knows_when_to_wait)
 	int ret;
 	DSTATE s;
 
-	defaultcfg();
 	initdstate(&s);
 	suppress_output();
 	debug = 1;
@@ -950,7 +920,6 @@ START_TEST(waittimesync_knows_when_to_give_up)
 	int ret;
 	DSTATE s;
 
-	defaultcfg();
 	initdstate(&s);
 	suppress_output();
 	debug = 1;
@@ -987,7 +956,6 @@ START_TEST(detectboot_sets_btime_if_missing_from_database)
 	DSTATE s;
 	char *buffer;
 
-	defaultcfg();
 	initdstate(&s);
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -1019,7 +987,6 @@ START_TEST(detectboot_sets_btime_for_new_database)
 	char *buffer;
 	char temp[64];
 
-	defaultcfg();
 	initdstate(&s);
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -1053,7 +1020,6 @@ START_TEST(detectboot_can_detect_boot)
 	char *buffer;
 	char temp[64];
 
-	defaultcfg();
 	initdstate(&s);
 	suppress_output();
 	debug = 1;
@@ -1087,7 +1053,6 @@ END_TEST
 START_TEST(handledatabaseerror_exits_on_fatal_error)
 {
 	DSTATE s;
-	defaultcfg();
 	initdstate(&s);
 	disable_logprints();
 
@@ -1100,7 +1065,6 @@ START_TEST(handledatabaseerror_does_not_exit_if_limit_is_not_exceeded)
 {
 	int i;
 	DSTATE s;
-	defaultcfg();
 	initdstate(&s);
 	disable_logprints();
 
@@ -1123,7 +1087,6 @@ START_TEST(handledatabaseerror_exits_if_limit_is_exceeded)
 {
 	int i;
 	DSTATE s;
-	defaultcfg();
 	initdstate(&s);
 	disable_logprints();
 
@@ -1144,7 +1107,6 @@ START_TEST(cleanremovedinterfaces_allows_interfaces_to_be_removed)
 {
 	int ret;
 	DSTATE s;
-	defaultcfg();
 	initdstate(&s);
 	disable_logprints();
 
@@ -1191,7 +1153,6 @@ START_TEST(processifinfo_syncs_when_needed)
 {
 	int ret;
 	DSTATE s;
-	defaultcfg();
 	initdstate(&s);
 
 	ifinfo.rx = 11;
@@ -1219,7 +1180,6 @@ START_TEST(processifinfo_skips_update_if_timestamps_make_no_sense)
 {
 	int ret;
 	DSTATE s;
-	defaultcfg();
 	initdstate(&s);
 
 	ifinfo.rx = 11;
@@ -1249,7 +1209,6 @@ START_TEST(processifinfo_exits_if_timestamps_really_make_no_sense)
 {
 	int ret;
 	DSTATE s;
-	defaultcfg();
 	initdstate(&s);
 	disable_logprints();
 
@@ -1273,7 +1232,6 @@ START_TEST(processifinfo_syncs_if_timestamps_match)
 {
 	int ret;
 	DSTATE s;
-	defaultcfg();
 	initdstate(&s);
 
 	ifinfo.rx = 11;
@@ -1304,7 +1262,6 @@ START_TEST(processifinfo_adds_traffic)
 {
 	int ret;
 	DSTATE s;
-	defaultcfg();
 	initdstate(&s);
 	suppress_output();
 	debug = 1;
@@ -1340,7 +1297,6 @@ START_TEST(processifinfo_does_not_add_traffic_when_over_limit)
 {
 	int ret;
 	DSTATE s;
-	defaultcfg();
 	initdstate(&s);
 	suppress_output();
 	debug = 1;
@@ -1377,7 +1333,6 @@ START_TEST(processifinfo_adds_zero_traffic_when_over_limit)
 {
 	int ret;
 	DSTATE s;
-	defaultcfg();
 	initdstate(&s);
 	suppress_output();
 	debug = 1;
@@ -1426,7 +1381,6 @@ START_TEST(datacache_status_can_show_limits)
 {
 	int ret;
 	datacache *dcache;
-	defaultcfg();
 	disable_logprints();
 	dcache = NULL;
 
@@ -1457,7 +1411,6 @@ START_TEST(datacache_status_has_no_issues_with_large_number_of_interfaces)
 	int i, ret;
 	char buffer[8];
 	datacache *dcache;
-	defaultcfg();
 	disable_logprints();
 	dcache = NULL;
 

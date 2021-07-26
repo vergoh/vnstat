@@ -163,8 +163,6 @@ START_TEST(database_outputs_do_not_crash)
 {
 	int ret, i;
 
-	defaultcfg();
-
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 	ret = db_addinterface("something");
@@ -229,8 +227,6 @@ START_TEST(database_outputs_do_not_crash_without_traffic)
 {
 	int ret, i;
 
-	defaultcfg();
-
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 	ret = db_addinterface("something");
@@ -293,8 +289,6 @@ START_TEST(database_outputs_do_not_crash_without_data)
 {
 	int ret, i;
 
-	defaultcfg();
-
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 	ret = db_addinterface("something");
@@ -350,8 +344,6 @@ END_TEST
 START_TEST(database_outputs_do_not_crash_without_data_if_totals_are_wrong)
 {
 	int ret, i;
-
-	defaultcfg();
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -444,7 +436,6 @@ START_TEST(showbar_with_all_rx)
 	char buffer[512];
 	memset(&buffer, '\0', sizeof(buffer));
 
-	defaultcfg();
 	cfg.rxchar[0] = 'r';
 	cfg.txchar[0] = 't';
 	pipe = pipe_output();
@@ -463,7 +454,6 @@ START_TEST(showbar_with_all_tx)
 	char buffer[512];
 	memset(&buffer, '\0', sizeof(buffer));
 
-	defaultcfg();
 	cfg.rxchar[0] = 'r';
 	cfg.txchar[0] = 't';
 	pipe = pipe_output();
@@ -482,7 +472,6 @@ START_TEST(showbar_with_half_and_half)
 	char buffer[512];
 	memset(&buffer, '\0', sizeof(buffer));
 
-	defaultcfg();
 	cfg.rxchar[0] = 'r';
 	cfg.txchar[0] = 't';
 	pipe = pipe_output();
@@ -501,7 +490,6 @@ START_TEST(showbar_with_one_tenth)
 	char buffer[512];
 	memset(&buffer, '\0', sizeof(buffer));
 
-	defaultcfg();
 	cfg.rxchar[0] = 'r';
 	cfg.txchar[0] = 't';
 	pipe = pipe_output();
@@ -520,7 +508,6 @@ START_TEST(showbar_with_small_rx_shows_all_tx)
 	char buffer[512];
 	memset(&buffer, '\0', sizeof(buffer));
 
-	defaultcfg();
 	cfg.rxchar[0] = 'r';
 	cfg.txchar[0] = 't';
 	pipe = pipe_output();
@@ -548,7 +535,6 @@ START_TEST(showbar_with_half_and_half_of_half)
 	char buffer[512];
 	memset(&buffer, '\0', sizeof(buffer));
 
-	defaultcfg();
 	cfg.rxchar[0] = 'r';
 	cfg.txchar[0] = 't';
 	pipe = pipe_output();
@@ -564,7 +550,6 @@ END_TEST
 START_TEST(importlegacydb_does_not_overwrite_existing_interface_data)
 {
 	int ret;
-	defaultcfg();
 	disable_logprints();
 
 	ret = db_open_rw(1);
@@ -583,7 +568,6 @@ END_TEST
 START_TEST(importlegacydb_can_detect_when_database_read_fails)
 {
 	int ret;
-	defaultcfg();
 	disable_logprints();
 
 	ret = db_open_rw(1);
@@ -612,7 +596,6 @@ START_TEST(importlegacydb_can_import_legacy_database)
 	dbdatalistinfo datainfo;
 
 	initdb(&data);
-	defaultcfg();
 	disable_logprints();
 
 	ret = db_open_rw(1);
