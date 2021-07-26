@@ -24,5 +24,6 @@ int readifaddrs(const char *iface);
 uint32_t getifspeed(const char *iface);
 int isifavailable(const char *iface);
 int isifvalid(const char *iface);
+int istun(const char *iface);
 
 #endif

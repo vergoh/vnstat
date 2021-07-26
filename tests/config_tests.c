@@ -274,10 +274,65 @@ START_TEST(ibwget_with_empty_list_and_maxbw)
 }
 END_TEST
 
+START_TEST(ibwget_with_empty_list_gives_speed_instead_of_maxbw_if_available)
+{
+	int ret;
+	uint32_t limit;
+
+	linuxonly;
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_sys_class_net("ethnotseen", 0, 0, 0, 0, 21);
+
+	cfg.maxbw = 12;
+	ibwflush();
+	ret = ibwget("ethnotseen", &limit);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(limit, 21);
+}
+END_TEST
+
+START_TEST(ibwget_with_empty_list_gives_maxbw_for_tun_even_if_speed_is_available)
+{
+	int ret;
+	uint32_t limit;
+
+	linuxonly;
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_sys_class_net("tun142", 0, 0, 0, 0, 10);
+
+	cfg.maxbw = 12;
+	ibwflush();
+	ret = ibwget("tun142", &limit);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(limit, 12);
+}
+END_TEST
+
 START_TEST(ibwget_from_config)
 {
 	int ret;
 	uint32_t limit;
+	ck_assert_int_eq(loadcfg(CFGFILE, CT_All), 1);
+	ck_assert_int_eq(ibwloadcfg(CFGFILE), 1);
+	cfg.maxbw = 10;
+	ret = ibwget("ethnone", &limit);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(limit, 8);
+}
+END_TEST
+
+START_TEST(ibwget_from_config_ignores_detected_speed)
+{
+	int ret;
+	uint32_t limit;
+
+	linuxonly;
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_sys_class_net("ethnone", 0, 0, 0, 0, 42);
+
 	ck_assert_int_eq(loadcfg(CFGFILE, CT_All), 1);
 	ck_assert_int_eq(ibwloadcfg(CFGFILE), 1);
 	cfg.maxbw = 10;
@@ -675,7 +730,10 @@ void add_config_tests(Suite *s)
 	tcase_add_test(tc_config, ibwloadcfg_not_a_cfgfile);
 	tcase_add_test(tc_config, ibwget_with_empty_list_and_no_maxbw);
 	tcase_add_test(tc_config, ibwget_with_empty_list_and_maxbw);
+	tcase_add_test(tc_config, ibwget_with_empty_list_gives_speed_instead_of_maxbw_if_available);
+	tcase_add_test(tc_config, ibwget_with_empty_list_gives_maxbw_for_tun_even_if_speed_is_available);
 	tcase_add_test(tc_config, ibwget_from_config);
+	tcase_add_test(tc_config, ibwget_from_config_ignores_detected_speed);
 	tcase_add_test(tc_config, ibwadd_single_success);
 	tcase_add_test(tc_config, ibwadd_multi_success);
 	tcase_add_test(tc_config, ibwadd_update_success);

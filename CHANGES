@@ -12,11 +12,20 @@
      output wasn't being used
    - Warnings of mismatches between image output and data retention
      configuration didn't provide relevant details for solving the issues
+   - BandwidthDetection was being used for tun interfaces even when the
+     Linux kernel had the information hardcoded to 10 Mbit regardless of the
+     used real interface, interface specific MaxBW will now be used instead
+     or MaxBandwidth as fallback
+   - Configured interface specific MaxBW values were getting overridden by
+     BandwidthDetection when something could be detected
  - New
    - Add the possibility of specifying an interface without using the
      -i / --iface options (vnstat and vnstati)
    - Add configuration option UseUTC for using UTC as timezone for database
      entries instead of following the system timezone configuration
+   - --iflist uses user configured interface specific MaxBW values in the
+     output when available instead of showing only the kernel provided
+     information when detected
    - Image output example cgi (examples/vnstat.cgi) automatically lists
      all monitored interfaces instead of requiring the list to be filled
      manually, server name in page title comes from hostname command

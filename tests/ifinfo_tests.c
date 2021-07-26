@@ -336,6 +336,22 @@ START_TEST(isifavailable_knows_interface_availability)
 }
 END_TEST
 
+START_TEST(istun_knows_what_a_tun_interface_looks_like)
+{
+	linuxonly;
+
+	ck_assert_int_eq(istun("eth0"), 0);
+	ck_assert_int_eq(istun("not_tun0"), 0);
+	ck_assert_int_eq(istun("tun"), 0);
+	ck_assert_int_eq(istun("tuna"), 0);
+	ck_assert_int_eq(istun("tun0"), 1);
+	ck_assert_int_eq(istun("tun1"), 1);
+	ck_assert_int_eq(istun("tun12"), 1);
+	ck_assert_int_eq(istun("tun123"), 1);
+	ck_assert_int_eq(istun("tun1234"), 1);
+}
+END_TEST
+
 void add_ifinfo_tests(Suite *s)
 {
 	TCase *tc_ifinfo = tcase_create("Ifinfo");
@@ -360,5 +376,6 @@ void add_ifinfo_tests(Suite *s)
 	tcase_add_test(tc_ifinfo, getifinfo_not_found);
 	tcase_add_test(tc_ifinfo, getifinfo_success);
 	tcase_add_test(tc_ifinfo, isifavailable_knows_interface_availability);
+	tcase_add_test(tc_ifinfo, istun_knows_what_a_tun_interface_looks_like);
 	suite_add_tcase(s, tc_ifinfo);
 }

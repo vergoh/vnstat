@@ -107,7 +107,13 @@ int ibwget(const char *iface, uint32_t *limit)
 	while (p != NULL) {
 		if (strcasecmp(p->interface, iface) == 0) {
 
-			if (cfg.bwdetection && p->retries < 5) {
+			/* never override manually configured limits */
+			if (p->detected == 0 && p->limit > 0) {
+				*limit = p->limit;
+				return 1;
+			}
+
+			if (!istun(iface) && cfg.bwdetection && p->retries < 5) {
 				if (cfg.bwdetectioninterval > 0 && (current - p->detected) > (cfg.bwdetectioninterval * 60)) {
 					speed = getifspeed(iface);
 					if (speed > 0) {
@@ -135,7 +141,7 @@ int ibwget(const char *iface, uint32_t *limit)
 		p = p->next;
 	}
 
-	if (cfg.bwdetection) {
+	if (!istun(iface) && cfg.bwdetection) {
 		if (ibwadd(iface, (uint32_t)cfg.maxbw)) {
 			p = ibwgetnode(iface);
 			if (p != NULL) {

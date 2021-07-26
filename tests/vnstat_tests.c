@@ -1,4 +1,5 @@
 #include "common.h"
+#include "cfg.h"
 #include "vnstat_tests.h"
 #include "common_tests.h"
 #include "dbsql_tests.h"
@@ -79,6 +80,7 @@ void verify_fork_status(void)
 }
 
 void setup(void) {
+	defaultcfg();
 	debug = 0;
 }
 

@@ -1,4 +1,5 @@
 #include "common.h"
+#include "ibw.h"
 #include "ifinfo.h"
 
 int getifinfo(const char *iface)
@@ -106,13 +107,20 @@ int getifliststring(char **ifacelist, int showspeed)
 
 int getiflist(iflist **ifl, const int getspeed, const int validate)
 {
+	int result = 0;
+	int32_t maxbw = cfg.maxbw;
+
+	/* disable MaxBandwidth during list creation to avoid having it being set as the default value when nothing is detected */
+	cfg.maxbw = 0;
 #if defined(__linux__) || defined(CHECK_VNSTAT)
-	return getiflist_linux(ifl, getspeed, validate);
+	result = getiflist_linux(ifl, getspeed, validate);
 #elif defined(BSD_VNSTAT)
-	return getiflist_bsd(ifl, getspeed, validate);
+	result = getiflist_bsd(ifl, getspeed, validate);
 #else
 #error vnStat only supports Linux and BSD like systems
 #endif
+	cfg.maxbw = maxbw;
+	return result;
 }
 
 #if defined(__linux__) || defined(CHECK_VNSTAT)
@@ -124,6 +132,7 @@ int getiflist_linux(iflist **ifl, const int getspeed, const int validate)
 	DIR *dp;
 	struct dirent *di;
 	char procline[512];
+	uint32_t bwlimit = 0;
 
 	if ((fp = fopen(PROCNETDEV, "r")) != NULL) {
 
@@ -135,8 +144,9 @@ int getiflist_linux(iflist **ifl, const int getspeed, const int validate)
 				if (validate && !isifvalid(interface)) {
 					continue;
 				}
-				if (getspeed) {
-					iflistadd(ifl, interface, getifspeed(interface));
+				bwlimit = 0;
+				if (getspeed && ibwget(interface, &bwlimit)) {
+					iflistadd(ifl, interface, bwlimit);
 				} else {
 					iflistadd(ifl, interface, 0);
 				}
@@ -158,8 +168,9 @@ int getiflist_linux(iflist **ifl, const int getspeed, const int validate)
 				if (validate && !isifvalid(di->d_name)) {
 					continue;
 				}
-				if (getspeed) {
-					iflistadd(ifl, di->d_name, getifspeed(di->d_name));
+				bwlimit = 0;
+				if (getspeed && ibwget(di->d_name, &bwlimit)) {
+					iflistadd(ifl, di->d_name, bwlimit);
 				} else {
 					iflistadd(ifl, di->d_name, 0);
 				}
@@ -176,6 +187,7 @@ int getiflist_linux(iflist **ifl, const int getspeed, const int validate)
 int getiflist_bsd(iflist **ifl, const int getspeed, const int validate)
 {
 	struct ifaddrs *ifap, *ifa;
+	uint32_t bwlimit = 0;
 
 	if (getifaddrs(&ifap) >= 0) {
 
@@ -187,7 +199,8 @@ int getiflist_bsd(iflist **ifl, const int getspeed, const int validate)
 			if (validate && !isifvalid(ifa->ifa_name)) {
 				continue;
 			}
-			if (getspeed) {
+			bwlimit = 0;
+			if (getspeed && ibwget(ifa->ifa_name, &bwlimit)) {
 				iflistadd(ifl, ifa->ifa_name, getifspeed(ifa->ifa_name));
 			} else {
 				iflistadd(ifl, ifa->ifa_name, 0);
@@ -469,4 +482,19 @@ int isifvalid(const char *iface)
 		return 0;
 	}
 	return 1;
+}
+
+/* tun interfaces have speed hardcoded as 10 in the Linux kernel regardless of used interface and can't
+be trusted to provide correct details as a result even if the information is available:
+https://github.com/torvalds/linux/blob/9d31d2338950293ec19d9b095fbaa9030899dcb4/drivers/net/tun.c#L3456 */
+int istun(const char *iface)
+{
+#if defined(__linux__)
+	if (strlen(iface) > 3 && strncmp(iface, "tun", 3) == 0) {
+		if (isdigit(iface[3])) {
+			return 1;
+		}
+	}
+#endif
+	return 0;
 }

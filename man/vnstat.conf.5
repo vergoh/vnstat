@@ -164,9 +164,11 @@ Try to automatically detect
 value for each monitored interface. Mostly only ethernet interfaces support
 this feature.
 .B MaxBandwidth
-or interface specific
+will be used as fallback value if detection fails. Any interface specific
 .B MaxBW
-will be used as fallback value if detection fails.
+configuration will disable the detection for the specified interface.
+In Linux, the detection is disabled for tun interfaces due to the
+Linux kernel always reporting 10 Mbit regardless of the used real interface.
 1 = enabled, 0 = disabled.
 
 .TP
@@ -264,10 +266,16 @@ Set to 0 in order to disable the feature. Value range: 0..50000
 
 .TP
 .B MaxBW
-Same as MaxBandwidth but can be used for setting individual limits
+Same as
+.B MaxBandwidth
+but can be used for setting individual limits
 for selected interfaces. The name of the interface is specified directly
 after the MaxBW keyword without spaces. For example MaxBWeth0 for eth0
-and MaxBWppp0 for ppp0. Value range: 0..50000
+and MaxBWppp0 for ppp0.
+.B BandwidthDetection
+is disabled on an interface specific level for each
+.B MaxBW
+configuration. Value range: 0..50000
 
 .TP
 .B MonthlyMonths
