@@ -10,7 +10,6 @@
 
 /* rectangle size */
 #define YBEGINOFFSET (-1)
-#define YENDOFFSET 6
 
 #define FIVEMINHEIGHTOFFSET 4
 #define FIVEMINWIDTHFULLPADDING 10

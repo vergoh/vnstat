@@ -516,19 +516,19 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		gdImageString(ic->im, ic->font, textx, texty, (unsigned char *)buffer, ic->ctext);
 		if (listtype == LT_Top) {
 			if (cfg.ostyle > 2) {
-				drawbar(ic, textx + (71 * ic->font->w) + 2, texty + 4, 9 * ic->font->w - 2, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+				drawbar(ic, textx + (71 * ic->font->w) + 2, texty + 4, 9 * ic->font->w - 1, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 			} else {
-				drawbar(ic, textx + (56 * ic->font->w), texty + 4, 23 * ic->font->w + 2, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+				drawbar(ic, textx + (56 * ic->font->w), texty + 4, 23 * ic->font->w + 3, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 			}
 		} else { // everything else
 			if (cfg.ostyle > 2) {
 				if (datalist_i->next == NULL && estimateavailable && cfg.barshowsrate) {
-					drawbar(ic, textx + (67 * ic->font->w) - 2, texty + 4, 13 * ic->font->w, e_rx, e_tx, datainfo.max, 0);
+					drawbar(ic, textx + (67 * ic->font->w) - 2, texty + 4, 13 * ic->font->w + 1, e_rx, e_tx, datainfo.max, 0);
 				} else {
-					drawbar(ic, textx + (67 * ic->font->w) - 2, texty + 4, 13 * ic->font->w, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+					drawbar(ic, textx + (67 * ic->font->w) - 2, texty + 4, 13 * ic->font->w + 1, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 				}
 			} else {
-				drawbar(ic, textx + (51 * ic->font->w) - 2, texty + 4, 28 * ic->font->w + 2, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+				drawbar(ic, textx + (51 * ic->font->w) - 2, texty + 4, 28 * ic->font->w + 3, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 			}
 		}
 		texty += ic->lineheight + cfg.linespaceadjust;
@@ -568,11 +568,11 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 
 		if (cfg.estimatestyle) {
 			if (cfg.ostyle > 2) {
-				drawbar(ic, textx + (67 * ic->font->w) - 2, texty - ic->lineheight + 4, 13 * ic->font->w, e_rx, e_tx, datainfo.max, 1);
-				drawbar(ic, textx + (67 * ic->font->w) - 2, texty - ic->lineheight + 4, 13 * ic->font->w, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+				drawbar(ic, textx + (67 * ic->font->w) - 2, texty - ic->lineheight + 4, 13 * ic->font->w + 1, e_rx, e_tx, datainfo.max, 1);
+				drawbar(ic, textx + (67 * ic->font->w) - 2, texty - ic->lineheight + 4, 13 * ic->font->w + 1, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 			} else {
-				drawbar(ic, textx + (51 * ic->font->w) - 2, texty - ic->lineheight + 4, 28 * ic->font->w + 2, e_rx, e_tx, datainfo.max, 1);
-				drawbar(ic, textx + (51 * ic->font->w) - 2, texty - ic->lineheight + 4, 28 * ic->font->w + 2, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+				drawbar(ic, textx + (51 * ic->font->w) - 2, texty - ic->lineheight + 4, 28 * ic->font->w + 3, e_rx, e_tx, datainfo.max, 1);
+				drawbar(ic, textx + (51 * ic->font->w) - 2, texty - ic->lineheight + 4, 28 * ic->font->w + 3, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 			}
 		}
 

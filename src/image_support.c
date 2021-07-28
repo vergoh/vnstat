@@ -167,7 +167,7 @@ void drawlegend(IMAGECONTENT *ic, const int x, const int y, const short israte)
 
 void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max, const short isestimate)
 {
-	int l, width = len;
+	int rxl, txl, width = len, overlap = 0;
 	int crx = ic->crx, ctx = ic->ctx, crxd = ic->crxd, ctxd = ic->ctxd;
 	int ybeginoffset = YBEGINOFFSET, yendoffset = YBEGINOFFSET + ic->font->h - 6 - ic->large;
 
@@ -209,26 +209,24 @@ void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const ui
 	}
 
 	if (tx > rx) {
-		l = (int)lrint(((double)rx / (double)(rx + tx) * width));
-
-		if (l > 0) {
-			gdImageFilledRectangle(ic->im, x, y + ybeginoffset, x + l, y + yendoffset, crx);
-			gdImageRectangle(ic->im, x, y + ybeginoffset, x + l, y + yendoffset, crxd);
-		}
-
-		gdImageFilledRectangle(ic->im, x + l, y + ybeginoffset, x + width, y + yendoffset, ctx);
-		gdImageRectangle(ic->im, x + l, y + ybeginoffset, x + width, y + yendoffset, ctxd);
-
+		rxl = (int)lrint(((double)rx / (double)(rx + tx) * width));
+		txl = width - rxl;
 	} else {
-		l = (int)(lrint(((double)tx / (double)(rx + tx) * width)));
+		txl = (int)lrint(((double)tx / (double)(rx + tx) * width));
+		rxl = width - txl;
+	}
 
-		gdImageFilledRectangle(ic->im, x, y + ybeginoffset, x + (width - l), y + yendoffset, crx);
-		gdImageRectangle(ic->im, x, y + ybeginoffset, x + (width - l), y + yendoffset, crxd);
-
-		if (l > 0) {
-			gdImageFilledRectangle(ic->im, x + (width - l), y + ybeginoffset, x + width, y + yendoffset, ctx);
-			gdImageRectangle(ic->im, x + (width - l), y + ybeginoffset, x + width, y + yendoffset, ctxd);
+	if (rxl) {
+		if (txl > 0) {
+			overlap = 1;
 		}
+		gdImageFilledRectangle(ic->im, x, y + ybeginoffset, x + rxl - 1 + overlap, y + yendoffset, crx);
+		gdImageRectangle(ic->im, x, y + ybeginoffset, x + rxl - 1 + overlap, y + yendoffset, crxd);
+	}
+
+	if (txl) {
+		gdImageFilledRectangle(ic->im, x + rxl, y + ybeginoffset, x + rxl + txl - 1, y + yendoffset, ctx);
+		gdImageRectangle(ic->im, x + rxl, y + ybeginoffset, x + rxl + txl - 1, y + yendoffset, ctxd);
 	}
 }
 
