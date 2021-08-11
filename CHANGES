@@ -28,16 +28,17 @@
    - --iflist uses user configured interface specific MaxBW values in the
      output when available instead of showing only the kernel provided
      information when detected
-   - Image output example cgi (examples/vnstat.cgi) automatically lists
-     all monitored interfaces instead of requiring the list to be filled
-     manually, server name in page title comes from hostname command
-   - Image output example cgi (examples/vnstat.cgi) provides links for most
-     available images to more detailed or longer versions of each image
-   - Image output example cgi (examples/vnstat.cgi) allows direct interface
-     specific page access with /interfacename suffix for the cgi if the
-     used httpd supports PATH_INFO
    - Image output uses LibGD filled arc bug workaround only for LibGD
      versions that are known to be broken
+   - Image output example cgi (examples/vnstat.cgi) improvements
+     - Automatically lists all monitored interfaces instead of requiring the
+       list to be filled manually, server name in page title comes from
+       hostname command
+     - Provides links for most available images to more detailed or longer
+       versions of each image
+     - Allows direct interface specific page access with /interfacename suffix
+       for the cgi if the used httpd supports PATH_INFO
+     - Has page auto refresh configurable
 
 
 2.7 / 16-May-2021

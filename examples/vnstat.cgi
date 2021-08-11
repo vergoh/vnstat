@@ -39,6 +39,9 @@ my $largefonts = '0';
 # page background color
 my $bgcolor = "white";
 
+# page auto refresh interval in seconds, set 0 to disable
+my $pagerefresh = '0';
+
 # cgi script file name for httpd
 # fill to override automatic detection
 my $scriptname = '';
@@ -46,7 +49,7 @@ my $scriptname = '';
 ################
 
 
-my $VERSION = "1.12";
+my $VERSION = "1.13";
 my $cssbody = "body { background-color: $bgcolor; }";
 my $csscommonstyle = <<CSS;
 a { text-decoration: underline; }
@@ -59,6 +62,7 @@ table { border: 0; }
 table td { vertical-align: top; }
 small { display: block; }
 CSS
+my $metarefresh = "";
 
 sub graph($$$)
 {
@@ -84,8 +88,8 @@ sub print_interface_list_html()
 <!DOCTYPE html>
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<meta name="Generator" content="vnstat.cgi $VERSION">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">$metarefresh
+<meta name="generator" content="vnstat.cgi $VERSION">
 <title>Traffic Statistics for $servername</title>
 <style>
 <!--
@@ -118,8 +122,8 @@ sub print_single_interface_html($)
 <!DOCTYPE html>
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<meta name="Generator" content="vnstat.cgi $VERSION">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">$metarefresh
+<meta name="generator" content="vnstat.cgi $VERSION">
 <title>Traffic Statistics for $servername - $interfaces[${interface}]</title>
 <style>
 <!--
@@ -183,8 +187,8 @@ sub print_single_image_html($)
 <!DOCTYPE html>
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<meta name="Generator" content="vnstat.cgi $VERSION">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">$metarefresh
+<meta name="generator" content="vnstat.cgi $VERSION">
 <title>$content Traffic Statistics for $servername - $interfaces[${interface}]</title>
 <style>
 <!--
@@ -255,6 +259,10 @@ sub main()
 
 	if ($aligncenter != '0') {
 		$cssbody = "html { display: table; width: 100%; }\nbody { background-color: $bgcolor; display: table-cell; text-align: center; vertical-align: middle; }\ntable { margin-left: auto; margin-right: auto; margin-top: 10px; }";
+	}
+
+	if ($pagerefresh != '0') {
+		$metarefresh = "\n<meta http-equiv=\"refresh\" content=\"$pagerefresh\">";
 	}
 
 	mkdir $tmp_dir, 0755 unless -d $tmp_dir;
