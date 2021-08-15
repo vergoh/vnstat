@@ -57,6 +57,7 @@ int loadcfg(const char *cfgfile, const ConfigType type)
 		 {"PollInterval", 0, &cfg.pollinterval, 0, 0},
 		 {"SaveInterval", 0, &cfg.saveinterval, 0, 0},
 		 {"OfflineSaveInterval", 0, &cfg.offsaveinterval, 0, 0},
+		 {"AlwaysAddNewInterfaces", 0, &cfg.alwaysadd, 0, 0},
 		 {"BandwidthDetectionInterval", 0, &cfg.bwdetectioninterval, 0, 0},
 		 {"SaveOnStatusChange", 0, &cfg.savestatus, 0, 0},
 		 {"UseLogging", 0, &cfg.uselogging, 0, 0},
@@ -262,6 +263,8 @@ void validatecfg(const ConfigType type)
 	}
 
 	if (type == CT_Daemon || type == CT_All) {
+		validatebool("AlwaysAddNewInterfaces", &cfg.alwaysadd, ALWAYSADD);
+
 		if (cfg.updateinterval < cfg.pollinterval || cfg.updateinterval > 300) {
 			if (cfg.pollinterval > UPDATEINTERVAL) {
 				cfg.updateinterval = cfg.pollinterval;
@@ -390,6 +393,7 @@ void defaultcfg(void)
 	cfg.pollinterval = POLLINTERVAL;
 	cfg.saveinterval = SAVEINTERVAL;
 	cfg.offsaveinterval = OFFSAVEINTERVAL;
+	cfg.alwaysadd = ALWAYSADD;
 	cfg.savestatus = SAVESTATUS;
 	cfg.uselogging = USELOGGING;
 	cfg.createdirs = CREATEDIRS;

@@ -21,6 +21,7 @@ vnStat daemon - Copyright (C) 2008-2021 Teemu Toivola <tst@iki.fi>
 #include "cfg.h"
 #include "ibw.h"
 #include "id.h"
+#include "misc.h"
 #include "daemon.h"
 #include "vnstatd.h"
 
@@ -161,7 +162,7 @@ int main(int argc, char *argv[])
 		if (s.dbifcount != 0) {
 			previflisthash = s.iflisthash;
 			interfacechangecheck(&s);
-			if (s.alwaysadd && s.iflisthash != previflisthash && previflisthash != 0) {
+			if (cfg.alwaysadd && s.iflisthash != previflisthash && previflisthash != 0) {
 				temp = s.dbifcount;
 				s.dbifcount += addinterfaces(&s);
 				if (temp != s.dbifcount) {
@@ -297,7 +298,27 @@ void parseargs(DSTATE *s, int argc, char **argv)
 		} else if (strcmp(argv[currentarg], "--noadd") == 0) {
 			s->noadd = 1;
 		} else if (strcmp(argv[currentarg], "--alwaysadd") == 0) {
-			s->alwaysadd = 1;
+			if (currentarg + 1 < argc && (strlen(argv[currentarg + 1]) == 1 || ishelprequest(argv[currentarg + 1]))) {
+				if (!isdigit(argv[currentarg + 1][0]) || atoi(argv[currentarg + 1]) > 1 || atoi(argv[currentarg + 1]) < 0) {
+					if (!ishelprequest(argv[currentarg + 1]))
+						printf("Error: Invalid mode parameter \"%s\".\n", argv[currentarg + 1]);
+					printf(" Valid parameters for %s:\n", argv[currentarg]);
+					printf("    0 - disabled");
+					if (!cfg.alwaysadd) {
+						printf(" (default)");
+					}
+					printf("\n    1 - enabled");
+					if (cfg.alwaysadd) {
+						printf(" (default)");
+					}
+					printf("\n No mode parameter results in feature being enabled.\n");
+					exit(EXIT_FAILURE);
+				}
+				cfg.alwaysadd = atoi(argv[currentarg + 1]);
+				currentarg++;
+			} else {
+				cfg.alwaysadd = 1;
+			}
 		} else if (strcmp(argv[currentarg], "--initdb") == 0) {
 			s->initdb = 1;
 			s->showhelp = 0;
@@ -322,9 +343,9 @@ void parseargs(DSTATE *s, int argc, char **argv)
 		}
 	}
 
-	if (s->noadd && s->alwaysadd) {
-		printf("Error: --noadd and --alwaysadd can't both be used at the same time.\n");
-		exit(EXIT_FAILURE);
+	if (s->noadd && cfg.alwaysadd) {
+		printf("Warning: --noadd and --alwaysadd can't both be enabled at the same time. --alwaysadd has been disabled.\n");
+		cfg.alwaysadd = 0;
 	}
 
 	if (s->rundaemon && debug) {

@@ -229,6 +229,7 @@ and most can be changed later from the config file.
 #define POLLINTERVAL 5
 #define SAVEINTERVAL 5
 #define OFFSAVEINTERVAL 30
+#define ALWAYSADD 0
 #define SAVESTATUS 1
 #define USELOGGING 2
 #define CREATEDIRS 1
@@ -305,7 +306,7 @@ typedef struct {
 	int32_t monthrotate, monthrotateyears, maxbw, spacecheck, trafficlessentries, transbg, ostyle;
 	int32_t defaultdecimals, hourlydecimals, hourlystyle, is64bit, waldb, dbsynchronous, useutc, imagescale;
 	int32_t largefonts, linespaceadjust, estimatebarvisible, estimatestyle, barshowsrate, fivegresultcount;
-	int32_t fivegheight, summarygraph;
+	int32_t fivegheight, summarygraph, alwaysadd;
 	char cfgfile[512], logfile[512], pidfile[512];
 	char daemonuser[33], daemongroup[33];
 	int32_t timesyncwait, updateinterval, pollinterval, saveinterval, offsaveinterval, savestatus;

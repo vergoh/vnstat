@@ -28,6 +28,8 @@
    - --iflist uses user configured interface specific MaxBW values in the
      output when available instead of showing only the kernel provided
      information when detected
+   - Add configuration option AlwaysAddNewInterfaces to expose the daemon
+     --alwaysadd command line option which gains an optional mode parameter
    - Image output uses LibGD filled arc bug workaround only for LibGD
      versions that are known to be broken
    - Image output example cgi (examples/vnstat.cgi) improvements

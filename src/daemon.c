@@ -252,7 +252,6 @@ void initdstate(DSTATE *s)
 	s->sync = 0;
 	s->forcesave = 0;
 	s->noadd = 0;
-	s->alwaysadd = 0;
 	s->initdb = 0;
 	s->iflisthash = 0;
 	s->cfgfile[0] = '\0';
@@ -273,7 +272,7 @@ void preparedatabase(DSTATE *s)
 {
 	s->dbifcount = db_getinterfacecount();
 
-	if (s->dbifcount > 0 && !s->alwaysadd) {
+	if (s->dbifcount > 0 && !cfg.alwaysadd) {
 		s->dbifcount = 0;
 		return;
 	}
@@ -293,7 +292,7 @@ void preparedatabase(DSTATE *s)
 	}
 
 	if (s->dbifcount == 0) {
-		if (importlegacydbs(s) && !s->alwaysadd) {
+		if (importlegacydbs(s) && !cfg.alwaysadd) {
 			s->dbifcount = 0;
 			return;
 		}

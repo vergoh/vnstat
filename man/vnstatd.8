@@ -6,7 +6,8 @@ vnstatd \- daemon based database updating for vnStat
 
 .B vnstatd
 .RB [ \-Ddnpsv? ]
-.RB [ \-\-alwaysadd ]
+.RB [ \-\-alwaysadd
+.RI [ mode ]]
 .RB [ \-\-config
 .IR file ]
 .RB [ \-\-daemon ]
@@ -52,10 +53,10 @@ during startup with entries for all available interfaces excluding pseudo
 interfaces lo, lo0 and sit0. This automatic database entry creation behaviour
 can be disabled using the
 .B --noadd
-option. Alternatively, it is possible to allow the daemon to create new
-database entries whenever previously unseen interfaces become visible using the
+option. Alternatively, using the
 .B --alwaysadd
-option.
+option instructs the daemon to create new database entries whenever interfaces not
+currently in the databases become visible.
 .PP
 The daemon will proceed to track the availability of monitored interfaces,
 process the interface traffic statistics and write new values to the database
@@ -78,11 +79,20 @@ existing database values get incremented with the new data.
 .SH OPTIONS
 
 .TP
-.B "--alwaysadd"
-Enable automatic creation of new database entries for previously unseen interfaces
-even if the database already exists when the daemon is started. New database entries
-will also get created for new interfaces seen while the daemon is running. Pseudo
-interfaces lo, lo0 and sit0 are always excluded from getting added.
+.BI "--alwaysadd " [mode]
+Enable automatic creation of new database entries for interfaces not currently in
+the database even if the database file already exists when the daemon is started. New
+database entries will also get created for new interfaces seen while the daemon is
+running. Pseudo interfaces lo, lo0 and sit0 are always excluded from getting added.
+Using the option without
+.I mode
+defined or with
+.I mode
+set to 1 will enable the feature. Setting
+.I mode
+to 0 will disable the feature. This command line option overrides the
+.B AlwaysAddNewInterfaces
+configuration option when used.
 
 .TP
 .BI "--config " file

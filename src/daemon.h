@@ -5,7 +5,7 @@ typedef struct {
 	int updateinterval, saveinterval;
 	short running, dodbsave, rundaemon;
 	short dbsaved, showhelp, sync, forcesave, noadd, initdb;
-	short alwaysadd, bootdetected, cleanuphour, dbretrycount;
+	short bootdetected, cleanuphour, dbretrycount;
 	uint32_t iflisthash;
 	uint64_t dbifcount;
 	char cfgfile[512];
