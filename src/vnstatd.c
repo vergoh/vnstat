@@ -247,7 +247,7 @@ void showhelp(void)
 	printf("      -g, --group <group>      set daemon process group\n");
 	printf("      --config <config file>   select used config file\n");
 	printf("      --noadd                  prevent startup if database has no interfaces\n");
-	printf("      --alwaysadd              automatically start monitoring all new interfaces\n");
+	printf("      --alwaysadd [mode]       automatically start monitoring all new interfaces\n");
 	printf("      --initdb                 create empty database and exit\n\n");
 
 	printf("See also \"man vnstatd\".\n");
