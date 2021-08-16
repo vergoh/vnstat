@@ -49,7 +49,7 @@ my $scriptname = '';
 ################
 
 
-my $VERSION = "1.13";
+my $VERSION = "1.14";
 my $cssbody = "body { background-color: $bgcolor; }";
 my $csscommonstyle = <<CSS;
 a { text-decoration: underline; }
@@ -277,6 +277,31 @@ sub main()
 		elsif ($query =~ /^(\d+)-hs$/) {
 			my $file = "$tmp_dir/vnstat_$1_hs.png";
 			graph($interfaces[$1], $file, "-hs");
+			send_image($file);
+		}
+		elsif ($query =~ /^(\d+)-hsh$/) {
+			my $file = "$tmp_dir/vnstat_$1_hsh.png";
+			graph($interfaces[$1], $file, "-hs 0");
+			send_image($file);
+		}
+		elsif ($query =~ /^(\d+)-hs5$/) {
+			my $file = "$tmp_dir/vnstat_$1_hs5.png";
+			graph($interfaces[$1], $file, "-hs 1");
+			send_image($file);
+		}
+		elsif ($query =~ /^(\d+)-vs$/) {
+			my $file = "$tmp_dir/vnstat_$1_vs.png";
+			graph($interfaces[$1], $file, "-vs");
+			send_image($file);
+		}
+		elsif ($query =~ /^(\d+)-vsh$/) {
+			my $file = "$tmp_dir/vnstat_$1_vsh.png";
+			graph($interfaces[$1], $file, "-vs 0");
+			send_image($file);
+		}
+		elsif ($query =~ /^(\d+)-vs5$/) {
+			my $file = "$tmp_dir/vnstat_$1_vs5.png";
+			graph($interfaces[$1], $file, "-vs 1");
 			send_image($file);
 		}
 		elsif ($query =~ /^(\d+)-d$/) {
