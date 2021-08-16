@@ -263,6 +263,7 @@ void validatecfg(const ConfigType type)
 	}
 
 	if (type == CT_Daemon || type == CT_All) {
+		validatebool("RescanDatabaseOnSave", &cfg.rescanonsave, RESCANONSAVE);
 		validatebool("AlwaysAddNewInterfaces", &cfg.alwaysadd, ALWAYSADD);
 
 		if (cfg.updateinterval < cfg.pollinterval || cfg.updateinterval > 300) {
@@ -393,6 +394,7 @@ void defaultcfg(void)
 	cfg.pollinterval = POLLINTERVAL;
 	cfg.saveinterval = SAVEINTERVAL;
 	cfg.offsaveinterval = OFFSAVEINTERVAL;
+	cfg.rescanonsave = RESCANONSAVE;
 	cfg.alwaysadd = ALWAYSADD;
 	cfg.savestatus = SAVESTATUS;
 	cfg.uselogging = USELOGGING;

@@ -1,7 +1,7 @@
 
 # New configuration settings
 
- * 2.8: AlwaysAddNewInterfaces, UseUTC
+ * 2.8: AlwaysAddNewInterfaces, RescanDatabaseOnSave, UseUTC
 
  * 2.7: 5MinuteGraphHeight, 5MinuteGraphResultCount, BarColumnShowsRate,
         EstimateBarVisible, EstimateStyle, ImageScale, LargeFonts,

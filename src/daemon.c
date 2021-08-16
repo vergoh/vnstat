@@ -471,6 +471,9 @@ void processdatacache(DSTATE *s)
 			db_removeoldentries();
 			s->cleanuphour = getcurrenthour();
 		}
+		if (cfg.rescanonsave) {
+			rescandatabaseforinterfaces(s);
+		}
 		s->dodbsave = 0;
 	}
 }
@@ -731,6 +734,48 @@ void cleanremovedinterfaces(DSTATE *s)
 		datacache_status(&s->dcache);
 		iflistfree(&dbifl);
 	}
+	timeused_debug(__func__, 0);
+}
+
+void rescandatabaseforinterfaces(DSTATE *s)
+{
+	short interface_already_monitored = 0;
+	uint64_t dbifcount = s->dbifcount;
+	datacache *iterator = s->dcache;
+	iflist *dbifl = NULL, *dbifl_iterator = NULL;
+
+	timeused_debug(__func__, 1);
+
+	if (db_getiflist(&dbifl) > 0 && dbifl != NULL) {
+		dbifl_iterator = dbifl;
+		while (dbifl_iterator != NULL) {
+			iterator = s->dcache;
+			interface_already_monitored = 0;
+			while (iterator != NULL) {
+				if (strcmp(iterator->interface, dbifl_iterator->interface) == 0) {
+					interface_already_monitored = 1;
+					break;
+				}
+				iterator = iterator->next;
+			}
+			if (!interface_already_monitored) {
+				snprintf(errorstring, 1024, "Adding interface \"%s\" to update list.", dbifl_iterator->interface);
+				printe(PT_Info);
+				if (!datacache_add(&s->dcache, dbifl_iterator->interface, 1)) {
+					snprintf(errorstring, 1024, "Cache memory allocation failed (%s), exiting.", strerror(errno));
+					printe(PT_Error);
+					errorexitdaemon(s, 1);
+				}
+				s->dbifcount++;
+			}
+			dbifl_iterator = dbifl_iterator->next;
+		}
+		if (s->dbifcount != dbifcount) {
+			datacache_status(&s->dcache);
+		}
+		iflistfree(&dbifl);
+	}
+
 	timeused_debug(__func__, 0);
 }
 

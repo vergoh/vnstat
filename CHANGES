@@ -30,6 +30,8 @@
      information when detected
    - Add configuration option AlwaysAddNewInterfaces to expose the daemon
      --alwaysadd command line option which gains an optional mode parameter
+   - The daemon can discover added interfaces from the database without
+     requiring a restart, configurable with option RescanDatabaseOnSave
    - Image output uses LibGD filled arc bug workaround only for LibGD
      versions that are known to be broken
    - Image output example cgi (examples/vnstat.cgi) improvements

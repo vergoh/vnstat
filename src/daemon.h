@@ -36,6 +36,7 @@ int processifinfo(DSTATE *s, datacache **dc);
 void flushcachetodisk(DSTATE *s);
 void handledatabaseerror(DSTATE *s);
 void cleanremovedinterfaces(DSTATE *s);
+void rescandatabaseforinterfaces(DSTATE *s);
 
 void datacache_status(datacache **dc);
 

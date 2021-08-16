@@ -327,6 +327,16 @@ How often in seconds interfaces are checked for status changes.
 Value range: 2..60
 
 .TP
+.B RescanDatabaseOnSave
+Automatically discover added interfaces from the database and start monitoring.
+The rescan is done every
+.B SaveInterval
+or
+.B OfflineSaveInterval
+minutes depending on the current activity state.
+1 = enabled, 0 = disabled.
+
+.TP
 .B SaveInterval
 How often in minutes cached interface data is saved to file.
 Value range: (

@@ -126,6 +126,9 @@ void printcfgfile(void)
 	printf("# how often (in minutes) data is saved when all interface are offline\n");
 	printf("OfflineSaveInterval %d\n\n", cfg.offsaveinterval);
 
+	printf("# rescan database after save for new interfaces to be monitored (1 = enabled, 0 = disabled)\n");
+	printf("RescanDatabaseOnSave %d\n\n", cfg.rescanonsave);
+
 	printf("# automatically start monitoring all interfaces not found in the database\n");
 	printf("# (1 = enabled, 0 = disabled)\n");
 	printf("AlwaysAddNewInterfaces %d\n\n", cfg.alwaysadd);

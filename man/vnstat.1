@@ -105,8 +105,13 @@ Create database entry for interface specified with
 .B \-i
 or
 .B \-\-iface
-option. The daemon can be running during this operation but will not
-automatically detect the addition without a restart.
+option. The daemon can be running during this operation and will automatically
+start monitoring the interface without a restart within
+.B SaveInterval
+minutes if configuration option
+.B RescanDatabaseOnSave
+is enabled. Otherwise the daemon needs to be restarted in order for the
+added interface to be monitored.
 
 .TP
 .BI "-b, --begin " date

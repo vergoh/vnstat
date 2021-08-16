@@ -1428,6 +1428,114 @@ START_TEST(datacache_status_has_no_issues_with_large_number_of_interfaces)
 }
 END_TEST
 
+START_TEST(rescandatabaseforinterfaces_does_nothing_if_database_has_no_interfaces)
+{
+	int ret;
+	DSTATE s;
+	initdstate(&s);
+
+	ck_assert_int_eq(datacache_count(&s.dcache), 0);
+	ck_assert_int_eq(s.dbifcount, 0);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(db_getinterfacecount(), 0);
+
+	rescandatabaseforinterfaces(&s);
+
+	ck_assert_int_eq(datacache_count(&s.dcache), 0);
+	ck_assert_int_eq(s.dbifcount, 0);
+
+	ck_assert_int_eq(db_getinterfacecount(), 0);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+
+	datacache_clear(&s.dcache);
+}
+END_TEST
+
+START_TEST(rescandatabaseforinterfaces_does_nothing_if_interface_lists_are_the_same)
+{
+	int ret;
+	DSTATE s;
+	initdstate(&s);
+
+	ck_assert_int_eq(datacache_count(&s.dcache), 0);
+	ret = datacache_add(&s.dcache, "ethtwo", 0);
+	ck_assert_int_eq(ret, 1);
+	ret = datacache_add(&s.dcache, "eththree", 0);
+	ck_assert_int_eq(ret, 1);
+	ret = datacache_add(&s.dcache, "ethone", 0);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datacache_count(&s.dcache), 3);
+	s.dbifcount = 3;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(db_getinterfacecount(), 0);
+	ret = db_addinterface("ethtwo");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("ethone");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eththree");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(db_getinterfacecount(), 3);
+
+	rescandatabaseforinterfaces(&s);
+
+	ck_assert_int_eq(datacache_count(&s.dcache), 3);
+	ck_assert_int_eq(s.dbifcount, 3);
+
+	ck_assert_int_eq(db_getinterfacecount(), 3);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+
+	datacache_clear(&s.dcache);
+}
+END_TEST
+
+START_TEST(rescandatabaseforinterfaces_adds_missing_interfaces_to_update_list)
+{
+	int ret;
+	DSTATE s;
+	initdstate(&s);
+	disable_logprints();
+
+	ck_assert_int_eq(datacache_count(&s.dcache), 0);
+	ret = datacache_add(&s.dcache, "ethone", 0);
+	ck_assert_int_eq(ret, 1);
+	ret = datacache_add(&s.dcache, "ethfour", 0);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datacache_count(&s.dcache), 2);
+	s.dbifcount = 2;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(db_getinterfacecount(), 0);
+	ret = db_addinterface("ethtwo");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("ethone");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eththree");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(db_getinterfacecount(), 3);
+
+	rescandatabaseforinterfaces(&s);
+
+	ck_assert_int_eq(datacache_count(&s.dcache), 4);
+	ck_assert_int_eq(s.dbifcount, 4);
+
+	ck_assert_int_eq(db_getinterfacecount(), 3);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+
+	datacache_clear(&s.dcache);
+}
+END_TEST
+
 void add_daemon_tests(Suite *s)
 {
 	TCase *tc_daemon = tcase_create("Daemon");
@@ -1493,5 +1601,8 @@ void add_daemon_tests(Suite *s)
 	tcase_add_test(tc_daemon, datacache_status_can_handle_nothing);
 	tcase_add_test(tc_daemon, datacache_status_can_show_limits);
 	tcase_add_test(tc_daemon, datacache_status_has_no_issues_with_large_number_of_interfaces);
+	tcase_add_test(tc_daemon, rescandatabaseforinterfaces_does_nothing_if_database_has_no_interfaces);
+	tcase_add_test(tc_daemon, rescandatabaseforinterfaces_does_nothing_if_interface_lists_are_the_same);
+	tcase_add_test(tc_daemon, rescandatabaseforinterfaces_adds_missing_interfaces_to_update_list);
 	suite_add_tcase(s, tc_daemon);
 }

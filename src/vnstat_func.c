@@ -661,7 +661,11 @@ void handleaddinterface(PARAMS *p)
 
 	printf("Adding interface \"%s\" for monitoring to database...\n", p->interface);
 	if (db_addinterface(p->interface)) {
-		printf("\nRestart the vnStat daemon if it is currently running in order to start monitoring \"%s\".\n", p->interface);
+		if (cfg.rescanonsave) {
+			printf("\nvnStat daemon will automatically start monitoring \"%s\" within %d minutes if the daemon process is currently running.\n", p->interface, cfg.saveinterval);
+		} else {
+			printf("\nRestart vnStat daemon if it is currently running in order to start monitoring \"%s\".\n", p->interface);
+		}
 		handlesetalias(p);
 #ifndef CHECK_VNSTAT
 		db_close();

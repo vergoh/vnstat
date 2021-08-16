@@ -229,6 +229,7 @@ and most can be changed later from the config file.
 #define POLLINTERVAL 5
 #define SAVEINTERVAL 5
 #define OFFSAVEINTERVAL 30
+#define RESCANONSAVE 1
 #define ALWAYSADD 0
 #define SAVESTATUS 1
 #define USELOGGING 2
@@ -309,7 +310,7 @@ typedef struct {
 	int32_t fivegheight, summarygraph, alwaysadd;
 	char cfgfile[512], logfile[512], pidfile[512];
 	char daemonuser[33], daemongroup[33];
-	int32_t timesyncwait, updateinterval, pollinterval, saveinterval, offsaveinterval, savestatus;
+	int32_t timesyncwait, updateinterval, pollinterval, saveinterval, offsaveinterval, rescanonsave, savestatus;
 	int32_t uselogging, createdirs, updatefileowner, bwdetection, bwdetectioninterval, utflocale;
 	int32_t fiveminutehours, hourlydays, dailydays, monthlymonths, yearlyyears, topdayentries;
 	int32_t listfivemins, listhours, listdays, listmonths, listyears, listtop, listjsonxml;
