@@ -741,7 +741,7 @@ void rescandatabaseforinterfaces(DSTATE *s)
 {
 	short interface_already_monitored = 0;
 	uint64_t dbifcount = s->dbifcount;
-	datacache *iterator = s->dcache;
+	datacache *iterator = NULL;
 	iflist *dbifl = NULL, *dbifl_iterator = NULL;
 
 	timeused_debug(__func__, 1);
