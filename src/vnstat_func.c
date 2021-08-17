@@ -542,8 +542,8 @@ void handleremoveinterface(PARAMS *p)
 	}
 
 	if (!p->force) {
-		printf("Warning:\nThe current option would remove all data\nabout interface \"%s\" from the database.\n", p->interface);
-		printf("Use --force in order to really do that.\n");
+		printf("Warning:\nThe current option would remove all data about interface \"%s\" from the database. ", p->interface);
+		printf("Add --force in order to really do that.\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -556,8 +556,7 @@ void handleremoveinterface(PARAMS *p)
 
 	if (db_removeinterface(p->interface)) {
 		printf("Interface \"%s\" removed from database.\n", p->interface);
-		printf("The interface will no longer be monitored. Use --add\n");
-		printf("if monitoring the interface is again needed.\n");
+		printf("The interface will no longer be monitored. Use --add if monitoring the interface is again needed.\n");
 #ifndef CHECK_VNSTAT
 		db_close();
 		exit(EXIT_SUCCESS);
@@ -595,8 +594,8 @@ void handlerenameinterface(PARAMS *p)
 	}
 
 	if (!p->force) {
-		printf("Warning:\nThe current option would rename\ninterface \"%s\" -> \"%s\" in the database.\n", p->interface, p->newifname);
-		printf("Use --force in order to really do that.\n");
+		printf("Warning:\nThe current option would rename interface \"%s\" -> \"%s\" in the database. ", p->interface, p->newifname);
+		printf("Add --force in order to really do that.\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -659,12 +658,12 @@ void handleaddinterface(PARAMS *p)
 	}
 #endif
 
-	printf("Adding interface \"%s\" for monitoring to database...\n", p->interface);
+	printf("Adding interface \"%s\" to database for monitoring.\n", p->interface);
 	if (db_addinterface(p->interface)) {
 		if (cfg.rescanonsave) {
-			printf("\nvnStat daemon will automatically start monitoring \"%s\" within %d minutes if the daemon process is currently running.\n", p->interface, cfg.saveinterval);
+			printf("vnStat daemon will automatically start monitoring \"%s\" within %d minutes if the daemon process is currently running.\n", p->interface, cfg.saveinterval);
 		} else {
-			printf("\nRestart vnStat daemon if it is currently running in order to start monitoring \"%s\".\n", p->interface);
+			printf("Restart vnStat daemon if it is currently running in order to start monitoring \"%s\".\n", p->interface);
 		}
 		handlesetalias(p);
 #ifndef CHECK_VNSTAT
@@ -834,8 +833,8 @@ void handletrafficmeters(PARAMS *p)
 		if (p->defaultiface) {
 			printf("Error: Configured default interface \"%s\" isn't available.\n\n", p->interface);
 			if (strlen(cfg.cfgfile)) {
-				printf("Update \"Interface\" keyword value in \"%s\" to change\n", cfg.cfgfile);
-				printf("the default interface or give an alternative interface\nusing the -i parameter.\n\n");
+				printf("Update \"Interface\" keyword value in configuration file \"%s\" to change ", cfg.cfgfile);
+				printf("the default interface or give an alternative interface using the -i parameter.\n\n");
 			} else {
 				printf("An alternative interface can be given using the -i parameter.\n\n");
 			}

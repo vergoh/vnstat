@@ -723,7 +723,7 @@ void cleanremovedinterfaces(DSTATE *s)
 	if (dbifl != NULL) {
 		dbifl_iterator = dbifl;
 		while (dbifl_iterator != NULL) {
-			snprintf(errorstring, 1024, "Removing interface \"%s\" from update list.", dbifl_iterator->interface);
+			snprintf(errorstring, 1024, "Removing interface \"%s\" from monitoring.", dbifl_iterator->interface);
 			printe(PT_Info);
 			datacache_remove(&s->dcache, dbifl_iterator->interface);
 			if (s->dbifcount > 0) {
@@ -759,7 +759,7 @@ void rescandatabaseforinterfaces(DSTATE *s)
 				iterator = iterator->next;
 			}
 			if (!interface_already_monitored) {
-				snprintf(errorstring, 1024, "Adding interface \"%s\" to update list.", dbifl_iterator->interface);
+				snprintf(errorstring, 1024, "Adding interface \"%s\" for monitoring.", dbifl_iterator->interface);
 				printe(PT_Info);
 				if (!datacache_add(&s->dcache, dbifl_iterator->interface, 1)) {
 					snprintf(errorstring, 1024, "Cache memory allocation failed (%s), exiting.", strerror(errno));

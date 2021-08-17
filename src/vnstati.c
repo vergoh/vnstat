@@ -514,7 +514,7 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 void validateinput(IPARAMS *p)
 {
 	if (!cfg.qmode || !strlen(p->filename)) {
-		printf("At least output mode and file parameter needs to be given.\n");
+		printf("At least output mode and file parameter needs to be given. ");
 		printf("Use -? or --help for getting short help.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -571,7 +571,7 @@ void handledatabase(IPARAMS *p, IMAGECONTENT *ic)
 			printf("Automatically selected interface: \"%s\"\n", p->interface);
 	}
 	if (!db_getinterfaceinfo(p->interface, &ic->interface)) {
-		printf("Error: Failed to fetch interface \"%s\" info from database.\n", p->interface);
+		printf("Error: Failed to fetch interface \"%s\" details from database.\n", p->interface);
 		exit(EXIT_FAILURE);
 	}
 }
