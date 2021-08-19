@@ -2448,6 +2448,112 @@ START_TEST(getqueryinterfacecount_can_count)
 }
 END_TEST
 
+START_TEST(top_list_returns_items_in_correct_order)
+{
+	int ret;
+	dbdatalist *datalist = NULL, *datalist_iterator = NULL;
+	dbdatalistinfo datainfo;
+	uint64_t previous_entry;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("ethtest");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addtraffic_dated("ethtest", 0, 0, get_timestamp(2000, 3, 10, 0, 0));
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addtraffic_dated("ethtest", 12, 34, get_timestamp(2000, 3, 11, 0, 0));
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addtraffic_dated("ethtest", 0, 0, get_timestamp(2000, 3, 12, 0, 0));
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addtraffic_dated("ethtest", 0, 0, get_timestamp(2000, 3, 13, 0, 0));
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addtraffic_dated("ethtest", 56, 78, get_timestamp(2000, 3, 14, 0, 0));
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addtraffic_dated("ethtest", 1, 1, get_timestamp(2000, 3, 15, 0, 0));
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addtraffic_dated("ethtest", 1, 1, get_timestamp(2000, 3, 16, 0, 0));
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addtraffic_dated("ethtest", 45, 1, get_timestamp(2000, 3, 17, 0, 0));
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getdata(&datalist, &datainfo, "ethtest", "top", 10);
+	ck_assert_int_eq(ret, 1);
+
+	ck_assert_int_eq(datainfo.count, 8);
+	ck_assert_int_eq(datainfo.maxrx, 56);
+	ck_assert_int_eq(datainfo.maxtx, 78);
+	ck_assert_int_eq(datainfo.minrx, 0);
+	ck_assert_int_eq(datainfo.mintx, 0);
+
+	datalist_iterator = datalist;
+
+	ck_assert_int_eq(datalist_iterator->rx, 56);
+	ck_assert_int_eq(datalist_iterator->tx, 78);
+	printf("%lu - %lu %lu\n", datalist_iterator->rx, datalist_iterator->tx, datalist_iterator->timestamp);
+
+	datalist_iterator = datalist_iterator->next;
+
+	ck_assert_int_eq(datalist_iterator->rx, 12);
+	ck_assert_int_eq(datalist_iterator->tx, 34);
+	printf("%lu - %lu %lu\n", datalist_iterator->rx, datalist_iterator->tx, datalist_iterator->timestamp);
+
+	datalist_iterator = datalist_iterator->next;
+
+	ck_assert_int_eq(datalist_iterator->rx, 45);
+	ck_assert_int_eq(datalist_iterator->tx, 1);
+	printf("%lu - %lu %lu\n", datalist_iterator->rx, datalist_iterator->tx, datalist_iterator->timestamp);
+
+	datalist_iterator = datalist_iterator->next;
+
+	ck_assert_int_eq(datalist_iterator->rx, 1);
+	ck_assert_int_eq(datalist_iterator->tx, 1);
+	previous_entry = (uint64_t)datalist_iterator->timestamp;
+	printf("%lu - %lu %lu\n", datalist_iterator->rx, datalist_iterator->tx, datalist_iterator->timestamp);
+
+	datalist_iterator = datalist_iterator->next;
+
+	ck_assert_int_eq(datalist_iterator->rx, 1);
+	ck_assert_int_eq(datalist_iterator->tx, 1);
+	ck_assert_int_lt(previous_entry, (uint64_t)datalist_iterator->timestamp);
+	printf("%lu - %lu %lu\n", datalist_iterator->rx, datalist_iterator->tx, datalist_iterator->timestamp);
+
+	datalist_iterator = datalist_iterator->next;
+
+	ck_assert_int_eq(datalist_iterator->rx, 0);
+	ck_assert_int_eq(datalist_iterator->tx, 0);
+	previous_entry = (uint64_t)datalist_iterator->timestamp;
+	printf("%lu - %lu %lu\n", datalist_iterator->rx, datalist_iterator->tx, datalist_iterator->timestamp);
+
+	datalist_iterator = datalist_iterator->next;
+
+	ck_assert_int_eq(datalist_iterator->rx, 0);
+	ck_assert_int_eq(datalist_iterator->tx, 0);
+	ck_assert_int_lt(previous_entry, (uint64_t)datalist_iterator->timestamp);
+	previous_entry = (uint64_t)datalist_iterator->timestamp;
+	printf("%lu - %lu %lu\n", datalist_iterator->rx, datalist_iterator->tx, datalist_iterator->timestamp);
+
+	datalist_iterator = datalist_iterator->next;
+
+	ck_assert_int_eq(datalist_iterator->rx, 0);
+	ck_assert_int_eq(datalist_iterator->tx, 0);
+	ck_assert_int_lt(previous_entry, (uint64_t)datalist_iterator->timestamp);
+	printf("%lu - %lu %lu\n", datalist_iterator->rx, datalist_iterator->tx, datalist_iterator->timestamp);
+
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 void add_dbsql_tests(Suite *s)
 {
 	TCase *tc_dbsql = tcase_create("DB SQL");
@@ -2536,5 +2642,6 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_getinterfaceinfo_can_handle_interface_merges);
 	tcase_add_test(tc_dbsql, db_getinterfaceinfo_can_handle_invalid_input);
 	tcase_add_test(tc_dbsql, getqueryinterfacecount_can_count);
+	tcase_add_test(tc_dbsql, top_list_returns_items_in_correct_order);
 	suite_add_tcase(s, tc_dbsql);
 }

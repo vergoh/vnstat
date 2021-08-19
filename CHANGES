@@ -20,6 +20,8 @@
      BandwidthDetection when something could be detected
    - Image output horizontal rx/tx bars often had one pixel too much width in
      the tx section resulting in slightly wrong ratio to be shown
+   - Top days list wasn't always sorting entries with exactly the same traffic
+     sum using ascending date
  - New
    - Add the possibility of specifying an interface without using the
      -i / --iface options (vnstat and vnstati)

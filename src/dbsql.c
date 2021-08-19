@@ -1027,7 +1027,7 @@ int db_removeoldentries_top(void)
 			continue;
 		}
 
-		sqlite3_snprintf(512, sql, "delete from top where id in ( select id from top where interface=%" PRId64 " and date!=date('now'%s) order by rx+tx desc limit -1 offset %d )", (int64_t)ifaceid, cfg.dbtzmodifier, cfg.topdayentries);
+		sqlite3_snprintf(512, sql, "delete from top where id in ( select id from top where interface=%" PRId64 " and date!=date('now'%s) order by rx+tx desc, date asc limit -1 offset %d )", (int64_t)ifaceid, cfg.dbtzmodifier, cfg.topdayentries);
 
 		if (!db_exec(sql)) {
 			errorcount++;
@@ -1222,15 +1222,15 @@ int db_getdata_range(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *
 			if (resultlimit > 0) {
 				snprintf(limit, 64, "limit %" PRIu32 "", resultlimit);
 			}
-			sqlite3_snprintf(512, sql, "select * from (select id, strftime('%%s', date, 'utc'), sum(rx) as rx, sum(tx) as tx from day where interface in (%q) %s %s group by date order by rx+tx desc %s) order by rx+tx asc", ifaceidin, dbegin, dend, limit);
+			sqlite3_snprintf(512, sql, "select * from (select id, strftime('%%s', date, 'utc') as unixdate, sum(rx) as rx, sum(tx) as tx from day where interface in (%q) %s %s group by date order by rx+tx desc, unixdate asc %s) order by rx+tx asc, unixdate desc", ifaceidin, dbegin, dend, limit);
 		} else {
-			sqlite3_snprintf(512, sql, "select * from (select id, strftime('%%s', date, 'utc'), sum(rx) as rx, sum(tx) as tx from top where interface in (%q) group by date order by rx+tx desc %s) order by rx+tx asc", ifaceidin, limit);
+			sqlite3_snprintf(512, sql, "select * from (select id, strftime('%%s', date, 'utc') as unixdate, sum(rx) as rx, sum(tx) as tx from top where interface in (%q) group by date order by rx+tx desc, unixdate asc %s) order by rx+tx asc, unixdate desc", ifaceidin, limit);
 		}
 	} else {
 		if (strlen(dbegin) && strlen(limit)) {
-			sqlite3_snprintf(512, sql, "select * from (select id, strftime('%%s', date, 'utc') as unixdate, sum(rx), sum(tx) from %s where interface in (%q) %s %s group by date order by date asc %s) order by unixdate desc", table, ifaceidin, dbegin, dend, limit);
+			sqlite3_snprintf(512, sql, "select * from (select id, strftime('%%s', date, 'utc') as unixdate, sum(rx), sum(tx) from %s where interface in (%q) %s %s group by date order by unixdate asc %s) order by unixdate desc", table, ifaceidin, dbegin, dend, limit);
 		} else {
-			sqlite3_snprintf(512, sql, "select id, strftime('%%s', date, 'utc'), sum(rx), sum(tx) from %s where interface in (%q) %s %s group by date order by date desc %s", table, ifaceidin, dbegin, dend, limit);
+			sqlite3_snprintf(512, sql, "select id, strftime('%%s', date, 'utc') as unixdate, sum(rx), sum(tx) from %s where interface in (%q) %s %s group by date order by unixdate desc %s", table, ifaceidin, dbegin, dend, limit);
 		}
 	}
 	free(ifaceidin);
