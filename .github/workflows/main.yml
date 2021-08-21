@@ -62,16 +62,6 @@ jobs:
       - name: verify log
         run: grep -iP 'sanitizer|runtime error' check_vnstat.log && exit 1 || true
 
-      - name: trigger dev container build
-        if: ${{ github.ref == 'refs/heads/master' && contains('push workflow_dispatch schedule', github.event_name) && success() }}
-        run: |
-          curl \
-            -X POST \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: token ${{ secrets.DEV_DOCKER_TRIGGER }}" \
-            -d '{"ref":"refs/heads/master"}' \
-            $GITHUB_API_URL/repos/vergoh/vnstat-docker/actions/workflows/dev.yml/dispatches
-
   ubuntu_clang_analyzer:
     runs-on: ubuntu-20.04
     env:
@@ -112,3 +102,28 @@ jobs:
 
       - name: version
         run: ./vnstat --version
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Check spelling
+        uses: crate-ci/typos@master
+        with:
+          files: ./man ./cfg ./CHANGES ./INSTALL* ./README* ./U*
+          isolated: true
+
+  dev_docker_trigger:
+    needs: [lint, ubuntu, ubuntu_clang_sanitizers, ubuntu_clang_analyzer]
+    runs-on: ubuntu-latest
+    steps:
+      - name: trigger dev container build
+        if: ${{ github.ref == 'refs/heads/master' && contains('push workflow_dispatch schedule', github.event_name) && success() }}
+        run: |
+          curl \
+            -X POST \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.DEV_DOCKER_TRIGGER }}" \
+            -d '{"ref":"refs/heads/master"}' \
+            $GITHUB_API_URL/repos/vergoh/vnstat-docker/actions/workflows/dev.yml/dispatches
