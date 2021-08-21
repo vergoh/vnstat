@@ -4,6 +4,7 @@
 # copyright (c) 2015-2021 Teemu Toivola <tst at iki dot fi>
 # released under the GNU General Public License
 
+use strict;
 
 # location of vnstat binary
 my $vnstat_cmd = '/usr/bin/vnstat';
@@ -34,8 +35,8 @@ if (defined $ENV{PATH_INFO}) {
 if (length($iface) == 0 and defined $ENV{QUERY_STRING}) {
 	my $getiface = "";
 	my @values = split(/&/, $ENV{QUERY_STRING});
-	foreach $i (@values) {
-		($varname, $varvalue) = split(/=/, $i);
+	foreach my $i (@values) {
+		my ($varname, $varvalue) = split(/=/, $i);
 		if ($varname eq 'interface' && $varvalue =~ /^(\d+)$/) {
 			$getiface = $varvalue;
 		}

@@ -8,6 +8,8 @@
 # copyright (c) 2000-2007 David Schweikert <dws@ee.ethz.ch>
 # released under the GNU General Public License
 
+package vnStatCGI;
+use strict;
 
 # server name in page title
 # fill to set, otherwise "hostname" command output is used
@@ -49,7 +51,7 @@ my $scriptname = '';
 ################
 
 
-my $VERSION = "1.14";
+my $VERSION = "1.15";
 my $cssbody = "body { background-color: $bgcolor; }";
 my $csscommonstyle = <<CSS;
 a { text-decoration: underline; }
@@ -64,7 +66,7 @@ small { display: block; }
 CSS
 my $metarefresh = "";
 
-sub graph($$$)
+sub graph
 {
 	my ($interface, $file, $param) = @_;
 
@@ -80,8 +82,10 @@ sub graph($$$)
 	}
 }
 
-sub print_interface_list_html()
+sub print_interface_list_html
 {
+	my @interfaces = @vnStatCGI::interfaces;
+
 	print "Content-Type: text/html\n\n";
 
 	print <<HEADER;
@@ -112,9 +116,10 @@ HEADER
 FOOTER
 }
 
-sub print_single_interface_html($)
+sub print_single_interface_html
 {
 	my ($interface) = @_;
+	my @interfaces = @vnStatCGI::interfaces;
 
 	print "Content-Type: text/html\n\n";
 
@@ -153,11 +158,12 @@ HEADER
 FOOTER
 }
 
-sub print_single_image_html($)
+sub print_single_image_html
 {
 	my ($image) = @_;
 	my $interface = "-1";
 	my $content = "";
+	my @interfaces = @vnStatCGI::interfaces;
 
 	if ($image =~ /^(\d+)-/) {
 		$interface = $1;
@@ -211,7 +217,7 @@ HEADER
 FOOTER
 }
 
-sub send_image($)
+sub send_image
 {
 	my ($file) = @_;
 
@@ -222,19 +228,19 @@ sub send_image($)
 	print "Content-type: image/png\n";
 	print "Content-length: ".((stat($file))[7])."\n";
 	print "\n";
-	open(IMG, $file) or die;
+	open(my $IMG_FILE, "<", $file) or die;
 	my $data;
-	print $data while read(IMG, $data, 16384)>0;
+	print $data while read($IMG_FILE, $data, 16384)>0;
 }
 
-sub show_error($)
+sub show_error
 {
 	my ($error_msg) = @_;
 	print "Content-type: text/plain\n\n$error_msg\n";
 	exit 1;
 }
 
-sub main()
+sub main
 {
 	if (length($scriptname) == 0) {
 		if (defined $ENV{REQUEST_URI}) {
@@ -247,10 +253,11 @@ sub main()
 		}
 	}
 
-	if (not defined $interfaces) {
+	if (not defined $vnStatCGI::interfaces) {
 		our @interfaces = `$vnstat_cmd --dbiflist 1`;
 	}
-	chomp @interfaces;
+	chomp @vnStatCGI::interfaces;
+	my @interfaces = @vnStatCGI::interfaces;
 
 	if (length($servername) == 0) {
 		$servername = `hostname`;

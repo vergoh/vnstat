@@ -111,8 +111,11 @@ jobs:
       - name: Check spelling
         uses: crate-ci/typos@master
         with:
-          files: ./man ./cfg ./CHANGES ./INSTALL* ./README* ./U*
+          files: ./man ./examples ./cfg ./CHANGES ./INSTALL* ./README* ./U*
           isolated: true
+
+      - name: Run Perl::Critic
+        uses: natanlao/perl-critic-action@v1.1
 
   dev_docker_trigger:
     needs: [lint, ubuntu, ubuntu_clang_sanitizers, ubuntu_clang_analyzer]
