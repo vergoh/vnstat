@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
 	timeused_debug("daemon_startup", 0);
 	s.running = 1;
 
-#if defined(__linux__)
+#if defined(__linux__) && HAVE_LINUX_RTNETLINK_H
 #if HAVE_DECL_IFLA_STATS64
 	snprintf(errorstring, 1024, "vnStat daemon %s started. (pid:%d uid:%d gid:%d 64-bit)", getversion(), (int)getpid(), (int)getuid(), (int)getgid());
 #else

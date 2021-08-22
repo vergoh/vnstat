@@ -9,7 +9,7 @@ int getifinfo(const char *iface)
 	ifinfo.filled = 0;
 	ifinfo.timestamp = 0;
 
-#if defined(__linux__)
+#if defined(__linux__) && HAVE_LINUX_RTNETLINK_H
 	if (cfg.is64bit == -2) {
 #if HAVE_DECL_IFLA_STATS64
 		ifinfo.is64bit = 1;

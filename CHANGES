@@ -22,6 +22,9 @@
      the tx section resulting in slightly wrong ratio to be shown
    - Top days list wasn't always sorting entries with exactly the same traffic
      sum using ascending date
+   - 64bitInterfaceCounters with value -2 always assumed 32-bit on Linux
+     systems until a 64-bit value was seen if kernel headers weren't available
+     when binaries were built
  - New
    - Add the possibility of specifying an interface without using the
      -i / --iface options (vnstat and vnstati)
