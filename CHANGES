@@ -47,7 +47,7 @@
        versions of each image
      - Allows direct interface specific page access with /interfacename suffix
        for the cgi if the used httpd supports PATH_INFO
-     - Has page auto refresh configurable
+     - Page auto refresh can be enabled with configurable interval
 
 
 2.7 / 16-May-2021
