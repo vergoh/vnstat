@@ -852,7 +852,7 @@ void preparedirs(DSTATE *s)
 
 void datacache_status(datacache **dc)
 {
-	char buffer[1024], bwtemp[16];
+	char buffer[1024], bwtemp[32];
 	unsigned int b = 0, count = 0;
 	uint32_t bwlimit = 0;
 	datacache *iterator = *dc;
@@ -863,11 +863,11 @@ void datacache_status(datacache **dc)
 	b = (unsigned int)strlen(buffer) + 1;
 
 	while (iterator != NULL) {
-		if ((b + strlen(iterator->interface) + 16) < 1020) {
+		if ((b + strlen(iterator->interface) + 32) < 1020) {
 			if (!ibwget(iterator->interface, &bwlimit) || bwlimit == 0) {
-				snprintf(bwtemp, 16, " (no limit) ");
+				snprintf(bwtemp, 32, " (no limit) ");
 			} else {
-				snprintf(bwtemp, 16, " (%" PRIu32 " Mbit) ", bwlimit);
+				snprintf(bwtemp, 32, " (%" PRIu32 " Mbit) ", bwlimit);
 			}
 			strcat(buffer, iterator->interface);
 			strcat(buffer, bwtemp);
