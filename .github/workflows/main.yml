@@ -16,7 +16,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       CC: ${{ matrix.compiler }}
-      CFLAGS: "${{ matrix.compiler == 'gcc' && '-Wall -Wextra' || '-Weverything -Wno-padded' }}"
+      CFLAGS: "${{ matrix.compiler == 'gcc' && '-Wall -Wextra -O2' || '-Weverything -Wno-padded' }}"
       CPARAMS: "${{ matrix.compiler == 'gcc' && '--enable-werror' || ' ' }}"
     steps:
       - uses: actions/checkout@v2
@@ -33,7 +33,10 @@ jobs:
         run: make check || ( cat test.log test-suite.log ; exit 1 )
 
       - name: version
-        run: ./vnstat --version
+        run: |
+          ./vnstat --version
+          ./vnstatd --version
+          ./vnstati --version
 
   ubuntu_clang_sanitizers:
     runs-on: ubuntu-20.04
@@ -57,7 +60,10 @@ jobs:
         run: make check || ( cat test.log test-suite.log ; exit 1 )
 
       - name: version
-        run: ./vnstat --version
+        run: |
+          ./vnstat --version
+          ./vnstatd --version
+          ./vnstati --version
 
       - name: verify log
         run: grep -iP 'sanitizer|runtime error' check_vnstat.log && exit 1 || true
@@ -101,7 +107,10 @@ jobs:
         run: make check || ( cat test.log test-suite.log ; exit 1 )
 
       - name: version
-        run: ./vnstat --version
+        run: |
+          ./vnstat --version
+          ./vnstatd --version
+          ./vnstati --version
 
   lint:
     runs-on: ubuntu-latest
