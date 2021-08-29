@@ -751,7 +751,6 @@ END_TEST
 
 START_TEST(vnstat_parseargs_can_select_interface_without_parameter)
 {
-	int ret;
 	PARAMS p;
 	char *argv[] = {"vnstat", "ethsomething", NULL};
 	int argc = sizeof(argv) / sizeof(char *) - 1;
@@ -767,7 +766,6 @@ END_TEST
 
 START_TEST(vnstat_parseargs_can_select_interface_without_parameter_even_if_there_are_other_parameters)
 {
-	int ret;
 	PARAMS p;
 	char *argv[] = {"vnstat", "-d", "ethsomethingtoo", NULL};
 	int argc = sizeof(argv) / sizeof(char *) - 1;
@@ -785,7 +783,6 @@ END_TEST
 
 START_TEST(vnstat_parseargs_can_select_interface_without_parameter_from_the_middle_of_the_parameter_list)
 {
-	int ret;
 	PARAMS p;
 	char *argv[] = {"vnstat", "-m", "ethsomethings", "-ru", NULL};
 	int argc = sizeof(argv) / sizeof(char *) - 1;
@@ -804,7 +801,6 @@ END_TEST
 
 START_TEST(vnstat_parseargs_knows_when_interface_name_is_too_long_even_without_parameter)
 {
-	int ret;
 	PARAMS p;
 	char *argv[] = {"vnstat", "ethethethethethethethethethetheth", NULL};
 	int argc = sizeof(argv) / sizeof(char *) - 1;
@@ -813,7 +809,6 @@ START_TEST(vnstat_parseargs_knows_when_interface_name_is_too_long_even_without_p
 	initparams(&p);
 	suppress_output();
 	parseargs(&p, argc, argv);
-	ck_assert_str_ne(p.interface, "ethethethethethethethethethetheth");
 	ck_assert_int_eq(p.defaultiface, 1);
 }
 END_TEST
