@@ -2497,40 +2497,34 @@ START_TEST(top_list_returns_items_in_correct_order)
 
 	ck_assert_int_eq(datalist_iterator->rx, 56);
 	ck_assert_int_eq(datalist_iterator->tx, 78);
-	printf("%lu - %lu %lu\n", datalist_iterator->rx, datalist_iterator->tx, datalist_iterator->timestamp);
 
 	datalist_iterator = datalist_iterator->next;
 
 	ck_assert_int_eq(datalist_iterator->rx, 12);
 	ck_assert_int_eq(datalist_iterator->tx, 34);
-	printf("%lu - %lu %lu\n", datalist_iterator->rx, datalist_iterator->tx, datalist_iterator->timestamp);
 
 	datalist_iterator = datalist_iterator->next;
 
 	ck_assert_int_eq(datalist_iterator->rx, 45);
 	ck_assert_int_eq(datalist_iterator->tx, 1);
-	printf("%lu - %lu %lu\n", datalist_iterator->rx, datalist_iterator->tx, datalist_iterator->timestamp);
 
 	datalist_iterator = datalist_iterator->next;
 
 	ck_assert_int_eq(datalist_iterator->rx, 1);
 	ck_assert_int_eq(datalist_iterator->tx, 1);
 	previous_entry = (uint64_t)datalist_iterator->timestamp;
-	printf("%lu - %lu %lu\n", datalist_iterator->rx, datalist_iterator->tx, datalist_iterator->timestamp);
 
 	datalist_iterator = datalist_iterator->next;
 
 	ck_assert_int_eq(datalist_iterator->rx, 1);
 	ck_assert_int_eq(datalist_iterator->tx, 1);
 	ck_assert_int_lt(previous_entry, (uint64_t)datalist_iterator->timestamp);
-	printf("%lu - %lu %lu\n", datalist_iterator->rx, datalist_iterator->tx, datalist_iterator->timestamp);
 
 	datalist_iterator = datalist_iterator->next;
 
 	ck_assert_int_eq(datalist_iterator->rx, 0);
 	ck_assert_int_eq(datalist_iterator->tx, 0);
 	previous_entry = (uint64_t)datalist_iterator->timestamp;
-	printf("%lu - %lu %lu\n", datalist_iterator->rx, datalist_iterator->tx, datalist_iterator->timestamp);
 
 	datalist_iterator = datalist_iterator->next;
 
@@ -2538,14 +2532,12 @@ START_TEST(top_list_returns_items_in_correct_order)
 	ck_assert_int_eq(datalist_iterator->tx, 0);
 	ck_assert_int_lt(previous_entry, (uint64_t)datalist_iterator->timestamp);
 	previous_entry = (uint64_t)datalist_iterator->timestamp;
-	printf("%lu - %lu %lu\n", datalist_iterator->rx, datalist_iterator->tx, datalist_iterator->timestamp);
 
 	datalist_iterator = datalist_iterator->next;
 
 	ck_assert_int_eq(datalist_iterator->rx, 0);
 	ck_assert_int_eq(datalist_iterator->tx, 0);
 	ck_assert_int_lt(previous_entry, (uint64_t)datalist_iterator->timestamp);
-	printf("%lu - %lu %lu\n", datalist_iterator->rx, datalist_iterator->tx, datalist_iterator->timestamp);
 
 	dbdatalistfree(&datalist);
 
