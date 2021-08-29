@@ -749,6 +749,75 @@ START_TEST(vnstat_parseargs_dbiflist_with_parseable_mode)
 }
 END_TEST
 
+START_TEST(vnstat_parseargs_can_select_interface_without_parameter)
+{
+	int ret;
+	PARAMS p;
+	char *argv[] = {"vnstat", "ethsomething", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	defaultcfg();
+	initparams(&p);
+	suppress_output();
+	parseargs(&p, argc, argv);
+	ck_assert_str_eq(p.interface, "ethsomething");
+	ck_assert_int_eq(p.defaultiface, 0);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_can_select_interface_without_parameter_even_if_there_are_other_parameters)
+{
+	int ret;
+	PARAMS p;
+	char *argv[] = {"vnstat", "-d", "ethsomethingtoo", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	defaultcfg();
+	initparams(&p);
+	suppress_output();
+	ck_assert_int_ne(cfg.qmode, 1);
+	parseargs(&p, argc, argv);
+	ck_assert_str_eq(p.interface, "ethsomethingtoo");
+	ck_assert_int_eq(p.defaultiface, 0);
+	ck_assert_int_eq(cfg.qmode, 1);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_can_select_interface_without_parameter_from_the_middle_of_the_parameter_list)
+{
+	int ret;
+	PARAMS p;
+	char *argv[] = {"vnstat", "-m", "ethsomethings", "-ru", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	defaultcfg();
+	initparams(&p);
+	suppress_output();
+	debug = 1;
+	ck_assert_int_ne(cfg.qmode, 2);
+	parseargs(&p, argc, argv);
+	ck_assert_str_eq(p.interface, "ethsomethings");
+	ck_assert_int_eq(p.defaultiface, 0);
+	ck_assert_int_eq(cfg.qmode, 2);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_knows_when_interface_name_is_too_long_even_without_parameter)
+{
+	int ret;
+	PARAMS p;
+	char *argv[] = {"vnstat", "ethethethethethethethethethetheth", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	defaultcfg();
+	initparams(&p);
+	suppress_output();
+	parseargs(&p, argc, argv);
+	ck_assert_str_ne(p.interface, "ethethethethethethethethethetheth");
+	ck_assert_int_eq(p.defaultiface, 1);
+}
+END_TEST
+
 void add_parseargs_tests(Suite *s)
 {
 	TCase *tc_pa = tcase_create("ParseArgs");
@@ -805,5 +874,9 @@ void add_parseargs_tests(Suite *s)
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_dbiflist_without_parameters, 0);
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_dbiflist_with_verbose_mode, 0);
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_dbiflist_with_parseable_mode, 0);
+	tcase_add_test(tc_pa, vnstat_parseargs_can_select_interface_without_parameter);
+	tcase_add_test(tc_pa, vnstat_parseargs_can_select_interface_without_parameter_even_if_there_are_other_parameters);
+	tcase_add_test(tc_pa, vnstat_parseargs_can_select_interface_without_parameter_from_the_middle_of_the_parameter_list);
+	tcase_add_exit_test(tc_pa, vnstat_parseargs_knows_when_interface_name_is_too_long_even_without_parameter, 1);
 	suite_add_tcase(s, tc_pa);
 }
