@@ -13,9 +13,6 @@ are fully user configurable. Total seen traffic and a top days listing is also
 provided. Optional png image output is available in systems with the gd
 library installed.
 
-Optional png image output is available in systems with the gd library
-installed.
-
 See the webpage https://humdi.net/vnstat/ for output examples.
 
 

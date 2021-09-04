@@ -1,4 +1,4 @@
-2.8 / <not released yet>
+2.8 / 4-Sep-2021
 
  - Fixed
    - Using a combination of --live and --json wasn't flushing stdout after
@@ -19,7 +19,7 @@
    - Configured interface specific MaxBW values were getting overridden by
      BandwidthDetection when something could be detected
    - Image output horizontal rx/tx bars often had one pixel too much width in
-     the tx section resulting in slightly wrong ratio to be shown
+     the tx section resulting in slightly wrong ratio getting shown
    - Top days list wasn't always sorting entries with exactly the same traffic
      sum using ascending date
    - 64bitInterfaceCounters with value -2 always assumed 32-bit on Linux
@@ -28,6 +28,8 @@
  - New
    - Add the possibility of specifying an interface without using the
      -i / --iface options (vnstat and vnstati)
+   - The daemon can discover added interfaces from the database without
+     requiring a restart, configurable with option RescanDatabaseOnSave
    - Add configuration option UseUTC for using UTC as timezone for database
      entries instead of following the system timezone configuration
    - --iflist uses user configured interface specific MaxBW values in the
@@ -35,14 +37,12 @@
      information when detected
    - Add configuration option AlwaysAddNewInterfaces to expose the daemon
      --alwaysadd command line option which gains an optional mode parameter
-   - The daemon can discover added interfaces from the database without
-     requiring a restart, configurable with option RescanDatabaseOnSave
    - Image output uses LibGD filled arc bug workaround only for LibGD
      versions that are known to be broken
    - Image output example cgi (examples/vnstat.cgi) improvements
      - Automatically lists all monitored interfaces instead of requiring the
        list to be filled manually, server name in page title comes from
-       hostname command
+       hostname command by default
      - Provides links for most available images to more detailed or longer
        versions of each image
      - Allows direct interface specific page access with /interfacename suffix

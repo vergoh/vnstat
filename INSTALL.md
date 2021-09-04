@@ -176,12 +176,12 @@ permissions, such as your home dir. Then try starting the daemon with
 
     vnstatd -d
 
-After that wait for (or generate) at least 1024 bytes of network traffic
+After that wait for (or generate) at least 1 byte of network traffic
 (and 5 min for the next database file save).
 
     vnstat
 
-Now you should get some stats about your network usage. See the config
+Now you should get some statistics about your network usage. See the config
 file `~/.vnstatrc` for interface and other settings.
 
 
