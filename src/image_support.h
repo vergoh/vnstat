@@ -15,7 +15,7 @@ void drawdonut_libgd_native(IMAGECONTENT *ic, const int x, const int y, const fl
 void drawpole(IMAGECONTENT *ic, const int x, const int y, const int length, const int direction, const int maincolor);
 void drawarrowup(IMAGECONTENT *ic, const int x, const int y);
 void drawarrowright(IMAGECONTENT *ic, const int x, const int y);
-void hextorgb(char *input, int *rgb);
+void hextorgb(const char *input, int *rgb);
 void modcolor(int *rgb, const int offset, const int force);
 char *getimagevalue(const uint64_t b, const int len, const int rate);
 char *getimagescale(const uint64_t b, const int rate);
