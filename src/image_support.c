@@ -362,7 +362,7 @@ void drawarrowright(IMAGECONTENT *ic, const int x, const int y)
 	gdImageLine(ic->im, x + 1, y, x - 1, y, ic->ctext);
 }
 
-void hextorgb(char *input, int *rgb)
+void hextorgb(const char *input, int *rgb)
 {
 	int offset;
 	char hex[3], dec[4];
