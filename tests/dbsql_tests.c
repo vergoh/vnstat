@@ -2546,6 +2546,112 @@ START_TEST(top_list_returns_items_in_correct_order)
 }
 END_TEST
 
+START_TEST(db_setinterfacebyalias_sets_nothing_when_there_is_no_match)
+{
+	int ret;
+	char interface[32];
+
+	interface[0] = '\0';
+	ck_assert_int_eq(strlen(interface), 0);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setinterfacebyalias(interface, "internet");
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(strlen(interface), 0);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_setinterfacebyalias_can_set)
+{
+	int ret;
+	char interface[32];
+
+	interface[0] = '\0';
+	ck_assert_int_eq(strlen(interface), 0);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setalias("eth0", "lan");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setalias("eth1", "internet");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth2");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setinterfacebyalias(interface, "internet");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(strlen(interface), 4);
+	ck_assert_str_eq(interface, "eth1");
+
+	ret = db_setinterfacebyalias(interface, "lan");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(strlen(interface), 4);
+	ck_assert_str_eq(interface, "eth0");
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_setinterfacebyalias_sets_highest_traffic_interface_if_alias_is_not_unique)
+{
+	int ret;
+	char interface[32];
+
+	interface[0] = '\0';
+	ck_assert_int_eq(strlen(interface), 0);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setalias("eth0", "notnet");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_settotal("eth0", 2, 2);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth12");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setalias("eth12", "notnet");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_settotal("eth12", 2, 3);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setinterfacebyalias(interface, "notnet");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(strlen(interface), 5);
+	ck_assert_str_eq(interface, "eth12");
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 void add_dbsql_tests(Suite *s)
 {
 	TCase *tc_dbsql = tcase_create("DB SQL");
@@ -2635,5 +2741,8 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_getinterfaceinfo_can_handle_invalid_input);
 	tcase_add_test(tc_dbsql, getqueryinterfacecount_can_count);
 	tcase_add_test(tc_dbsql, top_list_returns_items_in_correct_order);
+	tcase_add_test(tc_dbsql, db_setinterfacebyalias_sets_nothing_when_there_is_no_match);
+	tcase_add_test(tc_dbsql, db_setinterfacebyalias_can_set);
+	tcase_add_test(tc_dbsql, db_setinterfacebyalias_sets_highest_traffic_interface_if_alias_is_not_unique);
 	suite_add_tcase(s, tc_dbsql);
 }

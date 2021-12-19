@@ -1,6 +1,8 @@
 2.9 / <not released yet>
 
- - No changes worth mentioning yet
+ - New
+   - Add possibility of specifying an interface for database queries by using
+     its alias instead of system provided interface name (vnstat and vnstati)
 
 
 2.8 / 4-Sep-2021

@@ -209,11 +209,19 @@ followed by a table representing the numerical data.
 .BI "-i, --iface " interface
 Select one specific
 .I interface
-and apply actions to only it. For queries, it is possible to merge the
+and apply actions to only it. For database queries, it is possible to merge the
 information of two or more interfaces using the
 .I interface1+interface2+...
 syntax. All provided interfaces must be unique and must exist in the database
-when the merge syntax is used.
+when the merge syntax is used. Optionally,
+.I interface
+can be replaced with
+.I alias
+previously set using
+.BR "--setalias" .
+Merge syntax isn't supported when
+.I alias
+is used.
 
 .TP
 .BI "--iflist " [mode]

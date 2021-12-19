@@ -524,6 +524,38 @@ char *db_getinterfaceidin(const char *iface)
 	return result;
 }
 
+int db_setinterfacebyalias(char *iface, const char *alias)
+{
+	int rc;
+	char sql[128];
+	sqlite3_stmt *sqlstmt;
+
+	sqlite3_snprintf(128, sql, "select name from interface where alias='%q' order by rxtotal+txtotal desc", alias);
+
+	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
+	if (rc != SQLITE_OK) {
+		db_errcode = rc;
+		snprintf(errorstring, 1024, "Failed to get interface alias from database (%d): %s", rc, sqlite3_errmsg(db));
+		printe(PT_Error);
+		return 0;
+	}
+
+	if (sqlite3_column_count(sqlstmt) != 1) {
+		return 0;
+	}
+
+	rc = 0;
+	if (sqlite3_step(sqlstmt) == SQLITE_ROW) {
+		if (sqlite3_column_text(sqlstmt, 0) != NULL) {
+			strncpy_nt(iface, (const char *)sqlite3_column_text(sqlstmt, 0), 32);
+			rc++;
+		}
+	}
+	sqlite3_finalize(sqlstmt);
+
+	return rc;
+}
+
 int db_setactive(const char *iface, const int active)
 {
 	char sql[64];
