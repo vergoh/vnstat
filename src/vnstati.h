@@ -16,6 +16,8 @@ void handlecaching(IPARAMS *p, IMAGECONTENT *ic);
 void handledatabase(IPARAMS *p, IMAGECONTENT *ic);
 void validateoutput(IPARAMS *p);
 void writeoutput(IPARAMS *p, IMAGECONTENT *ic);
+#if HAVE_DECL_GDIMAGEFILE
 void showsupportedfileextensions(void);
+#endif
 
 #endif

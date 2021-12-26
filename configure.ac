@@ -32,7 +32,7 @@ AC_CHECK_LIB([sqlite3], [sqlite3_prepare_v2], [], [AC_MSG_ERROR([could not find 
 
 AS_IF([test "x$enable_image_output" != "xno"], [
 AC_CHECK_LIB([gd], [gdImagePng], [IMAGELIBS=-lgd])
-AC_CHECK_DECLS([GD_NEAREST_NEIGHBOUR], [], [], [[#include <gd.h>]])
+AC_CHECK_DECLS([GD_NEAREST_NEIGHBOUR, gdImageFile], [], [], [[#include <gd.h>]])
 AC_SUBST([IMAGELIBS])])
 
 AM_CONDITIONAL([HAVE_LIBGD], [test "$IMAGELIBS" = "-lgd"])

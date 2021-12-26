@@ -581,6 +581,7 @@ void handledatabase(IPARAMS *p, IMAGECONTENT *ic)
 
 void validateoutput(IPARAMS *p)
 {
+#if HAVE_DECL_GDIMAGEFILE
 	/* not output to stdout */
 	if (!(strlen(p->filename) == 1 && p->filename[0] == '-')) {
 		if (!gdSupportsFileType(p->filename, 1)) {
@@ -589,6 +590,12 @@ void validateoutput(IPARAMS *p)
 			exit(EXIT_FAILURE);
 		}
 	}
+#else
+	/* show warning if given filename doesn't end with .png when gdImageFile() isn't available */
+	if (!(strlen(p->filename) >= 4 && strcmp(p->filename + strlen(p->filename) - 4, ".png") == 0)) {
+		printf("Warning: Image format selection based on file extension is not available in used LibGD %d.%d.%d, \"%s\" will be written as png.\n", GD_MAJOR_VERSION, GD_MINOR_VERSION, GD_RELEASE_VERSION, p->filename);
+	}
+#endif
 }
 
 void writeoutput(IPARAMS *p, IMAGECONTENT *ic)
@@ -606,6 +613,7 @@ void writeoutput(IPARAMS *p, IMAGECONTENT *ic)
 		gdImagePng(ic->im, p->pngout);
 		fclose(p->pngout);
 	} else {
+#if HAVE_DECL_GDIMAGEFILE
 		/* avoid "Palette image not supported by webp" */
 		if (strlen(p->filename) >= 5 && strcmp(p->filename + strlen(p->filename) - 5, ".webp") == 0) {
 			gdImagePaletteToTrueColor(ic->im);
@@ -614,11 +622,20 @@ void writeoutput(IPARAMS *p, IMAGECONTENT *ic)
 			printf("Error: Writing output to \"%s\" failed: %s\n", p->filename, strerror(errno));
 			exit(EXIT_FAILURE);
 		}
+#else
+		if ((p->pngout = fopen(p->filename, "w")) == NULL) {
+			printf("Error: Opening file \"%s\" for output failed: %s\n", p->filename, strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+		gdImagePng(ic->im, p->pngout);
+		fclose(p->pngout);
+#endif
 	}
 
 	gdImageDestroy(ic->im);
 }
 
+#if HAVE_DECL_GDIMAGEFILE
 void showsupportedfileextensions(void)
 {
 	int i;
@@ -633,3 +650,4 @@ void showsupportedfileextensions(void)
 	}
 	printf("\n");
 }
+#endif
