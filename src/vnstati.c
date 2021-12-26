@@ -64,9 +64,9 @@ int main(int argc, char *argv[])
 
 	parseargs(&p, &ic, argc, argv);
 	validateinput(&p);
+	validateoutput(&p);
 	handlecaching(&p, &ic);
 	handledatabase(&p, &ic);
-	openoutput(&p);
 
 	if (debug)
 		printf("Qmode: %d\n", cfg.qmode);
@@ -579,17 +579,13 @@ void handledatabase(IPARAMS *p, IMAGECONTENT *ic)
 	}
 }
 
-void openoutput(IPARAMS *p)
+void validateoutput(IPARAMS *p)
 {
-	if (strlen(p->filename) == 1 && p->filename[0] == '-') {
-		/* output to stdout */
-		if ((p->pngout = fdopen(1, "w")) == NULL) {
-			printf("Error: Opening stdout for output failed: %s\n", strerror(errno));
-			exit(EXIT_FAILURE);
-		}
-	} else {
-		if ((p->pngout = fopen(p->filename, "w")) == NULL) {
-			printf("Error: Opening file \"%s\" for output failed: %s\n", p->filename, strerror(errno));
+	/* not output to stdout */
+	if (!(strlen(p->filename) == 1 && p->filename[0] == '-')) {
+		if (!gdSupportsFileType(p->filename, 1)) {
+			printf("Error: Image format file extension for \"%s\" is not supported or recognized\n\n", p->filename);
+			showsupportedfileextensions();
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -601,7 +597,39 @@ void writeoutput(IPARAMS *p, IMAGECONTENT *ic)
 		return;
 	}
 
-	gdImagePng(ic->im, p->pngout);
-	fclose(p->pngout);
+	/* output to stdout is always png */
+	if (strlen(p->filename) == 1 && p->filename[0] == '-') {
+		if ((p->pngout = fdopen(1, "w")) == NULL) {
+			printf("Error: Opening stdout for output failed: %s\n", strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+		gdImagePng(ic->im, p->pngout);
+		fclose(p->pngout);
+	} else {
+		/* avoid "Palette image not supported by webp" */
+		if (strlen(p->filename) >= 5 && strcmp(p->filename + strlen(p->filename) - 5, ".webp") == 0) {
+			gdImagePaletteToTrueColor(ic->im);
+		}
+		if (!gdImageFile(ic->im, p->filename)) {
+			printf("Error: Writing output to \"%s\" failed: %s\n", p->filename, strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+	}
+
 	gdImageDestroy(ic->im);
+}
+
+void showsupportedfileextensions(void)
+{
+	int i;
+	const char *extensions[] = {".avif", ".bmp", ".gif", ".heif", ".heix", ".jpeg", ".jpg", ".png", ".tga", ".tif", ".tiff", ".wbmp", ".webp", ".xbm", ".xpm"};
+
+	printf("Supported image format file extensions in current environment:\n");
+
+	for (i = 0; i < 15; i++) {
+		if (gdSupportsFileType(extensions[i], 1)) {
+			printf("%s ", extensions[i]);
+		}
+	}
+	printf("\n");
 }

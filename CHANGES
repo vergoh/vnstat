@@ -3,6 +3,8 @@
  - New
    - Add possibility of specifying an interface for database queries by using
      its alias instead of system provided interface name (vnstat and vnstati)
+   - Image output file extension allows selecting the used image file format
+     as long as the used LibGD supports it, PNG is no longer the only option
 
 
 2.8 / 4-Sep-2021

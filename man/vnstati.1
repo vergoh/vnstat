@@ -1,6 +1,6 @@
-.TH VNSTATI 1 "SEPTEMBER 2021" "version 2.8" "User Manuals"
+.TH VNSTATI 1 "DECEMBER 2021" "version 2.9" "User Manuals"
 .SH NAME
-vnstati \- png image output support for vnStat
+vnstati \- image output support for vnStat
 
 .SH SYNOPSIS
 
@@ -87,9 +87,10 @@ The purpose of
 .B vnstati
 is to provide image output support for statistics collected using
 .BR vnstat (1).
-The image file format is limited to png. All basic outputs
-of vnStat are supported excluding live traffic features. The image
-can be outputted either to a file or to standard output.
+The available image file formats depend on what is supported by the used GD
+library. All basic outputs of vnStat are supported excluding live traffic
+features. The image can be outputted either to a file or to standard output,
+with the later being limited to png image format.
 
 .SH OPTIONS
 
@@ -280,9 +281,17 @@ Remove legend containing rx and tx color mapping information from the image.
 
 .TP
 .BI "-o, --output " file
-Write png image to
+Write image to
 .I file
-and exit. Output can be directed to stdout by giving "-" as filename.
+and exit. The used image format is selected by the given file extension of
+.IR file .
+For example, "image.png" results in the file getting written using the png
+image format due to the ".png" extension having been used. Usage of png image
+format usually results in the smallest file size without loss of detail or
+introduction of compression artifacts. Alternatively, output can be directed
+to stdout by giving "-" as
+.I file
+in which case png image format is used.
 
 .TP
 .BI "-ru, --rateunit " [mode]
