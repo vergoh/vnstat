@@ -361,6 +361,10 @@ int validatedatetime(const char *str)
 	const char *templates[] = {"dddd-dd-dd dd:dd", "dddd-dd-dd"};
 
 	len = (unsigned int)strlen(str);
+	if (strcmp(str, "today") == 0) {
+		return 1;
+	}
+
 	if (len > strlen(templates[0])) {
 		return 0;
 	}

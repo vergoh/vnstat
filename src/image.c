@@ -129,7 +129,13 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate)
 		hourdata[i].date = 0;
 	}
 
-	if (!db_getdata(&datalist, &datainfo, ic->interface.name, "hour", 24) || datainfo.count == 0) {
+	if (cfg.hourlygmode == 0) {
+		buffer[0] = '\0';
+	} else {
+		snprintf(buffer, 32, "today");
+	}
+
+	if (!db_getdata_range(&datalist, &datainfo, ic->interface.name, "hour", 24, buffer, "") || datainfo.count == 0) {
 		gdImageString(ic->im, ic->font, x + (32 * ic->font->w), y + 54, (unsigned char *)"no data available", ic->ctext);
 		return 0;
 	}
@@ -238,15 +244,22 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate)
 
 	/* x-axis values and poles */
 	for (i = 0; i < 24; i++) {
-		s = tmax - i;
-		if (s < 0) {
-			s += 24;
+		if (cfg.hourlygmode == 0) {
+			s = tmax - i;
+			if (s < 0) {
+				s += 24;
+			}
+		} else {
+			s = 23 - i;
 		}
 		snprintf(buffer, 32, "%02d ", s);
 		if (hourdata[s].date == 0) {
 			chour = ic->cline;
 		} else {
 			chour = ic->ctext;
+		}
+		if (s == 0 && i != 23) {
+			gdImageLine(ic->im, x + 435 - (i * (17 + ic->large * 6)) + extrax - (ic->large * 3), y - 5 - extray, x + 435 - (i * (17 + ic->large * 6)) + extrax - (ic->large * 3), y + 124 - 1, ic->clinel);
 		}
 		gdImageString(ic->im, font, x + 440 - (i * (17 + ic->large * 6)) + extrax, y + 128, (unsigned char *)buffer, chour);
 		drawpoles(ic, x + 438 - (i * (17 + ic->large * 6)) + extrax, y - extray, 124 + extray, hourdata[s].rx, hourdata[s].tx, max);

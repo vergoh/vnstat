@@ -31,10 +31,12 @@ vnstati \- image output support for vnStat
 .RB [ \-\-headertext
 .IR text ]
 .RB [ \-\-help ]
-.RB [ \-hg ]
+.RB [ \-hg
+.RI [ mode ]]
 .RB [ \-\-hours
 .RI [ limit ]]
-.RB [ \-\-hoursgraph ]
+.RB [ \-\-hoursgraph
+.RI [ mode ]]
 .RB [ \-hs
 .RI [ graph ]]
 .RB [ \-\-hsummary
@@ -111,7 +113,7 @@ If
 .I date
 isn't available in the database then the closest later date will be used.
 .I date
-supports the following formats: YYYY-MM-DD HH:MM and YYYY-MM-DD.
+supports the following formats: YYYY-MM-DD HH:MM, YYYY-MM-DD and "today".
 This option can only be used with list outputs.
 
 .TP
@@ -204,8 +206,12 @@ parameter is used. All entries store in the database will be shown if the
 is set to 0.
 
 .TP
-.B "-hg, --hoursgraph"
+.BI "-hg, --hoursgraph " [mode]
 Output traffic statistics on a hourly basis for the last 24 hours using a bar graph.
+The optional
+.I mode
+parameter can be used to override the configuration file setting. Available modes:
+0 = 24 hour sliding window, 1 = graph begins from midnight.
 
 .TP
 .BI "-hs, --hsummary " [graph]

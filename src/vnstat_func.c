@@ -420,13 +420,13 @@ void parseargs(PARAMS *p, int argc, char **argv)
 		} else if ((strcmp(argv[currentarg], "-b") == 0) || (strcmp(argv[currentarg], "--begin") == 0)) {
 			if (currentarg + 1 < argc) {
 				if (!validatedatetime(argv[currentarg + 1])) {
-					printf("Error: Invalid date format, expected YYYY-MM-DD HH:MM or YYYY-MM-DD.\n");
+					printf("Error: Invalid date format, expected YYYY-MM-DD HH:MM, YYYY-MM-DD or \"today\".\n");
 					exit(EXIT_FAILURE);
 				}
 				strncpy_nt(p->databegin, argv[currentarg + 1], 18);
 				currentarg++;
 			} else {
-				printf("Error: Date of format YYYY-MM-DD HH:MM or YYYY-MM-DD for %s missing.\n", argv[currentarg]);
+				printf("Error: Date of format YYYY-MM-DD HH:MM, YYYY-MM-DD or \"today\" for %s missing.\n", argv[currentarg]);
 				exit(EXIT_FAILURE);
 			}
 		} else if ((strcmp(argv[currentarg], "-e") == 0) || (strcmp(argv[currentarg], "--end") == 0)) {

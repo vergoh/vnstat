@@ -1,6 +1,8 @@
 
 # New configuration settings
 
+ * 2.9: HourlyGraphMode
+
  * 2.8: AlwaysAddNewInterfaces, RescanDatabaseOnSave, UseUTC
 
  * 2.7: 5MinuteGraphHeight, 5MinuteGraphResultCount, BarColumnShowsRate,

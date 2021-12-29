@@ -1203,7 +1203,7 @@ int db_getdata_range(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *
 {
 	int ret, i, rc;
 	const char *datatables[] = {"fiveminute", "hour", "day", "month", "year", "top"};
-	char sql[512], limit[64], dbegin[32], dend[44], *ifaceidin = NULL;
+	char sql[512], limit[64], dbegin[37], dend[44], *ifaceidin = NULL;
 	sqlite3_stmt *sqlstmt;
 	time_t timestamp;
 	int64_t rowid;
@@ -1229,7 +1229,11 @@ int db_getdata_range(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *
 
 	dbegin[0] = '\0';
 	if (strlen(databegin)) {
-		snprintf(dbegin, 32, "and date >= '%s'", databegin);
+		if (strcmp(databegin, "today") == 0) {
+			snprintf(dbegin, 37, "and date >= date('now'%s)", cfg.dbtzmodifier);
+		} else {
+			snprintf(dbegin, 37, "and date >= '%s'", databegin);
+		}
 	}
 
 	dend[0] = '\0';

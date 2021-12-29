@@ -356,8 +356,22 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 			}
 		} else if ((strcmp(argv[currentarg], "-s") == 0) || (strcmp(argv[currentarg], "--summary")) == 0) {
 			cfg.qmode = 5;
-		} else if ((strcmp(argv[currentarg], "-hg") == 0) || (strcmp(argv[currentarg], "--hoursgraph")) == 0) {
+		} else if ((strcmp(argv[currentarg], "-hg") == 0) || (strcmp(argv[currentarg], "--hoursgraph") == 0) || (strcmp(argv[currentarg], "--hourlygraph")) == 0) {
 			cfg.qmode = 7;
+			if (currentarg + 1 < argc && (strlen(argv[currentarg + 1]) == 1 || ishelprequest(argv[currentarg + 1]))) {
+				if (!isdigit(argv[currentarg + 1][0]) || atoi(argv[currentarg + 1]) > 1 || atoi(argv[currentarg + 1]) < 0) {
+					if (!ishelprequest(argv[currentarg + 1]))
+						printf("Error: Invalid mode selection \"%s\".\n", argv[currentarg + 1]);
+					printf(" Valid modes for %s:\n", argv[currentarg]);
+					printf("    0 - 24 hour sliding windows\n");
+					printf("    1 - graph start from midnight\n");
+					exit(EXIT_FAILURE);
+				}
+				cfg.hourlygmode = atoi(argv[currentarg + 1]);
+				if (debug)
+					printf("Hourly graph mode changed: %d\n", cfg.hourlygmode);
+				currentarg++;
+			}
 		} else if ((strcmp(argv[currentarg], "-5g") == 0) || (strcmp(argv[currentarg], "--fivegraph")) == 0) {
 			cfg.qmode = 10;
 			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {
@@ -439,13 +453,13 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 		} else if ((strcmp(argv[currentarg], "-b") == 0) || (strcmp(argv[currentarg], "--begin") == 0)) {
 			if (currentarg + 1 < argc) {
 				if (!validatedatetime(argv[currentarg + 1])) {
-					printf("Error: Invalid date format, expected YYYY-MM-DD HH:MM or YYYY-MM-DD.\n");
+					printf("Error: Invalid date format, expected YYYY-MM-DD HH:MM, YYYY-MM-DD or \"today\".\n");
 					exit(EXIT_FAILURE);
 				}
 				strncpy_nt(ic->databegin, argv[currentarg + 1], 18);
 				currentarg++;
 			} else {
-				printf("Error: Date of format YYYY-MM-DD HH:MM or YYYY-MM-DD for %s missing.\n", argv[currentarg]);
+				printf("Error: Date of format YYYY-MM-DD HH:MM, YYYY-MM-DD or \"today\" for %s missing.\n", argv[currentarg]);
 				exit(EXIT_FAILURE);
 			}
 		} else if ((strcmp(argv[currentarg], "-e") == 0) || (strcmp(argv[currentarg], "--end") == 0)) {

@@ -5,6 +5,12 @@
      its alias instead of system provided interface name (vnstat and vnstati)
    - Image output file extension allows selecting the used image file format
      as long as the used LibGD supports it, PNG is no longer the only option
+   - Add configuration option HourlyGraphMode for changing the output mode
+     of the graph, 0 = 24 hour sliding window (default, as in previous
+     releases), 1 = graph begins from midnight
+   - Add mode parameter for -hg / --hoursgraph options for overriding the
+     HourlyGraphMode configuration option setting from the command line
+   - Add vertical line to image output hourly graph to visualize midnight
 
 
 2.8 / 4-Sep-2021

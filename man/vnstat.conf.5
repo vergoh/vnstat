@@ -1,4 +1,4 @@
-.TH VNSTAT.CONF 5 "SEPTEMBER 2021" "version 2.8" "User Manuals"
+.TH VNSTAT.CONF 5 "DECEMBER 2021" "version 2.9" "User Manuals"
 .SH NAME
 vnstat.conf \- vnStat configuration file
 
@@ -491,6 +491,11 @@ Show a visual representation of the traffic estimation.
 .B HeaderFormat
 Formatting of date in header. Uses the same format as
 .BR date (1).
+
+.TP
+.B HourlyGraphMode
+Select the output mode of the hourly graph. 0 = 24 hour sliding window,
+1 = graph begins from midnight.
 
 .TP
 .B HourlyRate

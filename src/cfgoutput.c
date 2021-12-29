@@ -211,6 +211,9 @@ void printcfgfile(void)
 	printf("5MinuteGraphResultCount %d\n", cfg.fivegresultcount);
 	printf("5MinuteGraphHeight %d\n\n", cfg.fivegheight);
 
+	printf("# hourly graph mode (0 = 24 hour sliding window, 1 = begins from midnight)\n");
+	printf("HourlyGraphMode %d\n\n", cfg.hourlygmode);
+
 	printf("# horizontal/vertical summary graph (0 = hours, 1 = 5 minutes)\n");
 	printf("SummaryGraph %d\n\n", cfg.summarygraph);
 

@@ -386,6 +386,7 @@ START_TEST(validatedatetime_can_detect_valid_strings)
 	ck_assert_int_eq(validatedatetime("1998-01-15 23:16"), 1);
 	ck_assert_int_eq(validatedatetime("2018-03-24"), 1);
 	ck_assert_int_eq(validatedatetime("1998-01-15"), 1);
+	ck_assert_int_eq(validatedatetime("today"), 1);
 }
 END_TEST
 
@@ -418,6 +419,8 @@ START_TEST(validatedatetime_can_detect_invalid_strings)
 	ck_assert_int_eq(validatedatetime(" "), 0);
 	ck_assert_int_eq(validatedatetime(""), 0);
 	ck_assert_int_eq(validatedatetime("wtf?"), 0);
+	ck_assert_int_eq(validatedatetime("yesterday"), 0);
+	ck_assert_int_eq(validatedatetime("tomorrow"), 0);
 }
 END_TEST
 
