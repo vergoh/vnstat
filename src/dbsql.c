@@ -524,13 +524,29 @@ char *db_getinterfaceidin(const char *iface)
 	return result;
 }
 
-int db_setinterfacebyalias(char *iface, const char *alias)
+int db_setinterfacebyalias(char *iface, const char *alias, const int matchmode)
 {
 	int rc;
-	char sql[128];
+	char sql[256];
 	sqlite3_stmt *sqlstmt;
 
-	sqlite3_snprintf(128, sql, "select name from interface where alias='%q' order by rxtotal+txtotal desc", alias);
+	switch (matchmode) {
+		// case sensitive
+		case 1:
+			sqlite3_snprintf(256, sql, "select name from interface where alias='%q' order by rxtotal+txtotal desc", alias);
+			break;
+		// case insensitive
+		case 2:
+			sqlite3_snprintf(256, sql, "select name from interface where alias='%q' collate nocase order by rxtotal+txtotal desc", alias);
+			break;
+		// case insensitive prefix
+		case 3:
+			sqlite3_snprintf(256, sql, "select name from interface where alias like '%q%%' collate nocase order by rxtotal+txtotal desc", alias);
+			break;
+		default:
+			return 0;
+			break;
+	}
 
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
 	if (rc != SQLITE_OK) {

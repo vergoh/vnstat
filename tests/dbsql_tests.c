@@ -2563,7 +2563,7 @@ START_TEST(db_setinterfacebyalias_sets_nothing_when_there_is_no_match)
 	ret = db_addinterface("eth1");
 	ck_assert_int_eq(ret, 1);
 
-	ret = db_setinterfacebyalias(interface, "internet");
+	ret = db_setinterfacebyalias(interface, "internet", 1);
 	ck_assert_int_eq(ret, 0);
 	ck_assert_int_eq(strlen(interface), 0);
 
@@ -2598,12 +2598,12 @@ START_TEST(db_setinterfacebyalias_can_set)
 	ret = db_addinterface("eth2");
 	ck_assert_int_eq(ret, 1);
 
-	ret = db_setinterfacebyalias(interface, "internet");
+	ret = db_setinterfacebyalias(interface, "internet", 1);
 	ck_assert_int_eq(ret, 1);
 	ck_assert_int_eq(strlen(interface), 4);
 	ck_assert_str_eq(interface, "eth1");
 
-	ret = db_setinterfacebyalias(interface, "lan");
+	ret = db_setinterfacebyalias(interface, "lan", 1);
 	ck_assert_int_eq(ret, 1);
 	ck_assert_int_eq(strlen(interface), 4);
 	ck_assert_str_eq(interface, "eth0");
@@ -2642,10 +2642,110 @@ START_TEST(db_setinterfacebyalias_sets_highest_traffic_interface_if_alias_is_not
 	ret = db_settotal("eth12", 2, 3);
 	ck_assert_int_eq(ret, 1);
 
-	ret = db_setinterfacebyalias(interface, "notnet");
+	ret = db_setinterfacebyalias(interface, "notnet", 1);
 	ck_assert_int_eq(ret, 1);
 	ck_assert_int_eq(strlen(interface), 5);
 	ck_assert_str_eq(interface, "eth12");
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_setinterfacebyalias_can_be_case_insensitive)
+{
+	int ret;
+	char interface[32];
+
+	interface[0] = '\0';
+	ck_assert_int_eq(strlen(interface), 0);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setalias("eth0", "LAN");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setalias("eth1", "Internet");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth2");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setinterfacebyalias(interface, "internet", 1);
+	ck_assert_int_eq(ret, 0);
+
+	ret = db_setinterfacebyalias(interface, "lan", 1);
+	ck_assert_int_eq(ret, 0);
+
+	ret = db_setinterfacebyalias(interface, "internet", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(strlen(interface), 4);
+	ck_assert_str_eq(interface, "eth1");
+
+	ret = db_setinterfacebyalias(interface, "lan", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(strlen(interface), 4);
+	ck_assert_str_eq(interface, "eth0");
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_setinterfacebyalias_can_match_prefix)
+{
+	int ret;
+	char interface[32];
+
+	interface[0] = '\0';
+	ck_assert_int_eq(strlen(interface), 0);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setalias("eth0", "LAN");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setalias("eth1", "Internet");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth2");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setinterfacebyalias(interface, "in", 1);
+	ck_assert_int_eq(ret, 0);
+
+	ret = db_setinterfacebyalias(interface, "la", 1);
+	ck_assert_int_eq(ret, 0);
+
+	ret = db_setinterfacebyalias(interface, "in", 2);
+	ck_assert_int_eq(ret, 0);
+
+	ret = db_setinterfacebyalias(interface, "la", 2);
+	ck_assert_int_eq(ret, 0);
+
+	ret = db_setinterfacebyalias(interface, "in", 3);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(strlen(interface), 4);
+	ck_assert_str_eq(interface, "eth1");
+
+	ret = db_setinterfacebyalias(interface, "la", 3);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(strlen(interface), 4);
+	ck_assert_str_eq(interface, "eth0");
 
 	ret = db_close();
 	ck_assert_int_eq(ret, 1);
@@ -2744,5 +2844,7 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_setinterfacebyalias_sets_nothing_when_there_is_no_match);
 	tcase_add_test(tc_dbsql, db_setinterfacebyalias_can_set);
 	tcase_add_test(tc_dbsql, db_setinterfacebyalias_sets_highest_traffic_interface_if_alias_is_not_unique);
+	tcase_add_test(tc_dbsql, db_setinterfacebyalias_can_be_case_insensitive);
+	tcase_add_test(tc_dbsql, db_setinterfacebyalias_can_match_prefix);
 	suite_add_tcase(s, tc_dbsql);
 }

@@ -781,7 +781,8 @@ void showoneinterface(PARAMS *p)
 {
 	if (!db_getinterfacecountbyname(p->interface)) {
 		if (strchr(p->interface, '+') == NULL) {
-			if (!db_setinterfacebyalias(p->interface, p->interface)) {
+			// TODO: show warning if match isn't unique
+			if (!db_setinterfacebyalias(p->interface, p->interface, 1)) {
 				printf("Error: Interface or alias \"%s\" not found in database.\n", p->interface);
 				exit(EXIT_FAILURE);
 			}
