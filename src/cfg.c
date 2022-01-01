@@ -115,7 +115,7 @@ int loadcfg(const char *cfgfile, const ConfigType type)
 		}
 
 		linelen = (unsigned int)strlen(cfgline);
-		if (linelen <= 2 || cfgline[0] == '#') {
+		if (linelen <= 2 || cfgline[0] == '#' || cfgline[0] == ';') {
 			continue;
 		}
 
