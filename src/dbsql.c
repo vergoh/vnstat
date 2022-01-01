@@ -545,7 +545,6 @@ int db_setinterfacebyalias(char *iface, const char *alias, const int matchmethod
 			break;
 		default:
 			return 0;
-			break;
 	}
 
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
