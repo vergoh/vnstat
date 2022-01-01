@@ -1,8 +1,11 @@
 2.9 / <not released yet>
 
  - New
-   - Add possibility of specifying an interface for database queries by using
-     its alias instead of system provided interface name (vnstat and vnstati)
+   - Add configuration option InterfaceMatchMethod which allows configuring
+     the possibility of specifying an interface for database queries by using
+     its alias instead of system provided interface name, enabled by default
+     to support case insensitive matching of the beginning of interface
+     aliases (vnstat and vnstati)
    - Image output file extension allows selecting the used image file format
      as long as the used LibGD supports it, PNG is no longer the only option
    - Add configuration option HourlyGraphMode for changing the output mode

@@ -524,13 +524,13 @@ char *db_getinterfaceidin(const char *iface)
 	return result;
 }
 
-int db_setinterfacebyalias(char *iface, const char *alias, const int matchmode)
+int db_setinterfacebyalias(char *iface, const char *alias, const int matchmethod)
 {
 	int rc;
 	char sql[256];
 	sqlite3_stmt *sqlstmt;
 
-	switch (matchmode) {
+	switch (matchmethod) {
 		// case sensitive
 		case 1:
 			sqlite3_snprintf(256, sql, "select name from interface where alias='%q' order by rxtotal+txtotal desc", alias);

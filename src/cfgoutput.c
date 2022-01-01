@@ -77,6 +77,13 @@ void printcfgfile(void)
 	printf("ListYears      %2d\n", cfg.listyears);
 	printf("ListTop        %2d\n\n", cfg.listtop);
 
+	printf("# how to match interface given for query to interface in database\n");
+	printf("# 0 = case sensitive exact match to interface name\n");
+	printf("# 1 = method 0 followed by case sensitive exact match of alias\n");
+	printf("# 2 = method 1 followed by case insensitive exact match of alias\n");
+	printf("# 3 = method 2 followed by case insensitive beginning match of alias\n");
+	printf("InterfaceMatchMethod %d\n\n", cfg.ifacematchmethod);
+
 	printf("\n");
 
 	/* vnstatd section */

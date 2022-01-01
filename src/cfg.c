@@ -44,6 +44,7 @@ int loadcfg(const char *cfgfile, const ConfigType type)
 		 {"ListMonths", 0, &cfg.listmonths, 0, 0},
 		 {"ListYears", 0, &cfg.listyears, 0, 0},
 		 {"ListTop", 0, &cfg.listtop, 0, 0},
+		 {"InterfaceMatchMethod", 0, &cfg.ifacematchmethod, 0, 0},
 		 {"5MinuteHours", 0, &cfg.fiveminutehours, 0, 0},
 		 {"HourlyDays", 0, &cfg.hourlydays, 0, 0},
 		 {"DailyDays", 0, &cfg.dailydays, 0, 0},
@@ -230,6 +231,7 @@ void validatecfg(const ConfigType type)
 	validateint("ListMonths", &cfg.listmonths, LISTMONTHS, 0, 0);
 	validateint("ListYears", &cfg.listyears, LISTYEARS, 0, 0);
 	validateint("ListTop", &cfg.listtop, LISTTOP, 0, 0);
+	validateint("InterfaceMatchMethod", &cfg.ifacematchmethod, IFACEMATCHMETHOD, 0, 3);
 	validateint("5MinuteHours", &cfg.fiveminutehours, FIVEMINUTEHOURS, -1, -1);
 	validateint("HourlyDays", &cfg.hourlydays, HOURLYDAYS, -1, -1);
 	validateint("DailyDays", &cfg.dailydays, DAILYDAYS, -1, -1);
@@ -360,6 +362,7 @@ void defaultcfg(void)
 	cfg.summaryrate = SUMMARYRATE;
 	cfg.trafficlessentries = TRAFFICLESSENTRIES;
 	cfg.utflocale = UTFLOCALE;
+	cfg.ifacematchmethod = IFACEMATCHMETHOD;
 
 	cfg.listfivemins = LISTFIVEMINS;
 	cfg.listhours = LISTHOURS;

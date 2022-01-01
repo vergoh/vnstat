@@ -1,7 +1,7 @@
 
 # New configuration settings
 
- * 2.9: HourlyGraphMode
+ * 2.9: HourlyGraphMode, InterfaceMatchMethod
 
  * 2.8: AlwaysAddNewInterfaces, RescanDatabaseOnSave, UseUTC
 

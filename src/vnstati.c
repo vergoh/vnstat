@@ -559,6 +559,7 @@ void handlecaching(IPARAMS *p, IMAGECONTENT *ic)
 
 void handledatabase(IPARAMS *p, IMAGECONTENT *ic)
 {
+	int i, found = 0;
 	iflist *dbifl = NULL;
 
 	if (!db_open_ro()) {
@@ -568,9 +569,17 @@ void handledatabase(IPARAMS *p, IMAGECONTENT *ic)
 	if (strlen(p->interface)) {
 		if (!db_getinterfacecountbyname(p->interface)) {
 			if (strchr(p->interface, '+') == NULL) {
-				// TODO: show warning if match isn't unique
-				if (!db_setinterfacebyalias(p->interface, p->interface, 1)) {
-					printf("Error: Interface or alias \"%s\" not found in database.\n", p->interface);
+				for (i = 1; i <= cfg.ifacematchmethod; i++) {
+					found = db_setinterfacebyalias(p->interface, p->interface, i);
+					if (found) {
+						if (debug) {
+							printf("Found \"%s\" with method %d\n", p->interface, i);
+						}
+						break;
+					}
+				}
+				if (!found) {
+					printf("Error: No interface matching \"%s\" found in database.\n", p->interface);
 					exit(EXIT_FAILURE);
 				}
 			} else {

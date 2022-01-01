@@ -43,7 +43,7 @@ uint64_t db_getinterfacecount(void);
 uint64_t db_getinterfacecountbyname(const char *iface);
 sqlite3_int64 db_getinterfaceid(const char *iface, const int createifnotfound);
 char *db_getinterfaceidin(const char *iface);
-int db_setinterfacebyalias(char *iface, const char *alias, const int matchmode);
+int db_setinterfacebyalias(char *iface, const char *alias, const int matchmethod);
 int db_setactive(const char *iface, const int active);
 int db_setupdated(const char *iface, const time_t timestamp);
 int db_setcounters(const char *iface, const uint64_t rxcounter, const uint64_t txcounter);
