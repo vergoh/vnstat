@@ -1,5 +1,8 @@
 2.9 / <not released yet>
 
+ - Fixed
+   - RescanDatabaseOnSave configuration option wasn't being read from the
+     configuration file resulting in the feature always being enabled
  - New
    - Add configuration option InterfaceMatchMethod which allows configuring
      the possibility of specifying an interface for database queries by using

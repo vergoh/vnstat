@@ -58,6 +58,7 @@ int loadcfg(const char *cfgfile, const ConfigType type)
 		 {"PollInterval", 0, &cfg.pollinterval, 0, 0},
 		 {"SaveInterval", 0, &cfg.saveinterval, 0, 0},
 		 {"OfflineSaveInterval", 0, &cfg.offsaveinterval, 0, 0},
+		 {"RescanDatabaseOnSave", 0, &cfg.rescanonsave, 0, 0},
 		 {"AlwaysAddNewInterfaces", 0, &cfg.alwaysadd, 0, 0},
 		 {"BandwidthDetectionInterval", 0, &cfg.bwdetectioninterval, 0, 0},
 		 {"SaveOnStatusChange", 0, &cfg.savestatus, 0, 0},
