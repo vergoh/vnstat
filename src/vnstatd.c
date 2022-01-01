@@ -245,6 +245,7 @@ void showhelp(void)
 	printf("      -p, --pidfile <file>     select used pid file\n");
 	printf("      -u, --user <user>        set daemon process user\n");
 	printf("      -g, --group <group>      set daemon process group\n");
+	printf("      -t, --timestamp          add timestamp to prints when running in foreground\n");
 	printf("      --config <config file>   select used config file\n");
 	printf("      --noadd                  prevent startup if database has no interfaces\n");
 	printf("      --alwaysadd [mode]       automatically start monitoring all new interfaces\n");
@@ -275,6 +276,8 @@ void parseargs(DSTATE *s, int argc, char **argv)
 			s->showhelp = 0;
 		} else if ((strcmp(argv[currentarg], "-s") == 0) || (strcmp(argv[currentarg], "--sync") == 0)) {
 			s->sync = 1;
+		} else if ((strcmp(argv[currentarg], "-t") == 0) || (strcmp(argv[currentarg], "--timestamp") == 0)) {
+			cfg.timestampprints = 1;
 		} else if ((strcmp(argv[currentarg], "-u") == 0) || (strcmp(argv[currentarg], "--user") == 0)) {
 			if (currentarg + 1 < argc) {
 				strncpy_nt(s->user, argv[currentarg + 1], 33);

@@ -322,7 +322,7 @@ typedef struct {
 	int32_t uselogging, createdirs, updatefileowner, bwdetection, bwdetectioninterval, utflocale;
 	int32_t fiveminutehours, hourlydays, dailydays, monthlymonths, yearlyyears, topdayentries;
 	int32_t listfivemins, listhours, listdays, listmonths, listyears, listtop, listjsonxml;
-	int32_t experimental;
+	int32_t timestampprints, experimental;
 } CFG;
 
 /* internal interface information structure */

@@ -14,6 +14,8 @@ int disableprints;
 int printe(const PrintType type)
 {
 	int result = 1;
+	char timestamp[22];
+	time_t current;
 
 	if (disableprints) {
 		return 1;
@@ -38,8 +40,14 @@ int printe(const PrintType type)
 				break;
 		}
 
-		/* daemon isn't running */
+		/* daemon isn't running or is running attached to a terminal */
 	} else {
+
+		if (cfg.timestampprints && type != PT_ShortMultiline) {
+			current = time(NULL);
+			strftime(timestamp, 22, DATETIMEFORMAT, localtime(&current));
+			printf("[%s] ", timestamp);
+		}
 
 		switch (type) {
 			case PT_Info:

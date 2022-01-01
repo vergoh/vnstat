@@ -1,11 +1,11 @@
-.TH VNSTATD 8 "SEPTEMBER 2021" "version 2.8" "User Manuals"
+.TH VNSTATD 8 "JANUARY 2022" "version 2.9" "User Manuals"
 .SH NAME
 vnstatd \- daemon based database updating for vnStat
 
 .SH SYNOPSIS
 
 .B vnstatd
-.RB [ \-Ddnpsv? ]
+.RB [ \-Ddnpstv? ]
 .RB [ \-\-alwaysadd
 .RI [ mode ]]
 .RB [ \-\-config
@@ -23,6 +23,7 @@ vnstatd \- daemon based database updating for vnStat
 .RB [ \-\-pidfile
 .IR file ]
 .RB [ \-\-sync ]
+.RB [ \-\-timestamp ]
 .RB [ \-\-u
 .IR user ]
 .RB [ \-\-user
@@ -42,7 +43,8 @@ an interface comes online or goes offline.
 .B vnstatd
 is the command for starting the daemon. The daemon can either fork
 itself to run as a background process or stay attached to the terminal.
-It supports logging to a user selectable file or using syslog.
+It supports logging directly to terminal, to a user selectable file or
+using syslog.
 .PP
 Once started, the daemon will read
 .BR vnstat.conf (5)
@@ -162,6 +164,14 @@ isn't required in normal use because the daemon will automatically synchronize
 the internal counters after a system reboot, if enough time has passed
 since the daemon was previously running or if the internal counters are
 clearly out of sync.
+
+.TP
+.B "-t, --timestamp"
+Add a timestamp to the beginning of every print from the daemon when
+the process is running in the foreground attached to a terminal after having
+been started with the
+.B "-n, --nodaemon"
+option.
 
 .TP
 .BI "-u, --user " user

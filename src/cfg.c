@@ -436,6 +436,7 @@ void defaultcfg(void)
 	strncpy_nt(cfg.ctx, CTX, 8);
 	strncpy_nt(cfg.ctxd, CTXD, 8);
 
+	cfg.timestampprints = 0;
 	cfg.experimental = 0;
 }
 
