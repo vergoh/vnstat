@@ -108,7 +108,7 @@ void scaleimage(IMAGECONTENT *ic)
 int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate)
 {
 	int i, tmax = 0, s = 0, step, prev = 0, diff = 0, chour;
-	int x = xpos, y = ypos, extrax = 0, extray = 0;
+	int x = xpos, y = ypos, extrax = 0, extray = 0, xt = 0;
 	double ratediv;
 	uint64_t max = 1, scaleunit = 0;
 	char buffer[32];
@@ -221,26 +221,35 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate)
 		step = 1;
 	}
 
+	xt = x + 36;
+
 	for (i = step; i * s <= (124 + extray + 4); i = i + step) {
-		gdImageDashedLine(ic->im, x + 36, y + 124 - (i * s), x + 460 + extrax, y + 124 - (i * s), ic->cline);
-		gdImageDashedLine(ic->im, x + 36, y + 124 - prev - (step * s) / 2, x + 460 + extrax, y + 124 - prev - (step * s) / 2, ic->clinel);
+		gdImageDashedLine(ic->im, xt, y + 124 - (i * s), xt + 424 + extrax, y + 124 - (i * s), ic->cline);
+		gdImageDashedLine(ic->im, xt, y + 124 - prev - (step * s) / 2, xt + 424 + extrax, y + 124 - prev - (step * s) / 2, ic->clinel);
 		gdImageString(ic->im, font, x + 16 - (ic->large * 3), y + 121 - (i * s) - (ic->large * 3), (unsigned char *)getimagevalue(scaleunit * (unsigned int)i, 3, rate), ic->ctext);
 		prev = i * s;
 	}
 	if ((prev + (step * s) / 2) <= (124 + extray + 4)) {
-		gdImageDashedLine(ic->im, x + 36, y + 124 - prev - (step * s) / 2, x + 460 + extrax, y + 124 - prev - (step * s) / 2, ic->clinel);
+		gdImageDashedLine(ic->im, xt, y + 124 - prev - (step * s) / 2, xt + 424 + extrax, y + 124 - prev - (step * s) / 2, ic->clinel);
 	}
 
 	/* scale text */
 	gdImageStringUp(ic->im, font, x - 2 - (ic->large * 14), y + 58 + (rate * 10) - (extray / 2), (unsigned char *)getimagescale(scaleunit * (unsigned int)step, rate), ic->ctext);
 
 	/* axis */
-	gdImageLine(ic->im, x + 36 - 4, y + 124, x + 466 + extrax, y + 124, ic->ctext);
-	gdImageLine(ic->im, x + 36, y - 10 - extray, x + 36, y + 124 + 4, ic->ctext);
+	gdImageLine(ic->im, xt - 4, y + 124, xt + 430 + extrax, y + 124, ic->ctext);
+	gdImageLine(ic->im, xt, y - 10 - extray, xt, y + 124 + 4, ic->ctext);
 
 	/* arrows */
-	drawarrowup(ic, x + 36, y - 9 - extray);
-	drawarrowright(ic, x + 465 + extrax, y + 124);
+	drawarrowup(ic, xt, y - 9 - extray);
+	drawarrowright(ic, xt + 429 + extrax, y + 124);
+
+	xt = x + 440 + extrax;
+
+	/* keep alignment when midnight line isn't shown s*/
+	if (cfg.hourlygmode || tmax - 23 == 0) {
+		xt--;
+	}
 
 	/* x-axis values and poles */
 	for (i = 0; i < 24; i++) {
@@ -258,12 +267,15 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate)
 		} else {
 			chour = ic->ctext;
 		}
+		gdImageString(ic->im, font, xt, y + 128, (unsigned char *)buffer, chour);
+		drawpoles(ic, xt - 2, y - extray, 124 + extray, hourdata[s].rx, hourdata[s].tx, max);
+		gdImageLine(ic->im, xt - 4 - (ic->large * 3), y + 124, xt + 12 + (ic->large * 3), y + 124, chour);
 		if (s == 0 && i != 23) {
-			gdImageLine(ic->im, x + 435 - (i * (17 + ic->large * 6)) + extrax - (ic->large * 3), y - 5 - extray, x + 435 - (i * (17 + ic->large * 6)) + extrax - (ic->large * 3), y + 124 - 1, ic->clinel);
+			/* midnight line */
+			gdImageLine(ic->im, xt - 5 - (ic->large * 3), y - 5 - extray, xt - 5 - (ic->large * 3), y + 124 - 1, ic->clinel);
+			xt--;
 		}
-		gdImageString(ic->im, font, x + 440 - (i * (17 + ic->large * 6)) + extrax, y + 128, (unsigned char *)buffer, chour);
-		drawpoles(ic, x + 438 - (i * (17 + ic->large * 6)) + extrax, y - extray, 124 + extray, hourdata[s].rx, hourdata[s].tx, max);
-		gdImageLine(ic->im, x + 438 - 2 - (i * (17 + ic->large * 6)) + extrax, y + 124, x + 438 + 14 - (i * (17 + ic->large * 6)) + extrax, y + 124, chour);
+		xt = xt - (17 + ic->large * 6);
 	}
 
 	return 1;
