@@ -736,10 +736,11 @@ vnstati_SOURCES = src/vnstati.c src/vnstati.h \
 @HAVE_CHECK_TRUE@check_vnstat_CFLAGS = @CFLAG_EXTRAS@ @CHECK_CFLAGS@ \
 @HAVE_CHECK_TRUE@	-DPROCNETDEV=\"testdir/proc/dev\" \
 @HAVE_CHECK_TRUE@	-DSYSCLASSNET=\"testdir/sysclassnet\" \
-@HAVE_CHECK_TRUE@	-DCFGFILE=\"$(top_srcdir)/cfg/vnstat.conf\" \
+@HAVE_CHECK_TRUE@	-DCFGFILE=\"tests/vnstat.conf\" \
 @HAVE_CHECK_TRUE@	-DCHECK_VNSTAT -I$(top_srcdir)/src \
 @HAVE_CHECK_TRUE@	$(am__append_2)
 @HAVE_CHECK_TRUE@check_vnstat_LDADD = @CHECK_LIBS@ $(am__append_3)
+@HAVE_CHECK_TRUE@EXTRA_check_vnstat_DEPENDENCIES = tests/vnstat.conf
 @HAVE_CHECK_TRUE@check_vnstat_SOURCES = tests/vnstat_tests.c \
 @HAVE_CHECK_TRUE@	tests/vnstat_tests.h tests/common_tests.c \
 @HAVE_CHECK_TRUE@	tests/common_tests.h tests/database_tests.c \
@@ -2579,10 +2580,14 @@ uninstall-hook:
 	@echo
 
 clean-local:
-	-rm -fr coverage *.lcov *.gz test*.log test*.xml src/*.gc* tests/*.gc* *.old *.new *check.png INSTALL INSTALL_BSD UPGRADE UNINSTALL
+	-rm -fr coverage *.lcov *.gz test*.log test*.xml src/*.gc* tests/*.gc* tests/*.conf *.old *.new *check.png INSTALL INSTALL_BSD UPGRADE UNINSTALL
 
 check-local: check-TESTS
 	tail -n 2 test.log
+
+tests/vnstat.conf: $(top_srcdir)/cfg/vnstat.conf
+	sed 's/^;//g' $(top_srcdir)/cfg/vnstat.conf >$@
+	echo "MaxBWethnone 8" >>$@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

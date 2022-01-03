@@ -19,9 +19,11 @@
    - Add mode parameter for -hg / --hoursgraph options for overriding the
      HourlyGraphMode configuration option setting from the command line
    - Add vertical line to image output hourly graph to visualize midnight
-   - Accept ; as comment character in configuration file in addition to #
    - Add -t / --timestamp options to daemon for enabling timestamps to prints
      when the daemon is running in the foreground attached to a terminal
+   - Accept ; as comment character in configuration file in addition to #
+   - Comment out keywords using default values with ; character in provided
+     configuration file and --showconfig output
 
 
 2.8 / 4-Sep-2021

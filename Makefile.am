@@ -60,10 +60,11 @@ check_PROGRAMS = check_vnstat
 check_vnstat_CFLAGS = @CFLAG_EXTRAS@ @CHECK_CFLAGS@ \
   -DPROCNETDEV=\"testdir/proc/dev\" \
   -DSYSCLASSNET=\"testdir/sysclassnet\" \
-  -DCFGFILE=\"$(top_srcdir)/cfg/vnstat.conf\" \
+  -DCFGFILE=\"tests/vnstat.conf\" \
   -DCHECK_VNSTAT \
   -I$(top_srcdir)/src
 check_vnstat_LDADD = @CHECK_LIBS@
+EXTRA_check_vnstat_DEPENDENCIES = tests/vnstat.conf
 
 check_vnstat_SOURCES = tests/vnstat_tests.c tests/vnstat_tests.h \
   tests/common_tests.c tests/common_tests.h \
@@ -178,7 +179,11 @@ uninstall-hook:
 	@echo
 
 clean-local:
-	-rm -fr coverage *.lcov *.gz test*.log test*.xml src/*.gc* tests/*.gc* *.old *.new *check.png INSTALL INSTALL_BSD UPGRADE UNINSTALL
+	-rm -fr coverage *.lcov *.gz test*.log test*.xml src/*.gc* tests/*.gc* tests/*.conf *.old *.new *check.png INSTALL INSTALL_BSD UPGRADE UNINSTALL
 
 check-local: check-TESTS
 	tail -n 2 test.log
+
+tests/vnstat.conf: $(top_srcdir)/cfg/vnstat.conf
+	sed 's/^;//g' $(top_srcdir)/cfg/vnstat.conf >$@
+	echo "MaxBWethnone 8" >>$@

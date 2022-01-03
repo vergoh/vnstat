@@ -32,7 +32,7 @@ uint64_t get_timestamp(const int year, const int month, const int day, const int
 #define TESTSYSCLASSNETDIR TESTDIR"/sysclassnet"
 
 #if !defined(CFGFILE)
-#define CFGFILE            "cfg/vnstat.conf"
+#define CFGFILE            "tests/vnstat.conf"
 #endif
 
 #if !defined(__linux__)

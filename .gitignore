@@ -23,6 +23,7 @@ src/config.h
 src/stamp-h1
 tests/.deps
 tests/.dirstamp
+tests/vnstat.conf
 *~
 INSTALL
 INSTALL_BSD
