@@ -41,6 +41,11 @@ void initparams(PARAMS *p)
 	p->xmlmode = 'a';
 	p->databegin[0] = '\0';
 	p->dataend[0] = '\0';
+
+	p->alert = 0;
+	p->alerttype = 0;
+	p->alertcondition = 0;
+	p->alertlimit = 0;
 }
 
 void showhelp(PARAMS *p)
@@ -60,7 +65,9 @@ void showhelp(PARAMS *p)
 
 	printf("      --oneline [mode]             show simple parsable format\n");
 	printf("      --json [mode] [limit]        show database in json format\n");
-	printf("      --xml [mode] [limit]         show database in xml format\n\n");
+	printf("      --xml [mode] [limit]         show database in xml format\n");
+	printf("      --alert <type> <condition>\n");
+	printf("              <limit> <unit>       show alert if limit is exceeded\n\n");
 
 	printf("      -tr, --traffic [time]        calculate traffic\n");
 	printf("      -l,  --live [mode]           show transfer rate in real time\n");
@@ -93,6 +100,8 @@ void showlonghelp(PARAMS *p)
 	printf("      --oneline [mode]             show simple parsable format\n");
 	printf("      --json [mode] [limit]        show database in json format\n");
 	printf("      --xml [mode] [limit]         show database in xml format\n\n");
+	printf("      --alert <type> <condition>\n");
+	printf("              <limit> <unit>       show alert if limit is exceeded\n\n");
 
 	printf("Modify:\n");
 
@@ -127,7 +136,7 @@ void showlonghelp(PARAMS *p)
 	printf("See also \"man vnstat\" for longer descriptions of each option.\n");
 }
 
-void parseargs(PARAMS *p, int argc, char **argv)
+void parseargs(PARAMS *p, const int argc, char **argv)
 {
 	int currentarg;
 
@@ -485,6 +494,13 @@ void parseargs(PARAMS *p, int argc, char **argv)
 				printf("Error: Invalid or missing parameter for %s.\n", argv[currentarg]);
 				exit(EXIT_FAILURE);
 			}
+		} else if (strcmp(argv[currentarg], "--alert") == 0) {
+			if (!parsealertargs(p, argc, argv, currentarg)) {
+				exit(EXIT_FAILURE);
+			} else {
+				currentarg += 4;
+				p->alert = 1;
+			}
 		} else if ((strcmp(argv[currentarg], "-v") == 0) || (strcmp(argv[currentarg], "--version") == 0)) {
 			printf("vnStat %s by Teemu Toivola <tst at iki dot fi>\n", getversion());
 			exit(EXIT_SUCCESS);
@@ -514,6 +530,134 @@ void parseargs(PARAMS *p, int argc, char **argv)
 	}
 }
 
+// TODO: error prints and tests
+int parsealertargs(PARAMS *p, const int argc, char **argv, const int currentarg)
+{
+	int i, u, found;
+	uint64_t alertlimit = 0;
+	int32_t unitmode = cfg.unitmode;
+	const char *alerttypes[] = {"h", "hour", "d", "day", "m", "month", "y", "year"};
+	const char *alertconditions[] = {"rx", "tx", "total", "rxe", "txe", "totale"};
+
+	if (currentarg + 4 >= argc) {
+		printf("Error: Parameters missing\n");
+		showalerthelp();
+		return 0;
+	}
+
+	for (i = 1; i <= 4; i++) {
+		if (argv[currentarg + i][0] == '-' || ishelprequest(argv[currentarg + i])) {
+			printf("Error: Parameter quick check fails\n");
+			showalerthelp();
+			return 0;
+		}
+	}
+
+	// type
+	found = 0;
+	for (i = 0; i < 8; i++) {
+		if (strcmp(argv[currentarg + 1], alerttypes[i]) == 0) {
+			found = 1;
+			break;
+		}
+	}
+	if (!found) {
+		printf("Error: Type check fails\n");
+		showalerthelp();
+		return 0;
+	}
+
+	switch (argv[currentarg + 1][0])
+	{
+		case 'h':
+			p->alerttype = 1;
+			break;
+		case 'd':
+			p->alerttype = 2;
+			break;
+		case 'm':
+			p->alerttype = 3;
+			break;
+		case 'y':
+			p->alerttype = 4;
+			break;
+		default:
+			return 0;
+	}
+	if (debug) {
+		printf("Alert type: %d\n", p->alerttype);
+	}
+
+	// condition
+	found = 0;
+	for (i = 0; i < 6; i++) {
+		if (strcmp(argv[currentarg + 2], alertconditions[i]) == 0) {
+			found = 1;
+			p->alertcondition = i + 1;
+			break;
+		}
+	}
+	if (!found) {
+		printf("Error: Condition check fails\n");
+		showalerthelp();
+		return 0;
+	}
+	if (debug) {
+		printf("Alert condition: %d\n", p->alertcondition);
+	}
+
+	// limit
+	if (!isdigit(argv[currentarg + 3][0])) {
+		printf("Error: Limit check fails\n");
+		showalerthelp();
+		return 0;
+	}
+	alertlimit = strtoull(argv[currentarg + 3], (char **)NULL, 0);
+	if (alertlimit == 0) {
+		printf("Error: Limit sanity check fails\n");
+		showalerthelp();
+		return 0;
+	}
+	if (debug) {
+		printf("Alert limit: %" PRIu64 "\n", alertlimit);
+	}
+
+	// limit unit
+	found = 0;
+	for (u = 0; u < 3; u++) {
+		cfg.unitmode = u;
+		for (i = 1; i <= UNITPREFIXCOUNT; i++) {
+			if (strcmp(argv[currentarg + 4], getunitprefix(i)) == 0) {
+				found = 1;
+				break;
+			}
+		}
+		if (found) {
+			break;
+		}
+	}
+	cfg.unitmode = unitmode;
+	if (!found) {
+		printf("Error: Limit unit fails\n");
+		return 0;
+	}
+
+	p->alertlimit = alertlimit * getunitdivisor(u, i);
+
+	if (debug) {
+		printf("Alert unit %s is %d %d = %" PRIu64 "\n", argv[currentarg + 4], u, i, getunitdivisor(u, i));
+		printf("Alert real limit is %" PRIu64 " * %" PRIu64 " = %" PRIu64 "\n", alertlimit, getunitdivisor(u, i), p->alertlimit);
+	}
+
+	return 1;
+}
+
+// TODO: fill placeholder
+void showalerthelp(void)
+{
+	printf("--alert help placeholder\n");
+}
+
 void showstylehelp(void)
 {
 	printf(" Valid parameters for --style.:\n");
@@ -523,6 +667,23 @@ void showstylehelp(void)
 	printf("    3 - average traffic rate in all outputs if available\n");
 	printf("    4 - disable terminal control characters in -l / --live\n");
 	printf("        and show raw values in --oneline\n");
+}
+
+// TODO: fill placeholder
+void handleshowalert(PARAMS *p)
+{
+	if (!p->alert) {
+		return;
+	}
+
+	if (p->defaultiface) {
+		// TODO: -i isn't mandatory anymore so update these prints
+		printf("Error: Use -i parameter to specify an interface.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	printf("--alert placeholder\n");
+	exit(EXIT_SUCCESS);
 }
 
 void handleremoveinterface(PARAMS *p)

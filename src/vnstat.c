@@ -104,6 +104,7 @@ int main(int argc, char *argv[])
 	handleifselection(&p);
 
 	/* parameter handlers */
+	handleshowalert(&p);
 	handleremoveinterface(&p);
 	handlerenameinterface(&p);
 	handleaddinterface(&p);
