@@ -887,3 +887,107 @@ void indent(int i)
 		printf("%*s", i, " ");
 	}
 }
+
+int showalert(const char *interface, const AlertType type, const AlertCondition condition, const uint64_t limit)
+{
+	interfaceinfo ifaceinfo;
+	int ret = 1;
+	char tablename[12], conditionname[16];
+	ListType listtype = LT_None;
+	uint64_t bytes = 0, e_rx = 0, e_tx = 0;
+	dbdatalist *datalist = NULL;
+	dbdatalistinfo datainfo;
+
+	timeused_debug(__func__, 1);
+
+	if (!db_getinterfaceinfo(interface, &ifaceinfo)) {
+		return 1;
+	}
+
+	switch (type) {
+		case AT_None:
+			return 0;
+		case AT_Hour:
+			listtype = LT_Hour;
+			snprintf(tablename, 12, "hour");
+			break;
+		case AT_Day:
+			listtype = LT_Day;
+			snprintf(tablename, 12, "day");
+			break;
+		case AT_Month:
+			listtype = LT_Month;
+			snprintf(tablename, 12, "month");
+			break;
+		case AT_Year:
+			listtype = LT_Year;
+			snprintf(tablename, 12, "year");
+			break;
+	}
+
+	if (!db_getdata(&datalist, &datainfo, interface, tablename, 1)) {
+		printf("Error: Failed to fetch %s data for interface %s.\n", tablename, interface);
+		return 1;
+	}
+
+	if (!datalist) {
+		printf("Error: No %s data available for interface %s.\n", tablename, interface);
+		return 1;
+	}
+
+	switch (condition) {
+		case AC_None:
+			break;
+		case AC_RX:
+			bytes = datalist->rx;
+			snprintf(conditionname, 16, "rx");
+			break;
+		case AC_TX:
+			bytes = datalist->tx;
+			snprintf(conditionname, 16, "tx");
+			break;
+		case AC_Total:
+			bytes = datalist->rx + datalist->tx;
+			snprintf(conditionname, 16, "total");
+			break;
+		case AC_RX_Estimate:
+			getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, &datalist);
+			bytes = e_rx;
+			snprintf(conditionname, 16, "rx estimate");
+			break;
+		case AC_TX_Estimate:
+			getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, &datalist);
+			bytes = e_tx;
+			snprintf(conditionname, 16, "tx estimate");
+			break;
+		case AC_Total_Estimate:
+			getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, &datalist);
+			bytes = e_rx + e_tx;
+			snprintf(conditionname, 16, "total estimate");
+			break;
+	}
+
+	dbdatalistfree(&datalist);
+
+	// TODO: replace placeholder output
+	if (strlen(ifaceinfo.alias)) {
+		printf("# %s (%s)", ifaceinfo.alias, ifaceinfo.name);
+	} else {
+		printf("# %s", interface);
+	}
+	printf(" %s %s\n", tablename, conditionname);
+	if (bytes >= limit) {
+		printf("Limit reached, %s >= ", getvalue(bytes, 0, RT_Normal));
+		printf("%s\n", getvalue(limit, 0, RT_Normal));
+		ret = 1;
+	} else {
+		printf("Limit:     %9s\n", getvalue(limit, 0, RT_Normal));
+		printf("Current:   %9s  (%4.1f%%)\n", getvalue(bytes, 0, RT_Normal), (double)bytes / (double)limit * 100.0);
+		printf("Remaining: %9s  (%4.1f%%)\n", getvalue(limit - bytes, 0, RT_Normal), (double)(limit - bytes) / (double)limit * 100.0);
+		ret = 0;
+	}
+
+	timeused_debug(__func__, 0);
+
+	return ret;
+}

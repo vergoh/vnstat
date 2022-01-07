@@ -10,7 +10,7 @@ typedef struct {
 	char interface[32], alias[32], newifname[32], filename[512];
 	char definterface[32], cfgfile[512], *ifacelist, jsonmode, xmlmode;
 	char databegin[18], dataend[18];
-	int alert, alerttype, alertcondition;
+	unsigned int alert, alerttype, alertcondition;
 	uint64_t alertlimit;
 } PARAMS;
 
@@ -32,5 +32,6 @@ void handletrafficmeters(PARAMS *p);
 void handleifselection(PARAMS *p);
 void showiflist(const int parseable);
 void showdbiflist(const int parseable);
+void validateinterface(PARAMS *p);
 
 #endif

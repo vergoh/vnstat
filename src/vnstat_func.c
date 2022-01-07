@@ -536,8 +536,8 @@ int parsealertargs(PARAMS *p, const int argc, char **argv, const int currentarg)
 	int i, u, found;
 	uint64_t alertlimit = 0;
 	int32_t unitmode = cfg.unitmode;
-	const char *alerttypes[] = {"h", "hour", "d", "day", "m", "month", "y", "year"};
-	const char *alertconditions[] = {"rx", "tx", "total", "rxe", "txe", "totale"};
+	const char *alerttypes[] = {"h", "hour", "hourly", "d", "day", "daily", "m", "month", "monthly", "y", "year", "yearly"};
+	const char *alertconditions[] = {"rx", "tx", "total", "rxe", "txe", "totale"}; // order must match that of AlertCondition in dbshow.h
 
 	if (currentarg + 4 >= argc) {
 		printf("Error: Parameters missing\n");
@@ -555,7 +555,7 @@ int parsealertargs(PARAMS *p, const int argc, char **argv, const int currentarg)
 
 	// type
 	found = 0;
-	for (i = 0; i < 8; i++) {
+	for (i = 0; i < 12; i++) {
 		if (strcmp(argv[currentarg + 1], alerttypes[i]) == 0) {
 			found = 1;
 			break;
@@ -567,19 +567,18 @@ int parsealertargs(PARAMS *p, const int argc, char **argv, const int currentarg)
 		return 0;
 	}
 
-	switch (argv[currentarg + 1][0])
-	{
+	switch (argv[currentarg + 1][0]) {
 		case 'h':
-			p->alerttype = 1;
+			p->alerttype = AT_Hour;
 			break;
 		case 'd':
-			p->alerttype = 2;
+			p->alerttype = AT_Day;
 			break;
 		case 'm':
-			p->alerttype = 3;
+			p->alerttype = AT_Month;
 			break;
 		case 'y':
-			p->alerttype = 4;
+			p->alerttype = AT_Year;
 			break;
 		default:
 			return 0;
@@ -593,7 +592,7 @@ int parsealertargs(PARAMS *p, const int argc, char **argv, const int currentarg)
 	for (i = 0; i < 6; i++) {
 		if (strcmp(argv[currentarg + 2], alertconditions[i]) == 0) {
 			found = 1;
-			p->alertcondition = i + 1;
+			p->alertcondition = (unsigned int)i + 1;
 			break;
 		}
 	}
@@ -607,7 +606,7 @@ int parsealertargs(PARAMS *p, const int argc, char **argv, const int currentarg)
 	}
 
 	// limit
-	if (!isdigit(argv[currentarg + 3][0])) {
+	if (!isnumeric(argv[currentarg + 3])) {
 		printf("Error: Limit check fails\n");
 		showalerthelp();
 		return 0;
@@ -669,7 +668,6 @@ void showstylehelp(void)
 	printf("        and show raw values in --oneline\n");
 }
 
-// TODO: fill placeholder
 void handleshowalert(PARAMS *p)
 {
 	if (!p->alert) {
@@ -677,13 +675,19 @@ void handleshowalert(PARAMS *p)
 	}
 
 	if (p->defaultiface) {
-		// TODO: -i isn't mandatory anymore so update these prints
+		// TODO: -i isn't mandatory anymore so update these type of prints
 		printf("Error: Use -i parameter to specify an interface.\n");
 		exit(EXIT_FAILURE);
 	}
 
-	printf("--alert placeholder\n");
-	exit(EXIT_SUCCESS);
+	validateinterface(p);
+
+	// TODO: needs something to control the verbosity and exit value handling
+	if (showalert(p->interface, p->alerttype, p->alertcondition, p->alertlimit)) {
+		exit(EXIT_FAILURE);
+	} else {
+		exit(EXIT_SUCCESS);
+	}
 }
 
 void handleremoveinterface(PARAMS *p)
@@ -940,28 +944,7 @@ void handleshowdata(PARAMS *p)
 
 void showoneinterface(PARAMS *p)
 {
-	int i, found = 0;
-
-	if (!db_getinterfacecountbyname(p->interface)) {
-		if (strchr(p->interface, '+') == NULL) {
-			for (i = 1; i <= cfg.ifacematchmethod; i++) {
-				found = db_setinterfacebyalias(p->interface, p->interface, i);
-				if (found) {
-					if (debug) {
-						printf("Found \"%s\" with method %d\n", p->interface, i);
-					}
-					break;
-				}
-			}
-			if (!found) {
-				printf("Error: No interface matching \"%s\" found in database.\n", p->interface);
-				exit(EXIT_FAILURE);
-			}
-		} else {
-			printf("Error: Not all requested interfaces found in database or given interfaces aren't unique.\n");
-			exit(EXIT_FAILURE);
-		}
-	}
+	validateinterface(p);
 
 	if (cfg.qmode == 5) {
 		if (cfg.ostyle != 0) {
@@ -1176,4 +1159,34 @@ void showdbiflist(const int parseable)
 
 	iflistfree(&dbifl);
 	db_close();
+}
+
+void validateinterface(PARAMS *p)
+{
+	int i, found = 0;
+
+	timeused_debug(__func__, 1);
+
+	if (!db_getinterfacecountbyname(p->interface)) {
+		if (strchr(p->interface, '+') == NULL) {
+			for (i = 1; i <= cfg.ifacematchmethod; i++) {
+				found = db_setinterfacebyalias(p->interface, p->interface, i);
+				if (found) {
+					if (debug) {
+						printf("Found \"%s\" with method %d\n", p->interface, i);
+					}
+					break;
+				}
+			}
+			if (!found) {
+				printf("Error: No interface matching \"%s\" found in database.\n", p->interface);
+				exit(EXIT_FAILURE);
+			}
+		} else {
+			printf("Error: Not all requested interfaces found in database or given interfaces aren't unique.\n");
+			exit(EXIT_FAILURE);
+		}
+	}
+
+	timeused_debug(__func__, 0);
 }
