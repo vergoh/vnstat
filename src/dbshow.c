@@ -888,7 +888,7 @@ void indent(int i)
 	}
 }
 
-int showalert(const char *interface, const AlertType type, const AlertCondition condition, const uint64_t limit)
+int showalert(const char *interface, const AlertAction action, const AlertType type, const AlertCondition condition, const uint64_t limit)
 {
 	interfaceinfo ifaceinfo;
 	int ret = 1;
@@ -970,21 +970,33 @@ int showalert(const char *interface, const AlertType type, const AlertCondition 
 	dbdatalistfree(&datalist);
 
 	// TODO: replace placeholder output
-	if (strlen(ifaceinfo.alias)) {
-		printf("# %s (%s)", ifaceinfo.alias, ifaceinfo.name);
-	} else {
-		printf("# %s", interface);
-	}
-	printf(" %s %s\n", tablename, conditionname);
+
 	if (bytes >= limit) {
-		printf("Limit reached, %s >= ", getvalue(bytes, 0, RT_Normal));
-		printf("%s\n", getvalue(limit, 0, RT_Normal));
 		ret = 1;
 	} else {
-		printf("Limit:     %9s\n", getvalue(limit, 0, RT_Normal));
-		printf("Current:   %9s  (%4.1f%%)\n", getvalue(bytes, 0, RT_Normal), (double)bytes / (double)limit * 100.0);
-		printf("Remaining: %9s  (%4.1f%%)\n", getvalue(limit - bytes, 0, RT_Normal), (double)(limit - bytes) / (double)limit * 100.0);
 		ret = 0;
+	}
+
+	if (action != AA_No_Output) {
+		if (ret || action == AA_Always_Output || action == AA_Always_Output_Exit_1) {
+			if (strlen(ifaceinfo.alias)) {
+				printf("# %s (%s)", ifaceinfo.alias, ifaceinfo.name);
+			} else {
+				printf("# %s", interface);
+			}
+			printf(" %s %s\n", tablename, conditionname);
+		}
+
+		if (ret) {
+			printf("Limit reached, %s >= ", getvalue(bytes, 0, RT_Normal));
+			printf("%s\n", getvalue(limit, 0, RT_Normal));
+		} else {
+			if (action == AA_Always_Output || action == AA_Always_Output_Exit_1) {
+				printf("Limit:     %9s\n", getvalue(limit, 0, RT_Normal));
+				printf("Current:   %9s  (%4.1f%%)\n", getvalue(bytes, 0, RT_Normal), (double)bytes / (double)limit * 100.0);
+				printf("Remaining: %9s  (%4.1f%%)\n", getvalue(limit - bytes, 0, RT_Normal), (double)(limit - bytes) / (double)limit * 100.0);
+			}
+		}
 	}
 
 	timeused_debug(__func__, 0);

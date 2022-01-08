@@ -10,7 +10,7 @@ typedef struct {
 	char interface[32], alias[32], newifname[32], filename[512];
 	char definterface[32], cfgfile[512], *ifacelist, jsonmode, xmlmode;
 	char databegin[18], dataend[18];
-	unsigned int alert, alerttype, alertcondition;
+	unsigned int alert, alertaction, alerttype, alertcondition;
 	uint64_t alertlimit;
 } PARAMS;
 
@@ -18,7 +18,7 @@ void initparams(PARAMS *p);
 void showhelp(PARAMS *p);
 void showlonghelp(PARAMS *p);
 void parseargs(PARAMS *p, const int argc, char **argv);
-int parsealertargs(PARAMS *p, const int argc, char **argv, const int currentarg);
+int parsealertargs(PARAMS *p, char **argv);
 void showalerthelp(void);
 void showstylehelp(void);
 void handleshowalert(PARAMS *p);

@@ -43,6 +43,7 @@ void initparams(PARAMS *p)
 	p->dataend[0] = '\0';
 
 	p->alert = 0;
+	p->alertaction = 0;
 	p->alerttype = 0;
 	p->alertcondition = 0;
 	p->alertlimit = 0;
@@ -66,8 +67,8 @@ void showhelp(PARAMS *p)
 	printf("      --oneline [mode]             show simple parsable format\n");
 	printf("      --json [mode] [limit]        show database in json format\n");
 	printf("      --xml [mode] [limit]         show database in xml format\n");
-	printf("      --alert <type> <condition>\n");
-	printf("              <limit> <unit>       show alert if limit is exceeded\n\n");
+	printf("      --alert <action> <type> <condition> <limit> <unit>\n");
+	printf("                                   alert if limit is reached\n\n");
 
 	printf("      -tr, --traffic [time]        calculate traffic\n");
 	printf("      -l,  --live [mode]           show transfer rate in real time\n");
@@ -100,8 +101,8 @@ void showlonghelp(PARAMS *p)
 	printf("      --oneline [mode]             show simple parsable format\n");
 	printf("      --json [mode] [limit]        show database in json format\n");
 	printf("      --xml [mode] [limit]         show database in xml format\n\n");
-	printf("      --alert <type> <condition>\n");
-	printf("              <limit> <unit>       show alert if limit is exceeded\n\n");
+	printf("      --alert <action> <type> <condition> <limit> <unit>\n");
+	printf("                                   alert if limit is reached\n\n");
 
 	printf("Modify:\n");
 
@@ -495,10 +496,15 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 				exit(EXIT_FAILURE);
 			}
 		} else if (strcmp(argv[currentarg], "--alert") == 0) {
-			if (!parsealertargs(p, argc, argv, currentarg)) {
+			if (currentarg + 5 >= argc) {
+				printf("Error: Parameters missing\n"); // TODO: improve
+				showalerthelp();
+				exit(EXIT_FAILURE);
+			}
+			if (!parsealertargs(p, argv + currentarg)) {
 				exit(EXIT_FAILURE);
 			} else {
-				currentarg += 4;
+				currentarg += 5;
 				p->alert = 1;
 			}
 		} else if ((strcmp(argv[currentarg], "-v") == 0) || (strcmp(argv[currentarg], "--version") == 0)) {
@@ -531,21 +537,15 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 }
 
 // TODO: error prints and tests
-int parsealertargs(PARAMS *p, const int argc, char **argv, const int currentarg)
+int parsealertargs(PARAMS *p, char **argv)
 {
-	int i, u, found;
+	int i, u, found, currentarg = 0;
 	uint64_t alertlimit = 0;
 	int32_t unitmode = cfg.unitmode;
 	const char *alerttypes[] = {"h", "hour", "hourly", "d", "day", "daily", "m", "month", "monthly", "y", "year", "yearly"};
 	const char *alertconditions[] = {"rx", "tx", "total", "rxe", "txe", "totale"}; // order must match that of AlertCondition in dbshow.h
 
-	if (currentarg + 4 >= argc) {
-		printf("Error: Parameters missing\n");
-		showalerthelp();
-		return 0;
-	}
-
-	for (i = 1; i <= 4; i++) {
+	for (i = 1; i <= 5; i++) {
 		if (argv[currentarg + i][0] == '-' || ishelprequest(argv[currentarg + i])) {
 			printf("Error: Parameter quick check fails\n");
 			showalerthelp();
@@ -553,10 +553,26 @@ int parsealertargs(PARAMS *p, const int argc, char **argv, const int currentarg)
 		}
 	}
 
+	// action
+	if (!isnumeric(argv[currentarg + 1])) {
+		printf("Error: Action check fails\n");
+		showalerthelp();
+		return 0;
+	}
+	p->alertaction = (unsigned int)atoi(argv[currentarg + 1]);
+	if (p->alertaction > 4) {
+		printf("Error: Another action check fails\n");
+		showalerthelp();
+		return 0;
+	}
+	if (debug) {
+		printf("Alert action: %u\n", p->alertaction);
+	}
+
 	// type
 	found = 0;
 	for (i = 0; i < 12; i++) {
-		if (strcmp(argv[currentarg + 1], alerttypes[i]) == 0) {
+		if (strcmp(argv[currentarg + 2], alerttypes[i]) == 0) {
 			found = 1;
 			break;
 		}
@@ -567,7 +583,7 @@ int parsealertargs(PARAMS *p, const int argc, char **argv, const int currentarg)
 		return 0;
 	}
 
-	switch (argv[currentarg + 1][0]) {
+	switch (argv[currentarg + 2][0]) {
 		case 'h':
 			p->alerttype = AT_Hour;
 			break;
@@ -584,13 +600,13 @@ int parsealertargs(PARAMS *p, const int argc, char **argv, const int currentarg)
 			return 0;
 	}
 	if (debug) {
-		printf("Alert type: %d\n", p->alerttype);
+		printf("Alert type: %u\n", p->alerttype);
 	}
 
 	// condition
 	found = 0;
 	for (i = 0; i < 6; i++) {
-		if (strcmp(argv[currentarg + 2], alertconditions[i]) == 0) {
+		if (strcmp(argv[currentarg + 3], alertconditions[i]) == 0) {
 			found = 1;
 			p->alertcondition = (unsigned int)i + 1;
 			break;
@@ -602,16 +618,16 @@ int parsealertargs(PARAMS *p, const int argc, char **argv, const int currentarg)
 		return 0;
 	}
 	if (debug) {
-		printf("Alert condition: %d\n", p->alertcondition);
+		printf("Alert condition: %u\n", p->alertcondition);
 	}
 
 	// limit
-	if (!isnumeric(argv[currentarg + 3])) {
+	if (!isnumeric(argv[currentarg + 4])) {
 		printf("Error: Limit check fails\n");
 		showalerthelp();
 		return 0;
 	}
-	alertlimit = strtoull(argv[currentarg + 3], (char **)NULL, 0);
+	alertlimit = strtoull(argv[currentarg + 4], (char **)NULL, 0);
 	if (alertlimit == 0) {
 		printf("Error: Limit sanity check fails\n");
 		showalerthelp();
@@ -626,7 +642,7 @@ int parsealertargs(PARAMS *p, const int argc, char **argv, const int currentarg)
 	for (u = 0; u < 3; u++) {
 		cfg.unitmode = u;
 		for (i = 1; i <= UNITPREFIXCOUNT; i++) {
-			if (strcmp(argv[currentarg + 4], getunitprefix(i)) == 0) {
+			if (strcmp(argv[currentarg + 5], getunitprefix(i)) == 0) {
 				found = 1;
 				break;
 			}
@@ -644,7 +660,7 @@ int parsealertargs(PARAMS *p, const int argc, char **argv, const int currentarg)
 	p->alertlimit = alertlimit * getunitdivisor(u, i);
 
 	if (debug) {
-		printf("Alert unit %s is %d %d = %" PRIu64 "\n", argv[currentarg + 4], u, i, getunitdivisor(u, i));
+		printf("Alert unit %s is %d %d = %" PRIu64 "\n", argv[currentarg + 5], u, i, getunitdivisor(u, i));
 		printf("Alert real limit is %" PRIu64 " * %" PRIu64 " = %" PRIu64 "\n", alertlimit, getunitdivisor(u, i), p->alertlimit);
 	}
 
@@ -682,12 +698,12 @@ void handleshowalert(PARAMS *p)
 
 	validateinterface(p);
 
-	// TODO: needs something to control the verbosity and exit value handling
-	if (showalert(p->interface, p->alerttype, p->alertcondition, p->alertlimit)) {
+	if (showalert(p->interface, p->alertaction, p->alerttype, p->alertcondition, p->alertlimit) &&
+			(p->alertaction == AA_No_Output || p->alertaction == AA_Alert_Output_Exit_1 || p->alertaction == AA_Always_Output_Exit_1)) {
 		exit(EXIT_FAILURE);
-	} else {
-		exit(EXIT_SUCCESS);
 	}
+
+	exit(EXIT_SUCCESS);
 }
 
 void handleremoveinterface(PARAMS *p)
