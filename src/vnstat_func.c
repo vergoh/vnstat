@@ -497,7 +497,7 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 			}
 		} else if (strcmp(argv[currentarg], "--alert") == 0) {
 			if (currentarg + 5 >= argc) {
-				printf("Error: Parameters missing\n"); // TODO: improve
+				printf("Error: Invalid parameter count for %s.\n", argv[currentarg]);
 				showalerthelp();
 				exit(EXIT_FAILURE);
 			}
@@ -536,18 +536,17 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 	}
 }
 
-// TODO: error prints and tests
+// TODO: tests
 int parsealertargs(PARAMS *p, char **argv)
 {
 	int i, u, found, currentarg = 0;
 	uint64_t alertlimit = 0;
 	int32_t unitmode = cfg.unitmode;
 	const char *alerttypes[] = {"h", "hour", "hourly", "d", "day", "daily", "m", "month", "monthly", "y", "year", "yearly"};
-	const char *alertconditions[] = {"rx", "tx", "total", "rxe", "txe", "totale"}; // order must match that of AlertCondition in dbshow.h
+	const char *alertconditions[] = {"rx", "tx", "total", "rx_estimate", "tx_estimate", "total_estimate"}; // order must match that of AlertCondition in dbshow.h
 
 	for (i = 1; i <= 5; i++) {
 		if (argv[currentarg + i][0] == '-' || ishelprequest(argv[currentarg + i])) {
-			printf("Error: Parameter quick check fails\n");
 			showalerthelp();
 			return 0;
 		}
@@ -555,13 +554,13 @@ int parsealertargs(PARAMS *p, char **argv)
 
 	// action
 	if (!isnumeric(argv[currentarg + 1])) {
-		printf("Error: Action check fails\n");
+		printf("Error: Non-numeric action parameter \"%s\" for %s.\n", argv[currentarg + 1], argv[currentarg]);
 		showalerthelp();
 		return 0;
 	}
 	p->alertaction = (unsigned int)atoi(argv[currentarg + 1]);
 	if (p->alertaction > 4) {
-		printf("Error: Another action check fails\n");
+		printf("Error: Action parameter out of range for %s.\n", argv[currentarg]);
 		showalerthelp();
 		return 0;
 	}
@@ -578,7 +577,7 @@ int parsealertargs(PARAMS *p, char **argv)
 		}
 	}
 	if (!found) {
-		printf("Error: Type check fails\n");
+		printf("Error: Invalid type parameter \"%s\" for %s.\n", argv[currentarg + 2], argv[currentarg]);
 		showalerthelp();
 		return 0;
 	}
@@ -613,7 +612,7 @@ int parsealertargs(PARAMS *p, char **argv)
 		}
 	}
 	if (!found) {
-		printf("Error: Condition check fails\n");
+		printf("Error: Invalid condition parameter \"%s\" for %s.\n", argv[currentarg + 3], argv[currentarg]);
 		showalerthelp();
 		return 0;
 	}
@@ -623,13 +622,13 @@ int parsealertargs(PARAMS *p, char **argv)
 
 	// limit
 	if (!isnumeric(argv[currentarg + 4])) {
-		printf("Error: Limit check fails\n");
+		printf("Error: Limit parameter for %s must be a greater than zero integer without decimals.\n", argv[currentarg]);
 		showalerthelp();
 		return 0;
 	}
 	alertlimit = strtoull(argv[currentarg + 4], (char **)NULL, 0);
 	if (alertlimit == 0) {
-		printf("Error: Limit sanity check fails\n");
+		printf("Error: Invalid limit parameter \"%s\" for %s.\n", argv[currentarg + 4], argv[currentarg]);
 		showalerthelp();
 		return 0;
 	}
@@ -653,7 +652,8 @@ int parsealertargs(PARAMS *p, char **argv)
 	}
 	cfg.unitmode = unitmode;
 	if (!found) {
-		printf("Error: Limit unit fails\n");
+		printf("Error: Invalid limit unit parameter \"%s\" for %s.\n", argv[currentarg + 5], argv[currentarg]);
+		showalerthelp();
 		return 0;
 	}
 
@@ -667,15 +667,31 @@ int parsealertargs(PARAMS *p, char **argv)
 	return 1;
 }
 
-// TODO: fill placeholder
 void showalerthelp(void)
 {
-	printf("--alert help placeholder\n");
+	printf("\n");
+	printf("Valid parameters for --alert <action> <type> <condition> <limit> <unit>\n\n");
+	printf(" <action>\n");
+	printf("    0 - no output, exit 1 if limit reached\n");
+	printf("    1 - output only if limit reached\n");
+	printf("    2 - output only if limit reached, exit 1 if limit reached\n");
+	printf("    3 - always show output\n");
+	printf("    4 - always show output, exit 1 if limit reached\n\n");
+	printf(" <type>\n");
+	printf("    h, hour, hourly        d, day, daily\n");
+	printf("    m, month, monthly      y, year, yearly\n\n");
+	printf(" <condition>\n");
+	printf("    rx, tx, total, rx_estimate, tx_estimate, total_estimate\n\n");
+	printf(" <limit>\n");
+	printf("    greater than zero integer without decimals\n\n");
+	printf(" <unit> for <limit>\n");
+	printf("    B, KiB, MiB, GiB, TiB, PiB, EiB\n");
+	printf("    B, KB, MB, GB, TB, PB, EB\n");
 }
 
 void showstylehelp(void)
 {
-	printf(" Valid parameters for --style.:\n");
+	printf(" Valid parameters for --style:\n");
 	printf("    0 - a more narrow output\n");
 	printf("    1 - enable bar column if available\n");
 	printf("    2 - average traffic rate in summary output\n");
