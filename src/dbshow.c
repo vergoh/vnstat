@@ -891,8 +891,10 @@ void indent(int i)
 int showalert(const char *interface, const AlertAction action, const AlertType type, const AlertCondition condition, const uint64_t limit)
 {
 	interfaceinfo ifaceinfo;
-	int ret = 1;
-	char tablename[12], conditionname[16];
+	int i, l, ret = 1;
+	short ongoing = 1;
+	char tablename[6], typeoutput[8], conditionname[16];
+	char datebuff[DATEBUFFLEN];
 	ListType listtype = LT_None;
 	uint64_t bytes = 0, e_rx = 0, e_tx = 0;
 	dbdatalist *datalist = NULL;
@@ -909,19 +911,23 @@ int showalert(const char *interface, const AlertAction action, const AlertType t
 			return 0;
 		case AT_Hour:
 			listtype = LT_Hour;
-			snprintf(tablename, 12, "hour");
+			snprintf(tablename, 6, "hour");
+			snprintf(typeoutput, 8, "hourly");
 			break;
 		case AT_Day:
 			listtype = LT_Day;
-			snprintf(tablename, 12, "day");
+			snprintf(tablename, 6, "day");
+			snprintf(typeoutput, 8, "daily");
 			break;
 		case AT_Month:
 			listtype = LT_Month;
-			snprintf(tablename, 12, "month");
+			snprintf(tablename, 6, "month");
+			snprintf(typeoutput, 8, "monthly");
 			break;
 		case AT_Year:
 			listtype = LT_Year;
-			snprintf(tablename, 12, "year");
+			snprintf(tablename, 6, "year");
+			snprintf(typeoutput, 8, "yearly");
 			break;
 	}
 
@@ -951,27 +957,26 @@ int showalert(const char *interface, const AlertAction action, const AlertType t
 			snprintf(conditionname, 16, "total");
 			break;
 		case AC_RX_Estimate:
+			ongoing = 0;
 			getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, &datalist);
 			bytes = e_rx;
 			snprintf(conditionname, 16, "rx estimate");
 			break;
 		case AC_TX_Estimate:
+			ongoing = 0;
 			getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, &datalist);
 			bytes = e_tx;
 			snprintf(conditionname, 16, "tx estimate");
 			break;
 		case AC_Total_Estimate:
+			ongoing = 0;
 			getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, &datalist);
 			bytes = e_rx + e_tx;
 			snprintf(conditionname, 16, "total estimate");
 			break;
 	}
 
-	dbdatalistfree(&datalist);
-
-	// TODO: replace placeholder output
-
-	if (bytes >= limit) {
+	if (bytes > limit) {
 		ret = 1;
 	} else {
 		ret = 0;
@@ -980,24 +985,52 @@ int showalert(const char *interface, const AlertAction action, const AlertType t
 	if (action != AA_No_Output) {
 		if (ret || action == AA_Always_Output || action == AA_Always_Output_Exit_1) {
 			if (strlen(ifaceinfo.alias)) {
-				printf("# %s (%s)", ifaceinfo.alias, ifaceinfo.name);
+				printf("\n   %s (%s)", ifaceinfo.alias, ifaceinfo.name);
 			} else {
-				printf("# %s", interface);
+				printf("\n   %s", interface);
 			}
-			printf(" %s %s\n", tablename, conditionname);
+			if (ifaceinfo.updated) {
+				strftime(datebuff, DATEBUFFLEN, DATETIMEFORMAT, localtime(&ifaceinfo.updated));
+				printf(" at %s", datebuff);
+			}
+			printf("\n\n");
 		}
 
 		if (ret) {
-			printf("Limit reached, %s >= ", getvalue(bytes, 0, RT_Normal));
-			printf("%s\n", getvalue(limit, 0, RT_Normal));
+			printf("                   Alert limit exceeded!\n\n");
+			printf("      %8s   %15s            avg. rate\n", typeoutput, conditionname);
+			printf("     --------------------------------------------------\n");
+			printf("         limit      %12s", getvalue(limit, 12, RT_Normal));
+			printf("         %14s\n", gettrafficrate(limit, (time_t)getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, 0), 14));
+			printf("          used      %12s", getvalue(bytes, 12, RT_Normal));
+			printf("         %14s\n", gettrafficrate(bytes, (time_t)getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, ongoing), 14));
+			printf("     --------------------------------------------------\n");
+			printf("        excess      %12s  (%.1f%%)\n", getvalue(bytes - limit, 12, RT_Normal), (double)(bytes) / (double)limit * 100.0 - 100.0);
 		} else {
 			if (action == AA_Always_Output || action == AA_Always_Output_Exit_1) {
-				printf("Limit:     %9s\n", getvalue(limit, 0, RT_Normal));
-				printf("Current:   %9s  (%4.1f%%)\n", getvalue(bytes, 0, RT_Normal), (double)bytes / (double)limit * 100.0);
-				printf("Remaining: %9s  (%4.1f%%)\n", getvalue(limit - bytes, 0, RT_Normal), (double)(limit - bytes) / (double)limit * 100.0);
+				printf("     [");
+				l = (int)lrint((double)(bytes) / (double)limit * 48);
+				for (i = 0; i < l; i++) {
+					printf("o");
+				}
+				for (; i < 48; i++) {
+					printf(".");
+				}
+				printf("]\n\n");
+
+				printf("      %8s   %15s            avg. rate\n", typeoutput, conditionname);
+				printf("     --------------------------------------------------\n");
+				printf("         limit      %12s", getvalue(limit, 12, RT_Normal));
+				printf("         %14s\n", gettrafficrate(limit, (time_t)getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, 0), 14));
+				printf("          used      %12s", getvalue(bytes, 12, RT_Normal));
+				printf("         %14s\n", gettrafficrate(bytes, (time_t)getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, ongoing), 14));
+				printf("     --------------------------------------------------\n");
+				printf("     remaining      %12s  (%.1f%%)\n", getvalue(limit - bytes, 12, RT_Normal), (double)(limit - bytes) / (double)limit * 100.0);
 			}
 		}
 	}
+
+	dbdatalistfree(&datalist);
 
 	timeused_debug(__func__, 0);
 

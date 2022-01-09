@@ -536,7 +536,7 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 	}
 }
 
-// TODO: tests
+// TODO: tests and documentation
 int parsealertargs(PARAMS *p, char **argv)
 {
 	int i, u, found, currentarg = 0;
