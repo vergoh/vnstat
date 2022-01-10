@@ -43,7 +43,8 @@ void initparams(PARAMS *p)
 	p->dataend[0] = '\0';
 
 	p->alert = 0;
-	p->alertaction = 0;
+	p->alertoutput = 0;
+	p->alertexit = 0;
 	p->alerttype = 0;
 	p->alertcondition = 0;
 	p->alertlimit = 0;
@@ -67,8 +68,8 @@ void showhelp(PARAMS *p)
 	printf("      --oneline [mode]             show simple parsable format\n");
 	printf("      --json [mode] [limit]        show database in json format\n");
 	printf("      --xml [mode] [limit]         show database in xml format\n");
-	printf("      --alert <action> <type> <condition> <limit> <unit>\n");
-	printf("                                   alert if limit is reached\n\n");
+	printf("      --alert <output> <exit> <type> <condition> <limit> <unit>\n");
+	printf("                                   alert if limit is exceeded\n\n");
 
 	printf("      -tr, --traffic [time]        calculate traffic\n");
 	printf("      -l,  --live [mode]           show transfer rate in real time\n");
@@ -101,8 +102,8 @@ void showlonghelp(PARAMS *p)
 	printf("      --oneline [mode]             show simple parsable format\n");
 	printf("      --json [mode] [limit]        show database in json format\n");
 	printf("      --xml [mode] [limit]         show database in xml format\n\n");
-	printf("      --alert <action> <type> <condition> <limit> <unit>\n");
-	printf("                                   alert if limit is reached\n\n");
+	printf("      --alert <output> <exit> <type> <condition> <limit> <unit>\n");
+	printf("                                   alert if limit is exceeded\n\n");
 
 	printf("Modify:\n");
 
@@ -496,7 +497,7 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 				exit(EXIT_FAILURE);
 			}
 		} else if (strcmp(argv[currentarg], "--alert") == 0) {
-			if (currentarg + 5 >= argc) {
+			if (currentarg + 6 >= argc) {
 				printf("Error: Invalid parameter count for %s.\n", argv[currentarg]);
 				showalerthelp();
 				exit(EXIT_FAILURE);
@@ -504,7 +505,7 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 			if (!parsealertargs(p, argv + currentarg)) {
 				exit(EXIT_FAILURE);
 			} else {
-				currentarg += 5;
+				currentarg += 6;
 				p->alert = 1;
 			}
 		} else if ((strcmp(argv[currentarg], "-v") == 0) || (strcmp(argv[currentarg], "--version") == 0)) {
@@ -545,44 +546,69 @@ int parsealertargs(PARAMS *p, char **argv)
 	const char *alerttypes[] = {"h", "hour", "hourly", "d", "day", "daily", "m", "month", "monthly", "y", "year", "yearly"};
 	const char *alertconditions[] = {"rx", "tx", "total", "rx_estimate", "tx_estimate", "total_estimate"}; // order must match that of AlertCondition in dbshow.h
 
-	for (i = 1; i <= 5; i++) {
+	for (i = 1; i <= 6; i++) {
 		if (argv[currentarg + i][0] == '-' || ishelprequest(argv[currentarg + i])) {
 			showalerthelp();
 			return 0;
 		}
 	}
+	currentarg++;
 
-	// action
-	if (!isnumeric(argv[currentarg + 1])) {
-		printf("Error: Non-numeric action parameter \"%s\" for %s.\n", argv[currentarg + 1], argv[currentarg]);
+	// output
+	if (!isnumeric(argv[currentarg])) {
+		printf("Error: Non-numeric output parameter \"%s\" for %s.\n", argv[currentarg], argv[0]);
 		showalerthelp();
 		return 0;
 	}
-	p->alertaction = (unsigned int)atoi(argv[currentarg + 1]);
-	if (p->alertaction > 4) {
-		printf("Error: Action parameter out of range for %s.\n", argv[currentarg]);
+	p->alertoutput = (unsigned int)atoi(argv[currentarg]);
+	if (p->alertoutput > 3) {
+		printf("Error: Output parameter out of range for %s.\n", argv[0]);
 		showalerthelp();
 		return 0;
 	}
 	if (debug) {
-		printf("Alert action: %u\n", p->alertaction);
+		printf("Alert output: %u\n", p->alertoutput);
 	}
+	currentarg++;
+
+	// exit
+	if (!isnumeric(argv[currentarg])) {
+		printf("Error: Non-numeric exit parameter \"%s\" for %s.\n", argv[currentarg], argv[0]);
+		showalerthelp();
+		return 0;
+	}
+	p->alertexit = (unsigned int)atoi(argv[currentarg]);
+	if (p->alertexit > 4) {
+		printf("Error: Exit parameter out of range for %s.\n", argv[0]);
+		showalerthelp();
+		return 0;
+	}
+	if (debug) {
+		printf("Alert exit: %u\n", p->alertexit);
+	}
+
+	if (p->alertoutput == AO_No_Output && (p->alertexit == AE_Always_Exit_0 || p->alertexit == AE_Always_Exit_1)) {
+		printf("Error: Configuring %s for no output and always same exit status provides no real usability.\n", argv[0]);
+		showalerthelp();
+		return 0;
+	}
+	currentarg++;
 
 	// type
 	found = 0;
 	for (i = 0; i < 12; i++) {
-		if (strcmp(argv[currentarg + 2], alerttypes[i]) == 0) {
+		if (strcmp(argv[currentarg], alerttypes[i]) == 0) {
 			found = 1;
 			break;
 		}
 	}
 	if (!found) {
-		printf("Error: Invalid type parameter \"%s\" for %s.\n", argv[currentarg + 2], argv[currentarg]);
+		printf("Error: Invalid type parameter \"%s\" for %s.\n", argv[currentarg], argv[0]);
 		showalerthelp();
 		return 0;
 	}
 
-	switch (argv[currentarg + 2][0]) {
+	switch (argv[currentarg][0]) {
 		case 'h':
 			p->alerttype = AT_Hour;
 			break;
@@ -601,47 +627,50 @@ int parsealertargs(PARAMS *p, char **argv)
 	if (debug) {
 		printf("Alert type: %u\n", p->alerttype);
 	}
+	currentarg++;
 
 	// condition
 	found = 0;
 	for (i = 0; i < 6; i++) {
-		if (strcmp(argv[currentarg + 3], alertconditions[i]) == 0) {
+		if (strcmp(argv[currentarg], alertconditions[i]) == 0) {
 			found = 1;
 			p->alertcondition = (unsigned int)i + 1;
 			break;
 		}
 	}
 	if (!found) {
-		printf("Error: Invalid condition parameter \"%s\" for %s.\n", argv[currentarg + 3], argv[currentarg]);
+		printf("Error: Invalid condition parameter \"%s\" for %s.\n", argv[currentarg], argv[0]);
 		showalerthelp();
 		return 0;
 	}
 	if (debug) {
 		printf("Alert condition: %u\n", p->alertcondition);
 	}
+	currentarg++;
 
 	// limit
-	if (!isnumeric(argv[currentarg + 4])) {
-		printf("Error: Limit parameter for %s must be a greater than zero integer without decimals.\n", argv[currentarg]);
+	if (!isnumeric(argv[currentarg])) {
+		printf("Error: Limit parameter for %s must be a greater than zero integer without decimals.\n", argv[0]);
 		showalerthelp();
 		return 0;
 	}
-	alertlimit = strtoull(argv[currentarg + 4], (char **)NULL, 0);
+	alertlimit = strtoull(argv[currentarg], (char **)NULL, 0);
 	if (alertlimit == 0) {
-		printf("Error: Invalid limit parameter \"%s\" for %s.\n", argv[currentarg + 4], argv[currentarg]);
+		printf("Error: Invalid limit parameter \"%s\" for %s.\n", argv[currentarg], argv[0]);
 		showalerthelp();
 		return 0;
 	}
 	if (debug) {
 		printf("Alert limit: %" PRIu64 "\n", alertlimit);
 	}
+	currentarg++;
 
 	// limit unit
 	found = 0;
 	for (u = 0; u < 3; u++) {
 		cfg.unitmode = u;
 		for (i = 1; i <= UNITPREFIXCOUNT; i++) {
-			if (strcmp(argv[currentarg + 5], getunitprefix(i)) == 0) {
+			if (strcmp(argv[currentarg], getunitprefix(i)) == 0) {
 				found = 1;
 				break;
 			}
@@ -652,7 +681,7 @@ int parsealertargs(PARAMS *p, char **argv)
 	}
 	cfg.unitmode = unitmode;
 	if (!found) {
-		printf("Error: Invalid limit unit parameter \"%s\" for %s.\n", argv[currentarg + 5], argv[currentarg]);
+		printf("Error: Invalid limit unit parameter \"%s\" for %s.\n", argv[currentarg], argv[0]);
 		showalerthelp();
 		return 0;
 	}
@@ -660,7 +689,7 @@ int parsealertargs(PARAMS *p, char **argv)
 	p->alertlimit = alertlimit * getunitdivisor(u, i);
 
 	if (debug) {
-		printf("Alert unit %s is %d %d = %" PRIu64 "\n", argv[currentarg + 5], u, i, getunitdivisor(u, i));
+		printf("Alert unit %s is %d %d = %" PRIu64 "\n", argv[currentarg], u, i, getunitdivisor(u, i));
 		printf("Alert real limit is %" PRIu64 " * %" PRIu64 " = %" PRIu64 "\n", alertlimit, getunitdivisor(u, i), p->alertlimit);
 	}
 
@@ -670,20 +699,30 @@ int parsealertargs(PARAMS *p, char **argv)
 void showalerthelp(void)
 {
 	printf("\n");
-	printf("Valid parameters for --alert <action> <type> <condition> <limit> <unit>\n\n");
-	printf(" <action>\n");
-	printf("    0 - no output, exit 1 if limit reached\n");
-	printf("    1 - output only if limit reached\n");
-	printf("    2 - output only if limit reached, exit 1 if limit reached\n");
-	printf("    3 - always show output\n");
-	printf("    4 - always show output, exit 1 if limit reached\n\n");
+	printf("Valid parameters for\n--alert <output> <exit> <type> <condition> <limit> <unit>\n\n");
+
+	printf(" <output>\n");
+	printf("    0 - no output\n");
+	printf("    1 - always show output\n");
+	printf("    2 - show output only if usage estimate exceeds limit\n");
+	printf("    3 - show output only if limit is exceeded\n\n");
+
+	printf(" <exit>\n");
+	printf("    0 - always use exit status 0\n");
+	printf("    1 - always use exit status 1\n");
+	printf("    2 - use exit status 1 if usage estimate exceeds limit\n");
+	printf("    3 - use exit status 1 if limit is exceeded\n\n");
+
 	printf(" <type>\n");
 	printf("    h, hour, hourly        d, day, daily\n");
 	printf("    m, month, monthly      y, year, yearly\n\n");
+
 	printf(" <condition>\n");
 	printf("    rx, tx, total, rx_estimate, tx_estimate, total_estimate\n\n");
+
 	printf(" <limit>\n");
 	printf("    greater than zero integer without decimals\n\n");
+
 	printf(" <unit> for <limit>\n");
 	printf("    B, KiB, MiB, GiB, TiB, PiB, EiB\n");
 	printf("    B, KB, MB, GB, TB, PB, EB\n");
@@ -702,6 +741,8 @@ void showstylehelp(void)
 
 void handleshowalert(PARAMS *p)
 {
+	int alert = 0;
+
 	if (!p->alert) {
 		return;
 	}
@@ -714,8 +755,9 @@ void handleshowalert(PARAMS *p)
 
 	validateinterface(p);
 
-	if (showalert(p->interface, p->alertaction, p->alerttype, p->alertcondition, p->alertlimit) &&
-			(p->alertaction == AA_No_Output || p->alertaction == AA_Alert_Output_Exit_1 || p->alertaction == AA_Always_Output_Exit_1)) {
+	alert = showalert(p->interface, p->alertoutput, p->alertexit, p->alerttype, p->alertcondition, p->alertlimit);
+
+	if ((alert || p->alertexit == AE_Always_Exit_1) && p->alertexit != AE_Always_Exit_0) {
 		exit(EXIT_FAILURE);
 	}
 

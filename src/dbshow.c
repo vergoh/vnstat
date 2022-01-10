@@ -888,15 +888,15 @@ void indent(int i)
 	}
 }
 
-int showalert(const char *interface, const AlertAction action, const AlertType type, const AlertCondition condition, const uint64_t limit)
+int showalert(const char *interface, const AlertOutput output, const AlertExit exit, const AlertType type, const AlertCondition condition, const uint64_t limit)
 {
 	interfaceinfo ifaceinfo;
-	int i, l, ret = 1;
+	int i, l, ret = 0, limitexceeded = 0, estimateexceeded = 0;
 	short ongoing = 1;
 	char tablename[6], typeoutput[8], conditionname[16];
 	char datebuff[DATEBUFFLEN];
 	ListType listtype = LT_None;
-	uint64_t bytes = 0, e_rx = 0, e_tx = 0;
+	uint64_t bytes = 0, e_rx = 0, e_tx = 0, e_bytes = 0;
 	dbdatalist *datalist = NULL;
 	dbdatalistinfo datainfo;
 
@@ -947,14 +947,20 @@ int showalert(const char *interface, const AlertAction action, const AlertType t
 		case AC_RX:
 			bytes = datalist->rx;
 			snprintf(conditionname, 16, "rx");
+			getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, &datalist);
+			e_bytes = e_rx;
 			break;
 		case AC_TX:
 			bytes = datalist->tx;
 			snprintf(conditionname, 16, "tx");
+			getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, &datalist);
+			e_bytes = e_tx;
 			break;
 		case AC_Total:
 			bytes = datalist->rx + datalist->tx;
 			snprintf(conditionname, 16, "total");
+			getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, &datalist);
+			e_bytes = e_rx + e_tx;
 			break;
 		case AC_RX_Estimate:
 			ongoing = 0;
@@ -977,13 +983,23 @@ int showalert(const char *interface, const AlertAction action, const AlertType t
 	}
 
 	if (bytes > limit) {
-		ret = 1;
-	} else {
-		ret = 0;
+		limitexceeded = 1;
 	}
 
-	if (action != AA_No_Output) {
-		if (ret || action == AA_Always_Output || action == AA_Always_Output_Exit_1) {
+	if (ongoing == 1 && e_bytes > limit) {
+		estimateexceeded = 1;
+	}
+
+	if (exit == AE_Exit_1_On_Limit) {
+		ret = 1;
+	} else if (exit == AE_Exit_1_On_Estimate) {
+		if (estimateexceeded) {
+			ret = 1;
+		}
+	}
+
+	if (output != AO_No_Output) {
+		if (output == AO_Always_Output || (output == AO_Output_On_Estimate && estimateexceeded) || (output == AO_Output_On_Limit && limitexceeded)) {
 			if (strlen(ifaceinfo.alias)) {
 				printf("\n   %s (%s)", ifaceinfo.alias, ifaceinfo.name);
 			} else {
@@ -996,8 +1012,36 @@ int showalert(const char *interface, const AlertAction action, const AlertType t
 			printf("\n\n");
 		}
 
-		if (ret) {
+		if ((output == AO_Always_Output || output == AO_Output_On_Limit) && limitexceeded) {
 			printf("                   Alert limit exceeded!\n\n");
+		} else if (output == AO_Always_Output || (output == AO_Output_On_Estimate && estimateexceeded)) {
+			if (estimateexceeded) {
+				printf("      Warning: Limit will be exceeded at current rate\n\n");
+			}
+			printf("     [");
+			l = (int)lrint((double)(bytes) / (double)limit * 48);
+			for (i = 0; i < l; i++) {
+				printf("=");
+			}
+			if (ongoing) {
+				if (!estimateexceeded) {
+					l = (int)lrint((double)(e_bytes) / (double)limit * 48);
+					for (; i < l; i++) {
+						printf("-");
+					}
+				} else {
+					for (; i < 48; i++) {
+						printf("-");
+					}
+				}
+			}
+			for (; i < 48; i++) {
+				printf(".");
+			}
+			printf("]\n\n");
+		}
+
+		if (output == AO_Always_Output || (output == AO_Output_On_Estimate && estimateexceeded) || (output == AO_Output_On_Limit && limitexceeded)) {
 			printf("      %8s   %15s            avg. rate\n", typeoutput, conditionname);
 			printf("     --------------------------------------------------\n");
 			printf("         limit      %12s", getvalue(limit, 12, RT_Normal));
@@ -1005,28 +1049,22 @@ int showalert(const char *interface, const AlertAction action, const AlertType t
 			printf("          used      %12s", getvalue(bytes, 12, RT_Normal));
 			printf("         %14s\n", gettrafficrate(bytes, (time_t)getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, ongoing), 14));
 			printf("     --------------------------------------------------\n");
-			printf("        excess      %12s  (%.1f%%)\n", getvalue(bytes - limit, 12, RT_Normal), (double)(bytes) / (double)limit * 100.0 - 100.0);
-		} else {
-			if (action == AA_Always_Output || action == AA_Always_Output_Exit_1) {
-				printf("     [");
-				l = (int)lrint((double)(bytes) / (double)limit * 48);
-				for (i = 0; i < l; i++) {
-					printf("o");
-				}
-				for (; i < 48; i++) {
-					printf(".");
-				}
-				printf("]\n\n");
 
-				printf("      %8s   %15s            avg. rate\n", typeoutput, conditionname);
-				printf("     --------------------------------------------------\n");
-				printf("         limit      %12s", getvalue(limit, 12, RT_Normal));
-				printf("         %14s\n", gettrafficrate(limit, (time_t)getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, 0), 14));
-				printf("          used      %12s", getvalue(bytes, 12, RT_Normal));
-				printf("         %14s\n", gettrafficrate(bytes, (time_t)getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, ongoing), 14));
-				printf("     --------------------------------------------------\n");
-				printf("     remaining      %12s  (%.1f%%)\n", getvalue(limit - bytes, 12, RT_Normal), (double)(limit - bytes) / (double)limit * 100.0);
+		}
+
+		if (limitexceeded) {
+			printf("        excess      %12s  (+%.1f%%)\n", getvalue(bytes - limit, 12, RT_Normal), (double)(bytes) / (double)limit * 100.0 - 100.0);
+			if (ongoing) {
+				printf("     estimated      %12s  (+%.1f%%", getvalue(e_bytes, 12, RT_Normal), (double)(e_bytes) / (double)limit * 100.0 - 100.0);
+				printf(", +%s)\n", getvalue(e_bytes - limit, 0, RT_Normal));
 			}
+			printf("     --------------------------------------------------\n");
+		} else if (output == AO_Always_Output || (output == AO_Output_On_Estimate && estimateexceeded)) {
+			printf("     remaining      %12s  (%.1f%%)\n", getvalue(limit - bytes, 12, RT_Normal), (double)(limit - bytes) / (double)limit * 100.0);
+			if (ongoing) {
+				printf("     estimated      %12s  (%.1f%%)\n", getvalue(e_bytes, 12, RT_Normal), (double)(e_bytes) / (double)limit * 100.0);
+			}
+			printf("     --------------------------------------------------\n");
 		}
 	}
 

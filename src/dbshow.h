@@ -9,13 +9,19 @@ typedef struct {
 	uint64_t rx, tx;
 } HOURDATA;
 
-typedef enum AlertAction {
-	AA_No_Output = 0,
-	AA_Alert_Output,
-	AA_Alert_Output_Exit_1,
-	AA_Always_Output,
-	AA_Always_Output_Exit_1
-} AlertAction;
+typedef enum AlertOutput {
+	AO_No_Output = 0,
+	AO_Always_Output,
+	AO_Output_On_Estimate,
+	AO_Output_On_Limit
+} AlertOutput;
+
+typedef enum AlertExit {
+	AE_Always_Exit_0 = 0,
+	AE_Always_Exit_1,
+	AE_Exit_1_On_Estimate,
+	AE_Exit_1_On_Limit
+} AlertExit;
 
 typedef enum AlertType {
 	AT_None = 0,
@@ -42,6 +48,6 @@ void showoneline(const interfaceinfo *interface);
 void showhours(const interfaceinfo *interface);
 int showbar(const uint64_t rx, const uint64_t tx, const uint64_t max, const int len);
 void indent(int i);
-int showalert(const char *interface, const AlertAction action, const AlertType type, const AlertCondition condition, const uint64_t limit);
+int showalert(const char *interface, const AlertOutput output, const AlertExit exit, const AlertType type, const AlertCondition condition, const uint64_t limit);
 
 #endif

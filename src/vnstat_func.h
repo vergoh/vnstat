@@ -10,7 +10,7 @@ typedef struct {
 	char interface[32], alias[32], newifname[32], filename[512];
 	char definterface[32], cfgfile[512], *ifacelist, jsonmode, xmlmode;
 	char databegin[18], dataend[18];
-	unsigned int alert, alertaction, alerttype, alertcondition;
+	unsigned int alert, alertoutput, alertexit, alerttype, alertcondition;
 	uint64_t alertlimit;
 } PARAMS;
 
