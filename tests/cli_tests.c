@@ -927,6 +927,347 @@ START_TEST(handleifselection_selects_only_available_interfaces_and_can_ignore_da
 }
 END_TEST
 
+START_TEST(showalerthelp_does_not_crash)
+{
+	suppress_output();
+	showalerthelp();
+}
+END_TEST
+
+START_TEST(parsealertargs_knows_which_parameters_belong_to_it)
+{
+	int ret;
+	PARAMS p;
+	char *argv[] = {"--alert", "1", "2", "--days", NULL};
+
+	defaultcfg();
+	initparams(&p);
+	suppress_output();
+
+	ret = parsealertargs(&p, argv);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(p.alertoutput, 0);
+	ck_assert_int_eq(p.alertexit, 0);
+	ck_assert_int_eq(p.alerttype, 0);
+	ck_assert_int_eq(p.alertcondition, 0);
+	ck_assert_int_eq(p.alertlimit, 0);
+}
+END_TEST
+
+START_TEST(parsealertargs_helps_when_asked)
+{
+	int ret;
+	PARAMS p;
+	char *argv[] = {"--alert", "1", "2", "--help", NULL};
+
+	defaultcfg();
+	initparams(&p);
+	suppress_output();
+
+	ret = parsealertargs(&p, argv);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(p.alertoutput, 0);
+	ck_assert_int_eq(p.alertexit, 0);
+	ck_assert_int_eq(p.alerttype, 0);
+	ck_assert_int_eq(p.alertcondition, 0);
+	ck_assert_int_eq(p.alertlimit, 0);
+}
+END_TEST
+
+START_TEST(parsealertargs_can_set_parameters)
+{
+	int ret;
+	PARAMS p;
+	char *argv[] = {"--alert", "1", "2", "y", "total", "5", "KiB", NULL};
+
+	defaultcfg();
+	initparams(&p);
+	debug = 1;
+
+	ret = parsealertargs(&p, argv);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(p.alertoutput, 1);
+	ck_assert_int_eq(p.alertexit, 2);
+	ck_assert_int_eq(p.alerttype, 4);
+	ck_assert_int_eq(p.alertcondition, 3);
+	ck_assert_int_eq(p.alertlimit, 5120);
+}
+END_TEST
+
+START_TEST(parsealertargs_can_validate_output)
+{
+	int ret;
+	PARAMS p;
+	char *argv[] = {"--alert", "a", "2", "y", "total", "5", "KiB", NULL};
+
+	defaultcfg();
+	initparams(&p);
+	suppress_output();
+
+	ret = parsealertargs(&p, argv);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(p.alertoutput, 0);
+	ck_assert_int_eq(p.alertexit, 0);
+	ck_assert_int_eq(p.alerttype, 0);
+	ck_assert_int_eq(p.alertcondition, 0);
+	ck_assert_int_eq(p.alertlimit, 0);
+}
+END_TEST
+
+START_TEST(parsealertargs_can_validate_output_range)
+{
+	int ret;
+	PARAMS p;
+	char *argv[] = {"--alert", "4", "2", "y", "total", "5", "KiB", NULL};
+
+	defaultcfg();
+	initparams(&p);
+	suppress_output();
+
+	ret = parsealertargs(&p, argv);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(p.alertoutput, 4);
+	ck_assert_int_eq(p.alertexit, 0);
+	ck_assert_int_eq(p.alerttype, 0);
+	ck_assert_int_eq(p.alertcondition, 0);
+	ck_assert_int_eq(p.alertlimit, 0);
+}
+END_TEST
+
+START_TEST(parsealertargs_can_validate_exit)
+{
+	int ret;
+	PARAMS p;
+	char *argv[] = {"--alert", "1", "b", "y", "total", "5", "KiB", NULL};
+
+	defaultcfg();
+	initparams(&p);
+	suppress_output();
+
+	ret = parsealertargs(&p, argv);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(p.alertoutput, 1);
+	ck_assert_int_eq(p.alertexit, 0);
+	ck_assert_int_eq(p.alerttype, 0);
+	ck_assert_int_eq(p.alertcondition, 0);
+	ck_assert_int_eq(p.alertlimit, 0);
+}
+END_TEST
+
+START_TEST(parsealertargs_can_validate_exit_range)
+{
+	int ret;
+	PARAMS p;
+	char *argv[] = {"--alert", "1", "4", "y", "total", "5", "KiB", NULL};
+
+	defaultcfg();
+	initparams(&p);
+	suppress_output();
+
+	ret = parsealertargs(&p, argv);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(p.alertoutput, 1);
+	ck_assert_int_eq(p.alertexit, 4);
+	ck_assert_int_eq(p.alerttype, 0);
+	ck_assert_int_eq(p.alertcondition, 0);
+	ck_assert_int_eq(p.alertlimit, 0);
+}
+END_TEST
+
+START_TEST(parsealertargs_knows_first_useless_parameter_combination)
+{
+	int ret;
+	PARAMS p;
+	char *argv[] = {"--alert", "0", "0", "y", "total", "5", "KiB", NULL};
+
+	defaultcfg();
+	initparams(&p);
+	suppress_output();
+
+	ret = parsealertargs(&p, argv);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(p.alertoutput, 0);
+	ck_assert_int_eq(p.alertexit, 0);
+	ck_assert_int_eq(p.alerttype, 0);
+	ck_assert_int_eq(p.alertcondition, 0);
+	ck_assert_int_eq(p.alertlimit, 0);
+}
+END_TEST
+
+START_TEST(parsealertargs_knows_second_useless_parameter_combination)
+{
+	int ret;
+	PARAMS p;
+	char *argv[] = {"--alert", "0", "1", "y", "total", "5", "KiB", NULL};
+
+	defaultcfg();
+	initparams(&p);
+	suppress_output();
+
+	ret = parsealertargs(&p, argv);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(p.alertoutput, 0);
+	ck_assert_int_eq(p.alertexit, 1);
+	ck_assert_int_eq(p.alerttype, 0);
+	ck_assert_int_eq(p.alertcondition, 0);
+	ck_assert_int_eq(p.alertlimit, 0);
+}
+END_TEST
+
+START_TEST(parsealertargs_can_validate_type)
+{
+	int ret;
+	PARAMS p;
+	char *argv[] = {"--alert", "1", "2", "a", "total", "5", "KiB", NULL};
+
+	defaultcfg();
+	initparams(&p);
+	suppress_output();
+
+	ret = parsealertargs(&p, argv);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(p.alertoutput, 1);
+	ck_assert_int_eq(p.alertexit, 2);
+	ck_assert_int_eq(p.alerttype, 0);
+	ck_assert_int_eq(p.alertcondition, 0);
+	ck_assert_int_eq(p.alertlimit, 0);
+}
+END_TEST
+
+START_TEST(parsealertargs_can_validate_condition)
+{
+	int ret;
+	PARAMS p;
+	char *argv[] = {"--alert", "1", "2", "y", "total_recall", "5", "KiB", NULL};
+
+	defaultcfg();
+	initparams(&p);
+	suppress_output();
+
+	ret = parsealertargs(&p, argv);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(p.alertoutput, 1);
+	ck_assert_int_eq(p.alertexit, 2);
+	ck_assert_int_eq(p.alerttype, 4);
+	ck_assert_int_eq(p.alertcondition, 0);
+	ck_assert_int_eq(p.alertlimit, 0);
+}
+END_TEST
+
+START_TEST(parsealertargs_knows_first_invalid_condition_combination)
+{
+	int ret;
+	PARAMS p;
+	char *argv[] = {"--alert", "2", "3", "y", "rx_estimate", "5", "KiB", NULL};
+
+	defaultcfg();
+	initparams(&p);
+	suppress_output();
+
+	ret = parsealertargs(&p, argv);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(p.alertoutput, 2);
+	ck_assert_int_eq(p.alertexit, 3);
+	ck_assert_int_eq(p.alerttype, 4);
+	ck_assert_int_eq(p.alertcondition, 4);
+	ck_assert_int_eq(p.alertlimit, 0);
+}
+END_TEST
+
+START_TEST(parsealertargs_knows_second_invalid_condition_combination)
+{
+	int ret;
+	PARAMS p;
+	char *argv[] = {"--alert", "3", "2", "y", "tx_estimate", "5", "KiB", NULL};
+
+	defaultcfg();
+	initparams(&p);
+	suppress_output();
+
+	ret = parsealertargs(&p, argv);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(p.alertoutput, 3);
+	ck_assert_int_eq(p.alertexit, 2);
+	ck_assert_int_eq(p.alerttype, 4);
+	ck_assert_int_eq(p.alertcondition, 5);
+	ck_assert_int_eq(p.alertlimit, 0);
+}
+END_TEST
+
+START_TEST(parsealertargs_can_validate_limit_as_integer)
+{
+	int ret;
+	PARAMS p;
+	char *argv[] = {"--alert", "1", "2", "y", "total", "5.5", "KiB", NULL};
+
+	defaultcfg();
+	initparams(&p);
+	suppress_output();
+
+	ret = parsealertargs(&p, argv);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(p.alertoutput, 1);
+	ck_assert_int_eq(p.alertexit, 2);
+	ck_assert_int_eq(p.alerttype, 4);
+	ck_assert_int_eq(p.alertcondition, 3);
+	ck_assert_int_eq(p.alertlimit, 0);
+}
+END_TEST
+
+START_TEST(parsealertargs_can_validate_limit_as_non_zero)
+{
+	int ret;
+	PARAMS p;
+	char *argv[] = {"--alert", "1", "2", "y", "total", "0", "KiB", NULL};
+
+	defaultcfg();
+	initparams(&p);
+	suppress_output();
+
+	ret = parsealertargs(&p, argv);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(p.alertoutput, 1);
+	ck_assert_int_eq(p.alertexit, 2);
+	ck_assert_int_eq(p.alerttype, 4);
+	ck_assert_int_eq(p.alertcondition, 3);
+	ck_assert_int_eq(p.alertlimit, 0);
+}
+END_TEST
+
+START_TEST(parsealertargs_can_validate_limit_unit)
+{
+	int ret;
+	PARAMS p;
+	char *argv[] = {"--alert", "1", "2", "y", "total", "5", "KeK", NULL};
+
+	defaultcfg();
+	initparams(&p);
+	suppress_output();
+
+	ret = parsealertargs(&p, argv);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(p.alertoutput, 1);
+	ck_assert_int_eq(p.alertexit, 2);
+	ck_assert_int_eq(p.alerttype, 4);
+	ck_assert_int_eq(p.alertcondition, 3);
+	ck_assert_int_eq(p.alertlimit, 0);
+}
+END_TEST
+
+START_TEST(handleshowalert_requires_interface_to_be_specified)
+{
+	PARAMS p;
+
+	defaultcfg();
+	initparams(&p);
+	suppress_output();
+	p.alert = 1;
+	p.defaultiface = 1;
+
+	handleshowalert(&p);
+}
+END_TEST
+
 void add_cli_tests(Suite *s)
 {
 	TCase *tc_cli = tcase_create("CLI");
@@ -976,5 +1317,23 @@ void add_cli_tests(Suite *s)
 	tcase_add_exit_test(tc_cli, handleifselection_exits_if_only_database_shows_interfaces_for_traffic, 1);
 	tcase_add_test(tc_cli, handleifselection_selects_only_available_interfaces_for_traffic);
 	tcase_add_test(tc_cli, handleifselection_selects_only_available_interfaces_and_can_ignore_database_for_traffic);
+	tcase_add_test(tc_cli, showalerthelp_does_not_crash);
+	tcase_add_test(tc_cli, parsealertargs_knows_which_parameters_belong_to_it);
+	tcase_add_test(tc_cli, parsealertargs_helps_when_asked);
+	tcase_add_test(tc_cli, parsealertargs_can_set_parameters);
+	tcase_add_test(tc_cli, parsealertargs_can_validate_output);
+	tcase_add_test(tc_cli, parsealertargs_can_validate_output_range);
+	tcase_add_test(tc_cli, parsealertargs_can_validate_exit);
+	tcase_add_test(tc_cli, parsealertargs_can_validate_exit_range);
+	tcase_add_test(tc_cli, parsealertargs_knows_first_useless_parameter_combination);
+	tcase_add_test(tc_cli, parsealertargs_knows_second_useless_parameter_combination);
+	tcase_add_test(tc_cli, parsealertargs_can_validate_type);
+	tcase_add_test(tc_cli, parsealertargs_can_validate_condition);
+	tcase_add_test(tc_cli, parsealertargs_knows_first_invalid_condition_combination);
+	tcase_add_test(tc_cli, parsealertargs_knows_second_invalid_condition_combination);
+	tcase_add_test(tc_cli, parsealertargs_can_validate_limit_as_integer);
+	tcase_add_test(tc_cli, parsealertargs_can_validate_limit_as_non_zero);
+	tcase_add_test(tc_cli, parsealertargs_can_validate_limit_unit);
+	tcase_add_exit_test(tc_cli, handleshowalert_requires_interface_to_be_specified, 1);
 	suite_add_tcase(s, tc_cli);
 }

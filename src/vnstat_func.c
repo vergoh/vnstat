@@ -537,7 +537,7 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 	}
 }
 
-// TODO: tests and documentation
+// TODO: documentation
 int parsealertargs(PARAMS *p, char **argv)
 {
 	int i, u, found, currentarg = 0;
@@ -578,7 +578,7 @@ int parsealertargs(PARAMS *p, char **argv)
 		return 0;
 	}
 	p->alertexit = (unsigned int)atoi(argv[currentarg]);
-	if (p->alertexit > 4) {
+	if (p->alertexit > 3) {
 		printf("Error: Exit parameter out of range for %s.\n", argv[0]);
 		showalerthelp();
 		return 0;
@@ -647,6 +647,18 @@ int parsealertargs(PARAMS *p, char **argv)
 		printf("Alert condition: %u\n", p->alertcondition);
 	}
 	currentarg++;
+
+	if ((p->alertcondition == AC_RX_Estimate || p->alertcondition == AC_TX_Estimate || p->alertcondition == AC_Total_Estimate) &&
+		(p->alertoutput == AO_Output_On_Estimate || p->alertexit == AE_Exit_1_On_Estimate)) {
+		if (p->alertoutput == AO_Output_On_Estimate) {
+			printf("Error: Estimate conditions cannot be used in combination with output parameter \"2\".\n");
+		}
+		if (p->alertexit == AE_Exit_1_On_Estimate) {
+			printf("Error: Estimate conditions cannot be used in combination with exit parameter \"2\".\n");
+		}
+		showalerthelp();
+		return 0;
+	}
 
 	// limit
 	if (!isnumeric(argv[currentarg])) {

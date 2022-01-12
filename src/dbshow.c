@@ -888,6 +888,7 @@ void indent(int i)
 	}
 }
 
+// TODO: tests
 int showalert(const char *interface, const AlertOutput output, const AlertExit exit, const AlertType type, const AlertCondition condition, const uint64_t limit)
 {
 	interfaceinfo ifaceinfo;
