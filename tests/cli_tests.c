@@ -983,6 +983,7 @@ START_TEST(parsealertargs_can_set_parameters)
 	defaultcfg();
 	initparams(&p);
 	debug = 1;
+	suppress_output();
 
 	ret = parsealertargs(&p, argv);
 	ck_assert_int_eq(ret, 1);
@@ -1268,6 +1269,206 @@ START_TEST(handleshowalert_requires_interface_to_be_specified)
 }
 END_TEST
 
+START_TEST(validateinterface_does_not_use_alias_if_interface_names_matches)
+{
+	int ret;
+	PARAMS p;
+
+	defaultcfg();
+	initparams(&p);
+	strncpy_nt(p.interface, "eth0", 32);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setalias("eth0", "LAN");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setalias("eth1", "eth0");
+	ck_assert_int_eq(ret, 1);
+
+	validateinterface(&p);
+
+	ck_assert_str_eq(p.interface, "eth0");
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(validateinterface_supports_interface_merges)
+{
+	int ret;
+	PARAMS p;
+
+	defaultcfg();
+	initparams(&p);
+	strncpy_nt(p.interface, "eth0+eth1", 32);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setalias("eth0", "LAN");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setalias("eth1", "Internet");
+	ck_assert_int_eq(ret, 1);
+
+	validateinterface(&p);
+
+	ck_assert_str_eq(p.interface, "eth0+eth1");
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(validateinterface_detects_if_not_all_interfaces_are_available_for_merge)
+{
+	int ret;
+	PARAMS p;
+
+	defaultcfg();
+	initparams(&p);
+	strncpy_nt(p.interface, "eth0+eth2", 32);
+	suppress_output();
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setalias("eth0", "LAN");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setalias("eth1", "Internet");
+	ck_assert_int_eq(ret, 1);
+
+	validateinterface(&p);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(validateinterface_detects_if_not_all_interfaces_are_unique_for_merge)
+{
+	int ret;
+	PARAMS p;
+
+	defaultcfg();
+	initparams(&p);
+	strncpy_nt(p.interface, "eth0+eth0", 32);
+	suppress_output();
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setalias("eth0", "LAN");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setalias("eth1", "Internet");
+	ck_assert_int_eq(ret, 1);
+
+	validateinterface(&p);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(validateinterface_uses_all_matching_methods_if_no_match_for_exact_name_is_found)
+{
+	int ret;
+	PARAMS p;
+
+	defaultcfg();
+	initparams(&p);
+	debug = 1;
+	cfg.ifacematchmethod = 3;
+	strncpy_nt(p.interface, "inter", 32);
+	suppress_output();
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setalias("eth0", "LAN");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setalias("eth1", "Internet");
+	ck_assert_int_eq(ret, 1);
+
+	validateinterface(&p);
+
+	ck_assert_str_eq(p.interface, "eth1");
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(validateinterface_knows_when_to_give_up_searching)
+{
+	int ret;
+	PARAMS p;
+
+	defaultcfg();
+	initparams(&p);
+	debug = 1;
+	cfg.ifacematchmethod = 3;
+	strncpy_nt(p.interface, "outer", 32);
+	suppress_output();
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setalias("eth0", "LAN");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setalias("eth1", "Internet");
+	ck_assert_int_eq(ret, 1);
+
+	validateinterface(&p);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 void add_cli_tests(Suite *s)
 {
 	TCase *tc_cli = tcase_create("CLI");
@@ -1335,5 +1536,11 @@ void add_cli_tests(Suite *s)
 	tcase_add_test(tc_cli, parsealertargs_can_validate_limit_as_non_zero);
 	tcase_add_test(tc_cli, parsealertargs_can_validate_limit_unit);
 	tcase_add_exit_test(tc_cli, handleshowalert_requires_interface_to_be_specified, 1);
+	tcase_add_test(tc_cli, validateinterface_does_not_use_alias_if_interface_names_matches);
+	tcase_add_test(tc_cli, validateinterface_supports_interface_merges);
+	tcase_add_exit_test(tc_cli, validateinterface_detects_if_not_all_interfaces_are_available_for_merge, 1);
+	tcase_add_exit_test(tc_cli, validateinterface_detects_if_not_all_interfaces_are_unique_for_merge, 1);
+	tcase_add_test(tc_cli, validateinterface_uses_all_matching_methods_if_no_match_for_exact_name_is_found);
+	tcase_add_exit_test(tc_cli, validateinterface_knows_when_to_give_up_searching, 1);
 	suite_add_tcase(s, tc_cli);
 }
