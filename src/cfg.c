@@ -548,17 +548,18 @@ int setcfgvalue(const struct cfgsetting *cset, const char *value, const char *cf
 
 void configlocale(void)
 {
+	const char *env = getenv("LC_ALL");
 	if (cfg.locale[0] != '-' && strlen(cfg.locale) > 0) {
 		setlocale(LC_ALL, cfg.locale);
 	} else {
-		if (getenv("LC_ALL")) {
-			setlocale(LC_ALL, getenv("LC_ALL"));
+		if (env) {
+			setlocale(LC_ALL, env);
 		} else {
 			setlocale(LC_ALL, "");
 		}
 	}
-	if (getenv("LC_ALL")) {
-		if (strstr(getenv("LC_ALL"), "UTF") != NULL) {
+	if (env) {
+		if (strstr(env, "UTF") != NULL) {
 			cfg.utflocale = 1;
 		} else {
 			cfg.utflocale = 0;
