@@ -7,6 +7,8 @@ vnstat \- a console-based network traffic monitor
 .B vnstat
 .RB [ \-5bDedhlmqstvy? ]
 .RB [ \-\-add ]
+.RB [ \-\-alert
+.IR "output exit type condition limit unit" ]
 .RB [ \-\-begin
 .IR date ]
 .RB [ \-\-config
@@ -112,6 +114,68 @@ minutes if configuration option
 .B RescanDatabaseOnSave
 is enabled. Otherwise the daemon needs to be restarted in order for the
 added interface to be monitored.
+
+.TP
+.BI "--alert " "output exit type condition limit unit"
+Depending on values of given parameters, show alert or use different exit
+status when configured situation is met.
+
+.IP
+.I output
+parameter takes a number from 0 to 3 and controls when, if at all, the command
+will result in output. '0' never produces output, '1' always produces output, '2'
+shows output only when usage estimate exceeds
+.I limit
+and '3' shows output only when
+.I limit
+is exceeded.
+
+.IP
+.I exit
+parameter takes a number from 0 to 3 and controls the exit status of the
+command. '0' always uses exit status 0, '1' always uses exit status 1, '2'
+uses exit status 1 if usage estimate exceeds
+.I limit
+but otherwise exit status 0 and '3' uses exit status 1 if
+.I limit
+is exceeded but otherwise exit status 0.
+
+.IP
+.I type
+parameter defines to which time range type usage the
+.I limit
+is compared against. Available options: 'h', 'hour', 'hourly', 'd', 'day', 'daily', 'm', 'month', 'monthly', 'y', 'year', 'yearly'.
+
+.IP
+.I condition
+parameter defines if
+.I limit
+is compared to received (rx), transmitted (tx), total or estimated usage of these three. Available options: 'rx', 'tx', 'total', 'rx_estimate', 'tx_estimate', 'total_estimate'.
+
+.IP
+.I limit
+is a greater than zero integer without decimals which defines the traffic usage
+limit using the unit defined with the
+.I unit
+parameter.
+.I unit
+accepts the following options: 'B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB'. Usage must exceed
+.I limit
+in order for the alarm to activate. Exactly the same usage as
+.I limit
+does not raise the alarm.
+
+.IP
+Estimate calculation isn't limited to the estimate options
+in
+.I condition
+parameter but can also be achieved by using the estimate option in
+.I output
+or
+.I exit
+parameters. Missing or invalid parameters will result in
+.B "--alert"
+specific help output being shown.
 
 .TP
 .BI "-b, --begin " date
