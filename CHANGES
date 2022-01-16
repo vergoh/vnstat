@@ -6,6 +6,9 @@
    - Hourly graph image output using large fonts didn't correctly fade out
      the x-axis line for hours not having data available
  - New
+   - Add --alert for producing output and/or specific exit status when
+     configured condition and transfer limit is exceeded, can also be used
+     for "quota remaining" type of queries depending on used parameters
    - Add configuration option InterfaceMatchMethod which allows configuring
      the possibility of specifying an interface for database queries by using
      its alias instead of system provided interface name, enabled by default
