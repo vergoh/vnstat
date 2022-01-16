@@ -888,7 +888,6 @@ void indent(int i)
 	}
 }
 
-// TODO: tests
 int showalert(const char *interface, const AlertOutput output, const AlertExit exit, const AlertType type, const AlertCondition condition, const uint64_t limit)
 {
 	interfaceinfo ifaceinfo;
@@ -991,12 +990,10 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit e
 		estimateexceeded = 1;
 	}
 
-	if (exit == AE_Exit_1_On_Limit) {
+	if (limitexceeded && exit == AE_Exit_1_On_Limit) {
 		ret = 1;
-	} else if (exit == AE_Exit_1_On_Estimate) {
-		if (estimateexceeded) {
-			ret = 1;
-		}
+	} else if (estimateexceeded && exit == AE_Exit_1_On_Estimate) {
+		ret = 1;
 	}
 
 	if (output != AO_No_Output) {
@@ -1055,14 +1052,14 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit e
 
 		if (limitexceeded) {
 			printf("        excess      %12s  (+%.1f%%)\n", getvalue(bytes - limit, 12, RT_Normal), (double)(bytes) / (double)limit * 100.0 - 100.0);
-			if (ongoing) {
+			if (ongoing && e_bytes > 0) {
 				printf("     estimated      %12s  (+%.1f%%", getvalue(e_bytes, 12, RT_Normal), (double)(e_bytes) / (double)limit * 100.0 - 100.0);
 				printf(", +%s)\n", getvalue(e_bytes - limit, 0, RT_Normal));
 			}
 			printf("     --------------------------------------------------\n");
 		} else if (output == AO_Always_Output || (output == AO_Output_On_Estimate && estimateexceeded)) {
 			printf("     remaining      %12s  (%.1f%%)\n", getvalue(limit - bytes, 12, RT_Normal), (double)(limit - bytes) / (double)limit * 100.0);
-			if (ongoing) {
+			if (ongoing && e_bytes > 0) {
 				printf("     estimated      %12s  (%.1f%%)\n", getvalue(e_bytes, 12, RT_Normal), (double)(e_bytes) / (double)limit * 100.0);
 			}
 			printf("     --------------------------------------------------\n");

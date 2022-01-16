@@ -719,6 +719,117 @@ START_TEST(importlegacydb_can_import_legacy_database)
 }
 END_TEST
 
+
+START_TEST(showalert_shows_nothing_with_none_type)
+{
+	int ret;
+
+	defaultcfg();
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("something");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addtraffic("something", 100, 200);
+	ck_assert_int_eq(ret, 1);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_None, AC_Total, 42);
+	ck_assert_int_eq(ret, 0);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(showalert_can_alert_on_limit_and_show_things)
+{
+	int ret;
+
+	defaultcfg();
+	suppress_output();
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("something");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setalias("something", "anything");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addtraffic("something", 100, 200);
+	ck_assert_int_eq(ret, 1);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Hour, AC_Total, 250);
+	ck_assert_int_eq(ret, 1);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Day, AC_Total, 250);
+	ck_assert_int_eq(ret, 1);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Month, AC_Total, 250);
+	ck_assert_int_eq(ret, 1);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Year, AC_Total, 250);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(showalert_limit_and_conditions_matter)
+{
+	int ret;
+
+	defaultcfg();
+	suppress_output();
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("something");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addtraffic("something", 100, 200);
+	ck_assert_int_eq(ret, 1);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Year, AC_Total, 100);
+	ck_assert_int_eq(ret, 1);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Year, AC_Total, 280);
+	ck_assert_int_eq(ret, 1);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Year, AC_Total, 350);
+	ck_assert_int_eq(ret, 0);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Year, AC_Total, 300);
+	ck_assert_int_eq(ret, 0);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Year, AC_RX, 80);
+	ck_assert_int_eq(ret, 1);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Year, AC_RX, 150);
+	ck_assert_int_eq(ret, 0);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Year, AC_TX, 180);
+	ck_assert_int_eq(ret, 1);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Year, AC_TX, 250);
+	ck_assert_int_eq(ret, 0);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Year, AC_TX, 350);
+	ck_assert_int_eq(ret, 0);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Year, AC_TX, 200);
+	ck_assert_int_eq(ret, 0);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 void add_database_tests(Suite *s)
 {
 	TCase *tc_db = tcase_create("Database");
@@ -752,6 +863,9 @@ void add_database_tests(Suite *s)
 	tcase_add_test(tc_db, importlegacydb_does_not_overwrite_existing_interface_data);
 	tcase_add_test(tc_db, importlegacydb_can_detect_when_database_read_fails);
 	tcase_add_test(tc_db, importlegacydb_can_import_legacy_database);
+	tcase_add_test(tc_db, showalert_shows_nothing_with_none_type);
+	tcase_add_test(tc_db, showalert_can_alert_on_limit_and_show_things);
+	tcase_add_test(tc_db, showalert_limit_and_conditions_matter);
 	suite_add_tcase(s, tc_db);
 }
 
