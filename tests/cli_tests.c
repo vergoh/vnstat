@@ -1255,6 +1255,27 @@ START_TEST(parsealertargs_can_validate_limit_unit)
 }
 END_TEST
 
+START_TEST(parsealertargs_knows_the_64_bit_limit_regardless_of_used_unit)
+{
+	int ret;
+	PARAMS p;
+	char *argv[] = {"--alert", "1", "2", "y", "total", "16", "EiB", NULL};
+
+	defaultcfg();
+	initparams(&p);
+	debug = 1;
+	suppress_output();
+
+	ret = parsealertargs(&p, argv);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(p.alertoutput, 1);
+	ck_assert_int_eq(p.alertexit, 2);
+	ck_assert_int_eq(p.alerttype, 4);
+	ck_assert_int_eq(p.alertcondition, 3);
+	ck_assert_int_eq(p.alertlimit, 0);
+}
+END_TEST
+
 START_TEST(handleshowalert_requires_interface_to_be_specified)
 {
 	PARAMS p;
@@ -1535,6 +1556,7 @@ void add_cli_tests(Suite *s)
 	tcase_add_test(tc_cli, parsealertargs_can_validate_limit_as_integer);
 	tcase_add_test(tc_cli, parsealertargs_can_validate_limit_as_non_zero);
 	tcase_add_test(tc_cli, parsealertargs_can_validate_limit_unit);
+	tcase_add_test(tc_cli, parsealertargs_knows_the_64_bit_limit_regardless_of_used_unit);
 	tcase_add_exit_test(tc_cli, handleshowalert_requires_interface_to_be_specified, 1);
 	tcase_add_test(tc_cli, validateinterface_does_not_use_alias_if_interface_names_matches);
 	tcase_add_test(tc_cli, validateinterface_supports_interface_merges);

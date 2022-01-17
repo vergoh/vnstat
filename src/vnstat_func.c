@@ -540,7 +540,7 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 int parsealertargs(PARAMS *p, char **argv)
 {
 	int i, u, found, currentarg = 0;
-	uint64_t alertlimit = 0;
+	uint64_t alertlimit = 0, unitmultiplier = 1;
 	int32_t unitmode = cfg.unitmode;
 	const char *alerttypes[] = {"h", "hour", "hourly", "d", "day", "daily", "m", "month", "monthly", "y", "year", "yearly"};
 	const char *alertconditions[] = {"rx", "tx", "total", "rx_estimate", "tx_estimate", "total_estimate"}; // order must match that of AlertCondition in dbshow.h
@@ -697,11 +697,18 @@ int parsealertargs(PARAMS *p, char **argv)
 		return 0;
 	}
 
-	p->alertlimit = alertlimit * getunitdivisor(u, i);
+	unitmultiplier = getunitdivisor(u, i);
+
+	if (alertlimit > (uint64_t)(MAX64 / unitmultiplier)) {
+		printf("Error: %" PRIu64 " %s exceeds maximum supported limit of %" PRIu64 " %s.\n", alertlimit, argv[currentarg], (uint64_t)(MAX64 / unitmultiplier), argv[currentarg]);
+		return 0;
+	}
+
+	p->alertlimit = alertlimit * unitmultiplier;
 
 	if (debug) {
-		printf("Alert unit %s is %d %d = %" PRIu64 "\n", argv[currentarg], u, i, getunitdivisor(u, i));
-		printf("Alert real limit is %" PRIu64 " * %" PRIu64 " = %" PRIu64 "\n", alertlimit, getunitdivisor(u, i), p->alertlimit);
+		printf("Alert unit %s is %d %d = %" PRIu64 "\n", argv[currentarg], u, i, unitmultiplier);
+		printf("Alert real limit is %" PRIu64 " * %" PRIu64 " = %" PRIu64 "\n", alertlimit, unitmultiplier, p->alertlimit);
 	}
 
 	return 1;
