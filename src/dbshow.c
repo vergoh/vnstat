@@ -997,7 +997,7 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit e
 	}
 
 	if (output != AO_No_Output) {
-		if (output == AO_Always_Output || (output == AO_Output_On_Estimate && estimateexceeded) || (output == AO_Output_On_Limit && limitexceeded)) {
+		if (output == AO_Always_Output || (output == AO_Output_On_Estimate && estimateexceeded) || ((output == AO_Output_On_Limit || output == AO_Output_On_Estimate) && limitexceeded)) {
 			if (strlen(ifaceinfo.alias)) {
 				printf("\n   %s (%s)", ifaceinfo.alias, ifaceinfo.name);
 			} else {
@@ -1010,7 +1010,7 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit e
 			printf("\n\n");
 		}
 
-		if ((output == AO_Always_Output || output == AO_Output_On_Limit) && limitexceeded) {
+		if ((output == AO_Always_Output || output == AO_Output_On_Limit || output == AO_Output_On_Estimate) && limitexceeded) {
 			printf("                   Alert limit exceeded!\n\n");
 		} else if (output == AO_Always_Output || (output == AO_Output_On_Estimate && estimateexceeded)) {
 			if (estimateexceeded) {
@@ -1018,6 +1018,9 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit e
 			}
 			printf("     [");
 			l = (int)lrint((double)(bytes) / (double)limit * 48);
+			if (l > 48) {
+				l = 48;
+			}
 			for (i = 0; i < l; i++) {
 				printf("=");
 			}
@@ -1039,7 +1042,7 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit e
 			printf("]\n\n");
 		}
 
-		if (output == AO_Always_Output || (output == AO_Output_On_Estimate && estimateexceeded) || (output == AO_Output_On_Limit && limitexceeded)) {
+		if (output == AO_Always_Output || (output == AO_Output_On_Estimate && estimateexceeded) || ((output == AO_Output_On_Limit || output == AO_Output_On_Estimate) && limitexceeded)) {
 			printf("      %8s   %15s            avg. rate\n", typeoutput, conditionname);
 			printf("     --------------------------------------------------\n");
 			printf("         limit      %12s", getvalue(limit, 12, RT_Normal));
