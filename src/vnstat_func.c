@@ -766,8 +766,7 @@ void handleshowalert(PARAMS *p)
 	}
 
 	if (p->defaultiface) {
-		// TODO: -i isn't mandatory anymore so update these type of prints
-		printf("Error: Use -i parameter to specify an interface.\n");
+		printf("Error: An interface needs to be explicitly specified for --alert.\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -789,7 +788,7 @@ void handleremoveinterface(PARAMS *p)
 	}
 
 	if (p->defaultiface) {
-		printf("Error: Use -i parameter to specify an interface.\n");
+		printf("Error: An interface needs to be explicitly specified for --remove.\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -831,7 +830,7 @@ void handlerenameinterface(PARAMS *p)
 	}
 
 	if (p->defaultiface) {
-		printf("Error: Use -i parameter to specify an interface.\n");
+		printf("Error: An interface needs to be explicitly specified for --rename.\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -882,7 +881,7 @@ void handleaddinterface(PARAMS *p)
 	}
 
 	if (p->defaultiface) {
-		printf("Error: Use -i parameter to specify an interface.\n");
+		printf("Error: An interface needs to be explicitly specified for --add.\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -940,7 +939,7 @@ void handlesetalias(PARAMS *p)
 	}
 
 	if (p->defaultiface) {
-		printf("Error: Use -i parameter to specify an interface.\n");
+		printf("Error: An interface needs to be explicitly specified for --setalias.\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -983,7 +982,7 @@ void handleshowdata(PARAMS *p)
 		return;
 	}
 
-	/* show all interfaces if -i isn't specified */
+	/* show all interfaces if none is explicitly specified */
 	if (p->dbifcount == 0) {
 		p->query = 0;
 	} else if ((cfg.qmode == 0 || cfg.qmode == 8 || cfg.qmode == 10) && (p->dbifcount > 1)) {
@@ -1084,9 +1083,9 @@ void handletrafficmeters(PARAMS *p)
 			printf("Error: Configured default interface \"%s\" isn't available.\n\n", p->interface);
 			if (strlen(cfg.cfgfile)) {
 				printf("Update \"Interface\" keyword value in configuration file \"%s\" to change ", cfg.cfgfile);
-				printf("the default interface or give an alternative interface using the -i parameter.\n\n");
+				printf("the default interface or give an alternative interface with or without the -i parameter.\n\n");
 			} else {
-				printf("An alternative interface can be given using the -i parameter.\n\n");
+				printf("An alternative interface can be given with or without the -i parameter.\n\n");
 			}
 			printf("The following interfaces are currently available:\n    %s\n", p->ifacelist);
 
