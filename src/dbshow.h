@@ -3,6 +3,7 @@
 
 #define DATEBUFFLEN 64
 #define HGLINES 15
+#define ALERTUSAGELEN 59
 
 typedef struct {
 	time_t date;

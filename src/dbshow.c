@@ -1011,61 +1011,67 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit e
 		}
 
 		if ((output == AO_Always_Output || output == AO_Output_On_Limit || output == AO_Output_On_Estimate) && limitexceeded) {
-			printf("                   Alert limit exceeded!\n\n");
+			printf("                          Alert limit exceeded!\n\n");
 		} else if (output == AO_Always_Output || (output == AO_Output_On_Estimate && estimateexceeded)) {
 			if (estimateexceeded) {
-				printf("      Warning: Limit will be exceeded at current rate\n\n");
+				printf("             Warning: Limit will be exceeded at current rate\n\n");
 			}
 			printf("     [");
-			l = (int)lrint((double)(bytes) / (double)limit * 48);
-			if (l > 48) {
-				l = 48;
+			l = (int)lrint((double)(bytes) / (double)limit * ALERTUSAGELEN);
+			if (l > ALERTUSAGELEN) {
+				l = ALERTUSAGELEN;
 			}
 			for (i = 0; i < l; i++) {
 				printf("=");
 			}
 			if (ongoing) {
 				if (!estimateexceeded) {
-					l = (int)lrint((double)(e_bytes) / (double)limit * 48);
+					l = (int)lrint((double)(e_bytes) / (double)limit * ALERTUSAGELEN);
 					for (; i < l; i++) {
 						printf("-");
 					}
 				} else {
-					for (; i < 48; i++) {
+					for (; i < ALERTUSAGELEN; i++) {
 						printf("-");
 					}
 				}
 			}
-			for (; i < 48; i++) {
+			for (; i < ALERTUSAGELEN; i++) {
 				printf(".");
 			}
 			printf("]\n\n");
 		}
 
 		if (output == AO_Always_Output || (output == AO_Output_On_Estimate && estimateexceeded) || ((output == AO_Output_On_Limit || output == AO_Output_On_Estimate) && limitexceeded)) {
-			printf("      %8s   %15s            avg. rate\n", typeoutput, conditionname);
-			printf("     --------------------------------------------------\n");
-			printf("         limit      %12s", getvalue(limit, 12, RT_Normal));
-			printf("         %14s\n", gettrafficrate(limit, (time_t)getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, 0), 14));
-			printf("          used      %12s", getvalue(bytes, 12, RT_Normal));
-			printf("         %14s\n", gettrafficrate(bytes, (time_t)getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, ongoing), 14));
-			printf("     --------------------------------------------------\n");
-
+			printf("      %8s |", typeoutput);
+			if (ongoing) {
+				printf("   %9s      |", conditionname);
+			} else {
+				printf("  %14s  |", conditionname);
+			}
+			printf("   percentage   |   avg. rate\n");
+			printf("     ----------+------------------+----------------+--------------\n");
+			printf("          used | %16s |", getvalue(bytes, 16, RT_Normal));
+			printf(" %13.1f%% | %13s\n", (double)(bytes) / (double)limit * 100.0, gettrafficrate(bytes, (time_t)getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, ongoing), 13));
+			printf("         limit | %16s |", getvalue(limit, 16, RT_Normal));
+			printf("                | %13s\n", gettrafficrate(limit, (time_t)getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, 0), 13));
 		}
 
 		if (limitexceeded) {
-			printf("        excess      %12s  (+%.1f%%)\n", getvalue(bytes - limit, 12, RT_Normal), (double)(bytes) / (double)limit * 100.0 - 100.0);
-			if (ongoing && e_bytes > 0) {
-				printf("     estimated      %12s  (+%.1f%%", getvalue(e_bytes, 12, RT_Normal), (double)(e_bytes) / (double)limit * 100.0 - 100.0);
-				printf(", +%s)\n", getvalue(e_bytes - limit, 0, RT_Normal));
-			}
-			printf("     --------------------------------------------------\n");
+			printf("        excess | %16s |                |\n", getvalue(bytes - limit, 16, RT_Normal));
+			printf("     ----------+------------------+----------------+--------------\n");
+
 		} else if (output == AO_Always_Output || (output == AO_Output_On_Estimate && estimateexceeded)) {
-			printf("     remaining      %12s  (%.1f%%)\n", getvalue(limit - bytes, 12, RT_Normal), (double)(limit - bytes) / (double)limit * 100.0);
-			if (ongoing && e_bytes > 0) {
-				printf("     estimated      %12s  (%.1f%%)\n", getvalue(e_bytes, 12, RT_Normal), (double)(e_bytes) / (double)limit * 100.0);
+			printf("     remaining | %16s | %13.1f%% |\n", getvalue(limit - bytes, 16, RT_Normal), (double)(limit - bytes) / (double)limit * 100.0);
+			printf("     ----------+------------------+----------------+--------------\n");
+		}
+		if (ongoing && e_bytes > 0) {
+			printf("     estimated | %16s | %13.1f%%", getvalue(e_bytes, 16, RT_Normal), (double)(e_bytes) / (double)limit * 100.0);
+			if (e_bytes > limit) {
+				printf(", +%s\n", getvalue(e_bytes - limit, 0, RT_Normal));
+			} else {
+				printf(" | %13s\n", gettrafficrate(bytes, (time_t)getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, ongoing), 13));
 			}
-			printf("     --------------------------------------------------\n");
 		}
 	}
 
