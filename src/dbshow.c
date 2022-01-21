@@ -1016,6 +1016,9 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit e
 					case AT_Hour:
 						strftime(datebuff, DATEBUFFLEN, "%H", localtime(&datalist->timestamp));
 						printf("%s of ", datebuff);
+						strftime(datebuff, DATEBUFFLEN, cfg.dformat, localtime(&datalist->timestamp));
+						printf("%s", datebuff);
+						break;
 					case AT_Day:
 						strftime(datebuff, DATEBUFFLEN, cfg.dformat, localtime(&datalist->timestamp));
 						printf("%s", datebuff);
