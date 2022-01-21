@@ -25,8 +25,8 @@
    - Add -t / --timestamp options to daemon for enabling timestamps to prints
      when the daemon is running in the foreground attached to a terminal
    - Accept ; as comment character in configuration file in addition to #
-   - Comment out keywords using default values with ; character in provided
-     configuration file and --showconfig output
+   - Comment out keywords which are using default values with ; character in
+     provided configuration file and --showconfig output
 
 
 2.8 / 4-Sep-2021

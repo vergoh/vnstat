@@ -893,6 +893,7 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit e
 	interfaceinfo ifaceinfo;
 	int i, l, ret = 0, limitexceeded = 0, estimateexceeded = 0;
 	short ongoing = 1;
+	double percentage = 0.0;
 	char tablename[6], typeoutput[8], conditionname[16];
 	char datebuff[DATEBUFFLEN];
 	ListType listtype = LT_None;
@@ -1007,6 +1008,28 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit e
 				strftime(datebuff, DATEBUFFLEN, DATETIMEFORMAT, localtime(&ifaceinfo.updated));
 				printf(" at %s", datebuff);
 			}
+			if (datalist->timestamp) {
+				printf(" for %s ", tablename);
+				switch (type) {
+					case AT_None:
+						break;
+					case AT_Hour:
+						strftime(datebuff, DATEBUFFLEN, "%H", localtime(&datalist->timestamp));
+						printf("%s of ", datebuff);
+					case AT_Day:
+						strftime(datebuff, DATEBUFFLEN, cfg.dformat, localtime(&datalist->timestamp));
+						printf("%s", datebuff);
+						break;
+					case AT_Month:
+						strftime(datebuff, DATEBUFFLEN, cfg.mformat, localtime(&datalist->timestamp));
+						printf("%s", datebuff);
+						break;
+					case AT_Year:
+						strftime(datebuff, DATEBUFFLEN, "%Y", localtime(&datalist->timestamp));
+						printf("%s", datebuff);
+						break;
+				}
+			}
 			printf("\n\n");
 		}
 
@@ -1049,28 +1072,38 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit e
 			} else {
 				printf("  %14s  |", conditionname);
 			}
+			percentage = (double)(bytes) / (double)limit * 100.0;
 			printf("   percentage   |   avg. rate\n");
 			printf("     ----------+------------------+----------------+--------------\n");
 			printf("          used | %16s |", getvalue(bytes, 16, RT_Normal));
-			printf(" %13.1f%% | %13s\n", (double)(bytes) / (double)limit * 100.0, gettrafficrate(bytes, (time_t)getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, ongoing), 13));
+			if (percentage <= 100000.0) {
+				printf(" %13.1f%% | %13s\n", percentage, gettrafficrate(bytes, (time_t)getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, ongoing), 13));
+			} else {
+				printf(" %14s | %13s\n", ">100000%", gettrafficrate(bytes, (time_t)getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, ongoing), 13));
+			}
 			printf("         limit | %16s |", getvalue(limit, 16, RT_Normal));
 			printf("                | %13s\n", gettrafficrate(limit, (time_t)getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, 0), 13));
-		}
 
-		if (limitexceeded) {
-			printf("        excess | %16s |                |\n", getvalue(bytes - limit, 16, RT_Normal));
-			printf("     ----------+------------------+----------------+--------------\n");
-
-		} else if (output == AO_Always_Output || (output == AO_Output_On_Estimate && estimateexceeded)) {
-			printf("     remaining | %16s | %13.1f%% |\n", getvalue(limit - bytes, 16, RT_Normal), (double)(limit - bytes) / (double)limit * 100.0);
-			printf("     ----------+------------------+----------------+--------------\n");
-		}
-		if (ongoing && e_bytes > 0) {
-			printf("     estimated | %16s | %13.1f%%", getvalue(e_bytes, 16, RT_Normal), (double)(e_bytes) / (double)limit * 100.0);
-			if (e_bytes > limit) {
-				printf(", +%s\n", getvalue(e_bytes - limit, 0, RT_Normal));
+			if (limitexceeded) {
+				printf("        excess | %16s |                |\n", getvalue(bytes - limit, 16, RT_Normal));
+				printf("     ----------+------------------+----------------+--------------\n");
 			} else {
-				printf(" | %13s\n", gettrafficrate(bytes, (time_t)getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, ongoing), 13));
+				printf("     remaining | %16s | %13.1f%% |\n", getvalue(limit - bytes, 16, RT_Normal), 100.0 - percentage);
+				printf("     ----------+------------------+----------------+--------------\n");
+			}
+			if (ongoing && e_bytes > 0) {
+				printf("     estimated | %16s |", getvalue(e_bytes, 16, RT_Normal));
+				percentage = (double)(e_bytes) / (double)limit * 100.0;
+				if (percentage <= 100000.0) {
+					printf(" %13.1f%%", percentage);
+				} else {
+					printf(" %14s", ">100000%");
+				}
+				if (e_bytes > limit) {
+					printf(", +%s\n", getvalue(e_bytes - limit, 0, RT_Normal));
+				} else {
+					printf(" | %13s\n", gettrafficrate(bytes, (time_t)getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, ongoing), 13));
+				}
 			}
 		}
 	}
