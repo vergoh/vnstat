@@ -897,7 +897,7 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit e
 	char tablename[6], typeoutput[8], conditionname[16];
 	char datebuff[DATEBUFFLEN];
 	ListType listtype = LT_None;
-	uint64_t bytes = 0, e_rx = 0, e_tx = 0, e_bytes = 0;
+	uint64_t bytes = 0, e_rx = 0, e_tx = 0, e_bytes = 0, periodseconds = 0;
 	dbdatalist *datalist = NULL;
 	dbdatalistinfo datainfo;
 
@@ -1079,10 +1079,14 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit e
 			printf("   percentage   |   avg. rate\n");
 			printf("     ----------+------------------+----------------+--------------\n");
 			printf("          used | %16s |", getvalue(bytes, 16, RT_Normal));
+			periodseconds = getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, ongoing);
+			if (ongoing && periodseconds == 0) {
+				periodseconds = getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, 0);
+			}
 			if (percentage <= 100000.0) {
-				printf(" %13.1f%% | %13s\n", percentage, gettrafficrate(bytes, (time_t)getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, ongoing), 13));
+				printf(" %13.1f%% | %13s\n", percentage, gettrafficrate(bytes, (time_t)periodseconds, 13));
 			} else {
-				printf(" %14s | %13s\n", ">100000%", gettrafficrate(bytes, (time_t)getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, ongoing), 13));
+				printf(" %14s | %13s\n", ">100000%", gettrafficrate(bytes, (time_t)periodseconds, 13));
 			}
 			printf("         limit | %16s |", getvalue(limit, 16, RT_Normal));
 			printf("                | %13s\n", gettrafficrate(limit, (time_t)getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, 0), 13));
@@ -1105,7 +1109,8 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit e
 				if (e_bytes > limit) {
 					printf(", +%s\n", getvalue(e_bytes - limit, 0, RT_Normal));
 				} else {
-					printf(" | %13s\n", gettrafficrate(bytes, (time_t)getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, ongoing), 13));
+					/* rate for estimated is always to same as for used so "bytes" intentionally used here instead of "e_bytes" */
+					printf(" | %13s\n", gettrafficrate(bytes, (time_t)periodseconds, 13));
 				}
 			}
 		}
