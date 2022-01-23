@@ -1,4 +1,4 @@
-2.9 / <not released yet>
+2.9 / 23-Jan-2022
 
  - Fixed
    - RescanDatabaseOnSave configuration option wasn't being read from the

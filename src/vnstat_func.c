@@ -101,7 +101,7 @@ void showlonghelp(PARAMS *p)
 	printf("      -e,  --end <date>            set list end date\n");
 	printf("      --oneline [mode]             show simple parsable format\n");
 	printf("      --json [mode] [limit]        show database in json format\n");
-	printf("      --xml [mode] [limit]         show database in xml format\n\n");
+	printf("      --xml [mode] [limit]         show database in xml format\n");
 	printf("      --alert <output> <exit> <type> <condition> <limit> <unit>\n");
 	printf("                                   alert if limit is exceeded\n\n");
 
