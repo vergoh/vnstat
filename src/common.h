@@ -297,6 +297,10 @@ and most can be changed later from the config file.
 #define CTX "606060"
 #define CTXD "-"
 
+/* interface name length limit */
+#define MAXIFLEN 32
+#define MAXIFPARAMLEN 256
+
 /* number of retries after non-fatal database errors, */
 /* will result in given number + 1 tries in total before exit, */
 /* a full disk (as reported by sqlite) will no cause retries or exit */
@@ -305,7 +309,7 @@ and most can be changed later from the config file.
 /* internal config structure */
 typedef struct {
 	char dformat[64], mformat[64], tformat[64], hformat[64];
-	char iface[32];
+	char iface[MAXIFPARAMLEN];
 	char locale[32];
 	char dbdir[512], dbtzmodifier[14];
 	char rxchar[2], txchar[2], rxhourchar[2], txhourchar[2];
@@ -327,7 +331,7 @@ typedef struct {
 
 /* internal interface information structure */
 typedef struct {
-	char name[32];
+	char name[MAXIFLEN];
 	short filled;
 	short is64bit;
 	uint64_t rx;
@@ -338,7 +342,7 @@ typedef struct {
 } IFINFO;
 
 typedef struct ibwnode {
-	char interface[32];
+	char interface[MAXIFLEN];
 	uint32_t limit;
 	uint32_t fallback;
 	short retries;

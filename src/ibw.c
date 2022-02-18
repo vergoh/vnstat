@@ -39,7 +39,7 @@ int ibwadd(const char *iface, const uint32_t limit)
 
 		n->next = ifacebw;
 		ifacebw = n;
-		strncpy_nt(n->interface, iface, 32);
+		strncpy_nt(n->interface, iface, MAXIFLEN);
 		n->limit = limit;
 		n->fallback = limit;
 		n->retries = 0;
@@ -65,7 +65,7 @@ int ibwadd(const char *iface, const uint32_t limit)
 
 		n->next = ifacebw;
 		ifacebw = n;
-		strncpy_nt(n->interface, iface, 32);
+		strncpy_nt(n->interface, iface, MAXIFLEN);
 		n->limit = limit;
 		n->fallback = limit;
 		n->retries = 0;

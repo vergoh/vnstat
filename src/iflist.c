@@ -21,7 +21,7 @@ int iflistadd(iflist **ifl, const char *iface, const uint32_t bandwidth)
 		*ifl = newif;
 	}
 
-	strncpy_nt(newif->interface, iface, 32);
+	strncpy_nt(newif->interface, iface, MAXIFLEN);
 	newif->bandwidth = bandwidth;
 
 	return 1;

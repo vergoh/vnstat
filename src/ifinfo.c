@@ -4,7 +4,7 @@
 
 int getifinfo(const char *iface)
 {
-	char inface[32];
+	char inface[MAXIFLEN];
 
 	ifinfo.filled = 0;
 	ifinfo.timestamp = 0;
@@ -28,9 +28,9 @@ int getifinfo(const char *iface)
 #endif
 
 	if (strcmp(iface, "default") == 0) {
-		strncpy_nt(inface, cfg.iface, 32);
+		strncpy_nt(inface, cfg.iface, MAXIFLEN);
 	} else {
-		strncpy_nt(inface, iface, 32);
+		strncpy_nt(inface, iface, MAXIFLEN);
 	}
 
 #if defined(__linux__) || defined(CHECK_VNSTAT)
@@ -127,7 +127,7 @@ int getiflist(iflist **ifl, const int getspeed, const int validate)
 int getiflist_linux(iflist **ifl, const int getspeed, const int validate)
 {
 	char temp[64];
-	char interface[32];
+	char interface[MAXIFLEN];
 	FILE *fp;
 	DIR *dp;
 	struct dirent *di;
@@ -162,7 +162,7 @@ int getiflist_linux(iflist **ifl, const int getspeed, const int validate)
 
 			/* make list of interfaces */
 			while ((di = readdir(dp))) {
-				if (di->d_name[0] == '.' || strlen(di->d_name) > 31) {
+				if (di->d_name[0] == '.' || strlen(di->d_name) > MAXIFLEN - 1) {
 					continue;
 				}
 				if (validate && !isifvalid(di->d_name)) {
@@ -193,7 +193,7 @@ int getiflist_bsd(iflist **ifl, const int getspeed, const int validate)
 
 		/* make list of interfaces */
 		for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
-			if (ifa->ifa_addr->sa_family != AF_LINK || strlen(ifa->ifa_name) > 31) {
+			if (ifa->ifa_addr->sa_family != AF_LINK || strlen(ifa->ifa_name) > MAXIFLEN - 1) {
 				continue;
 			}
 			if (validate && !isifvalid(ifa->ifa_name)) {
@@ -218,7 +218,7 @@ int getiflist_bsd(iflist **ifl, const int getspeed, const int validate)
 int readproc(const char *iface)
 {
 	FILE *fp;
-	char temp[4][64], procline[512], *proclineptr, ifaceid[33];
+	char temp[4][64], procline[512], *proclineptr, ifaceid[MAXIFLEN + 1];
 	int check;
 
 	if ((fp = fopen(PROCNETDEV, "r")) == NULL) {
@@ -227,7 +227,7 @@ int readproc(const char *iface)
 		return 0;
 	}
 
-	strncpy_nt(ifaceid, iface, 32);
+	strncpy_nt(ifaceid, iface, MAXIFLEN);
 	strcat(ifaceid, ":");
 
 	check = 0;
@@ -248,7 +248,7 @@ int readproc(const char *iface)
 		return 0;
 	} else {
 
-		strncpy_nt(ifinfo.name, iface, 32);
+		strncpy_nt(ifinfo.name, iface, MAXIFLEN);
 
 		/* get rx and tx from procline */
 		proclineptr = strchr(procline, ':');
@@ -274,7 +274,7 @@ int readsysclassnet(const char *iface)
 	FILE *fp;
 	char path[64], file[76], buffer[64];
 
-	strncpy_nt(ifinfo.name, iface, 32);
+	strncpy_nt(ifinfo.name, iface, MAXIFLEN);
 
 	snprintf(path, 64, "%s/%s/statistics", SYSCLASSNET, iface);
 
@@ -388,7 +388,7 @@ int readifaddrs(const char *iface)
 			printf("Requested interface \"%s\" not found.\n", iface);
 		return 0;
 	} else {
-		strncpy_nt(ifinfo.name, iface, 32);
+		strncpy_nt(ifinfo.name, iface, MAXIFLEN);
 		ifinfo.rx = ifd.ifi_ibytes;
 		ifinfo.tx = ifd.ifi_obytes;
 		ifinfo.rxp = ifd.ifi_ipackets;

@@ -1,6 +1,8 @@
 2.10 / <not released yet>
 
- - No changes worth mentioning yet
+ - New
+   - Support input of more than 31 characters in interface name when using
+     interface1+interface2 syntax data merge queries
 
 
 2.9 / 23-Jan-2022

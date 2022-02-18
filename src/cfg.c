@@ -11,7 +11,7 @@ int loadcfg(const char *cfgfile, const ConfigType type)
 
 	struct cfgsetting cset[] =
 		{/* cfg string, char var name, int var name, char len, fill status */
-		 {"Interface", cfg.iface, 0, 32, 0},
+		 {"Interface", cfg.iface, 0, MAXIFPARAMLEN, 0},
 		 {"DatabaseDir", cfg.dbdir, 0, 512, 0},
 		 {"Locale", cfg.locale, 0, 32, 0},
 		 {"MonthRotate", 0, &cfg.monthrotate, 0, 0},
@@ -382,7 +382,7 @@ void defaultcfg(void)
 
 	strncpy_nt(cfg.dbdir, DATABASEDIR, 512);
 	strncpy_nt(cfg.dbtzmodifier, DATABASELOCALTIMEMODIFIER, 14);
-	strncpy_nt(cfg.iface, DEFIFACE, 32);
+	strncpy_nt(cfg.iface, DEFIFACE, MAXIFPARAMLEN);
 	strncpy_nt(cfg.locale, LOCALE, 32);
 	strncpy_nt(cfg.dformat, DFORMAT, 64);
 	strncpy_nt(cfg.mformat, MFORMAT, 64);

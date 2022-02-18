@@ -60,8 +60,8 @@ int main(int argc, char *argv[])
 	}
 
 	configlocale();
-	strncpy_nt(p.interface, "default", 32);
-	strncpy_nt(p.definterface, cfg.iface, 32);
+	strncpy_nt(p.interface, "default", MAXIFPARAMLEN);
+	strncpy_nt(p.definterface, cfg.iface, MAXIFPARAMLEN);
 	strncpy_nt(p.alias, "none", 32);
 
 	parseargs(&p, argc, argv);
@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
 				printf("%" PRIu64 " interface(s) found\n", p.dbifcount);
 
 			if (p.dbifcount > 1) {
-				strncpy_nt(p.definterface, cfg.iface, 32);
+				strncpy_nt(p.definterface, cfg.iface, MAXIFPARAMLEN);
 			}
 		} else {
 			printf("Error: Unable to open database directory \"%s\": %s\n", cfg.dbdir, strerror(errno));

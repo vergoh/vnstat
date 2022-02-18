@@ -154,15 +154,22 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 			exit(EXIT_SUCCESS);
 		} else if ((strcmp(argv[currentarg], "-i") == 0) || (strcmp(argv[currentarg], "--iface") == 0) || (strcmp(argv[currentarg], "--interface") == 0)) {
 			if (currentarg + 1 < argc) {
-				if (strlen(argv[currentarg + 1]) > 31) {
-					printf("Error: Interface name is limited to 31 characters.\n");
-					exit(EXIT_FAILURE);
+				if (strchr(argv[currentarg + 1], '+') != NULL) {
+					if (strlen(argv[currentarg + 1]) > MAXIFPARAMLEN - 1) {
+						printf("Error: Interface merge is limited to %d characters.\n", MAXIFPARAMLEN - 1);
+						exit(EXIT_FAILURE);
+					}
+				} else {
+					if (strlen(argv[currentarg + 1]) > MAXIFLEN - 1) {
+						printf("Error: Interface name is limited to %d characters.\n", MAXIFLEN - 1);
+						exit(EXIT_FAILURE);
+					}
 				}
-				strncpy_nt(p->interface, argv[currentarg + 1], 32);
+				strncpy_nt(p->interface, argv[currentarg + 1], MAXIFPARAMLEN);
 				if (strlen(p->interface)) {
 					p->defaultiface = 0;
 				} else {
-					strncpy_nt(p->definterface, p->interface, 32);
+					strncpy_nt(p->definterface, p->interface, MAXIFPARAMLEN);
 				}
 				if (debug)
 					printf("Used interface: \"%s\"\n", p->interface);
@@ -418,7 +425,11 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 			p->query = 0;
 		} else if (strcmp(argv[currentarg], "--rename") == 0) {
 			if (currentarg + 1 < argc) {
-				strncpy_nt(p->newifname, argv[currentarg + 1], 32);
+				if (strlen(argv[currentarg + 1]) > MAXIFLEN - 1) {
+					printf("Error: Interface name is limited to %d characters.\n", MAXIFLEN - 1);
+					exit(EXIT_FAILURE);
+				}
+				strncpy_nt(p->newifname, argv[currentarg + 1], MAXIFLEN);
 				if (debug)
 					printf("Given new interface name: \"%s\"\n", p->newifname);
 				p->renameiface = 1;
@@ -516,15 +527,22 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 				printf("Unknown parameter \"%s\". Use --help for help.\n", argv[currentarg]);
 				exit(EXIT_FAILURE);
 			} else {
-				if (strlen(argv[currentarg]) > 31) {
-					printf("Error: Interface name is limited to 31 characters.\n");
-					exit(EXIT_FAILURE);
+				if (strchr(argv[currentarg], '+') != NULL) {
+					if (strlen(argv[currentarg]) > MAXIFPARAMLEN - 1) {
+						printf("Error: Interface merge is limited to %d characters.\n", MAXIFPARAMLEN - 1);
+						exit(EXIT_FAILURE);
+					}
+				} else {
+					if (strlen(argv[currentarg]) > MAXIFLEN - 1) {
+						printf("Error: Interface name is limited to %d characters.\n", MAXIFLEN - 1);
+						exit(EXIT_FAILURE);
+					}
 				}
-				strncpy_nt(p->interface, argv[currentarg], 32);
+				strncpy_nt(p->interface, argv[currentarg], MAXIFPARAMLEN);
 				if (strlen(p->interface)) {
 					p->defaultiface = 0;
 				} else {
-					strncpy_nt(p->definterface, p->interface, 32);
+					strncpy_nt(p->definterface, p->interface, MAXIFPARAMLEN);
 				}
 				if (debug)
 					printf("Used interface: \"%s\"\n", p->interface);
@@ -1006,7 +1024,7 @@ void handleshowdata(PARAMS *p)
 		dbifl_i = dbifl;
 
 		while (dbifl_i != NULL) {
-			strncpy_nt(p->interface, dbifl_i->interface, 32);
+			strncpy_nt(p->interface, dbifl_i->interface, MAXIFLEN);
 			if (debug)
 				printf("\nProcessing interface \"%s\"...\n", p->interface);
 			if (cfg.qmode == 0) {
@@ -1119,7 +1137,7 @@ void handleifselection(PARAMS *p)
 	}
 
 	if (strlen(p->definterface)) {
-		strncpy_nt(p->interface, p->definterface, 32);
+		strncpy_nt(p->interface, p->definterface, MAXIFPARAMLEN);
 		return;
 	}
 
@@ -1146,7 +1164,7 @@ void handleifselection(PARAMS *p)
 			dbifl_iterator = dbifl;
 			while (dbifl_iterator != NULL) {
 				if (iflistsearch(&ifl, dbifl_iterator->interface)) {
-					strncpy_nt(p->interface, dbifl_iterator->interface, 32);
+					strncpy_nt(p->interface, dbifl_iterator->interface, MAXIFLEN);
 					iffound = 1;
 					if (debug)
 						printf("Automatically selected interface with db: \"%s\"\n", p->interface);
@@ -1158,7 +1176,7 @@ void handleifselection(PARAMS *p)
 
 		if (!iffound) {
 			if (ifcount > 0) {
-				strncpy_nt(p->interface, ifl->interface, 32);
+				strncpy_nt(p->interface, ifl->interface, MAXIFLEN);
 				if (debug)
 					printf("Automatically selected interface without db: \"%s\"\n", p->interface);
 			} else {
@@ -1176,7 +1194,7 @@ void handleifselection(PARAMS *p)
 			iflistfree(&dbifl);
 			exit(EXIT_FAILURE);
 		}
-		strncpy_nt(p->interface, dbifl->interface, 32);
+		strncpy_nt(p->interface, dbifl->interface, MAXIFLEN);
 		if (debug)
 			printf("Automatically selected interface from db: \"%s\"\n", p->interface);
 	}

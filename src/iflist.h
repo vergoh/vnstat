@@ -2,7 +2,7 @@
 #define IFLIST_H
 
 typedef struct iflist {
-	char interface[32];
+	char interface[MAXIFLEN];
 	uint32_t bandwidth;
 	struct iflist *next;
 } iflist;

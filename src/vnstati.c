@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 	cfg.qmode = 0;
 
 	configlocale();
-	strncpy_nt(p.interface, cfg.iface, 32);
+	strncpy_nt(p.interface, cfg.iface, MAXIFPARAMLEN);
 	ic.current = time(NULL);
 
 	parseargs(&p, &ic, argc, argv);
@@ -173,11 +173,18 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 			p->help = 1;
 		} else if ((strcmp(argv[currentarg], "-i") == 0) || (strcmp(argv[currentarg], "--iface")) == 0 || (strcmp(argv[currentarg], "--interface") == 0)) {
 			if (currentarg + 1 < argc) {
-				if (strlen(argv[currentarg + 1]) > 31) {
-					printf("Error: Interface name is limited to 31 characters.\n");
-					exit(EXIT_FAILURE);
+				if (strchr(argv[currentarg + 1], '+') != NULL) {
+					if (strlen(argv[currentarg + 1]) > MAXIFPARAMLEN - 1) {
+						printf("Error: Interface merge is limited to %d characters.\n", MAXIFPARAMLEN - 1);
+						exit(EXIT_FAILURE);
+					}
+				} else {
+					if (strlen(argv[currentarg + 1]) > MAXIFLEN - 1) {
+						printf("Error: Interface name is limited to %d characters.\n", MAXIFLEN - 1);
+						exit(EXIT_FAILURE);
+					}
 				}
-				strncpy_nt(p->interface, argv[currentarg + 1], 32);
+				strncpy_nt(p->interface, argv[currentarg + 1], MAXIFPARAMLEN);
 				if (debug)
 					printf("Used interface: \"%s\"\n", p->interface);
 				currentarg++;
@@ -494,11 +501,18 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 				printf("Unknown parameter \"%s\". Use --help for help.\n", argv[currentarg]);
 				exit(EXIT_FAILURE);
 			} else {
-				if (strlen(argv[currentarg]) > 31) {
-					printf("Error: Interface name is limited to 31 characters.\n");
-					exit(EXIT_FAILURE);
+				if (strchr(argv[currentarg], '+') != NULL) {
+					if (strlen(argv[currentarg]) > MAXIFPARAMLEN - 1) {
+						printf("Error: Interface merge is limited to %d characters.\n", MAXIFPARAMLEN - 1);
+						exit(EXIT_FAILURE);
+					}
+				} else {
+					if (strlen(argv[currentarg]) > MAXIFLEN - 1) {
+						printf("Error: Interface name is limited to %d characters.\n", MAXIFLEN - 1);
+						exit(EXIT_FAILURE);
+					}
 				}
-				strncpy_nt(p->interface, argv[currentarg], 32);
+				strncpy_nt(p->interface, argv[currentarg], MAXIFPARAMLEN);
 				if (debug)
 					printf("Used interface: \"%s\"\n", p->interface);
 			}
@@ -592,7 +606,7 @@ void handledatabase(IPARAMS *p, IMAGECONTENT *ic)
 			printf("Error: Unable to discover suitable interface from database.\n");
 			exit(EXIT_FAILURE);
 		}
-		strncpy_nt(p->interface, dbifl->interface, 32);
+		strncpy_nt(p->interface, dbifl->interface, MAXIFLEN);
 		iflistfree(&dbifl);
 		if (debug)
 			printf("Automatically selected interface: \"%s\"\n", p->interface);

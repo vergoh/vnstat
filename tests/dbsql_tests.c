@@ -1837,6 +1837,80 @@ START_TEST(db_getdata_range_with_merged_interfaces)
 }
 END_TEST
 
+START_TEST(db_getdata_range_with_long_merged_interfaces)
+{
+	int ret, i;
+	char timestamp[64];
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+
+	cfg.monthrotate = 1;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("ethtester");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("ethotherthing");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("ethreallyfast");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("ethturtle");
+	ck_assert_int_eq(ret, 1);
+
+	for (i = 1; i <= 20; i++) {
+		ret = db_addtraffic_dated("ethtester", 1, 2, get_timestamp(2010, 9, i, 0, 0));
+		ck_assert_int_eq(ret, 1);
+		ret = db_addtraffic_dated("ethotherthing", 3, 7, get_timestamp(2010, 9, i, 0, 0));
+		ck_assert_int_eq(ret, 1);
+		ret = db_addtraffic_dated("ethreallyfast", 4, 8, get_timestamp(2010, 9, i, 0, 0));
+		ck_assert_int_eq(ret, 1);
+		ret = db_addtraffic_dated("ethturtle", 5, 9, get_timestamp(2010, 9, i, 0, 0));
+		ck_assert_int_eq(ret, 1);
+	}
+
+	ret = db_getdata_range(&datalist, &datainfo, "ethtester+ethotherthing+ethreallyfast+ethturtle", "month", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 1);
+	datalist_i = datalist;
+	i = 0;
+	while (datalist_i != NULL) {
+		switch (i) {
+			case 0:
+				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2010-09-01");
+				ck_assert_int_eq(datalist_i->rx, 260);
+				ck_assert_int_eq(datalist_i->tx, 520);
+				break;
+		}
+		datalist_i = datalist_i->next;
+		i++;
+	}
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "ethotherthing+ethreallyfast+ethturtle", "month", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 1);
+	datalist_i = datalist;
+	i = 0;
+	while (datalist_i != NULL) {
+		switch (i) {
+			case 0:
+				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
+				ck_assert_str_eq(timestamp, "2010-09-01");
+				ck_assert_int_eq(datalist_i->rx, 240);
+				ck_assert_int_eq(datalist_i->tx, 480);
+				break;
+		}
+		datalist_i = datalist_i->next;
+		i++;
+	}
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 START_TEST(db_addtraffic_without_monthrotate)
 {
 	int ret, i;
@@ -2189,6 +2263,17 @@ START_TEST(getifaceinquery_can_create_merge_queries)
 	result = getifaceinquery("eth0+em1+eth1");
 	ck_assert_ptr_ne(result, NULL);
 	ck_assert_str_eq(result, "\"eth0\",\"em1\",\"eth1\"");
+	free(result);
+}
+END_TEST
+
+START_TEST(getifaceinquery_can_create_merge_query_longer_than_single_interface_maxlen)
+{
+	char *result;
+
+	result = getifaceinquery("eth0+em1+eth1+eth2+em2+eth3+eth4+em3+eth5");
+	ck_assert_ptr_ne(result, NULL);
+	ck_assert_str_eq(result, "\"eth0\",\"em1\",\"eth1\",\"eth2\",\"em2\",\"eth3\",\"eth4\",\"em3\",\"eth5\"");
 	free(result);
 }
 END_TEST
@@ -2823,6 +2908,7 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_getdata_range_can_get_hours_with_range_limiting_end_with_limit);
 	tcase_add_test(tc_dbsql, db_getdata_range_can_get_hours_with_range_on_same_hour);
 	tcase_add_test(tc_dbsql, db_getdata_range_with_merged_interfaces);
+	tcase_add_test(tc_dbsql, db_getdata_range_with_long_merged_interfaces);
 	tcase_add_test(tc_dbsql, db_addtraffic_without_monthrotate);
 	tcase_add_test(tc_dbsql, db_addtraffic_with_monthrotate);
 	tcase_add_test(tc_dbsql, db_addtraffic_without_monthrotate_utc);
@@ -2833,6 +2919,7 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_get_date_generator_can_generate_dates_with_monthrotate_utc);
 	tcase_add_test(tc_dbsql, getifaceinquery_does_not_mess_regular_interfaces);
 	tcase_add_test(tc_dbsql, getifaceinquery_can_create_merge_queries);
+	tcase_add_test(tc_dbsql, getifaceinquery_can_create_merge_query_longer_than_single_interface_maxlen);
 	tcase_add_test(tc_dbsql, getifaceinquery_does_not_tolerate_nonsense);
 	tcase_add_test(tc_dbsql, db_getinterfaceid_can_get_ids);
 	tcase_add_test(tc_dbsql, db_getinterfaceidin_can_get_in_groups);

@@ -123,6 +123,32 @@ START_TEST(vnstat_parseargs_does_not_allow_too_long_interface_names)
 }
 END_TEST
 
+START_TEST(vnstat_parseargs_does_not_allow_too_long_interface_names_unless_it_is_a_merge)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--iface", "12345678901234567+890123456789012", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	initparams(&p);
+	suppress_output();
+	parseargs(&p, argc, argv);
+	ck_assert_str_eq(p.interface, "12345678901234567+890123456789012");
+	ck_assert_int_eq(p.defaultiface, 0);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_does_not_allow_too_long_interface_merges)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--iface", "12345678901234567+890123456789012+12345678901234567+890123456789012+12345678901234567+890123456789012+12345678901234567+890123456789012+12345678901234567+890123456789012+12345678901234567+890123456789012+12345678901234567+890123456789012+12345678901234567+890123456789012", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	initparams(&p);
+	suppress_output();
+	parseargs(&p, argc, argv);
+}
+END_TEST
+
 START_TEST(vnstat_parseargs_style_requires_parameter)
 {
 	PARAMS p;
@@ -813,6 +839,34 @@ START_TEST(vnstat_parseargs_knows_when_interface_name_is_too_long_even_without_p
 }
 END_TEST
 
+START_TEST(vnstat_parseargs_knows_when_interface_name_is_too_long_even_without_parameter_unless_it_is_a_merge)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "eth0+eth1+eth2+eth3+eth4+eth5+eth6+eth7+eth8", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	defaultcfg();
+	initparams(&p);
+	suppress_output();
+	parseargs(&p, argc, argv);
+	ck_assert_str_eq(p.interface, "eth0+eth1+eth2+eth3+eth4+eth5+eth6+eth7+eth8");
+	ck_assert_int_eq(p.defaultiface, 0);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_knows_when_interface_merge_is_too_long_even_without_parameter)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "eth0+eth1+eth2+eth3+eth4+eth5+eth6+eth7+eth8+eth0+eth1+eth2+eth3+eth4+eth5+eth6+eth7+eth8+eth0+eth1+eth2+eth3+eth4+eth5+eth6+eth7+eth8+eth0+eth1+eth2+eth3+eth4+eth5+eth6+eth7+eth8+eth0+eth1+eth2+eth3+eth4+eth5+eth6+eth7+eth8+eth0+eth1+eth2+eth3+eth4+eth5+eth6+eth7+eth8", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	defaultcfg();
+	initparams(&p);
+	suppress_output();
+	parseargs(&p, argc, argv);
+}
+END_TEST
+
 void add_parseargs_tests(Suite *s)
 {
 	TCase *tc_pa = tcase_create("ParseArgs");
@@ -825,6 +879,8 @@ void add_parseargs_tests(Suite *s)
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_detects_unknown_parameters, 1);
 	tcase_add_test(tc_pa, vnstat_parseargs_can_modify_settings);
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_does_not_allow_too_long_interface_names, 1);
+	tcase_add_test(tc_pa, vnstat_parseargs_does_not_allow_too_long_interface_names_unless_it_is_a_merge);
+	tcase_add_exit_test(tc_pa, vnstat_parseargs_does_not_allow_too_long_interface_merges, 1);
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_style_requires_parameter, 1);
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_style_checks_parameter, 1);
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_knows_that_update_is_not_supported, 1);
@@ -873,5 +929,7 @@ void add_parseargs_tests(Suite *s)
 	tcase_add_test(tc_pa, vnstat_parseargs_can_select_interface_without_parameter_even_if_there_are_other_parameters);
 	tcase_add_test(tc_pa, vnstat_parseargs_can_select_interface_without_parameter_from_the_middle_of_the_parameter_list);
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_knows_when_interface_name_is_too_long_even_without_parameter, 1);
+	tcase_add_test(tc_pa, vnstat_parseargs_knows_when_interface_name_is_too_long_even_without_parameter_unless_it_is_a_merge);
+	tcase_add_exit_test(tc_pa, vnstat_parseargs_knows_when_interface_merge_is_too_long_even_without_parameter, 1);
 	suite_add_tcase(s, tc_pa);
 }
