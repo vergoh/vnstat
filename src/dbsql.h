@@ -21,7 +21,7 @@ typedef struct dbdatalistinfo {
 } dbdatalistinfo;
 
 typedef struct interfaceinfo {
-	char name[MAXIFLEN], alias[32];
+	char name[MAXIFPARAMLEN], alias[32];
 	int active;
 	time_t created, updated;
 	uint64_t rxcounter, txcounter;

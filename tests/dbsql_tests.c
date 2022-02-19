@@ -2447,6 +2447,7 @@ START_TEST(db_getinterfaceinfo_can_handle_interface_merges)
 	ck_assert_int_eq(info.txtotal, 1);
 	ck_assert_int_gt(info.updated, 1000);
 	ck_assert_int_lt(info.updated, 2100000000);
+	ck_assert_str_eq(info.name, "eth0+ethnone");
 
 	ret = db_getinterfaceinfo("eth0+eth1", &info);
 	ck_assert_int_eq(ret, 1);
@@ -2454,6 +2455,7 @@ START_TEST(db_getinterfaceinfo_can_handle_interface_merges)
 	ck_assert_int_eq(info.txtotal, 3);
 	ck_assert_int_gt(info.updated, 1000);
 	ck_assert_int_lt(info.updated, 2100000000);
+	ck_assert_str_eq(info.name, "eth0+eth1");
 
 	ret = db_getinterfaceinfo("eth1+eth2", &info);
 	ck_assert_int_eq(ret, 1);
@@ -2461,6 +2463,7 @@ START_TEST(db_getinterfaceinfo_can_handle_interface_merges)
 	ck_assert_int_eq(info.txtotal, 7);
 	ck_assert_int_gt(info.updated, 1000);
 	ck_assert_int_lt(info.updated, 2100000000);
+	ck_assert_str_eq(info.name, "eth1+eth2");
 
 	ret = db_getinterfaceinfo("eth0+eth1+eth2", &info);
 	ck_assert_int_eq(ret, 1);
@@ -2468,6 +2471,62 @@ START_TEST(db_getinterfaceinfo_can_handle_interface_merges)
 	ck_assert_int_eq(info.txtotal, 8);
 	ck_assert_int_gt(info.updated, 1000);
 	ck_assert_int_lt(info.updated, 2100000000);
+	ck_assert_str_eq(info.name, "eth0+eth1+eth2");
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_getinterfaceinfo_can_handle_interface_merges_with_long_name)
+{
+	int ret;
+	interfaceinfo info;
+
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addtraffic("eth0notsolong", 1, 1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addtraffic("eth1withratherlongname", 2, 2);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addtraffic("eth2withstillmuchlongername", 5, 5);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getinterfaceinfo("eth0notsolong+ethnone", &info);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(info.rxtotal, 1);
+	ck_assert_int_eq(info.txtotal, 1);
+	ck_assert_int_gt(info.updated, 1000);
+	ck_assert_int_lt(info.updated, 2100000000);
+	ck_assert_str_eq(info.name, "eth0notsolong+ethnone");
+
+	ret = db_getinterfaceinfo("eth0notsolong+eth1withratherlongname", &info);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(info.rxtotal, 3);
+	ck_assert_int_eq(info.txtotal, 3);
+	ck_assert_int_gt(info.updated, 1000);
+	ck_assert_int_lt(info.updated, 2100000000);
+	ck_assert_str_eq(info.name, "eth0notsolong+eth1withratherlongname");
+
+	ret = db_getinterfaceinfo("eth1withratherlongname+eth2withstillmuchlongername", &info);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(info.rxtotal, 7);
+	ck_assert_int_eq(info.txtotal, 7);
+	ck_assert_int_gt(info.updated, 1000);
+	ck_assert_int_lt(info.updated, 2100000000);
+	ck_assert_str_eq(info.name, "eth1withratherlongname+eth2withstillmuchlongername");
+
+	ret = db_getinterfaceinfo("eth0notsolong+eth1withratherlongname+eth2withstillmuchlongername", &info);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(info.rxtotal, 8);
+	ck_assert_int_eq(info.txtotal, 8);
+	ck_assert_int_gt(info.updated, 1000);
+	ck_assert_int_lt(info.updated, 2100000000);
+	ck_assert_str_eq(info.name, "eth0notsolong+eth1withratherlongname+eth2withstillmuchlongername");
 
 	ret = db_close();
 	ck_assert_int_eq(ret, 1);
@@ -2925,6 +2984,7 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_getinterfaceidin_can_get_in_groups);
 	tcase_add_test(tc_dbsql, db_getinterfaceidin_can_handle_error_situations);
 	tcase_add_test(tc_dbsql, db_getinterfaceinfo_can_handle_interface_merges);
+	tcase_add_test(tc_dbsql, db_getinterfaceinfo_can_handle_interface_merges_with_long_name);
 	tcase_add_test(tc_dbsql, db_getinterfaceinfo_can_handle_invalid_input);
 	tcase_add_test(tc_dbsql, getqueryinterfacecount_can_count);
 	tcase_add_test(tc_dbsql, top_list_returns_items_in_correct_order);

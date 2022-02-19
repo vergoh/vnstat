@@ -651,7 +651,7 @@ int db_getcounters(const char *iface, uint64_t *rxcounter, uint64_t *txcounter)
 int db_getinterfaceinfo(const char *iface, interfaceinfo *info)
 {
 	int rc;
-	char sql[512], *ifaceidin = NULL;
+	char sql[768], *ifaceidin = NULL;
 	sqlite3_int64 ifaceid;
 	sqlite3_stmt *sqlstmt;
 
@@ -660,14 +660,14 @@ int db_getinterfaceinfo(const char *iface, interfaceinfo *info)
 		if (ifaceid == 0) {
 			return 0;
 		}
-		sqlite3_snprintf(512, sql, "select name, alias, active, strftime('%%s', created, 'utc'), strftime('%%s', updated, 'utc'), rxcounter, txcounter, rxtotal, txtotal from interface where id=%" PRId64 "", (int64_t)ifaceid);
+		sqlite3_snprintf(768, sql, "select name, alias, active, strftime('%%s', created, 'utc'), strftime('%%s', updated, 'utc'), rxcounter, txcounter, rxtotal, txtotal from interface where id=%" PRId64 "", (int64_t)ifaceid);
 	} else {
 		ifaceidin = db_getinterfaceidin(iface);
 		if (ifaceidin == NULL || strlen(ifaceidin) < 1) {
 			free(ifaceidin);
 			return 0;
 		}
-		sqlite3_snprintf(512, sql, "select \"%q\", NULL, max(active), max(strftime('%%s', created, 'utc')), min(strftime('%%s', updated, 'utc')), 0, 0, sum(rxtotal), sum(txtotal) from interface where id in (%q)", iface, ifaceidin);
+		sqlite3_snprintf(768, sql, "select \"%q\", NULL, max(active), max(strftime('%%s', created, 'utc')), min(strftime('%%s', updated, 'utc')), 0, 0, sum(rxtotal), sum(txtotal) from interface where id in (%q)", iface, ifaceidin);
 		free(ifaceidin);
 	}
 
@@ -683,7 +683,7 @@ int db_getinterfaceinfo(const char *iface, interfaceinfo *info)
 	}
 	if (sqlite3_step(sqlstmt) == SQLITE_ROW) {
 		if (sqlite3_column_text(sqlstmt, 0) != NULL) {
-			strncpy_nt(info->name, (const char *)sqlite3_column_text(sqlstmt, 0), MAXIFLEN);
+			strncpy_nt(info->name, (const char *)sqlite3_column_text(sqlstmt, 0), MAXIFPARAMLEN);
 		} else {
 			info->name[0] = '\0';
 		}
