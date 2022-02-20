@@ -1,5 +1,10 @@
 2.10 / <not released yet>
 
+ - Fixed
+   - BandwidthDetection in BSD wasn't correctly converting kernel reported
+     bits per second values to Mbits per second resulting in a sanity check
+     being triggered and detected values not being used expect for PPPoE
+     interfaces which incorrectly were detected as 64000 Mbit
  - New
    - Support input of more than 31 characters in interface name when using
      interface1+interface2 syntax data merge queries

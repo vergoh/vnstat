@@ -417,6 +417,7 @@ uint32_t getifspeed(const char *iface)
 	FILE *fp;
 	char file[64], buffer[64];
 
+	// value in file is Mbits per second
 	snprintf(file, 64, "%s/%s/speed", SYSCLASSNET, iface);
 
 	if ((fp = fopen(file, "r")) == NULL) {
@@ -444,7 +445,15 @@ uint32_t getifspeed(const char *iface)
 			printf("Requested interface \"%s\" not found.\n", iface);
 		return 0;
 	} else {
+		// value in ifi_baudrate is bits per second
 		speed = (uint64_t)ifd.ifi_baudrate;
+		if (speed < 1000000) {
+			if (debug)
+				printf("getifspeed: ignoring too small raw value %" PRIu64 " for interface \"%s\"\n", speed, iface);
+			return 0;
+		} else {
+			speed /= 1000000;
+		}
 	}
 
 #endif
