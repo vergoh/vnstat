@@ -386,7 +386,7 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 				if (cfg.fivegresultcount < FIVEGMINRESULTCOUNT) {
 					printf("Error: Invalid limit parameter \"%s\" for %s. A value equal or over %d is expected.\n", argv[currentarg + 1], argv[currentarg], FIVEGMINRESULTCOUNT);
 					exit(EXIT_FAILURE);
-				} else if (cfg.fivegresultcount > cfg.fiveminutehours * 12) {
+				} else if (cfg.fivegresultcount > cfg.fiveminutehours * 12 && cfg.fiveminutehours > 0) {
 					printf("Error: Invalid limit parameter \"%s\" for %s. Value cannot be larger than configured data retention (5MinuteHours %d * 12 = %d).\n", argv[currentarg + 1], argv[currentarg], cfg.fiveminutehours, cfg.fiveminutehours * 12);
 					exit(EXIT_FAILURE);
 				}
