@@ -5,6 +5,9 @@
      bits per second values to Mbits per second resulting in a sanity check
      being triggered and detected values not being used expect for PPPoE
      interfaces which incorrectly were detected as 64000 Mbit
+   - Image output of 5 minute graph wasn't possible if data retention of the
+     5 minute time period was configured as unlimited
+     (pull request by Sebastian Lechte)
  - New
    - Support input of more than 31 characters in interface name when using
      interface1+interface2 syntax data merge queries
