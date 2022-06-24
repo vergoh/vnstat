@@ -148,13 +148,12 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 				if (datalist_i->rx == 0 || datalist_i->tx == 0 || (interface->updated - datalist_i->timestamp) == 0) {
 					e_rx = e_tx = 0;
 				} else {
-					e_rx = (uint64_t)((double)datalist_i->rx / (double)(mosecs(datalist_i->timestamp, interface->updated))) * (uint64_t)(dmonth(d->tm_mon) * 86400);
-					e_tx = (uint64_t)((double)datalist_i->tx / (double)(mosecs(datalist_i->timestamp, interface->updated))) * (uint64_t)(dmonth(d->tm_mon) * 86400);
+					getestimates(&e_rx, &e_tx, LT_Month, interface->updated, interface->created, &datalist);
 				}
 				if (shortmode && cfg.ostyle != 0) {
 					printf("%s%s", fieldseparator, getvalue(e_rx + e_tx, 11, RT_Estimate));
 				} else if (!shortmode) {
-					printf("%s%s", fieldseparator, gettrafficrate(datalist_i->rx + datalist_i->tx, mosecs(datalist_i->timestamp, interface->updated), 14));
+					printf("%s%s", fieldseparator, gettrafficrate(datalist_i->rx + datalist_i->tx, (time_t)getperiodseconds(LT_Month, datalist_i->timestamp, interface->updated, interface->created, 1), 14));
 				}
 			} else if (!shortmode) {
 				printf(" | %s", gettrafficrate(datalist_i->rx + datalist_i->tx, dmonth(d->tm_mon) * 86400, 14));
@@ -247,7 +246,7 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 				if (shortmode && cfg.ostyle != 0) {
 					printf("%s%s", fieldseparator, getvalue(e_rx + e_tx, 11, RT_Estimate));
 				} else if (!shortmode) {
-					printf("%s%s", fieldseparator, gettrafficrate(datalist_i->rx + datalist_i->tx, d->tm_sec + (d->tm_min * 60) + (d->tm_hour * 3600), 14));
+					printf("%s%s", fieldseparator, gettrafficrate(datalist_i->rx + datalist_i->tx, (time_t)getperiodseconds(LT_Day, datalist_i->timestamp, interface->updated, interface->created, 1), 14));
 				}
 			} else if (!shortmode) {
 				printf(" | %s", gettrafficrate(datalist_i->rx + datalist_i->tx, 86400, 14));
@@ -366,7 +365,7 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 
 	if (strlen(dataend) == 0 && datainfo.count > 0 && (listtype == LT_Day || listtype == LT_Month || listtype == LT_Year)) {
 		estimatevisible = 1;
-		getestimates(&e_rx, &e_tx, listtype, interface->updated, &datalist);
+		getestimates(&e_rx, &e_tx, listtype, interface->updated, interface->created, &datalist);
 		if (cfg.estimatebarvisible && e_rx + e_tx > datainfo.max) {
 			datainfo.max = e_rx + e_tx;
 		}
@@ -480,9 +479,9 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 		printf(" | %s", getvalue(datalist_i->rx + datalist_i->tx, 11, RT_Normal));
 		if (cfg.ostyle == 3) {
 			if (datalist_i->next == NULL && issametimeslot(listtype, datalist_i->timestamp, interface->updated)) {
-				e_secs = getperiodseconds(listtype, datalist_i->timestamp, interface->updated, 1);
+				e_secs = getperiodseconds(listtype, datalist_i->timestamp, interface->updated, interface->created, 1);
 			} else {
-				e_secs = getperiodseconds(listtype, datalist_i->timestamp, interface->updated, 0);
+				e_secs = getperiodseconds(listtype, datalist_i->timestamp, interface->updated, interface->created, 0);
 			}
 			printf(" | %s", gettrafficrate(datalist_i->rx + datalist_i->tx, (time_t)e_secs, 14));
 		} else if (cfg.ostyle != 0) {
@@ -590,14 +589,12 @@ void showoneline(const interfaceinfo *interface)
 		strftime(daytemp, DATEBUFFLEN, cfg.dformat, d);
 		printf("%s;", daytemp);
 
-		d = localtime(&interface->updated);
-
 		/* daily */
 		if (cfg.ostyle == 4) {
 			printf("%" PRIu64 ";", datalist->rx);
 			printf("%" PRIu64 ";", datalist->tx);
 			printf("%" PRIu64 ";", datalist->rx + datalist->tx);
-			div = (uint64_t)(d->tm_sec + (d->tm_min * 60) + (d->tm_hour * 3600));
+			div = getperiodseconds(LT_Day, datalist->timestamp, interface->updated, interface->created, 1);
 			if (!div) {
 				div = 1;
 			}
@@ -606,7 +603,7 @@ void showoneline(const interfaceinfo *interface)
 			printf("%s;", getvalue(datalist->rx, 1, RT_Normal));
 			printf("%s;", getvalue(datalist->tx, 1, RT_Normal));
 			printf("%s;", getvalue(datalist->rx + datalist->tx, 1, RT_Normal));
-			printf("%s;", gettrafficrate(datalist->rx + datalist->tx, (time_t)(d->tm_sec + (d->tm_min * 60) + (d->tm_hour * 3600)), 1));
+			printf("%s;", gettrafficrate(datalist->rx + datalist->tx, (time_t)getperiodseconds(LT_Day, datalist->timestamp, interface->updated, interface->created, 1), 1));
 		}
 	} else {
 		printf(";;;;;");
@@ -628,7 +625,7 @@ void showoneline(const interfaceinfo *interface)
 			printf("%" PRIu64 ";", datalist->rx);
 			printf("%" PRIu64 ";", datalist->tx);
 			printf("%" PRIu64 ";", datalist->rx + datalist->tx);
-			div = (uint64_t)(mosecs(datalist->timestamp, interface->updated));
+			div = getperiodseconds(LT_Month, datalist->timestamp, interface->updated, interface->created, 1);
 			if (!div) {
 				div = 1;
 			}
@@ -637,7 +634,7 @@ void showoneline(const interfaceinfo *interface)
 			printf("%s;", getvalue(datalist->rx, 1, RT_Normal));
 			printf("%s;", getvalue(datalist->tx, 1, RT_Normal));
 			printf("%s;", getvalue(datalist->rx + datalist->tx, 1, RT_Normal));
-			printf("%s;", gettrafficrate(datalist->rx + datalist->tx, mosecs(datalist->timestamp, interface->updated), 1));
+			printf("%s;", gettrafficrate(datalist->rx + datalist->tx, (time_t)getperiodseconds(LT_Month, datalist->timestamp, interface->updated, interface->created, 1), 1));
 		}
 	} else {
 		printf(";;;;;");
@@ -948,36 +945,36 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit e
 		case AC_RX:
 			bytes = datalist->rx;
 			snprintf(conditionname, 16, "rx");
-			getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, &datalist);
+			getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, ifaceinfo.created, &datalist);
 			e_bytes = e_rx;
 			break;
 		case AC_TX:
 			bytes = datalist->tx;
 			snprintf(conditionname, 16, "tx");
-			getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, &datalist);
+			getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, ifaceinfo.created, &datalist);
 			e_bytes = e_tx;
 			break;
 		case AC_Total:
 			bytes = datalist->rx + datalist->tx;
 			snprintf(conditionname, 16, "total");
-			getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, &datalist);
+			getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, ifaceinfo.created, &datalist);
 			e_bytes = e_rx + e_tx;
 			break;
 		case AC_RX_Estimate:
 			ongoing = 0;
-			getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, &datalist);
+			getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, ifaceinfo.created, &datalist);
 			bytes = e_rx;
 			snprintf(conditionname, 16, "rx estimate");
 			break;
 		case AC_TX_Estimate:
 			ongoing = 0;
-			getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, &datalist);
+			getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, ifaceinfo.created, &datalist);
 			bytes = e_tx;
 			snprintf(conditionname, 16, "tx estimate");
 			break;
 		case AC_Total_Estimate:
 			ongoing = 0;
-			getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, &datalist);
+			getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, ifaceinfo.created, &datalist);
 			bytes = e_rx + e_tx;
 			snprintf(conditionname, 16, "total estimate");
 			break;
@@ -1079,9 +1076,9 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit e
 			printf("   percentage   |   avg. rate\n");
 			printf("     ----------+------------------+----------------+--------------\n");
 			printf("          used | %16s |", getvalue(bytes, 16, RT_Normal));
-			periodseconds = getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, ongoing);
+			periodseconds = getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, ifaceinfo.created, ongoing);
 			if (ongoing && periodseconds == 0) {
-				periodseconds = getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, 0);
+				periodseconds = getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, ifaceinfo.created, 0);
 			}
 			if (percentage <= 100000.0) {
 				printf(" %13.1f%% | %13s\n", percentage, gettrafficrate(bytes, (time_t)periodseconds, 13));
@@ -1089,7 +1086,7 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit e
 				printf(" %14s | %13s\n", ">100000%", gettrafficrate(bytes, (time_t)periodseconds, 13));
 			}
 			printf("         limit | %16s |", getvalue(limit, 16, RT_Normal));
-			printf("                | %13s\n", gettrafficrate(limit, (time_t)getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, 0), 13));
+			printf("                | %13s\n", gettrafficrate(limit, (time_t)getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, ifaceinfo.created, 0), 13));
 
 			if (limitexceeded) {
 				printf("        excess | %16s |                |\n", getvalue(bytes - limit, 16, RT_Normal));

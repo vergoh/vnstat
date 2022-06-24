@@ -367,7 +367,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	datalist_i = datalist;
 
 	if (strlen(ic->dataend) == 0 && datainfo.count > 0 && listtype != LT_Top) {
-		getestimates(&e_rx, &e_tx, listtype, ic->interface.updated, &datalist);
+		getestimates(&e_rx, &e_tx, listtype, ic->interface.updated, ic->interface.created, &datalist);
 		if ((cfg.estimatestyle > 0 || cfg.barshowsrate > 0) && e_rx + e_tx > datainfo.max) {
 			datainfo.max = e_rx + e_tx;
 		}
@@ -532,9 +532,9 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		if (cfg.ostyle > 2) {
 			strcat(buffer, "  ");
 			if (datalist_i->next == NULL && issametimeslot(listtype, datalist_i->timestamp, ic->interface.updated)) {
-				e_secs = getperiodseconds(listtype, datalist_i->timestamp, ic->interface.updated, 1);
+				e_secs = getperiodseconds(listtype, datalist_i->timestamp, ic->interface.updated, ic->interface.created, 1);
 			} else {
-				e_secs = getperiodseconds(listtype, datalist_i->timestamp, ic->interface.updated, 0);
+				e_secs = getperiodseconds(listtype, datalist_i->timestamp, ic->interface.updated, ic->interface.created, 0);
 			}
 			strncat(buffer, gettrafficrate(datalist_i->rx + datalist_i->tx, (time_t)e_secs, 14), 32);
 		}
@@ -813,9 +813,9 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 	if (cfg.summaryrate) {
 		d = localtime(&ic->interface.updated);
 		if (mode[0] == 'd') {
-			snprintf(buffer, 16, "%15s", gettrafficrate(data_current->rx + data_current->tx, d->tm_sec + (d->tm_min * 60) + (d->tm_hour * 3600), 15));
+			snprintf(buffer, 16, "%15s", gettrafficrate(data_current->rx + data_current->tx, (time_t)getperiodseconds(LT_Day, data_current->timestamp, ic->interface.updated, ic->interface.created, 1), 15));
 		} else if (mode[0] == 'm') {
-			snprintf(buffer, 16, "%15s", gettrafficrate(data_current->rx + data_current->tx, mosecs(data_current->timestamp, ic->interface.updated), 15));
+			snprintf(buffer, 16, "%15s", gettrafficrate(data_current->rx + data_current->tx, (time_t)getperiodseconds(LT_Month, data_current->timestamp, ic->interface.updated, ic->interface.created, 1), 15));
 		}
 		gdImageString(ic->im, ic->font, textx - 74, texty + 4 * ic->lineheight + 10, (unsigned char *)buffer, ic->ctext);
 	} else {

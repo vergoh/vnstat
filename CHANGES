@@ -8,6 +8,9 @@
    - Image output of 5 minute graph wasn't possible if data retention of the
      5 minute time period was configured as unlimited
      (pull request by Sebastian Lechte)
+   - Estimates and average rates weren't calculated correctly for daily,
+     monthly and yearly time periods when monitoring of the interface had been
+     started during the ongoing time period
  - New
    - Support input of more than 31 characters in interface name when using
      interface1+interface2 syntax data merge queries

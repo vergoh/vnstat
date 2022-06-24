@@ -711,99 +711,134 @@ END_TEST
 
 START_TEST(getperiodseconds_knows_fixed_not_ongoing_periods)
 {
-	time_t entry, updated;
+	time_t entry, created, updated;
 
+	created = (time_t)get_timestamp(2010, 1, 1, 3, 30);
 	entry = (time_t)get_timestamp(2021, 1, 1, 18, 0);
 	updated = entry;
 
-	ck_assert_int_eq(getperiodseconds(LT_None, entry, updated, 0), 0);
-	ck_assert_int_eq(getperiodseconds(LT_5min, entry, updated, 0), 300);
-	ck_assert_int_eq(getperiodseconds(LT_Hour, entry, updated, 0), 3600);
-	ck_assert_int_eq(getperiodseconds(LT_Day, entry, updated, 0), 86400);
-	ck_assert_int_eq(getperiodseconds(LT_Top, entry, updated, 0), 86400);
+	ck_assert_int_eq(getperiodseconds(LT_None, entry, updated, created, 0), 0);
+	ck_assert_int_eq(getperiodseconds(LT_5min, entry, updated, created, 0), 300);
+	ck_assert_int_eq(getperiodseconds(LT_Hour, entry, updated, created, 0), 3600);
+	ck_assert_int_eq(getperiodseconds(LT_Day, entry, updated, created, 0), 86400);
+	ck_assert_int_eq(getperiodseconds(LT_Top, entry, updated, created, 0), 86400);
 }
 END_TEST
 
 START_TEST(getperiodseconds_knows_dynamic_not_ongoing_periods)
 {
-	time_t entry, updated;
+	time_t entry, created, updated;
 
+	created = (time_t)get_timestamp(2010, 1, 1, 3, 30);
 	entry = (time_t)get_timestamp(2021, 1, 1, 18, 0);
 	updated = entry;
 
-	ck_assert_int_eq(getperiodseconds(LT_Month, entry, updated, 0), 2678400);
+	ck_assert_int_eq(getperiodseconds(LT_Month, entry, updated, created, 0), 2678400);
 
 	/* 2021 isn't a leap year */
-	ck_assert_int_eq(getperiodseconds(LT_Year, entry, updated, 0), 31536000);
+	ck_assert_int_eq(getperiodseconds(LT_Year, entry, updated, created, 0), 31536000);
 
 	entry = (time_t)get_timestamp(2020, 1, 1, 18, 0);
 	updated = entry;
 
 	/* 2020 is a leap year */
-	ck_assert_int_eq(getperiodseconds(LT_Year, entry, updated, 0), 31622400);
+	ck_assert_int_eq(getperiodseconds(LT_Year, entry, updated, created, 0), 31622400);
 }
 END_TEST
 
 START_TEST(getperiodseconds_returns_zero_when_there_is_no_time_spent)
 {
-	time_t entry, updated;
+	time_t entry, created, updated;
 
 	cfg.monthrotate = 1;
+	created = (time_t)get_timestamp(2010, 1, 1, 3, 30);
 	entry = (time_t)get_timestamp(2021, 1, 1, 0, 0);
 	updated = entry;
 
-	ck_assert_int_eq(getperiodseconds(LT_None, entry, updated, 1), 0);
-	ck_assert_int_eq(getperiodseconds(LT_5min, entry, updated, 1), 0);
-	ck_assert_int_eq(getperiodseconds(LT_Hour, entry, updated, 1), 0);
-	ck_assert_int_eq(getperiodseconds(LT_Day, entry, updated, 1), 0);
-	ck_assert_int_eq(getperiodseconds(LT_Year, entry, updated, 1), 0);
+	ck_assert_int_eq(getperiodseconds(LT_None, entry, updated, created, 1), 0);
+	ck_assert_int_eq(getperiodseconds(LT_5min, entry, updated, created, 1), 0);
+	ck_assert_int_eq(getperiodseconds(LT_Hour, entry, updated, created, 1), 0);
+	ck_assert_int_eq(getperiodseconds(LT_Day, entry, updated, created, 1), 0);
+	ck_assert_int_eq(getperiodseconds(LT_Year, entry, updated, created, 1), 0);
 
 	/* months are special due to cfg.monthrotate */
-	ck_assert_int_eq(getperiodseconds(LT_Month, entry, updated, 1), 1);
+	ck_assert_int_eq(getperiodseconds(LT_Month, entry, updated, created, 1), 1);
 
 	/* LT_Top always returns the same value */
-	ck_assert_int_eq(getperiodseconds(LT_Top, entry, updated, 1), 86400);
+	ck_assert_int_eq(getperiodseconds(LT_Top, entry, updated, created, 1), 86400);
 }
 END_TEST
 
 START_TEST(getperiodseconds_knows_spent_ongoing_time)
 {
-	time_t entry, updated;
+	time_t entry, created, updated;
 
 	cfg.monthrotate = 1;
+	created = (time_t)get_timestamp(2010, 1, 1, 3, 30);
 	entry = (time_t)get_timestamp(2021, 1, 2, 3, 46);
 	updated = entry;
 
-	ck_assert_int_eq(getperiodseconds(LT_None, entry, updated, 1), 0);
-	ck_assert_int_eq(getperiodseconds(LT_5min, entry, updated, 1), 60);
-	ck_assert_int_eq(getperiodseconds(LT_Hour, entry, updated, 1), 2760);
-	ck_assert_int_eq(getperiodseconds(LT_Day, entry, updated, 1), 13560);
-	ck_assert_int_eq(getperiodseconds(LT_Year, entry, updated, 1), 99960);
+	ck_assert_int_eq(getperiodseconds(LT_None, entry, updated, created, 1), 0);
+	ck_assert_int_eq(getperiodseconds(LT_5min, entry, updated, created, 1), 60);
+	ck_assert_int_eq(getperiodseconds(LT_Hour, entry, updated, created, 1), 2760);
+	ck_assert_int_eq(getperiodseconds(LT_Day, entry, updated, created, 1), 13560);
+	ck_assert_int_eq(getperiodseconds(LT_Year, entry, updated, created, 1), 99960);
 
 	/* months are special due to cfg.monthrotate */
-	ck_assert_int_eq(getperiodseconds(LT_Month, entry, updated, 1), 1);
+	ck_assert_int_eq(getperiodseconds(LT_Month, entry, updated, created, 1), 1);
 
 	/* LT_Top always returns the same value */
-	ck_assert_int_eq(getperiodseconds(LT_Top, entry, updated, 1), 86400);
+	ck_assert_int_eq(getperiodseconds(LT_Top, entry, updated, created, 1), 86400);
+}
+END_TEST
+
+START_TEST(getperiodseconds_knows_spent_ongoing_time_when_created_mid_period)
+{
+	time_t entry, created, updated;
+
+	cfg.monthrotate = 1;
+	entry = (time_t)get_timestamp(2021, 1, 2, 18, 33);
+	updated = entry;
+
+	created = (time_t)get_timestamp(2021, 1, 2, 18, 33);
+	ck_assert_int_eq(getperiodseconds(LT_5min, entry, updated, created, 1), 180);
+	ck_assert_int_eq(getperiodseconds(LT_Hour, entry, updated, created, 1), 1980);
+	ck_assert_int_eq(getperiodseconds(LT_Day, entry, updated, created, 1), 66780);
+	ck_assert_int_eq(getperiodseconds(LT_Year, entry, updated, created, 1), 153180);
+
+	//printf("u: %" PRIu64 "\nc: %" PRIu64 "\n", (uint64_t)updated, (uint64_t)created);
+
+	created = (time_t)get_timestamp(2021, 1, 2, 18, 35);
+	ck_assert_int_eq(getperiodseconds(LT_5min, entry, updated, created, 1), 60);
+	ck_assert_int_eq(getperiodseconds(LT_Hour, entry, updated, created, 1), 1860);
+	ck_assert_int_eq(getperiodseconds(LT_Day, entry, updated, created, 1), 66660);
+	ck_assert_int_eq(getperiodseconds(LT_Year, entry, updated, created, 1), 153060);
+
+	/* months are special due to cfg.monthrotate */
+	ck_assert_int_eq(getperiodseconds(LT_Month, entry, updated, created, 1), 1);
+
+	/* LT_Top always returns the same value */
+	ck_assert_int_eq(getperiodseconds(LT_Top, entry, updated, created, 1), 86400);
 }
 END_TEST
 
 START_TEST(getestimates_has_error_handling)
 {
-	time_t updated;
+	time_t created, updated;
 	uint64_t rx = 1, tx = 2;
 	dbdatalist *datalist = NULL;
 
+	created = (time_t)get_timestamp(2010, 1, 2, 3, 46);
 	updated = (time_t)get_timestamp(2021, 1, 2, 3, 46);
 
-	getestimates(&rx, &tx, LT_None, updated, &datalist);
+	getestimates(&rx, &tx, LT_None, updated, created, &datalist);
 	ck_assert_int_eq(rx, 0);
 	ck_assert_int_eq(tx, 0);
 
 	rx = 1;
 	tx = 2;
 	ck_assert_int_eq(dbdatalistadd(&datalist, 0, 0, 0, 1), 1);
-	getestimates(&rx, &tx, LT_Day, updated, &datalist);
+	getestimates(&rx, &tx, LT_Day, updated, created, &datalist);
 	ck_assert_int_eq(rx, 0);
 	ck_assert_int_eq(tx, 0);
 	dbdatalistfree(&datalist);
@@ -811,7 +846,7 @@ START_TEST(getestimates_has_error_handling)
 	rx = 1;
 	tx = 2;
 	ck_assert_int_eq(dbdatalistadd(&datalist, 1000000, 0, 0, 1), 1);
-	getestimates(&rx, &tx, LT_Day, updated, &datalist);
+	getestimates(&rx, &tx, LT_Day, updated, created, &datalist);
 	ck_assert_int_eq(rx, 0);
 	ck_assert_int_eq(tx, 0);
 	dbdatalistfree(&datalist);
@@ -819,7 +854,7 @@ START_TEST(getestimates_has_error_handling)
 	rx = 1;
 	tx = 2;
 	ck_assert_int_eq(dbdatalistadd(&datalist, 0, 1000000, 0, 1), 1);
-	getestimates(&rx, &tx, LT_Day, updated, &datalist);
+	getestimates(&rx, &tx, LT_Day, updated, created, &datalist);
 	ck_assert_int_eq(rx, 0);
 	ck_assert_int_eq(tx, 0);
 	dbdatalistfree(&datalist);
@@ -827,7 +862,7 @@ START_TEST(getestimates_has_error_handling)
 	rx = 1;
 	tx = 2;
 	ck_assert_int_eq(dbdatalistadd(&datalist, 1000000, 1000000, 0, 1), 1);
-	getestimates(&rx, &tx, LT_None, updated, &datalist);
+	getestimates(&rx, &tx, LT_None, updated, created, &datalist);
 	ck_assert_int_eq(rx, 0);
 	ck_assert_int_eq(tx, 0);
 	dbdatalistfree(&datalist);
@@ -836,9 +871,11 @@ END_TEST
 
 START_TEST(getestimates_has_a_crystal_ball)
 {
-	time_t updated;
+	time_t created, updated;
 	uint64_t rx = 1, tx = 2;
 	dbdatalist *datalist = NULL;
+
+	created = (time_t)get_timestamp(2010, 1, 1, 3, 30);
 
 	cfg.monthrotate = 1;
 	updated = (time_t)get_timestamp(2021, 1, 1, 3, 45);
@@ -847,7 +884,7 @@ START_TEST(getestimates_has_a_crystal_ball)
 	rx = 1;
 	tx = 2;
 	/* on the 5 minute so there's no calculation done */
-	getestimates(&rx, &tx, LT_5min, updated, &datalist);
+	getestimates(&rx, &tx, LT_5min, updated, created, &datalist);
 	ck_assert_int_eq(rx, 100000);
 	ck_assert_int_eq(tx, 200000);
 
@@ -855,13 +892,13 @@ START_TEST(getestimates_has_a_crystal_ball)
 
 	rx = 1;
 	tx = 2;
-	getestimates(&rx, &tx, LT_5min, updated, &datalist);
+	getestimates(&rx, &tx, LT_5min, updated, created, &datalist);
 	ck_assert_int_eq(rx, 499800);
 	ck_assert_int_eq(tx, 999900);
 
 	rx = 1;
 	tx = 2;
-	getestimates(&rx, &tx, LT_Hour, updated, &datalist);
+	getestimates(&rx, &tx, LT_Hour, updated, created, &datalist);
 	ck_assert_int_eq(rx, 129600);
 	ck_assert_int_eq(tx, 259200);
 
@@ -870,27 +907,123 @@ START_TEST(getestimates_has_a_crystal_ball)
 	rx = 1;
 	tx = 2;
 	/* on the hour so there's no calculation done */
-	getestimates(&rx, &tx, LT_Hour, updated, &datalist);
+	getestimates(&rx, &tx, LT_Hour, updated, created, &datalist);
 	ck_assert_int_eq(rx, 100000);
 	ck_assert_int_eq(tx, 200000);
 
 	rx = 1;
 	tx = 2;
-	getestimates(&rx, &tx, LT_Day, updated, &datalist);
+	getestimates(&rx, &tx, LT_Day, updated, created, &datalist);
 	ck_assert_int_eq(rx, 777600);
 	ck_assert_int_eq(tx, 1555200);
 
 	rx = 1;
 	tx = 2;
-	getestimates(&rx, &tx, LT_Month, updated, &datalist);
+	getestimates(&rx, &tx, LT_Month, updated, created, &datalist);
 	ck_assert_int_eq(rx, 2678400);
 	ck_assert_int_eq(tx, 5356800);
 
 	rx = 1;
 	tx = 2;
-	getestimates(&rx, &tx, LT_Year, updated, &datalist);
-	ck_assert_int_eq(rx, 32061600);
-	ck_assert_int_eq(tx, 64648800);
+	getestimates(&rx, &tx, LT_Year, updated, created, &datalist);
+	ck_assert_int_eq(rx, 31536000);
+	ck_assert_int_eq(tx, 63072000);
+
+	dbdatalistfree(&datalist);
+}
+END_TEST
+
+START_TEST(getestimates_still_has_a_crystal_ball_when_created_mid_day_period)
+{
+	time_t created, updated;
+	uint64_t rx = 1, tx = 2;
+	dbdatalist *datalist = NULL;
+
+	cfg.monthrotate = 1;
+	updated = (time_t)get_timestamp(2021, 1, 2, 0, 0);
+	ck_assert_int_eq(dbdatalistadd(&datalist, 100000, 200000, updated, 1), 1);
+
+	updated = (time_t)get_timestamp(2021, 1, 2, 12, 0);
+
+	created = (time_t)get_timestamp(2021, 1, 1, 0, 0);
+
+	rx = 1;
+	tx = 2;
+	getestimates(&rx, &tx, LT_Day, updated, created, &datalist);
+	ck_assert_int_eq(rx, 172800);
+	ck_assert_int_eq(tx, 345600);
+
+	created = (time_t)get_timestamp(2021, 1, 2, 6, 0);
+
+	rx = 1;
+	tx = 2;
+	getestimates(&rx, &tx, LT_Day, updated, created, &datalist);
+	ck_assert_int_gt(rx, 172800);
+	ck_assert_int_gt(tx, 345600);
+
+	dbdatalistfree(&datalist);
+}
+END_TEST
+
+START_TEST(getestimates_still_has_a_crystal_ball_when_created_mid_month_period)
+{
+	time_t created, updated;
+	uint64_t rx = 1, tx = 2;
+	dbdatalist *datalist = NULL;
+
+	cfg.monthrotate = 1;
+	updated = (time_t)get_timestamp(2021, 1, 1, 0, 0);
+	ck_assert_int_eq(dbdatalistadd(&datalist, 100000000, 200000000, updated, 1), 1);
+
+	updated = (time_t)get_timestamp(2021, 1, 15, 12, 0);
+
+	created = (time_t)get_timestamp(2021, 1, 1, 0, 0);
+
+	rx = 1;
+	tx = 2;
+	getestimates(&rx, &tx, LT_Month, updated, created, &datalist);
+	ck_assert_int_eq(rx, 211593600);
+	ck_assert_int_eq(tx, 425865600);
+
+	created = (time_t)get_timestamp(2021, 1, 10, 6, 0);
+
+	rx = 1;
+	tx = 2;
+	getestimates(&rx, &tx, LT_Month, updated, created, &datalist);
+	ck_assert_int_gt(rx, 211593600);
+	ck_assert_int_gt(tx, 425865600);
+
+	dbdatalistfree(&datalist);
+}
+END_TEST
+
+START_TEST(getestimates_still_has_a_crystal_ball_when_created_mid_year_period)
+{
+	time_t created, updated;
+	uint64_t rx = 1, tx = 2;
+	dbdatalist *datalist = NULL;
+
+	cfg.monthrotate = 1;
+	updated = (time_t)get_timestamp(2021, 1, 1, 0, 0);
+	ck_assert_int_eq(dbdatalistadd(&datalist, 100000000, 200000000, updated, 1), 1);
+
+	updated = (time_t)get_timestamp(2021, 8, 15, 12, 0);
+
+	created = (time_t)get_timestamp(2021, 1, 1, 0, 0);
+
+	rx = 1;
+	tx = 2;
+	getestimates(&rx, &tx, LT_Year, updated, created, &datalist);
+	ck_assert_int_eq(rx, 157680000);
+	ck_assert_int_eq(tx, 315360000);
+
+	created = (time_t)get_timestamp(2021, 4, 10, 6, 0);
+
+	rx = 1;
+	tx = 2;
+	getestimates(&rx, &tx, LT_Year, updated, created, &datalist);
+	ck_assert_int_gt(rx, 157680000);
+	ck_assert_int_gt(tx, 315360000);
 
 	dbdatalistfree(&datalist);
 }
@@ -945,8 +1078,12 @@ void add_misc_tests(Suite *s)
 	tcase_add_test(tc_misc, getperiodseconds_knows_dynamic_not_ongoing_periods);
 	tcase_add_test(tc_misc, getperiodseconds_returns_zero_when_there_is_no_time_spent);
 	tcase_add_test(tc_misc, getperiodseconds_knows_spent_ongoing_time);
+	tcase_add_test(tc_misc, getperiodseconds_knows_spent_ongoing_time_when_created_mid_period);
 	tcase_add_test(tc_misc, getestimates_has_error_handling);
 	tcase_add_test(tc_misc, getestimates_has_a_crystal_ball);
+	tcase_add_test(tc_misc, getestimates_still_has_a_crystal_ball_when_created_mid_day_period);
+	tcase_add_test(tc_misc, getestimates_still_has_a_crystal_ball_when_created_mid_month_period);
+	tcase_add_test(tc_misc, getestimates_still_has_a_crystal_ball_when_created_mid_year_period);
 	tcase_add_test(tc_misc, ishelprequest_knows_what_a_help_request_is);
 	suite_add_tcase(s, tc_misc);
 }

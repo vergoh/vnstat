@@ -450,7 +450,7 @@ int issametimeslot(const ListType listtype, const time_t entry, const time_t upd
 	return 0;
 }
 
-uint64_t getperiodseconds(const ListType listtype, const time_t entry, const time_t updated, const short isongoing)
+uint64_t getperiodseconds(const ListType listtype, const time_t entry, const time_t updated, const time_t created, const short isongoing)
 {
 	struct tm e, u;
 	uint64_t seconds = 0;
@@ -473,6 +473,10 @@ uint64_t getperiodseconds(const ListType listtype, const time_t entry, const tim
 		} else if (listtype == LT_5min) {
 			seconds = (uint64_t)u.tm_sec + (uint64_t)u.tm_min % 5 * 60;
 		}
+		/* offset for cases when database has been created after the beginning of the evaluated time period */
+		if (listtype != LT_Top && created > entry && (uint64_t)(created - entry) < seconds) {
+			seconds -= (uint64_t)(created - entry);
+		}
 	} else {
 		if (listtype == LT_Day || listtype == LT_Top) {
 			seconds = 86400;
@@ -490,10 +494,10 @@ uint64_t getperiodseconds(const ListType listtype, const time_t entry, const tim
 	return seconds;
 }
 
-void getestimates(uint64_t *rx, uint64_t *tx, const ListType listtype, const time_t updated, dbdatalist **dbdata)
+void getestimates(uint64_t *rx, uint64_t *tx, const ListType listtype, const time_t updated, const time_t created, dbdatalist **dbdata)
 {
 	struct tm u;
-	uint64_t div = 0, mult = 0;
+	uint64_t div = 0, mult = 0, offset = 0;
 	dbdatalist *datalist_i = *dbdata;
 
 	*rx = *tx = 0;
@@ -513,6 +517,11 @@ void getestimates(uint64_t *rx, uint64_t *tx, const ListType listtype, const tim
 
 	if (datalist_i->rx == 0 || datalist_i->tx == 0) {
 		return;
+	}
+
+	/* offset for cases when database has been created after the beginning of the evaluated time period */
+	if (created > datalist_i->timestamp) {
+		offset = (uint64_t)(created - datalist_i->timestamp);
 	}
 
 	/* LT_5min and LT_Hour don't have the estimate line visible in outputs */
@@ -541,8 +550,14 @@ void getestimates(uint64_t *rx, uint64_t *tx, const ListType listtype, const tim
 		div = (uint64_t)mosecs(datalist_i->timestamp, updated);
 		mult = (uint64_t)dmonth(u.tm_mon) * 86400;
 	} else if (listtype == LT_Year) {
-		div = (uint64_t)u.tm_yday * 1440 + (uint64_t)u.tm_hour * 60 + (uint64_t)u.tm_min;
-		mult = (uint64_t)(365 + isleapyear(u.tm_year + 1900)) * 1440;
+		div = (uint64_t)u.tm_yday * 86400 + (uint64_t)u.tm_hour * 3600 + (uint64_t)u.tm_min * 60 + (uint64_t)u.tm_sec;
+		mult = (uint64_t)(365 + isleapyear(u.tm_year + 1900)) * 86400;
+	}
+	if (listtype == LT_Day || listtype == LT_Month || listtype == LT_Year) {
+		if (offset && div > offset && mult > offset) {
+			div -= offset;
+			mult -= offset;
+		}
 	}
 	if (div > 0) {
 		*rx = (uint64_t)((double)datalist_i->rx / (double)div) * mult;
