@@ -189,18 +189,21 @@ END_TEST
 
 START_TEST(loadcfg_included_default)
 {
+	defaultcfg();
 	ck_assert_int_eq(loadcfg(CFGFILE, CT_All), 1);
 }
 END_TEST
 
 START_TEST(loadcfg_no_file)
 {
+	defaultcfg();
 	ck_assert_int_eq(loadcfg("", CT_All), 1);
 }
 END_TEST
 
 START_TEST(loadcfg_nonexistent_file)
 {
+	defaultcfg();
 	suppress_output();
 	ck_assert_int_eq(loadcfg("_nosuchfile_", CT_All), 0);
 }
@@ -208,24 +211,28 @@ END_TEST
 
 START_TEST(loadcfg_not_a_cfgfile)
 {
+	defaultcfg();
 	ck_assert_int_eq(loadcfg("Makefile", CT_All), 1);
 }
 END_TEST
 
 START_TEST(ibwloadcfg_included_default)
 {
+	defaultcfg();
 	ck_assert_int_eq(ibwloadcfg(CFGFILE), 1);
 }
 END_TEST
 
 START_TEST(ibwloadcfg_no_file)
 {
+	defaultcfg();
 	ck_assert_int_eq(ibwloadcfg(""), 1);
 }
 END_TEST
 
 START_TEST(ibwloadcfg_nonexistent_file)
 {
+	defaultcfg();
 	suppress_output();
 	ck_assert_int_eq(ibwloadcfg("_nosuchfile_"), 0);
 }
@@ -233,6 +240,7 @@ END_TEST
 
 START_TEST(ibwloadcfg_not_a_cfgfile)
 {
+	defaultcfg();
 	ck_assert_int_eq(ibwloadcfg("Makefile"), 1);
 }
 END_TEST

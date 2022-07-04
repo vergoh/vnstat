@@ -99,9 +99,6 @@ int loadcfg(const char *cfgfile, const ConfigType type)
 		 {"Experimental", 0, &cfg.experimental, 0, 0},
 		 {0, 0, 0, 0, 0}};
 
-	/* load default config */
-	defaultcfg();
-
 	i = opencfgfile(cfgfile, &fd);
 	if (i != 2)
 		return i;

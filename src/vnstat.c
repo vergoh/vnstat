@@ -41,7 +41,13 @@ int main(int argc, char *argv[])
 				if (currentarg + 1 < argc) {
 					strncpy_nt(p.cfgfile, argv[currentarg + 1], 512);
 					if (debug)
-						printf("Used config file: %s\n", p.cfgfile);
+						printf("Loading config file: %s\n", p.cfgfile);
+					if (!loadcfg(p.cfgfile, CT_CLI)) {
+						return 1;
+					}
+					if (!ibwloadcfg(p.cfgfile)) {
+						return 1;
+					}
 					currentarg++;
 				} else {
 					printf("Error: File for --config missing.\n");
@@ -51,12 +57,14 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	/* load config if available */
-	if (!loadcfg(p.cfgfile, CT_CLI)) {
-		return 1;
-	}
-	if (!ibwloadcfg(p.cfgfile)) {
-		return 1;
+	/* find configuration file if none was defined from command line */
+	if (p.cfgfile[0] == '\0') {
+		if (!loadcfg(p.cfgfile, CT_CLI)) {
+			return 1;
+		}
+		if (!ibwloadcfg(p.cfgfile)) {
+			return 1;
+		}
 	}
 
 	configlocale();

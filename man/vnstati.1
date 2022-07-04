@@ -128,7 +128,11 @@ stdout is used as output.
 Use
 .I file
 as configuration file instead of using automatic configuration file search
-functionality.
+functionality.  If
+.B "--config"
+is used multiple times, the configuration settings from files later on the command line
+will override configuration settings loaded from earlier files if the settings defined
+in the files overlap.
 
 .TP
 .BI "-d, --days " [limit]

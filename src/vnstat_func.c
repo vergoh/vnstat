@@ -48,6 +48,9 @@ void initparams(PARAMS *p)
 	p->alerttype = 0;
 	p->alertcondition = 0;
 	p->alertlimit = 0;
+
+	/* load default config */
+	defaultcfg();
 }
 
 void showhelp(PARAMS *p)

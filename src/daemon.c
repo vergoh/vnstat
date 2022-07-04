@@ -266,6 +266,9 @@ void initdstate(DSTATE *s)
 	s->dbretrycount = 0;
 	s->dcache = NULL;
 	s->prevwaldbcheckpoint = time(NULL);
+
+	/* load default config */
+	defaultcfg();
 }
 
 void preparedatabase(DSTATE *s)
@@ -791,6 +794,7 @@ void handleintsignals(DSTATE *s)
 			s->dbifcount = 0;
 			ibwflush();
 			db_close();
+			defaultcfg();
 			loadcfg(s->cfgfile, CT_Daemon);
 			ibwloadcfg(s->cfgfile);
 			if (!db_open_rw(1)) {
