@@ -141,8 +141,9 @@ and transmitted traffic in hourly graph output. (vnstat only)
 
 .TP
 .B Sampletime
-Defines how many seconds the \-tr option will sample traffic.
-Value range: 2..600 (vnstat only)
+Defines how many seconds the
+.B "-tr"
+option will sample traffic. Value range: 2..600 (vnstat only)
 
 .TP
 .B UnitMode
@@ -402,7 +403,10 @@ How often in seconds the interface data is updated. Value range:
 
 .TP
 .B UseLogging
-Enable or disable logging. 0 = disabled, 1 = logfile and 2 = syslog.
+Enable or disable logging. This option is ignored when the daemon is started with
+.B "-n, --nodaemon"
+which results in all log output being shown in terminal the daemon process is using.
+0 = disabled, 1 = logfile and 2 = syslog.
 
 .TP
 .B UseUTC
