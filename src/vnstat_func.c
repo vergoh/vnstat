@@ -1062,7 +1062,7 @@ void showoneinterface(PARAMS *p)
 		if (cfg.ostyle != 0) {
 			printf("\n                      rx      /      tx      /     total    /   estimated\n");
 		} else {
-			printf("\n                      rx      /      tx      /     total\n");
+			printf("\n                 rx      /      tx      /     total\n");
 		}
 	}
 	if (cfg.qmode != 8 && cfg.qmode != 10) {

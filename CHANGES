@@ -11,6 +11,10 @@
    - Estimates and average rates weren't calculated correctly for daily,
      monthly and yearly time periods when monitoring of the interface had been
      started during the ongoing time period
+   - Estimates weren't being shown in summary output when OutputStyle or
+     --style was configured with a value less than 2 (vnstat)
+   - Alignment of column header in short output wasn't correct when
+     OutputStyle or --style was configured with the value 0 (vnstat)
  - New
    - Support input of more than 31 characters in interface name when using
      interface1+interface2 syntax data merge queries

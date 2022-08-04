@@ -103,7 +103,11 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 		strftime(datebuff, DATEBUFFLEN, cfg.tformat, d);
 		printf(" since %s\n\n", datebuff);
 
-		indent(10);
+		if (cfg.ostyle == 1) {
+			indent(3);
+		} else {
+			indent(10);
+		}
 		printf("rx:  %s", getvalue(interface->rxtotal, 1, RT_Normal));
 		indent(3);
 		printf("   tx:  %s", getvalue(interface->txtotal, 1, RT_Normal));
@@ -143,21 +147,19 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 		}
 		printf("%s%s", fieldseparator, getvalue(datalist_i->tx, 11, RT_Normal));
 		printf("%s%s", fieldseparator, getvalue(datalist_i->rx + datalist_i->tx, 11, RT_Normal));
-		if (cfg.ostyle >= 2) {
-			if (datalist_i->next == NULL && issametimeslot(LT_Month, datalist_i->timestamp, interface->updated)) {
-				if (datalist_i->rx == 0 || datalist_i->tx == 0 || (interface->updated - datalist_i->timestamp) == 0) {
-					e_rx = e_tx = 0;
-				} else {
-					getestimates(&e_rx, &e_tx, LT_Month, interface->updated, interface->created, &datalist);
-				}
-				if (shortmode && cfg.ostyle != 0) {
-					printf("%s%s", fieldseparator, getvalue(e_rx + e_tx, 11, RT_Estimate));
-				} else if (!shortmode) {
-					printf("%s%s", fieldseparator, gettrafficrate(datalist_i->rx + datalist_i->tx, (time_t)getperiodseconds(LT_Month, datalist_i->timestamp, interface->updated, interface->created, 1), 14));
-				}
-			} else if (!shortmode) {
-				printf(" | %s", gettrafficrate(datalist_i->rx + datalist_i->tx, dmonth(d->tm_mon) * 86400, 14));
+		if (datalist_i->next == NULL && issametimeslot(LT_Month, datalist_i->timestamp, interface->updated)) {
+			if (datalist_i->rx == 0 || datalist_i->tx == 0 || (interface->updated - datalist_i->timestamp) == 0) {
+				e_rx = e_tx = 0;
+			} else {
+				getestimates(&e_rx, &e_tx, LT_Month, interface->updated, interface->created, &datalist);
 			}
+			if (shortmode && cfg.ostyle != 0) {
+				printf("%s%s", fieldseparator, getvalue(e_rx + e_tx, 11, RT_Estimate));
+			} else if (!shortmode && cfg.ostyle >= 2) {
+				printf("%s%s", fieldseparator, gettrafficrate(datalist_i->rx + datalist_i->tx, (time_t)getperiodseconds(LT_Month, datalist_i->timestamp, interface->updated, interface->created, 1), 14));
+			}
+		} else if (!shortmode && cfg.ostyle >= 2) {
+			printf(" | %s", gettrafficrate(datalist_i->rx + datalist_i->tx, dmonth(d->tm_mon) * 86400, 14));
 		}
 		printf("\n");
 		datalist_i = datalist_i->next;
@@ -234,23 +236,21 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 		}
 		printf("%s%s", fieldseparator, getvalue(datalist_i->tx, 11, RT_Normal));
 		printf("%s%s", fieldseparator, getvalue(datalist_i->rx + datalist_i->tx, 11, RT_Normal));
-		if (cfg.ostyle >= 2) {
-			if (datalist_i->next == NULL && issametimeslot(LT_Day, datalist_i->timestamp, interface->updated)) {
-				d = localtime(&interface->updated);
-				if (datalist_i->rx == 0 || datalist_i->tx == 0 || (d->tm_hour * 60 + d->tm_min) == 0) {
-					e_rx = e_tx = 0;
-				} else {
-					e_rx = (uint64_t)((double)datalist_i->rx / (double)(d->tm_hour * 60 + d->tm_min)) * 1440;
-					e_tx = (uint64_t)((double)datalist_i->tx / (double)(d->tm_hour * 60 + d->tm_min)) * 1440;
-				}
-				if (shortmode && cfg.ostyle != 0) {
-					printf("%s%s", fieldseparator, getvalue(e_rx + e_tx, 11, RT_Estimate));
-				} else if (!shortmode) {
-					printf("%s%s", fieldseparator, gettrafficrate(datalist_i->rx + datalist_i->tx, (time_t)getperiodseconds(LT_Day, datalist_i->timestamp, interface->updated, interface->created, 1), 14));
-				}
-			} else if (!shortmode) {
-				printf(" | %s", gettrafficrate(datalist_i->rx + datalist_i->tx, 86400, 14));
+		if (datalist_i->next == NULL && issametimeslot(LT_Day, datalist_i->timestamp, interface->updated)) {
+			d = localtime(&interface->updated);
+			if (datalist_i->rx == 0 || datalist_i->tx == 0 || (d->tm_hour * 60 + d->tm_min) == 0) {
+				e_rx = e_tx = 0;
+			} else {
+				e_rx = (uint64_t)((double)datalist_i->rx / (double)(d->tm_hour * 60 + d->tm_min)) * 1440;
+				e_tx = (uint64_t)((double)datalist_i->tx / (double)(d->tm_hour * 60 + d->tm_min)) * 1440;
 			}
+			if (shortmode && cfg.ostyle != 0) {
+				printf("%s%s", fieldseparator, getvalue(e_rx + e_tx, 11, RT_Estimate));
+			} else if (!shortmode && cfg.ostyle >= 2) {
+				printf("%s%s", fieldseparator, gettrafficrate(datalist_i->rx + datalist_i->tx, (time_t)getperiodseconds(LT_Day, datalist_i->timestamp, interface->updated, interface->created, 1), 14));
+			}
+		} else if (!shortmode && cfg.ostyle >= 2) {
+			printf(" | %s", gettrafficrate(datalist_i->rx + datalist_i->tx, 86400, 14));
 		}
 		printf("\n");
 		datalist_i = datalist_i->next;
