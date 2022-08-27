@@ -579,3 +579,10 @@ int ishelprequest(const char *arg)
 
 	return 0;
 }
+
+void indent(int i)
+{
+	if ((cfg.ostyle > 0) && (i > 0)) {
+		printf("%*s", i, " ");
+	}
+}

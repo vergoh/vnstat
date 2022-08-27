@@ -36,7 +36,9 @@ void trafficmeter(const char *iface, unsigned int sampletime)
 
 	/* wait sampletime and print some nice dots so that the user thinks
 	something is done :) */
-	if (!json) {
+	if (json || cfg.ostyle == 4) {
+		sleep(sampletime);
+	} else {
 		snprintf(buffer, 256, "Sampling %s (%u seconds average)", iface, sampletime);
 		printf("%s", buffer);
 		fflush(stdout);
@@ -55,8 +57,6 @@ void trafficmeter(const char *iface, unsigned int sampletime)
 
 		cursortocolumn(1);
 		eraseline();
-	} else {
-		sleep(sampletime);
 	}
 
 #ifdef CHECK_VNSTAT
@@ -77,10 +77,24 @@ void trafficmeter(const char *iface, unsigned int sampletime)
 
 	/* show the difference in a readable format or json */
 	if (!json) {
-		printf("%" PRIu64 " packets sampled in %d seconds\n", rxp + txp, sampletime);
-		printf("Traffic average for %s\n", iface);
-		printf("\n      rx     %s         %5" PRIu64 " packets/s\n", gettrafficrate(rx, sampletime, 15), (uint64_t)(rxp / sampletime));
-		printf("      tx     %s         %5" PRIu64 " packets/s\n\n", gettrafficrate(tx, sampletime, 15), (uint64_t)(txp / sampletime));
+		if (cfg.ostyle != 4) {
+			printf("%" PRIu64 " packets sampled in %d seconds\n", rxp + txp, sampletime);
+		}
+		printf("Traffic average for %s\n\n", iface);
+
+		indent(4);
+		printf("  rx");
+		indent(5);
+		printf("%s   ", gettrafficrate(rx, sampletime, 15));
+		indent(6);
+		printf("%5" PRIu64 " packets/s\n", (uint64_t)(rxp / sampletime));
+
+		indent(4);
+		printf("  tx");
+		indent(5);
+		printf("%s   ", gettrafficrate(tx, sampletime, 15));
+		indent(6);
+		printf("%5" PRIu64 " packets/s\n\n", (uint64_t)(txp / sampletime));
 	} else {
 		printf("{\"jsonversion\":\"%d\",", JSONVERSION_TR);
 		printf("\"vnstatversion\":\"%s\",", getversion());

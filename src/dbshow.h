@@ -48,7 +48,6 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 void showoneline(const interfaceinfo *interface);
 void showhours(const interfaceinfo *interface);
 int showbar(const uint64_t rx, const uint64_t tx, const uint64_t max, const int len);
-void indent(int i);
 int showalert(const char *interface, const AlertOutput output, const AlertExit exit, const AlertType type, const AlertCondition condition, const uint64_t limit);
 
 #endif

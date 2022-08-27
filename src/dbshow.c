@@ -878,13 +878,6 @@ int showbar(const uint64_t rx, const uint64_t tx, const uint64_t max, const int 
 	return width;
 }
 
-void indent(int i)
-{
-	if ((cfg.ostyle > 0) && (i > 0)) {
-		printf("%*s", i, " ");
-	}
-}
-
 int showalert(const char *interface, const AlertOutput output, const AlertExit exit, const AlertType type, const AlertCondition condition, const uint64_t limit)
 {
 	interfaceinfo ifaceinfo;

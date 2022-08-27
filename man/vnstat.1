@@ -466,8 +466,10 @@ to 0 for a narrower output, 1 for enabling bar column, 2
 for same as previous but with average traffic rate visible in summary
 output and 3 for enabling average traffic rate in all outputs where it is
 supported. 4 disables the use of terminal control characters in
-.B "-l / --live"
-mode.
+.B "-l, --live"
+and
+.B "-tr, --traffic"
+modes.
 
 .TP
 .BI "-t, --top " [limit]
@@ -495,6 +497,8 @@ will be 5 seconds if a number parameter isn't specified. The output will
 be in json format if used in combination with
 .B "--json"
 option. However, in that case, the countdown before results isn't shown.
+.B "--style"
+can also be used to affect the layout of the output.
 
 .TP
 .B "-v, --version"

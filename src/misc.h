@@ -43,5 +43,6 @@ int issametimeslot(const ListType listtype, const time_t entry, const time_t upd
 uint64_t getperiodseconds(const ListType listtype, const time_t entry, const time_t updated, const time_t created, const short isongoing);
 void getestimates(uint64_t *rx, uint64_t *tx, const ListType listtype, const time_t updated, const time_t created, dbdatalist **dbdata);
 int ishelprequest(const char *arg);
+void indent(int i);
 
 #endif

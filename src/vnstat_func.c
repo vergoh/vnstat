@@ -775,7 +775,7 @@ void showstylehelp(void)
 	printf("    2 - average traffic rate in summary output\n");
 	printf("    3 - average traffic rate in all outputs if available\n");
 	printf("    4 - disable terminal control characters in -l / --live\n");
-	printf("        and show raw values in --oneline\n");
+	printf("        and -tr / --traffic, show raw values in --oneline\n");
 }
 
 void handleshowalert(PARAMS *p)
