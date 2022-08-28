@@ -50,6 +50,13 @@ void showxml(const char *interface, const char mode, const char *databegin, cons
 		case 'f':
 			xmldump(&info, "fiveminute", 2, databegin, dataend);
 			break;
+		case 's':
+			xmldump(&info, "fiveminute", 2, "", "");
+			xmldump(&info, "hour", 2, "", "");
+			xmldump(&info, "day", 1, "", "");
+			xmldump(&info, "month", 3, "", "");
+			xmldump(&info, "year", 2, "", "");
+			break;
 		case 'a':
 		default:
 			xmldump(&info, "fiveminute", 2, databegin, dataend);
@@ -115,6 +122,7 @@ void xmldate(const time_t *date, const int type)
 		default:
 			break;
 	}
+	printf("<timestamp>%" PRId64 "</timestamp>", (uint64_t)*date);
 }
 
 void xmlheader(void)

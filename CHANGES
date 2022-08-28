@@ -20,7 +20,9 @@
      interface1+interface2 syntax data merge queries
    - Support passing --config option multiple times, later files override
      earlier files if settings overlap (vnstat and vnstati)
-   - Add --style support for -tr / --traffic
+   - Add --style support to -tr / --traffic output
+   - Add summary option to --json and --xml outputs
+   - Add timestamps to --json and --xml outputs
 
 
 2.9 / 23-Jan-2022

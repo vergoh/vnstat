@@ -204,6 +204,7 @@ START_TEST(database_outputs_do_not_crash)
 	showxml("something", 'y', "", "");
 	showxml("something", 'f', "", "");
 	showxml("something", 'a', "", "");
+	showxml("something", 's', "", "");
 	showxml("nothing", 'a', "", "");
 	xmlfooter();
 
@@ -214,7 +215,9 @@ START_TEST(database_outputs_do_not_crash)
 	showjson("something", 0, 'h', "", "");
 	showjson("something", 0, 'y', "", "");
 	showjson("something", 0, 'f', "", "");
+	showjson("something", 0, 'a', "", "");
 	showjson("something", 1, 'a', "", "");
+	showjson("something", 0, 's', "", "");
 	showjson("nothing", 0, 'a', "", "");
 	jsonfooter();
 
@@ -265,6 +268,7 @@ START_TEST(database_outputs_do_not_crash_without_traffic)
 	showxml("something", 'h', "", "");
 	showxml("something", 'y', "", "");
 	showxml("something", 'f', "", "");
+	showxml("something", 's', "", "");
 	showxml("something", 'a', "", "");
 
 	xmlfooter();
@@ -276,7 +280,9 @@ START_TEST(database_outputs_do_not_crash_without_traffic)
 	showjson("something", 0, 'h', "", "");
 	showjson("something", 0, 'y', "", "");
 	showjson("something", 0, 'f', "", "");
+	showjson("something", 0, 'a', "", "");
 	showjson("something", 1, 'a', "", "");
+	showjson("something", 0, 's', "", "");
 	showjson("nothing", 0, 'a', "", "");
 	jsonfooter();
 
@@ -321,6 +327,7 @@ START_TEST(database_outputs_do_not_crash_without_data)
 	showxml("something", 'h', "", "");
 	showxml("something", 'y', "", "");
 	showxml("something", 'f', "", "");
+	showxml("something", 's', "", "");
 	showxml("something", 'a', "", "");
 
 	xmlfooter();
@@ -332,7 +339,9 @@ START_TEST(database_outputs_do_not_crash_without_data)
 	showjson("something", 0, 'h', "", "");
 	showjson("something", 0, 'y', "", "");
 	showjson("something", 0, 'f', "", "");
+	showjson("something", 0, 'a', "", "");
 	showjson("something", 1, 'a', "", "");
+	showjson("something", 0, 's', "", "");
 	showjson("nothing", 0, 'a', "", "");
 	jsonfooter();
 
@@ -383,6 +392,7 @@ START_TEST(database_outputs_do_not_crash_without_data_if_totals_are_wrong)
 	showxml("something", 'h', "", "");
 	showxml("something", 'y', "", "");
 	showxml("something", 'f', "", "");
+	showxml("something", 's', "", "");
 	showxml("something", 'a', "", "");
 
 	xmlfooter();
@@ -394,7 +404,9 @@ START_TEST(database_outputs_do_not_crash_without_data_if_totals_are_wrong)
 	showjson("something", 0, 'h', "", "");
 	showjson("something", 0, 'y', "", "");
 	showjson("something", 0, 'f', "", "");
+	showjson("something", 0, 'a', "", "");
 	showjson("something", 1, 'a', "", "");
+	showjson("something", 0, 's', "", "");
 	showjson("nothing", 0, 'a', "", "");
 	jsonfooter();
 

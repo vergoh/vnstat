@@ -327,11 +327,12 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 			cfg.qmode = 8;
 			if (currentarg + 1 < argc && (strlen(argv[currentarg + 1]) == 1 || ishelprequest(argv[currentarg + 1]))) {
 				p->xmlmode = argv[currentarg + 1][0];
-				if (strlen(argv[currentarg + 1]) != 1 || strchr("afhdmyt", p->xmlmode) == NULL) {
+				if (strlen(argv[currentarg + 1]) != 1 || strchr("asfhdmyt", p->xmlmode) == NULL) {
 					if (!ishelprequest(argv[currentarg + 1]))
 						printf("Error: Invalid mode parameter \"%s\".\n", argv[currentarg + 1]);
 					printf(" Valid parameters for --xml:\n");
 					printf("    a - all (default)\n");
+					printf("    s - summary\n");
 					printf("    f - only 5 minutes\n");
 					printf("    h - only hours\n");
 					printf("    d - only days\n");
@@ -339,6 +340,9 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 					printf("    y - only years\n");
 					printf("    t - only top\n");
 					exit(EXIT_FAILURE);
+				}
+				if (p->xmlmode == 's') {
+					cfg.listjsonxml = 2;
 				}
 				currentarg++;
 			}
@@ -354,11 +358,12 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 			cfg.qmode = 10;
 			if (currentarg + 1 < argc && (strlen(argv[currentarg + 1]) == 1 || ishelprequest(argv[currentarg + 1]))) {
 				p->jsonmode = argv[currentarg + 1][0];
-				if (strlen(argv[currentarg + 1]) != 1 || strchr("afhdmyt", p->jsonmode) == NULL) {
+				if (strlen(argv[currentarg + 1]) != 1 || strchr("asfhdmyt", p->jsonmode) == NULL) {
 					if (!ishelprequest(argv[currentarg + 1]))
 						printf("Error: Invalid mode parameter \"%s\".\n", argv[currentarg + 1]);
 					printf(" Valid parameters for --json:\n");
 					printf("    a - all (default)\n");
+					printf("    s - summary\n");
 					printf("    f - only 5 minutes\n");
 					printf("    h - only hours\n");
 					printf("    d - only days\n");
@@ -366,6 +371,9 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 					printf("    y - only years\n");
 					printf("    t - only top\n");
 					exit(EXIT_FAILURE);
+				}
+				if (p->jsonmode == 's') {
+					cfg.listjsonxml = 2;
 				}
 				currentarg++;
 			}

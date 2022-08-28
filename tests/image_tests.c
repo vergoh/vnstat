@@ -727,9 +727,9 @@ END_TEST
 
 START_TEST(hextorgb_can_convert)
 {
-	debug = 1;
 	int rgb[3];
 
+	debug = 1;
 	suppress_output();
 
 	rgb[0] = 1;
@@ -784,9 +784,9 @@ END_TEST
 
 START_TEST(modcolor_mods_colors)
 {
-	debug = 1;
 	int rgb[3];
 
+	debug = 1;
 	suppress_output();
 
 	rgb[0] = 10;

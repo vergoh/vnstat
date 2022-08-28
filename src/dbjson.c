@@ -52,6 +52,17 @@ void showjson(const char *interface, const int ifcount, const char mode, const c
 		case 'f':
 			jsondump(&info, "fiveminute", 2, databegin, dataend);
 			break;
+		case 's':
+			jsondump(&info, "fiveminute", 2, "", "");
+			printf(",");
+			jsondump(&info, "hour", 2, "", "");
+			printf(",");
+			jsondump(&info, "day", 1, "", "");
+			printf(",");
+			jsondump(&info, "month", 3, "", "");
+			printf(",");
+			jsondump(&info, "year", 4, "", "");
+			break;
 		case 'a':
 		default:
 			jsondump(&info, "fiveminute", 2, databegin, dataend);
@@ -109,24 +120,25 @@ void jsondate(const time_t *date, const int type)
 
 	switch (type) {
 		case 1:
-			printf("\"date\":{\"year\":%d,\"month\":%d,\"day\":%d}",
+			printf("\"date\":{\"year\":%d,\"month\":%d,\"day\":%d},",
 				   1900 + d->tm_year, 1 + d->tm_mon, d->tm_mday);
 			break;
 		case 2:
-			printf("\"date\":{\"year\":%d,\"month\":%d,\"day\":%d},\"time\":{\"hour\":%d,\"minute\":%d}",
+			printf("\"date\":{\"year\":%d,\"month\":%d,\"day\":%d},\"time\":{\"hour\":%d,\"minute\":%d},",
 				   1900 + d->tm_year, 1 + d->tm_mon, d->tm_mday, d->tm_hour, d->tm_min);
 			break;
 		case 3:
-			printf("\"date\":{\"year\":%d,\"month\":%d}",
+			printf("\"date\":{\"year\":%d,\"month\":%d},",
 				   1900 + d->tm_year, 1 + d->tm_mon);
 			break;
 		case 4:
-			printf("\"date\":{\"year\":%d}",
+			printf("\"date\":{\"year\":%d},",
 				   1900 + d->tm_year);
 			break;
 		default:
 			break;
 	}
+	printf("\"timestamp\":%" PRId64 "", (uint64_t)*date);
 }
 
 void jsonheader(void)
