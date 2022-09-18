@@ -87,7 +87,7 @@ void ibwlist(void)
 
 	printf("ibw: ");
 	while (p != NULL) {
-		printf("%2d: i\"%s\" l%u f%u r%d d%u  ", i, p->interface, p->limit, p->fallback, p->retries, (unsigned int)p->detected);
+		printf("%2d: i\"%s\" l%u f%u r%d d%" PRIu64 "  ", i, p->interface, p->limit, p->fallback, p->retries, (uint64_t)p->detected);
 		p = p->next;
 		i++;
 	}

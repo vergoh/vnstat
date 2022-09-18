@@ -414,7 +414,7 @@ int validatedb(DATA *data)
 			break;
 		}
 		if (data->day[i - 1].date < data->day[i].date) {
-			snprintf(errorstring, 1024, "%s: %s daily date order: %u (%d) < %u (%d)", data->interface, invaliddb, (unsigned int)data->day[i - 1].date, i - 1, (unsigned int)data->day[i].date, i);
+			snprintf(errorstring, 1024, "%s: %s daily date order: %" PRIu64 " (%d) < %" PRIu64 " (%d)", data->interface, invaliddb, (uint64_t)data->day[i - 1].date, i - 1, (uint64_t)data->day[i].date, i);
 			printe(PT_Error);
 			return 0;
 		}
@@ -457,7 +457,7 @@ int validatedb(DATA *data)
 			break;
 		}
 		if (data->month[i - 1].month < data->month[i].month) {
-			snprintf(errorstring, 1024, "%s: %s monthly date order: %u (%d) < %u (%d)", data->interface, invaliddb, (unsigned int)data->month[i - 1].month, i - 1, (unsigned int)data->month[i].month, i);
+			snprintf(errorstring, 1024, "%s: %s monthly date order: %" PRIu64 " (%d) < %" PRIu64 " (%d)", data->interface, invaliddb, (uint64_t)data->month[i - 1].month, i - 1, (uint64_t)data->month[i].month, i);
 			printe(PT_Error);
 			return 0;
 		}
