@@ -1017,8 +1017,8 @@ void handleshowdata(PARAMS *p)
 	} else if ((cfg.qmode == 0 || cfg.qmode == 8 || cfg.qmode == 10) && (p->dbifcount > 1)) {
 
 		if (cfg.qmode == 0) {
-			if (cfg.ostyle != 0) {
-				printf("\n                      rx      /      tx      /     total    /   estimated\n");
+			if (cfg.ostyle != 0 && cfg.estimatevisible) {
+				printf("\n                      rx      /      tx      /     total    /   %s\n", cfg.estimatetext);
 			} else {
 				printf("\n                      rx      /      tx      /     total\n");
 			}
@@ -1068,7 +1068,11 @@ void showoneinterface(PARAMS *p)
 
 	if (cfg.qmode == 5) {
 		if (cfg.ostyle != 0) {
-			printf("\n                      rx      /      tx      /     total    /   estimated\n");
+			printf("\n                      rx      /      tx      /     total");
+			if (cfg.estimatevisible) {
+				printf("    /   %s", cfg.estimatetext);
+			}
+			printf("\n");
 		} else {
 			printf("\n                 rx      /      tx      /     total\n");
 		}

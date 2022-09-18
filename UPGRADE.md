@@ -1,6 +1,8 @@
 
 # New configuration settings
 
+ * 2.10: EstimateVisible, EstimateText
+
  * 2.9: HourlyGraphMode, InterfaceMatchMethod
 
  * 2.8: AlwaysAddNewInterfaces, RescanDatabaseOnSave, UseUTC

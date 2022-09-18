@@ -372,7 +372,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 			datainfo.max = e_rx + e_tx;
 		}
 		estimateavailable = 1;
-		if (listtype == LT_Day || listtype == LT_Month || listtype == LT_Year) {
+		if (cfg.estimatevisible && (listtype == LT_Day || listtype == LT_Month || listtype == LT_Year)) {
 			estimatevisible = 1;
 		}
 	}
@@ -406,8 +406,8 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	width = 83 * ic->font->w + 2 + (ic->large * 2);
 	height = 62 + 3 * ic->lineheight;
 
-	// less space needed when no estimate or sum is shown (Top, 5min and Hour never have estimate)
-	if ((!estimatevisible && datainfo.count < 2) || (listtype == LT_Top || listtype == LT_Hour || listtype == LT_5min)) {
+	// less space needed when no estimate or sum is shown
+	if (!estimatevisible && !(strlen(ic->dataend) > 0 && datainfo.count > 1 && listtype != LT_Top)) {
 		height = 62 + 2 * ic->lineheight;
 	}
 
@@ -584,7 +584,11 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 
 	/* estimate visible */
 	if (estimatevisible) {
-		snprintf(buffer, 32, " estimated   ");
+		if (strlen(datebuff) <= 9) {
+			snprintf(buffer, 32, " %9s   ", cfg.estimatetext);
+		} else {
+			snprintf(buffer, 32, "  %9s  ", cfg.estimatetext);
+		}
 		strncat(buffer, getvalue(e_rx, 10, RT_Estimate), 32);
 		strcat(buffer, "   ");
 		strncat(buffer, getvalue(e_tx, 10, RT_Estimate), 32);

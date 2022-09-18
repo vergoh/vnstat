@@ -113,6 +113,12 @@ void printcfgfile(void)
 	defaultcomment(cfg.ifacematchmethod == IFACEMATCHMETHOD);
 	printf("InterfaceMatchMethod %d\n\n", cfg.ifacematchmethod);
 
+	printf("# visibility of estimate line and text used in it\n");
+	defaultcomment(cfg.estimatevisible == ESTIMATEVISIBLE);
+	printf("EstimateVisible 1\n");
+	defaultcomment(strcmp(cfg.estimatetext, ESTIMATETEXT) == 0);
+	printf("EstimateText \"estimated\"\n\n");
+
 	printf("\n");
 
 	/* vnstatd section */

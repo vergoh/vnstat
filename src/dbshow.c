@@ -150,10 +150,10 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 		if (datalist_i->next == NULL && issametimeslot(LT_Month, datalist_i->timestamp, interface->updated)) {
 			if (datalist_i->rx == 0 || datalist_i->tx == 0 || (interface->updated - datalist_i->timestamp) == 0) {
 				e_rx = e_tx = 0;
-			} else {
+			} else if (cfg.estimatevisible) {
 				getestimates(&e_rx, &e_tx, LT_Month, interface->updated, interface->created, &datalist);
 			}
-			if (shortmode && cfg.ostyle != 0) {
+			if (shortmode && cfg.ostyle != 0 && cfg.estimatevisible) {
 				printf("%s%s", fieldseparator, getvalue(e_rx + e_tx, 11, RT_Estimate));
 			} else if (!shortmode && cfg.ostyle >= 2) {
 				printf("%s%s", fieldseparator, gettrafficrate(datalist_i->rx + datalist_i->tx, (time_t)getperiodseconds(LT_Month, datalist_i->timestamp, interface->updated, interface->created, 1), 14));
@@ -177,15 +177,18 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 		} else {
 			printf("------------------------+-------------+------------\n");
 		}
-		indent(5);
-		printf("estimated   %s", getvalue(e_rx, 11, RT_Estimate));
-		printf(" | %s", getvalue(e_tx, 11, RT_Estimate));
-		printf(" | %s", getvalue(e_rx + e_tx, 11, RT_Estimate));
-		if (cfg.ostyle >= 2) {
-			printf(" |\n\n");
-		} else {
-			printf("\n\n");
+		if (cfg.estimatevisible) {
+			indent(5);
+			printf("%9s   %s", cfg.estimatetext, getvalue(e_rx, 11, RT_Estimate));
+			printf(" | %s", getvalue(e_tx, 11, RT_Estimate));
+			printf(" | %s", getvalue(e_rx + e_tx, 11, RT_Estimate));
+			if (cfg.ostyle >= 2) {
+				printf(" |\n");
+			} else {
+				printf("\n");
+			}
 		}
+		printf("\n");
 	}
 
 	dbdatalistfree(&datalist);
@@ -240,11 +243,11 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 			d = localtime(&interface->updated);
 			if (datalist_i->rx == 0 || datalist_i->tx == 0 || (d->tm_hour * 60 + d->tm_min) == 0) {
 				e_rx = e_tx = 0;
-			} else {
-				e_rx = (uint64_t)((double)datalist_i->rx / (double)(d->tm_hour * 60 + d->tm_min)) * 1440;
-				e_tx = (uint64_t)((double)datalist_i->tx / (double)(d->tm_hour * 60 + d->tm_min)) * 1440;
+			} else if (cfg.estimatevisible) {
+					e_rx = (uint64_t)((double)datalist_i->rx / (double)(d->tm_hour * 60 + d->tm_min)) * 1440;
+					e_tx = (uint64_t)((double)datalist_i->tx / (double)(d->tm_hour * 60 + d->tm_min)) * 1440;
 			}
-			if (shortmode && cfg.ostyle != 0) {
+			if (shortmode && cfg.ostyle != 0 && cfg.estimatevisible) {
 				printf("%s%s", fieldseparator, getvalue(e_rx + e_tx, 11, RT_Estimate));
 			} else if (!shortmode && cfg.ostyle >= 2) {
 				printf("%s%s", fieldseparator, gettrafficrate(datalist_i->rx + datalist_i->tx, (time_t)getperiodseconds(LT_Day, datalist_i->timestamp, interface->updated, interface->created, 1), 14));
@@ -267,14 +270,16 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 		} else {
 			printf("------------------------+-------------+------------\n");
 		}
-		indent(5);
-		printf("estimated   %s", getvalue(e_rx, 11, RT_Estimate));
-		printf(" | %s", getvalue(e_tx, 11, RT_Estimate));
-		printf(" | %s", getvalue(e_rx + e_tx, 11, RT_Estimate));
-		if (cfg.ostyle >= 2) {
-			printf(" |\n");
-		} else {
-			printf("\n");
+		if (cfg.estimatevisible) {
+			indent(5);
+			printf("%9s   %s", cfg.estimatetext, getvalue(e_rx, 11, RT_Estimate));
+			printf(" | %s", getvalue(e_tx, 11, RT_Estimate));
+			printf(" | %s", getvalue(e_rx + e_tx, 11, RT_Estimate));
+			if (cfg.ostyle >= 2) {
+				printf(" |\n");
+			} else {
+				printf("\n");
+			}
 		}
 	} else {
 		printf("\n");
@@ -363,7 +368,7 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 
 	datalist_i = datalist;
 
-	if (strlen(dataend) == 0 && datainfo.count > 0 && (listtype == LT_Day || listtype == LT_Month || listtype == LT_Year)) {
+	if (strlen(dataend) == 0 && datainfo.count > 0 && (listtype == LT_Day || listtype == LT_Month || listtype == LT_Year) && cfg.estimatevisible) {
 		estimatevisible = 1;
 		getestimates(&e_rx, &e_tx, listtype, interface->updated, interface->created, &datalist);
 		if (cfg.estimatebarvisible && e_rx + e_tx > datainfo.max) {
@@ -530,7 +535,12 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 			printf("    ");
 		}
 		if (strlen(dataend) == 0) {
-			printf(" estimated   %s", getvalue(e_rx, 11, RT_Estimate));
+			if (strlen(datebuff) <= 9) {
+				printf(" %9s ", cfg.estimatetext);
+			} else {
+				printf("  %9s", cfg.estimatetext);
+			}
+			printf("  %s", getvalue(e_rx, 11, RT_Estimate));
 			printf(" | %s", getvalue(e_tx, 11, RT_Estimate));
 			printf(" | %s", getvalue(e_rx + e_tx, 11, RT_Estimate));
 		} else {
@@ -1089,7 +1099,7 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit e
 				printf("     ----------+------------------+----------------+--------------\n");
 			}
 			if (ongoing && e_bytes > 0) {
-				printf("     estimated | %16s |", getvalue(e_bytes, 16, RT_Normal));
+				printf("     %9s | %16s |", cfg.estimatetext, getvalue(e_bytes, 16, RT_Normal));
 				percentage = (double)(e_bytes) / (double)limit * 100.0;
 				if (percentage <= 100000.0) {
 					printf(" %13.1f%%", percentage);

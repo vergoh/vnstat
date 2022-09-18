@@ -20,6 +20,10 @@
      interface1+interface2 syntax data merge queries
    - Support passing --config option multiple times, later files override
      earlier files if settings overlap (vnstat and vnstati)
+   - Add configuration option EstimateVisible for controlling the visibility
+     of the estimate line
+   - Add configuration option EstimateText for modifying the default
+     "estimated" text string when the estimate line is visible
    - Add --style support to -tr / --traffic output
    - Add summary option to --json and --xml outputs
    - Add timestamps to --json and --xml outputs
