@@ -12,7 +12,7 @@ void drawpoles(IMAGECONTENT *ic, const int x, const int y, const int len, const 
 void drawdonut(IMAGECONTENT *ic, const int x, const int y, const float rxp, const float txp, const int size, const int holesize);
 void drawdonut_libgd_bug_workaround(IMAGECONTENT *ic, const int x, const int y, const float rxp, const float txp, const int size, const int holesize);
 void drawdonut_libgd_native(IMAGECONTENT *ic, const int x, const int y, const float rxp, const float txp, const int size, const int holesize);
-void drawpole(IMAGECONTENT *ic, const int x, const int y, const int length, const int direction, const int maincolor);
+void drawpole(IMAGECONTENT *ic, const int x, const int y, const int length, const int direction, const int color);
 void drawarrowup(IMAGECONTENT *ic, const int x, const int y);
 void drawarrowright(IMAGECONTENT *ic, const int x, const int y);
 void hextorgb(const char *input, int *rgb);

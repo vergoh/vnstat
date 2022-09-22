@@ -176,7 +176,7 @@ int verifylogaccess(void)
 
 int dmonth(const int month)
 {
-	static int dmon[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+	static const int dmon[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 	int year;
 	time_t current;
 

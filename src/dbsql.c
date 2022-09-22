@@ -852,7 +852,7 @@ int db_addtraffic_dated(const char *iface, const uint64_t rx, const uint64_t tx,
 	sqlite3_int64 ifaceid = 0;
 
 	const char *datatables[] = {"fiveminute", "hour", "day", "month", "year", "top"};
-	int32_t *featurecfg[] = {&cfg.fiveminutehours, &cfg.hourlydays, &cfg.dailydays, &cfg.monthlymonths, &cfg.yearlyyears, &cfg.topdayentries};
+	const int32_t *featurecfg[] = {&cfg.fiveminutehours, &cfg.hourlydays, &cfg.dailydays, &cfg.monthlymonths, &cfg.yearlyyears, &cfg.topdayentries};
 
 	ifaceid = db_getinterfaceid(iface, 1);
 	if (ifaceid == 0) {
