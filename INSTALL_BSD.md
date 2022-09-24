@@ -32,7 +32,8 @@ the required additional libgd2 library is found to be available and
 An example cgi (`vnstat.cgi`) to be used with a http server with the image
 output support has been provided in the `examples` directory. Configuration
 options for the cgi are in the beginning of the file. Additional examples
-for using the json output are also available in the same directory.
+for using the json output or providing a Prometheus compatible metrics endpoint
+are also available in the same directory.
 
 For executing the optional test suite, see the appendix at the end of this
 file.
