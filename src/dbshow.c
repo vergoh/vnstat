@@ -948,20 +948,26 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit e
 		case AC_RX:
 			bytes = datalist->rx;
 			snprintf(conditionname, 16, "rx");
-			getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, ifaceinfo.created, &datalist);
-			e_bytes = e_rx;
+			if (cfg.estimatevisible) {
+				getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, ifaceinfo.created, &datalist);
+				e_bytes = e_rx;
+			}
 			break;
 		case AC_TX:
 			bytes = datalist->tx;
 			snprintf(conditionname, 16, "tx");
-			getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, ifaceinfo.created, &datalist);
-			e_bytes = e_tx;
+			if (cfg.estimatevisible) {
+				getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, ifaceinfo.created, &datalist);
+				e_bytes = e_tx;
+			}
 			break;
 		case AC_Total:
 			bytes = datalist->rx + datalist->tx;
 			snprintf(conditionname, 16, "total");
-			getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, ifaceinfo.created, &datalist);
-			e_bytes = e_rx + e_tx;
+			if (cfg.estimatevisible) {
+				getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, ifaceinfo.created, &datalist);
+				e_bytes = e_rx + e_tx;
+			}
 			break;
 		case AC_RX_Estimate:
 			ongoing = 0;
@@ -1050,7 +1056,7 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit e
 			for (i = 0; i < l; i++) {
 				printf("=");
 			}
-			if (ongoing) {
+			if (ongoing && cfg.estimatevisible) {
 				if (!estimateexceeded) {
 					l = (int)lrint((double)(e_bytes) / (double)limit * ALERTUSAGELEN);
 					for (; i < l; i++) {
@@ -1098,7 +1104,7 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit e
 				printf("     remaining | %16s | %13.1f%% |\n", getvalue(limit - bytes, 16, RT_Normal), 100.0 - percentage);
 				printf("     ----------+------------------+----------------+--------------\n");
 			}
-			if (ongoing && e_bytes > 0) {
+			if (ongoing && cfg.estimatevisible && e_bytes > 0) {
 				printf("     %9s | %16s |", cfg.estimatetext, getvalue(e_bytes, 16, RT_Normal));
 				percentage = (double)(e_bytes) / (double)limit * 100.0;
 				if (percentage <= 100000.0) {

@@ -62,9 +62,11 @@ Limited to 9 characters. (vnstat and vnstati only)
 
 .TP
 .B EstimateVisible
-Show a line with traffic estimation for the shown time period as the last line
-of the output in output modes supporting it. 1 = enabled, 0 = disabled.
-(vnstat and vnstati only)
+Show a line with traffic estimation for the selected time period or alert as the
+last line of the output in output modes supporting it. Disabling estimate visibility
+also disables estimate conditions in
+.BR "--alert" "."
+1 = enabled, 0 = disabled. (vnstat and vnstati only)
 
 .TP
 .B HourlyDecimals
@@ -90,16 +92,19 @@ interface will be used. (vnstat and vnstati only)
 .TP
 .B InterfaceMatchMethod
 Method for matching interface given for a query to an interface in the
-database. Method 0 requires the interface name to be an case sensitive exact
+database.
+
+Method 0 requires the interface name to be a case sensitive exact
 match. Method 1 extends the previous method by allowing a case sensitive
 exact match of the interface alias. Method 2 extends the previous method
 by allowing a case insensitive exact match of the interface alias. Method
 3 extends the previous method by allowing a case insensitive match of the
-beginning of the interface alias. Methods will be evaluated in the order
-described above resulting in exact interface matches always taking precedence.
-If any interface alias matching method results in multiple matches then
-the interface with the highest total traffic will be used.
-(vnstat and vnstati only)
+beginning of the interface alias.
+
+Methods will be evaluated in the order described above resulting in exact
+interface matches always taking precedence. If any interface alias matching
+method results in multiple matches then the interface with the highest total
+traffic will be used. (vnstat and vnstati only)
 
 .TP
 .B "List5Mins, ListHours, ListDays, ListMonths, ListYears, ListTop"

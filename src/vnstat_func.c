@@ -659,7 +659,7 @@ int parsealertargs(PARAMS *p, char **argv)
 
 	// condition
 	found = 0;
-	for (i = 0; i < 6; i++) {
+	for (i = 0; i < 3 + (cfg.estimatevisible * 3); i++) {
 		if (strcmp(argv[currentarg], alertconditions[i]) == 0) {
 			found = 1;
 			p->alertcondition = (unsigned int)i + 1;
@@ -765,7 +765,11 @@ void showalerthelp(void)
 	printf("    m, month, monthly      y, year, yearly\n\n");
 
 	printf(" <condition>\n");
-	printf("    rx, tx, total, rx_estimate, tx_estimate, total_estimate\n\n");
+	if (cfg.estimatevisible) {
+		printf("    rx, tx, total, rx_estimate, tx_estimate, total_estimate\n\n");
+	} else {
+		printf("    rx, tx, total\n\n");
+	}
 
 	printf(" <limit>\n");
 	printf("    greater than zero integer without decimals\n\n");
