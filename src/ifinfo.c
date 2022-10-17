@@ -504,6 +504,9 @@ int istun(const char *iface)
 			return 1;
 		}
 	}
+#else
+	// suppress unused variable warning
+	(void)iface;
 #endif
 	return 0;
 }
