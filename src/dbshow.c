@@ -944,7 +944,7 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit e
 
 	switch (condition) {
 		case AC_None:
-			break;
+			return 0;
 		case AC_RX:
 			bytes = datalist->rx;
 			snprintf(conditionname, 16, "rx");
