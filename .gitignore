@@ -30,3 +30,5 @@ INSTALL_BSD
 UPGRADE
 UNINSTALL
 .vscode
+*.gz
+*.asc
