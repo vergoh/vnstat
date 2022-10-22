@@ -1,4 +1,4 @@
-2.10 / <not released yet>
+2.10 / 22-Oct-2022
 
  - Fixed
    - BandwidthDetection in BSD wasn't correctly converting kernel reported
