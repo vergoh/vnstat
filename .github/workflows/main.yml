@@ -11,7 +11,7 @@ jobs:
   ubuntu:
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-18.04]
+        os: [ubuntu-22.04, ubuntu-20.04]
         compiler: [gcc, clang]
     runs-on: ${{ matrix.os }}
     env:
@@ -39,7 +39,7 @@ jobs:
           ./vnstati --version
 
   ubuntu_clang_sanitizers:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       CC: clang
       CFLAGS: '-Wall -Wextra -O1 -g -fsanitize=address -fsanitize-address-use-after-scope -fno-omit-frame-pointer -fsanitize=undefined -fsanitize=nullability -fsanitize=implicit-conversion -fsanitize=integer -fsanitize=float-divide-by-zero -fsanitize=local-bounds'
@@ -69,7 +69,7 @@ jobs:
         run: grep -iP 'sanitizer|runtime error' check_vnstat.log && exit 1 || true
 
   ubuntu_clang_analyzer:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       CC: clang
       CFLAGS: '-Wall -Wextra'
@@ -88,7 +88,7 @@ jobs:
         run: scan-build -analyze-headers --status-bugs make
 
   macos_clang:
-    runs-on: macos-10.15
+    runs-on: macos-12
     env:
       CC: clang
       CFLAGS: '-Weverything -Wno-padded -Wno-poison-system-directories'
