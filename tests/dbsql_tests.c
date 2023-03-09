@@ -2225,23 +2225,23 @@ START_TEST(getifaceinquery_does_not_mess_regular_interfaces)
 
 	result = getifaceinquery("eth0");
 	ck_assert_ptr_ne(result, NULL);
-	ck_assert_str_eq(result, "\"eth0\"");
+	ck_assert_str_eq(result, "'eth0'");
 	free(result);
 
 	/* this isn't a realistic scenario but doesn't hurt to have a test */
 	result = getifaceinquery("eth0 with space");
 	ck_assert_ptr_ne(result, NULL);
-	ck_assert_str_eq(result, "\"eth0 with space\"");
+	ck_assert_str_eq(result, "'eth0 with space'");
 	free(result);
 
 	result = getifaceinquery("em1_em2");
 	ck_assert_ptr_ne(result, NULL);
-	ck_assert_str_eq(result, "\"em1_em2\"");
+	ck_assert_str_eq(result, "'em1_em2'");
 	free(result);
 
 	result = getifaceinquery("em1-em2");
 	ck_assert_ptr_ne(result, NULL);
-	ck_assert_str_eq(result, "\"em1-em2\"");
+	ck_assert_str_eq(result, "'em1-em2'");
 	free(result);
 }
 END_TEST
@@ -2252,17 +2252,17 @@ START_TEST(getifaceinquery_can_create_merge_queries)
 
 	result = getifaceinquery("eth0+eth1");
 	ck_assert_ptr_ne(result, NULL);
-	ck_assert_str_eq(result, "\"eth0\",\"eth1\"");
+	ck_assert_str_eq(result, "'eth0','eth1'");
 	free(result);
 
 	result = getifaceinquery("eth1+eth0");
 	ck_assert_ptr_ne(result, NULL);
-	ck_assert_str_eq(result, "\"eth1\",\"eth0\"");
+	ck_assert_str_eq(result, "'eth1','eth0'");
 	free(result);
 
 	result = getifaceinquery("eth0+em1+eth1");
 	ck_assert_ptr_ne(result, NULL);
-	ck_assert_str_eq(result, "\"eth0\",\"em1\",\"eth1\"");
+	ck_assert_str_eq(result, "'eth0','em1','eth1'");
 	free(result);
 }
 END_TEST
@@ -2273,7 +2273,7 @@ START_TEST(getifaceinquery_can_create_merge_query_longer_than_single_interface_m
 
 	result = getifaceinquery("eth0+em1+eth1+eth2+em2+eth3+eth4+em3+eth5");
 	ck_assert_ptr_ne(result, NULL);
-	ck_assert_str_eq(result, "\"eth0\",\"em1\",\"eth1\",\"eth2\",\"em2\",\"eth3\",\"eth4\",\"em3\",\"eth5\"");
+	ck_assert_str_eq(result, "'eth0','em1','eth1','eth2','em2','eth3','eth4','em3','eth5'");
 	free(result);
 }
 END_TEST
@@ -2589,6 +2589,23 @@ START_TEST(getqueryinterfacecount_can_count)
 	ck_assert_int_eq(getqueryinterfacecount("ethnothing+"), 0);
 	ck_assert_int_eq(getqueryinterfacecount("eth+nothing"), 2);
 	ck_assert_int_eq(getqueryinterfacecount("ethlongcanbelong+ethnotsoshort+ethdoesnotcare"), 3);
+	ck_assert_int_eq(getqueryinterfacecount("eth1/eth2"), 1);
+	ck_assert_int_eq(getqueryinterfacecount("eth1/eth2+eth3/eth4"), 2);
+}
+END_TEST
+
+START_TEST(getqueryinterfacecount_can_reject_query_due_to_some_characters)
+{
+	ck_assert_int_eq(getqueryinterfacecount("eth0;"), 0);
+	ck_assert_int_eq(getqueryinterfacecount("<eth0<"), 0);
+	ck_assert_int_eq(getqueryinterfacecount(">eth0>"), 0);
+	ck_assert_int_eq(getqueryinterfacecount("<eth0>"), 0);
+	ck_assert_int_eq(getqueryinterfacecount("\"eth0\""), 0);
+	ck_assert_int_eq(getqueryinterfacecount("\'eth0\'"), 0);
+	ck_assert_int_eq(getqueryinterfacecount("eth0\'"), 0);
+	ck_assert_int_eq(getqueryinterfacecount("eth0\""), 0);
+	ck_assert_int_eq(getqueryinterfacecount("eth0\"+eth1"), 0);
+	ck_assert_int_eq(getqueryinterfacecount("eth0\\+eth1"), 0);
 }
 END_TEST
 
@@ -2987,6 +3004,7 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_getinterfaceinfo_can_handle_interface_merges_with_long_name);
 	tcase_add_test(tc_dbsql, db_getinterfaceinfo_can_handle_invalid_input);
 	tcase_add_test(tc_dbsql, getqueryinterfacecount_can_count);
+	tcase_add_test(tc_dbsql, getqueryinterfacecount_can_reject_query_due_to_some_characters);
 	tcase_add_test(tc_dbsql, top_list_returns_items_in_correct_order);
 	tcase_add_test(tc_dbsql, db_setinterfacebyalias_sets_nothing_when_there_is_no_match);
 	tcase_add_test(tc_dbsql, db_setinterfacebyalias_can_set);

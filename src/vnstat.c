@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 		for (currentarg = 1; currentarg < argc; currentarg++) {
 			if ((strcmp(argv[currentarg], "-D") == 0) || (strcmp(argv[currentarg], "--debug") == 0)) {
 				debug = 1;
-				printf("Debug enabled, vnstat %s\n", VERSION);
+				printf("Debug enabled, vnstat %s, SQLite %s\n", VERSION, sqlite3_libversion());
 			} else if (strcmp(argv[currentarg], "--config") == 0) {
 				if (currentarg + 1 < argc) {
 					strncpy_nt(p.cfgfile, argv[currentarg + 1], 512);

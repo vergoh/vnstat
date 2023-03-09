@@ -1,6 +1,10 @@
 2.11 / <not released yet>
 
- - No changes yet
+ - Fixed
+   - Database queries worked only if SQLite double-quoted string (DQS)
+     feature (https://www.sqlite.org/quirks.html#dblquote) was enabled
+ - New
+   - SQLite version is visible in --version outputs
 
 
 2.10 / 22-Oct-2022

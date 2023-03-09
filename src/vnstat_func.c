@@ -531,7 +531,7 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 				p->alert = 1;
 			}
 		} else if ((strcmp(argv[currentarg], "-v") == 0) || (strcmp(argv[currentarg], "--version") == 0)) {
-			printf("vnStat %s by Teemu Toivola <tst at iki dot fi>\n", getversion());
+			printf("vnStat %s by Teemu Toivola <tst at iki dot fi> (SQLite %s)\n", getversion(), sqlite3_libversion());
 			exit(EXIT_SUCCESS);
 		} else {
 			if (argv[currentarg][0] == '-' || strlen(argv[currentarg]) == 1) {
