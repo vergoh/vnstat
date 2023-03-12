@@ -806,6 +806,24 @@ void handleintsignals(DSTATE *s)
 				}
 				exit(EXIT_FAILURE);
 			}
+			if (!db_removedisabledresolutionentries()) {
+				snprintf(errorstring, 1024, "Disabled resolution entry cleanup after SIGHUP failed (%s), exiting.", strerror(errno));
+				printe(PT_Error);
+				if (s->rundaemon && !debug) {
+					close(pidfile);
+					unlink(cfg.pidfile);
+				}
+				exit(EXIT_FAILURE);
+			}
+			if (!db_vacuum()) {
+				snprintf(errorstring, 1024, "Database vacuum after SIGHUP failed (%s), exiting.", strerror(errno));
+				printe(PT_Error);
+				if (s->rundaemon && !debug) {
+					close(pidfile);
+					unlink(cfg.pidfile);
+				}
+				exit(EXIT_FAILURE);
+			}
 			break;
 
 		case SIGINT:

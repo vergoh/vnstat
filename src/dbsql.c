@@ -1094,6 +1094,90 @@ int db_removeoldentries_top(void)
 	return 1;
 }
 
+int db_removedisabledresolutionentries(void)
+{
+	char sql[256];
+
+	if (cfg.topdayentries != 0 && cfg.fiveminutehours != 0 && cfg.hourlydays != 0 && cfg.dailydays != 0 && cfg.monthlymonths != 0 && cfg.yearlyyears != 0) {
+		if (debug) {
+			printf("db: all entry resolutions are enabled, no removal needed\n");
+		}
+		return 1;
+	}
+
+	if (!db_begintransaction()) {
+		return 0;
+	}
+
+	if (cfg.topdayentries == 0) {
+		if (debug) {
+			printf("db: top removal\n");
+		}
+		sqlite3_snprintf(256, sql, "delete from top");
+		if (!db_exec(sql)) {
+			db_rollbacktransaction();
+			return 0;
+		}
+	}
+
+	if (cfg.fiveminutehours == 0) {
+		if (debug) {
+			printf("db: fiveminute removal\n");
+		}
+		sqlite3_snprintf(256, sql, "delete from fiveminute");
+		if (!db_exec(sql)) {
+			db_rollbacktransaction();
+			return 0;
+		}
+	}
+
+	if (cfg.hourlydays == 0) {
+		if (debug) {
+			printf("db: hour removal\n");
+		}
+		sqlite3_snprintf(256, sql, "delete from hour");
+		if (!db_exec(sql)) {
+			db_rollbacktransaction();
+			return 0;
+		}
+	}
+
+	if (cfg.dailydays == 0) {
+		if (debug) {
+			printf("db: day removal");
+		}
+		sqlite3_snprintf(256, sql, "delete from day");
+		if (!db_exec(sql)) {
+			db_rollbacktransaction();
+			return 0;
+		}
+	}
+
+	if (cfg.monthlymonths == 0) {
+		if (debug) {
+			printf("db: month removal");
+		}
+		sqlite3_snprintf(256, sql, "delete from month");
+		if (!db_exec(sql)) {
+			db_rollbacktransaction();
+			return 0;
+		}
+	}
+
+	if (cfg.yearlyyears == 0) {
+		if (debug) {
+			printf("db: year removal");
+		}
+		sqlite3_snprintf(256, sql, "delete from year");
+		if (!db_exec(sql)) {
+			db_rollbacktransaction();
+			return 0;
+		}
+	}
+
+	return db_committransaction();
+}
+
 int db_vacuum(void)
 {
 	if (debug) {

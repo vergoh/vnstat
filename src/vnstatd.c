@@ -96,7 +96,19 @@ int main(int argc, char *argv[])
 	preparedatabase(&s);
 
 	if (!db_removeoldentries()) {
-		printf("Error: Database \"%s/%s\" cleanup failed: %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
+		printf("Error: Database \"%s/%s\" old entry cleanup failed: %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
+		printf("Exiting...\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (!db_removedisabledresolutionentries()) {
+		printf("Error: Database \"%s/%s\" disabled resolution entry cleanup failed: %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
+		printf("Exiting...\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (!db_vacuum()) {
+		printf("Error: Database \"%s/%s\" vacuum failed: %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
 		printf("Exiting...\n");
 		exit(EXIT_FAILURE);
 	}

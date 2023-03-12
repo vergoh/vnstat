@@ -9,7 +9,6 @@ START_TEST(db_close_does_no_harm_when_db_is_already_closed)
 {
 	int ret;
 
-
 	ret = db_close();
 	ck_assert_int_eq(ret, 1);
 }
@@ -18,7 +17,6 @@ END_TEST
 START_TEST(db_open_rw_can_create_database_if_file_does_not_exist)
 {
 	int ret;
-
 
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
@@ -782,6 +780,9 @@ START_TEST(db_maintenance_does_not_fault)
 	ck_assert_int_eq(ret, 1);
 
 	ret = db_removeoldentries();
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_removedisabledresolutionentries();
 	ck_assert_int_eq(ret, 1);
 
 	ret = db_close();
@@ -2913,6 +2914,410 @@ START_TEST(db_setinterfacebyalias_can_match_prefix)
 }
 END_TEST
 
+START_TEST(db_removedisabledresolutionentries_does_nothing_when_nothing_is_disabled)
+{
+	int ret;
+	dbdatalist *datalist = NULL;
+	dbdatalistinfo datainfo;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ck_assert_int_ne(cfg.fiveminutehours, 0);
+	ck_assert_int_ne(cfg.hourlydays, 0);
+	ck_assert_int_ne(cfg.dailydays, 0);
+	ck_assert_int_ne(cfg.monthlymonths, 0);
+	ck_assert_int_ne(cfg.yearlyyears, 0);
+	ck_assert_int_ne(cfg.topdayentries, 0);
+
+	ck_assert_int_eq(db_addtraffic("eth0", 12, 34), 1);
+
+	ret = db_removedisabledresolutionentries();
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "fiveminute", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "hour", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "day", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "month", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "year", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "top", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_removedisabledresolutionentries_removes_fiveminutes_when_disabled)
+{
+	int ret;
+	dbdatalist *datalist = NULL;
+	dbdatalistinfo datainfo;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	cfg.fiveminutehours = 0;
+
+	ck_assert_int_eq(cfg.fiveminutehours, 0);
+	ck_assert_int_ne(cfg.hourlydays, 0);
+	ck_assert_int_ne(cfg.dailydays, 0);
+	ck_assert_int_ne(cfg.monthlymonths, 0);
+	ck_assert_int_ne(cfg.yearlyyears, 0);
+	ck_assert_int_ne(cfg.topdayentries, 0);
+
+	ck_assert_int_eq(db_addtraffic("eth0", 12, 34), 1);
+
+	ret = db_removedisabledresolutionentries();
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "fiveminute", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "hour", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "day", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "month", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "year", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "top", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_removedisabledresolutionentries_removes_hours_when_disabled)
+{
+	int ret;
+	dbdatalist *datalist = NULL;
+	dbdatalistinfo datainfo;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	cfg.hourlydays = 0;
+
+	ck_assert_int_ne(cfg.fiveminutehours, 0);
+	ck_assert_int_eq(cfg.hourlydays, 0);
+	ck_assert_int_ne(cfg.dailydays, 0);
+	ck_assert_int_ne(cfg.monthlymonths, 0);
+	ck_assert_int_ne(cfg.yearlyyears, 0);
+	ck_assert_int_ne(cfg.topdayentries, 0);
+
+	ck_assert_int_eq(db_addtraffic("eth0", 12, 34), 1);
+
+	ret = db_removedisabledresolutionentries();
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "fiveminute", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "hour", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "day", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "month", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "year", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "top", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_removedisabledresolutionentries_removes_days_when_disabled)
+{
+	int ret;
+	dbdatalist *datalist = NULL;
+	dbdatalistinfo datainfo;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	cfg.dailydays = 0;
+
+	ck_assert_int_ne(cfg.fiveminutehours, 0);
+	ck_assert_int_ne(cfg.hourlydays, 0);
+	ck_assert_int_eq(cfg.dailydays, 0);
+	ck_assert_int_ne(cfg.monthlymonths, 0);
+	ck_assert_int_ne(cfg.yearlyyears, 0);
+	ck_assert_int_ne(cfg.topdayentries, 0);
+
+	ck_assert_int_eq(db_addtraffic("eth0", 12, 34), 1);
+
+	ret = db_removedisabledresolutionentries();
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "fiveminute", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "hour", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "day", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "month", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "year", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "top", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_removedisabledresolutionentries_removes_months_when_disabled)
+{
+	int ret;
+	dbdatalist *datalist = NULL;
+	dbdatalistinfo datainfo;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	cfg.monthlymonths = 0;
+
+	ck_assert_int_ne(cfg.fiveminutehours, 0);
+	ck_assert_int_ne(cfg.hourlydays, 0);
+	ck_assert_int_ne(cfg.dailydays, 0);
+	ck_assert_int_eq(cfg.monthlymonths, 0);
+	ck_assert_int_ne(cfg.yearlyyears, 0);
+	ck_assert_int_ne(cfg.topdayentries, 0);
+
+	ck_assert_int_eq(db_addtraffic("eth0", 12, 34), 1);
+
+	ret = db_removedisabledresolutionentries();
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "fiveminute", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "hour", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "day", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "month", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "year", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "top", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_removedisabledresolutionentries_removes_years_when_disabled)
+{
+	int ret;
+	dbdatalist *datalist = NULL;
+	dbdatalistinfo datainfo;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	cfg.yearlyyears = 0;
+
+	ck_assert_int_ne(cfg.fiveminutehours, 0);
+	ck_assert_int_ne(cfg.hourlydays, 0);
+	ck_assert_int_ne(cfg.dailydays, 0);
+	ck_assert_int_ne(cfg.monthlymonths, 0);
+	ck_assert_int_eq(cfg.yearlyyears, 0);
+	ck_assert_int_ne(cfg.topdayentries, 0);
+
+	ck_assert_int_eq(db_addtraffic("eth0", 12, 34), 1);
+
+	ret = db_removedisabledresolutionentries();
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "fiveminute", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "hour", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "day", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "month", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "year", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "top", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_removedisabledresolutionentries_removes_top_days_when_disabled)
+{
+	int ret;
+	dbdatalist *datalist = NULL;
+	dbdatalistinfo datainfo;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	cfg.topdayentries = 0;
+
+	ck_assert_int_ne(cfg.fiveminutehours, 0);
+	ck_assert_int_ne(cfg.hourlydays, 0);
+	ck_assert_int_ne(cfg.dailydays, 0);
+	ck_assert_int_ne(cfg.monthlymonths, 0);
+	ck_assert_int_ne(cfg.yearlyyears, 0);
+	ck_assert_int_eq(cfg.topdayentries, 0);
+
+	ck_assert_int_eq(db_addtraffic("eth0", 12, 34), 1);
+
+	ret = db_removedisabledresolutionentries();
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "fiveminute", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "hour", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "day", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "month", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "year", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "top", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 void add_dbsql_tests(Suite *s)
 {
 	TCase *tc_dbsql = tcase_create("DB SQL");
@@ -3011,5 +3416,12 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_setinterfacebyalias_sets_highest_traffic_interface_if_alias_is_not_unique);
 	tcase_add_test(tc_dbsql, db_setinterfacebyalias_can_be_case_insensitive);
 	tcase_add_test(tc_dbsql, db_setinterfacebyalias_can_match_prefix);
+	tcase_add_test(tc_dbsql, db_removedisabledresolutionentries_does_nothing_when_nothing_is_disabled);
+	tcase_add_test(tc_dbsql, db_removedisabledresolutionentries_removes_fiveminutes_when_disabled);
+	tcase_add_test(tc_dbsql, db_removedisabledresolutionentries_removes_hours_when_disabled);
+	tcase_add_test(tc_dbsql, db_removedisabledresolutionentries_removes_days_when_disabled);
+	tcase_add_test(tc_dbsql, db_removedisabledresolutionentries_removes_months_when_disabled);
+	tcase_add_test(tc_dbsql, db_removedisabledresolutionentries_removes_years_when_disabled);
+	tcase_add_test(tc_dbsql, db_removedisabledresolutionentries_removes_top_days_when_disabled);
 	suite_add_tcase(s, tc_dbsql);
 }
