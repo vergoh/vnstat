@@ -885,7 +885,7 @@ int db_addtraffic_dated(const char *iface, const uint64_t rx, const uint64_t tx,
 
 	/* time specific */
 	for (i = 0; i < 6; i++) {
-		if (featurecfg[i] == 0) {
+		if (*featurecfg[i] == 0) {
 			continue;
 		}
 		sqlite3_snprintf(1024, sql, "insert or ignore into %s (interface, date, rx, tx) values (%" PRId64 ", %s, 0, 0)", datatables[i], (int64_t)ifaceid, db_get_date_generator(i, 0, nowdate));

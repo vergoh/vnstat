@@ -5,6 +5,8 @@
      feature (https://www.sqlite.org/quirks.html#dblquote) was enabled
    - Disabling data resolutions in data retention configuration didn't result
      in possibly existing database entries getting removed from the database
+   - Disabling data resolutions in data retention configuration didn't result
+     in the data resolution getting disabled but instead storing data forever
  - New
    - SQLite version is visible in --version outputs
    - Database is vacuumed during daemon startup and reload

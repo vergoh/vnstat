@@ -177,6 +177,112 @@ START_TEST(db_addtraffic_can_add_traffic_and_interfaces_utc)
 }
 END_TEST
 
+START_TEST(db_addtraffic_adds_traffic_to_different_data_types)
+{
+	int ret;
+	dbdatalist *datalist = NULL;
+	dbdatalistinfo datainfo;
+
+	ck_assert_int_ne(cfg.fiveminutehours, 0);
+	ck_assert_int_ne(cfg.hourlydays, 0);
+	ck_assert_int_ne(cfg.dailydays, 0);
+	ck_assert_int_ne(cfg.monthlymonths, 0);
+	ck_assert_int_ne(cfg.yearlyyears, 0);
+	ck_assert_int_ne(cfg.topdayentries, 0);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ck_assert_int_eq(db_addtraffic("eth0", 123, 456), 1);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "fiveminute", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "hour", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "day", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "month", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "year", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "top", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_gt(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_addtraffic_does_not_add_traffic_to_disabled_data_types)
+{
+	int ret;
+	dbdatalist *datalist = NULL;
+	dbdatalistinfo datainfo;
+
+	cfg.fiveminutehours = 0;
+	cfg.hourlydays = 0;
+	cfg.dailydays = 0;
+	cfg.monthlymonths = 0;
+	cfg.yearlyyears = 0;
+	cfg.topdayentries = 0;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ck_assert_int_eq(db_addtraffic("eth0", 1, 1), 1);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "fiveminute", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "hour", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "day", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "month", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "year", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata(&datalist, &datainfo, "eth0", "top", 2);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 0);
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 START_TEST(db_addtraffic_dated_does_not_touch_updated_time)
 {
 	int ret;
@@ -3336,6 +3442,8 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_addtraffic_with_no_traffic_does_nothing);
 	tcase_add_test(tc_dbsql, db_addtraffic_can_add_traffic_and_interfaces);
 	tcase_add_test(tc_dbsql, db_addtraffic_can_add_traffic_and_interfaces_utc);
+	tcase_add_test(tc_dbsql, db_addtraffic_adds_traffic_to_different_data_types);
+	tcase_add_test(tc_dbsql, db_addtraffic_does_not_add_traffic_to_disabled_data_types);
 	tcase_add_test(tc_dbsql, db_addtraffic_dated_does_not_touch_updated_time);
 	tcase_add_test(tc_dbsql, db_getinterfacecount_counts_interfaces);
 	tcase_add_test(tc_dbsql, db_getinterfacecountbyname_counts_interfaces);
