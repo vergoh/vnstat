@@ -291,7 +291,7 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 
 void showlist(const interfaceinfo *interface, const char *listname, const char *databegin, const char *dataend)
 {
-	int32_t limit;
+	int32_t limit, retention;
 	ListType listtype = LT_None;
 	int offset = 0, i = 1;
 	int estimatevisible = 0;
@@ -311,24 +311,28 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 		snprintf(titlename, 16, "daily");
 		strncpy_nt(stampformat, cfg.dformat, 64);
 		limit = cfg.listdays;
+		retention = cfg.dailydays;
 	} else if (strcmp(listname, "month") == 0) {
 		listtype = LT_Month;
 		strncpy_nt(colname, listname, 8);
 		snprintf(titlename, 16, "monthly");
 		strncpy_nt(stampformat, cfg.mformat, 64);
 		limit = cfg.listmonths;
+		retention = cfg.monthlymonths;
 	} else if (strcmp(listname, "year") == 0) {
 		listtype = LT_Year;
 		strncpy_nt(colname, listname, 8);
 		snprintf(titlename, 16, "yearly");
 		strncpy_nt(stampformat, "%Y", 64);
 		limit = cfg.listyears;
+		retention = cfg.yearlyyears;
 	} else if (strcmp(listname, "top") == 0) {
 		listtype = LT_Top;
 		snprintf(colname, 8, "day");
 		snprintf(titlename, 16, "top days");
 		strncpy_nt(stampformat, cfg.tformat, 64);
 		limit = cfg.listtop;
+		retention = cfg.topdayentries;
 		offset = 6;
 	} else if (strcmp(listname, "hour") == 0) {
 		listtype = LT_Hour;
@@ -336,12 +340,14 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 		snprintf(titlename, 16, "hourly");
 		strncpy_nt(stampformat, "%H:%M", 64);
 		limit = cfg.listhours;
+		retention = cfg.hourlydays;
 	} else if (strcmp(listname, "fiveminute") == 0) {
 		listtype = LT_5min;
 		strncpy_nt(colname, "time", 8);
 		snprintf(titlename, 16, "5 minute");
 		strncpy_nt(stampformat, "%H:%M", 64);
 		limit = cfg.listfivemins;
+		retention = cfg.fiveminutehours;
 	} else {
 		return;
 	}
@@ -361,6 +367,9 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 		printf("No %s data available", titlename);
 		if (strlen(databegin) || strlen(dataend)) {
 			printf(" for given date range");
+		}
+		if (retention == 0) {
+			printf(". Data retention for this data type is disabled in configuration");
 		}
 		printf(".\n");
 		return;
