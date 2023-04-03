@@ -1106,7 +1106,8 @@ int db_removeoldentries_top(void)
 
 int db_removedisabledresolutionentries(void)
 {
-	char sql[256], rc;
+	int rc;
+	char sql[256];
 
 	timeused_debug(__func__, 1);
 
