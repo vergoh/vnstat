@@ -47,6 +47,7 @@ int loadcfg(const char *cfgfile, const ConfigType type)
 		 {"InterfaceMatchMethod", 0, &cfg.ifacematchmethod, 0, 0},
 		 {"EstimateVisible", 0, &cfg.estimatevisible, 0, 0},
 		 {"EstimateText", cfg.estimatetext, 0, 10, 0},
+		 {"InterfaceOrder", 0, &cfg.interfaceorder, 0, 0},
 		 {"5MinuteHours", 0, &cfg.fiveminutehours, 0, 0},
 		 {"HourlyDays", 0, &cfg.hourlydays, 0, 0},
 		 {"DailyDays", 0, &cfg.dailydays, 0, 0},
@@ -129,7 +130,7 @@ int loadcfg(const char *cfgfile, const ConfigType type)
 			}
 
 			cfglen = (unsigned int)strlen(cset[i].name);
-			if ((linelen < (cfglen + 2)) || (strncasecmp(cfgline, cset[i].name, cfglen) != 0)) {
+			if ((linelen < (cfglen + 2)) || (strncasecmp(cfgline, cset[i].name, cfglen) != 0) || (cfgline[cfglen] != ' ' && cfgline[cfglen] != '=' && cfgline[cfglen] != '\t')) {
 				continue;
 			}
 
@@ -237,6 +238,7 @@ void validatecfg(const ConfigType type)
 	validateint("ListTop", &cfg.listtop, LISTTOP, 0, 0);
 	validateint("InterfaceMatchMethod", &cfg.ifacematchmethod, IFACEMATCHMETHOD, 0, 3);
 	validatebool("EstimateVisible", &cfg.estimatevisible, ESTIMATEVISIBLE);
+	validateint("InterfaceOrder", &cfg.interfaceorder, INTERFACEORDER, 0, 1);
 	validateint("5MinuteHours", &cfg.fiveminutehours, FIVEMINUTEHOURS, -1, -1);
 	validateint("HourlyDays", &cfg.hourlydays, HOURLYDAYS, -1, -1);
 	validateint("DailyDays", &cfg.dailydays, DAILYDAYS, -1, -1);
@@ -370,6 +372,7 @@ void defaultcfg(void)
 	cfg.ifacematchmethod = IFACEMATCHMETHOD;
 	cfg.estimatevisible = ESTIMATEVISIBLE;
 	strncpy_nt(cfg.estimatetext, ESTIMATETEXT, 10);
+	cfg.interfaceorder = INTERFACEORDER;
 
 	cfg.listfivemins = LISTFIVEMINS;
 	cfg.listhours = LISTHOURS;

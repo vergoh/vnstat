@@ -1,7 +1,7 @@
 
 # New configuration settings
 
- * 2.11: VacuumOnStartup, VacuumOnHUPSignal
+ * 2.11: InterfaceOrder, VacuumOnStartup, VacuumOnHUPSignal
 
  * 2.10: EstimateVisible, EstimateText
 

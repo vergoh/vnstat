@@ -12,6 +12,8 @@
    - Database is vacuumed during daemon startup and reload, behaviour is
      configurable using VacuumOnStartup and VacuumOnHUPSignal configuration
      options
+   - Add configuration option InterfaceOrder for controlling the interface
+     order in outputs with multiple interfaces
 
 
 2.10 / 22-Oct-2022

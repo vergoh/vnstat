@@ -775,7 +775,11 @@ int db_getiflist_sorted(iflist **ifl, const int orderbytraffic)
 	sqlite3_stmt *sqlstmt;
 
 	if (!orderbytraffic) {
-		constsql = "select name from interface order by name asc";
+		if (cfg.interfaceorder == 1) {
+			constsql = "select name from interface order by alias asc, name asc";
+		} else {
+			constsql = "select name from interface order by name asc";
+		}
 	} else {
 		constsql = "select name from interface order by rxtotal+txtotal desc";
 	}

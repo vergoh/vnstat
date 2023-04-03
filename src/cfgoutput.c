@@ -119,6 +119,10 @@ void printcfgfile(void)
 	defaultcomment(strcmp(cfg.estimatetext, ESTIMATETEXT) == 0);
 	printf("EstimateText \"estimated\"\n\n");
 
+	printf("# interface order (0 = alphabetical by name, 1 = alphabetical by alias)\n");
+	defaultcomment(cfg.interfaceorder == INTERFACEORDER);
+	printf("InterfaceOrder %d\n\n", cfg.interfaceorder);
+
 	printf("\n");
 
 	/* vnstatd section */

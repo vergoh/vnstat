@@ -107,6 +107,13 @@ method results in multiple matches then the interface with the highest total
 traffic will be used. (vnstat and vnstati only)
 
 .TP
+.B InterfaceOrder
+Interface order in outputs with multiple interfaces. 0 = alphabetical
+by name, 1 = alphabetical by alias. If 1 is selected and multiple interfaces
+don't have aliases then the interface name will be used for defining the order.
+(vnstat only)
+
+.TP
 .B "List5Mins, ListHours, ListDays, ListMonths, ListYears, ListTop"
 Number of entries to show in list outputs unless overridden from the command line.
 Set to 0 to show all entries available in the database.

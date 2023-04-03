@@ -110,6 +110,10 @@ and most can be changed later from the config file.
 #define OSTYLE 3
 #define ESTIMATEBARVISIBLE 1
 
+/* interface order */
+/* 0 = alphabetical by name, 1 = alphabetical by alias */
+#define INTERFACEORDER 0
+
 /* rate in vnstati summary output */
 #define SUMMARYRATE 1
 
@@ -332,7 +336,7 @@ typedef struct {
 	int32_t uselogging, createdirs, updatefileowner, bwdetection, bwdetectioninterval, utflocale;
 	int32_t fiveminutehours, hourlydays, dailydays, monthlymonths, yearlyyears, topdayentries;
 	int32_t listfivemins, listhours, listdays, listmonths, listyears, listtop, listjsonxml;
-	int32_t timestampprints, experimental, vacuumonstartup, vacuumonhupsignal;
+	int32_t timestampprints, interfaceorder, vacuumonstartup, vacuumonhupsignal, experimental;
 } CFG;
 
 /* internal interface information structure */

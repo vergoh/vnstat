@@ -832,6 +832,8 @@ START_TEST(db_getiflist_lists_interfaces)
 	int ret;
 	iflist *dbifl = NULL, *dbifl_i = NULL;
 
+	cfg.interfaceorder = 0;
+
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 	ret = db_addinterface("a");
@@ -860,6 +862,89 @@ START_TEST(db_getiflist_lists_interfaces)
 	dbifl_i = dbifl_i->next;
 
 	ck_assert_str_eq(dbifl_i->interface, "eth0");
+	ck_assert_ptr_ne(dbifl_i->next, NULL);
+	dbifl_i = dbifl_i->next;
+
+	ck_assert_str_eq(dbifl_i->interface, "eth1");
+	ck_assert_ptr_eq(dbifl_i->next, NULL);
+
+	iflistfree(&dbifl);
+	ck_assert_ptr_eq(dbifl, NULL);
+}
+END_TEST
+
+START_TEST(db_getiflist_orders_interfaces)
+{
+	int ret;
+	iflist *dbifl = NULL, *dbifl_i = NULL;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("a");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("b");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setalias("a", "03. a");
+	ck_assert_int_eq(ret, 1);
+	ret = db_setalias("b", "01. b");
+	ck_assert_int_eq(ret, 1);
+	ret = db_setalias("eth0", "02. eth0");
+	ck_assert_int_eq(ret, 1);
+	ret = db_setalias("eth1", "04. eth1");
+	ck_assert_int_eq(ret, 1);
+
+	/* alphabetical by interface */
+	cfg.interfaceorder = 0;
+
+	ret = db_getiflist(&dbifl);
+	ck_assert_int_eq(ret, 4);
+
+	dbifl_i = dbifl;
+
+	ck_assert_str_eq(dbifl_i->interface, "a");
+	ck_assert_ptr_ne(dbifl_i->next, NULL);
+	dbifl_i = dbifl_i->next;
+
+	ck_assert_str_eq(dbifl_i->interface, "b");
+	ck_assert_ptr_ne(dbifl_i->next, NULL);
+	dbifl_i = dbifl_i->next;
+
+	ck_assert_str_eq(dbifl_i->interface, "eth0");
+	ck_assert_ptr_ne(dbifl_i->next, NULL);
+	dbifl_i = dbifl_i->next;
+
+	ck_assert_str_eq(dbifl_i->interface, "eth1");
+	ck_assert_ptr_eq(dbifl_i->next, NULL);
+
+	iflistfree(&dbifl);
+	ck_assert_ptr_eq(dbifl, NULL);
+
+	/* alphabetical by alias */
+	cfg.interfaceorder = 1;
+
+	ret = db_getiflist(&dbifl);
+	ck_assert_int_eq(ret, 4);
+
+	dbifl_i = dbifl;
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+
+	ck_assert_str_eq(dbifl_i->interface, "b");
+	ck_assert_ptr_ne(dbifl_i->next, NULL);
+	dbifl_i = dbifl_i->next;
+
+	ck_assert_str_eq(dbifl_i->interface, "eth0");
+	ck_assert_ptr_ne(dbifl_i->next, NULL);
+	dbifl_i = dbifl_i->next;
+
+	ck_assert_str_eq(dbifl_i->interface, "a");
 	ck_assert_ptr_ne(dbifl_i->next, NULL);
 	dbifl_i = dbifl_i->next;
 
@@ -3467,6 +3552,7 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_setcounters_with_no_interface);
 	tcase_add_test(tc_dbsql, db_interface_info_manipulation);
 	tcase_add_test(tc_dbsql, db_getiflist_lists_interfaces);
+	tcase_add_test(tc_dbsql, db_getiflist_orders_interfaces);
 	tcase_add_test(tc_dbsql, db_maintenance_does_not_fault);
 	tcase_add_test(tc_dbsql, db_data_can_be_inserted);
 	tcase_add_test(tc_dbsql, db_data_can_be_retrieved);
