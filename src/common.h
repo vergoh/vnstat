@@ -252,6 +252,8 @@ and most can be changed later from the config file.
 #define SLOWDBWARNLIMIT 4.0 // needs to be less than DBREADTIMEOUTSECS
 #define DBSYNCHRONOUS -1
 #define USEUTC 0
+#define VACUUMONSTARTUP 1
+#define VACUUMONHUPSIGNAL 1
 
 /* database read timeout */
 #define DBREADTIMEOUTSECS 5
@@ -330,7 +332,7 @@ typedef struct {
 	int32_t uselogging, createdirs, updatefileowner, bwdetection, bwdetectioninterval, utflocale;
 	int32_t fiveminutehours, hourlydays, dailydays, monthlymonths, yearlyyears, topdayentries;
 	int32_t listfivemins, listhours, listdays, listmonths, listyears, listtop, listjsonxml;
-	int32_t timestampprints, experimental;
+	int32_t timestampprints, experimental, vacuumonstartup, vacuumonhupsignal;
 } CFG;
 
 /* internal interface information structure */

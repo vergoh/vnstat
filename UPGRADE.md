@@ -1,6 +1,8 @@
 
 # New configuration settings
 
+ * 2.11: VacuumOnStartup, VacuumOnHUPSignal
+
  * 2.10: EstimateVisible, EstimateText
 
  * 2.9: HourlyGraphMode, InterfaceMatchMethod

@@ -433,6 +433,22 @@ will be used. Changing this setting will not result in already existing
 data to be modified. 1 = enabled, 0 = disabled.
 
 .TP
+.B VacuumOnHUPSignal
+Enable or disable the execution of SQLite VACUUM command after the daemon has received
+a HUP signal. When enabled, the database file is rebuilt and repacked into a minimal amount
+of disk space. The difference in size can be notable especially if data retention
+durations have been reduced or previously monitored interfaces removed from the database.
+1 = enabled, 0 = disabled.
+
+.TP
+.B VacuumOnStartup
+Enable or disable the execution of SQLite VACUUM command during daemon startup.
+When enabled, the database file is rebuilt and repacked into a minimal amount
+of disk space. The difference in size can be notable especially if data retention
+durations have been reduced or previously monitored interfaces removed from the database.
+1 = enabled, 0 = disabled.
+
+.TP
 .B YearlyYears
 Data retention duration for the one year resolution entries. The configuration
 defines for how many past years entries will be stored. Set to -1 for

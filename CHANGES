@@ -9,7 +9,9 @@
      in the data resolution getting disabled but instead storing data forever
  - New
    - SQLite version is visible in --version outputs
-   - Database is vacuumed during daemon startup and reload
+   - Database is vacuumed during daemon startup and reload, behaviour is
+     configurable using VacuumOnStartup and VacuumOnHUPSignal configuration
+     options
 
 
 2.10 / 22-Oct-2022

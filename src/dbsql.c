@@ -972,9 +972,11 @@ int db_insertdata(const char *table, const char *iface, const uint64_t rx, const
 
 int db_removeoldentries(void)
 {
+	int rc;
 	char sql[256];
 
 	if (debug) {
+		timeused_debug(__func__, 1);
 		printf("db: removing old entries\n");
 	}
 
@@ -1042,7 +1044,11 @@ int db_removeoldentries(void)
 		}
 	}
 
-	return db_committransaction();
+	rc = db_committransaction();
+
+	timeused_debug(__func__, 0);
+
+	return rc;
 }
 
 int db_removeoldentries_top(void)
@@ -1096,7 +1102,9 @@ int db_removeoldentries_top(void)
 
 int db_removedisabledresolutionentries(void)
 {
-	char sql[256];
+	char sql[256], rc;
+
+	timeused_debug(__func__, 1);
 
 	if (cfg.topdayentries != 0 && cfg.fiveminutehours != 0 && cfg.hourlydays != 0 && cfg.dailydays != 0 && cfg.monthlymonths != 0 && cfg.yearlyyears != 0) {
 		if (debug) {
@@ -1175,15 +1183,28 @@ int db_removedisabledresolutionentries(void)
 		}
 	}
 
-	return db_committransaction();
+	rc = db_committransaction();
+
+	timeused_debug(__func__, 0);
+
+	return rc;
 }
 
 int db_vacuum(void)
 {
+	int rc;
+
+	timeused_debug(__func__, 1);
+
 	if (debug) {
 		printf("db: vacuum\n");
 	}
-	return db_exec("VACUUM");
+
+	rc = db_exec("VACUUM");
+
+	timeused_debug(__func__, 0);
+
+	return rc;
 }
 
 int db_begintransaction(void)

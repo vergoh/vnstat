@@ -73,6 +73,8 @@ int loadcfg(const char *cfgfile, const ConfigType type)
 		 {"DatabaseWriteAheadLogging", 0, &cfg.waldb, 0, 0},
 		 {"DatabaseSynchronous", 0, &cfg.dbsynchronous, 0, 0},
 		 {"UseUTC", 0, &cfg.useutc, 0, 0},
+		 {"VacuumOnStartup", 0, &cfg.vacuumonstartup, 0, 0},
+		 {"VacuumOnHUPSignal", 0, &cfg.vacuumonhupsignal, 0, 0},
 		 {"HeaderFormat", cfg.hformat, 0, 64, 0},
 		 {"HourlyRate", 0, &cfg.hourlyrate, 0, 0},
 		 {"SummaryRate", 0, &cfg.summaryrate, 0, 0},
@@ -210,6 +212,8 @@ void validatecfg(const ConfigType type)
 	validatebool("DatabaseWriteAheadLogging", &cfg.waldb, WALDB);
 	validateint("DatabaseSynchronous", &cfg.dbsynchronous, DBSYNCHRONOUS, -1, 3);
 	validatebool("UseUTC", &cfg.useutc, USEUTC);
+	validatebool("VacuumOnStartup", &cfg.vacuumonstartup, VACUUMONSTARTUP);
+	validatebool("VacuumOnHUPSignal", &cfg.vacuumonhupsignal, VACUUMONHUPSIGNAL);
 	if (type == CT_Image || type == CT_All) {
 		validatebool("TransparentBg", &cfg.transbg, TRANSBG);
 		validatebool("LargeFonts", &cfg.largefonts, LARGEFONTS);
@@ -414,6 +418,8 @@ void defaultcfg(void)
 	cfg.waldb = WALDB;
 	cfg.dbsynchronous = DBSYNCHRONOUS;
 	cfg.useutc = USEUTC;
+	cfg.vacuumonstartup = VACUUMONSTARTUP;
+	cfg.vacuumonhupsignal = VACUUMONHUPSIGNAL;
 
 	cfg.transbg = TRANSBG;
 	cfg.largefonts = LARGEFONTS;

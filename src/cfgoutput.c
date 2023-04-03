@@ -260,6 +260,12 @@ void printcfgfile(void)
 	defaultcomment(cfg.useutc == USEUTC);
 	printf("UseUTC %d\n\n", cfg.useutc);
 
+	printf("# database maintenance (1 = enabled, 0 = disabled)\n");
+	defaultcomment(cfg.vacuumonstartup == VACUUMONSTARTUP);
+	printf("VacuumOnStartup %d\n", cfg.vacuumonstartup);
+	defaultcomment(cfg.vacuumonhupsignal == VACUUMONHUPSIGNAL);
+	printf("VacuumOnHUPSignal %d\n\n", cfg.vacuumonhupsignal);
+
 	printf("\n");
 
 	/* vnstati section */
