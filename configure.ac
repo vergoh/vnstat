@@ -75,19 +75,19 @@ AC_OUTPUT
 
 # Resolve install paths for output.
 msg_bindir=$bindir
-while expr match "${msg_bindir}" '^.*\$.*$' 1>/dev/null;
+while expr "${msg_bindir}" : '^.*\$.*$' 1>/dev/null;
 do
     msg_bindir="$(eval echo ${msg_bindir})"
 done
 
 msg_sbindir=$sbindir
-while expr match "${msg_sbindir}" '^.*\$.*$' 1>/dev/null;
+while expr "${msg_sbindir}" : '^.*\$.*$' 1>/dev/null;
 do
     msg_sbindir="$(eval echo ${msg_sbindir})"
 done
 
 msg_sysconfdir=$sysconfdir
-while expr match "${msg_sysconfdir}" '^.*\$.*$' 1>/dev/null;
+while expr "${msg_sysconfdir}" : '^.*\$.*$' 1>/dev/null;
 do
     msg_sysconfdir="$(eval echo ${msg_sysconfdir})"
 done
