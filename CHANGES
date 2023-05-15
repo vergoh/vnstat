@@ -7,6 +7,7 @@
      in possibly existing database entries getting removed from the database
    - Disabling data resolutions in data retention configuration didn't result
      in the data resolution getting disabled but instead storing data forever
+   - "expr: syntax error" during configure in BSD (pull request by namtsui)
  - New
    - SQLite version is visible in --version outputs
    - Database is vacuumed during daemon startup and reload, behaviour is
