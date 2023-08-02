@@ -20,11 +20,11 @@ int printe(const PrintType type)
 	if (disableprints) {
 		return 1;
 
-		/* daemon running but log not enabled */
+	/* daemon running but log not enabled */
 	} else if (noexit == 2 && cfg.uselogging == 0) {
 		return 1;
 
-		/* daemon running, log enabled */
+	/* daemon running, log enabled */
 	} else if (noexit == 2) {
 
 		switch (type) {
@@ -40,7 +40,7 @@ int printe(const PrintType type)
 				break;
 		}
 
-		/* daemon isn't running or is running attached to a terminal */
+	/* daemon isn't running or is running attached to a terminal */
 	} else {
 
 		if (cfg.timestampprints && type != PT_ShortMultiline) {
@@ -129,7 +129,7 @@ int logprint(const PrintType type)
 		fclose(logfile);
 		return 1;
 
-		/* syslog */
+	/* syslog */
 	} else if (cfg.uselogging == 2) {
 
 		openlog("vnstatd", LOG_PID, LOG_DAEMON);
@@ -232,7 +232,7 @@ uint64_t countercalc(const uint64_t *a, const uint64_t *b, const short is64bit)
 			printf("cc (%d): %" PRIu64 " - %" PRIu64 " = %" PRIu64 "\n", is64bit, *b, *a, *b - *a);
 		return *b - *a;
 
-		/* rollover exists */
+	/* rollover exists */
 	} else {
 		/* counter is 64bit */
 		if (*a > MAX32 || *b > MAX32 || is64bit == 1) {
@@ -240,7 +240,7 @@ uint64_t countercalc(const uint64_t *a, const uint64_t *b, const short is64bit)
 				printf("cc64 (%d): uint64 - %" PRIu64 " + %" PRIu64 " = %" PRIu64 "\n", is64bit, *a, *b, (uint64_t)MAX64 - *a + *b);
 			return MAX64 - *a + *b;
 
-			/* counter is 32bit */
+		/* counter is 32bit */
 		} else {
 			if (debug)
 				printf("cc32 (%d): uint32 - %" PRIu64 " + %" PRIu64 " = %" PRIu64 "\n", is64bit, *a, *b, (uint64_t)MAX32 - *a + *b);
