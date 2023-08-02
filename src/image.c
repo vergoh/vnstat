@@ -666,11 +666,6 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int rate)
 	imageinit(ic, width, height);
 	layoutinit(ic, "", width, height);
 
-	if (ic->interface.rxtotal == 0 && ic->interface.txtotal == 0) {
-		gdImageString(ic->im, ic->font, 33 * ic->font->w, 100, (unsigned char *)"no data available", ic->ctext);
-		return;
-	}
-
 	drawsummary_alltime(ic, 385 + (ic->large * 125), 57 - headermod + (ic->large * 10));
 	drawlegend(ic, 410 + (ic->large * 132), 155 - headermod + (ic->large * 40), 0);
 
@@ -759,7 +754,8 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 	}
 
 	if (!db_getdata(&datalist, &datainfo, ic->interface.name, mode, 2) || datalist == NULL) {
-		gdImageString(ic->im, ic->font, 25 * ic->font->w, y + 30, (unsigned char *)"no data available", ic->ctext);
+		snprintf(buffer, 512, "no %s data available", mode);
+		gdImageString(ic->im, ic->font, 25 * ic->font->w, y + 30, (unsigned char *)buffer, ic->ctext);
 		return;
 	} else if (datalist->next == NULL) {
 		data_current = datalist;

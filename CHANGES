@@ -8,6 +8,9 @@
    - Disabling data resolutions in data retention configuration didn't result
      in the data resolution getting disabled but instead storing data forever
    - "expr: syntax error" during configure in BSD (pull request by namtsui)
+   - Image output summary would show only "no data available" text in case of
+     zero total traffic even when the historical data of no traffic could have
+     been shown instead
  - New
    - SQLite version is visible in --version outputs
    - Database is vacuumed during daemon startup and reload, behaviour is
@@ -15,6 +18,13 @@
      options
    - Add configuration option InterfaceOrder for controlling the interface
      order in outputs with multiple interfaces
+ - Notes
+   - "Not enough data available yet." message has been replaced with
+     "No data. Timestamp of database creation is same as the last update."
+     to better indicate the situation when the interface's creation timestamp
+     in the database is the same as its last update timestamp, this message
+     is expected to disappear within configured SaveInterval if the interface
+     is active
 
 
 2.10 / 22-Oct-2022

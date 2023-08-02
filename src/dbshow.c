@@ -16,7 +16,7 @@ void showdb(const char *interface, int qmode, const char *databegin, const char 
 	}
 
 	if (info.created == info.updated) {
-		printf(" %s: Not enough data available yet.\n", interface);
+		printf(" %s: No data. Timestamp of database creation is same as the last update.\n", interface);
 		return;
 	}
 
