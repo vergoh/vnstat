@@ -95,6 +95,18 @@ int main(int argc, char *argv[])
 	detectboot(&s);
 	preparedatabase(&s);
 
+	if (cfg.fiveminutehours == 0 && cfg.hourlydays == 0 && cfg.dailydays == 0 && cfg.monthlymonths == 0 && cfg.yearlyyears == 0 && cfg.topdayentries == 0) {
+		printf("Error: All data resolutions have been disabled in data retention configuration:");
+		printf("  5MinuteHours   %d\n", cfg.fiveminutehours);
+		printf("  HourlyDays     %d\n", cfg.hourlydays);
+		printf("  DailyDays      %d\n", cfg.dailydays);
+		printf("  MonthlyMonths  %d\n", cfg.monthlymonths);
+		printf("  YearlyYears    %d\n", cfg.yearlyyears);
+		printf("  TopDayEntries  %d\n", cfg.topdayentries);
+		printf("Exiting...\n");
+		exit(EXIT_FAILURE);
+	}
+
 	if (!db_removeoldentries()) {
 		printf("Error: Database \"%s/%s\" old entry cleanup failed: %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
 		printf("Exiting...\n");
@@ -107,10 +119,12 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	if (!db_vacuum()) {
-		printf("Error: Database \"%s/%s\" vacuum failed: %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
-		printf("Exiting...\n");
-		exit(EXIT_FAILURE);
+	if (cfg.vacuumonstartup) {
+		if (!db_vacuum()) {
+			printf("Error: Database \"%s/%s\" vacuum failed: %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
+			printf("Exiting...\n");
+			exit(EXIT_FAILURE);
+		}
 	}
 
 	setsignaltraps();
@@ -134,23 +148,7 @@ int main(int argc, char *argv[])
 	timeused_debug("daemon_startup", 0);
 	s.running = 1;
 
-#if defined(__linux__) && HAVE_LINUX_RTNETLINK_H
-#if HAVE_DECL_IFLA_STATS64
-	snprintf(errorstring, 1024, "vnStat daemon %s started. (pid:%d uid:%d gid:%d 64-bit, SQLite %s)", getversion(), (int)getpid(), (int)getuid(), (int)getgid(), sqlite3_libversion());
-#else
-	snprintf(errorstring, 1024, "vnStat daemon %s started. (pid:%d uid:%d gid:%d 32-bit, SQLite %s)", getversion(), (int)getpid(), (int)getuid(), (int)getgid(), sqlite3_libversion());
-#endif
-#else
-	snprintf(errorstring, 1024, "vnStat daemon %s started. (pid:%d uid:%d gid:%d, SQLite %s)", getversion(), (int)getpid(), (int)getuid(), (int)getgid(), sqlite3_libversion());
-#endif
-	printe(PT_Info);
-
-#if !HAVE_DECL_SQLITE_CHECKPOINT_RESTART
-	if (cfg.waldb) {
-		snprintf(errorstring, 1024, "DatabaseWriteAheadLogging is enabled but used libsqlite3 does not support it");
-		printe(PT_Warning);
-	}
-#endif
+	printstartupdetails();
 
 	/* warmup */
 	if (s.dbifcount == 0) {

@@ -15,6 +15,7 @@ typedef struct {
 } DSTATE;
 
 void daemonize(void);
+void printstartupdetails(void);
 void debugtimestamp(void);
 
 unsigned int addinterfaces(DSTATE *s);
@@ -26,7 +27,6 @@ void filldatabaselist(DSTATE *s);
 void adjustsaveinterval(DSTATE *s);
 void checkdbsaveneed(DSTATE *s);
 void processdatacache(DSTATE *s);
-void processdatalist(DSTATE *s);
 void handleintsignals(DSTATE *s);
 void preparedirs(DSTATE *s);
 void detectboot(DSTATE *s);

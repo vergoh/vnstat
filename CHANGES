@@ -24,6 +24,10 @@
      options
    - Add configuration option InterfaceOrder for controlling the interface
      order in outputs with multiple interfaces
+   - Used data retention configuration is made visible during daemon startup
+     and after configuration reloads
+   - Daemon will no longer start if all data resolutions have been disabled
+     in the configuration file
  - Notes
    - "Not enough data available yet." message has been replaced with
      "No data. Timestamp of database creation is same as the last update."

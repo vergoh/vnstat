@@ -110,6 +110,30 @@ void daemonize(void)
 	signal(SIGTTIN, SIG_IGN);
 }
 
+void printstartupdetails(void)
+{
+#if defined(__linux__) && HAVE_LINUX_RTNETLINK_H
+#if HAVE_DECL_IFLA_STATS64
+	snprintf(errorstring, 1024, "vnStat daemon %s (pid:%d uid:%d gid:%d 64-bit, SQLite %s)", getversion(), (int)getpid(), (int)getuid(), (int)getgid(), sqlite3_libversion());
+#else
+	snprintf(errorstring, 1024, "vnStat daemon %s (pid:%d uid:%d gid:%d 32-bit, SQLite %s)", getversion(), (int)getpid(), (int)getuid(), (int)getgid(), sqlite3_libversion());
+#endif
+#else
+	snprintf(errorstring, 1024, "vnStat daemon %s (pid:%d uid:%d gid:%d, SQLite %s)", getversion(), (int)getpid(), (int)getuid(), (int)getgid(), sqlite3_libversion());
+#endif
+	printe(PT_Info);
+
+	snprintf(errorstring, 1024, "Data retention: %d 5MinuteHours, %d HourlyDays, %d DailyDays, %d MonthlyMonths, %d YearlyYears, %d TopDayEntries", cfg.fiveminutehours, cfg.hourlydays, cfg.dailydays, cfg.monthlymonths, cfg.yearlyyears, cfg.topdayentries);
+	printe(PT_Info);
+
+#if !HAVE_DECL_SQLITE_CHECKPOINT_RESTART
+	if (cfg.waldb) {
+		snprintf(errorstring, 1024, "DatabaseWriteAheadLogging is enabled but used libsqlite3 does not support it");
+		printe(PT_Warning);
+	}
+#endif
+}
+
 unsigned int addinterfaces(DSTATE *s)
 {
 	iflist *ifl = NULL, *ifl_iterator = NULL;
@@ -816,15 +840,18 @@ void handleintsignals(DSTATE *s)
 				}
 				exit(EXIT_FAILURE);
 			}
-			if (!db_vacuum()) {
-				snprintf(errorstring, 1024, "Database vacuum after SIGHUP failed (%s), exiting.", strerror(errno));
-				printe(PT_Error);
-				if (s->rundaemon && !debug) {
-					close(pidfile);
-					unlink(cfg.pidfile);
+			if (cfg.vacuumonhupsignal) {
+				if (!db_vacuum()) {
+					snprintf(errorstring, 1024, "Database vacuum after SIGHUP failed (%s), exiting.", strerror(errno));
+					printe(PT_Error);
+					if (s->rundaemon && !debug) {
+						close(pidfile);
+						unlink(cfg.pidfile);
+					}
+					exit(EXIT_FAILURE);
 				}
-				exit(EXIT_FAILURE);
 			}
+			printstartupdetails();
 			break;
 
 		case SIGINT:
