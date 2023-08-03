@@ -1,5 +1,5 @@
 /*
-vnStat image output - Copyright (C) 2007-2022 Teemu Toivola <tst@iki.fi>
+vnStat image output - Copyright (C) 2007-2023 Teemu Toivola <tst@iki.fi>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
