@@ -471,10 +471,10 @@ int isifavailable(const char *iface)
 {
 	int ret = 0, printstatus;
 
-	printstatus = disableprints;
-	disableprints = 1;
+	printstatus = disableprinte;
+	disableprinte = 1;
 	ret = getifinfo(iface);
-	disableprints = printstatus;
+	disableprinte = printstatus;
 
 	return ret;
 }

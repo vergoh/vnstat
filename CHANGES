@@ -11,6 +11,12 @@
    - Image output summary would show only "no data available" text in case of
      zero total traffic even when the historical data of no traffic could have
      been shown instead
+   - Image output "-o -" content could get corrupted due to info, warning and
+     error messages also using stdout, configuration file warnings being the
+     most likely source, now uses stderr in image output
+   - Configuration validation was too heavily limiting and enforcing image
+     output 5 minute graph related configuration options for combinations that
+     would have resulted in usable images
  - New
    - SQLite version is visible in --version outputs
    - Database is vacuumed during daemon startup and reload, behaviour is

@@ -394,6 +394,7 @@ extern int debug;
 extern int noexit; /* = running as daemon if 2 */
 extern int intsignal;
 extern int pidfile;
-extern int disableprints;
+extern int disableprinte;
+extern int stderrprinte;
 
 #endif

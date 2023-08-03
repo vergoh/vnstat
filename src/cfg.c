@@ -330,17 +330,6 @@ void validatecfg(const ConfigType type)
 				printf("BarColumnShowsRate and EstimateBarVisible both enabled -> EstimateStyle set to 0\n");
 			}
 		}
-
-		if (cfg.fiveminutehours > 0 && cfg.fivegresultcount > cfg.fiveminutehours * 12) {
-			if (cfg.fiveminutehours * 12 < FIVEGMINRESULTCOUNT) {
-				snprintf(errorstring, 1024, "Value \"%d\" for 5MinuteHours is too small for 5MinuteGraphResultCount with value \"%d\" (smallest supported value: %d). Value for 5MinuteHours needs to be at least %d if 5MinuteGraphResultCount is set to %d.", cfg.fiveminutehours, cfg.fivegresultcount, FIVEGMINRESULTCOUNT, FIVEGMINRESULTCOUNT / 12, FIVEGMINRESULTCOUNT);
-				cfg.fivegresultcount = FIVEGMINRESULTCOUNT;
-			} else {
-				snprintf(errorstring, 1024, "5MinuteGraphResultCount has been adjusted to %d because requested \"%d\" requires more data than can be available with value %d for 5MinuteHours.", cfg.fiveminutehours * 12, cfg.fivegresultcount, cfg.fiveminutehours);
-				cfg.fivegresultcount = cfg.fiveminutehours * 12;
-			}
-			printe(PT_Config);
-		}
 	}
 }
 

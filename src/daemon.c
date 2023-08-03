@@ -243,7 +243,8 @@ void initdstate(DSTATE *s)
 	db = NULL;
 	noexit = 1;		   /* disable exits in functions */
 	debug = 0;		   /* debug disabled by default */
-	disableprints = 0; /* let prints be visible */
+	disableprinte = 0; /* let printe() output be visible */
+	stderrprinte = 0;  /* use stdout for printe() output */
 	s->rundaemon = 0;  /* daemon disabled by default */
 
 	s->running = 0;

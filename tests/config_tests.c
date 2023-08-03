@@ -113,28 +113,6 @@ START_TEST(validatecfg_can_change_estimatestyle_for_images_depending_on_settings
 }
 END_TEST
 
-START_TEST(validatecfg_limits_5_minute_result_count_to_available_data_amount)
-{
-	cfg.fiveminutehours = 26;
-	cfg.fivegresultcount = 9001;
-	suppress_output();
-	validatecfg(CT_Image);
-	ck_assert_int_eq(cfg.fiveminutehours, 26);
-	ck_assert_int_eq(cfg.fivegresultcount, 312);
-}
-END_TEST
-
-START_TEST(validatecfg_limits_5_minute_result_count_to_minimum_usable)
-{
-	cfg.fiveminutehours = 12;
-	cfg.fivegresultcount = 9001;
-	suppress_output();
-	validatecfg(CT_Image);
-	ck_assert_int_eq(cfg.fiveminutehours, 12);
-	ck_assert_int_eq(cfg.fivegresultcount, 288);
-}
-END_TEST
-
 START_TEST(validatecfg_limits_5_minute_result_count_to_not_be_too_much)
 {
 	cfg.fiveminutehours = 9001;
@@ -704,8 +682,6 @@ void add_config_tests(Suite *s)
 	tcase_add_test(tc_config, validatecfg_can_tune_updateinterval_to_avoid_rollover_issues);
 	tcase_add_test(tc_config, validatecfg_has_fallback_for_updateinterval_for_very_fast_interfaces);
 	tcase_add_test(tc_config, validatecfg_can_change_estimatestyle_for_images_depending_on_settings);
-	tcase_add_test(tc_config, validatecfg_limits_5_minute_result_count_to_available_data_amount);
-	tcase_add_test(tc_config, validatecfg_limits_5_minute_result_count_to_minimum_usable);
 	tcase_add_test(tc_config, validatecfg_limits_5_minute_result_count_to_not_be_too_much);
 	tcase_add_test(tc_config, validatecfg_does_not_touch_5_minute_result_count_if_data_is_not_being_created);
 	tcase_add_test(tc_config, validatecfg_is_not_stupid_with_5_minute_result_count_if_there_is_no_data_limit);

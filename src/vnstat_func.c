@@ -16,7 +16,8 @@ void initparams(PARAMS *p)
 	db = NULL;
 	noexit = 0;		   /* allow functions to exit in case of error */
 	debug = 0;		   /* debug disabled by default */
-	disableprints = 0; /* let prints be visible */
+	disableprinte = 0; /* let printe() output be visible */
+	stderrprinte = 0;  /* use stdout for printe() output */
 
 	p->addiface = 0;
 	p->query = 1;

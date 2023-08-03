@@ -82,6 +82,8 @@ void verify_fork_status(void)
 void setup(void) {
 	defaultcfg();
 	debug = 0;
+	disableprinte = 0;
+	stderrprinte = 0;
 }
 
 void teardown(void) {
@@ -117,7 +119,7 @@ void disable_logprints(void)
 {
 	noexit = 2;
 	cfg.uselogging = 0;
-	disableprints = 1;
+	disableprinte = 1;
 }
 
 int clean_testdbdir(void)

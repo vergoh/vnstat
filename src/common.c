@@ -9,15 +9,17 @@ int debug;
 int noexit; /* = running as daemon if 2 */
 int intsignal;
 int pidfile;
-int disableprints;
+int disableprinte;
+int stderrprinte;
 
 int printe(const PrintType type)
 {
 	int result = 1;
 	char timestamp[22];
 	time_t current;
+	FILE *output = stdout;
 
-	if (disableprints) {
+	if (disableprinte) {
 		return 1;
 
 	/* daemon running but log not enabled */
@@ -43,35 +45,41 @@ int printe(const PrintType type)
 	/* daemon isn't running or is running attached to a terminal */
 	} else {
 
+		if (stderrprinte) {
+			output = stderr;
+		}
+
 		if (cfg.timestampprints && type != PT_ShortMultiline) {
 			current = time(NULL);
 			strftime(timestamp, 22, DATETIMEFORMAT, localtime(&current));
-			printf("[%s] ", timestamp);
+			fprintf(output, "[%s] ", timestamp);
 		}
 
 		switch (type) {
 			case PT_Info:
-				printf("Info: %s\n", errorstring);
+				fprintf(output, "Info: %s\n", errorstring);
 				break;
 			case PT_Infoless:
-				printf("%s\n", errorstring);
+				fprintf(output, "%s\n", errorstring);
 				break;
 			case PT_Warning:
-				printf("Warning: %s\n", errorstring);
+				fprintf(output, "Warning: %s\n", errorstring);
 				break;
 			case PT_Error:
-				printf("Error: %s\n", errorstring);
+				fprintf(output, "Error: %s\n", errorstring);
 				break;
 			case PT_Config:
-				printf("Config: %s\n", errorstring);
+				fprintf(output, "Config: %s\n", errorstring);
 				break;
 			case PT_Multiline:
-				printf("%s\n", errorstring);
+				fprintf(output, "%s\n", errorstring);
 				break;
 			case PT_ShortMultiline:
 				break;
 		}
-		fflush(stdout);
+		if (!stderrprinte) {
+			fflush(stdout);
+		}
 	}
 
 	return result;
@@ -278,7 +286,9 @@ __attribute__((noreturn)) void panicexit(const char *sourcefile, const int sourc
 {
 	snprintf(errorstring, 1024, "Unexpected error (%s), exiting. (%s:%d)", strerror(errno), sourcefile, sourceline);
 	fprintf(stderr, "%s\n", errorstring);
-	printe(PT_Error);
+	if (!stderrprinte) {
+		printe(PT_Error);
+	}
 	exit(EXIT_FAILURE);
 }
 
