@@ -6,6 +6,7 @@
 void showdb(const char *interface, int qmode, const char *databegin, const char *dataend)
 {
 	interfaceinfo info;
+	char timestamp[22];
 
 	if (!db_getinterfacecountbyname(interface)) {
 		return;
@@ -16,7 +17,8 @@ void showdb(const char *interface, int qmode, const char *databegin, const char 
 	}
 
 	if (info.created == info.updated) {
-		printf(" %s: No data. Timestamp of database creation is same as the last update.\n", interface);
+		strftime(timestamp, 22, DATETIMEFORMAT, localtime(&info.updated));
+		printf(" %s: No data. Timestamp of last update is same %s as of database creation.\n", interface, timestamp);
 		return;
 	}
 
