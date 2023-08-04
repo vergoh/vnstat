@@ -136,7 +136,7 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate)
 	}
 
 	if (!db_getdata_range(&datalist, &datainfo, ic->interface.name, "hour", 24, buffer, "") || datainfo.count == 0) {
-		gdImageString(ic->im, ic->font, x + (32 * ic->font->w), y + 54, (unsigned char *)"no data available", ic->ctext);
+		gdImageString(ic->im, ic->font, x + (28 * ic->font->w), y + 54 - (ic->large * 18), (unsigned char *)"no hour data available", ic->ctext);
 		return 0;
 	}
 
@@ -755,7 +755,7 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 
 	if (!db_getdata(&datalist, &datainfo, ic->interface.name, mode, 2) || datalist == NULL) {
 		snprintf(buffer, 512, "no %s data available", mode);
-		gdImageString(ic->im, ic->font, 25 * ic->font->w, y + 30, (unsigned char *)buffer, ic->ctext);
+		gdImageString(ic->im, ic->font, 20 * ic->font->w, y + 30, (unsigned char *)buffer, ic->ctext);
 		return;
 	} else if (datalist->next == NULL) {
 		data_current = datalist;
@@ -937,8 +937,8 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	}
 
 	if (!db_getdata(&datalist, &datainfo, ic->interface.name, "fiveminute", (uint32_t)resultcount) || datainfo.count == 0) {
-		x = (resultcount + FIVEMINEXTRASPACE + (ic->large * 14)) / 2 - (8 * ic->font->w + ic->font->w / 2);
-		gdImageString(ic->im, ic->font, x, y - (height / 2) - ic->font->h, (unsigned char *)"no data available", ic->ctext);
+		x = (resultcount + FIVEMINEXTRASPACE + (ic->large * 14)) / 2 - (13 * ic->font->w);
+		gdImageString(ic->im, ic->font, x, y - (height / 2) - ic->font->h, (unsigned char *)"no 5 minute data available", ic->ctext);
 		return 0;
 	}
 
