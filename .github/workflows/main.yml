@@ -150,6 +150,6 @@ jobs:
           curl \
             -X POST \
             -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: token ${{ secrets.ACTION_TRIGGERs }}" \
+            -H "Authorization: token ${{ secrets.ACTION_TRIGGER }}" \
             -d '{"ref":"refs/heads/master"}' \
             $GITHUB_API_URL/repos/vergoh/vnstat-snap/actions/workflows/edge.yml/dispatches
