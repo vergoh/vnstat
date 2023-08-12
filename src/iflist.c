@@ -1,7 +1,7 @@
 #include "common.h"
 #include "iflist.h"
 
-int iflistadd(iflist **ifl, const char *iface, const uint32_t bandwidth)
+int iflistadd(iflist **ifl, const char *iface, const int64_t id, const uint32_t bandwidth)
 {
 	iflist *newif = NULL, *ifl_iterator = *ifl;
 
@@ -22,6 +22,7 @@ int iflistadd(iflist **ifl, const char *iface, const uint32_t bandwidth)
 	}
 
 	strncpy_nt(newif->interface, iface, MAXIFLEN);
+	newif->id = id;
 	newif->bandwidth = bandwidth;
 
 	return 1;

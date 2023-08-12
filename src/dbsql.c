@@ -776,12 +776,12 @@ int db_getiflist_sorted(iflist **ifl, const int orderbytraffic)
 
 	if (!orderbytraffic) {
 		if (cfg.interfaceorder == 1) {
-			constsql = "select name from interface order by alias asc, name asc";
+			constsql = "select name, id from interface order by alias asc, name asc";
 		} else {
-			constsql = "select name from interface order by name asc";
+			constsql = "select name, id from interface order by name asc";
 		}
 	} else {
-		constsql = "select name from interface order by rxtotal+txtotal desc";
+		constsql = "select name, id from interface order by rxtotal+txtotal desc";
 	}
 
 	rc = sqlite3_prepare_v2(db, constsql, -1, &sqlstmt, NULL);
@@ -797,7 +797,7 @@ int db_getiflist_sorted(iflist **ifl, const int orderbytraffic)
 		if (sqlite3_column_text(sqlstmt, 0) == NULL) {
 			continue;
 		}
-		if (!iflistadd(ifl, (const char *)sqlite3_column_text(sqlstmt, 0), 0)) {
+		if (!iflistadd(ifl, (const char *)sqlite3_column_text(sqlstmt, 0), (int64_t)sqlite3_column_int64(sqlstmt, 1), 0)) {
 			break;
 		}
 		rc++;
@@ -976,132 +976,69 @@ int db_insertdata(const char *table, const char *iface, const uint64_t rx, const
 
 int db_removeoldentries(void)
 {
-	int rc;
+	int rc, i;
 	char sql[256];
+	const char *datatables[] = {"fiveminute", "hour", "day", "month", "year"};
+	const int32_t entrylimits[] = {cfg.fiveminutehours * 12, cfg.hourlydays * 24, cfg.dailydays, cfg.monthlymonths, cfg.yearlyyears};
+	iflist *dbifl = NULL, *dbifl_i = NULL;
 
 	if (debug) {
 		timeused_debug(__func__, 1);
 		printf("db: removing old entries\n");
 	}
 
+	if (db_getiflist(&dbifl) <= 0) {
+		return 0;
+	} else {
+		dbifl_i = dbifl;
+	}
+
 	if (!db_begintransaction()) {
 		return 0;
 	}
 
-	if (!db_removeoldentries_top()) {
-		db_rollbacktransaction();
-		return 0;
-	}
-
-	if (cfg.fiveminutehours > 0) {
+	while (dbifl_i != NULL) {
 		if (debug) {
-			printf("db: fiveminute cleanup (%dh)\n", cfg.fiveminutehours);
+			printf("%s, id %" PRId64 "\n", dbifl_i->interface, dbifl_i->id);
 		}
-		sqlite3_snprintf(256, sql, "delete from fiveminute where date < datetime('now', '-%d hours'%s)", cfg.fiveminutehours, cfg.dbtzmodifier);
-		if (!db_exec(sql)) {
-			db_rollbacktransaction();
-			return 0;
+		if (cfg.topdayentries > 0) {
+			if (debug) {
+				printf("  top - %d entries to be left\n", cfg.topdayentries);
+			}
+			sqlite3_snprintf(512, sql, "delete from top where id in ( select id from top where interface=%" PRId64 " and date!=date('now'%s) order by rx+tx desc, date asc limit -1 offset %d )", dbifl_i->id, cfg.dbtzmodifier, cfg.topdayentries);
+			if (!db_exec(sql)) {
+				db_rollbacktransaction();
+				iflistfree(&dbifl);
+				return 0;
+			}
+		} else if (debug) {
+			printf("  top - disabled (%d), skipping\n", cfg.topdayentries);
 		}
-	}
-
-	if (cfg.hourlydays > 0) {
-		if (debug) {
-			printf("db: hour cleanup (%dd)\n", cfg.hourlydays);
+		for (i = 0; i < 5; i++) {
+			if (entrylimits[i] <= 0) {
+				if (debug) {
+					printf("  %s - disabled (%d), skipping\n", datatables[i], entrylimits[i]);
+				}
+				continue;
+			}
+			if (debug) {
+				printf("  %s - %d entries to be left\n", datatables[i], entrylimits[i]);
+			}
+			sqlite3_snprintf(256, sql, "delete from %s where id in ( select id from %s where interface=%" PRId64 " order by date desc limit -1 offset %d )", datatables[i], datatables[i], dbifl_i->id, entrylimits[i]);
+			if (!db_exec(sql)) {
+				db_rollbacktransaction();
+				iflistfree(&dbifl);
+				return 0;
+			}
 		}
-		sqlite3_snprintf(256, sql, "delete from hour where date < datetime('now', '-%d days'%s)", cfg.hourlydays, cfg.dbtzmodifier);
-		if (!db_exec(sql)) {
-			db_rollbacktransaction();
-			return 0;
-		}
-	}
-
-	if (cfg.dailydays > 0) {
-		if (debug) {
-			printf("db: day cleanup (%dd)\n", cfg.dailydays);
-		}
-		sqlite3_snprintf(256, sql, "delete from day where date < date('now', '-%d days'%s)", cfg.dailydays, cfg.dbtzmodifier);
-		if (!db_exec(sql)) {
-			db_rollbacktransaction();
-			return 0;
-		}
-	}
-
-	if (cfg.monthlymonths > 0) {
-		if (debug) {
-			printf("db: month cleanup (%dm)\n", cfg.monthlymonths);
-		}
-		sqlite3_snprintf(256, sql, "delete from month where date < date('now', '-%d months'%s)", cfg.monthlymonths, cfg.dbtzmodifier);
-		if (!db_exec(sql)) {
-			db_rollbacktransaction();
-			return 0;
-		}
-	}
-
-	if (cfg.yearlyyears > 0) {
-		if (debug) {
-			printf("db: year cleanup (%dy)\n", cfg.yearlyyears);
-		}
-		sqlite3_snprintf(256, sql, "delete from year where date < date('now', '-%d years'%s)", cfg.yearlyyears, cfg.dbtzmodifier);
-		if (!db_exec(sql)) {
-			db_rollbacktransaction();
-			return 0;
-		}
-	}
-
-	rc = db_committransaction();
-
-	timeused_debug(__func__, 0);
-
-	return rc;
-}
-
-int db_removeoldentries_top(void)
-{
-	int errorcount = 0;
-	char sql[512];
-	iflist *dbifl = NULL, *dbifl_iterator = NULL;
-	sqlite3_int64 ifaceid;
-
-	if (cfg.topdayentries <= 0) {
-		return 1;
-	}
-
-	if (db_getiflist(&dbifl) < 0) {
-		return 0;
-	}
-
-	dbifl_iterator = dbifl;
-
-	while (dbifl_iterator != NULL) {
-		if (debug) {
-			printf("db: top cleanup: %s (%d)\n", dbifl_iterator->interface, cfg.topdayentries);
-		}
-
-		ifaceid = db_getinterfaceid(dbifl_iterator->interface, 0);
-		if (ifaceid == 0) {
-			errorcount++;
-			dbifl_iterator = dbifl_iterator->next;
-			continue;
-		}
-
-		sqlite3_snprintf(512, sql, "delete from top where id in ( select id from top where interface=%" PRId64 " and date!=date('now'%s) order by rx+tx desc, date asc limit -1 offset %d )", (int64_t)ifaceid, cfg.dbtzmodifier, cfg.topdayentries);
-
-		if (!db_exec(sql)) {
-			errorcount++;
-			dbifl_iterator = dbifl_iterator->next;
-			continue;
-		}
-
-		dbifl_iterator = dbifl_iterator->next;
+		dbifl_i = dbifl_i->next;
 	}
 
 	iflistfree(&dbifl);
 
-	if (errorcount) {
-		return 0;
-	}
-
-	return 1;
+	rc = db_committransaction();
+	timeused_debug(__func__, 0);
+	return rc;
 }
 
 int db_removedisabledresolutionentries(void)

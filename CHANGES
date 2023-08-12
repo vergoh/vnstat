@@ -18,7 +18,10 @@
      output 5 minute graph related configuration options for combinations that
      would have resulted in usable images
  - New
-   - SQLite version is visible in --version outputs
+   - Database cleanup has been changed to interpret data retention
+     configuration as number of entries to be kept instead of calendar time,
+     this restores the behaviour to similar as it was up to version 1.18, the
+     difference is visible only on systems that aren't powered all the time
    - Database is vacuumed during daemon startup and reload, behaviour is
      configurable using VacuumOnStartup and VacuumOnHUPSignal configuration
      options
@@ -28,6 +31,7 @@
      and after configuration reloads
    - Daemon will no longer start if all data resolutions have been disabled
      in the configuration file
+   - SQLite version is visible in --version outputs
  - Notes
    - "Not enough data available yet." message has been replaced with
      "No data. Timestamp of last update is same YYYY-MM-DD HH:MM:SS as of

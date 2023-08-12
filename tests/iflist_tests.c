@@ -16,29 +16,35 @@ START_TEST(iflistadd_can_add)
     iflist *ifl = NULL;
     ck_assert_ptr_eq(ifl, NULL);
 
-    ret = iflistadd(&ifl, "eth0", 0);
+    ret = iflistadd(&ifl, "eth0", 1, 0);
     ck_assert_int_eq(ret, 1);
     ck_assert_str_eq(ifl->interface, "eth0");
+    ck_assert_int_eq(ifl->id, 1);
     ck_assert_int_eq(ifl->bandwidth, 0);
     ck_assert_ptr_eq(ifl->next, NULL);
 
-    ret = iflistadd(&ifl, "eth1", 1);
+    ret = iflistadd(&ifl, "eth1", 2, 1);
     ck_assert_int_eq(ret, 1);
     ck_assert_str_eq(ifl->interface, "eth0");
+    ck_assert_int_eq(ifl->id, 1);
     ck_assert_int_eq(ifl->bandwidth, 0);
     ck_assert_ptr_ne(ifl->next, NULL);
     ck_assert_str_eq(ifl->next->interface, "eth1");
+    ck_assert_int_eq(ifl->next->id, 2);
     ck_assert_int_eq(ifl->next->bandwidth, 1);
 
-    ret = iflistadd(&ifl, "eth0", 2);
+    ret = iflistadd(&ifl, "eth0", 3, 2);
     ck_assert_int_eq(ret, 1);
     ck_assert_str_eq(ifl->interface, "eth0");
+    ck_assert_int_eq(ifl->id, 1);
     ck_assert_int_eq(ifl->bandwidth, 0);
     ck_assert_ptr_ne(ifl->next, NULL);
     ck_assert_str_eq(ifl->next->interface, "eth1");
+    ck_assert_int_eq(ifl->next->id, 2);
     ck_assert_int_eq(ifl->next->bandwidth, 1);
     ck_assert_ptr_ne(ifl->next->next, NULL);
     ck_assert_str_eq(ifl->next->next->interface, "eth0");
+    ck_assert_int_eq(ifl->next->next->id, 3);
     ck_assert_int_eq(ifl->next->next->bandwidth, 2);
 
     iflistfree(&ifl);
@@ -55,25 +61,25 @@ START_TEST(iflistsearch_can_search)
     ret = iflistsearch(&ifl, "eth0");
     ck_assert_int_eq(ret, 0);
 
-    ret = iflistadd(&ifl, "eth0", 0);
+    ret = iflistadd(&ifl, "eth0", 0, 0);
     ck_assert_int_eq(ret, 1);
 
     ret = iflistsearch(&ifl, "eth0");
     ck_assert_int_eq(ret, 1);
 
-    ret = iflistadd(&ifl, "eth1", 1);
+    ret = iflistadd(&ifl, "eth1", 0, 1);
     ck_assert_int_eq(ret, 1);
 
     ret = iflistsearch(&ifl, "eth0");
     ck_assert_int_eq(ret, 1);
 
-    ret = iflistadd(&ifl, "eth0", 2);
+    ret = iflistadd(&ifl, "eth0", 0, 2);
     ck_assert_int_eq(ret, 1);
 
     ret = iflistsearch(&ifl, "eth0");
     ck_assert_int_eq(ret, 1);
 
-    ret = iflistadd(&ifl, "eth2", 10);
+    ret = iflistadd(&ifl, "eth2", 0, 10);
     ck_assert_int_eq(ret, 1);
 
     ret = iflistsearch(&ifl, "eth0");
@@ -91,13 +97,13 @@ START_TEST(iflistsearch_can_search)
     ret = iflistsearch(&ifl, "eth3");
     ck_assert_int_eq(ret, 0);
 
-    ret = iflistadd(&ifl, "eth3", 0);
+    ret = iflistadd(&ifl, "eth3", 0, 0);
     ck_assert_int_eq(ret, 1);
 
     ret = iflistsearch(&ifl, "eth3");
     ck_assert_int_eq(ret, 1);
 
-    ret = iflistadd(&ifl, "eth4", 0);
+    ret = iflistadd(&ifl, "eth4", 0, 0);
     ck_assert_int_eq(ret, 1);
 
     ret = iflistsearch(&ifl, "eth3");

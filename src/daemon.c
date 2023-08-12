@@ -743,7 +743,7 @@ void cleanremovedinterfaces(DSTATE *s)
 
 	while (iterator != NULL) {
 		if (!db_getinterfacecountbyname(iterator->interface)) {
-			iflistadd(&dbifl, iterator->interface, 0);
+			iflistadd(&dbifl, iterator->interface, 0, 0);
 		}
 		iterator = iterator->next;
 	}

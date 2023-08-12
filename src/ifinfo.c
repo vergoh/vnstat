@@ -146,9 +146,9 @@ int getiflist_linux(iflist **ifl, const int getspeed, const int validate)
 				}
 				bwlimit = 0;
 				if (getspeed && ibwget(interface, &bwlimit)) {
-					iflistadd(ifl, interface, bwlimit);
+					iflistadd(ifl, interface, 0, bwlimit);
 				} else {
-					iflistadd(ifl, interface, 0);
+					iflistadd(ifl, interface, 0, 0);
 				}
 			}
 		}
@@ -170,9 +170,9 @@ int getiflist_linux(iflist **ifl, const int getspeed, const int validate)
 				}
 				bwlimit = 0;
 				if (getspeed && ibwget(di->d_name, &bwlimit)) {
-					iflistadd(ifl, di->d_name, bwlimit);
+					iflistadd(ifl, di->d_name, 0, bwlimit);
 				} else {
-					iflistadd(ifl, di->d_name, 0);
+					iflistadd(ifl, di->d_name, 0, 0);
 				}
 			}
 
@@ -201,9 +201,9 @@ int getiflist_bsd(iflist **ifl, const int getspeed, const int validate)
 			}
 			bwlimit = 0;
 			if (getspeed && ibwget(ifa->ifa_name, &bwlimit)) {
-				iflistadd(ifl, ifa->ifa_name, getifspeed(ifa->ifa_name));
+				iflistadd(ifl, ifa->ifa_name, 0, getifspeed(ifa->ifa_name));
 			} else {
-				iflistadd(ifl, ifa->ifa_name, 0);
+				iflistadd(ifl, ifa->ifa_name, 0, 0);
 			}
 		}
 
