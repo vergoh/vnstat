@@ -15,17 +15,17 @@ typedef struct {
 } PARAMS;
 
 void initparams(PARAMS *p);
-void showhelp(PARAMS *p);
-void showlonghelp(PARAMS *p);
+void showhelp(const PARAMS *p);
+void showlonghelp(const PARAMS *p);
 void parseargs(PARAMS *p, const int argc, char **argv);
 int parsealertargs(PARAMS *p, char **argv);
 void showalerthelp(void);
 void showstylehelp(void);
 void handleshowalert(PARAMS *p);
-void handleremoveinterface(PARAMS *p);
-void handlerenameinterface(PARAMS *p);
+void handleremoveinterface(const PARAMS *p);
+void handlerenameinterface(const PARAMS *p);
 void handleaddinterface(PARAMS *p);
-void handlesetalias(PARAMS *p);
+void handlesetalias(const PARAMS *p);
 void handleshowdata(PARAMS *p);
 void showoneinterface(PARAMS *p);
 void handletrafficmeters(PARAMS *p);

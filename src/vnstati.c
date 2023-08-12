@@ -113,7 +113,7 @@ void initiparams(IPARAMS *p)
 	defaultcfg();
 }
 
-void showihelp(IPARAMS *p)
+void showihelp(const IPARAMS *p)
 {
 	printf("vnStat image output %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
 
@@ -548,7 +548,7 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 	}
 }
 
-void validateinput(IPARAMS *p)
+void validateinput(const IPARAMS *p)
 {
 	if (!cfg.qmode || !strlen(p->filename)) {
 		fprintf(stderr, "Error: At least output mode and file parameter needs to be given. ");
@@ -560,7 +560,7 @@ void validateinput(IPARAMS *p)
 	}
 }
 
-void handlecaching(IPARAMS *p, IMAGECONTENT *ic)
+void handlecaching(const IPARAMS *p, const IMAGECONTENT *ic)
 {
 	struct stat filestat;
 
@@ -629,7 +629,7 @@ void handledatabase(IPARAMS *p, IMAGECONTENT *ic)
 	}
 }
 
-void validateoutput(IPARAMS *p)
+void validateoutput(const IPARAMS *p)
 {
 #if HAVE_DECL_GDIMAGEFILE
 	/* not output to stdout */

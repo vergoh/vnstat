@@ -506,7 +506,7 @@ void processdatacache(DSTATE *s)
 	}
 }
 
-int initcachevalues(DSTATE *s, datacache **dc)
+int initcachevalues(const DSTATE *s, datacache **dc)
 {
 	interfaceinfo info;
 
@@ -882,7 +882,7 @@ void handleintsignals(DSTATE *s)
 	intsignal = 0;
 }
 
-void preparedirs(DSTATE *s)
+void preparedirs(const DSTATE *s)
 {
 	/* database directory */
 	if (mkpath(cfg.dbdir, 0775)) {

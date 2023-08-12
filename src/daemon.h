@@ -28,10 +28,10 @@ void adjustsaveinterval(DSTATE *s);
 void checkdbsaveneed(DSTATE *s);
 void processdatacache(DSTATE *s);
 void handleintsignals(DSTATE *s);
-void preparedirs(DSTATE *s);
+void preparedirs(const DSTATE *s);
 void detectboot(DSTATE *s);
 
-int initcachevalues(DSTATE *s, datacache **dc);
+int initcachevalues(const DSTATE *s, datacache **dc);
 int processifinfo(DSTATE *s, datacache **dc);
 void flushcachetodisk(DSTATE *s);
 void handledatabaseerror(DSTATE *s);

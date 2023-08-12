@@ -54,7 +54,7 @@ void initparams(PARAMS *p)
 	defaultcfg();
 }
 
-void showhelp(PARAMS *p)
+void showhelp(const PARAMS *p)
 {
 	printf("vnStat %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
 
@@ -86,7 +86,7 @@ void showhelp(PARAMS *p)
 	printf("Use \"--longhelp\" or \"man vnstat\" for complete list of options.\n");
 }
 
-void showlonghelp(PARAMS *p)
+void showlonghelp(const PARAMS *p)
 {
 	printf("vnStat %s by Teemu Toivola <tst at iki dot fi>\n\n", getversion());
 
@@ -815,7 +815,7 @@ void handleshowalert(PARAMS *p)
 	exit(EXIT_SUCCESS);
 }
 
-void handleremoveinterface(PARAMS *p)
+void handleremoveinterface(const PARAMS *p)
 {
 	if (!p->removeiface) {
 		return;
@@ -857,7 +857,7 @@ void handleremoveinterface(PARAMS *p)
 	}
 }
 
-void handlerenameinterface(PARAMS *p)
+void handlerenameinterface(const PARAMS *p)
 {
 	if (!p->renameiface) {
 		return;
@@ -966,7 +966,7 @@ void handleaddinterface(PARAMS *p)
 	}
 }
 
-void handlesetalias(PARAMS *p)
+void handlesetalias(const PARAMS *p)
 {
 	if (!p->setalias) {
 		return;
