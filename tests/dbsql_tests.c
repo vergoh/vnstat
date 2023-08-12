@@ -3509,6 +3509,724 @@ START_TEST(db_removedisabledresolutionentries_removes_top_days_when_disabled)
 }
 END_TEST
 
+START_TEST(db_removeoldentries_can_remove_fiveminute_entries)
+{
+	int ret, h, m;
+	dbdatalist *datalist = NULL;
+	dbdatalistinfo datainfo;
+
+	cfg.fiveminutehours = 2;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+
+	for (h = 12; h <= 14; h++) {
+		for (m = 0; m <= 55; m+=5) {
+			ret = db_addtraffic_dated("eth0", 1, 2, get_timestamp(2000, 3, 3, h, m));
+			ck_assert_int_eq(ret, 1);
+			ret = db_addtraffic_dated("eth1", 3, 7, get_timestamp(2000, 3, 3, h, m));
+			ck_assert_int_eq(ret, 1);
+		}
+	}
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth0", "fiveminute", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 36);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth1", "fiveminute", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 36);
+	dbdatalistfree(&datalist);
+
+	ret = db_removeoldentries();
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth0", "fiveminute", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 24);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth1", "fiveminute", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 24);
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_removeoldentries_can_be_configured_to_not_touch_fiveminute_entries)
+{
+	int ret, h, m;
+	dbdatalist *datalist = NULL;
+	dbdatalistinfo datainfo;
+
+	cfg.fiveminutehours = -1;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+
+	for (h = 12; h <= 14; h++) {
+		for (m = 0; m <= 55; m+=5) {
+			ret = db_addtraffic_dated("eth0", 1, 2, get_timestamp(2000, 3, 3, h, m));
+			ck_assert_int_eq(ret, 1);
+			ret = db_addtraffic_dated("eth1", 3, 7, get_timestamp(2000, 3, 3, h, m));
+			ck_assert_int_eq(ret, 1);
+		}
+	}
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth0", "fiveminute", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 36);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth1", "fiveminute", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 36);
+	dbdatalistfree(&datalist);
+
+	ret = db_removeoldentries();
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth0", "fiveminute", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 36);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth1", "fiveminute", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 36);
+	dbdatalistfree(&datalist);
+
+	cfg.fiveminutehours = 0;
+
+	ret = db_removeoldentries();
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth0", "fiveminute", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 36);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth1", "fiveminute", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 36);
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_removeoldentries_can_remove_hour_entries)
+{
+	int ret, d, h;
+	dbdatalist *datalist = NULL;
+	dbdatalistinfo datainfo;
+
+	cfg.hourlydays = 2;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+
+	for (d = 2; d <= 6; d++) {
+		for (h = 0; h <= 23; h++) {
+			ret = db_addtraffic_dated("eth0", 3, 5, get_timestamp(2000, 3, d, h, 0));
+			ck_assert_int_eq(ret, 1);
+			if (d >= 3) {
+				ret = db_addtraffic_dated("eth1", 1, 9, get_timestamp(2000, 3, d, h, 0));
+				ck_assert_int_eq(ret, 1);
+			}
+		}
+	}
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth0", "hour", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 120);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth1", "hour", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 96);
+	dbdatalistfree(&datalist);
+
+	ret = db_removeoldentries();
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth0", "hour", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 48);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth1", "hour", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 48);
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_removeoldentries_can_be_configured_to_not_touch_hour_entries)
+{
+	int ret, d, h;
+	dbdatalist *datalist = NULL;
+	dbdatalistinfo datainfo;
+
+	cfg.hourlydays = -1;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+
+	for (d = 2; d <= 6; d++) {
+		for (h = 0; h <= 23; h++) {
+			ret = db_addtraffic_dated("eth0", 3, 5, get_timestamp(2000, 3, d, h, 0));
+			ck_assert_int_eq(ret, 1);
+			if (d >= 3) {
+				ret = db_addtraffic_dated("eth1", 1, 9, get_timestamp(2000, 3, d, h, 0));
+				ck_assert_int_eq(ret, 1);
+			}
+		}
+	}
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth0", "hour", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 120);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth1", "hour", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 96);
+	dbdatalistfree(&datalist);
+
+	ret = db_removeoldentries();
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth0", "hour", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 120);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth1", "hour", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 96);
+	dbdatalistfree(&datalist);
+
+	cfg.hourlydays = 0;
+
+	ret = db_removeoldentries();
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth0", "hour", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 120);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth1", "hour", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 96);
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_removeoldentries_can_remove_day_entries)
+{
+	int ret, d;
+	dbdatalist *datalist = NULL;
+	dbdatalistinfo datainfo;
+
+	cfg.dailydays = 2;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+
+	for (d = 5; d <= 21; d++) {
+		ret = db_addtraffic_dated("eth0", 3, 5, get_timestamp(2000, 3, d, 12, 0));
+		ck_assert_int_eq(ret, 1);
+		if (d >= 10) {
+			ret = db_addtraffic_dated("eth1", 1, 9, get_timestamp(2000, 3, d, 12, 0));
+			ck_assert_int_eq(ret, 1);
+		}
+	}
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth0", "day", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 17);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth1", "day", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 12);
+	dbdatalistfree(&datalist);
+
+	ret = db_removeoldentries();
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth0", "day", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 2);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth1", "day", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 2);
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_removeoldentries_can_be_configured_to_not_touch_day_entries)
+{
+	int ret, d;
+	dbdatalist *datalist = NULL;
+	dbdatalistinfo datainfo;
+
+	cfg.dailydays = -1;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+
+	for (d = 5; d <= 21; d++) {
+		ret = db_addtraffic_dated("eth0", 3, 5, get_timestamp(2000, 3, d, 12, 0));
+		ck_assert_int_eq(ret, 1);
+		if (d >= 10) {
+			ret = db_addtraffic_dated("eth1", 1, 9, get_timestamp(2000, 3, d, 12, 0));
+			ck_assert_int_eq(ret, 1);
+		}
+	}
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth0", "day", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 17);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth1", "day", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 12);
+	dbdatalistfree(&datalist);
+
+	ret = db_removeoldentries();
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth0", "day", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 17);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth1", "day", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 12);
+	dbdatalistfree(&datalist);
+
+	cfg.dailydays = 0;
+
+	ret = db_removeoldentries();
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth0", "day", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 17);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth1", "day", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 12);
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_removeoldentries_can_remove_month_entries)
+{
+	int ret, m;
+	dbdatalist *datalist = NULL;
+	dbdatalistinfo datainfo;
+
+	cfg.monthlymonths = 4;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+
+	for (m = 1; m <= 10; m++) {
+		ret = db_addtraffic_dated("eth0", 3, 5, get_timestamp(2000, m, 10, 12, 0));
+		ck_assert_int_eq(ret, 1);
+		if (m >= 6) {
+			ret = db_addtraffic_dated("eth1", 1, 9, get_timestamp(2000, m, 10, 12, 0));
+			ck_assert_int_eq(ret, 1);
+		}
+	}
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth0", "month", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 10);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth1", "month", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 5);
+	dbdatalistfree(&datalist);
+
+	ret = db_removeoldentries();
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth0", "month", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 4);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth1", "month", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 4);
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_removeoldentries_can_be_configured_to_not_touch_month_entries)
+{
+	int ret, m;
+	dbdatalist *datalist = NULL;
+	dbdatalistinfo datainfo;
+
+	cfg.monthlymonths = -1;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+
+	for (m = 1; m <= 10; m++) {
+		ret = db_addtraffic_dated("eth0", 3, 5, get_timestamp(2000, m, 10, 12, 0));
+		ck_assert_int_eq(ret, 1);
+		if (m >= 6) {
+			ret = db_addtraffic_dated("eth1", 1, 9, get_timestamp(2000, m, 10, 12, 0));
+			ck_assert_int_eq(ret, 1);
+		}
+	}
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth0", "month", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 10);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth1", "month", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 5);
+	dbdatalistfree(&datalist);
+
+	ret = db_removeoldentries();
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth0", "month", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 10);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth1", "month", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 5);
+	dbdatalistfree(&datalist);
+
+	cfg.monthlymonths = 0;
+
+	ret = db_removeoldentries();
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth0", "month", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 10);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth1", "month", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 5);
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_removeoldentries_can_remove_year_entries)
+{
+	int ret, y;
+	dbdatalist *datalist = NULL;
+	dbdatalistinfo datainfo;
+
+	cfg.yearlyyears = 10;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+
+	for (y = 1995; y <= 2021; y++) {
+		ret = db_addtraffic_dated("eth0", 3, 5, get_timestamp(y, 1, 1, 12, 0));
+		ck_assert_int_eq(ret, 1);
+		if (y >= 2000) {
+			ret = db_addtraffic_dated("eth1", 1, 9, get_timestamp(y, 1, 1, 12, 0));
+			ck_assert_int_eq(ret, 1);
+		}
+	}
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth0", "year", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 27);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth1", "year", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 22);
+	dbdatalistfree(&datalist);
+
+	ret = db_removeoldentries();
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth0", "year", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 10);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth1", "year", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 10);
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_removeoldentries_can_be_configured_to_not_touch_year_entries)
+{
+	int ret, y;
+	dbdatalist *datalist = NULL;
+	dbdatalistinfo datainfo;
+
+	cfg.yearlyyears = -1;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+
+	for (y = 1995; y <= 2021; y++) {
+		ret = db_addtraffic_dated("eth0", 3, 5, get_timestamp(y, 1, 1, 12, 0));
+		ck_assert_int_eq(ret, 1);
+		if (y >= 2000) {
+			ret = db_addtraffic_dated("eth1", 1, 9, get_timestamp(y, 1, 1, 12, 0));
+			ck_assert_int_eq(ret, 1);
+		}
+	}
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth0", "year", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 27);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth1", "year", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 22);
+	dbdatalistfree(&datalist);
+
+	ret = db_removeoldentries();
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth0", "year", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 27);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth1", "year", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 22);
+	dbdatalistfree(&datalist);
+
+	cfg.yearlyyears = 0;
+
+	ret = db_removeoldentries();
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth0", "year", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 27);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth1", "year", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 22);
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_removeoldentries_can_remove_top_entries)
+{
+	int ret, d;
+	dbdatalist *datalist = NULL;
+	dbdatalistinfo datainfo;
+
+	cfg.topdayentries = 6;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+
+	for (d = 5; d <= 21; d++) {
+		ret = db_addtraffic_dated("eth0", 3, 5, get_timestamp(2000, 3, d, 12, 0));
+		ck_assert_int_eq(ret, 1);
+		if (d >= 10) {
+			ret = db_addtraffic_dated("eth1", 1, 9, get_timestamp(2000, 3, d, 12, 0));
+			ck_assert_int_eq(ret, 1);
+		}
+	}
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth0", "top", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 17);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth1", "top", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 12);
+	dbdatalistfree(&datalist);
+
+	ret = db_removeoldentries();
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth0", "top", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 6);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth1", "top", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 6);
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_removeoldentries_can_be_configured_to_not_touch_top_entries)
+{
+	int ret, d;
+	dbdatalist *datalist = NULL;
+	dbdatalistinfo datainfo;
+
+	cfg.topdayentries = -1;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+
+	for (d = 5; d <= 21; d++) {
+		ret = db_addtraffic_dated("eth0", 3, 5, get_timestamp(2000, 3, d, 12, 0));
+		ck_assert_int_eq(ret, 1);
+		if (d >= 10) {
+			ret = db_addtraffic_dated("eth1", 1, 9, get_timestamp(2000, 3, d, 12, 0));
+			ck_assert_int_eq(ret, 1);
+		}
+	}
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth0", "top", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 17);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth1", "top", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 12);
+	dbdatalistfree(&datalist);
+
+	ret = db_removeoldentries();
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth0", "top", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 17);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth1", "top", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 12);
+	dbdatalistfree(&datalist);
+
+	cfg.topdayentries = 0;
+
+	ret = db_removeoldentries();
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth0", "top", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 17);
+	dbdatalistfree(&datalist);
+
+	ret = db_getdata_range(&datalist, &datainfo, "eth1", "top", 0, "", "");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 12);
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 void add_dbsql_tests(Suite *s)
 {
 	TCase *tc_dbsql = tcase_create("DB SQL");
@@ -3617,5 +4335,17 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_removedisabledresolutionentries_removes_months_when_disabled);
 	tcase_add_test(tc_dbsql, db_removedisabledresolutionentries_removes_years_when_disabled);
 	tcase_add_test(tc_dbsql, db_removedisabledresolutionentries_removes_top_days_when_disabled);
+	tcase_add_test(tc_dbsql, db_removeoldentries_can_remove_fiveminute_entries);
+	tcase_add_test(tc_dbsql, db_removeoldentries_can_be_configured_to_not_touch_fiveminute_entries);
+	tcase_add_test(tc_dbsql, db_removeoldentries_can_remove_hour_entries);
+	tcase_add_test(tc_dbsql, db_removeoldentries_can_be_configured_to_not_touch_hour_entries);
+	tcase_add_test(tc_dbsql, db_removeoldentries_can_remove_day_entries);
+	tcase_add_test(tc_dbsql, db_removeoldentries_can_be_configured_to_not_touch_day_entries);
+	tcase_add_test(tc_dbsql, db_removeoldentries_can_remove_month_entries);
+	tcase_add_test(tc_dbsql, db_removeoldentries_can_be_configured_to_not_touch_month_entries);
+	tcase_add_test(tc_dbsql, db_removeoldentries_can_remove_year_entries);
+	tcase_add_test(tc_dbsql, db_removeoldentries_can_be_configured_to_not_touch_year_entries);
+	tcase_add_test(tc_dbsql, db_removeoldentries_can_remove_top_entries);
+	tcase_add_test(tc_dbsql, db_removeoldentries_can_be_configured_to_not_touch_top_entries);
 	suite_add_tcase(s, tc_dbsql);
 }
