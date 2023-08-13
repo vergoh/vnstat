@@ -994,6 +994,7 @@ int db_removeoldentries(void)
 	}
 
 	if (!db_begintransaction()) {
+		iflistfree(&dbifl);
 		return 0;
 	}
 
