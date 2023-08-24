@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # vnstat.cgi -- example cgi for vnStat image output
-# copyright (c) 2008-2021 Teemu Toivola <tst at iki dot fi>
+# copyright (c) 2008-2023 Teemu Toivola <tst at iki dot fi>
 #
 # based on mailgraph.cgi
 # copyright (c) 2000-2007 ETH Zurich
@@ -51,7 +51,7 @@ my $scriptname = '';
 ################
 
 
-my $VERSION = "1.15";
+my $VERSION = "1.16";
 my $cssbody = "body { background-color: $bgcolor; }";
 my $csscommonstyle = <<CSS;
 a { text-decoration: underline; }
@@ -69,6 +69,7 @@ my $metarefresh = "";
 sub graph
 {
 	my ($interface, $file, $param) = @_;
+	my $result = '';
 
 	my $fontparam = '--small';
 	if ($largefonts == '1') {
@@ -76,10 +77,57 @@ sub graph
 	}
 
 	if (defined $interface and defined $file and defined $param) {
-		my $result = `"$vnstati_cmd" -i "$interface" -c $cachetime $param $fontparam -o "$file"`;
+		$result = `"$vnstati_cmd" -i "$interface" -c $cachetime $param $fontparam -o "$file"`;
 	} else {
 		show_error("ERROR: invalid input");
 	}
+	return $result;
+}
+
+sub send_image
+{
+	my ($file, $output) = @_;
+
+	if ($file ne '-') {
+		-r $file or do {
+			show_error("ERROR: can't find $file");
+		};
+
+		print "Content-type: image/png\n";
+		print "Content-length: ".((stat($file))[7])."\n";
+		print "\n";
+		open(my $IMG_FILE, "<", $file) or die;
+		my $data;
+		print $data while read($IMG_FILE, $data, 16384)>0;
+	} else {
+		if (length($output) < 1000) {
+			show_error("ERROR: command failed: $output");
+		}
+
+		print "Content-type: image/png\n";
+		print "Content-length: ".(length($output))."\n";
+		print "\n";
+		print $output;
+	}
+}
+
+sub handle_image
+{
+	my ($interface, $file, $param) = @_;
+
+	if ($cachetime == '0') {
+		$file = '-';
+	}
+
+	my $output = graph($interface, $file, $param);
+	send_image($file, $output);
+}
+
+sub show_error
+{
+	my ($error_msg) = @_;
+	print "Content-type: text/plain\n\n$error_msg\n";
+	exit 1;
 }
 
 sub print_interface_list_html
@@ -217,29 +265,6 @@ HEADER
 FOOTER
 }
 
-sub send_image
-{
-	my ($file) = @_;
-
-	-r $file or do {
-		show_error("ERROR: can't find $file");
-	};
-
-	print "Content-type: image/png\n";
-	print "Content-length: ".((stat($file))[7])."\n";
-	print "\n";
-	open(my $IMG_FILE, "<", $file) or die;
-	my $data;
-	print $data while read($IMG_FILE, $data, 16384)>0;
-}
-
-sub show_error
-{
-	my ($error_msg) = @_;
-	print "Content-type: text/plain\n\n$error_msg\n";
-	exit 1;
-}
-
 sub main
 {
 	if (length($scriptname) == 0) {
@@ -272,108 +297,72 @@ sub main
 		$metarefresh = "\n<meta http-equiv=\"refresh\" content=\"$pagerefresh\">";
 	}
 
-	mkdir $tmp_dir, 0755 unless -d $tmp_dir;
+	if ($cachetime != '0') {
+		mkdir $tmp_dir, 0755 unless -d $tmp_dir;
+	}
 
 	my $query = $ENV{QUERY_STRING};
 	if (defined $query and $query =~ /\S/) {
 		if ($query =~ /^(\d+)-s$/) {
-			my $file = "$tmp_dir/vnstat_$1.png";
-			graph($interfaces[$1], $file, "-s");
-			send_image($file);
+			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1.png", "-s");
 		}
 		elsif ($query =~ /^(\d+)-hs$/) {
-			my $file = "$tmp_dir/vnstat_$1_hs.png";
-			graph($interfaces[$1], $file, "-hs");
-			send_image($file);
+			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_hs.png", "-hs");
 		}
 		elsif ($query =~ /^(\d+)-hsh$/) {
-			my $file = "$tmp_dir/vnstat_$1_hsh.png";
-			graph($interfaces[$1], $file, "-hs 0");
-			send_image($file);
+			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_hsh.png", "-hs 0");
 		}
 		elsif ($query =~ /^(\d+)-hs5$/) {
-			my $file = "$tmp_dir/vnstat_$1_hs5.png";
-			graph($interfaces[$1], $file, "-hs 1");
-			send_image($file);
+			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_hs5.png", "-hs 1");
 		}
 		elsif ($query =~ /^(\d+)-vs$/) {
-			my $file = "$tmp_dir/vnstat_$1_vs.png";
-			graph($interfaces[$1], $file, "-vs");
-			send_image($file);
+			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_vs.png", "-vs");
 		}
 		elsif ($query =~ /^(\d+)-vsh$/) {
-			my $file = "$tmp_dir/vnstat_$1_vsh.png";
-			graph($interfaces[$1], $file, "-vs 0");
-			send_image($file);
+			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_vsh.png", "-vs 0");
 		}
 		elsif ($query =~ /^(\d+)-vs5$/) {
-			my $file = "$tmp_dir/vnstat_$1_vs5.png";
-			graph($interfaces[$1], $file, "-vs 1");
-			send_image($file);
+			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_vs5.png", "-vs 1");
 		}
 		elsif ($query =~ /^(\d+)-d$/) {
-			my $file = "$tmp_dir/vnstat_$1_d.png";
-			graph($interfaces[$1], $file, "-d 30");
-			send_image($file);
+			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_d.png", "-d 30");
 		}
 		elsif ($query =~ /^(\d+)-d-l$/) {
-			my $file = "$tmp_dir/vnstat_$1_d_l.png";
-			graph($interfaces[$1], $file, "-d 60");
-			send_image($file);
+			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_d_l.png", "-d 60");
 		}
 		elsif ($query =~ /^(\d+)-m$/) {
-			my $file = "$tmp_dir/vnstat_$1_m.png";
-			graph($interfaces[$1], $file, "-m 12");
-			send_image($file);
+			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_m.png", "-m 12");
 		}
 		elsif ($query =~ /^(\d+)-m-l$/) {
-			my $file = "$tmp_dir/vnstat_$1_m_l.png";
-			graph($interfaces[$1], $file, "-m 24");
-			send_image($file);
+			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_m_l.png", "-m 24");
 		}
 		elsif ($query =~ /^(\d+)-t$/) {
-			my $file = "$tmp_dir/vnstat_$1_t.png";
-			graph($interfaces[$1], $file, "-t 10");
-			send_image($file);
+			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_t.png", "-t 10");
 		}
 		elsif ($query =~ /^(\d+)-t-l$/) {
-			my $file = "$tmp_dir/vnstat_$1_t_l.png";
-			graph($interfaces[$1], $file, "-t 20");
-			send_image($file);
+			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_t_l.png", "-t 20");
 		}
 		elsif ($query =~ /^(\d+)-h$/) {
-			my $file = "$tmp_dir/vnstat_$1_h.png";
-			graph($interfaces[$1], $file, "-h 48");
-			send_image($file);
+			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_h.png", "-h 48");
 		}
 		elsif ($query =~ /^(\d+)-hg$/) {
-			my $file = "$tmp_dir/vnstat_$1_hg.png";
-			graph($interfaces[$1], $file, "-hg");
-			send_image($file);
+			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_hg.png", "-hg");
 		}
 		elsif ($query =~ /^(\d+)-5$/) {
-			my $file = "$tmp_dir/vnstat_$1_5.png";
-			graph($interfaces[$1], $file, "-5 60");
-			send_image($file);
+			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_5.png", "-5 60");
 		}
 		elsif ($query =~ /^(\d+)-5g$/) {
-			my $file = "$tmp_dir/vnstat_$1_5g.png";
 			if ($largefonts == '1') {
-				graph($interfaces[$1], $file, "-5g 576 300");
+				handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_5g.png", "-5g 576 300");
 			} else {
-				graph($interfaces[$1], $file, "-5g 422 250");
+				handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_5g.png", "-5g 422 250");
 			}
-			send_image($file);
 		}
 		elsif ($query =~ /^(\d+)-y$/) {
-			my $file = "$tmp_dir/vnstat_$1_y.png";
-			graph($interfaces[$1], $file, "-y 5");
-			send_image($file);
+			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_y.png", "-y 5");
 		}
 		elsif ($query =~ /^(\d+)-y-l$/) {
-			my $file = "$tmp_dir/vnstat_$1_y_l.png";
-			graph($interfaces[$1], $file, "-y 0");
-			send_image($file);
+			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_y_l.png", "-y 0");
 		}
 		elsif ($query =~ /^(\d+)-f$/) {
 			print_single_interface_html($1);
