@@ -247,7 +247,12 @@ This option can only be used with
 .B "--json"
 ,
 .B "--xml"
-and list outputs. The top list also requires
+and list outputs. In list outputs the estimate line is replaced with
+a sum line with values representing the sums of each column. The sum line is
+shown only if the output consists of more than one data line. This is applicable
+even if the defined
+.I date
+is the same as the current date. The top list also requires
 .B "--begin"
 to be used at the same time with this option.
 
