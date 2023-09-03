@@ -34,6 +34,7 @@ int loadcfg(const char *cfgfile, const ConfigType type)
 		 {"BandwidthDetection", 0, &cfg.bwdetection, 0, 0},
 		 {"MaxBandwidth", 0, &cfg.maxbw, 0, 0},
 		 {"Sampletime", 0, &cfg.sampletime, 0, 0},
+		 {"LiveSpinner", 0, &cfg.livespinner, 0, 0},
 		 {"QueryMode", 0, &cfg.qmode, 0, 0},
 		 {"CheckDiskSpace", 0, &cfg.spacecheck, 0, 0},
 		 {"BootVariation", 0, &cfg.bvar, 0, 0},
@@ -199,6 +200,7 @@ void validatecfg(const ConfigType type)
 	validateint("HourlySectionStyle", &cfg.hourlystyle, HOURLYSTYLE, 0, 3);
 	validateint("BootVariation", &cfg.bvar, BVAR, 0, 300);
 	validateint("Sampletime", &cfg.sampletime, DEFSAMPTIME, 2, 600);
+	validatebool("LiveSpinner", &cfg.livespinner, LIVESPINNER);
 	validateint("MonthRotate", &cfg.monthrotate, MONTHROTATE, 1, 28);
 	validatebool("MonthRotateAffectsYears", &cfg.monthrotateyears, MONTHROTATEYEARS);
 	validateint("MaxBandwidth", &cfg.maxbw, DEFMAXBW, 0, BWMAX);
@@ -340,6 +342,7 @@ void defaultcfg(void)
 	cfg.bvar = BVAR;
 	cfg.qmode = DEFQMODE;
 	cfg.sampletime = DEFSAMPTIME;
+	cfg.livespinner = LIVESPINNER;
 	cfg.monthrotate = MONTHROTATE;
 	cfg.monthrotateyears = MONTHROTATEYEARS;
 	cfg.unitmode = UNITMODE;

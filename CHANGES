@@ -1,6 +1,8 @@
 2.12 / <not released yet>
 
- - No changes yet
+ - New
+   - Show spinning animation at the beginning of -l / --live output line,
+     visibility configurable using LiveSpinner configuration option
 
 
 2.11 / 19-Aug-2023

@@ -126,8 +126,9 @@ void livetrafficmeter(const char *iface, const int mode)
 	uint64_t rxpmin, txpmin, rxpmax, txpmax;
 	uint64_t rxmin, txmin, rxmax, txmax;
 	uint64_t index = 1;
-	int ratewidth, ppswidth, paddingwidth, json = 0;
-	char buffer[256], buffer2[256];
+	int ratewidth, ppswidth, paddingwidth, json = 0, spin_i = 0;
+	char buffer[256], buffer2[256], spin_c = ' ';
+	const char *spinner = "|/-\\";
 	IFINFO previnfo;
 
 	if (cfg.qmode == 10) {
@@ -163,9 +164,9 @@ void livetrafficmeter(const char *iface, const int mode)
 		exit(EXIT_FAILURE);
 	}
 
-	ratewidth = 15;
+	ratewidth = 14;
 	ppswidth = 5;
-	paddingwidth = 8;
+	paddingwidth = 6;
 
 	/* narrow output mode */
 	if (cfg.ostyle == 0) {
@@ -253,14 +254,22 @@ void livetrafficmeter(const char *iface, const int mode)
 
 		/* show the difference in a readable format or json */
 		if (!json) {
+			if (cfg.livespinner && cfg.ostyle != 4) {
+				spin_i++;
+				if (spin_i >= strlen(spinner)) {
+					spin_i = 0;
+				}
+				spin_c = spinner[spin_i];
+			}
+
 			if (mode == 0) {
 				/* packets per second visible */
-				snprintf(buffer, 128, "   rx: %s %*" PRIu64 " p/s", gettrafficrate(rx, LIVETIME, ratewidth), ppswidth, rxp / LIVETIME);
-				snprintf(buffer2, 128, " %*s tx: %s %*" PRIu64 " p/s", paddingwidth, " ", gettrafficrate(tx, LIVETIME, ratewidth), ppswidth, txp / LIVETIME);
+				snprintf(buffer, 128, "%c%*srx: %s %*" PRIu64 " p/s", spin_c, paddingwidth, " ", gettrafficrate(rx, LIVETIME, ratewidth), ppswidth, rxp / LIVETIME);
+				snprintf(buffer2, 128, "%*s tx: %s %*" PRIu64 " p/s", paddingwidth, " ", gettrafficrate(tx, LIVETIME, ratewidth), ppswidth, txp / LIVETIME);
 			} else {
 				/* total transfer amount visible */
-				snprintf(buffer, 128, "   rx: %s   %s", gettrafficrate(rx, LIVETIME, ratewidth), getvalue(rxtotal, 1, RT_Normal));
-				snprintf(buffer2, 128, " %*s tx: %s   %s", paddingwidth, " ", gettrafficrate(tx, LIVETIME, ratewidth), getvalue(txtotal, 1, RT_Normal));
+				snprintf(buffer, 128, "%c%*srx: %s   %s", spin_c, paddingwidth, " ", gettrafficrate(rx, LIVETIME, ratewidth), getvalue(rxtotal, 1, RT_Normal));
+				snprintf(buffer2, 128, "%*stx: %s   %s", paddingwidth, " ", gettrafficrate(tx, LIVETIME, ratewidth), getvalue(txtotal, 1, RT_Normal));
 			}
 			strcat(buffer, buffer2);
 

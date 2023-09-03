@@ -147,6 +147,9 @@ and most can be changed later from the config file.
 /* 0 = feature disabled */
 #define DEFMAXBW 1000
 
+/* animation visibility in -l / --live */
+#define LIVESPINNER 1
+
 /* maximum allowed config value for bandwidth */
 #define BWMAX 50000
 
@@ -329,7 +332,7 @@ typedef struct {
 	int32_t monthrotate, monthrotateyears, maxbw, spacecheck, trafficlessentries, transbg, ostyle;
 	int32_t defaultdecimals, hourlydecimals, hourlystyle, is64bit, waldb, dbsynchronous, useutc, imagescale;
 	int32_t largefonts, linespaceadjust, estimatebarvisible, estimatestyle, estimatevisible, barshowsrate, fivegresultcount;
-	int32_t fivegheight, summarygraph, hourlygmode, alwaysadd;
+	int32_t fivegheight, summarygraph, hourlygmode, alwaysadd, livespinner;
 	char cfgfile[512], logfile[512], pidfile[512];
 	char daemonuser[33], daemongroup[33];
 	int32_t timesyncwait, updateinterval, pollinterval, saveinterval, offsaveinterval, rescanonsave, savestatus;

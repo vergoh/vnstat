@@ -85,6 +85,10 @@ void printcfgfile(void)
 	defaultcomment(cfg.sampletime == DEFSAMPTIME);
 	printf("Sampletime %d\n\n", cfg.sampletime);
 
+	printf("# show animation at the beginning of -l / --live line (1 = enabled, 0 = disabled)\n");
+	defaultcomment(cfg.livespinner == LIVESPINNER);
+	printf("LiveSpinner %d\n\n", cfg.livespinner);
+
 	printf("# default query mode\n");
 	printf("# 0 = normal, 1 = days, 2 = months, 3 = top, 5 = short\n");
 	printf("# 7 = hours, 8 = xml, 9 = one line, 10 = json\n");
