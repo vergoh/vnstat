@@ -256,7 +256,7 @@ void livetrafficmeter(const char *iface, const int mode)
 		if (!json) {
 			if (cfg.livespinner && cfg.ostyle != 4) {
 				spin_i++;
-				if (spin_i >= strlen(spinner)) {
+				if (spin_i >= 4) {
 					spin_i = 0;
 				}
 				spin_c = spinner[spin_i];
