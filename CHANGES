@@ -3,6 +3,9 @@
  - New
    - Show spinning animation at the beginning of -l / --live output line,
      visibility configurable using LiveSpinner configuration option
+   - Add --invert-colors option to image output for facilitating for example
+     dark mode switching without needing to have multiple separate color
+     configurations
 
 
 2.11 / 19-Aug-2023

@@ -871,6 +871,31 @@ START_TEST(modcolor_mods_colors)
 }
 END_TEST
 
+START_TEST(invertcolor_inverts_colors)
+{
+	int rgb[3];
+
+	debug = 1;
+	suppress_output();
+
+	rgb[0] = 0;
+	rgb[1] = 10;
+	rgb[2] = 255;
+	invertcolor(rgb);
+	ck_assert_int_eq(rgb[0], 255);
+	ck_assert_int_eq(rgb[1], 245);
+	ck_assert_int_eq(rgb[2], 0);
+
+	rgb[0] = 50;
+	rgb[1] = 150;
+	rgb[2] = 200;
+	invertcolor(rgb);
+	ck_assert_int_eq(rgb[0], 205);
+	ck_assert_int_eq(rgb[1], 105);
+	ck_assert_int_eq(rgb[2], 55);
+}
+END_TEST
+
 void add_image_tests(Suite *s)
 {
 	TCase *tc_image = tcase_create("Image");
@@ -897,5 +922,6 @@ void add_image_tests(Suite *s)
 	tcase_add_test(tc_image, element_output_check);
 	tcase_add_test(tc_image, hextorgb_can_convert);
 	tcase_add_test(tc_image, modcolor_mods_colors);
+	tcase_add_test(tc_image, invertcolor_inverts_colors);
 	suite_add_tcase(s, tc_image);
 }

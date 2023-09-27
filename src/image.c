@@ -11,6 +11,7 @@ void initimagecontent(IMAGECONTENT *ic)
 	ic->font = gdFontGetSmall();
 	ic->lineheight = 12;
 	ic->large = 0;
+	ic->invert = 0;
 	ic->showheader = 1;
 	ic->showedge = 1;
 	ic->showlegend = 1;

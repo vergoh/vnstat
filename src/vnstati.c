@@ -165,7 +165,8 @@ void showihelp(const IPARAMS *p)
 #if HAVE_DECL_GD_NEAREST_NEIGHBOUR
 	printf("      --scale <percent>                  change image size by scaling it\n");
 #endif
-	printf("      --transparent [enabled]            toggle background transparency\n\n");
+	printf("      --transparent [enabled]            toggle background transparency\n");
+	printf("      --invert-colors <mode>             invert image colors (0-2)\n\n");
 
 	printf("See also \"man vnstati\".\n");
 }
@@ -501,6 +502,26 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 			} else {
 				fprintf(stderr, "Error: Invalid or missing parameter for %s.\n", argv[currentarg]);
 				exit(EXIT_FAILURE);
+			}
+		} else if (strcmp(argv[currentarg], "--invert-colors") == 0) {
+			if (currentarg + 1 < argc && (strlen(argv[currentarg + 1]) == 1 || ishelprequest(argv[currentarg + 1]))) {
+				if (!isdigit(argv[currentarg + 1][0]) || atoi(argv[currentarg + 1]) > 2 || atoi(argv[currentarg + 1]) < 0) {
+					if (!ishelprequest(argv[currentarg + 1]))
+						fprintf(stderr, "Error: Invalid parameter \"%s\".\n", argv[currentarg + 1]);
+					printf(" Valid parameters for %s:\n", argv[currentarg]);
+					printf("    0 - no color inversion\n");
+					printf("    1 - invert all colors except rx and tx\n");
+					printf("    2 - invert all colors\n");
+					exit(EXIT_FAILURE);
+				}
+				ic->invert = atoi(argv[currentarg + 1]);
+				if (debug)
+					printf("Invert colors changed: %d\n", ic->invert);
+				currentarg++;
+			} else {
+				ic->invert = !ic->invert;
+				if (debug)
+					printf("Invert colors changed: %d\n", ic->invert);
 			}
 		} else if ((strcmp(argv[currentarg], "-v") == 0) || (strcmp(argv[currentarg], "--version")) == 0) {
 			printf("vnStat image output %s by Teemu Toivola <tst at iki dot fi> (SQLite %s, LibGD %d.%d.%d)\n", getversion(), sqlite3_libversion(), GD_MAJOR_VERSION, GD_MINOR_VERSION, GD_RELEASE_VERSION);

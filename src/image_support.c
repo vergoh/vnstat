@@ -7,75 +7,93 @@
 
 void imageinit(IMAGECONTENT *ic, const int width, const int height)
 {
-	int rgb[3];
+	int rgb[3], invert = 1;
 
 	ic->im = gdImageCreate(width, height);
 
+	if (ic->invert > 0) {
+		invert = -1;
+	}
+
 	/* text, edge and header colors */
 	hextorgb(cfg.ctext, rgb);
+	if (ic->invert > 0) { invertcolor(rgb); }
 	ic->ctext = gdImageColorAllocate(ic->im, rgb[0], rgb[1], rgb[2]);
 	colorinitcheck("ctext", ic->ctext, cfg.ctext, rgb);
 	hextorgb(cfg.cedge, rgb);
+	if (ic->invert > 0) { invertcolor(rgb); }
 	ic->cedge = gdImageColorAllocate(ic->im, rgb[0], rgb[1], rgb[2]);
 	colorinitcheck("cedge", ic->cedge, cfg.cedge, rgb);
 	hextorgb(cfg.cheader, rgb);
+	if (ic->invert > 0) { invertcolor(rgb); }
 	ic->cheader = gdImageColorAllocate(ic->im, rgb[0], rgb[1], rgb[2]);
 	colorinitcheck("cheader", ic->cheader, cfg.cheader, rgb);
 	hextorgb(cfg.cheadertitle, rgb);
+	if (ic->invert > 0) { invertcolor(rgb); }
 	ic->cheadertitle = gdImageColorAllocate(ic->im, rgb[0], rgb[1], rgb[2]);
 	colorinitcheck("cheadertitle", ic->cheadertitle, cfg.cheadertitle, rgb);
 	hextorgb(cfg.cheaderdate, rgb);
+	if (ic->invert > 0) { invertcolor(rgb); }
 	ic->cheaderdate = gdImageColorAllocate(ic->im, rgb[0], rgb[1], rgb[2]);
 	colorinitcheck("cheaderdate", ic->cheaderdate, cfg.cheaderdate, rgb);
 
 	/* lines */
 	hextorgb(cfg.cline, rgb);
+	if (ic->invert > 0) { invertcolor(rgb); }
 	ic->cline = gdImageColorAllocate(ic->im, rgb[0], rgb[1], rgb[2]);
 	colorinitcheck("cline", ic->cline, cfg.cline, rgb);
 	if (cfg.clinel[0] == '-') {
-		modcolor(rgb, 50, 1);
+		modcolor(rgb, 50 * invert, 1);
 	} else {
 		hextorgb(cfg.clinel, rgb);
+		if (ic->invert > 0) { invertcolor(rgb); }
 	}
 	ic->clinel = gdImageColorAllocate(ic->im, rgb[0], rgb[1], rgb[2]);
 	colorinitcheck("clinel", ic->clinel, cfg.clinel, rgb);
 
 	/* background */
 	hextorgb(cfg.cbg, rgb);
+	if (ic->invert > 0) { invertcolor(rgb); }
 	ic->cbackground = gdImageColorAllocate(ic->im, rgb[0], rgb[1], rgb[2]);
 	colorinitcheck("cbackground", ic->cbackground, cfg.cbg, rgb);
-	modcolor(rgb, -35, 0);
+	modcolor(rgb, -35 * invert, 0);
 	ic->cvnstat = gdImageColorAllocate(ic->im, rgb[0], rgb[1], rgb[2]);
 	colorinitcheck("cvnstat", ic->cvnstat, cfg.cbg, rgb);
 	hextorgb(cfg.cbg, rgb);
-	modcolor(rgb, -15, 0);
+	if (ic->invert > 0) { invertcolor(rgb); }
+	modcolor(rgb, -15 * invert, 0);
 	ic->cbgoffset = gdImageColorAllocate(ic->im, rgb[0], rgb[1], rgb[2]);
 	colorinitcheck("cbgoffset", ic->cbgoffset, cfg.cbg, rgb);
 	hextorgb(cfg.cbg, rgb);
-	modcolor(rgb, -40, 0);
+	if (ic->invert > 0) { invertcolor(rgb); }
+	modcolor(rgb, -40 * invert, 0);
 	ic->cbgoffsetmore = gdImageColorAllocate(ic->im, rgb[0], rgb[1], rgb[2]);
 	colorinitcheck("cbgoffsetmore", ic->cbgoffsetmore, cfg.cbg, rgb);
 
 	/* rx */
 	hextorgb(cfg.crx, rgb);
+	if (ic->invert > 1) { invertcolor(rgb); }
 	ic->crx = gdImageColorAllocate(ic->im, rgb[0], rgb[1], rgb[2]);
 	colorinitcheck("crx", ic->crx, cfg.crx, rgb);
 	if (cfg.crxd[0] == '-') {
-		modcolor(rgb, -50, 1);
+		modcolor(rgb, -50 * invert, 1);
 	} else {
 		hextorgb(cfg.crxd, rgb);
+		if (ic->invert > 1) { invertcolor(rgb); }
 	}
 	ic->crxd = gdImageColorAllocate(ic->im, rgb[0], rgb[1], rgb[2]);
 	colorinitcheck("crxd", ic->crxd, cfg.crxd, rgb);
 
 	/* tx */
 	hextorgb(cfg.ctx, rgb);
+	if (ic->invert > 1) { invertcolor(rgb); }
 	ic->ctx = gdImageColorAllocate(ic->im, rgb[0], rgb[1], rgb[2]);
 	colorinitcheck("ctx", ic->ctx, cfg.ctx, rgb);
 	if (cfg.ctxd[0] == '-') {
-		modcolor(rgb, -50, 1);
+		modcolor(rgb, -50 * invert, 1);
 	} else {
 		hextorgb(cfg.ctxd, rgb);
+		if (ic->invert > 1) { invertcolor(rgb); }
 	}
 	ic->ctxd = gdImageColorAllocate(ic->im, rgb[0], rgb[1], rgb[2]);
 	colorinitcheck("ctxd", ic->ctxd, cfg.ctxd, rgb);
@@ -422,6 +440,23 @@ void modcolor(int *rgb, const int offset, const int force)
 				rgb[i] -= offset;
 			}
 		}
+	}
+
+	if (debug) {
+		printf("%d, %d, %d\n", rgb[0], rgb[1], rgb[2]);
+	}
+}
+
+void invertcolor(int *rgb)
+{
+	int i;
+
+	if (debug) {
+		printf("invert: %d, %d, %d -> ", rgb[0], rgb[1], rgb[2]);
+	}
+
+	for (i = 0; i < 3; i++) {
+		rgb[i] = 255 - rgb[i];
 	}
 
 	if (debug) {
