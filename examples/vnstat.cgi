@@ -41,6 +41,10 @@ my $largefonts = '0';
 # page background color
 my $bgcolor = "white";
 
+# use black background and invert image colors when enabled, set 0 to disable,
+# set 1 to enable without inverting rx and tx color, set 2 to enable and invert all colors
+my $darkmode = '0';
+
 # page auto refresh interval in seconds, set 0 to disable
 my $pagerefresh = '0';
 
@@ -51,20 +55,16 @@ my $scriptname = '';
 ################
 
 
-my $VERSION = "1.16";
+my $VERSION = "1.17";
 my $cssbody = "body { background-color: $bgcolor; }";
-my $csscommonstyle = <<CSS;
-a { text-decoration: underline; }
-a:link { color: #b0b0b0; }
-a:visited { color: #b0b0b0; }
-a:hover { color: #000000; }
-small { font-size: 8px; color: #cbcbcb; }
-img { border: 0; vertical-align: top; }
-table { border: 0; }
-table td { vertical-align: top; }
-small { display: block; }
-CSS
+my $csscommonstyle = "a { text-decoration: underline; }\na:link { color: #b0b0b0; }\na:visited { color: #b0b0b0; }\na:hover { color: #000000; }\nsmall { font-size: 8px; color: #cbcbcb; }\nimg { border: 0; vertical-align: top; }\ntable { border: 0; }\ntable td { vertical-align: top; }\nsmall { display: block; }\n";
 my $metarefresh = "";
+
+if ($darkmode == '1' or $darkmode == '2') {
+	$bgcolor = "black";
+	$cssbody = "body { background-color: $bgcolor; }";
+	$csscommonstyle = "a { text-decoration: underline; }\na:link { color: #707070; }\na:visited { color: #707070; }\na:hover { color: #ffffff; }\nsmall { font-size: 8px; color: #606060; }\nimg { border: 0; vertical-align: top; }\ntable { border: 0; }\ntable td { vertical-align: top; }\nsmall { display: block; }\n";
+}
 
 sub graph
 {
@@ -77,7 +77,7 @@ sub graph
 	}
 
 	if (defined $interface and defined $file and defined $param) {
-		$result = `"$vnstati_cmd" -i "$interface" -c $cachetime $param $fontparam -o "$file"`;
+		$result = `"$vnstati_cmd" -i "$interface" -c $cachetime $param $fontparam --invert-colors $darkmode -o "$file"`;
 	} else {
 		show_error("ERROR: invalid input");
 	}

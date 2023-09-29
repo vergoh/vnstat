@@ -6,6 +6,7 @@
    - Add --invert-colors option to image output for facilitating for example
      dark mode switching without needing to have multiple separate color
      configurations
+   - Add dark mode option to image output example cgi (examples/vnstat.cgi)
 
 
 2.11 / 19-Aug-2023
