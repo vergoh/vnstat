@@ -90,8 +90,8 @@ void printcfgfile(void)
 	printf("LiveSpinner %d\n\n", cfg.livespinner);
 
 	printf("# default query mode\n");
-	printf("# 0 = normal, 1 = days, 2 = months, 3 = top, 5 = short\n");
-	printf("# 7 = hours, 8 = xml, 9 = one line, 10 = json\n");
+	printf("# 0 = normal, 1 = days, 2 = months, 3 = top, 5 = short, 7 = hours graph\n");
+	printf("# 8 = xml, 9 = one line, 10 = json, 11 = hours, 12 = 5 minute\n");
 	defaultcomment(cfg.qmode == DEFQMODE);
 	printf("QueryMode %d\n\n", cfg.qmode);
 

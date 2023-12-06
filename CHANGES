@@ -1,5 +1,8 @@
 2.12 / <not released yet>
 
+ - Fixed
+   - QueryMode documentation in configuration file didn't match implementation
+     or man page description
  - New
    - Show spinning animation at the beginning of -l / --live output line,
      visibility configurable using LiveSpinner configuration option
