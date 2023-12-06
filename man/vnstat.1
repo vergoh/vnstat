@@ -1,5 +1,5 @@
 '\" t
-.TH VNSTAT 1 "AUGUST 2023" "version 2.11" "User Manuals"
+.TH VNSTAT 1 "DECEMBER 2023" "version 2.12" "User Manuals"
 .SH NAME
 vnstat \- a console-based network traffic monitor
 
@@ -50,7 +50,8 @@ vnstat \- a console-based network traffic monitor
 .RI [ limit ]]
 .RB [ \-\-oneline
 .RI [ mode ]]
-.RB [ \-\-query ]
+.RB [ \-\-query
+.RI [ mode ]]
 .RB [ \-\-rateunit
 .RI [ mode ]]
 .RB [ \-\-remove ]
@@ -414,8 +415,18 @@ parameter can be used to force all fields to output in bytes without the
 unit itself shown.
 
 .TP
-.B "-q, --query"
-Force database query mode.
+.BI "-q, --query " [mode]
+Force database query mode. An optional
+.I mode
+parameter can be used to override the default query mode. 'a' results in
+short summary output being used when there are more than one interface in the
+database, otherwise regular summary output is used. 's' results in regular
+summary output being shown for one interface regardless of the number of interfaces
+in the database. When the optional
+.I mode
+parameter isn't defined, the configured
+.I QueryMode
+will be used instead.
 
 .TP
 .B "--remove"

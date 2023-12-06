@@ -92,7 +92,7 @@ void showlonghelp(const PARAMS *p)
 
 	printf("Query:\n");
 
-	printf("      -q,  --query                 query database\n");
+	printf("      -q,  --query [mode]          query database\n");
 	printf("      -s,  --short                 use short output\n");
 	printf("      -5,  --fiveminutes [limit]   show 5 minutes\n");
 	printf("      -h,  --hours [limit]         show hours\n");
@@ -243,6 +243,22 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 			exit(EXIT_FAILURE);
 		} else if ((strcmp(argv[currentarg], "-q") == 0) || (strcmp(argv[currentarg], "--query") == 0)) {
 			p->query = 1;
+			if (currentarg + 1 < argc && (strlen(argv[currentarg + 1]) == 1 || ishelprequest(argv[currentarg + 1]))) {
+				if (argv[currentarg + 1][0] == 'a') {
+					cfg.qmode = 0;
+				} else if (argv[currentarg + 1][0] == 's') {
+					cfg.qmode = 4;
+				} else {
+					if (!ishelprequest(argv[currentarg + 1]))
+						printf("Error: Invalid mode parameter \"%s\".\n", argv[currentarg + 1]);
+					printf(" Valid parameters for %s:\n", argv[currentarg]);
+					printf("    (none) - use QueryMode configuration\n");
+					printf("    a      - summary for all interfaces\n");
+					printf("    s      - summary for single interface\n");
+					exit(EXIT_FAILURE);
+				}
+				currentarg++;
+			}
 		} else if ((strcmp(argv[currentarg], "-D") == 0) || (strcmp(argv[currentarg], "--debug") == 0)) {
 			debug = 1;
 		} else if ((strcmp(argv[currentarg], "-d") == 0) || (strcmp(argv[currentarg], "--days") == 0)) {

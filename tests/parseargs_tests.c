@@ -867,6 +867,63 @@ START_TEST(vnstat_parseargs_knows_when_interface_merge_is_too_long_even_without_
 }
 END_TEST
 
+START_TEST(vnstat_parseargs_query_gives_help)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--query", "g", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	initparams(&p);
+	suppress_output();
+	parseargs(&p, argc, argv);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_query_without_mode_does_not_change_querymode)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--query", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	initparams(&p);
+	cfg.qmode = 2;
+	suppress_output();
+	parseargs(&p, argc, argv);
+	ck_assert_int_eq(p.query, 1);
+	ck_assert_int_eq(cfg.qmode, 2);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_query_with_a_changes_querymode)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--query", "a", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	initparams(&p);
+	cfg.qmode = 2;
+	suppress_output();
+	parseargs(&p, argc, argv);
+	ck_assert_int_eq(p.query, 1);
+	ck_assert_int_eq(cfg.qmode, 0);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_query_with_s_changes_querymode)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--query", "s", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	initparams(&p);
+	cfg.qmode = 2;
+	suppress_output();
+	parseargs(&p, argc, argv);
+	ck_assert_int_eq(p.query, 1);
+	ck_assert_int_eq(cfg.qmode, 4);
+}
+END_TEST
+
 void add_parseargs_tests(Suite *s)
 {
 	TCase *tc_pa = tcase_create("ParseArgs");
@@ -931,5 +988,9 @@ void add_parseargs_tests(Suite *s)
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_knows_when_interface_name_is_too_long_even_without_parameter, 1);
 	tcase_add_test(tc_pa, vnstat_parseargs_knows_when_interface_name_is_too_long_even_without_parameter_unless_it_is_a_merge);
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_knows_when_interface_merge_is_too_long_even_without_parameter, 1);
+	tcase_add_exit_test(tc_pa, vnstat_parseargs_query_gives_help, 1);
+	tcase_add_test(tc_pa, vnstat_parseargs_query_without_mode_does_not_change_querymode);
+	tcase_add_test(tc_pa, vnstat_parseargs_query_with_a_changes_querymode);
+	tcase_add_test(tc_pa, vnstat_parseargs_query_with_s_changes_querymode);
 	suite_add_tcase(s, tc_pa);
 }

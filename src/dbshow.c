@@ -35,6 +35,9 @@ void showdb(const char *interface, int qmode, const char *databegin, const char 
 		case 3:
 			showlist(&info, "top", databegin, dataend);
 			break;
+		case 4:
+			showsummary(&info, 0);
+			break;
 		case 5:
 			showsummary(&info, 1);
 			break;

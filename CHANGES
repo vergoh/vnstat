@@ -10,6 +10,11 @@
      dark mode switching without needing to have multiple separate color
      configurations
    - Add dark mode option to image output example cgi (examples/vnstat.cgi)
+   - Add option 4 to QueryMode for selecting summary output of single
+     interface regardless of the number of interfaces in the database
+   - Add optional mode parameter to -q / --query for overriding QueryMode
+     for summary output and for enabling control of summary output style
+     regardless of the number of interfaces in the database
 
 
 2.11 / 19-Aug-2023
