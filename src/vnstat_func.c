@@ -69,6 +69,7 @@ void showhelp(const PARAMS *p)
 	printf("      -b, --begin <date>           set list begin date\n");
 	printf("      -e, --end <date>             set list end date\n\n");
 
+	printf("      --95%%                        show 95th percentile\n");
 	printf("      --oneline [mode]             show simple parsable format\n");
 	printf("      --json [mode] [limit]        show database in json format\n");
 	printf("      --xml [mode] [limit]         show database in xml format\n");
@@ -325,6 +326,8 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 				}
 				currentarg++;
 			}
+		} else if ((strcmp(argv[currentarg], "--95") == 0) || (strcmp(argv[currentarg], "--95%") == 0) || (strcmp(argv[currentarg], "--95th") == 0)) {
+			cfg.qmode = 13;
 		} else if (strcmp(argv[currentarg], "--oneline") == 0) {
 			cfg.qmode = 9;
 			if (currentarg + 1 < argc && (strlen(argv[currentarg + 1]) == 1 || ishelprequest(argv[currentarg + 1]))) {

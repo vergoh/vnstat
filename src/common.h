@@ -89,6 +89,10 @@ and most can be changed later from the config file.
 #define DATETIMEFORMAT "%Y-%m-%d %H:%M:%S"
 #endif
 
+#ifndef DATETIMEFORMATWITHOUTSECS
+#define DATETIMEFORMATWITHOUTSECS "%Y-%m-%d %H:%M"
+#endif
+
 /* characters used for visuals */
 #define RXCHAR "%"
 #define TXCHAR ":"
