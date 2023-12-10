@@ -69,7 +69,7 @@ void showhelp(const PARAMS *p)
 	printf("      -b, --begin <date>           set list begin date\n");
 	printf("      -e, --end <date>             set list end date\n\n");
 
-	printf("      --95%%                        show 95th percentile\n");
+	printf("      --95%%                        show 95th percentile\n"); // TODO: documentation
 	printf("      --oneline [mode]             show simple parsable format\n");
 	printf("      --json [mode] [limit]        show database in json format\n");
 	printf("      --xml [mode] [limit]         show database in xml format\n");

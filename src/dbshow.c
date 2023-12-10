@@ -1,6 +1,7 @@
 #include "common.h"
 #include "dbsql.h"
 #include "misc.h"
+#include "percentile.h"
 #include "dbshow.h"
 
 // TODO: use exit(EXIT_FAILURE); for errors instead of return
@@ -868,156 +869,84 @@ void showhours(const interfaceinfo *interface)
 	timeused_debug(__func__, 0);
 }
 
-// TODO: json?
-// TODO: xml?
-// TODO: alert
-// TODO: image?
+// TODO: json? needs new function due to different format
+// TODO: xml? needs new function due to different format
+// TODO: alert needs new function due to different format
+// TODO: image? output below doesn't have much graphics potential, line in 5 minute graph could be one alternative
 // TODO: tests
 void show95thpercentile(const interfaceinfo *interface)
 {
-	uint32_t entry = 0, entrylimit, entrycountexpectation;
-	uint64_t *rxdata, *txdata, *totaldata;
 	struct tm *d;
-	time_t monthbegins;
 	char datebuff[DATEBUFFLEN];
-	dbdatalist *datalist = NULL, *datalist_i = NULL;
-	dbdatalistinfo datainfo;
+	percentiledata pdata;
 
 	timeused_debug(__func__, 1);
 
 	if (cfg.fiveminutehours < 744) {
-		printf("\nWarning: Configuration \"5MinuteHours\" needs to be at least 744 for 100%% coverage. Currently set at %d.\n\n", cfg.fiveminutehours);
+		printf("\nWarning: Configuration \"5MinuteHours\" needs to be at least 744 for 100%% coverage.\n");
+		printf("         \"5MinuteHours\" is currently set at %d.\n\n", cfg.fiveminutehours);
 	}
 
-	if (!db_getdata_range(&datalist, &datainfo, interface->name, "month", 1, "", "")) {
-		printf("Error: Failed to fetch month data for 95th percentile.\n");
-		return;
+	if (!getpercentiledata(&pdata, interface->name)) {
+		exit(EXIT_FAILURE);
 	}
-
-	if (!datalist) {
-		printf("No month data for 95th percentile available.\n");
-		return;
-	}
-
-	monthbegins = datainfo.mintime;
-	d = localtime(&monthbegins);
-	strftime(datebuff, DATEBUFFLEN, "%Y-%m-%d", d);
-	dbdatalistfree(&datalist);
-
-	// TODO: if interface hasn't been updated during current month, show some error?
-
-	// limit query to a maximum of 8228 entries (31 days * 24 hours * 60 minutes / 5 minutes)
-	if (!db_getdata_range(&datalist, &datainfo, interface->name, "fiveminute", 8928, datebuff, "")) {
-		printf("Error: Failed to fetch 5-minute data for 95th percentile.\n");
-		return;
-	}
-
-	if (!datalist) {
-		printf("No 5-minute data for 95th percentile available.\n");
-		return;
-	}
-
-	// TODO: --style not used
 
 	printf("\n");
+	indent(1);
 	if (strcmp(interface->name, interface->alias) == 0 || strlen(interface->alias) == 0) {
-		printf(" %s", interface->name);
+		printf("%s", interface->name);
 	} else {
-		printf(" %s (%s)", interface->alias, interface->name);
+		printf("%s (%s)", interface->alias, interface->name);
 	}
 	if (interface->active == 0) {
 		printf(" [disabled]");
 	}
 	printf("  /  95th percentile\n\n");
 
-	d = localtime(&monthbegins);
+	indent(1);
+	d = localtime(&pdata.monthbegin);
 	strftime(datebuff, DATEBUFFLEN, DATETIMEFORMATWITHOUTSECS, d);
-	printf(" %s", datebuff);
-	d = localtime(&datainfo.maxtime);
+	printf("%s", datebuff);
+	d = localtime(&pdata.dataend);
 	strftime(datebuff, DATEBUFFLEN, DATETIMEFORMATWITHOUTSECS, d);
 	printf(" - %s", datebuff);
-	printf(" (%" PRIu32 " entries", datainfo.count);
-	entrycountexpectation = (uint32_t)((datainfo.maxtime - monthbegins) / 300 + 1);
-	if (datainfo.count == entrycountexpectation) {
+	if (cfg.ostyle == 0) {
+		printf("\n");
+	} else {
+		indent(1);
+	}
+	printf("(%" PRIu32 " entries", pdata.count);
+	if (pdata.count == pdata.countexpectation) {
 		printf(", 100%% coverage)");
 	} else {
-		printf(", %0.1f%% coverage)", (float)datainfo.count / (float)entrycountexpectation * 100.0);
+		printf(", %0.1f%% coverage)", (float)pdata.count / (float)pdata.countexpectation * 100.0);
 	}
 	printf("\n\n");
 
-	entrylimit = lrint(datainfo.count * (float)0.95) - 1;
-
-	if (debug) {
-		printf("Entry expectation: %" PRIu32 "\n", entrycountexpectation);
-		printf("Entry count: %" PRIu32 "\n", datainfo.count);
-		printf("95th: %" PRIu32 "\n", entrylimit);
-	}
-
-	printf("                        rx       |       tx       |     total\n");
-	printf("       --------------------------+----------------+---------------\n");
-	printf("       minimum   %s |", gettrafficrate(datainfo.minrx, 300, 15));
-	printf("%s |", gettrafficrate(datainfo.mintx, 300, 15));
-	printf("%s\n", gettrafficrate(datainfo.min, 300, 15));
-	printf("       average   %s |", gettrafficrate(datainfo.sumrx, (time_t)(datainfo.count * 300), 15));
-	printf("%s |", gettrafficrate(datainfo.sumtx, (time_t)(datainfo.count * 300), 15));
-	printf("%s\n", gettrafficrate(datainfo.sumrx + datainfo.sumtx, (time_t)(datainfo.count * 300), 15));
-	printf("       maximum   %s |", gettrafficrate(datainfo.maxrx, 300, 15));
-	printf("%s |", gettrafficrate(datainfo.maxtx, 300, 15));
-	printf("%s\n", gettrafficrate(datainfo.max, 300, 15));
-	printf("       --------------------------+----------------+---------------\n");
-
-	rxdata = (uint64_t *)malloc(datainfo.count * sizeof(uint64_t));
-	txdata = (uint64_t *)malloc(datainfo.count * sizeof(uint64_t));
-	totaldata = (uint64_t *)malloc(datainfo.count * sizeof(uint64_t));
-	if (rxdata == NULL || txdata == NULL || totaldata == NULL) {
-		panicexit(__FILE__, __LINE__);
-	}
-
-	datalist_i = datalist;
-	while (datalist_i != NULL) {
-		if (entry >= datainfo.count) {
-			printf("Error: Database query resulted in more data than expected (%" PRIu32 " >= %" PRIu32 ").\n", entry, datainfo.count);
-			exit(EXIT_FAILURE);
-		}
-		rxdata[entry] = datalist_i->rx;
-		txdata[entry] = datalist_i->tx;
-		totaldata[entry] = datalist_i->rx + datalist_i->tx;
-		datalist_i = datalist_i->next;
-		entry++;
-	}
-
-	if (datainfo.count != entry) {
-		printf("Error: Database query data count doesn't match entry count (%" PRIu32 " != %" PRIu32 ").\n", datainfo.count, entry);
-		exit(EXIT_FAILURE);
-	}
-
-	qsort((void *)rxdata, datainfo.count, sizeof(uint64_t), compare_uint64_t);
-	qsort((void *)txdata, datainfo.count, sizeof(uint64_t), compare_uint64_t);
-	qsort((void *)totaldata, datainfo.count, sizeof(uint64_t), compare_uint64_t);
-
-	printf("        95th %%   %s |", gettrafficrate(rxdata[entrylimit], 300, 15));
-	printf("%s |", gettrafficrate(txdata[entrylimit], 300, 15));
-	printf("%s\n", gettrafficrate(totaldata[entrylimit], 300, 15));
-
-	free(rxdata);
-	free(txdata);
-	free(totaldata);
-	dbdatalistfree(&datalist);
-
-	// TODO: tests: printf("Compare test: %d\n", compare_uint64_t((void *)&datainfo.mintime, (void *)&datainfo.maxtime));
+	indent(7);
+	printf("                 rx       |       tx       |     total\n");
+	indent(7);
+	printf("--------------------------+----------------+---------------\n");
+	indent(7);
+	printf("minimum   %s |", gettrafficrate(pdata.minrx, 300, 15));
+	printf("%s |", gettrafficrate(pdata.mintx, 300, 15));
+	printf("%s\n", gettrafficrate(pdata.min, 300, 15));
+	indent(7);
+	printf("average   %s |", gettrafficrate(pdata.sumrx, (time_t)(pdata.count * 300), 15));
+	printf("%s |", gettrafficrate(pdata.sumtx, (time_t)(pdata.count * 300), 15));
+	printf("%s\n", gettrafficrate(pdata.sumrx + pdata.sumtx, (time_t)(pdata.count * 300), 15));
+	indent(7);
+	printf("maximum   %s |", gettrafficrate(pdata.maxrx, 300, 15));
+	printf("%s |", gettrafficrate(pdata.maxtx, 300, 15));
+	printf("%s\n", gettrafficrate(pdata.max, 300, 15));
+	indent(7);
+	printf("--------------------------+----------------+---------------\n");
+	indent(7);
+	printf(" 95th %%   %s |", gettrafficrate(pdata.rxpercentile, 300, 15));
+	printf("%s |", gettrafficrate(pdata.txpercentile, 300, 15));
+	printf("%s\n", gettrafficrate(pdata.sumpercentile, 300, 15));
 
 	timeused_debug(__func__, 0);
-}
-
-// TODO: tests
-int compare_uint64_t(const void *a, const void *b)
-{
-	if (*(uint64_t *)a < *(uint64_t *)b) {
-		return -1;
-	} else if (*(uint64_t *)a > *(uint64_t *)b) {
-		return 1;
-	}
-	return 0;
 }
 
 int showbar(const uint64_t rx, const uint64_t tx, const uint64_t max, const int len)

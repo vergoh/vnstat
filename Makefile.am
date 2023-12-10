@@ -20,6 +20,7 @@ vnstat_SOURCES = src/vnstat.c \
   src/dbxml.c src/dbxml.h \
   src/dbjson.c src/dbjson.h \
   src/dbshow.c src/dbshow.h \
+  src/percentile.c src/percentile.h \
   src/common.c src/common.h \
   src/misc.c src/misc.h \
   src/cfg.c src/cfg.h \
@@ -89,6 +90,7 @@ check_vnstat_SOURCES += src/cfg.c src/cfg.h \
   src/dbaccess.c src/dbaccess.h \
   src/datacache.c src/datacache.h \
   src/dbshow.c src/dbshow.h \
+  src/percentile.c src/percentile.h \
   src/dbjson.c src/dbjson.h \
   src/dbxml.c src/dbxml.h \
   src/ibw.c src/ibw.h \

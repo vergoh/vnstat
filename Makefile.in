@@ -132,10 +132,11 @@ am__check_vnstat_SOURCES_DIST = tests/vnstat_tests.c \
 	src/cfgoutput.h src/common.c src/common.h src/daemon.c \
 	src/daemon.h src/dbsql.c src/dbsql.h src/dbaccess.c \
 	src/dbaccess.h src/datacache.c src/datacache.h src/dbshow.c \
-	src/dbshow.h src/dbjson.c src/dbjson.h src/dbxml.c src/dbxml.h \
-	src/ibw.c src/ibw.h src/ifinfo.c src/ifinfo.h src/iflist.c \
-	src/iflist.h src/misc.c src/misc.h src/fs.c src/fs.h src/id.c \
-	src/id.h src/vnstat_func.c src/vnstat_func.h src/traffic.c \
+	src/dbshow.h src/percentile.c src/percentile.h src/dbjson.c \
+	src/dbjson.h src/dbxml.c src/dbxml.h src/ibw.c src/ibw.h \
+	src/ifinfo.c src/ifinfo.h src/iflist.c src/iflist.h src/misc.c \
+	src/misc.h src/fs.c src/fs.h src/id.c src/id.h \
+	src/vnstat_func.c src/vnstat_func.h src/traffic.c \
 	src/traffic.h tests/image_tests.c tests/image_tests.h \
 	src/image.c src/image.h src/image_support.c \
 	src/image_support.h
@@ -166,6 +167,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @HAVE_CHECK_TRUE@	src/check_vnstat-dbaccess.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	src/check_vnstat-datacache.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	src/check_vnstat-dbshow.$(OBJEXT) \
+@HAVE_CHECK_TRUE@	src/check_vnstat-percentile.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	src/check_vnstat-dbjson.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	src/check_vnstat-dbxml.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	src/check_vnstat-ibw.$(OBJEXT) \
@@ -185,9 +187,10 @@ check_vnstat_LINK = $(CCLD) $(check_vnstat_CFLAGS) $(CFLAGS) \
 am_vnstat_OBJECTS = src/vnstat.$(OBJEXT) src/vnstat_func.$(OBJEXT) \
 	src/ifinfo.$(OBJEXT) src/iflist.$(OBJEXT) src/dbsql.$(OBJEXT) \
 	src/dbxml.$(OBJEXT) src/dbjson.$(OBJEXT) src/dbshow.$(OBJEXT) \
-	src/common.$(OBJEXT) src/misc.$(OBJEXT) src/cfg.$(OBJEXT) \
-	src/cfgoutput.$(OBJEXT) src/ibw.$(OBJEXT) src/fs.$(OBJEXT) \
-	src/id.$(OBJEXT) src/traffic.$(OBJEXT)
+	src/percentile.$(OBJEXT) src/common.$(OBJEXT) \
+	src/misc.$(OBJEXT) src/cfg.$(OBJEXT) src/cfgoutput.$(OBJEXT) \
+	src/ibw.$(OBJEXT) src/fs.$(OBJEXT) src/id.$(OBJEXT) \
+	src/traffic.$(OBJEXT)
 vnstat_OBJECTS = $(am_vnstat_OBJECTS)
 vnstat_LDADD = $(LDADD)
 am_vnstatd_OBJECTS = src/vnstatd.$(OBJEXT) src/ifinfo.$(OBJEXT) \
@@ -238,6 +241,7 @@ am__depfiles_remade = src/$(DEPDIR)/cfg.Po src/$(DEPDIR)/cfgoutput.Po \
 	src/$(DEPDIR)/check_vnstat-image.Po \
 	src/$(DEPDIR)/check_vnstat-image_support.Po \
 	src/$(DEPDIR)/check_vnstat-misc.Po \
+	src/$(DEPDIR)/check_vnstat-percentile.Po \
 	src/$(DEPDIR)/check_vnstat-traffic.Po \
 	src/$(DEPDIR)/check_vnstat-vnstat_func.Po \
 	src/$(DEPDIR)/common.Po src/$(DEPDIR)/daemon.Po \
@@ -247,9 +251,10 @@ am__depfiles_remade = src/$(DEPDIR)/cfg.Po src/$(DEPDIR)/cfgoutput.Po \
 	src/$(DEPDIR)/fs.Po src/$(DEPDIR)/ibw.Po src/$(DEPDIR)/id.Po \
 	src/$(DEPDIR)/ifinfo.Po src/$(DEPDIR)/iflist.Po \
 	src/$(DEPDIR)/image.Po src/$(DEPDIR)/image_support.Po \
-	src/$(DEPDIR)/misc.Po src/$(DEPDIR)/traffic.Po \
-	src/$(DEPDIR)/vnstat.Po src/$(DEPDIR)/vnstat_func.Po \
-	src/$(DEPDIR)/vnstatd.Po src/$(DEPDIR)/vnstati.Po \
+	src/$(DEPDIR)/misc.Po src/$(DEPDIR)/percentile.Po \
+	src/$(DEPDIR)/traffic.Po src/$(DEPDIR)/vnstat.Po \
+	src/$(DEPDIR)/vnstat_func.Po src/$(DEPDIR)/vnstatd.Po \
+	src/$(DEPDIR)/vnstati.Po \
 	tests/$(DEPDIR)/check_vnstat-cli_tests.Po \
 	tests/$(DEPDIR)/check_vnstat-common_tests.Po \
 	tests/$(DEPDIR)/check_vnstat-config_tests.Po \
@@ -702,6 +707,7 @@ vnstat_SOURCES = src/vnstat.c \
   src/dbxml.c src/dbxml.h \
   src/dbjson.c src/dbjson.h \
   src/dbshow.c src/dbshow.h \
+  src/percentile.c src/percentile.h \
   src/common.c src/common.h \
   src/misc.c src/misc.h \
   src/cfg.c src/cfg.h \
@@ -764,6 +770,7 @@ vnstati_SOURCES = src/vnstati.c src/vnstati.h \
 @HAVE_CHECK_TRUE@	src/dbsql.c src/dbsql.h src/dbaccess.c \
 @HAVE_CHECK_TRUE@	src/dbaccess.h src/datacache.c \
 @HAVE_CHECK_TRUE@	src/datacache.h src/dbshow.c src/dbshow.h \
+@HAVE_CHECK_TRUE@	src/percentile.c src/percentile.h \
 @HAVE_CHECK_TRUE@	src/dbjson.c src/dbjson.h src/dbxml.c \
 @HAVE_CHECK_TRUE@	src/dbxml.h src/ibw.c src/ibw.h src/ifinfo.c \
 @HAVE_CHECK_TRUE@	src/ifinfo.h src/iflist.c src/iflist.h \
@@ -998,6 +1005,8 @@ src/check_vnstat-datacache.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/check_vnstat-dbshow.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
+src/check_vnstat-percentile.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
 src/check_vnstat-dbjson.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/check_vnstat-dbxml.$(OBJEXT): src/$(am__dirstamp) \
@@ -1041,6 +1050,8 @@ src/dbxml.$(OBJEXT): src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 src/dbjson.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/dbshow.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/percentile.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/common.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
@@ -1107,6 +1118,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-image.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-image_support.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-misc.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-percentile.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-traffic.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-vnstat_func.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/common.Po@am__quote@ # am--include-marker
@@ -1125,6 +1137,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/image.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/image_support.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/misc.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/percentile.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/traffic.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/vnstat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/vnstat_func.Po@am__quote@ # am--include-marker
@@ -1475,6 +1488,20 @@ src/check_vnstat-dbshow.obj: src/dbshow.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/dbshow.c' object='src/check_vnstat-dbshow.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o src/check_vnstat-dbshow.obj `if test -f 'src/dbshow.c'; then $(CYGPATH_W) 'src/dbshow.c'; else $(CYGPATH_W) '$(srcdir)/src/dbshow.c'; fi`
+
+src/check_vnstat-percentile.o: src/percentile.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT src/check_vnstat-percentile.o -MD -MP -MF src/$(DEPDIR)/check_vnstat-percentile.Tpo -c -o src/check_vnstat-percentile.o `test -f 'src/percentile.c' || echo '$(srcdir)/'`src/percentile.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/check_vnstat-percentile.Tpo src/$(DEPDIR)/check_vnstat-percentile.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/percentile.c' object='src/check_vnstat-percentile.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o src/check_vnstat-percentile.o `test -f 'src/percentile.c' || echo '$(srcdir)/'`src/percentile.c
+
+src/check_vnstat-percentile.obj: src/percentile.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT src/check_vnstat-percentile.obj -MD -MP -MF src/$(DEPDIR)/check_vnstat-percentile.Tpo -c -o src/check_vnstat-percentile.obj `if test -f 'src/percentile.c'; then $(CYGPATH_W) 'src/percentile.c'; else $(CYGPATH_W) '$(srcdir)/src/percentile.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/check_vnstat-percentile.Tpo src/$(DEPDIR)/check_vnstat-percentile.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/percentile.c' object='src/check_vnstat-percentile.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o src/check_vnstat-percentile.obj `if test -f 'src/percentile.c'; then $(CYGPATH_W) 'src/percentile.c'; else $(CYGPATH_W) '$(srcdir)/src/percentile.c'; fi`
 
 src/check_vnstat-dbjson.o: src/dbjson.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT src/check_vnstat-dbjson.o -MD -MP -MF src/$(DEPDIR)/check_vnstat-dbjson.Tpo -c -o src/check_vnstat-dbjson.o `test -f 'src/dbjson.c' || echo '$(srcdir)/'`src/dbjson.c
@@ -2326,6 +2353,7 @@ distclean: distclean-recursive
 	-rm -f src/$(DEPDIR)/check_vnstat-image.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-image_support.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-misc.Po
+	-rm -f src/$(DEPDIR)/check_vnstat-percentile.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-traffic.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-vnstat_func.Po
 	-rm -f src/$(DEPDIR)/common.Po
@@ -2344,6 +2372,7 @@ distclean: distclean-recursive
 	-rm -f src/$(DEPDIR)/image.Po
 	-rm -f src/$(DEPDIR)/image_support.Po
 	-rm -f src/$(DEPDIR)/misc.Po
+	-rm -f src/$(DEPDIR)/percentile.Po
 	-rm -f src/$(DEPDIR)/traffic.Po
 	-rm -f src/$(DEPDIR)/vnstat.Po
 	-rm -f src/$(DEPDIR)/vnstat_func.Po
@@ -2432,6 +2461,7 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f src/$(DEPDIR)/check_vnstat-image.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-image_support.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-misc.Po
+	-rm -f src/$(DEPDIR)/check_vnstat-percentile.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-traffic.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-vnstat_func.Po
 	-rm -f src/$(DEPDIR)/common.Po
@@ -2450,6 +2480,7 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f src/$(DEPDIR)/image.Po
 	-rm -f src/$(DEPDIR)/image_support.Po
 	-rm -f src/$(DEPDIR)/misc.Po
+	-rm -f src/$(DEPDIR)/percentile.Po
 	-rm -f src/$(DEPDIR)/traffic.Po
 	-rm -f src/$(DEPDIR)/vnstat.Po
 	-rm -f src/$(DEPDIR)/vnstat_func.Po

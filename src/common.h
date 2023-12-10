@@ -323,6 +323,9 @@ and most can be changed later from the config file.
 /* a full disk (as reported by sqlite) will no cause retries or exit */
 #define DBRETRYLIMIT 5
 
+/* buffer sizes */
+#define DATEBUFFLEN 64
+
 /* internal config structure */
 typedef struct {
 	char dformat[64], mformat[64], tformat[64], hformat[64];

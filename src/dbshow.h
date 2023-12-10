@@ -1,7 +1,6 @@
 #ifndef DBSHOW_H
 #define DBSHOW_H
 
-#define DATEBUFFLEN 64
 #define HGLINES 15
 #define ALERTUSAGELEN 59
 
@@ -48,7 +47,6 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 void showoneline(const interfaceinfo *interface);
 void showhours(const interfaceinfo *interface);
 void show95thpercentile(const interfaceinfo *interface);
-int compare_uint64_t(const void *a, const void *b);
 int showbar(const uint64_t rx, const uint64_t tx, const uint64_t max, const int len);
 int showalert(const char *interface, const AlertOutput output, const AlertExit exit, const AlertType type, const AlertCondition condition, const uint64_t limit);
 
