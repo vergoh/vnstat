@@ -869,7 +869,6 @@ void showhours(const interfaceinfo *interface)
 	timeused_debug(__func__, 0);
 }
 
-// TODO: xml? needs new function due to different format
 // TODO: alert needs new function due to different format
 // TODO: image? output below doesn't have much graphics potential, line in 5 minute graph could be one alternative
 // TODO: tests

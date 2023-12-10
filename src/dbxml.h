@@ -3,6 +3,7 @@
 
 void showxml(const char *interface, const char mode, const char *databegin, const char *dataend);
 void xmldump(const interfaceinfo *interface, const char *tablename, const int datetype, const char *databegin, const char *dataend);
+void xmlpercentile(const interfaceinfo *interface);
 void xmldate(const time_t *date, const int type);
 void xmlheader(void);
 void xmlfooter(void);

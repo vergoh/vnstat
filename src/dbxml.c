@@ -1,5 +1,6 @@
 #include "common.h"
 #include "dbsql.h"
+#include "percentile.h"
 #include "dbxml.h"
 
 void showxml(const char *interface, const char mode, const char *databegin, const char *dataend)
@@ -27,6 +28,13 @@ void showxml(const char *interface, const char mode, const char *databegin, cons
 	printf("  <updated>");
 	xmldate(&info.updated, 2);
 	printf("</updated>\n");
+
+	if (mode == 'p') {
+		xmlpercentile(&info);
+		printf(" </interface>\n");
+		timeused_debug(__func__, 0);
+		return;
+	}
 
 	printf("  <traffic>\n");
 	printf("   <total><rx>%" PRIu64 "</rx><tx>%" PRIu64 "</tx></total>\n", info.rxtotal, info.txtotal);
@@ -94,6 +102,57 @@ void xmldump(const interfaceinfo *interface, const char *tablename, const int da
 	}
 	dbdatalistfree(&datalist);
 	printf("   </%ss>\n", tablename);
+}
+
+void xmlpercentile(const interfaceinfo *interface)
+{
+	percentiledata pdata;
+
+	if (!getpercentiledata(&pdata, interface->name)) {
+		exit(EXIT_FAILURE);
+	}
+
+	printf("  <bandwidth>\n");
+
+	printf("   <month>");
+	xmldate(&pdata.monthbegin, 1);
+	printf("</month>\n");
+
+	printf("   <data_begin>");
+	xmldate(&pdata.databegin, 2);
+	printf("</data_begin>\n");
+
+	printf("   <data_end>");
+	xmldate(&pdata.dataend, 2);
+	printf("</data_end>\n");
+
+	printf("   <entries><seen>%" PRIu32 "</seen><expected>%" PRIu32 "</expected><missing>%" PRIu32 "</missing></entries>\n", pdata.count, pdata.countexpectation, pdata.countexpectation-pdata.count);
+
+	printf("   <minimum>");
+	printf("<rx_bytes_per_second>%" PRIu64 "</rx_bytes_per_second>", (uint64_t)(pdata.minrx / (double)300));
+	printf("<tx_bytes_per_second>%" PRIu64 "</tx_bytes_per_second>", (uint64_t)(pdata.mintx / (double)300));
+	printf("<total_bytes_per_second>%" PRIu64 "</total_bytes_per_second>", (uint64_t)(pdata.min / (double)300));
+	printf("</minimum>\n");
+
+	printf("   <average>");
+	printf("<rx_bytes_per_second>%" PRIu64 "</rx_bytes_per_second>", (uint64_t)(pdata.sumrx / (double)(pdata.count * 300)));
+	printf("<tx_bytes_per_second>%" PRIu64 "</tx_bytes_per_second>", (uint64_t)(pdata.sumtx / (double)(pdata.count * 300)));
+	printf("<total_bytes_per_second>%" PRIu64 "</total_bytes_per_second>", (uint64_t)(pdata.sumrx + pdata.sumtx / (double)(pdata.count * 300)));
+	printf("</average>\n");
+
+	printf("   <maximum>");
+	printf("<rx_bytes_per_second>%" PRIu64 "</rx_bytes_per_second>", (uint64_t)(pdata.maxrx / (double)300));
+	printf("<tx_bytes_per_second>%" PRIu64 "</tx_bytes_per_second>", (uint64_t)(pdata.maxtx / (double)300));
+	printf("<total_bytes_per_second>%" PRIu64 "</total_bytes_per_second>", (uint64_t)(pdata.max / (double)300));
+	printf("</maximum>\n");
+
+	printf("   <95th_percentile>");
+	printf("<rx_bytes_per_second>%" PRIu64 "</rx_bytes_per_second>", (uint64_t)(pdata.rxpercentile / (double)300));
+	printf("<tx_bytes_per_second>%" PRIu64 "</tx_bytes_per_second>", (uint64_t)(pdata.txpercentile / (double)300));
+	printf("<total_bytes_per_second>%" PRIu64 "</total_bytes_per_second>", (uint64_t)(pdata.sumpercentile / (double)300));
+	printf("</95th_percentile>\n");
+
+	printf("  </bandwidth>\n");
 }
 
 void xmldate(const time_t *date, const int type)
