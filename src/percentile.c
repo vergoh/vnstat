@@ -24,6 +24,7 @@ int getpercentiledata(percentiledata *pdata, const char *iface)
 	pdata->monthbegin = datainfo.mintime;
 	d = localtime(&pdata->monthbegin);
 	strftime(datebuff, DATEBUFFLEN, "%Y-%m-%d", d);
+
 	dbdatalistfree(&datalist);
 
 	// limit query to a maximum of 8228 entries (31 days * 24 hours * 60 minutes / 5 minutes)
@@ -37,17 +38,17 @@ int getpercentiledata(percentiledata *pdata, const char *iface)
 		return 0;
 	}
 
-    pdata->dataend = datainfo.maxtime;
-    pdata->count = datainfo.count;
-    pdata->countexpectation = (uint32_t)((pdata->dataend - pdata->monthbegin) / 300 + 1);
-    pdata->minrx = datainfo.minrx;
-    pdata->mintx = datainfo.mintx;
-    pdata->min = datainfo.min;
-    pdata->sumrx = datainfo.sumrx;
-    pdata->sumtx = datainfo.sumtx;
-    pdata->maxrx = datainfo.maxrx;
-    pdata->maxtx = datainfo.maxtx;
-    pdata->max = datainfo.max;
+	pdata->dataend = datainfo.maxtime;
+	pdata->count = datainfo.count;
+	pdata->countexpectation = (uint32_t)((pdata->dataend - pdata->monthbegin) / 300 + 1);
+	pdata->minrx = datainfo.minrx;
+	pdata->mintx = datainfo.mintx;
+	pdata->min = datainfo.min;
+	pdata->sumrx = datainfo.sumrx;
+	pdata->sumtx = datainfo.sumtx;
+	pdata->maxrx = datainfo.maxrx;
+	pdata->maxtx = datainfo.maxtx;
+	pdata->max = datainfo.max;
 
 	entrylimit = lrint(datainfo.count * (float)0.95) - 1;
 
@@ -68,6 +69,10 @@ int getpercentiledata(percentiledata *pdata, const char *iface)
 	while (datalist_i != NULL) {
 		if (entry >= datainfo.count) {
 			printf("Error: Database query resulted in more data than expected (%" PRIu32 " >= %" PRIu32 ").\n", entry, datainfo.count);
+			free(rxdata);
+			free(txdata);
+			free(sumdata);
+			dbdatalistfree(&datalist);
 			return 0;
 		}
 		rxdata[entry] = datalist_i->rx;
@@ -79,6 +84,10 @@ int getpercentiledata(percentiledata *pdata, const char *iface)
 
 	if (datainfo.count != entry) {
 		printf("Error: Database query data count doesn't match entry count (%" PRIu32 " != %" PRIu32 ").\n", datainfo.count, entry);
+		free(rxdata);
+		free(txdata);
+		free(sumdata);
+		dbdatalistfree(&datalist);
 		return 0;
 	}
 
@@ -86,16 +95,16 @@ int getpercentiledata(percentiledata *pdata, const char *iface)
 	qsort((void *)txdata, datainfo.count, sizeof(uint64_t), compare_uint64_t);
 	qsort((void *)sumdata, datainfo.count, sizeof(uint64_t), compare_uint64_t);
 
-    pdata->rxpercentile = rxdata[entrylimit];
-    pdata->txpercentile = txdata[entrylimit];
-    pdata->sumpercentile = sumdata[entrylimit];
+	pdata->rxpercentile = rxdata[entrylimit];
+	pdata->txpercentile = txdata[entrylimit];
+	pdata->sumpercentile = sumdata[entrylimit];
 
 	free(rxdata);
 	free(txdata);
 	free(sumdata);
 	dbdatalistfree(&datalist);
 
-    return 1;
+	return 1;
 }
 
 // TODO: tests
