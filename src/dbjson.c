@@ -1,5 +1,6 @@
 #include "common.h"
 #include "dbsql.h"
+#include "percentile.h"
 #include "dbjson.h"
 
 void showjson(const char *interface, const int ifcount, const char mode, const char *databegin, const char *dataend)
@@ -29,6 +30,13 @@ void showjson(const char *interface, const int ifcount, const char mode, const c
 	printf("\"updated\":{");
 	jsondate(&info.updated, 2);
 	printf("},");
+
+	if (mode == 'p') {
+		jsonpercentile(&info);
+		printf("}");
+		timeused_debug(__func__, 0);
+		return;
+	}
 
 	printf("\"traffic\":");
 	printf("{\"total\":{\"rx\":%" PRIu64 ",\"tx\":%" PRIu64 "},", info.rxtotal, info.txtotal);
@@ -110,6 +118,57 @@ void jsondump(const interfaceinfo *interface, const char *tablename, const int d
 	}
 	dbdatalistfree(&datalist);
 	printf("]");
+}
+
+void jsonpercentile(const interfaceinfo *interface)
+{
+	percentiledata pdata;
+
+	if (!getpercentiledata(&pdata, interface->name)) {
+		exit(EXIT_FAILURE);
+	}
+
+	printf("\"bandwidth\":{");
+
+	printf("\"month\":{");
+	jsondate(&pdata.monthbegin, 1);
+	printf("},");
+
+	printf("\"data_begin\":{");
+	jsondate(&pdata.databegin, 2);
+	printf("},");
+
+	printf("\"data_end\":{");
+	jsondate(&pdata.dataend, 2);
+	printf("},");
+
+	printf("\"entries\":{\"seen\":%" PRIu32 ",\"expected\":%" PRIu32 ",\"missing\":%" PRIu32 "},", pdata.count, pdata.countexpectation, pdata.countexpectation-pdata.count);
+
+	printf("\"minimum\":{");
+	printf("\"rx_bytes_per_second\":%" PRIu64 ",", (uint64_t)(pdata.minrx / (double)300));
+	printf("\"tx_bytes_per_second\":%" PRIu64 ",", (uint64_t)(pdata.mintx / (double)300));
+	printf("\"total_bytes_per_second\":%" PRIu64 "", (uint64_t)(pdata.min / (double)300));
+	printf("},");
+
+	printf("\"average\":{");
+	printf("\"rx_bytes_per_second\":%" PRIu64 ",", (uint64_t)(pdata.sumrx / (double)(pdata.count * 300)));
+	printf("\"tx_bytes_per_second\":%" PRIu64 ",", (uint64_t)(pdata.sumtx / (double)(pdata.count * 300)));
+	printf("\"total_bytes_per_second\":%" PRIu64 "", (uint64_t)(pdata.sumrx + pdata.sumtx / (double)(pdata.count * 300)));
+	printf("},");
+
+	printf("\"maximum\":{");
+	printf("\"rx_bytes_per_second\":%" PRIu64 ",", (uint64_t)(pdata.maxrx / (double)300));
+	printf("\"tx_bytes_per_second\":%" PRIu64 ",", (uint64_t)(pdata.maxtx / (double)300));
+	printf("\"total_bytes_per_second\":%" PRIu64 "", (uint64_t)(pdata.max / (double)300));
+	printf("},");
+
+	printf("\"95th_percentile\":{");
+	printf("\"rx_bytes_per_second\":%" PRIu64 ",", (uint64_t)(pdata.rxpercentile / (double)300));
+	printf("\"tx_bytes_per_second\":%" PRIu64 ",", (uint64_t)(pdata.txpercentile / (double)300));
+	printf("\"total_bytes_per_second\":%" PRIu64 "", (uint64_t)(pdata.sumpercentile / (double)300));
+	printf("}");
+
+	printf("}");
 }
 
 void jsondate(const time_t *date, const int type)

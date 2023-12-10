@@ -2,7 +2,7 @@
 #define PERCENTILE_H
 
 typedef struct percentiledata {
-	time_t monthbegin, dataend;
+	time_t monthbegin, databegin, dataend;
 	uint32_t count, countexpectation;
 	uint64_t minrx, mintx;
 	uint64_t maxrx, maxtx;

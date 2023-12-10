@@ -378,11 +378,11 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 			cfg.qmode = 10;
 			if (currentarg + 1 < argc && (strlen(argv[currentarg + 1]) == 1 || ishelprequest(argv[currentarg + 1]))) {
 				p->jsonmode = argv[currentarg + 1][0];
-				if (strlen(argv[currentarg + 1]) != 1 || strchr("asfhdmyt", p->jsonmode) == NULL) {
+				if (strlen(argv[currentarg + 1]) != 1 || strchr("asfhdmytp", p->jsonmode) == NULL) {
 					if (!ishelprequest(argv[currentarg + 1]))
 						printf("Error: Invalid mode parameter \"%s\".\n", argv[currentarg + 1]);
 					printf(" Valid parameters for --json:\n");
-					printf("    a - all (default)\n");
+					printf("    a - all except 95th percentile (default)\n");
 					printf("    s - summary\n");
 					printf("    f - only 5 minutes\n");
 					printf("    h - only hours\n");
@@ -390,6 +390,7 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 					printf("    m - only months\n");
 					printf("    y - only years\n");
 					printf("    t - only top\n");
+					printf("    p - 95th percentile\n"); // TODO: documentation
 					exit(EXIT_FAILURE);
 				}
 				if (p->jsonmode == 's') {

@@ -38,6 +38,7 @@ int getpercentiledata(percentiledata *pdata, const char *iface)
 		return 0;
 	}
 
+	pdata->databegin = datainfo.mintime;
 	pdata->dataend = datainfo.maxtime;
 	pdata->count = datainfo.count;
 	pdata->countexpectation = (uint32_t)((pdata->dataend - pdata->monthbegin) / 300 + 1);
