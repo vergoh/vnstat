@@ -2,6 +2,7 @@
 #include "ifinfo.h"
 #include "iflist.h"
 #include "traffic.h"
+#include "percentile.h"
 #include "dbsql.h"
 #include "dbxml.h"
 #include "dbjson.h"
@@ -593,7 +594,7 @@ int parsealertargs(PARAMS *p, char **argv)
 	int i, u, found, currentarg = 0;
 	uint64_t alertlimit = 0, unitmultiplier = 1;
 	int32_t unitmode = cfg.unitmode;
-	const char *alerttypes[] = {"h", "hour", "hourly", "d", "day", "daily", "m", "month", "monthly", "y", "year", "yearly"};
+	const char *alerttypes[] = {"h", "hour", "hourly", "d", "day", "daily", "m", "month", "monthly", "y", "year", "yearly", "p", "95", "95%"};
 	const char *alertconditions[] = {"rx", "tx", "total", "rx_estimate", "tx_estimate", "total_estimate"}; // order must match that of AlertCondition in dbshow.h
 
 	for (i = 1; i <= 6; i++) {
@@ -646,7 +647,7 @@ int parsealertargs(PARAMS *p, char **argv)
 
 	// type
 	found = 0;
-	for (i = 0; i < 12; i++) {
+	for (i = 0; i < 15; i++) {
 		if (strcmp(argv[currentarg], alerttypes[i]) == 0) {
 			found = 1;
 			break;
@@ -671,6 +672,10 @@ int parsealertargs(PARAMS *p, char **argv)
 		case 'y':
 			p->alerttype = AT_Year;
 			break;
+		case 'p':
+		case '9':
+			p->alerttype = AT_Percentile;
+			break;
 		default:
 			return 0;
 	}
@@ -678,6 +683,12 @@ int parsealertargs(PARAMS *p, char **argv)
 		printf("Alert type: %u\n", p->alerttype);
 	}
 	currentarg++;
+
+	if (p->alerttype == AT_Percentile && (p->alertoutput == 2 || p->alertexit == 2)) {
+		printf("Error: Estimate conditions cannot be used in combination with selected alert type.\n");
+		showalerthelp();
+		return 0;
+	}
 
 	// condition
 	found = 0;
@@ -729,19 +740,50 @@ int parsealertargs(PARAMS *p, char **argv)
 
 	// limit unit
 	found = 0;
-	for (u = 0; u < 3; u++) {
-		cfg.unitmode = u;
-		for (i = 1; i <= UNITPREFIXCOUNT; i++) {
-			if (strcmp(argv[currentarg], getunitprefix(i)) == 0) {
-				found = 1;
+	if (p->alerttype != AT_Percentile) {
+		for (u = 0; u < 3; u++) {
+			cfg.unitmode = u;
+			for (i = 1; i <= UNITPREFIXCOUNT; i++) {
+				if (strcmp(argv[currentarg], getunitprefix(i)) == 0) {
+					found = 1;
+					break;
+				}
+			}
+			if (found) {
+				break;
+			}
+		}
+		cfg.unitmode = unitmode;
+	} else {
+		for (u = 0; u < 5; u++) {
+			if (u == 1) {
+				continue;
+			}
+			for (i = 1; i <= UNITPREFIXCOUNT; i++) {
+				if (strcmp(argv[currentarg], getrateunitprefix(u, i)) == 0) {
+					found = 1;
+					break;
+				}
+			}
+			if (found) {
 				break;
 			}
 		}
 		if (found) {
-			break;
+			// override configuration to use same units as user gave as parameter
+			if (u > 2) {
+				cfg.rateunit = 1;
+			} else {
+				cfg.rateunit = 0;
+			}
+			if (u == 0 || u == 3) {
+				cfg.rateunitmode = 0;
+			} else {
+				cfg.rateunitmode = 1;
+			}
 		}
+
 	}
-	cfg.unitmode = unitmode;
 	if (!found) {
 		printf("Error: Invalid limit unit parameter \"%s\" for %s.\n", argv[currentarg], argv[0]);
 		showalerthelp();
@@ -783,7 +825,7 @@ void showalerthelp(void)
 	printf("    3 - use exit status 1 if limit is exceeded\n\n");
 
 	printf(" <type>\n");
-	printf("    h, hour, hourly        d, day, daily\n");
+	printf("    h, hour, hourly        d, day, daily        p, 95, 95%%\n");
 	printf("    m, month, monthly      y, year, yearly\n\n");
 
 	printf(" <condition>\n");
@@ -794,11 +836,17 @@ void showalerthelp(void)
 	}
 
 	printf(" <limit>\n");
-	printf("    greater than zero integer without decimals\n\n");
+	printf("    greater than zero integer, no decimals\n\n");
 
 	printf(" <unit> for <limit>\n");
 	printf("    B, KiB, MiB, GiB, TiB, PiB, EiB\n");
-	printf("    B, KB, MB, GB, TB, PB, EB\n");
+	printf("    B, KB, MB, GB, TB, PB, EB\n\n");
+
+	printf(" <unit> for <limit> when 95th percentile <type> is used\n");
+	printf("    B/s, KiB/s, MiB/s, GiB/s, TiB/s, PiB/s, EiB/s                (IEC 1024^n)\n");
+	printf("    B/s, kB/s, MB/s, GB/s, TB/s, PB/s, EB/s                      (SI  1000^n)\n");
+	printf("    bit/s, Kibit/s, Mibit/s, Gibit/s, Tibit/s, Pibit/s, Eibit/s  (IEC 1024^n)\n");
+	printf("    bit/s, kbit/s, Mbit/s, Gbit/s, Tbit/s, Pbit/s, Ebit/s        (SI  1000^n)\n");
 }
 
 void showstylehelp(void)

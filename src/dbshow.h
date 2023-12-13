@@ -28,7 +28,8 @@ typedef enum AlertType {
 	AT_Hour,
 	AT_Day,
 	AT_Month,
-	AT_Year
+	AT_Year,
+	AT_Percentile
 } AlertType;
 
 typedef enum AlertCondition {
@@ -47,7 +48,8 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 void showoneline(const interfaceinfo *interface);
 void showhours(const interfaceinfo *interface);
 void show95thpercentile(const interfaceinfo *interface);
+void showpercentiledataminavgmaxtable(const percentiledata *pdata, const int indentation);
 int showbar(const uint64_t rx, const uint64_t tx, const uint64_t max, const int len);
-int showalert(const char *interface, const AlertOutput output, const AlertExit exit, const AlertType type, const AlertCondition condition, const uint64_t limit);
+int showalert(const char *interface, const AlertOutput output, const AlertExit aexit, const AlertType type, const AlertCondition condition, const uint64_t limit);
 
 #endif

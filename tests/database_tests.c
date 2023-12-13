@@ -3,6 +3,7 @@
 #include "database_tests.h"
 #include "dbaccess.h"
 #include "ifinfo.h"
+#include "percentile.h"
 #include "dbsql.h"
 #include "dbshow.h"
 #include "dbxml.h"

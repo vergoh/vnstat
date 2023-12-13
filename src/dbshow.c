@@ -921,30 +921,35 @@ void show95thpercentile(const interfaceinfo *interface)
 	}
 	printf("\n\n");
 
-	indent(7);
-	printf("                 rx       |       tx       |     total\n");
-	indent(7);
-	printf("--------------------------+----------------+---------------\n");
-	indent(7);
-	printf("minimum   %s |", gettrafficrate(pdata.minrx, 300, 15));
-	printf("%s |", gettrafficrate(pdata.mintx, 300, 15));
-	printf("%s\n", gettrafficrate(pdata.min, 300, 15));
-	indent(7);
-	printf("average   %s |", gettrafficrate(pdata.sumrx, (time_t)(pdata.count * 300), 15));
-	printf("%s |", gettrafficrate(pdata.sumtx, (time_t)(pdata.count * 300), 15));
-	printf("%s\n", gettrafficrate(pdata.sumrx + pdata.sumtx, (time_t)(pdata.count * 300), 15));
-	indent(7);
-	printf("maximum   %s |", gettrafficrate(pdata.maxrx, 300, 15));
-	printf("%s |", gettrafficrate(pdata.maxtx, 300, 15));
-	printf("%s\n", gettrafficrate(pdata.max, 300, 15));
-	indent(7);
-	printf("--------------------------+----------------+---------------\n");
+	showpercentiledataminavgmaxtable(&pdata, 7);
 	indent(7);
 	printf(" 95th %%   %s |", gettrafficrate(pdata.rxpercentile, 300, 15));
 	printf("%s |", gettrafficrate(pdata.txpercentile, 300, 15));
 	printf("%s\n", gettrafficrate(pdata.sumpercentile, 300, 15));
 
 	timeused_debug(__func__, 0);
+}
+
+void showpercentiledataminavgmaxtable(const percentiledata *pdata, const int indentation)
+{
+	indent(indentation);
+	printf("                 rx       |       tx       |     total\n");
+	indent(indentation);
+	printf("--------------------------+----------------+---------------\n");
+	indent(indentation);
+	printf("minimum   %s |", gettrafficrate(pdata->minrx, 300, 15));
+	printf("%s |", gettrafficrate(pdata->mintx, 300, 15));
+	printf("%s\n", gettrafficrate(pdata->min, 300, 15));
+	indent(indentation);
+	printf("average   %s |", gettrafficrate(pdata->sumrx, (time_t)(pdata->count * 300), 15));
+	printf("%s |", gettrafficrate(pdata->sumtx, (time_t)(pdata->count * 300), 15));
+	printf("%s\n", gettrafficrate(pdata->sumrx + pdata->sumtx, (time_t)(pdata->count * 300), 15));
+	indent(indentation);
+	printf("maximum   %s |", gettrafficrate(pdata->maxrx, 300, 15));
+	printf("%s |", gettrafficrate(pdata->maxtx, 300, 15));
+	printf("%s\n", gettrafficrate(pdata->max, 300, 15));
+	indent(indentation);
+	printf("--------------------------+----------------+---------------\n");
 }
 
 int showbar(const uint64_t rx, const uint64_t tx, const uint64_t max, const int len)
@@ -985,7 +990,7 @@ int showbar(const uint64_t rx, const uint64_t tx, const uint64_t max, const int 
 	return width;
 }
 
-int showalert(const char *interface, const AlertOutput output, const AlertExit exit, const AlertType type, const AlertCondition condition, const uint64_t limit)
+int showalert(const char *interface, const AlertOutput output, const AlertExit aexit, const AlertType type, const AlertCondition condition, const uint64_t limit)
 {
 	interfaceinfo ifaceinfo;
 	int i, l, ret = 0, limitexceeded = 0, estimateexceeded = 0;
@@ -993,10 +998,12 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit e
 	double percentage = 0.0;
 	char tablename[6], typeoutput[8], conditionname[16];
 	char datebuff[DATEBUFFLEN];
+	time_t timestamp;
 	ListType listtype = LT_None;
-	uint64_t bytes = 0, e_rx = 0, e_tx = 0, e_bytes = 0, periodseconds = 0;
+	uint64_t used = 0, e_rx = 0, e_tx = 0, e_used = 0, periodseconds = 0;
 	dbdatalist *datalist = NULL;
 	dbdatalistinfo datainfo;
+	percentiledata pdata;
 
 	timeused_debug(__func__, 1);
 
@@ -1027,76 +1034,113 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit e
 			snprintf(tablename, 6, "year");
 			snprintf(typeoutput, 8, "yearly");
 			break;
+		case AT_Percentile:
+			break;
 	}
 
-	if (!db_getdata(&datalist, &datainfo, interface, tablename, 1)) {
-		printf("Error: Failed to fetch %s data for interface %s.\n", tablename, interface);
-		return 1;
-	}
+	if (type != AT_Percentile) {
+		if (!db_getdata(&datalist, &datainfo, interface, tablename, 1)) {
+			printf("Error: Failed to fetch %s data for interface %s.\n", tablename, interface);
+			return 1;
+		}
 
-	if (!datalist) {
-		printf("Error: No %s data available for interface %s.\n", tablename, interface);
-		return 1;
+		if (!datalist) {
+			printf("Error: No %s data available for interface %s.\n", tablename, interface);
+			return 1;
+		}
+		timestamp = datalist->timestamp;
+	} else {
+		if (cfg.fiveminutehours < 744) {
+			printf("\nWarning: Configuration \"5MinuteHours\" needs to be at least 744 for 100%% coverage.\n");
+			printf("         \"5MinuteHours\" is currently set at %d.\n\n", cfg.fiveminutehours);
+		}
+
+		if (!getpercentiledata(&pdata, ifaceinfo.name)) {
+			exit(EXIT_FAILURE);
+		}
+		timestamp = pdata.dataend;
 	}
 
 	switch (condition) {
 		case AC_None:
 			return 0;
 		case AC_RX:
-			bytes = datalist->rx;
+			if (type != AT_Percentile) {
+				used = datalist->rx;
+			} else {
+				used = (uint64_t)(pdata.rxpercentile / (double)300);
+			}
 			snprintf(conditionname, 16, "rx");
-			if (cfg.estimatevisible) {
+			if (type != AT_Percentile && cfg.estimatevisible) {
 				getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, ifaceinfo.created, &datalist);
-				e_bytes = e_rx;
+				e_used = e_rx;
 			}
 			break;
 		case AC_TX:
-			bytes = datalist->tx;
+			if (type != AT_Percentile) {
+				used = datalist->tx;
+			} else {
+				used = (uint64_t)(pdata.txpercentile / (double)300);
+			}
 			snprintf(conditionname, 16, "tx");
-			if (cfg.estimatevisible) {
+			if (type != AT_Percentile && cfg.estimatevisible) {
 				getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, ifaceinfo.created, &datalist);
-				e_bytes = e_tx;
+				e_used = e_tx;
 			}
 			break;
 		case AC_Total:
-			bytes = datalist->rx + datalist->tx;
+			if (type != AT_Percentile) {
+				used = datalist->rx + datalist->tx;
+			} else {
+				used = (uint64_t)(pdata.sumpercentile / (double)300);
+			}
 			snprintf(conditionname, 16, "total");
-			if (cfg.estimatevisible) {
+			if (type != AT_Percentile && cfg.estimatevisible) {
 				getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, ifaceinfo.created, &datalist);
-				e_bytes = e_rx + e_tx;
+				e_used = e_rx + e_tx;
 			}
 			break;
 		case AC_RX_Estimate:
 			ongoing = 0;
 			getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, ifaceinfo.created, &datalist);
-			bytes = e_rx;
+			used = e_rx;
 			snprintf(conditionname, 16, "rx estimate");
 			break;
 		case AC_TX_Estimate:
 			ongoing = 0;
 			getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, ifaceinfo.created, &datalist);
-			bytes = e_tx;
+			used = e_tx;
 			snprintf(conditionname, 16, "tx estimate");
 			break;
 		case AC_Total_Estimate:
 			ongoing = 0;
 			getestimates(&e_rx, &e_tx, listtype, ifaceinfo.updated, ifaceinfo.created, &datalist);
-			bytes = e_rx + e_tx;
+			used = e_rx + e_tx;
 			snprintf(conditionname, 16, "total estimate");
 			break;
 	}
 
-	if (bytes > limit) {
+	// cfg.rateunit and cfg.rateunitmode are set for AT_Percentile in parsealertargs()
+	// TODO: should everything else also follow this logic?
+	if (type == AT_Percentile && cfg.rateunit == 1) {
+		used *= 8; // bytes to bits
+	}
+
+	if (debug) {
+		printf("used: %" PRIu64 "\nlimit: %" PRIu64 "\n", used, limit);
+	}
+
+	if (used > limit) {
 		limitexceeded = 1;
 	}
 
-	if (ongoing == 1 && e_bytes > limit) {
+	if (ongoing == 1 && e_used > limit) {
 		estimateexceeded = 1;
 	}
 
-	if (limitexceeded && exit == AE_Exit_1_On_Limit) {
+	if (limitexceeded && aexit == AE_Exit_1_On_Limit) {
 		ret = 1;
-	} else if (estimateexceeded && exit == AE_Exit_1_On_Estimate) {
+	} else if (estimateexceeded && aexit == AE_Exit_1_On_Estimate) {
 		ret = 1;
 	}
 
@@ -1108,31 +1152,34 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit e
 				printf("\n   %s", interface);
 			}
 			if (ifaceinfo.updated) {
-				strftime(datebuff, DATEBUFFLEN, DATETIMEFORMAT, localtime(&ifaceinfo.updated));
+				strftime(datebuff, DATEBUFFLEN, DATETIMEFORMATWITHOUTSECS, localtime(&ifaceinfo.updated));
 				printf(" at %s", datebuff);
 			}
-			if (datalist->timestamp) {
-				printf(" for %s ", tablename);
+			if (timestamp) {
 				switch (type) {
 					case AT_None:
 						break;
+					case AT_Percentile:
+						strftime(datebuff, DATEBUFFLEN, cfg.mformat, localtime(&timestamp));
+						printf(" for 95th percentile of %s", datebuff);
+						break;
 					case AT_Hour:
-						strftime(datebuff, DATEBUFFLEN, "%H", localtime(&datalist->timestamp));
-						printf("%s of ", datebuff);
-						strftime(datebuff, DATEBUFFLEN, cfg.dformat, localtime(&datalist->timestamp));
+						strftime(datebuff, DATEBUFFLEN, "%H", localtime(&timestamp));
+						printf(" for %s %s of ", tablename, datebuff);
+						strftime(datebuff, DATEBUFFLEN, cfg.dformat, localtime(&timestamp));
 						printf("%s", datebuff);
 						break;
 					case AT_Day:
-						strftime(datebuff, DATEBUFFLEN, cfg.dformat, localtime(&datalist->timestamp));
-						printf("%s", datebuff);
+						strftime(datebuff, DATEBUFFLEN, cfg.dformat, localtime(&timestamp));
+						printf(" for %s %s", tablename, datebuff);
 						break;
 					case AT_Month:
-						strftime(datebuff, DATEBUFFLEN, cfg.mformat, localtime(&datalist->timestamp));
-						printf("%s", datebuff);
+						strftime(datebuff, DATEBUFFLEN, cfg.mformat, localtime(&timestamp));
+						printf(" for %s %s", tablename, datebuff);
 						break;
 					case AT_Year:
-						strftime(datebuff, DATEBUFFLEN, "%Y", localtime(&datalist->timestamp));
-						printf("%s", datebuff);
+						strftime(datebuff, DATEBUFFLEN, "%Y", localtime(&timestamp));
+						printf(" for %s %s", tablename, datebuff);
 						break;
 				}
 			}
@@ -1146,7 +1193,7 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit e
 				printf("             Warning: Limit will be exceeded at current rate\n\n");
 			}
 			printf("     [");
-			l = (int)lrint((double)(bytes) / (double)limit * ALERTUSAGELEN);
+			l = (int)lrint((double)(used) / (double)limit * ALERTUSAGELEN);
 			if (l > ALERTUSAGELEN) {
 				l = ALERTUSAGELEN;
 			}
@@ -1155,7 +1202,7 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit e
 			}
 			if (ongoing && cfg.estimatevisible) {
 				if (!estimateexceeded) {
-					l = (int)lrint((double)(e_bytes) / (double)limit * ALERTUSAGELEN);
+					l = (int)lrint((double)(e_used) / (double)limit * ALERTUSAGELEN);
 					for (; i < l; i++) {
 						printf("-");
 					}
@@ -1168,52 +1215,67 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit e
 			for (; i < ALERTUSAGELEN; i++) {
 				printf(".");
 			}
-			printf("]\n\n");
+			printf("]\n");
 		}
 
 		if (output == AO_Always_Output || (output == AO_Output_On_Estimate && estimateexceeded) || ((output == AO_Output_On_Limit || output == AO_Output_On_Estimate) && limitexceeded)) {
-			printf("      %8s |", typeoutput);
-			if (ongoing) {
-				printf("   %9s      |", conditionname);
-			} else {
-				printf("  %14s  |", conditionname);
-			}
-			percentage = (double)(bytes) / (double)limit * 100.0;
-			printf("   percentage   |   avg. rate\n");
-			printf("     ----------+------------------+----------------+--------------\n");
-			printf("          used | %16s |", getvalue(bytes, 16, RT_Normal));
-			periodseconds = getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, ifaceinfo.created, ongoing);
-			if (ongoing && periodseconds == 0) {
-				periodseconds = getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, ifaceinfo.created, 0);
-			}
-			if (percentage <= 100000.0) {
-				printf(" %13.1f%% | %13s\n", percentage, gettrafficrate(bytes, (time_t)periodseconds, 13));
-			} else {
-				printf(" %14s | %13s\n", ">100000%", gettrafficrate(bytes, (time_t)periodseconds, 13));
-			}
-			printf("         limit | %16s |", getvalue(limit, 16, RT_Normal));
-			printf("                | %13s\n", gettrafficrate(limit, (time_t)getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, ifaceinfo.created, 0), 13));
-
-			if (limitexceeded) {
-				printf("        excess | %16s |                |\n", getvalue(bytes - limit, 16, RT_Normal));
-				printf("     ----------+------------------+----------------+--------------\n");
-			} else {
-				printf("     remaining | %16s | %13.1f%% |\n", getvalue(limit - bytes, 16, RT_Normal), 100.0 - percentage);
-				printf("     ----------+------------------+----------------+--------------\n");
-			}
-			if (ongoing && cfg.estimatevisible && e_bytes > 0) {
-				printf("     %9s | %16s |", cfg.estimatetext, getvalue(e_bytes, 16, RT_Normal));
-				percentage = (double)(e_bytes) / (double)limit * 100.0;
-				if (percentage <= 100000.0) {
-					printf(" %13.1f%%", percentage);
+			percentage = (double)(used) / (double)limit * 100.0;
+			if (type != AT_Percentile) {
+				printf("\n      %8s |", typeoutput);
+				if (ongoing) {
+					printf("   %9s      |", conditionname);
 				} else {
-					printf(" %14s", ">100000%");
+					printf("  %14s  |", conditionname);
 				}
-				if (e_bytes > limit) {
-					printf(", +%s\n", getvalue(e_bytes - limit, 0, RT_Normal));
+				printf("   percentage   |   avg. rate\n");
+				printf("     ----------+------------------+----------------+--------------\n");
+				printf("          used | %16s |", getvalue(used, 16, RT_Normal));
+				periodseconds = getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, ifaceinfo.created, ongoing);
+				if (ongoing && periodseconds == 0) {
+					periodseconds = getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, ifaceinfo.created, 0);
+				}
+				if (percentage <= 100000.0) {
+					printf(" %13.1f%% | %13s\n", percentage, gettrafficrate(used, (time_t)periodseconds, 13));
 				} else {
-					/* rate for estimated is always to same as for used so "bytes" intentionally used here instead of "e_bytes" */
-					printf(" | %13s\n", gettrafficrate(bytes, (time_t)periodseconds, 13));
+					printf(" %14s | %13s\n", ">100000%", gettrafficrate(used, (time_t)periodseconds, 13));
+				}
+				printf("         limit | %16s |", getvalue(limit, 16, RT_Normal));
+				printf("                | %13s\n", gettrafficrate(limit, (time_t)getperiodseconds(listtype, datalist->timestamp, ifaceinfo.updated, ifaceinfo.created, 0), 13));
+
+				if (limitexceeded) {
+					printf("        excess | %16s |                |\n", getvalue(used - limit, 16, RT_Normal));
+					printf("     ----------+------------------+----------------+--------------\n");
+				} else {
+					printf("     remaining | %16s | %13.1f%% |\n", getvalue(limit - used, 16, RT_Normal), 100.0 - percentage);
+					printf("     ----------+------------------+----------------+--------------\n");
+				}
+				if (ongoing && cfg.estimatevisible && e_used > 0) {
+					printf("     %9s | %16s |", cfg.estimatetext, getvalue(e_used, 16, RT_Normal));
+					percentage = (double)(e_used) / (double)limit * 100.0;
+					if (percentage <= 100000.0) {
+						printf(" %13.1f%%", percentage);
+					} else {
+						printf(" %14s", ">100000%");
+					}
+					if (e_used > limit) {
+						printf(", +%s\n", getvalue(e_used - limit, 0, RT_Normal));
+					} else {
+						/* rate for estimated is always to same as for used so "used" intentionally used here instead of "e_used" */
+						printf(" | %13s\n", gettrafficrate(used, (time_t)periodseconds, 13));
+					}
+				}
+			} else {
+				// TODO: check that these center the text well enough
+				printf("                 %s", getratestring(used, 14, 2));
+				printf(" of %s (%0.1f%%)\n\n", getratestring(limit, 0, 0), percentage);
+				cfg.ostyle = 1;
+				showpercentiledataminavgmaxtable(&pdata, 6);
+
+				printf("                      %4" PRIu32 " entries", pdata.count);
+				if (pdata.count == pdata.countexpectation) {
+					printf(", 100%% coverage\n");
+				} else {
+					printf(", %0.1f%% coverage\n", (float)pdata.count / (float)pdata.countexpectation * 100.0);
 				}
 			}
 		}
