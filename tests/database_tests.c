@@ -189,12 +189,10 @@ START_TEST(database_outputs_do_not_crash)
 		showdb("something", 5, "", "");
 		showdb("something", 6, "", "");
 		showdb("something", 7, "", "");
-		showdb("something", 8, "", "");
 		showdb("something", 9, "", "");
-		showdb("something", 10, "", "");
 		showdb("something", 11, "", "");
 		showdb("something", 12, "", "");
-		showdb("nothing", 0, "", "");
+		showdb("something", 13, "", "");
 	}
 
 	xmlheader();
@@ -206,7 +204,6 @@ START_TEST(database_outputs_do_not_crash)
 	showxml("something", 'f', "", "");
 	showxml("something", 'a', "", "");
 	showxml("something", 's', "", "");
-	showxml("nothing", 'a', "", "");
 	xmlfooter();
 
 	jsonheader();
@@ -219,8 +216,85 @@ START_TEST(database_outputs_do_not_crash)
 	showjson("something", 0, 'a', "", "");
 	showjson("something", 1, 'a', "", "");
 	showjson("something", 0, 's', "", "");
-	showjson("nothing", 0, 'a', "", "");
 	jsonfooter();
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(database_showdb_exists_for_invalid_interface)
+{
+	int ret, i;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("something");
+	ck_assert_int_eq(ret, 1);
+
+	for (i = 1; i < 100; i++) {
+		ret = db_addtraffic_dated("something", (uint64_t)i * 1234, (uint64_t)i * 2345, (uint64_t)i * 85000);
+		ck_assert_int_eq(ret, 1);
+	}
+
+	ret = db_setupdated("something", (time_t)i * 85000);
+	ck_assert_int_eq(ret, 1);
+
+	suppress_output();
+
+	showdb("nothing", 0, "", "");
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(database_showjson_exists_for_invalid_interface)
+{
+	int ret, i;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("something");
+	ck_assert_int_eq(ret, 1);
+
+	for (i = 1; i < 100; i++) {
+		ret = db_addtraffic_dated("something", (uint64_t)i * 1234, (uint64_t)i * 2345, (uint64_t)i * 85000);
+		ck_assert_int_eq(ret, 1);
+	}
+
+	ret = db_setupdated("something", (time_t)i * 85000);
+	ck_assert_int_eq(ret, 1);
+
+	suppress_output();
+
+	showjson("nothing", 0, 'a', "", "");
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(database_showxml_exists_for_invalid_interface)
+{
+	int ret, i;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("something");
+	ck_assert_int_eq(ret, 1);
+
+	for (i = 1; i < 100; i++) {
+		ret = db_addtraffic_dated("something", (uint64_t)i * 1234, (uint64_t)i * 2345, (uint64_t)i * 85000);
+		ck_assert_int_eq(ret, 1);
+	}
+
+	ret = db_setupdated("something", (time_t)i * 85000);
+	ck_assert_int_eq(ret, 1);
+
+	suppress_output();
+
+	showxml("nothing", 'a', "", "");
 
 	ret = db_close();
 	ck_assert_int_eq(ret, 1);
@@ -254,12 +328,10 @@ START_TEST(database_outputs_do_not_crash_without_traffic)
 		showdb("something", 5, "", "");
 		showdb("something", 6, "", "");
 		showdb("something", 7, "", "");
-		showdb("something", 8, "", "");
 		showdb("something", 9, "", "");
-		showdb("something", 10, "", "");
 		showdb("something", 11, "", "");
 		showdb("something", 12, "", "");
-		showdb("nothing", 0, "", "");
+		showdb("something", 13, "", "");
 	}
 
 	xmlheader();
@@ -284,7 +356,6 @@ START_TEST(database_outputs_do_not_crash_without_traffic)
 	showjson("something", 0, 'a', "", "");
 	showjson("something", 1, 'a', "", "");
 	showjson("something", 0, 's', "", "");
-	showjson("nothing", 0, 'a', "", "");
 	jsonfooter();
 
 	ret = db_close();
@@ -313,12 +384,10 @@ START_TEST(database_outputs_do_not_crash_without_data)
 		showdb("something", 5, "", "");
 		showdb("something", 6, "", "");
 		showdb("something", 7, "", "");
-		showdb("something", 8, "", "");
 		showdb("something", 9, "", "");
-		showdb("something", 10, "", "");
 		showdb("something", 11, "", "");
 		showdb("something", 12, "", "");
-		showdb("nothing", 0, "", "");
+		showdb("something", 13, "", "");
 	}
 
 	xmlheader();
@@ -343,7 +412,6 @@ START_TEST(database_outputs_do_not_crash_without_data)
 	showjson("something", 0, 'a', "", "");
 	showjson("something", 1, 'a', "", "");
 	showjson("something", 0, 's', "", "");
-	showjson("nothing", 0, 'a', "", "");
 	jsonfooter();
 
 	ret = db_close();
@@ -366,7 +434,7 @@ START_TEST(database_outputs_do_not_crash_without_data_if_totals_are_wrong)
 	ret = db_setupdated("something", 85000);
 	ck_assert_int_eq(ret, 1);
 
-	suppress_output();
+	//suppress_output();
 
 	for (i = 0; i <= 4; i++) {
 		cfg.ostyle = i;
@@ -378,12 +446,9 @@ START_TEST(database_outputs_do_not_crash_without_data_if_totals_are_wrong)
 		showdb("something", 5, "", "");
 		showdb("something", 6, "", "");
 		showdb("something", 7, "", "");
-		showdb("something", 8, "", "");
 		showdb("something", 9, "", "");
-		showdb("something", 10, "", "");
 		showdb("something", 11, "", "");
 		showdb("something", 12, "", "");
-		showdb("nothing", 0, "", "");
 	}
 
 	xmlheader();
@@ -408,7 +473,6 @@ START_TEST(database_outputs_do_not_crash_without_data_if_totals_are_wrong)
 	showjson("something", 0, 'a', "", "");
 	showjson("something", 1, 'a', "", "");
 	showjson("something", 0, 's', "", "");
-	showjson("nothing", 0, 'a', "", "");
 	jsonfooter();
 
 	ret = db_close();
@@ -860,6 +924,9 @@ void add_database_tests(Suite *s)
 	tcase_add_test(tc_db, validatedb_with_invalid_totals);
 	tcase_add_test(tc_db, validatedb_with_top10_use);
 	tcase_add_test(tc_db, database_outputs_do_not_crash);
+	tcase_add_exit_test(tc_db, database_showdb_exists_for_invalid_interface, 1);
+	tcase_add_exit_test(tc_db, database_showjson_exists_for_invalid_interface, 1);
+	tcase_add_exit_test(tc_db, database_showxml_exists_for_invalid_interface, 1);
 	tcase_add_test(tc_db, database_outputs_do_not_crash_without_traffic);
 	tcase_add_test(tc_db, database_outputs_do_not_crash_without_data);
 	tcase_add_test(tc_db, database_outputs_do_not_crash_without_data_if_totals_are_wrong);

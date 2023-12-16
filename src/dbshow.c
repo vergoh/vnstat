@@ -11,11 +11,11 @@ void showdb(const char *interface, int qmode, const char *databegin, const char 
 	char timestamp[22];
 
 	if (!db_getinterfacecountbyname(interface)) {
-		return;
+		exit(EXIT_FAILURE);
 	}
 
 	if (!db_getinterfaceinfo(interface, &info)) {
-		return;
+		exit(EXIT_FAILURE);
 	}
 
 	if (info.created == info.updated) {
@@ -63,7 +63,7 @@ void showdb(const char *interface, int qmode, const char *databegin, const char 
 			break;
 		default:
 			printf("Error: Not such query mode: %d\n", qmode);
-			break;
+			exit(EXIT_FAILURE);
 	}
 }
 
@@ -141,7 +141,7 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 
 	if (!db_getdata(&datalist, &datainfo, interface->name, "month", 2)) {
 		printf("Error: Failed to fetch month data.\n");
-		return;
+		exit(EXIT_FAILURE);
 	}
 
 	e_rx = e_tx = 0;
@@ -227,7 +227,7 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 
 	if (!db_getdata(&datalist, &datainfo, interface->name, "day", 2)) {
 		printf("Error: Failed to fetch day data.\n");
-		return;
+		exit(EXIT_FAILURE);
 	}
 
 	e_rx = e_tx = 0;
@@ -370,7 +370,7 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 
 	if (!db_getdata_range(&datalist, &datainfo, interface->name, listname, (uint32_t)limit, databegin, dataend)) {
 		printf("Error: Failed to fetch %s data.\n", titlename);
-		return;
+		exit(EXIT_FAILURE);
 	}
 
 	if (!datalist) {
@@ -610,7 +610,7 @@ void showoneline(const interfaceinfo *interface)
 
 	if (!db_getdata(&datalist, &datainfo, interface->name, "day", 1)) {
 		printf("\nError: Failed to fetch day data.\n");
-		return;
+		exit(EXIT_FAILURE);
 	}
 
 	if (datainfo.count > 0) {
@@ -641,7 +641,7 @@ void showoneline(const interfaceinfo *interface)
 
 	if (!db_getdata(&datalist, &datainfo, interface->name, "month", 1)) {
 		printf("\nError: Failed to fetch month data.\n");
-		return;
+		exit(EXIT_FAILURE);
 	}
 
 	if (datainfo.count > 0) {
@@ -704,7 +704,7 @@ void showhours(const interfaceinfo *interface)
 
 	if (!db_getdata(&datalist, &datainfo, interface->name, "hour", 24)) {
 		printf("Error: Failed to fetch hour data.\n");
-		return;
+		exit(EXIT_FAILURE);
 	}
 
 	if (datainfo.count == 0) {

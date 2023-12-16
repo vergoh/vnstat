@@ -10,11 +10,11 @@ void showjson(const char *interface, const int ifcount, const char mode, const c
 	timeused_debug(__func__, 1);
 
 	if (!db_getinterfacecountbyname(interface)) {
-		return;
+		exit(EXIT_FAILURE);
 	}
 
 	if (!db_getinterfaceinfo(interface, &info)) {
-		return;
+		exit(EXIT_FAILURE);
 	}
 
 	if (ifcount) {
@@ -100,7 +100,7 @@ void jsondump(const interfaceinfo *interface, const char *tablename, const int d
 
 	if (!db_getdata_range(&datalist, &datainfo, interface->name, tablename, (uint32_t)cfg.listjsonxml, databegin, dataend)) {
 		printf("Error: Failed to fetch %s data.\n", tablename);
-		return;
+		exit(EXIT_FAILURE);
 	}
 
 	printf("\"%s\":[", tablename);

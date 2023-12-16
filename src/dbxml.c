@@ -10,11 +10,11 @@ void showxml(const char *interface, const char mode, const char *databegin, cons
 	timeused_debug(__func__, 1);
 
 	if (!db_getinterfacecountbyname(interface)) {
-		return;
+		exit(EXIT_FAILURE);
 	}
 
 	if (!db_getinterfaceinfo(interface, &info)) {
-		return;
+		exit(EXIT_FAILURE);
 	}
 
 	printf(" <interface name=\"%s\">\n", info.name);
@@ -89,7 +89,7 @@ void xmldump(const interfaceinfo *interface, const char *tablename, const int da
 
 	if (!db_getdata_range(&datalist, &datainfo, interface->name, tablename, (uint32_t)cfg.listjsonxml, databegin, dataend)) {
 		printf("Error: Failed to fetch %s data.\n", tablename);
-		return;
+		exit(EXIT_FAILURE);
 	}
 
 	printf("   <%ss>\n", tablename);
