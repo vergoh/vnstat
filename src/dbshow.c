@@ -884,7 +884,7 @@ void show95thpercentile(const interfaceinfo *interface)
 		printf("         \"5MinuteHours\" is currently set at %d.\n\n", cfg.fiveminutehours);
 	}
 
-	if (!getpercentiledata(&pdata, interface->name)) {
+	if (!getpercentiledata(&pdata, interface->name, 0)) {
 		exit(EXIT_FAILURE);
 	}
 
@@ -922,7 +922,7 @@ void show95thpercentile(const interfaceinfo *interface)
 
 	showpercentiledataminavgmaxtable(&pdata, 7);
 	indent(7);
-	printf(" 95th %%   %s |", gettrafficrate(pdata.rxpercentile, 300, 15));
+	printf(" 95th %%     %s |", gettrafficrate(pdata.rxpercentile, 300, 15));
 	printf("%s |", gettrafficrate(pdata.txpercentile, 300, 15));
 	printf("%s\n", gettrafficrate(pdata.sumpercentile, 300, 15));
 
@@ -932,23 +932,23 @@ void show95thpercentile(const interfaceinfo *interface)
 void showpercentiledataminavgmaxtable(const percentiledata *pdata, const int indentation)
 {
 	indent(indentation);
-	printf("                 rx       |       tx       |     total\n");
+	printf("                   rx       |       tx       |     total\n");
 	indent(indentation);
-	printf("--------------------------+----------------+---------------\n");
+	printf("----------------------------+----------------+---------------\n");
 	indent(indentation);
-	printf("minimum   %s |", gettrafficrate(pdata->minrx, 300, 15));
+	printf("minimum     %s |", gettrafficrate(pdata->minrx, 300, 15));
 	printf("%s |", gettrafficrate(pdata->mintx, 300, 15));
 	printf("%s\n", gettrafficrate(pdata->min, 300, 15));
 	indent(indentation);
-	printf("average   %s |", gettrafficrate(pdata->sumrx, (time_t)(pdata->count * 300), 15));
+	printf("average     %s |", gettrafficrate(pdata->sumrx, (time_t)(pdata->count * 300), 15));
 	printf("%s |", gettrafficrate(pdata->sumtx, (time_t)(pdata->count * 300), 15));
 	printf("%s\n", gettrafficrate(pdata->sumrx + pdata->sumtx, (time_t)(pdata->count * 300), 15));
 	indent(indentation);
-	printf("maximum   %s |", gettrafficrate(pdata->maxrx, 300, 15));
+	printf("maximum     %s |", gettrafficrate(pdata->maxrx, 300, 15));
 	printf("%s |", gettrafficrate(pdata->maxtx, 300, 15));
 	printf("%s\n", gettrafficrate(pdata->max, 300, 15));
 	indent(indentation);
-	printf("--------------------------+----------------+---------------\n");
+	printf("----------------------------+----------------+---------------\n");
 }
 
 int showbar(const uint64_t rx, const uint64_t tx, const uint64_t max, const int len)
@@ -1054,12 +1054,13 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit a
 			printf("         \"5MinuteHours\" is currently set at %d.\n\n", cfg.fiveminutehours);
 		}
 
-		if (!getpercentiledata(&pdata, ifaceinfo.name)) {
+		if (!getpercentiledata(&pdata, ifaceinfo.name, limit)) {
 			exit(EXIT_FAILURE);
 		}
 		timestamp = pdata.dataend;
 	}
 
+	// "limit" and "used" are always in either bytes or bytes/second
 	switch (condition) {
 		case AC_None:
 			return 0;
@@ -1117,12 +1118,6 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit a
 			used = e_rx + e_tx;
 			snprintf(conditionname, 16, "total estimate");
 			break;
-	}
-
-	// cfg.rateunit and cfg.rateunitmode are set for AT_Percentile in parsealertargs()
-	// TODO: should everything else also follow this logic?
-	if (type == AT_Percentile && cfg.rateunit == 1) {
-		used *= 8; // bytes to bits
 	}
 
 	if (debug) {
@@ -1264,13 +1259,33 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit a
 					}
 				}
 			} else {
-				// TODO: check that these center the text well enough
-				printf("                 %s", getratestring(used, 14, 2));
-				printf(" of %s (%0.1f%%)\n\n", getratestring(limit, 0, 0), percentage);
+				// TODO: make these center the text in all cases
+				printf("          ");
+				if (condition == AC_RX) {
+					printf("rx");
+				} else if (condition == AC_TX) {
+					printf("tx");
+				} else if (condition == AC_Total) {
+					printf("total");
+				}
+				printf(" - %s ", gettrafficrate(used, 1, 0));
+				if (percentage <= 100000.0) {
+					printf("(%0.1f%%)", percentage);
+				} else {
+					printf("(%s)", ">100000%");
+				}
+				printf(" of %s limit\n\n", gettrafficrate(limit, 1, 0));
 				cfg.ostyle = 1;
-				showpercentiledataminavgmaxtable(&pdata, 6);
+				showpercentiledataminavgmaxtable(&pdata, 5);
 
-				printf("                      %4" PRIu32 " entries", pdata.count);
+				printf("           %4" PRIu32 " entries", pdata.count);
+				if (condition == AC_RX) {
+					printf(", %" PRIu32 " (%0.1f%%) over limit", pdata.countrxoveruserlimit, (float)pdata.countrxoveruserlimit / (float)pdata.count * 100.0);
+				} else if (condition == AC_TX) {
+					printf(", %" PRIu32 " (%0.1f%%) over limit", pdata.counttxoveruserlimit, (float)pdata.counttxoveruserlimit / (float)pdata.count * 100.0);
+				} else if (condition == AC_Total) {
+					printf(", %" PRIu32 " (%0.1f%%) over limit", pdata.countsumoveruserlimit, (float)pdata.countsumoveruserlimit / (float)pdata.count * 100.0);
+				}
 				if (pdata.count == pdata.countexpectation) {
 					printf(", 100%% coverage\n");
 				} else {

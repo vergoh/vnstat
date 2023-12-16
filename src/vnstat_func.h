@@ -11,6 +11,7 @@ typedef struct {
 	char definterface[MAXIFPARAMLEN], cfgfile[512], *ifacelist, jsonmode, xmlmode;
 	char databegin[18], dataend[18];
 	unsigned int alert, alertoutput, alertexit, alerttype, alertcondition;
+	int alertrateunit, alertrateunitmode;
 	uint64_t alertlimit;
 } PARAMS;
 

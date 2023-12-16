@@ -3,7 +3,7 @@
 #include "percentile.h"
 
 // TODO: tests
-int getpercentiledata(percentiledata *pdata, const char *iface)
+int getpercentiledata(percentiledata *pdata, const char *iface, const uint64_t userlimitbytespersecond)
 {
 	uint32_t entry = 0, entrylimit;
 	uint64_t *rxdata, *txdata, *sumdata;
@@ -11,6 +11,11 @@ int getpercentiledata(percentiledata *pdata, const char *iface)
 	char datebuff[DATEBUFFLEN];
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
+
+	pdata->userlimitbytespersecond = userlimitbytespersecond;
+	pdata->countrxoveruserlimit = 0;
+	pdata->counttxoveruserlimit = 0;
+	pdata->countsumoveruserlimit = 0;
 
 	if (!db_getdata_range(&datalist, &datainfo, iface, "month", 1, "", "")) {
 		printf("Error: Failed to fetch month data for 95th percentile.\n");
@@ -80,6 +85,19 @@ int getpercentiledata(percentiledata *pdata, const char *iface)
 		rxdata[entry] = datalist_i->rx;
 		txdata[entry] = datalist_i->tx;
 		sumdata[entry] = datalist_i->rx + datalist_i->tx;
+
+		if (userlimitbytespersecond > 0) {
+			if (rxdata[entry] > userlimitbytespersecond * 300) {
+				pdata->countrxoveruserlimit++;
+			}
+			if (txdata[entry] > userlimitbytespersecond * 300) {
+				pdata->counttxoveruserlimit++;
+			}
+			if (sumdata[entry] > userlimitbytespersecond * 300) {
+				pdata->countsumoveruserlimit++;
+			}
+		}
+
 		datalist_i = datalist_i->next;
 		entry++;
 	}

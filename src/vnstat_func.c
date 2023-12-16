@@ -50,6 +50,8 @@ void initparams(PARAMS *p)
 	p->alerttype = 0;
 	p->alertcondition = 0;
 	p->alertlimit = 0;
+	p->alertrateunit = -1;
+	p->alertrateunitmode = -1;
 
 	/* load default config */
 	defaultcfg();
@@ -779,13 +781,17 @@ int parsealertargs(PARAMS *p, char **argv)
 			// override configuration to use same units as user gave as parameter
 			if (u > 2) {
 				cfg.rateunit = 1;
+				p->alertrateunit = 1;
 			} else {
 				cfg.rateunit = 0;
+				p->alertrateunit = 0;
 			}
 			if (u == 0 || u == 3) {
 				cfg.rateunitmode = 0;
+				p->alertrateunitmode = 0;
 			} else {
 				cfg.rateunitmode = 1;
+				p->alertrateunitmode = 1;
 			}
 		}
 
@@ -804,6 +810,14 @@ int parsealertargs(PARAMS *p, char **argv)
 	}
 
 	p->alertlimit = alertlimit * unitmultiplier;
+
+	if (p->alerttype == AT_Percentile && cfg.rateunit == 1) {
+		if (p->alertlimit < 8) {
+			printf("Error: Limit needs to be at least 8 bits per second.\n");
+			return 0;
+		}
+		p->alertlimit /= 8;
+	}
 
 	if (debug) {
 		printf("Alert unit %s is %d %d = %" PRIu64 "\n", argv[currentarg], u, i, unitmultiplier);
@@ -880,6 +894,11 @@ void handleshowalert(PARAMS *p)
 	}
 
 	validateinterface(p);
+
+	if (p->alertrateunit > -1 && p->alertrateunitmode > -1) {
+		cfg.rateunit = p->alertrateunit;
+		cfg.rateunitmode = p->alertrateunitmode;
+	}
 
 	alert = showalert(p->interface, p->alertoutput, p->alertexit, p->alerttype, p->alertcondition, p->alertlimit);
 

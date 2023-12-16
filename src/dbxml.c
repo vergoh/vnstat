@@ -108,7 +108,7 @@ void xmlpercentile(const interfaceinfo *interface)
 {
 	percentiledata pdata;
 
-	if (!getpercentiledata(&pdata, interface->name)) {
+	if (!getpercentiledata(&pdata, interface->name, 0)) {
 		exit(EXIT_FAILURE);
 	}
 

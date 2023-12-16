@@ -9,9 +9,11 @@ typedef struct percentiledata {
 	uint64_t min, max;
 	uint64_t sumrx, sumtx;
 	uint64_t rxpercentile, txpercentile, sumpercentile;
+	uint64_t userlimitbytespersecond;
+	uint32_t countrxoveruserlimit, counttxoveruserlimit, countsumoveruserlimit;
 } percentiledata;
 
-int getpercentiledata(percentiledata *pdata, const char *iface);
+int getpercentiledata(percentiledata *pdata, const char *iface, const uint64_t userlimitbytespersecond);
 int compare_uint64_t(const void *a, const void *b);
 
 #endif
