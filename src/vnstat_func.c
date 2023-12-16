@@ -685,7 +685,7 @@ int parsealertargs(PARAMS *p, char **argv)
 	currentarg++;
 
 	if (p->alerttype == AT_Percentile && (p->alertoutput == 2 || p->alertexit == 2)) {
-		printf("Error: Estimate conditions cannot be used in combination with selected alert type.\n");
+		printf("Error: Estimate output and exit conditions cannot be used in combination with selected alert type.\n");
 		showalerthelp();
 		return 0;
 	}
@@ -717,6 +717,12 @@ int parsealertargs(PARAMS *p, char **argv)
 		if (p->alertexit == AE_Exit_1_On_Estimate) {
 			printf("Error: Estimate conditions cannot be used in combination with exit parameter \"2\".\n");
 		}
+		showalerthelp();
+		return 0;
+	}
+
+	if (p->alerttype == AT_Percentile && (p->alertcondition == AC_RX_Estimate || p->alertcondition == AC_TX_Estimate || p->alertcondition == AC_Total_Estimate)) {
+		printf("Error: Estimate conditions cannot be used in combination with selected alert type.\n");
 		showalerthelp();
 		return 0;
 	}

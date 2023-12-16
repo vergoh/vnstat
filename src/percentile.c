@@ -2,6 +2,7 @@
 #include "dbsql.h"
 #include "percentile.h"
 
+// TODO: tests
 int getpercentiledata(percentiledata *pdata, const char *iface)
 {
 	uint32_t entry = 0, entrylimit;
