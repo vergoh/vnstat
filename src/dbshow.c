@@ -920,16 +920,12 @@ void show95thpercentile(const interfaceinfo *interface)
 	}
 	printf("\n\n");
 
-	showpercentiledataminavgmaxtable(&pdata, 7);
-	indent(7);
-	printf(" 95th %%     %s |", gettrafficrate(pdata.rxpercentile, 300, 15));
-	printf("%s |", gettrafficrate(pdata.txpercentile, 300, 15));
-	printf("%s\n", gettrafficrate(pdata.sumpercentile, 300, 15));
+	showpercentiledatatable(&pdata, 7, 1);
 
 	timeused_debug(__func__, 0);
 }
 
-void showpercentiledataminavgmaxtable(const percentiledata *pdata, const int indentation)
+void showpercentiledatatable(const percentiledata *pdata, const int indentation, const int visible95th)
 {
 	indent(indentation);
 	printf("                   rx       |       tx       |     total\n");
@@ -949,6 +945,12 @@ void showpercentiledataminavgmaxtable(const percentiledata *pdata, const int ind
 	printf("%s\n", gettrafficrate(pdata->max, 300, 15));
 	indent(indentation);
 	printf("----------------------------+----------------+---------------\n");
+	if (visible95th) {
+		indent(indentation);
+		printf(" 95th %%     %s |", gettrafficrate(pdata->rxpercentile, 300, 15));
+		printf("%s |", gettrafficrate(pdata->txpercentile, 300, 15));
+		printf("%s\n", gettrafficrate(pdata->sumpercentile, 300, 15));
+	}
 }
 
 int showbar(const uint64_t rx, const uint64_t tx, const uint64_t max, const int len)
@@ -989,6 +991,7 @@ int showbar(const uint64_t rx, const uint64_t tx, const uint64_t max, const int 
 	return width;
 }
 
+// TODO: refactor to smaller functions
 int showalert(const char *interface, const AlertOutput output, const AlertExit aexit, const AlertType type, const AlertCondition condition, const uint64_t limit)
 {
 	interfaceinfo ifaceinfo;
@@ -1276,7 +1279,7 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit a
 				}
 				printf(" of %s limit\n\n", gettrafficrate(limit, 1, 0));
 				cfg.ostyle = 1;
-				showpercentiledataminavgmaxtable(&pdata, 5);
+				showpercentiledatatable(&pdata, 5, 0);
 
 				printf("           %4" PRIu32 " entries", pdata.count);
 				if (condition == AC_RX) {
