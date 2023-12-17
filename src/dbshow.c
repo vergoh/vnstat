@@ -999,7 +999,7 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit a
 	short ongoing = 1;
 	double percentage = 0.0;
 	char tablename[6], typeoutput[8], conditionname[16];
-	char datebuff[DATEBUFFLEN];
+	char datebuff[DATEBUFFLEN], linebuffer[128], buffer[32];
 	time_t timestamp;
 	ListType listtype = LT_None;
 	uint64_t used = 0, e_rx = 0, e_tx = 0, e_used = 0, periodseconds = 0;
@@ -1262,38 +1262,43 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit a
 					}
 				}
 			} else {
-				// TODO: make these center the text in all cases
-				printf("          ");
 				if (condition == AC_RX) {
-					printf("rx");
+					snprintf(linebuffer, 128, "rx - ");
 				} else if (condition == AC_TX) {
-					printf("tx");
+					snprintf(linebuffer, 128, "tx - ");
 				} else if (condition == AC_Total) {
-					printf("total");
+					snprintf(linebuffer, 128, "total - ");
 				}
-				printf(" - %s ", gettrafficrate(used, 1, 0));
+				strncat(linebuffer, gettrafficrate(used, 1, 0), 16);
 				if (percentage <= 100000.0) {
-					printf("(%0.1f%%)", percentage);
+					snprintf(buffer, 32, " (%0.1f%%)", percentage);
 				} else {
-					printf("(%s)", ">100000%");
+					snprintf(buffer, 32, " (>100000%%)");
 				}
-				printf(" of %s limit\n\n", gettrafficrate(limit, 1, 0));
+				strncat(linebuffer, buffer, 32);
+				snprintf(buffer, 32, " of %s limit", gettrafficrate(limit, 1, 0));
+				strncat(linebuffer, buffer, 32);
+				printf("%*s%s\n\n", (int)(5 + (61 - strlen(linebuffer)) / 2), " ", linebuffer);
+
 				cfg.ostyle = 1;
 				showpercentiledatatable(&pdata, 5, 0);
 
-				printf("           %4" PRIu32 " entries", pdata.count);
+				snprintf(linebuffer, 128, "%" PRIu32 " entries", pdata.count);
 				if (condition == AC_RX) {
-					printf(", %" PRIu32 " (%0.1f%%) over limit", pdata.countrxoveruserlimit, (float)pdata.countrxoveruserlimit / (float)pdata.count * 100.0);
+					snprintf(buffer, 32, ", %" PRIu32 " (%0.1f%%) over limit", pdata.countrxoveruserlimit, (float)pdata.countrxoveruserlimit / (float)pdata.count * 100.0);
 				} else if (condition == AC_TX) {
-					printf(", %" PRIu32 " (%0.1f%%) over limit", pdata.counttxoveruserlimit, (float)pdata.counttxoveruserlimit / (float)pdata.count * 100.0);
+					snprintf(buffer, 32, ", %" PRIu32 " (%0.1f%%) over limit", pdata.counttxoveruserlimit, (float)pdata.counttxoveruserlimit / (float)pdata.count * 100.0);
 				} else if (condition == AC_Total) {
-					printf(", %" PRIu32 " (%0.1f%%) over limit", pdata.countsumoveruserlimit, (float)pdata.countsumoveruserlimit / (float)pdata.count * 100.0);
+					snprintf(buffer, 32, ", %" PRIu32 " (%0.1f%%) over limit", pdata.countsumoveruserlimit, (float)pdata.countsumoveruserlimit / (float)pdata.count * 100.0);
 				}
+				strncat(linebuffer, buffer, 32);
 				if (pdata.count == pdata.countexpectation) {
-					printf(", 100%% coverage\n");
+					snprintf(buffer, 32, ", 100%% coverage");
 				} else {
-					printf(", %0.1f%% coverage\n", (float)pdata.count / (float)pdata.countexpectation * 100.0);
+					snprintf(buffer, 32, ", %0.1f%% coverage", (float)pdata.count / (float)pdata.countexpectation * 100.0);
 				}
+				strncat(linebuffer, buffer, 32);
+				printf("%*s%s\n", (int)(5 + (61 - strlen(linebuffer)) / 2), " ", linebuffer);
 			}
 		}
 	}
