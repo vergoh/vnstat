@@ -1,10 +1,8 @@
 #include "common.h"
 #include "dbsql.h"
-#include "misc.h"
-#include "percentile.h"
+#include "dbjson.h"
 #include "dbshow.h"
 
-// TODO: use exit(EXIT_FAILURE); for errors instead of return
 void showdb(const char *interface, int qmode, const char *databegin, const char *dataend)
 {
 	interfaceinfo info;
@@ -1134,7 +1132,11 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit a
 	}
 
 	if (output != AO_No_Output) {
-		alertoutput(&adata, output, type, condition, limit);
+		if (cfg.qmode == 10) { // --json
+			jsonalertoutput(&adata, output, type, condition, limit);
+		} else {
+			alertoutput(&adata, output, type, condition, limit);
+		}
 	}
 
 	dbdatalistfree(&adata.datalist);

@@ -212,7 +212,7 @@ and most can be changed later from the config file.
 
 /* json format version */
 /* 1 = 1.13-1.16, 2 = 2.0 */
-#define JSONVERSION 2
+#define JSONVERSION "2"
 
 /* json format version, -tr */
 /* 1 = 1.18- */
@@ -221,6 +221,10 @@ and most can be changed later from the config file.
 /* json format version, --live */
 /* 1 = 1.18- */
 #define JSONVERSION_LIVE 1
+
+/*json format version, --alert */
+/* 1 = 2.12- */
+#define JSONALERT "1"
 
 /* --oneline format version */
 #define ONELINEVERSION 1

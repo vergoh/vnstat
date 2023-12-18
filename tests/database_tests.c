@@ -206,7 +206,7 @@ START_TEST(database_outputs_do_not_crash)
 	showxml("something", 's', "", "");
 	xmlfooter();
 
-	jsonheader();
+	jsonheader(JSONVERSION);
 	showjson("something", 0, 'd', "", "");
 	showjson("something", 0, 'm', "", "");
 	showjson("something", 0, 't', "", "");
@@ -346,7 +346,7 @@ START_TEST(database_outputs_do_not_crash_without_traffic)
 
 	xmlfooter();
 
-	jsonheader();
+	jsonheader(JSONVERSION);
 	showjson("something", 0, 'd', "", "");
 	showjson("something", 0, 'm', "", "");
 	showjson("something", 0, 't', "", "");
@@ -402,7 +402,7 @@ START_TEST(database_outputs_do_not_crash_without_data)
 
 	xmlfooter();
 
-	jsonheader();
+	jsonheader(JSONVERSION);
 	showjson("something", 0, 'd', "", "");
 	showjson("something", 0, 'm', "", "");
 	showjson("something", 0, 't', "", "");
@@ -434,7 +434,7 @@ START_TEST(database_outputs_do_not_crash_without_data_if_totals_are_wrong)
 	ret = db_setupdated("something", 85000);
 	ck_assert_int_eq(ret, 1);
 
-	//suppress_output();
+	suppress_output();
 
 	for (i = 0; i <= 4; i++) {
 		cfg.ostyle = i;
@@ -463,7 +463,7 @@ START_TEST(database_outputs_do_not_crash_without_data_if_totals_are_wrong)
 
 	xmlfooter();
 
-	jsonheader();
+	jsonheader(JSONVERSION);
 	showjson("something", 0, 'd', "", "");
 	showjson("something", 0, 'm', "", "");
 	showjson("something", 0, 't', "", "");

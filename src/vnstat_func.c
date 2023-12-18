@@ -1123,7 +1123,7 @@ void handleshowdata(PARAMS *p)
 		} else if (cfg.qmode == 8) {
 			xmlheader();
 		} else if (cfg.qmode == 10) {
-			jsonheader();
+			jsonheader(JSONVERSION);
 		}
 
 		if (db_getiflist(&dbifl) <= 0) {
@@ -1182,7 +1182,7 @@ void showoneinterface(PARAMS *p)
 		showxml(p->interface, p->xmlmode, p->databegin, p->dataend);
 		xmlfooter();
 	} else if (cfg.qmode == 10) {
-		jsonheader();
+		jsonheader(JSONVERSION);
 		showjson(p->interface, 0, p->jsonmode, p->databegin, p->dataend);
 		jsonfooter();
 	}
