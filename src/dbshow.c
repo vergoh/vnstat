@@ -1003,7 +1003,7 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit a
 
 	adata.limitexceeded = 0;
 	adata.estimateexceeded = 0;
-	adata.ongoing = 0;
+	adata.ongoing = 1;
 	adata.used = 0;
 	adata.e_used = 0;
 	adata.datalist = NULL;
