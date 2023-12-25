@@ -33,7 +33,7 @@ int getpercentiledata(percentiledata *pdata, const char *iface, const uint64_t u
 
 	dbdatalistfree(&datalist);
 
-	// limit query to a maximum of 8228 entries (31 days * 24 hours * 60 minutes / 5 minutes)
+	/* limit query to a maximum of 8928 entries (31 days * 24 hours * 60 minutes / 5 minutes) */
 	if (!db_getdata_range(&datalist, &datainfo, iface, "fiveminute", 8928, datebuff, "")) {
 		printf("Error: Failed to fetch 5 minute data for 95th percentile.\n");
 		return 0;
