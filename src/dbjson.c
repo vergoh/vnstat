@@ -199,8 +199,6 @@ void jsonalert(const alertdata *adata, const uint64_t limit)
 	jsondate(&adata->timestamp, 1);
 	printf("},");
 
-	// TODO: estimate missing?
-
 	printf("\"limit\":{");
 	printf("\"exceeded\":");
 	if (adata->limitexceeded) {
@@ -211,6 +209,11 @@ void jsonalert(const alertdata *adata, const uint64_t limit)
 	printf("\"condition\":\"%s\",", adata->conditionname);
 	printf("\"limit_bytes\":%" PRIu64 ",", limit);
 	printf("\"used_bytes\":%" PRIu64 ",", adata->used);
+	if (adata->used < limit) {
+		printf("\"remaining_bytes\":%" PRIu64 ",", limit - adata->used);
+	} else {
+		printf("\"remaining_bytes\":0,");
+	}
 	printf("\"used_percentage\":");
 	if (percentage <= 100000.0) {
 		printf("%0.1f,", percentage);
@@ -224,6 +227,39 @@ void jsonalert(const alertdata *adata, const uint64_t limit)
 		printf("%0.1f", 100.0 - percentage);
 	}
 	printf("}");
+
+	// show estimate section when condition isn't estimate
+	if (strstr(adata->conditionname, "estimate") == NULL) {
+		percentage = (double)adata->e_used / (double)limit * 100.0;
+
+		printf(",\"estimate\":{");
+		printf("\"exceeded\":");
+		if (adata->estimateexceeded) {
+			printf("true,");
+		} else {
+			printf("false,");
+		}
+		printf("\"limit_bytes\":%" PRIu64 ",", limit);
+		printf("\"used_bytes\":%" PRIu64 ",", adata->e_used);
+		if (adata->e_used < limit) {
+			printf("\"remaining_bytes\":%" PRIu64 ",", limit - adata->e_used);
+		} else {
+			printf("\"remaining_bytes\":0,");
+		}
+		printf("\"used_percentage\":");
+		if (percentage <= 100000.0) {
+			printf("%0.1f,", percentage);
+		} else {
+			printf("100000.0,");
+		}
+		printf("\"remaining_percentage\":");
+		if (percentage >= 100.0) {
+			printf("0.0");
+		} else {
+			printf("%0.1f", 100.0 - percentage);
+		}
+		printf("}");
+	}
 
 	printf("}");
 }
