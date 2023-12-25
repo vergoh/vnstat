@@ -228,7 +228,7 @@ void jsonalert(const alertdata *adata, const uint64_t limit)
 	}
 	printf("}");
 
-	// show estimate section when condition isn't estimate
+	/* show estimate section when condition isn't estimate */
 	if (strstr(adata->conditionname, "estimate") == NULL) {
 		percentage = (double)adata->e_used / (double)limit * 100.0;
 
