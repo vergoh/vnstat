@@ -46,6 +46,7 @@ vnstatd_SOURCES = src/vnstatd.c src/vnstatd.h \
 
 vnstati_SOURCES = src/vnstati.c src/vnstati.h \
   src/iflist.c src/iflist.h \
+  src/percentile.c src/percentile.h \
   src/image.c src/image.h \
   src/image_support.c src/image_support.h \
   src/dbsql.c src/dbsql.h \

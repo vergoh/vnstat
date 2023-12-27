@@ -1265,7 +1265,7 @@ int db_getdata(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface,
 int db_getdata_range(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *iface, const char *table, const uint32_t resultlimit, const char *databegin, const char *dataend)
 {
 	int ret, i, rc;
-	const char *datatables[] = {"fiveminute", "hour", "day", "month", "year", "top"};
+	const char *datatables[] = {"fiveminute", "hour", "day", "month", "year", "top", "percentile"};
 	char sql[768], limit[64], dbegin[37], dend[44], *ifaceidin = NULL;
 	sqlite3_stmt *sqlstmt;
 	time_t timestamp;
@@ -1275,7 +1275,7 @@ int db_getdata_range(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *
 	listinfo->count = 0;
 
 	ret = 0;
-	for (i = 0; i < 6; i++) {
+	for (i = 0; i < 7; i++) {
 		if (strcmp(table, datatables[i]) == 0) {
 			ret = 1;
 			break;
@@ -1324,6 +1324,13 @@ int db_getdata_range(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *
 			sqlite3_snprintf(768, sql, "select * from (select id, strftime('%%s', date, 'utc') as unixdate, sum(rx) as rx, sum(tx) as tx from day where interface in (%s) %s %s group by date order by rx+tx desc, unixdate asc %s) order by rx+tx asc, unixdate desc", ifaceidin, dbegin, dend, limit);
 		} else {
 			sqlite3_snprintf(768, sql, "select * from (select id, strftime('%%s', date, 'utc') as unixdate, sum(rx) as rx, sum(tx) as tx from top where interface in (%s) group by date order by rx+tx desc, unixdate asc %s) order by rx+tx asc, unixdate desc", ifaceidin, limit);
+		}
+	} else if (strcmp(table, "percentile") == 0) {
+		/* 'percentile' is a meta table collected from 'fiveminute' grouped as hours requiring as different query */
+		if (strlen(dbegin) && strlen(limit)) {
+			sqlite3_snprintf(768, sql, "select * from (select id, strftime('%%s', date, 'utc') as unixdate, sum(rx), sum(tx) from fiveminute where interface in (%s) %s %s group by strftime('%%Y-%%m-%%d %%H', date, 'utc') order by unixdate asc %s) order by unixdate desc", ifaceidin, dbegin, dend, limit);
+		} else {
+			sqlite3_snprintf(768, sql, "select id, strftime('%%s', date, 'utc') as unixdate, sum(rx), sum(tx) from fiveminute where interface in (%s) %s %s group by strftime('%%Y-%%m-%%d %%H', date, 'utc') order by unixdate desc %s", ifaceidin, dbegin, dend, limit);
 		}
 	} else {
 		if (strlen(dbegin) && strlen(limit)) {

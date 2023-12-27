@@ -24,6 +24,7 @@ typedef struct {
 	interfaceinfo interface;
 	int cbackground, cedge, cheader, cheadertitle, cheaderdate, ctext, cline, clinel, cvnstat;
 	int crx, crxd, ctx, ctxd, cbgoffset, cbgoffsetmore, showheader, showedge, showlegend, altdate;
+	int cpercentile, cpercentileline;
 	int lineheight, large, invert;
 	char headertext[65], databegin[18], dataend[18];
 	time_t current;
@@ -47,5 +48,7 @@ void drawsummary_alltime(IMAGECONTENT *ic, const int x, const int y);
 void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *mode);
 void drawfivegraph(IMAGECONTENT *ic, const int rate, const int resultcount, const int height);
 int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate, const int resultcount, const int height);
+void draw95thpercentilegraph(IMAGECONTENT *ic, const int mode);
+void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int ypos, const int height);
 
 #endif

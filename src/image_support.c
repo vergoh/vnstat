@@ -51,6 +51,12 @@ void imageinit(IMAGECONTENT *ic, const int width, const int height)
 	ic->clinel = gdImageColorAllocate(ic->im, rgb[0], rgb[1], rgb[2]);
 	colorinitcheck("clinel", ic->clinel, cfg.clinel, rgb);
 
+	// TODO: cleanup
+	hextorgb("CF0045", rgb);
+	if (ic->invert > 0) { invertcolor(rgb); }
+	ic->cpercentileline = gdImageColorAllocate(ic->im, rgb[0], rgb[1], rgb[2]);
+	colorinitcheck("cpercentileline", ic->cpercentileline, "CF0045", rgb);
+
 	/* background */
 	hextorgb(cfg.cbg, rgb);
 	if (ic->invert > 0) { invertcolor(rgb); }
@@ -97,6 +103,12 @@ void imageinit(IMAGECONTENT *ic, const int width, const int height)
 	}
 	ic->ctxd = gdImageColorAllocate(ic->im, rgb[0], rgb[1], rgb[2]);
 	colorinitcheck("ctxd", ic->ctxd, cfg.ctxd, rgb);
+
+	// TODO: cleanup
+	hextorgb("0098CF", rgb);
+	if (ic->invert > 1) { invertcolor(rgb); }
+	ic->cpercentile = gdImageColorAllocate(ic->im, rgb[0], rgb[1], rgb[2]);
+	colorinitcheck("cpercentile", ic->cpercentile, "0098CF", rgb);
 }
 
 void colorinitcheck(const char *color, const int value, const char *cfgtext, const int *rgb)
@@ -181,6 +193,28 @@ void drawlegend(IMAGECONTENT *ic, const int x, const int y, const short israte)
 		gdImageFilledRectangle(ic->im, x + 8 + (ic->large * 7), y + 4, x + 8 + ic->font->w + (ic->large * 7), y + 4 + ic->font->w, ic->ctx);
 		gdImageRectangle(ic->im, x + 8 + (ic->large * 7), y + 4, x + 8 + ic->font->w + (ic->large * 7), y + 4 + ic->font->w, ic->ctext);
 	}
+}
+
+void drawpercentilelegend(IMAGECONTENT *ic, const int x, const int y, const int mode, const uint64_t percentile)
+{
+	char modetext[6], percentiletext[64];
+
+	if (mode == 0) {
+		snprintf(modetext, 6, "rx");
+	} else if (mode == 1) {
+		snprintf(modetext, 6, "tx");
+	} else {
+		snprintf(modetext, 6, "total");
+	}
+
+	snprintf(percentiletext, 64, "%-5s    95th percentile: %s", modetext, gettrafficrate(percentile, 300, 0));
+	gdImageString(ic->im, ic->font, x, y, (unsigned char *)percentiletext, ic->ctext);
+
+	gdImageFilledRectangle(ic->im, x - 12 - (ic->large * 2), y + 4, x - 12 + ic->font->w - (ic->large * 2), y + 4 + ic->font->w, ic->cpercentile);
+	gdImageRectangle(ic->im, x - 12 - (ic->large * 2), y + 4, x - 12 + ic->font->w - (ic->large * 2), y + 4 + ic->font->w, ic->ctext);
+
+	gdImageFilledRectangle(ic->im, x + 42 + (ic->large * 16), y + 4, x + 42 + ic->font->w + (ic->large * 16), y + 4 + ic->font->w, ic->cpercentileline);
+	gdImageRectangle(ic->im, x + 42 + (ic->large * 16), y + 4, x + 42 + ic->font->w + (ic->large * 16), y + 4 + ic->font->w, ic->ctext);
 }
 
 void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max, const short isestimate)
@@ -370,6 +404,7 @@ void drawarrowup(IMAGECONTENT *ic, const int x, const int y)
 	gdImageLine(ic->im, x, y, x - 2, y + 3, ic->ctext);
 	gdImageLine(ic->im, x - 2, y + 3, x + 2, y + 3, ic->ctext);
 	gdImageLine(ic->im, x, y + 1, x, y - 1, ic->ctext);
+	gdImageLine(ic->im, x, y, x, y + 2, ic->ctext);
 }
 
 void drawarrowright(IMAGECONTENT *ic, const int x, const int y)

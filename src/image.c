@@ -1,6 +1,7 @@
 #include "common.h"
 #include "dbsql.h"
 #include "misc.h"
+#include "percentile.h"
 #include "image.h"
 #include "image_support.h"
 #include "vnstati.h"
@@ -58,6 +59,11 @@ void drawimage(IMAGECONTENT *ic)
 			break;
 		case 10:
 			drawfivegraph(ic, cfg.hourlyrate, cfg.fivegresultcount, cfg.fivegheight);
+			break;
+		case 130:
+		case 131:
+		case 132:
+			draw95thpercentilegraph(ic, cfg.qmode - 130);
 			break;
 		default:
 			printf("Error: No such query mode: %d\n", cfg.qmode);
@@ -1112,4 +1118,187 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	dbdatalistfree(&datalist);
 
 	return 1;
+}
+
+void draw95thpercentilegraph(IMAGECONTENT *ic, const int mode)
+{
+	int imagewidth, imageheight = 300, headermod = 0;
+
+	// TODO: explain this better, 744 bars, 78 extra for layout, should height be more configurable? width is fixed
+	imagewidth = 744 + 78 + (ic->large * 14);
+
+	if (!ic->showheader) {
+		headermod = 22;
+	}
+
+	imageinit(ic, imagewidth, imageheight);
+	layoutinit(ic, " / 95th percentile", imagewidth, imageheight);
+
+	drawpercentile(ic, mode, 8 + (ic->large * 14), imageheight - 30 - (ic->large * 8), imageheight - 68 + headermod - (ic->large * 8));
+}
+
+// TODO: come up with a better term for "mode" if possible
+// TODO: remove references to FIVEMIN defines
+// TODO: rearrange debug prints
+void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int ypos, const int height)
+{
+	int i, l, x = xpos, y = ypos, s = 0, step = 0, prev = 0;
+	uint64_t scaleunit, max, percentile;
+	double ratediv, percentileratediv;
+	struct tm *d;
+	time_t current;
+	char datebuff[DATEBUFFLEN];
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+	percentiledata pdata;
+	gdFontPtr font;
+
+	// TODO: needs to go to stderr?
+	if (cfg.fiveminutehours < 744) {
+		printf("\nWarning: Configuration \"5MinuteHours\" needs to be at least 744 for 100%% coverage.\n");
+		printf("         \"5MinuteHours\" is currently set at %d.\n\n", cfg.fiveminutehours);
+	}
+
+	if (ic->large) {
+		font = gdFontGetSmall();
+	} else {
+		font = gdFontGetTiny();
+	}
+
+	if (!getpercentiledata(&pdata, ic->interface.name, 0)) {
+		// TODO: can't exit here, nor should this function print things to stdout blindly
+		exit(EXIT_FAILURE);
+	}
+
+	/* hourly/percentile bytes to rate */
+	if (cfg.rateunit) {
+		ratediv = 450;
+		percentileratediv = 37.5;
+	} else {
+		ratediv = 3600;
+		percentileratediv = 300;
+	}
+
+	d = localtime(&pdata.monthbegin);
+	strftime(datebuff, DATEBUFFLEN, "%Y-%m-%d", d);
+
+	// TODO: explain 744
+	if (!db_getdata_range(&datalist, &datainfo, ic->interface.name, "percentile", 744, datebuff, "") || datainfo.count == 0) {
+		gdImageString(ic->im, ic->font, x + (28 * ic->font->w), y + 54 - (ic->large * 18), (unsigned char *)"no percentile data available", ic->ctext);
+		return;
+	}
+
+	if (debug) {
+		printf("mode:  %d - %d\n", mode, cfg.qmode);
+		printf("count: %" PRIu32 "\n", datainfo.count);
+	}
+
+	if (mode == 0) {
+		percentile = pdata.rxpercentile;
+		max = (uint64_t)((double)datainfo.maxrx / ratediv);
+	} else if (mode == 1) {
+		percentile = pdata.txpercentile;
+		max = (uint64_t)((double)datainfo.maxtx / ratediv);
+	} else {
+		percentile = pdata.sumpercentile;
+		max = (uint64_t)((double)datainfo.max / ratediv);
+	}
+
+	/* scale values */
+	scaleunit = getscale(max, 1);
+
+	s = (int)lrint(((double)scaleunit / (double)max) * height);
+	if (s < SCALEMINPIXELS) {
+		step = 2;
+	} else {
+		step = 1;
+	}
+
+	/* scale text */
+	gdImageStringUp(ic->im, font, x - 2 - (ic->large * 14), y - (height / 2), (unsigned char *)getimagescale(scaleunit * (unsigned int)step, 1), ic->ctext);
+
+	/* axis */
+	x += 36;
+	gdImageLine(ic->im, x, y, x + (744 + FIVEMINWIDTHFULLPADDING), y, ic->ctext);
+	gdImageLine(ic->im, x + 4, y + 4, x + 4, y - height, ic->ctext);
+
+	/* arrows */
+	drawarrowup(ic, x + 4, y - 4 - height);
+	drawarrowright(ic, x + 1 + (744 + FIVEMINWIDTHFULLPADDING), y);
+
+	/* adjust cursor to first point on graph */
+	x += 5;
+	y -= 1;
+
+	for (i = step; i * s <= height; i = i + step) {
+		gdImageDashedLine(ic->im, x, y - (i * s), x + (744 + FIVEMINWIDTHFULLPADDING) - 5, y - (i * s), ic->cline);
+		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + (744 + FIVEMINWIDTHFULLPADDING) - 5, y - prev - (step * s) / 2, ic->clinel);
+		gdImageString(ic->im, font, x - 22 - (ic->large * 3), y - 4 - (i * s) - (ic->large * 3), (unsigned char *)getimagevalue(scaleunit * (unsigned int)i, 3, 1), ic->ctext);
+		prev = i * s;
+	}
+	if ((prev + (step * s) / 2) <= height) {
+		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + (744 + FIVEMINWIDTHFULLPADDING) - 5, y - prev - (step * s) / 2, ic->clinel);
+	}
+
+	datalist_i = datalist;
+	current = pdata.monthbegin;
+	prev = 0;
+
+	/* draw data */
+	for (i = 0; i < 744; i++, current += 3600) {
+		if (datalist_i == NULL || current < datalist_i->timestamp) {
+			gdImageSetPixel(ic->im, x + i, y + 1, ic->cbgoffset);
+			if (i >= prev + 24 && i % 24 == 0 && current < pdata.dataend) {
+				d = localtime(&current);
+				strftime(datebuff, DATEBUFFLEN, "%d", d);
+				drawpole(ic, x + i, y, height, 1, ic->cbgoffset);
+				gdImageString(ic->im, font, x + i - 4 - (ic->large), y + 4 - (ic->large), (unsigned char *)datebuff, ic->cline);
+				prev = i;
+			}
+			continue;
+		}
+
+		if (i >= prev + 24 && i % 24 == 0) {
+			d = localtime(&current);
+			strftime(datebuff, DATEBUFFLEN, "%d", d);
+			drawpole(ic, x + i, y, height, 1, ic->cbgoffset);
+			gdImageString(ic->im, font, x + i - 4 - (ic->large), y + 4 - (ic->large), (unsigned char *)datebuff, ic->ctext);
+			prev = i;
+		}
+
+		if (mode == 0) {
+			l = (int)lrint(((double)(datalist_i->rx) / (double)ratediv / (double)max) * height);
+		} else if (mode == 1) {
+			l = (int)lrint(((double)(datalist_i->tx) / (double)ratediv / (double)max) * height);
+		} else {
+			l = (int)lrint(((double)(datalist_i->rx + datalist_i->tx) / (double)ratediv / (double)max) * height);
+		}
+		drawpole(ic, x + i, y, l, 1, ic->cpercentile);
+
+		datalist_i = datalist_i->next;
+	}
+
+	dbdatalistfree(&datalist);
+
+	/* 95th percentile line */
+	l = (int)lrint(((double)(percentile) / percentileratediv / (double)max) * height);
+	if (l > height) {
+		l = height;
+	} else if (l == 0) {
+		l = 1;
+	}
+	gdImageLine(ic->im, x, y - l, x + (744 + FIVEMINWIDTHPADDING), y - l, ic->cpercentileline);
+
+	if (debug) {
+		printf("s:   %d\n", s);
+		printf("l:   %d\n", l);
+		printf("h:   %d\n", height);
+		printf("p:   %" PRIu64 "\n", (uint64_t)(percentile / percentileratediv));
+		printf("max: %" PRIu64 "\n", max);
+		printf("max rate: %s\n", gettrafficrate(max * ratediv, 3600, 0));
+		printf("per rate: %s\n", gettrafficrate(percentile, 300, 0));
+	}
+
+	/* finally add legend with percentile text */
+	drawpercentilelegend(ic, x + 300 - (ic->large * 50), y + 15 + (ic->large * 5), mode, percentile);
 }

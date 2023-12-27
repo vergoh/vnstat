@@ -127,7 +127,8 @@ void showihelp(const IPARAMS *p)
 	printf("      -t,  --top [limit]                 output top days\n");
 	printf("      -s,  --summary                     output summary\n");
 	printf("      -hs, --hsummary [graph]            output horizontal summary with graph\n");
-	printf("      -vs, --vsummary [graph]            output vertical summary with graph\n\n");
+	printf("      -vs, --vsummary [graph]            output vertical summary with graph\n");
+	printf("      --95%% <mode>                       output 95th percentile graph\n\n"); // TODO: documentation
 
 	printf("      -nh, --noheader                    remove header from output\n");
 	printf("      -ne, --noedge                      remove edge from output\n");
@@ -166,7 +167,7 @@ void showihelp(const IPARAMS *p)
 	printf("      --scale <percent>                  change image size by scaling it\n");
 #endif
 	printf("      --transparent [enabled]            toggle background transparency\n");
-	printf("      --invert-colors <mode>             invert image colors (0-2)\n\n");
+	printf("      --invert-colors <mode>             invert image colors (0-2)\n\n"); // TODO: add -ic short?
 
 	printf("See also \"man vnstati\".\n");
 }
@@ -441,6 +442,27 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 				if (debug)
 					printf("Summary graph changed: %d\n", cfg.summarygraph);
 				currentarg++;
+			}
+		} else if ((strcmp(argv[currentarg], "--95") == 0) || (strcmp(argv[currentarg], "--95%") == 0) || (strcmp(argv[currentarg], "--95th") == 0)) {
+			cfg.qmode = 130;
+			if (currentarg + 1 < argc && (strlen(argv[currentarg + 1]) == 1 || ishelprequest(argv[currentarg + 1]))) {
+				if (!isdigit(argv[currentarg + 1][0]) || atoi(argv[currentarg + 1]) > 2 || atoi(argv[currentarg + 1]) < 0) {
+					if (!ishelprequest(argv[currentarg + 1]))
+						fprintf(stderr, "Error: Invalid parameter \"%s\".\n", argv[currentarg + 1]);
+					printf(" Valid parameters for %s:\n", argv[currentarg]);
+					printf("    0 - rx\n");
+					printf("    1 - tx\n");
+					printf("    2 - total\n");
+					exit(EXIT_FAILURE);
+				}
+				cfg.qmode += atoi(argv[currentarg + 1]);
+				currentarg++;
+			} else {
+				printf("Error: Mandatory mode parameters not given for %s:\n", argv[currentarg]);
+				printf("    0 - rx\n");
+				printf("    1 - tx\n");
+				printf("    2 - total\n");
+				exit(EXIT_FAILURE);
 			}
 		} else if ((strcmp(argv[currentarg], "-nh") == 0) || (strcmp(argv[currentarg], "--noheader")) == 0) {
 			ic->showheader = 0;

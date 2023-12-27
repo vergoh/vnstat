@@ -4,9 +4,9 @@
    - QueryMode documentation in configuration file didn't match implementation
      or man page description
  - New
-   - Add 95th percentile output as --95%, also available via --alert, --json
-     and --xml, requires 5MinuteHours configuration to be set to at least 744
-     (work in progress)
+   - Add 95th percentile output as --95%, also available via --alert, --json,
+     --xml and image output, requires 5MinuteHours configuration to be set to
+     at least 744 (work in progress)
    - Add --json support for --alert
    - Database queries resulting in error exit with status 1
    - Show spinning animation at the beginning of -l / --live output line,
