@@ -11,9 +11,9 @@
    - Database queries resulting in error exit with status 1
    - Show spinning animation at the beginning of -l / --live output line,
      visibility configurable using LiveSpinner configuration option
-   - Add --invert-colors option to image output for facilitating for example
-     dark mode switching without needing to have multiple separate color
-     configurations
+   - Add -ic / --invert-colors option to image output for facilitating for
+     example dark mode switching without needing to have multiple separate
+     color configurations
    - Add dark mode option to image output example cgi (examples/vnstat.cgi)
    - Add option 4 to QueryMode for selecting summary output of single
      interface regardless of the number of interfaces in the database

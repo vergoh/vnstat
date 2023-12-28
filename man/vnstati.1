@@ -1,4 +1,4 @@
-.TH VNSTATI 1 "SEPTEMBER 2023" "version 2.12" "User Manuals"
+.TH VNSTATI 1 "DECEMBER 2023" "version 2.12" "User Manuals"
 .SH NAME
 vnstati \- image output support for vnStat
 
@@ -45,6 +45,8 @@ vnstati \- image output support for vnStat
 .IR interface ]
 .RB [ \-\-iface
 .IR interface ]
+.RB [ \-ic
+.RI [ mode ]]
 .RB [ \-\-invert\-colors
 .RI [ mode ]]
 .RB [ \-\-large ]
@@ -254,7 +256,7 @@ can be used as parameter on the command line for selecting the used interface
 even without the option being explicitly used.
 
 .TP
-.BI "--invert-colors " [mode]
+.BI "-ic, --invert-colors " [mode]
 Invert image colors. Results in black becoming white, dark colors becoming light,
 light colors becoming dark and white becoming black. The optional
 .I mode

@@ -134,6 +134,7 @@ void showihelp(const IPARAMS *p)
 	printf("      -ne, --noedge                      remove edge from output\n");
 	printf("      -nl, --nolegend                    remove legend from output\n");
 	printf("      -ru, --rateunit [mode]             swap configured rate unit\n");
+	printf("      -ic, --invert-colors [mode]        invert image colors\n\n");
 	printf("      -S,  --small                       use small fonts");
 	if (!cfg.largefonts) {
 		printf(" (default)");
@@ -166,8 +167,7 @@ void showihelp(const IPARAMS *p)
 #if HAVE_DECL_GD_NEAREST_NEIGHBOUR
 	printf("      --scale <percent>                  change image size by scaling it\n");
 #endif
-	printf("      --transparent [enabled]            toggle background transparency\n");
-	printf("      --invert-colors <mode>             invert image colors (0-2)\n\n"); // TODO: add -ic short?
+	printf("      --transparent [enabled]            toggle background transparency\n\n");
 
 	printf("See also \"man vnstati\".\n");
 }
@@ -525,7 +525,7 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 				fprintf(stderr, "Error: Invalid or missing parameter for %s.\n", argv[currentarg]);
 				exit(EXIT_FAILURE);
 			}
-		} else if (strcmp(argv[currentarg], "--invert-colors") == 0) {
+		} else if ((strcmp(argv[currentarg], "-ic") == 0) || strcmp(argv[currentarg], "--invert-colors") == 0) {
 			if (currentarg + 1 < argc && (strlen(argv[currentarg + 1]) == 1 || ishelprequest(argv[currentarg + 1]))) {
 				if (!isdigit(argv[currentarg + 1][0]) || atoi(argv[currentarg + 1]) > 2 || atoi(argv[currentarg + 1]) < 0) {
 					if (!ishelprequest(argv[currentarg + 1]))
