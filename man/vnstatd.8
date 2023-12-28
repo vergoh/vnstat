@@ -21,6 +21,7 @@ vnstatd \- daemon based database updating for vnStat
 .RB [ \-\-initdb ]
 .RB [ \-\-noadd ]
 .RB [ \-\-nodaemon ]
+.RB [ \-\-noremove ]
 .RB [ \-\-pidfile
 .IR file ]
 .RB [ \-\-startempty ]
@@ -149,6 +150,11 @@ added regardless of this option.
 .B "-n, --nodaemon"
 Stay in foreground attached to the current terminal and start the update
 process.
+
+.TP
+.B "--noremove"
+Disable automatic removal of interfaces from database that aren't currently visible
+and haven't seen any traffic.
 
 .TP
 .BI "-p, --pidfile " file

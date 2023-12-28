@@ -277,6 +277,7 @@ void initdstate(DSTATE *s)
 	s->sync = 0;
 	s->forcesave = 0;
 	s->noadd = 0;
+	s->noremove = 0;
 	s->initdb = 0;
 	s->startempty = 0;
 	s->iflisthash = 0;
@@ -674,7 +675,7 @@ void flushcachetodisk(DSTATE *s)
 			}
 		}
 
-		if (!iterator->active && !logcount) {
+		if (!s->noremove && !iterator->active && !logcount) {
 			/* throw away if interface hasn't seen any data and is disabled */
 			if (!iterator->currx && !iterator->curtx) {
 				ret = db_getinterfaceinfo(iterator->interface, &info);

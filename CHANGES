@@ -25,6 +25,9 @@
      regardless of the number of interfaces in the database
    - Add --startempty option to daemon for starting and keeping the daemon
      running even if no interfaces were discovered and the database is empty
+   - Add --noremove option to daemon for disabling the automatic removal of
+     interfaces from database that aren't currently visible and haven't seen
+     any traffic
 
 
 2.11 / 19-Aug-2023

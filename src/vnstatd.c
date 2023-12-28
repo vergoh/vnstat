@@ -267,6 +267,7 @@ void showhelp(void)
 	printf("      --alwaysadd [mode]       automatically start monitoring all new interfaces\n");
 	printf("      --noadd                  disable discovery of interfaces when database\n");
 	printf("                               contains none\n");
+	printf("      --noremove               disable removal of never seen interfaces\n");
 	printf("      --startempty             start even when database is empty\n\n");
 
 	printf("See also \"man vnstatd\".\n");
@@ -318,6 +319,8 @@ void parseargs(DSTATE *s, int argc, char **argv)
 			}
 		} else if (strcmp(argv[currentarg], "--noadd") == 0) {
 			s->noadd = 1;
+		} else if (strcmp(argv[currentarg], "--noremove") == 0) {
+			s->noremove = 1;
 		} else if (strcmp(argv[currentarg], "--alwaysadd") == 0) {
 			if (currentarg + 1 < argc && (strlen(argv[currentarg + 1]) == 1 || ishelprequest(argv[currentarg + 1]))) {
 				if (!isdigit(argv[currentarg + 1][0]) || atoi(argv[currentarg + 1]) > 1 || atoi(argv[currentarg + 1]) < 0) {
