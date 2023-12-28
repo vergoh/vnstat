@@ -503,7 +503,7 @@ void invertcolor(int *rgb)
 	}
 }
 
-char *getimagevalue(const uint64_t b, const int len, const int rate)
+char *getimagevalue(const uint64_t b, const int len, const int israte)
 {
 	static char buffer[64];
 	int i, declen = 0, unit = 0, p = 1024;
@@ -512,7 +512,7 @@ char *getimagevalue(const uint64_t b, const int len, const int rate)
 	if (b == 0) {
 		snprintf(buffer, 64, "%*s", len, "--");
 	} else {
-		if (rate && (getunit() == 2 || getunit() == 4)) {
+		if (israte && (getunit() == 2 || getunit() == 4)) {
 			p = 1000;
 			unit = getunit();
 		}
@@ -529,7 +529,7 @@ char *getimagevalue(const uint64_t b, const int len, const int rate)
 	return buffer;
 }
 
-char *getimagescale(const uint64_t b, const int rate)
+char *getimagescale(const uint64_t b, const int israte)
 {
 	static char buffer[8];
 	int unit, div = 1, p = 1024;
@@ -539,7 +539,7 @@ char *getimagescale(const uint64_t b, const int rate)
 	if (b == 0) {
 		snprintf(buffer, 8, "--");
 	} else {
-		if (rate) {
+		if (israte) {
 			if (unit == 2 || unit == 4) {
 				p = 1000;
 			}
@@ -557,7 +557,7 @@ char *getimagescale(const uint64_t b, const int rate)
 	return buffer;
 }
 
-uint64_t getscale(const uint64_t input, const int rate)
+uint64_t getscale(const uint64_t input, const int israte)
 {
 	int i, unit;
 	unsigned int div = 1024;
@@ -565,7 +565,7 @@ uint64_t getscale(const uint64_t input, const int rate)
 
 	unit = getunit();
 
-	if (rate && (unit == 2 || unit == 4)) {
+	if (israte && (unit == 2 || unit == 4)) {
 		div = 1000;
 	}
 

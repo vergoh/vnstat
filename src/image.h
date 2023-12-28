@@ -40,14 +40,14 @@ void drawimage(IMAGECONTENT *ic);
 #if HAVE_DECL_GD_NEAREST_NEIGHBOUR
 void scaleimage(IMAGECONTENT *ic);
 #endif
-int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate);
-void drawhourly(IMAGECONTENT *ic, const int rate);
+int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte);
+void drawhourly(IMAGECONTENT *ic, const int israte);
 void drawlist(IMAGECONTENT *ic, const char *listname);
-void drawsummary(IMAGECONTENT *ic, const int layout, const int rate);
+void drawsummary(IMAGECONTENT *ic, const int layout, const int israte);
 void drawsummary_alltime(IMAGECONTENT *ic, const int x, const int y);
 void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *mode);
-void drawfivegraph(IMAGECONTENT *ic, const int rate, const int resultcount, const int height);
-int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int rate, const int resultcount, const int height);
+void drawfivegraph(IMAGECONTENT *ic, const int israte, const int resultcount, const int height);
+int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte, const int resultcount, const int height);
 void draw95thpercentilegraph(IMAGECONTENT *ic, const int mode);
 void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int ypos, const int height);
 
