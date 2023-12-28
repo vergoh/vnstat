@@ -1360,7 +1360,7 @@ void showdbiflist(const int parseable)
 	}
 
 	if (dbifcount == 0 && !parseable) {
-		printf("Database is empty.");
+		printf("Database is empty.\n");
 	} else {
 		dbifl_i = dbifl;
 
