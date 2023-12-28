@@ -1302,8 +1302,13 @@ void handleifselection(PARAMS *p)
 
 		iflistfree(&ifl);
 	} else if (p->query) {
-		if (db_getiflist_sorted(&dbifl, 1) <= 0) {
-			printf("Error: Unable to discover suitable interface from database.\n");
+		dbifcount = db_getiflist_sorted(&dbifl, 1);
+		if (dbifcount <= 0) {
+			if (dbifcount == 0) {
+				printf("Error: Database is empty.\n");
+			} else {
+				printf("Error: Unable to discover suitable interface from database.\n");
+			}
 			iflistfree(&dbifl);
 			exit(EXIT_FAILURE);
 		}
