@@ -357,7 +357,7 @@ void parseargs(DSTATE *s, int argc, char **argv)
 	}
 
 	if (s->noadd && cfg.alwaysadd) {
-		printf("Warning: --noadd and --alwaysadd can't both be enabled at the same time. --alwaysadd has been disabled.\n");
+		printf("Warning: --noadd and --alwaysadd can't both be enabled at the same time. --alwaysadd has been ignored.\n");
 		cfg.alwaysadd = 0;
 	}
 

@@ -300,18 +300,13 @@ void preparedatabase(DSTATE *s)
 {
 	s->dbifcount = db_getinterfacecount();
 
+	if (debug) {
+		printf("initial db if count: %" PRIu64 "\n", s->dbifcount);
+	}
+
 	if (s->dbifcount > 0 && !cfg.alwaysadd) {
 		s->dbifcount = 0;
 		return;
-	}
-
-	if (debug) {
-		printf("db if count: %" PRIu64 "\n", s->dbifcount);
-	}
-
-	if (s->noadd) {
-		printf("No interfaces found in database, exiting.\n");
-		exit(EXIT_FAILURE);
 	}
 
 	if (!spacecheck(cfg.dbdir)) {
@@ -324,11 +319,17 @@ void preparedatabase(DSTATE *s)
 			s->dbifcount = 0;
 			return;
 		}
+	}
+
+	if (s->noadd) {
+		printf("No interfaces found in database, exiting.\n");
+		exit(EXIT_FAILURE);
+	} else if (s->dbifcount == 0) {
 		printf("No interfaces found in database, adding available interfaces...\n");
 	}
 
 	if (!addinterfaces(s) && s->dbifcount == 0) {
-		printf("Nothing to do, exiting.\n");
+		printf("No interfaces found for monitoring, exiting.\n");
 		exit(EXIT_FAILURE);
 	}
 

@@ -3,6 +3,9 @@
  - Fixed
    - QueryMode documentation in configuration file didn't match implementation
      or man page description
+   - Daemon didn't try to import legacy databases when --noadd was used and no
+     current version database initially existed resulting in the process
+     exiting even when something could have been done
  - New
    - Add 95th percentile output as --95%, also available via --alert, --json,
      --xml and image output, requires 5MinuteHours configuration to be set to
