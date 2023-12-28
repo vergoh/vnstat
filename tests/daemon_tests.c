@@ -287,14 +287,14 @@ START_TEST(filldatabaselist_does_not_exit_with_empty_database_dir)
 	DSTATE s;
 	initdstate(&s);
 	disable_logprints();
-	s.sync = 1;
+	s.sync = 0;
 	ret = db_open_rw(1);
 	ck_assert_int_eq(ret, 1);
 
 	filldatabaselist(&s);
 
 	ck_assert_int_eq(s.dbifcount, 0);
-	ck_assert_int_eq(s.sync, 0);
+	ck_assert_int_eq(s.sync, 1);
 	ck_assert_int_eq(s.updateinterval, 120);
 	ret = db_close();
 	ck_assert_int_eq(ret, 1);
@@ -335,7 +335,7 @@ START_TEST(filldatabaselist_adds_databases)
 	ck_assert_int_eq(check_dbfile_exists("name2", 0), 1);
 	ck_assert_int_eq(check_dbfile_exists(".name2", 0), 0);
 	ck_assert_int_eq(s.dbifcount, 2);
-	ck_assert_int_eq(s.sync, 0);
+	ck_assert_int_eq(s.sync, 1);
 	ck_assert_int_eq(s.updateinterval, 0);
 	ck_assert_int_eq(intsignal, 42);
 	ret = db_close();

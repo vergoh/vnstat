@@ -278,6 +278,7 @@ void initdstate(DSTATE *s)
 	s->forcesave = 0;
 	s->noadd = 0;
 	s->initdb = 0;
+	s->startempty = 0;
 	s->iflisthash = 0;
 	s->cfgfile[0] = '\0';
 	s->user[0] = '\0';
@@ -305,7 +306,6 @@ void preparedatabase(DSTATE *s)
 	}
 
 	if (s->dbifcount > 0 && !cfg.alwaysadd) {
-		s->dbifcount = 0;
 		return;
 	}
 
@@ -315,29 +315,43 @@ void preparedatabase(DSTATE *s)
 	}
 
 	if (s->dbifcount == 0) {
-		if (importlegacydbs(s) && !cfg.alwaysadd) {
-			s->dbifcount = 0;
+		s->dbifcount += importlegacydbs();
+		if (s->dbifcount > 0 && !cfg.alwaysadd) {
 			return;
 		}
 	}
 
-	if (s->noadd) {
-		printf("No interfaces found in database, exiting.\n");
-		exit(EXIT_FAILURE);
-	} else if (s->dbifcount == 0) {
+	if (s->dbifcount == 0 && !cfg.alwaysadd) {
+		if (s->noadd && !s->startempty) {
+			printf("No interfaces found in database, exiting.\n");
+			exit(EXIT_FAILURE);
+		} else if (s->noadd && s->startempty) {
+			printf("Starting without interfaces to monitor.\n");
+			/* force counter sync for any later discovered interface */
+			s->sync = 1;
+			return;
+		}
+	}
+
+	if (s->dbifcount == 0) {
 		printf("No interfaces found in database, adding available interfaces...\n");
 	}
 
-	if (!addinterfaces(s) && s->dbifcount == 0) {
-		printf("No interfaces found for monitoring, exiting.\n");
-		exit(EXIT_FAILURE);
-	}
+	s->dbifcount += addinterfaces(s);
 
-	/* set counter back to zero so that dbs will be cached later */
-	s->dbifcount = 0;
+	if (s->dbifcount == 0) {
+		if (!s->startempty) {
+			printf("No interfaces found for monitoring, exiting.\n");
+			exit(EXIT_FAILURE);
+		} else {
+			printf("Starting without interfaces to monitor.\n");
+			/* force counter sync for any later discovered interface */
+			s->sync = 1;
+		}
+	}
 }
 
-unsigned int importlegacydbs(DSTATE *s)
+unsigned int importlegacydbs(void)
 {
 	DIR *dir;
 	struct dirent *di;
@@ -350,7 +364,6 @@ unsigned int importlegacydbs(DSTATE *s)
 		exit(EXIT_FAILURE);
 	}
 
-	s->dbifcount = 0;
 	while ((di = readdir(dir))) {
 		if ((di->d_name[0] != '.') && (strncmp(di->d_name, DATABASEFILE, strlen(DATABASEFILE)) != 0)) {
 			/* ignore already known interfaces */
@@ -364,7 +377,6 @@ unsigned int importlegacydbs(DSTATE *s)
 	}
 	closedir(dir);
 
-	s->dbifcount += importcount;
 	return importcount;
 }
 
@@ -411,7 +423,9 @@ void filldatabaselist(DSTATE *s)
 	}
 
 	iflistfree(&dbifl);
-	s->sync = 0;
+
+	/* force counter sync for any later discovered interface */
+	s->sync = 1;
 
 	/* disable update interval check for one loop if database list was refreshed */
 	/* otherwise increase default update interval since there's nothing else to do */

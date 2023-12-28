@@ -23,6 +23,8 @@
    - Add optional mode parameter to -q / --query for overriding QueryMode
      for summary output and for enabling control of summary output style
      regardless of the number of interfaces in the database
+   - Add --startempty option to daemon for starting and keeping the daemon
+     running even if no interfaces were discovered and the database is empty
 
 
 2.11 / 19-Aug-2023

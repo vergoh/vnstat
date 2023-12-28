@@ -107,23 +107,25 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	if (!db_removeoldentries()) {
-		printf("Error: Database \"%s/%s\" old entry cleanup failed: %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
-		printf("Exiting...\n");
-		exit(EXIT_FAILURE);
-	}
-
-	if (!db_removedisabledresolutionentries()) {
-		printf("Error: Database \"%s/%s\" disabled resolution entry cleanup failed: %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
-		printf("Exiting...\n");
-		exit(EXIT_FAILURE);
-	}
-
-	if (cfg.vacuumonstartup) {
-		if (!db_vacuum()) {
-			printf("Error: Database \"%s/%s\" vacuum failed: %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
+	if (s.dbifcount > 0) {
+		if (!db_removeoldentries()) {
+			printf("Error: Database \"%s/%s\" old entry cleanup failed: %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
 			printf("Exiting...\n");
 			exit(EXIT_FAILURE);
+		}
+
+		if (!db_removedisabledresolutionentries()) {
+			printf("Error: Database \"%s/%s\" disabled resolution entry cleanup failed: %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
+			printf("Exiting...\n");
+			exit(EXIT_FAILURE);
+		}
+
+		if (cfg.vacuumonstartup) {
+			if (!db_vacuum()) {
+				printf("Error: Database \"%s/%s\" vacuum failed: %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
+				printf("Exiting...\n");
+				exit(EXIT_FAILURE);
+			}
 		}
 	}
 
@@ -151,10 +153,10 @@ int main(int argc, char *argv[])
 	printstartupdetails();
 
 	/* warmup */
-	if (s.dbifcount == 0) {
-		filldatabaselist(&s);
-		s.prevdbsave = 0;
-	}
+	s.dbifcount = 0;
+	filldatabaselist(&s);
+	s.prevdbsave = 0;
+
 	while (s.running && s.dbifcount && waittimesync(&s)) {
 		if (intsignal) {
 			handleintsignals(&s);
@@ -168,7 +170,7 @@ int main(int argc, char *argv[])
 
 		s.current = time(NULL);
 
-		/* track interface status only if at least one database exists */
+		/* track interface status only if at least one database entry exists */
 		if (s.dbifcount != 0) {
 			previflisthash = s.iflisthash;
 			interfacechangecheck(&s);
@@ -219,7 +221,11 @@ int main(int argc, char *argv[])
 		}
 
 		if (s.running && intsignal == 0) {
-			sleep((unsigned int)(cfg.pollinterval - (time(NULL) % cfg.pollinterval)));
+			if (s.dbifcount == 0) {
+				sleep((unsigned int)(s.updateinterval - (time(NULL) % s.updateinterval)));
+			} else {
+				sleep((unsigned int)(cfg.pollinterval - (time(NULL) % cfg.pollinterval)));
+			}
 		}
 
 		if (intsignal) {
@@ -255,11 +261,13 @@ void showhelp(void)
 	printf("      -p, --pidfile <file>     select used pid file\n");
 	printf("      -u, --user <user>        set daemon process user\n");
 	printf("      -g, --group <group>      set daemon process group\n");
-	printf("      -t, --timestamp          add timestamp to prints when running in foreground\n");
+	printf("      -t, --timestamp          timestamp prints when running in foreground\n");
 	printf("      --config <config file>   select used config file\n");
-	printf("      --noadd                  prevent startup if database has no interfaces\n");
+	printf("      --initdb                 create empty database and exit\n");
 	printf("      --alwaysadd [mode]       automatically start monitoring all new interfaces\n");
-	printf("      --initdb                 create empty database and exit\n\n");
+	printf("      --noadd                  disable discovery of interfaces when database\n");
+	printf("                               contains none\n");
+	printf("      --startempty             start even when database is empty\n\n");
 
 	printf("See also \"man vnstatd\".\n");
 }
@@ -335,6 +343,8 @@ void parseargs(DSTATE *s, int argc, char **argv)
 		} else if (strcmp(argv[currentarg], "--initdb") == 0) {
 			s->initdb = 1;
 			s->showhelp = 0;
+		} else if (strcmp(argv[currentarg], "--startempty") == 0) {
+			s->startempty = 1;
 		} else if ((strcmp(argv[currentarg], "-v") == 0) || (strcmp(argv[currentarg], "--version") == 0)) {
 			printf("vnStat daemon %s by Teemu Toivola <tst at iki dot fi> (SQLite %s)\n", getversion(), sqlite3_libversion());
 			exit(EXIT_SUCCESS);
@@ -368,6 +378,11 @@ void parseargs(DSTATE *s, int argc, char **argv)
 
 	if (s->rundaemon && s->initdb) {
 		printf("Error: --daemon and --initdb can't both be used at the same time.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (s->startempty && s->initdb) {
+		printf("Error: --startempty and --initdb can't both be used at the same time.\n");
 		exit(EXIT_FAILURE);
 	}
 

@@ -4,7 +4,7 @@
 typedef struct {
 	int updateinterval, saveinterval;
 	short running, dodbsave, rundaemon;
-	short dbsaved, showhelp, sync, forcesave, noadd, initdb;
+	short dbsaved, showhelp, sync, forcesave, noadd, initdb, startempty;
 	short bootdetected, cleanuphour, dbretrycount;
 	uint32_t iflisthash;
 	uint64_t dbifcount;
@@ -21,7 +21,7 @@ void debugtimestamp(void);
 unsigned int addinterfaces(DSTATE *s);
 void initdstate(DSTATE *s);
 void preparedatabase(DSTATE *s);
-unsigned int importlegacydbs(DSTATE *s);
+unsigned int importlegacydbs(void);
 void setsignaltraps(void);
 void filldatabaselist(DSTATE *s);
 void adjustsaveinterval(DSTATE *s);

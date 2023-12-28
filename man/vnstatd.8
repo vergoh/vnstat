@@ -1,5 +1,5 @@
 '\" t
-.TH VNSTATD 8 "AUGUST 2023" "version 2.11" "User Manuals"
+.TH VNSTATD 8 "DECEMBER 2023" "version 2.12" "User Manuals"
 .SH NAME
 vnstatd \- daemon based database updating for vnStat
 
@@ -23,6 +23,7 @@ vnstatd \- daemon based database updating for vnStat
 .RB [ \-\-nodaemon ]
 .RB [ \-\-pidfile
 .IR file ]
+.RB [ \-\-startempty ]
 .RB [ \-\-sync ]
 .RB [ \-\-timestamp ]
 .RB [ \-\-u
@@ -35,7 +36,7 @@ vnstatd \- daemon based database updating for vnStat
 
 The purpose of
 .B vnstatd
-is to provide a flexible and robust way for updating the database that
+is to provide a flexible and robust way for gathering data to the database that
 .BR vnstat (1)
 uses. The availability of each interface is automatically tracked which
 removes the need for additional scripts to be implemented and called when
@@ -56,15 +57,19 @@ during startup with entries for all available interfaces excluding pseudo
 interfaces lo, lo0 and sit0. This automatic database entry creation behaviour
 can be disabled using the
 .B --noadd
-option. Alternatively, using the
+option. Alternatively, the
 .B --alwaysadd
-option instructs the daemon to create new database entries whenever interfaces not
-currently in the databases become visible.
+option can be used to instruct the daemon to create new database entries whenever
+interfaces not currently in the databases become visible. By default, unless the
+.B --startempty
+option is used, the daemon will not stay running if no interfaces are discovered
+during startup and the database contains no interfaces.
 .PP
 The daemon will proceed to track the availability of monitored interfaces,
 process the interface traffic statistics and write new values to the database
-at a configured interval. As a result, the daemon ends up spending most
-of the time sleeping between updates.
+at a configured interval. As a result, the daemon ends up spending most of the
+time sleeping between updates. New interfaces added to the database will be
+automatically picked up for monitoring without the daemon needing to be notified.
 .PP
 When the
 .B UseUTC
@@ -127,18 +132,18 @@ can only be used when the process is started as root.
 Create a new empty database without interface data and exit. If the database
 already exists then access to it is only verified. The daemon will not stay
 running when this option is used. This option cannot be used in combination with
-.B "-d, --daemon"
+.BR "-d, --daemon" ,
+.B "-n, --nodaemon"
 or
-.BR "-n, --nodaemon" .
+.BR "--startempty" .
 
 .TP
 .B "--noadd"
-Disable the automatic creation of new database entries for all available
-interfaces if the daemon is started with no database found or with a database
-without any interfaces. The daemon will fail to start if this option is used when
-the database contains no interfaces or doesn't exist. The daemon will create an
-empty database if one doesn't already exist. Pseudo interfaces lo, lo0 and sit0
-are always excluded from getting added regardless of this option.
+Disable the automatic creation of new database entries for all currently available
+interfaces when the daemon is started with no existing database or with a database
+containing zero interfaces. The daemon will still create an empty database if one doesn't
+already exist. Pseudo interfaces lo, lo0 and sit0 are always excluded from getting
+added regardless of this option.
 
 .TP
 .B "-n, --nodaemon"
@@ -154,6 +159,15 @@ be started if the same
 .I file
 is specified. This option has no effect if used in combination with
 .BR "-n, --nodaemon" .
+
+.TP
+.B "--startempty"
+Start even when no interfaces were discovered and the database is empty. Results in
+the daemon staying running and waiting for interfaces to be added to the database or
+found if
+.B "--alwaysadd"
+option has also been used. This option cannot be used in combination with
+.BR "--initdb" .
 
 .TP
 .B "-s, --sync"
