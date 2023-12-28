@@ -1142,7 +1142,7 @@ void draw95thpercentilegraph(IMAGECONTENT *ic, const int mode)
 // TODO: rearrange debug prints
 void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int ypos, const int height)
 {
-	int i, l, x = xpos, y = ypos, s = 0, step = 0, prev = 0;
+	int i, l, x = xpos, y = ypos, s = 0, step = 0, prev = 0, color;
 	uint64_t scaleunit, max, percentile;
 	double ratediv, percentileratediv;
 	struct tm *d;
@@ -1194,12 +1194,15 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 	}
 
 	if (mode == 0) {
+		color = ic->crx;
 		percentile = pdata.rxpercentile;
 		max = (uint64_t)((double)datainfo.maxrx / ratediv);
 	} else if (mode == 1) {
+		color = ic->ctx;
 		percentile = pdata.txpercentile;
 		max = (uint64_t)((double)datainfo.maxtx / ratediv);
 	} else {
+		color = ic->cpercentile;
 		percentile = pdata.sumpercentile;
 		max = (uint64_t)((double)datainfo.max / ratediv);
 	}
@@ -1273,7 +1276,7 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 		} else {
 			l = (int)lrint(((double)(datalist_i->rx + datalist_i->tx) / (double)ratediv / (double)max) * height);
 		}
-		drawpole(ic, x + i, y, l, 1, ic->cpercentile);
+		drawpole(ic, x + i, y, l, 1, color);
 
 		datalist_i = datalist_i->next;
 	}
@@ -1288,6 +1291,9 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 		l = 1;
 	}
 	gdImageLine(ic->im, x, y - l, x + (744 + FIVEMINWIDTHPADDING), y - l, ic->cpercentileline);
+
+	// TODO: would it look better to draw the percentile line only up to the point where data ends?
+	// TODO: would it look better to end the x axis arrow where the data ends?
 
 	if (debug) {
 		printf("s:   %d\n", s);

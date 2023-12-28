@@ -197,20 +197,24 @@ void drawlegend(IMAGECONTENT *ic, const int x, const int y, const short israte)
 
 void drawpercentilelegend(IMAGECONTENT *ic, const int x, const int y, const int mode, const uint64_t percentile)
 {
+	int color;
 	char modetext[6], percentiletext[64];
 
 	if (mode == 0) {
 		snprintf(modetext, 6, "rx");
+		color = ic->crx;
 	} else if (mode == 1) {
 		snprintf(modetext, 6, "tx");
+		color = ic->ctx;
 	} else {
 		snprintf(modetext, 6, "total");
+		color = ic->cpercentile;
 	}
 
 	snprintf(percentiletext, 64, "%-5s    95th percentile: %s", modetext, gettrafficrate(percentile, 300, 0));
 	gdImageString(ic->im, ic->font, x, y, (unsigned char *)percentiletext, ic->ctext);
 
-	gdImageFilledRectangle(ic->im, x - 12 - (ic->large * 2), y + 4, x - 12 + ic->font->w - (ic->large * 2), y + 4 + ic->font->w, ic->cpercentile);
+	gdImageFilledRectangle(ic->im, x - 12 - (ic->large * 2), y + 4, x - 12 + ic->font->w - (ic->large * 2), y + 4 + ic->font->w, color);
 	gdImageRectangle(ic->im, x - 12 - (ic->large * 2), y + 4, x - 12 + ic->font->w - (ic->large * 2), y + 4 + ic->font->w, ic->ctext);
 
 	gdImageFilledRectangle(ic->im, x + 42 + (ic->large * 16), y + 4, x + 42 + ic->font->w + (ic->large * 16), y + 4 + ic->font->w, ic->cpercentileline);
