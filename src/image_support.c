@@ -50,12 +50,10 @@ void imageinit(IMAGECONTENT *ic, const int width, const int height)
 	}
 	ic->clinel = gdImageColorAllocate(ic->im, rgb[0], rgb[1], rgb[2]);
 	colorinitcheck("clinel", ic->clinel, cfg.clinel, rgb);
-
-	// TODO: cleanup
-	hextorgb("CF0045", rgb);
+	hextorgb(cfg.cpercentileline, rgb);
 	if (ic->invert > 0) { invertcolor(rgb); }
 	ic->cpercentileline = gdImageColorAllocate(ic->im, rgb[0], rgb[1], rgb[2]);
-	colorinitcheck("cpercentileline", ic->cpercentileline, "CF0045", rgb);
+	colorinitcheck("cpercentileline", ic->cpercentileline, cfg.cpercentileline, rgb);
 
 	/* background */
 	hextorgb(cfg.cbg, rgb);
@@ -104,11 +102,11 @@ void imageinit(IMAGECONTENT *ic, const int width, const int height)
 	ic->ctxd = gdImageColorAllocate(ic->im, rgb[0], rgb[1], rgb[2]);
 	colorinitcheck("ctxd", ic->ctxd, cfg.ctxd, rgb);
 
-	// TODO: cleanup
-	hextorgb("0098CF", rgb);
+	/* total */
+	hextorgb(cfg.ctotal, rgb);
 	if (ic->invert > 1) { invertcolor(rgb); }
-	ic->cpercentile = gdImageColorAllocate(ic->im, rgb[0], rgb[1], rgb[2]);
-	colorinitcheck("cpercentile", ic->cpercentile, "0098CF", rgb);
+	ic->ctotal = gdImageColorAllocate(ic->im, rgb[0], rgb[1], rgb[2]);
+	colorinitcheck("ctotal", ic->ctotal, cfg.ctotal, rgb);
 }
 
 void colorinitcheck(const char *color, const int value, const char *cfgtext, const int *rgb)
@@ -208,7 +206,7 @@ void drawpercentilelegend(IMAGECONTENT *ic, const int x, const int y, const int 
 		color = ic->ctx;
 	} else {
 		snprintf(modetext, 6, "total");
-		color = ic->cpercentile;
+		color = ic->ctotal;
 	}
 
 	snprintf(percentiletext, 64, "%-5s    95th percentile: %s", modetext, gettrafficrate(percentile, 300, 0));

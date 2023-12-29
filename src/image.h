@@ -16,15 +16,16 @@
 #define FIVEMINWIDTHPADDING 2
 #define FIVEMINEXTRASPACE 78
 
+#define PERCENTILEMINWIDTHFULLPADDING 10
+
 #define SCALEMINPIXELS 25
 
 typedef struct {
 	gdImagePtr im;
 	gdFontPtr font;
 	interfaceinfo interface;
-	int cbackground, cedge, cheader, cheadertitle, cheaderdate, ctext, cline, clinel, cvnstat;
-	int crx, crxd, ctx, ctxd, cbgoffset, cbgoffsetmore, showheader, showedge, showlegend, altdate;
-	int cpercentile, cpercentileline;
+	int cbackground, cedge, cheader, cheadertitle, cheaderdate, ctext, cline, clinel, cpercentileline, cvnstat;
+	int crx, crxd, ctx, ctxd, ctotal, cbgoffset, cbgoffsetmore, showheader, showedge, showlegend, altdate;
 	int lineheight, large, invert;
 	char headertext[65], databegin[18], dataend[18];
 	time_t current;

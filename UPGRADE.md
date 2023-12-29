@@ -1,7 +1,7 @@
 
 # New configuration settings
 
- * 2.12: LiveSpinner
+ * 2.12: CPercentileLine, CTotal, LiveSpinner
 
  * 2.11: InterfaceOrder, VacuumOnStartup, VacuumOnHUPSignal
 

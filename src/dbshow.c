@@ -867,7 +867,6 @@ void showhours(const interfaceinfo *interface)
 	timeused_debug(__func__, 0);
 }
 
-// TODO: image? output below doesn't have much graphics potential, line in 5 minute graph could be one alternative
 // TODO: tests
 void show95thpercentile(const interfaceinfo *interface)
 {
@@ -877,8 +876,8 @@ void show95thpercentile(const interfaceinfo *interface)
 
 	timeused_debug(__func__, 1);
 
-	if (cfg.fiveminutehours < 744) {
-		printf("\nWarning: Configuration \"5MinuteHours\" needs to be at least 744 for 100%% coverage.\n");
+	if (cfg.fiveminutehours < PERCENTILEENTRYCOUNT) {
+		printf("\nWarning: Configuration \"5MinuteHours\" needs to be at least %d for 100%% coverage.\n", PERCENTILEENTRYCOUNT);
 		printf("         \"5MinuteHours\" is currently set at %d.\n\n", cfg.fiveminutehours);
 	}
 
@@ -1155,8 +1154,8 @@ void alertoutput(const alertdata *adata, const AlertOutput output, const AlertTy
 	char datebuff[DATEBUFFLEN], linebuffer[128], buffer[32];
 
 	if (output == AO_Always_Output || (output == AO_Output_On_Estimate && adata->estimateexceeded) || ((output == AO_Output_On_Limit || output == AO_Output_On_Estimate) && adata->limitexceeded)) {
-		if (type == AT_Percentile && cfg.fiveminutehours < 744) {
-			printf("\nWarning: Configuration \"5MinuteHours\" needs to be at least 744 for 100%% coverage.\n");
+		if (type == AT_Percentile && cfg.fiveminutehours < PERCENTILEENTRYCOUNT) {
+			printf("\nWarning: Configuration \"5MinuteHours\" needs to be at least %d for 100%% coverage.\n", PERCENTILEENTRYCOUNT);
 			printf("         \"5MinuteHours\" is currently set at %d.\n\n", cfg.fiveminutehours);
 		}
 

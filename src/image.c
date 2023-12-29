@@ -1124,8 +1124,8 @@ void draw95thpercentilegraph(IMAGECONTENT *ic, const int mode)
 {
 	int imagewidth, imageheight = 300, headermod = 0;
 
-	// TODO: explain this better, 744 bars, 78 extra for layout, should height be more configurable? width is fixed
-	imagewidth = 744 + 78 + (ic->large * 14);
+	/* width needed for all percentile entries + decoration depending on font size */
+	imagewidth = PERCENTILEENTRYCOUNT + 78 + (ic->large * 14);
 
 	if (!ic->showheader) {
 		headermod = 22;
@@ -1137,12 +1137,9 @@ void draw95thpercentilegraph(IMAGECONTENT *ic, const int mode)
 	drawpercentile(ic, mode, 8 + (ic->large * 14), imageheight - 30 - (ic->large * 8), imageheight - 68 + headermod - (ic->large * 8));
 }
 
-// TODO: come up with a better term for "mode" if possible
-// TODO: remove references to FIVEMIN defines
-// TODO: rearrange debug prints
 void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int ypos, const int height)
 {
-	int i, l, x = xpos, y = ypos, s = 0, step = 0, prev = 0, color;
+	int i, l, x = xpos, y = ypos, s = 0, step = 0, prev = 0, last = 0, color;
 	uint64_t scaleunit, max, percentile;
 	double ratediv, percentileratediv;
 	struct tm *d;
@@ -1153,10 +1150,9 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 	percentiledata pdata;
 	gdFontPtr font;
 
-	// TODO: needs to go to stderr?
-	if (cfg.fiveminutehours < 744) {
-		printf("\nWarning: Configuration \"5MinuteHours\" needs to be at least 744 for 100%% coverage.\n");
-		printf("         \"5MinuteHours\" is currently set at %d.\n\n", cfg.fiveminutehours);
+	if (cfg.fiveminutehours < PERCENTILEENTRYCOUNT) {
+		fprintf(stderr, "\nWarning: Configuration \"5MinuteHours\" needs to be at least %d for 100%% coverage.\n", PERCENTILEENTRYCOUNT);
+		fprintf(stderr, "         \"5MinuteHours\" is currently set at %d.\n\n", cfg.fiveminutehours);
 	}
 
 	if (ic->large) {
@@ -1182,9 +1178,8 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 	d = localtime(&pdata.monthbegin);
 	strftime(datebuff, DATEBUFFLEN, "%Y-%m-%d", d);
 
-	// TODO: explain 744
-	if (!db_getdata_range(&datalist, &datainfo, ic->interface.name, "percentile", 744, datebuff, "") || datainfo.count == 0) {
-		gdImageString(ic->im, ic->font, x + (28 * ic->font->w), y + 54 - (ic->large * 18), (unsigned char *)"no percentile data available", ic->ctext);
+	if (!db_getdata_range(&datalist, &datainfo, ic->interface.name, "percentile", PERCENTILEENTRYCOUNT, datebuff, "") || datainfo.count == 0) {
+		gdImageString(ic->im, ic->font, x + 320 - (ic->large * 30), y - 120, (unsigned char *)"no percentile data available", ic->ctext);
 		return;
 	}
 
@@ -1202,7 +1197,7 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 		percentile = pdata.txpercentile;
 		max = (uint64_t)((double)datainfo.maxtx / ratediv);
 	} else {
-		color = ic->cpercentile;
+		color = ic->ctotal;
 		percentile = pdata.sumpercentile;
 		max = (uint64_t)((double)datainfo.max / ratediv);
 	}
@@ -1222,25 +1217,25 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 
 	/* axis */
 	x += 36;
-	gdImageLine(ic->im, x, y, x + (744 + FIVEMINWIDTHFULLPADDING), y, ic->ctext);
+	gdImageLine(ic->im, x, y, x + (PERCENTILEENTRYCOUNT + PERCENTILEMINWIDTHFULLPADDING), y, ic->ctext);
 	gdImageLine(ic->im, x + 4, y + 4, x + 4, y - height, ic->ctext);
 
 	/* arrows */
 	drawarrowup(ic, x + 4, y - 4 - height);
-	drawarrowright(ic, x + 1 + (744 + FIVEMINWIDTHFULLPADDING), y);
+	drawarrowright(ic, x + 1 + (PERCENTILEENTRYCOUNT + PERCENTILEMINWIDTHFULLPADDING), y);
 
 	/* adjust cursor to first point on graph */
 	x += 5;
 	y -= 1;
 
 	for (i = step; i * s <= height; i = i + step) {
-		gdImageDashedLine(ic->im, x, y - (i * s), x + (744 + FIVEMINWIDTHFULLPADDING) - 5, y - (i * s), ic->cline);
-		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + (744 + FIVEMINWIDTHFULLPADDING) - 5, y - prev - (step * s) / 2, ic->clinel);
+		gdImageDashedLine(ic->im, x, y - (i * s), x + (PERCENTILEENTRYCOUNT + PERCENTILEMINWIDTHFULLPADDING) - 5, y - (i * s), ic->cline);
+		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + (PERCENTILEENTRYCOUNT + PERCENTILEMINWIDTHFULLPADDING) - 5, y - prev - (step * s) / 2, ic->clinel);
 		gdImageString(ic->im, font, x - 22 - (ic->large * 3), y - 4 - (i * s) - (ic->large * 3), (unsigned char *)getimagevalue(scaleunit * (unsigned int)i, 3, 1), ic->ctext);
 		prev = i * s;
 	}
 	if ((prev + (step * s) / 2) <= height) {
-		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + (744 + FIVEMINWIDTHFULLPADDING) - 5, y - prev - (step * s) / 2, ic->clinel);
+		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + (PERCENTILEENTRYCOUNT + PERCENTILEMINWIDTHFULLPADDING) - 5, y - prev - (step * s) / 2, ic->clinel);
 	}
 
 	datalist_i = datalist;
@@ -1248,7 +1243,7 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 	prev = 0;
 
 	/* draw data */
-	for (i = 0; i < 744; i++, current += 3600) {
+	for (i = 0; i < PERCENTILEENTRYCOUNT; i++, current += 3600) {
 		if (datalist_i == NULL || current < datalist_i->timestamp) {
 			gdImageSetPixel(ic->im, x + i, y + 1, ic->cbgoffset);
 			if (i >= prev + 24 && i % 24 == 0 && current < pdata.dataend) {
@@ -1276,8 +1271,12 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 		} else {
 			l = (int)lrint(((double)(datalist_i->rx + datalist_i->tx) / (double)ratediv / (double)max) * height);
 		}
+		if (l > height) {
+			l = height;
+		}
 		drawpole(ic, x + i, y, l, 1, color);
 
+		last = i;
 		datalist_i = datalist_i->next;
 	}
 
@@ -1290,10 +1289,7 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 	} else if (l == 0) {
 		l = 1;
 	}
-	gdImageLine(ic->im, x, y - l, x + (744 + FIVEMINWIDTHPADDING), y - l, ic->cpercentileline);
-
-	// TODO: would it look better to draw the percentile line only up to the point where data ends?
-	// TODO: would it look better to end the x axis arrow where the data ends?
+	gdImageLine(ic->im, x, y - l, x + last, y - l, ic->cpercentileline);
 
 	if (debug) {
 		printf("s:   %d\n", s);

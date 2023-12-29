@@ -313,10 +313,15 @@ and most can be changed later from the config file.
 #define CTEXT "000000"
 #define CLINE "B0B0B0"
 #define CLINEL "-"
+#define CPERCENTILELINE "CF0045"
 #define CRX "92CF00"
 #define CRXD "-"
 #define CTX "606060"
 #define CTXD "-"
+#define CTOTAL "0098CF"
+
+/* percentile month entry count */
+#define PERCENTILEENTRYCOUNT 744
 
 /* interface name length limit */
 #define MAXIFLEN 32
@@ -338,7 +343,7 @@ typedef struct {
 	char dbdir[512], dbtzmodifier[14];
 	char rxchar[2], txchar[2], rxhourchar[2], txhourchar[2], estimatetext[10];
 	char cbg[8], cedge[8], cheader[8], cheadertitle[8], cheaderdate[8], ctext[8];
-	char cline[8], clinel[8], cvnstat[8], crx[8], crxd[8], ctx[8], ctxd[8];
+	char cline[8], clinel[8], cpercentileline[8], cvnstat[8], crx[8], crxd[8], ctx[8], ctxd[8], ctotal[8];
 	int32_t unitmode, rateunitmode, rateunit, bvar, qmode, ifacematchmethod, sampletime, hourlyrate, summaryrate;
 	int32_t monthrotate, monthrotateyears, maxbw, spacecheck, trafficlessentries, transbg, ostyle;
 	int32_t defaultdecimals, hourlydecimals, hourlystyle, is64bit, waldb, dbsynchronous, useutc, imagescale;

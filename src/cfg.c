@@ -98,10 +98,12 @@ int loadcfg(const char *cfgfile, const ConfigType type)
 		 {"CText", cfg.ctext, 0, 8, 0},
 		 {"CLine", cfg.cline, 0, 8, 0},
 		 {"CLineL", cfg.clinel, 0, 8, 0},
+		 {"CPercentileLine", cfg.cpercentileline, 0, 8, 0},
 		 {"CRx", cfg.crx, 0, 8, 0},
 		 {"CRxD", cfg.crxd, 0, 8, 0},
 		 {"CTx", cfg.ctx, 0, 8, 0},
 		 {"CTxD", cfg.ctxd, 0, 8, 0},
+		 {"CTotal", cfg.ctotal, 0, 8, 0},
 		 {"Experimental", 0, &cfg.experimental, 0, 0},
 		 {0, 0, 0, 0, 0}};
 
@@ -434,10 +436,12 @@ void defaultcfg(void)
 	strncpy_nt(cfg.ctext, CTEXT, 8);
 	strncpy_nt(cfg.cline, CLINE, 8);
 	strncpy_nt(cfg.clinel, CLINEL, 8);
+	strncpy_nt(cfg.cpercentileline, CPERCENTILELINE, 8);
 	strncpy_nt(cfg.crx, CRX, 8);
 	strncpy_nt(cfg.crxd, CRXD, 8);
 	strncpy_nt(cfg.ctx, CTX, 8);
 	strncpy_nt(cfg.ctxd, CTXD, 8);
+	strncpy_nt(cfg.ctotal, CTOTAL, 8);
 
 	cfg.timestampprints = 0;
 	cfg.experimental = 0;

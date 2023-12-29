@@ -344,6 +344,8 @@ void printcfgfile(void)
 	printf("CLine           \"%s\"\n", cfg.cline);
 	defaultcomment(strcmp(cfg.clinel, CLINEL) == 0);
 	printf("CLineL          \"%s\"\n", cfg.clinel);
+	defaultcomment(strcmp(cfg.cpercentileline, CPERCENTILELINE) == 0);
+	printf("CPercentileLine \"%s\"\n", cfg.cpercentileline);
 	defaultcomment(strcmp(cfg.crx, CRX) == 0);
 	printf("CRx             \"%s\"\n", cfg.crx);
 	defaultcomment(strcmp(cfg.ctx, CTX) == 0);
@@ -352,6 +354,8 @@ void printcfgfile(void)
 	printf("CRxD            \"%s\"\n", cfg.crxd);
 	defaultcomment(strcmp(cfg.ctxd, CTXD) == 0);
 	printf("CTxD            \"%s\"\n", cfg.ctxd);
+	defaultcomment(strcmp(cfg.ctotal, CTOTAL) == 0);
+	printf("CTotal          \"%s\"\n", cfg.ctotal);
 }
 
 void defaultcomment(const int isdefault)
