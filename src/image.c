@@ -1162,8 +1162,8 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 	}
 
 	if (!getpercentiledata(&pdata, ic->interface.name, 0)) {
-		// TODO: can't exit here, nor should this function print things to stdout blindly
-		exit(EXIT_FAILURE);
+		gdImageString(ic->im, ic->font, x + 320 - (ic->large * 30), y - 120, (unsigned char *)"failed to get percentile data", ic->ctext);
+		return;
 	}
 
 	/* hourly/percentile bytes to rate */

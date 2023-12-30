@@ -18,12 +18,14 @@ int getpercentiledata(percentiledata *pdata, const char *iface, const uint64_t u
 	pdata->countsumoveruserlimit = 0;
 
 	if (!db_getdata_range(&datalist, &datainfo, iface, "month", 1, "", "")) {
-		printf("Error: Failed to fetch month data for 95th percentile.\n");
+		snprintf(errorstring, 1024, "Failed to fetch month data for 95th percentile.");
+		printe(PT_Error);
 		return 0;
 	}
 
 	if (!datalist) {
-		printf("No month data for 95th percentile available.\n");
+		snprintf(errorstring, 1024, "No month data for 95th percentile available.");
+		printe(PT_Error);
 		return 0;
 	}
 
@@ -35,12 +37,14 @@ int getpercentiledata(percentiledata *pdata, const char *iface, const uint64_t u
 
 	/* limit query to a maximum of 8928 entries (31 days * 24 hours * 60 minutes / 5 minutes) */
 	if (!db_getdata_range(&datalist, &datainfo, iface, "fiveminute", 8928, datebuff, "")) {
-		printf("Error: Failed to fetch 5 minute data for 95th percentile.\n");
+		snprintf(errorstring, 1024, "Failed to fetch 5 minute data for 95th percentile.");
+		printe(PT_Error);
 		return 0;
 	}
 
 	if (!datalist) {
-		printf("No 5 minute data for 95th percentile available.\n");
+		snprintf(errorstring, 1024, "No 5 minute data for 95th percentile available.");
+		printe(PT_Error);
 		return 0;
 	}
 
@@ -75,7 +79,8 @@ int getpercentiledata(percentiledata *pdata, const char *iface, const uint64_t u
 	datalist_i = datalist;
 	while (datalist_i != NULL) {
 		if (entry >= datainfo.count) {
-			printf("Error: Database query resulted in more data than expected (%" PRIu32 " >= %" PRIu32 ").\n", entry, datainfo.count);
+			snprintf(errorstring, 1024, "Database query resulted in more data than expected (%" PRIu32 " >= %" PRIu32 ").", entry, datainfo.count);
+			printe(PT_Error);
 			free(rxdata);
 			free(txdata);
 			free(sumdata);
@@ -103,7 +108,8 @@ int getpercentiledata(percentiledata *pdata, const char *iface, const uint64_t u
 	}
 
 	if (datainfo.count != entry) {
-		printf("Error: Database query data count doesn't match entry count (%" PRIu32 " != %" PRIu32 ").\n", datainfo.count, entry);
+		snprintf(errorstring, 1024, "Database query data count doesn't match entry count (%" PRIu32 " != %" PRIu32 ").", datainfo.count, entry);
+		printe(PT_Error);
 		free(rxdata);
 		free(txdata);
 		free(sumdata);
