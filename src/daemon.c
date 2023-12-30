@@ -524,9 +524,9 @@ void processdatacache(DSTATE *s)
 
 int initcachevalues(const DSTATE *s, datacache **dc)
 {
-	interfaceinfo info;
+	interfaceinfo ifaceinfo;
 
-	if (!db_getinterfaceinfo((*dc)->interface, &info)) {
+	if (!db_getinterfaceinfo((*dc)->interface, &ifaceinfo)) {
 		return 0;
 	}
 
@@ -534,10 +534,10 @@ int initcachevalues(const DSTATE *s, datacache **dc)
 		(*dc)->currx = 0;
 		(*dc)->curtx = 0;
 	} else {
-		(*dc)->currx = info.rxcounter;
-		(*dc)->curtx = info.txcounter;
+		(*dc)->currx = ifaceinfo.rxcounter;
+		(*dc)->curtx = ifaceinfo.txcounter;
 	}
-	(*dc)->updated = info.updated;
+	(*dc)->updated = ifaceinfo.updated;
 	(*dc)->filled = 1;
 
 	return 1;
@@ -630,7 +630,7 @@ void flushcachetodisk(DSTATE *s)
 	uint32_t logcount = 0;
 	datacache *iterator = s->dcache;
 	xferlog *logiterator;
-	interfaceinfo info;
+	interfaceinfo ifaceinfo;
 
 	timeused(__func__, 1);
 
@@ -678,8 +678,8 @@ void flushcachetodisk(DSTATE *s)
 		if (!s->noremove && !iterator->active && !logcount) {
 			/* throw away if interface hasn't seen any data and is disabled */
 			if (!iterator->currx && !iterator->curtx) {
-				ret = db_getinterfaceinfo(iterator->interface, &info);
-				if (!ret || (!info.rxtotal && !info.txtotal)) {
+				ret = db_getinterfaceinfo(iterator->interface, &ifaceinfo);
+				if (!ret || (!ifaceinfo.rxtotal && !ifaceinfo.txtotal)) {
 					snprintf(errorstring, 1024, "Removing interface \"%s\" from database as it is disabled and has seen no data.", iterator->interface);
 					printe(PT_Info);
 					if (!db_removeinterface(iterator->interface)) {

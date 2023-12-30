@@ -57,13 +57,12 @@ typedef struct alertdata {
 	percentiledata pdata;
 } alertdata;
 
-// TODO: refactor const interfaceinfo to have a different name than const char for better readability
 void showdb(const char *interface, int qmode, const char *databegin, const char *dataend);
-void showsummary(const interfaceinfo *interface, const int shortmode);
-void showlist(const interfaceinfo *interface, const char *listname, const char *databegin, const char *dataend);
-void showoneline(const interfaceinfo *interface);
-void showhours(const interfaceinfo *interface);
-void show95thpercentile(const interfaceinfo *interface);
+void showsummary(const interfaceinfo *ifaceinfo, const int shortmode);
+void showlist(const interfaceinfo *ifaceinfo, const char *listname, const char *databegin, const char *dataend);
+void showoneline(const interfaceinfo *ifaceinfo);
+void showhours(const interfaceinfo *ifaceinfo);
+void show95thpercentile(const interfaceinfo *ifaceinfo);
 void showpercentiledatatable(const percentiledata *pdata, const int indentation, const int visible95th);
 int showbar(const uint64_t rx, const uint64_t tx, const uint64_t max, const int len);
 int showalert(const char *interface, const AlertOutput output, const AlertExit aexit, const AlertType type, const AlertCondition condition, const uint64_t limit);

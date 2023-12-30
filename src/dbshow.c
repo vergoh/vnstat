@@ -5,59 +5,59 @@
 
 void showdb(const char *interface, int qmode, const char *databegin, const char *dataend)
 {
-	interfaceinfo info;
+	interfaceinfo ifaceinfo;
 	char timestamp[22];
 
 	if (!db_getinterfacecountbyname(interface)) {
 		exit(EXIT_FAILURE);
 	}
 
-	if (!db_getinterfaceinfo(interface, &info)) {
+	if (!db_getinterfaceinfo(interface, &ifaceinfo)) {
 		exit(EXIT_FAILURE);
 	}
 
-	if (info.created == info.updated) {
-		strftime(timestamp, 22, DATETIMEFORMAT, localtime(&info.updated));
+	if (ifaceinfo.created == ifaceinfo.updated) {
+		strftime(timestamp, 22, DATETIMEFORMAT, localtime(&ifaceinfo.updated));
 		printf(" %s: No data. Timestamp of last update is same %s as of database creation.\n", interface, timestamp);
 		return;
 	}
 
 	switch (qmode) {
 		case 0:
-			showsummary(&info, 0);
+			showsummary(&ifaceinfo, 0);
 			break;
 		case 1:
-			showlist(&info, "day", databegin, dataend);
+			showlist(&ifaceinfo, "day", databegin, dataend);
 			break;
 		case 2:
-			showlist(&info, "month", databegin, dataend);
+			showlist(&ifaceinfo, "month", databegin, dataend);
 			break;
 		case 3:
-			showlist(&info, "top", databegin, dataend);
+			showlist(&ifaceinfo, "top", databegin, dataend);
 			break;
 		case 4:
-			showsummary(&info, 0);
+			showsummary(&ifaceinfo, 0);
 			break;
 		case 5:
-			showsummary(&info, 1);
+			showsummary(&ifaceinfo, 1);
 			break;
 		case 6:
-			showlist(&info, "year", databegin, dataend);
+			showlist(&ifaceinfo, "year", databegin, dataend);
 			break;
 		case 7:
-			showhours(&info);
+			showhours(&ifaceinfo);
 			break;
 		case 9:
-			showoneline(&info);
+			showoneline(&ifaceinfo);
 			break;
 		case 11:
-			showlist(&info, "hour", databegin, dataend);
+			showlist(&ifaceinfo, "hour", databegin, dataend);
 			break;
 		case 12:
-			showlist(&info, "fiveminute", databegin, dataend);
+			showlist(&ifaceinfo, "fiveminute", databegin, dataend);
 			break;
 		case 13:
-			show95thpercentile(&info);
+			show95thpercentile(&ifaceinfo);
 			break;
 		default:
 			printf("Error: Not such query mode: %d\n", qmode);
@@ -65,7 +65,7 @@ void showdb(const char *interface, int qmode, const char *databegin, const char 
 	}
 }
 
-void showsummary(const interfaceinfo *interface, const int shortmode)
+void showsummary(const interfaceinfo *ifaceinfo, const int shortmode)
 {
 	struct tm *d;
 	char datebuff[DATEBUFFLEN];
@@ -81,8 +81,8 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 	current = time(NULL);
 	yesterday = current - 86400;
 
-	if (interface->updated && !shortmode) {
-		strftime(datebuff, DATEBUFFLEN, DATETIMEFORMAT, localtime(&interface->updated));
+	if (ifaceinfo->updated && !shortmode) {
+		strftime(datebuff, DATEBUFFLEN, DATETIMEFORMAT, localtime(&ifaceinfo->updated));
 		printf("Database updated: %s\n\n", datebuff);
 	} else if (!shortmode) {
 		printf("\n");
@@ -95,19 +95,19 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 		snprintf(fieldseparator, 8, "  / ");
 		indent(1);
 	}
-	if (strcmp(interface->name, interface->alias) == 0 || strlen(interface->alias) == 0) {
-		printf("%s", interface->name);
+	if (strcmp(ifaceinfo->name, ifaceinfo->alias) == 0 || strlen(ifaceinfo->alias) == 0) {
+		printf("%s", ifaceinfo->name);
 	} else {
-		printf("%s (%s)", interface->alias, interface->name);
+		printf("%s (%s)", ifaceinfo->alias, ifaceinfo->name);
 	}
-	if (interface->active == 0) {
+	if (ifaceinfo->active == 0) {
 		printf(" [disabled]");
 	}
 	if (shortmode) {
 		printf(":\n");
 	} else {
 		/* get formatted date for creation date */
-		d = localtime(&interface->created);
+		d = localtime(&ifaceinfo->created);
 		strftime(datebuff, DATEBUFFLEN, cfg.tformat, d);
 		printf(" since %s\n\n", datebuff);
 
@@ -116,11 +116,11 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 		} else {
 			indent(10);
 		}
-		printf("rx:  %s", getvalue(interface->rxtotal, 1, RT_Normal));
+		printf("rx:  %s", getvalue(ifaceinfo->rxtotal, 1, RT_Normal));
 		indent(3);
-		printf("   tx:  %s", getvalue(interface->txtotal, 1, RT_Normal));
+		printf("   tx:  %s", getvalue(ifaceinfo->txtotal, 1, RT_Normal));
 		indent(3);
-		printf("   total:  %s\n\n", getvalue(interface->rxtotal + interface->txtotal, 1, RT_Normal));
+		printf("   total:  %s\n\n", getvalue(ifaceinfo->rxtotal + ifaceinfo->txtotal, 1, RT_Normal));
 
 		indent(3);
 		printf("monthly\n");
@@ -137,7 +137,7 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 		}
 	}
 
-	if (!db_getdata(&datalist, &datainfo, interface->name, "month", 2)) {
+	if (!db_getdata(&datalist, &datainfo, ifaceinfo->name, "month", 2)) {
 		printf("Error: Failed to fetch month data.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -155,16 +155,16 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 		}
 		printf("%s%s", fieldseparator, getvalue(datalist_i->tx, 11, RT_Normal));
 		printf("%s%s", fieldseparator, getvalue(datalist_i->rx + datalist_i->tx, 11, RT_Normal));
-		if (datalist_i->next == NULL && issametimeslot(LT_Month, datalist_i->timestamp, interface->updated)) {
-			if (datalist_i->rx == 0 || datalist_i->tx == 0 || (interface->updated - datalist_i->timestamp) == 0) {
+		if (datalist_i->next == NULL && issametimeslot(LT_Month, datalist_i->timestamp, ifaceinfo->updated)) {
+			if (datalist_i->rx == 0 || datalist_i->tx == 0 || (ifaceinfo->updated - datalist_i->timestamp) == 0) {
 				e_rx = e_tx = 0;
 			} else if (cfg.estimatevisible) {
-				getestimates(&e_rx, &e_tx, LT_Month, interface->updated, interface->created, &datalist);
+				getestimates(&e_rx, &e_tx, LT_Month, ifaceinfo->updated, ifaceinfo->created, &datalist);
 			}
 			if (shortmode && cfg.ostyle != 0 && cfg.estimatevisible) {
 				printf("%s%s", fieldseparator, getvalue(e_rx + e_tx, 11, RT_Estimate));
 			} else if (!shortmode && cfg.ostyle >= 2) {
-				printf("%s%s", fieldseparator, gettrafficrate(datalist_i->rx + datalist_i->tx, (time_t)getperiodseconds(LT_Month, datalist_i->timestamp, interface->updated, interface->created, 1), 14));
+				printf("%s%s", fieldseparator, gettrafficrate(datalist_i->rx + datalist_i->tx, (time_t)getperiodseconds(LT_Month, datalist_i->timestamp, ifaceinfo->updated, ifaceinfo->created, 1), 14));
 			}
 		} else if (!shortmode && cfg.ostyle >= 2) {
 			printf(" | %s", gettrafficrate(datalist_i->rx + datalist_i->tx, dmonth(d->tm_mon) * 86400, 14));
@@ -223,7 +223,7 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 	d = localtime(&yesterday);
 	strftime(yesterdaystr, DATEBUFFLEN, cfg.dformat, d);
 
-	if (!db_getdata(&datalist, &datainfo, interface->name, "day", 2)) {
+	if (!db_getdata(&datalist, &datainfo, ifaceinfo->name, "day", 2)) {
 		printf("Error: Failed to fetch day data.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -247,8 +247,8 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 		}
 		printf("%s%s", fieldseparator, getvalue(datalist_i->tx, 11, RT_Normal));
 		printf("%s%s", fieldseparator, getvalue(datalist_i->rx + datalist_i->tx, 11, RT_Normal));
-		if (datalist_i->next == NULL && issametimeslot(LT_Day, datalist_i->timestamp, interface->updated)) {
-			d = localtime(&interface->updated);
+		if (datalist_i->next == NULL && issametimeslot(LT_Day, datalist_i->timestamp, ifaceinfo->updated)) {
+			d = localtime(&ifaceinfo->updated);
 			if (datalist_i->rx == 0 || datalist_i->tx == 0 || (d->tm_hour * 60 + d->tm_min) == 0) {
 				e_rx = e_tx = 0;
 			} else if (cfg.estimatevisible) {
@@ -258,7 +258,7 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 			if (shortmode && cfg.ostyle != 0 && cfg.estimatevisible) {
 				printf("%s%s", fieldseparator, getvalue(e_rx + e_tx, 11, RT_Estimate));
 			} else if (!shortmode && cfg.ostyle >= 2) {
-				printf("%s%s", fieldseparator, gettrafficrate(datalist_i->rx + datalist_i->tx, (time_t)getperiodseconds(LT_Day, datalist_i->timestamp, interface->updated, interface->created, 1), 14));
+				printf("%s%s", fieldseparator, gettrafficrate(datalist_i->rx + datalist_i->tx, (time_t)getperiodseconds(LT_Day, datalist_i->timestamp, ifaceinfo->updated, ifaceinfo->created, 1), 14));
 			}
 		} else if (!shortmode && cfg.ostyle >= 2) {
 			printf(" | %s", gettrafficrate(datalist_i->rx + datalist_i->tx, 86400, 14));
@@ -297,7 +297,7 @@ void showsummary(const interfaceinfo *interface, const int shortmode)
 	timeused_debug(__func__, 0);
 }
 
-void showlist(const interfaceinfo *interface, const char *listname, const char *databegin, const char *dataend)
+void showlist(const interfaceinfo *ifaceinfo, const char *listname, const char *databegin, const char *dataend)
 {
 	int32_t limit, retention;
 	ListType listtype = LT_None;
@@ -366,7 +366,7 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 
 	daybuff[0] = '\0';
 
-	if (!db_getdata_range(&datalist, &datainfo, interface->name, listname, (uint32_t)limit, databegin, dataend)) {
+	if (!db_getdata_range(&datalist, &datainfo, ifaceinfo->name, listname, (uint32_t)limit, databegin, dataend)) {
 		printf("Error: Failed to fetch %s data.\n", titlename);
 		exit(EXIT_FAILURE);
 	}
@@ -387,7 +387,7 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 
 	if (strlen(dataend) == 0 && datainfo.count > 0 && (listtype == LT_Day || listtype == LT_Month || listtype == LT_Year) && cfg.estimatevisible) {
 		estimatevisible = 1;
-		getestimates(&e_rx, &e_tx, listtype, interface->updated, interface->created, &datalist);
+		getestimates(&e_rx, &e_tx, listtype, ifaceinfo->updated, ifaceinfo->created, &datalist);
 		if (cfg.estimatebarvisible && e_rx + e_tx > datainfo.max) {
 			datainfo.max = e_rx + e_tx;
 		}
@@ -408,12 +408,12 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 	}
 
 	printf("\n");
-	if (strcmp(interface->name, interface->alias) == 0 || strlen(interface->alias) == 0) {
-		printf(" %s", interface->name);
+	if (strcmp(ifaceinfo->name, ifaceinfo->alias) == 0 || strlen(ifaceinfo->alias) == 0) {
+		printf(" %s", ifaceinfo->name);
 	} else {
-		printf(" %s (%s)", interface->alias, interface->name);
+		printf(" %s (%s)", ifaceinfo->alias, ifaceinfo->name);
 	}
-	if (interface->active == 0) {
+	if (ifaceinfo->active == 0) {
 		printf(" [disabled]");
 	}
 	printf("  /  %s", titlename);
@@ -500,10 +500,10 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 		printf(" | %s", getvalue(datalist_i->tx, 11, RT_Normal));
 		printf(" | %s", getvalue(datalist_i->rx + datalist_i->tx, 11, RT_Normal));
 		if (cfg.ostyle == 3) {
-			if (datalist_i->next == NULL && issametimeslot(listtype, datalist_i->timestamp, interface->updated)) {
-				e_secs = getperiodseconds(listtype, datalist_i->timestamp, interface->updated, interface->created, 1);
+			if (datalist_i->next == NULL && issametimeslot(listtype, datalist_i->timestamp, ifaceinfo->updated)) {
+				e_secs = getperiodseconds(listtype, datalist_i->timestamp, ifaceinfo->updated, ifaceinfo->created, 1);
 			} else {
-				e_secs = getperiodseconds(listtype, datalist_i->timestamp, interface->updated, interface->created, 0);
+				e_secs = getperiodseconds(listtype, datalist_i->timestamp, ifaceinfo->updated, ifaceinfo->created, 0);
 			}
 			printf(" | %s", gettrafficrate(datalist_i->rx + datalist_i->tx, (time_t)e_secs, 14));
 		} else if (cfg.ostyle != 0) {
@@ -582,7 +582,7 @@ void showlist(const interfaceinfo *interface, const char *listname, const char *
 	timeused_debug(__func__, 0);
 }
 
-void showoneline(const interfaceinfo *interface)
+void showoneline(const interfaceinfo *ifaceinfo)
 {
 	struct tm *d;
 	char daytemp[DATEBUFFLEN];
@@ -596,17 +596,17 @@ void showoneline(const interfaceinfo *interface)
 	printf("%d;", ONELINEVERSION);
 
 	/* interface name */
-	if (strcmp(interface->name, interface->alias) == 0 || strlen(interface->alias) == 0) {
-		printf("%s", interface->name);
+	if (strcmp(ifaceinfo->name, ifaceinfo->alias) == 0 || strlen(ifaceinfo->alias) == 0) {
+		printf("%s", ifaceinfo->name);
 	} else {
-		printf("%s (%s)", interface->alias, interface->name);
+		printf("%s (%s)", ifaceinfo->alias, ifaceinfo->name);
 	}
-	if (interface->active == 0) {
+	if (ifaceinfo->active == 0) {
 		printf(" [disabled]");
 	}
 	printf(";");
 
-	if (!db_getdata(&datalist, &datainfo, interface->name, "day", 1)) {
+	if (!db_getdata(&datalist, &datainfo, ifaceinfo->name, "day", 1)) {
 		printf("\nError: Failed to fetch day data.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -621,7 +621,7 @@ void showoneline(const interfaceinfo *interface)
 			printf("%" PRIu64 ";", datalist->rx);
 			printf("%" PRIu64 ";", datalist->tx);
 			printf("%" PRIu64 ";", datalist->rx + datalist->tx);
-			div = getperiodseconds(LT_Day, datalist->timestamp, interface->updated, interface->created, 1);
+			div = getperiodseconds(LT_Day, datalist->timestamp, ifaceinfo->updated, ifaceinfo->created, 1);
 			if (!div) {
 				div = 1;
 			}
@@ -630,14 +630,14 @@ void showoneline(const interfaceinfo *interface)
 			printf("%s;", getvalue(datalist->rx, 1, RT_Normal));
 			printf("%s;", getvalue(datalist->tx, 1, RT_Normal));
 			printf("%s;", getvalue(datalist->rx + datalist->tx, 1, RT_Normal));
-			printf("%s;", gettrafficrate(datalist->rx + datalist->tx, (time_t)getperiodseconds(LT_Day, datalist->timestamp, interface->updated, interface->created, 1), 1));
+			printf("%s;", gettrafficrate(datalist->rx + datalist->tx, (time_t)getperiodseconds(LT_Day, datalist->timestamp, ifaceinfo->updated, ifaceinfo->created, 1), 1));
 		}
 	} else {
 		printf(";;;;;");
 	}
 	dbdatalistfree(&datalist);
 
-	if (!db_getdata(&datalist, &datainfo, interface->name, "month", 1)) {
+	if (!db_getdata(&datalist, &datainfo, ifaceinfo->name, "month", 1)) {
 		printf("\nError: Failed to fetch month data.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -652,7 +652,7 @@ void showoneline(const interfaceinfo *interface)
 			printf("%" PRIu64 ";", datalist->rx);
 			printf("%" PRIu64 ";", datalist->tx);
 			printf("%" PRIu64 ";", datalist->rx + datalist->tx);
-			div = getperiodseconds(LT_Month, datalist->timestamp, interface->updated, interface->created, 1);
+			div = getperiodseconds(LT_Month, datalist->timestamp, ifaceinfo->updated, ifaceinfo->created, 1);
 			if (!div) {
 				div = 1;
 			}
@@ -661,7 +661,7 @@ void showoneline(const interfaceinfo *interface)
 			printf("%s;", getvalue(datalist->rx, 1, RT_Normal));
 			printf("%s;", getvalue(datalist->tx, 1, RT_Normal));
 			printf("%s;", getvalue(datalist->rx + datalist->tx, 1, RT_Normal));
-			printf("%s;", gettrafficrate(datalist->rx + datalist->tx, (time_t)getperiodseconds(LT_Month, datalist->timestamp, interface->updated, interface->created, 1), 1));
+			printf("%s;", gettrafficrate(datalist->rx + datalist->tx, (time_t)getperiodseconds(LT_Month, datalist->timestamp, ifaceinfo->updated, ifaceinfo->created, 1), 1));
 		}
 	} else {
 		printf(";;;;;");
@@ -670,18 +670,18 @@ void showoneline(const interfaceinfo *interface)
 
 	/* all time total */
 	if (cfg.ostyle == 4) {
-		printf("%" PRIu64 ";", interface->rxtotal);
-		printf("%" PRIu64 ";", interface->txtotal);
-		printf("%" PRIu64 "\n", interface->rxtotal + interface->txtotal);
+		printf("%" PRIu64 ";", ifaceinfo->rxtotal);
+		printf("%" PRIu64 ";", ifaceinfo->txtotal);
+		printf("%" PRIu64 "\n", ifaceinfo->rxtotal + ifaceinfo->txtotal);
 	} else {
-		printf("%s;", getvalue(interface->rxtotal, 1, RT_Normal));
-		printf("%s;", getvalue(interface->txtotal, 1, RT_Normal));
-		printf("%s\n", getvalue(interface->rxtotal + interface->txtotal, 1, RT_Normal));
+		printf("%s;", getvalue(ifaceinfo->rxtotal, 1, RT_Normal));
+		printf("%s;", getvalue(ifaceinfo->txtotal, 1, RT_Normal));
+		printf("%s\n", getvalue(ifaceinfo->rxtotal + ifaceinfo->txtotal, 1, RT_Normal));
 	}
 	timeused_debug(__func__, 0);
 }
 
-void showhours(const interfaceinfo *interface)
+void showhours(const interfaceinfo *ifaceinfo)
 {
 	int i, s = 0, hour, minute, declen = cfg.hourlydecimals, div = 1;
 	unsigned int j, k, tmax = 0, dots = 0;
@@ -700,7 +700,7 @@ void showhours(const interfaceinfo *interface)
 		hourdata[i].date = 0;
 	}
 
-	if (!db_getdata(&datalist, &datainfo, interface->name, "hour", 24)) {
+	if (!db_getdata(&datalist, &datainfo, ifaceinfo->name, "hour", 24)) {
 		printf("Error: Failed to fetch hour data.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -713,7 +713,7 @@ void showhours(const interfaceinfo *interface)
 
 	while (datalist_i != NULL) {
 		d = localtime(&datalist_i->timestamp);
-		if (hourdata[d->tm_hour].date != 0 || interface->updated - datalist_i->timestamp > 86400) {
+		if (hourdata[d->tm_hour].date != 0 || ifaceinfo->updated - datalist_i->timestamp > 86400) {
 			datalist_i = datalist_i->next;
 			continue;
 		}
@@ -727,7 +727,7 @@ void showhours(const interfaceinfo *interface)
 	/* tmax = time max = current hour */
 	/* max = transfer max */
 
-	d = localtime(&interface->updated);
+	d = localtime(&ifaceinfo->updated);
 	hour = d->tm_hour;
 	minute = d->tm_min;
 
@@ -774,12 +774,12 @@ void showhours(const interfaceinfo *interface)
 	matrix[12][2] = '|';
 
 	/* title */
-	if (strcmp(interface->name, interface->alias) == 0 || strlen(interface->alias) == 0) {
-		i = snprintf(matrix[0], 81, " %s", interface->name);
+	if (strcmp(ifaceinfo->name, ifaceinfo->alias) == 0 || strlen(ifaceinfo->alias) == 0) {
+		i = snprintf(matrix[0], 81, " %s", ifaceinfo->name);
 	} else {
-		i = snprintf(matrix[0], 81, " %s (%s)", interface->alias, interface->name);
+		i = snprintf(matrix[0], 81, " %s (%s)", ifaceinfo->alias, ifaceinfo->name);
 	}
-	if (interface->active == 0) {
+	if (ifaceinfo->active == 0) {
 		snprintf(matrix[0] + i + 1, 81, " [disabled]");
 	}
 
@@ -868,7 +868,7 @@ void showhours(const interfaceinfo *interface)
 }
 
 // TODO: tests
-void show95thpercentile(const interfaceinfo *interface)
+void show95thpercentile(const interfaceinfo *ifaceinfo)
 {
 	struct tm *d;
 	char datebuff[DATEBUFFLEN];
@@ -881,18 +881,18 @@ void show95thpercentile(const interfaceinfo *interface)
 		printf("         \"5MinuteHours\" is currently set at %d.\n\n", cfg.fiveminutehours);
 	}
 
-	if (!getpercentiledata(&pdata, interface->name, 0)) {
+	if (!getpercentiledata(&pdata, ifaceinfo->name, 0)) {
 		exit(EXIT_FAILURE);
 	}
 
 	printf("\n");
 	indent(1);
-	if (strcmp(interface->name, interface->alias) == 0 || strlen(interface->alias) == 0) {
-		printf("%s", interface->name);
+	if (strcmp(ifaceinfo->name, ifaceinfo->alias) == 0 || strlen(ifaceinfo->alias) == 0) {
+		printf("%s", ifaceinfo->name);
 	} else {
-		printf("%s (%s)", interface->alias, interface->name);
+		printf("%s (%s)", ifaceinfo->alias, ifaceinfo->name);
 	}
-	if (interface->active == 0) {
+	if (ifaceinfo->active == 0) {
 		printf(" [disabled]");
 	}
 	printf("  /  95th percentile\n\n");

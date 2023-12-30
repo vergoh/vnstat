@@ -3,7 +3,7 @@
 
 void showjson(const char *interface, const int ifcount, const char mode, const char *databegin, const char *dataend)
 {
-	interfaceinfo info;
+	interfaceinfo ifaceinfo;
 
 	timeused_debug(__func__, 1);
 
@@ -11,7 +11,7 @@ void showjson(const char *interface, const int ifcount, const char mode, const c
 		exit(EXIT_FAILURE);
 	}
 
-	if (!db_getinterfaceinfo(interface, &info)) {
+	if (!db_getinterfaceinfo(interface, &ifaceinfo)) {
 		exit(EXIT_FAILURE);
 	}
 
@@ -20,61 +20,61 @@ void showjson(const char *interface, const int ifcount, const char mode, const c
 	}
 
 	printf("{");
-	jsoninterfaceinfo(&info);
+	jsoninterfaceinfo(&ifaceinfo);
 
 	if (mode == 'p') {
-		jsonpercentile(&info);
+		jsonpercentile(&ifaceinfo);
 		printf("}");
 		timeused_debug(__func__, 0);
 		return;
 	}
 
 	printf("\"traffic\":");
-	printf("{\"total\":{\"rx\":%" PRIu64 ",\"tx\":%" PRIu64 "},", info.rxtotal, info.txtotal);
+	printf("{\"total\":{\"rx\":%" PRIu64 ",\"tx\":%" PRIu64 "},", ifaceinfo.rxtotal, ifaceinfo.txtotal);
 
 	switch (mode) {
 		case 'd':
-			jsondump(&info, "day", 1, databegin, dataend);
+			jsondump(&ifaceinfo, "day", 1, databegin, dataend);
 			break;
 		case 'm':
-			jsondump(&info, "month", 3, databegin, dataend);
+			jsondump(&ifaceinfo, "month", 3, databegin, dataend);
 			break;
 		case 't':
-			jsondump(&info, "top", 1, databegin, dataend);
+			jsondump(&ifaceinfo, "top", 1, databegin, dataend);
 			break;
 		case 'h':
-			jsondump(&info, "hour", 2, databegin, dataend);
+			jsondump(&ifaceinfo, "hour", 2, databegin, dataend);
 			break;
 		case 'y':
-			jsondump(&info, "year", 4, databegin, dataend);
+			jsondump(&ifaceinfo, "year", 4, databegin, dataend);
 			break;
 		case 'f':
-			jsondump(&info, "fiveminute", 2, databegin, dataend);
+			jsondump(&ifaceinfo, "fiveminute", 2, databegin, dataend);
 			break;
 		case 's':
-			jsondump(&info, "fiveminute", 2, "", "");
+			jsondump(&ifaceinfo, "fiveminute", 2, "", "");
 			printf(",");
-			jsondump(&info, "hour", 2, "", "");
+			jsondump(&ifaceinfo, "hour", 2, "", "");
 			printf(",");
-			jsondump(&info, "day", 1, "", "");
+			jsondump(&ifaceinfo, "day", 1, "", "");
 			printf(",");
-			jsondump(&info, "month", 3, "", "");
+			jsondump(&ifaceinfo, "month", 3, "", "");
 			printf(",");
-			jsondump(&info, "year", 4, "", "");
+			jsondump(&ifaceinfo, "year", 4, "", "");
 			break;
 		case 'a':
 		default:
-			jsondump(&info, "fiveminute", 2, databegin, dataend);
+			jsondump(&ifaceinfo, "fiveminute", 2, databegin, dataend);
 			printf(",");
-			jsondump(&info, "hour", 2, databegin, dataend);
+			jsondump(&ifaceinfo, "hour", 2, databegin, dataend);
 			printf(",");
-			jsondump(&info, "day", 1, databegin, dataend);
+			jsondump(&ifaceinfo, "day", 1, databegin, dataend);
 			printf(",");
-			jsondump(&info, "month", 3, databegin, dataend);
+			jsondump(&ifaceinfo, "month", 3, databegin, dataend);
 			printf(",");
-			jsondump(&info, "year", 4, databegin, dataend);
+			jsondump(&ifaceinfo, "year", 4, databegin, dataend);
 			printf(",");
-			jsondump(&info, "top", 1, databegin, dataend);
+			jsondump(&ifaceinfo, "top", 1, databegin, dataend);
 			break;
 	}
 
@@ -83,13 +83,13 @@ void showjson(const char *interface, const int ifcount, const char mode, const c
 	timeused_debug(__func__, 0);
 }
 
-void jsondump(const interfaceinfo *interface, const char *tablename, const int datetype, const char *databegin, const char *dataend)
+void jsondump(const interfaceinfo *ifaceinfo, const char *tablename, const int datetype, const char *databegin, const char *dataend)
 {
 	int first = 1;
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
 
-	if (!db_getdata_range(&datalist, &datainfo, interface->name, tablename, (uint32_t)cfg.listjsonxml, databegin, dataend)) {
+	if (!db_getdata_range(&datalist, &datainfo, ifaceinfo->name, tablename, (uint32_t)cfg.listjsonxml, databegin, dataend)) {
 		printf("Error: Failed to fetch %s data.\n", tablename);
 		exit(EXIT_FAILURE);
 	}
@@ -111,11 +111,11 @@ void jsondump(const interfaceinfo *interface, const char *tablename, const int d
 	printf("]");
 }
 
-void jsonpercentile(const interfaceinfo *interface)
+void jsonpercentile(const interfaceinfo *ifaceinfo)
 {
 	percentiledata pdata;
 
-	if (!getpercentiledata(&pdata, interface->name, 0)) {
+	if (!getpercentiledata(&pdata, ifaceinfo->name, 0)) {
 		exit(EXIT_FAILURE);
 	}
 
@@ -329,16 +329,16 @@ void jsonpercentilealert(const alertdata *adata, const AlertCondition condition,
 	printf("}");
 }
 
-void jsoninterfaceinfo(const interfaceinfo *info)
+void jsoninterfaceinfo(const interfaceinfo *ifaceinfo)
 {
-	printf("\"name\":\"%s\",", info->name);
-	printf("\"alias\":\"%s\",", info->alias);
+	printf("\"name\":\"%s\",", ifaceinfo->name);
+	printf("\"alias\":\"%s\",", ifaceinfo->alias);
 
 	printf("\"created\":{");
-	jsondate(&info->created, 1);
+	jsondate(&ifaceinfo->created, 1);
 	printf("},");
 	printf("\"updated\":{");
-	jsondate(&info->updated, 2);
+	jsondate(&ifaceinfo->updated, 2);
 	printf("},");
 }
 

@@ -5,7 +5,7 @@
 
 void showxml(const char *interface, const char mode, const char *databegin, const char *dataend)
 {
-	interfaceinfo info;
+	interfaceinfo ifaceinfo;
 
 	timeused_debug(__func__, 1);
 
@@ -13,66 +13,66 @@ void showxml(const char *interface, const char mode, const char *databegin, cons
 		exit(EXIT_FAILURE);
 	}
 
-	if (!db_getinterfaceinfo(interface, &info)) {
+	if (!db_getinterfaceinfo(interface, &ifaceinfo)) {
 		exit(EXIT_FAILURE);
 	}
 
-	printf(" <interface name=\"%s\">\n", info.name);
+	printf(" <interface name=\"%s\">\n", ifaceinfo.name);
 
-	printf("  <name>%s</name>\n", info.name);
-	printf("  <alias>%s</alias>\n", info.alias);
+	printf("  <name>%s</name>\n", ifaceinfo.name);
+	printf("  <alias>%s</alias>\n", ifaceinfo.alias);
 
 	printf("  <created>");
-	xmldate(&info.created, 1);
+	xmldate(&ifaceinfo.created, 1);
 	printf("</created>\n");
 	printf("  <updated>");
-	xmldate(&info.updated, 2);
+	xmldate(&ifaceinfo.updated, 2);
 	printf("</updated>\n");
 
 	if (mode == 'p') {
-		xmlpercentile(&info);
+		xmlpercentile(&ifaceinfo);
 		printf(" </interface>\n");
 		timeused_debug(__func__, 0);
 		return;
 	}
 
 	printf("  <traffic>\n");
-	printf("   <total><rx>%" PRIu64 "</rx><tx>%" PRIu64 "</tx></total>\n", info.rxtotal, info.txtotal);
+	printf("   <total><rx>%" PRIu64 "</rx><tx>%" PRIu64 "</tx></total>\n", ifaceinfo.rxtotal, ifaceinfo.txtotal);
 
 	switch (mode) {
 		case 'd':
-			xmldump(&info, "day", 1, databegin, dataend);
+			xmldump(&ifaceinfo, "day", 1, databegin, dataend);
 			break;
 		case 'm':
-			xmldump(&info, "month", 3, databegin, dataend);
+			xmldump(&ifaceinfo, "month", 3, databegin, dataend);
 			break;
 		case 't':
-			xmldump(&info, "top", 1, databegin, dataend);
+			xmldump(&ifaceinfo, "top", 1, databegin, dataend);
 			break;
 		case 'h':
-			xmldump(&info, "hour", 2, databegin, dataend);
+			xmldump(&ifaceinfo, "hour", 2, databegin, dataend);
 			break;
 		case 'y':
-			xmldump(&info, "year", 4, databegin, dataend);
+			xmldump(&ifaceinfo, "year", 4, databegin, dataend);
 			break;
 		case 'f':
-			xmldump(&info, "fiveminute", 2, databegin, dataend);
+			xmldump(&ifaceinfo, "fiveminute", 2, databegin, dataend);
 			break;
 		case 's':
-			xmldump(&info, "fiveminute", 2, "", "");
-			xmldump(&info, "hour", 2, "", "");
-			xmldump(&info, "day", 1, "", "");
-			xmldump(&info, "month", 3, "", "");
-			xmldump(&info, "year", 2, "", "");
+			xmldump(&ifaceinfo, "fiveminute", 2, "", "");
+			xmldump(&ifaceinfo, "hour", 2, "", "");
+			xmldump(&ifaceinfo, "day", 1, "", "");
+			xmldump(&ifaceinfo, "month", 3, "", "");
+			xmldump(&ifaceinfo, "year", 2, "", "");
 			break;
 		case 'a':
 		default:
-			xmldump(&info, "fiveminute", 2, databegin, dataend);
-			xmldump(&info, "hour", 2, databegin, dataend);
-			xmldump(&info, "day", 1, databegin, dataend);
-			xmldump(&info, "month", 3, databegin, dataend);
-			xmldump(&info, "year", 2, databegin, dataend);
-			xmldump(&info, "top", 1, databegin, dataend);
+			xmldump(&ifaceinfo, "fiveminute", 2, databegin, dataend);
+			xmldump(&ifaceinfo, "hour", 2, databegin, dataend);
+			xmldump(&ifaceinfo, "day", 1, databegin, dataend);
+			xmldump(&ifaceinfo, "month", 3, databegin, dataend);
+			xmldump(&ifaceinfo, "year", 2, databegin, dataend);
+			xmldump(&ifaceinfo, "top", 1, databegin, dataend);
 			break;
 	}
 
@@ -82,12 +82,12 @@ void showxml(const char *interface, const char mode, const char *databegin, cons
 	timeused_debug(__func__, 0);
 }
 
-void xmldump(const interfaceinfo *interface, const char *tablename, const int datetype, const char *databegin, const char *dataend)
+void xmldump(const interfaceinfo *ifaceinfo, const char *tablename, const int datetype, const char *databegin, const char *dataend)
 {
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
 
-	if (!db_getdata_range(&datalist, &datainfo, interface->name, tablename, (uint32_t)cfg.listjsonxml, databegin, dataend)) {
+	if (!db_getdata_range(&datalist, &datainfo, ifaceinfo->name, tablename, (uint32_t)cfg.listjsonxml, databegin, dataend)) {
 		printf("Error: Failed to fetch %s data.\n", tablename);
 		exit(EXIT_FAILURE);
 	}
@@ -104,11 +104,11 @@ void xmldump(const interfaceinfo *interface, const char *tablename, const int da
 	printf("   </%ss>\n", tablename);
 }
 
-void xmlpercentile(const interfaceinfo *interface)
+void xmlpercentile(const interfaceinfo *ifaceinfo)
 {
 	percentiledata pdata;
 
-	if (!getpercentiledata(&pdata, interface->name, 0)) {
+	if (!getpercentiledata(&pdata, ifaceinfo->name, 0)) {
 		exit(EXIT_FAILURE);
 	}
 
