@@ -1145,7 +1145,6 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit a
 	return ret;
 }
 
-// TODO: refactor to even smaller functions?
 void alertoutput(const alertdata *adata, const AlertOutput output, const AlertType type, const AlertCondition condition, const uint64_t limit)
 {
 	int i, l;

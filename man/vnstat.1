@@ -7,6 +7,7 @@ vnstat \- a console-based network traffic monitor
 
 .B vnstat
 .RB [ \-5bDedhlmqstvy? ]
+.RB [ \-\-95% ]
 .RB [ \-\-add ]
 .RB [ \-\-alert
 .IR "output exit type condition limit unit" ]
@@ -104,6 +105,16 @@ time sleeping between data updates.
 .SH OPTIONS
 
 .TP
+.B "--95%"
+Show 95th percentile output for the ongoing month. This output uses the 5 minute resolution
+data of the ongoing month to calculate the 95th percentile traffic rate for received, transmitted
+and total. In addition, the minimum, average and maximum traffic rates for received, transmitted
+and total are also shown. This output requires the
+.B 5MinuteHours
+configuration option to have a value of at least 744 for storing all the necessary data, otherwise 100% coverage
+isn't possible.
+
+.TP
 .B "--add"
 Create database entry for interface specified with
 .B \-i
@@ -146,13 +157,16 @@ is exceeded but otherwise exit status 0.
 .I type
 parameter defines to which time range type usage the
 .I limit
-is compared against. Available options: 'h', 'hour', 'hourly', 'd', 'day', 'daily', 'm', 'month', 'monthly', 'y', 'year', 'yearly'.
+is compared against. Available options: 'h', 'hour', 'hourly', 'd', 'day', 'daily', 'm', 'month', 'monthly', 'y', 'year', 'yearly', 'p', '95', '95%'.
 
 .IP
 .I condition
 parameter defines if
 .I limit
-is compared to received (rx), transmitted (tx), total or estimated usage of these three. Available options: 'rx', 'tx', 'total', 'rx_estimate', 'tx_estimate', 'total_estimate'.
+is compared to received (rx), transmitted (tx), total or estimated usage of these three.
+Available options: 'rx', 'tx', 'total', 'rx_estimate', 'tx_estimate', 'total_estimate'.
+Estimate options aren't available for 95th percentile
+.IR type .
 
 .IP
 .I limit
@@ -161,7 +175,11 @@ limit using the unit defined with the
 .I unit
 parameter.
 .I unit
-accepts the following options: 'B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB'. Usage must exceed
+accepts the following options: 'B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB'.
+For 95th percentile
+.I type
+the following options are available: 'B/s', 'KiB/s', 'MiB/s', 'GiB/s', 'TiB/s', 'PiB/s', 'EiB/s', 'kB/s', 'MB/s', 'GB/s', 'TB/s', 'PB/s', 'EB/s', 'bit/s', 'Kibit/s', 'Mibit/s', 'Gibit/s', 'Tibit/s', 'Pibit/s', 'Eibit/s', 'kbit/s', 'Mbit/s', 'Gbit/s', 'Tbit/s', 'Pbit/s', 'Ebit/s'.
+Usage must exceed
 .I limit
 in order for the alarm to activate. Exactly the same usage as
 .I limit
@@ -175,7 +193,7 @@ parameter but can also be achieved by using the estimate option in
 .I output
 or
 .I exit
-parameters. Missing or invalid parameters will result in
+parameters. Missing or invalid parameters or parameter combination will result in
 .B "--alert"
 specific help output being shown.
 
@@ -317,15 +335,15 @@ is set to 1 then the output will contain one interface per line. See also
 .TP
 .BI "--json " "[mode] [limit]"
 Show database content for selected interface or all interfaces in json format. All
-traffic values in the output are in bytes. An optional
+traffic values in the output are in bytes unless otherwise indicated by the name of the key. An optional
 .I mode
 parameter can be used for limiting the output to only selected information.
-Everything is shown by default. Setting
+Everything except the 95th percentile output is shown by default. Setting
 .I mode
 to 's' will output a summary containing the last 2 entries of 5 minute, hourly,
 daily, monthly and yearly resolution data, 'f' will output only 5 minute
-resolution entries, 'h' hours, 'd' days, 'm' months, 'y' years and 't' the top
-days. Alternatively or in combination with
+resolution entries, 'h' hours, 'd' days, 'm' months, 'y' years, 't' the top
+days and 'p' the 95th percentile. Alternatively or in combination with
 .I mode
 an optional
 .I limit
@@ -526,15 +544,15 @@ Show current version.
 .TP
 .BI "--xml " "[mode] [limit]"
 Show database content for selected interface or all interfaces in xml format. All
-traffic values in the output are in bytes. An optional
+traffic values in the output are in bytes unless otherwise indicated by the name of the key. An optional
 .I mode
 parameter can be used for limiting the output to only selected information.
-Everything is shown by default. Setting
+Everything except the 95th percentile output is shown by default. Setting
 .I mode
 to 's' will output a summary containing the last 2 entries of 5 minute, hourly,
 daily, monthly and yearly resolution data, 'f' will output only 5 minute
-resolution entries, 'h' hours, 'd' days, 'm' months, 'y' years and 't' the top
-days. Alternatively or in combination with
+resolution entries, 'h' hours, 'd' days, 'm' months, 'y' years, 't' the top
+days and 'p' the 95th percentile. Alternatively or in combination with
 .I mode
 an optional
 .I limit

@@ -71,7 +71,7 @@ void showhelp(const PARAMS *p)
 	printf("      -b, --begin <date>           set list begin date\n");
 	printf("      -e, --end <date>             set list end date\n\n");
 
-	printf("      --95%%                        show 95th percentile\n"); // TODO: documentation
+	printf("      --95%%                        show 95th percentile\n");
 	printf("      --oneline [mode]             show simple parsable format\n");
 	printf("      --json [mode] [limit]        show database in json format\n");
 	printf("      --xml [mode] [limit]         show database in xml format\n");
@@ -361,7 +361,7 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 					printf("    m - only months\n");
 					printf("    y - only years\n");
 					printf("    t - only top\n");
-					printf("    p - 95th percentile\n"); // TODO: documentation
+					printf("    p - 95th percentile\n");
 					exit(EXIT_FAILURE);
 				}
 				if (p->xmlmode == 's') {
@@ -393,7 +393,7 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 					printf("    m - only months\n");
 					printf("    y - only years\n");
 					printf("    t - only top\n");
-					printf("    p - 95th percentile\n"); // TODO: documentation
+					printf("    p - 95th percentile\n");
 					exit(EXIT_FAILURE);
 				}
 				if (p->jsonmode == 's') {

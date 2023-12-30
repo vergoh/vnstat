@@ -128,7 +128,7 @@ void showihelp(const IPARAMS *p)
 	printf("      -s,  --summary                     output summary\n");
 	printf("      -hs, --hsummary [graph]            output horizontal summary with graph\n");
 	printf("      -vs, --vsummary [graph]            output vertical summary with graph\n");
-	printf("      --95%% <mode>                       output 95th percentile graph\n\n"); // TODO: documentation
+	printf("      --95%% <mode>                       output 95th percentile graph\n\n");
 
 	printf("      -nh, --noheader                    remove header from output\n");
 	printf("      -ne, --noedge                      remove edge from output\n");
