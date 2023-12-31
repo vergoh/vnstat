@@ -28,6 +28,8 @@
    - Add --noremove option to daemon for disabling the automatic removal of
      interfaces from database that aren't currently visible and haven't seen
      any traffic
+   - Add third mode option to --iflist and --dbiflist for getting only the
+     interface count as output
 
 
 2.11 / 19-Aug-2023
