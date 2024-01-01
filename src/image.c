@@ -1202,6 +1202,10 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 		max = (uint64_t)((double)datainfo.max / ratediv);
 	}
 
+	if ((uint64_t)((double)(percentile) / percentileratediv) > max) {
+		max = (uint64_t)((double)(percentile) / percentileratediv);
+	}
+
 	/* scale values */
 	scaleunit = getscale(max, 1);
 
