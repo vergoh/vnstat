@@ -14,6 +14,7 @@
 #include "iflist_tests.h"
 #include "cli_tests.h"
 #include "parseargs_tests.h"
+#include "percentile_tests.h"
 #if defined(HAVE_IMAGE)
 #include "image_tests.h"
 #endif
@@ -59,6 +60,7 @@ Suite *test_suite(void)
 	add_iflist_tests(s);
 	add_cli_tests(s);
 	add_parseargs_tests(s);
+	add_percentile_tests(s);
 #if defined(HAVE_IMAGE)
 	add_image_tests(s);
 #endif

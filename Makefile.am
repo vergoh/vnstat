@@ -81,6 +81,7 @@ check_vnstat_SOURCES = tests/vnstat_tests.c tests/vnstat_tests.h \
   tests/iflist_tests.c tests/iflist_tests.h \
   tests/cli_tests.c tests/cli_tests.h \
   tests/parseargs_tests.c tests/parseargs_tests.h \
+  tests/percentile_tests.c tests/percentile_tests.h \
   tests/daemon_tests.c tests/daemon_tests.h
 
 check_vnstat_SOURCES += src/cfg.c src/cfg.h \

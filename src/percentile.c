@@ -133,7 +133,6 @@ int getpercentiledata(percentiledata *pdata, const char *iface, const uint64_t u
 	return 1;
 }
 
-// TODO: tests
 int compare_uint64_t(const void *a, const void *b)
 {
 	if (*(uint64_t *)a < *(uint64_t *)b) {
