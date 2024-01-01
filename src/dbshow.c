@@ -867,7 +867,6 @@ void showhours(const interfaceinfo *ifaceinfo)
 	timeused_debug(__func__, 0);
 }
 
-// TODO: tests
 void show95thpercentile(const interfaceinfo *ifaceinfo)
 {
 	struct tm *d;

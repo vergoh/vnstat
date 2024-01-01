@@ -822,6 +822,30 @@ START_TEST(showalert_shows_nothing_with_none_type)
 }
 END_TEST
 
+START_TEST(showalert_shows_nothing_in_json_with_none_type)
+{
+	int ret;
+
+	defaultcfg();
+	cfg.qmode = 10;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("something");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addtraffic("something", 100, 200);
+	ck_assert_int_eq(ret, 1);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_None, AC_Total, 42);
+	ck_assert_int_eq(ret, 0);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 START_TEST(showalert_can_alert_on_limit_and_show_things)
 {
 	int ret;
@@ -838,19 +862,74 @@ START_TEST(showalert_can_alert_on_limit_and_show_things)
 	ret = db_setalias("something", "anything");
 	ck_assert_int_eq(ret, 1);
 
-	ret = db_addtraffic("something", 100, 200);
+	ret = db_addtraffic("something", 1000, 2000);
 	ck_assert_int_eq(ret, 1);
 
-	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Hour, AC_Total, 250);
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Hour, AC_Total, 2500);
 	ck_assert_int_eq(ret, 1);
 
-	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Day, AC_Total, 250);
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Day, AC_Total, 2500);
 	ck_assert_int_eq(ret, 1);
 
-	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Month, AC_Total, 250);
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Month, AC_Total, 2500);
 	ck_assert_int_eq(ret, 1);
 
-	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Year, AC_Total, 250);
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Year, AC_Total, 2500);
+	ck_assert_int_eq(ret, 1);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Percentile, AC_RX, 2);
+	ck_assert_int_eq(ret, 1);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Percentile, AC_TX, 4);
+	ck_assert_int_eq(ret, 1);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Percentile, AC_Total, 5);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(showalert_can_alert_on_limit_and_show_things_in_json)
+{
+	int ret;
+
+	defaultcfg();
+	cfg.qmode = 10;
+	suppress_output();
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("something");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_setalias("something", "anything");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addtraffic("something", 1000, 2000);
+	ck_assert_int_eq(ret, 1);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Hour, AC_Total, 2500);
+	ck_assert_int_eq(ret, 1);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Day, AC_Total, 2500);
+	ck_assert_int_eq(ret, 1);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Month, AC_Total, 2500);
+	ck_assert_int_eq(ret, 1);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Year, AC_Total, 2500);
+	ck_assert_int_eq(ret, 1);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Percentile, AC_RX, 2);
+	ck_assert_int_eq(ret, 1);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Percentile, AC_TX, 4);
+	ck_assert_int_eq(ret, 1);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Percentile, AC_Total, 5);
 	ck_assert_int_eq(ret, 1);
 
 	ret = db_close();
@@ -863,6 +942,58 @@ START_TEST(showalert_limit_and_conditions_matter)
 	int ret;
 
 	defaultcfg();
+	suppress_output();
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("something");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addtraffic("something", 100, 200);
+	ck_assert_int_eq(ret, 1);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Year, AC_Total, 100);
+	ck_assert_int_eq(ret, 1);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Year, AC_Total, 280);
+	ck_assert_int_eq(ret, 1);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Year, AC_Total, 350);
+	ck_assert_int_eq(ret, 0);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Year, AC_Total, 300);
+	ck_assert_int_eq(ret, 0);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Year, AC_RX, 80);
+	ck_assert_int_eq(ret, 1);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Year, AC_RX, 150);
+	ck_assert_int_eq(ret, 0);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Year, AC_TX, 180);
+	ck_assert_int_eq(ret, 1);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Year, AC_TX, 250);
+	ck_assert_int_eq(ret, 0);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Year, AC_TX, 350);
+	ck_assert_int_eq(ret, 0);
+
+	ret = showalert("something", AO_Always_Output, AE_Exit_1_On_Limit, AT_Year, AC_TX, 200);
+	ck_assert_int_eq(ret, 0);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(showalert_limit_and_conditions_matter_also_for_json_output)
+{
+	int ret;
+
+	defaultcfg();
+	cfg.qmode = 10;
 	suppress_output();
 
 	ret = db_open_rw(1);
@@ -946,8 +1077,11 @@ void add_database_tests(Suite *s)
 	tcase_add_test(tc_db, importlegacydb_can_detect_when_database_read_fails);
 	tcase_add_test(tc_db, importlegacydb_can_import_legacy_database);
 	tcase_add_test(tc_db, showalert_shows_nothing_with_none_type);
+	tcase_add_test(tc_db, showalert_shows_nothing_in_json_with_none_type);
 	tcase_add_test(tc_db, showalert_can_alert_on_limit_and_show_things);
+	tcase_add_test(tc_db, showalert_can_alert_on_limit_and_show_things_in_json);
 	tcase_add_test(tc_db, showalert_limit_and_conditions_matter);
+	tcase_add_test(tc_db, showalert_limit_and_conditions_matter_also_for_json_output);
 	suite_add_tcase(s, tc_db);
 }
 
