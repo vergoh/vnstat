@@ -204,6 +204,7 @@ START_TEST(database_outputs_do_not_crash)
 	showxml("something", 'f', "", "");
 	showxml("something", 'a', "", "");
 	showxml("something", 's', "", "");
+	showxml("something", 'p', "", "");
 	xmlfooter();
 
 	jsonheader(JSONVERSION);
@@ -216,6 +217,7 @@ START_TEST(database_outputs_do_not_crash)
 	showjson("something", 0, 'a', "", "");
 	showjson("something", 1, 'a', "", "");
 	showjson("something", 0, 's', "", "");
+	showjson("something", 0, 'p', "", "");
 	jsonfooter();
 
 	ret = db_close();
