@@ -2645,7 +2645,7 @@ uninstall-hook:
 	@echo
 
 clean-local:
-	-rm -fr coverage *.lcov *.gz test*.log test*.xml src/*.gc* tests/*.gc* tests/*.conf *.old *.new *check.png INSTALL INSTALL_BSD UPGRADE UNINSTALL
+	-rm -fr coverage cov-int *.lcov *.gz test*.log test*.xml src/*.gc* tests/*.gc* tests/*.conf *.old *.new *check.png INSTALL INSTALL_BSD UPGRADE UNINSTALL
 
 check-local: check-TESTS
 	tail -n 2 test.log
