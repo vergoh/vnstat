@@ -1254,7 +1254,7 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 				d = localtime(&current);
 				strftime(datebuff, DATEBUFFLEN, "%d", d);
 				drawpole(ic, x + i, y, height, 1, ic->cbgoffset);
-				gdImageString(ic->im, font, x + i - 4 - (ic->large), y + 4 - (ic->large), (unsigned char *)datebuff, ic->cline);
+				gdImageString(ic->im, font, x + i - 4 - (ic->large), y + 5, (unsigned char *)datebuff, ic->cline);
 				prev = i;
 			}
 			continue;
@@ -1264,7 +1264,7 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 			d = localtime(&current);
 			strftime(datebuff, DATEBUFFLEN, "%d", d);
 			drawpole(ic, x + i, y, height, 1, ic->cbgoffset);
-			gdImageString(ic->im, font, x + i - 4 - (ic->large), y + 4 - (ic->large), (unsigned char *)datebuff, ic->ctext);
+			gdImageString(ic->im, font, x + i - 4 - (ic->large), y + 5, (unsigned char *)datebuff, ic->ctext);
 			prev = i;
 		}
 
@@ -1306,5 +1306,5 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 	}
 
 	/* finally add legend with percentile text */
-	drawpercentilelegend(ic, x + 300 - (ic->large * 50), y + 15 + (ic->large * 5), mode, percentile);
+	drawpercentilelegend(ic, x + 300 - (ic->large * 50), y + 14 + (ic->large * 6), mode, percentile);
 }
