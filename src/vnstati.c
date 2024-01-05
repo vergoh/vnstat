@@ -380,9 +380,9 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 				if (!isdigit(argv[currentarg + 1][0]) || atoi(argv[currentarg + 1]) > 1 || atoi(argv[currentarg + 1]) < 0) {
 					if (!ishelprequest(argv[currentarg + 1]))
 						fprintf(stderr, "Error: Invalid mode selection \"%s\".\n", argv[currentarg + 1]);
-					printf(" Valid modes for %s:\n", argv[currentarg]);
-					printf("    0 - 24 hour sliding windows\n");
-					printf("    1 - graph start from midnight\n");
+					fprintf(stderr, " Valid modes for %s:\n", argv[currentarg]);
+					fprintf(stderr, "    0 - 24 hour sliding windows\n");
+					fprintf(stderr, "    1 - graph start from midnight\n");
 					exit(EXIT_FAILURE);
 				}
 				cfg.hourlygmode = atoi(argv[currentarg + 1]);
@@ -417,9 +417,9 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 				if (!isdigit(argv[currentarg + 1][0]) || atoi(argv[currentarg + 1]) > 1 || atoi(argv[currentarg + 1]) < 0) {
 					if (!ishelprequest(argv[currentarg + 1]))
 						fprintf(stderr, "Error: Invalid graph selection \"%s\".\n", argv[currentarg + 1]);
-					printf(" Valid graphs for %s:\n", argv[currentarg]);
-					printf("    0 - hours\n");
-					printf("    1 - 5 minutes\n");
+					fprintf(stderr, " Valid graphs for %s:\n", argv[currentarg]);
+					fprintf(stderr, "    0 - hours\n");
+					fprintf(stderr, "    1 - 5 minutes\n");
 					exit(EXIT_FAILURE);
 				}
 				cfg.summarygraph = atoi(argv[currentarg + 1]);
@@ -433,9 +433,9 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 				if (!isdigit(argv[currentarg + 1][0]) || atoi(argv[currentarg + 1]) > 1 || atoi(argv[currentarg + 1]) < 0) {
 					if (!ishelprequest(argv[currentarg + 1]))
 						fprintf(stderr, "Error: Invalid graph selection \"%s\".\n", argv[currentarg + 1]);
-					printf(" Valid graphs for %s:\n", argv[currentarg]);
-					printf("    0 - hours\n");
-					printf("    1 - 5 minutes\n");
+					fprintf(stderr, " Valid graphs for %s:\n", argv[currentarg]);
+					fprintf(stderr, "    0 - hours\n");
+					fprintf(stderr, "    1 - 5 minutes\n");
 					exit(EXIT_FAILURE);
 				}
 				cfg.summarygraph = atoi(argv[currentarg + 1]);
@@ -449,19 +449,19 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 				if (!isdigit(argv[currentarg + 1][0]) || atoi(argv[currentarg + 1]) > 2 || atoi(argv[currentarg + 1]) < 0) {
 					if (!ishelprequest(argv[currentarg + 1]))
 						fprintf(stderr, "Error: Invalid parameter \"%s\".\n", argv[currentarg + 1]);
-					printf(" Valid parameters for %s:\n", argv[currentarg]);
-					printf("    0 - rx\n");
-					printf("    1 - tx\n");
-					printf("    2 - total\n");
+					fprintf(stderr, " Valid parameters for %s:\n", argv[currentarg]);
+					fprintf(stderr, "    0 - rx\n");
+					fprintf(stderr, "    1 - tx\n");
+					fprintf(stderr, "    2 - total\n");
 					exit(EXIT_FAILURE);
 				}
 				cfg.qmode += atoi(argv[currentarg + 1]);
 				currentarg++;
 			} else {
-				printf("Error: Mandatory mode parameters not given for %s:\n", argv[currentarg]);
-				printf("    0 - rx\n");
-				printf("    1 - tx\n");
-				printf("    2 - total\n");
+				fprintf(stderr, "Error: Mandatory mode parameters not given for %s:\n", argv[currentarg]);
+				fprintf(stderr, "    0 - rx\n");
+				fprintf(stderr, "    1 - tx\n");
+				fprintf(stderr, "    2 - total\n");
 				exit(EXIT_FAILURE);
 			}
 		} else if ((strcmp(argv[currentarg], "-nh") == 0) || (strcmp(argv[currentarg], "--noheader")) == 0) {
@@ -475,9 +475,9 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 				if (!isdigit(argv[currentarg + 1][0]) || atoi(argv[currentarg + 1]) > 1 || atoi(argv[currentarg + 1]) < 0) {
 					if (!ishelprequest(argv[currentarg + 1]))
 						fprintf(stderr, "Error: Invalid parameter \"%s\".\n", argv[currentarg + 1]);
-					printf(" Valid parameters for %s:\n", argv[currentarg]);
-					printf("    0 - bytes\n");
-					printf("    1 - bits\n");
+					fprintf(stderr, " Valid parameters for %s:\n", argv[currentarg]);
+					fprintf(stderr, "    0 - bytes\n");
+					fprintf(stderr, "    1 - bits\n");
 					exit(EXIT_FAILURE);
 				}
 				cfg.rateunit = atoi(argv[currentarg + 1]);
@@ -530,10 +530,10 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 				if (!isdigit(argv[currentarg + 1][0]) || atoi(argv[currentarg + 1]) > 2 || atoi(argv[currentarg + 1]) < 0) {
 					if (!ishelprequest(argv[currentarg + 1]))
 						fprintf(stderr, "Error: Invalid parameter \"%s\".\n", argv[currentarg + 1]);
-					printf(" Valid parameters for %s:\n", argv[currentarg]);
-					printf("    0 - no color inversion\n");
-					printf("    1 - invert all colors except rx and tx\n");
-					printf("    2 - invert all colors\n");
+					fprintf(stderr, " Valid parameters for %s:\n", argv[currentarg]);
+					fprintf(stderr, "    0 - no color inversion\n");
+					fprintf(stderr, "    1 - invert all colors except rx and tx\n");
+					fprintf(stderr, "    2 - invert all colors\n");
 					exit(EXIT_FAILURE);
 				}
 				ic->invert = atoi(argv[currentarg + 1]);
@@ -550,7 +550,7 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 			exit(EXIT_SUCCESS);
 		} else {
 			if (argv[currentarg][0] == '-') {
-				printf("Unknown parameter \"%s\". Use --help for help.\n", argv[currentarg]);
+				fprintf(stderr, "Unknown parameter \"%s\". Use --help for help.\n", argv[currentarg]);
 				exit(EXIT_FAILURE);
 			} else {
 				if (strchr(argv[currentarg], '+') != NULL) {
@@ -734,13 +734,13 @@ void showsupportedfileextensions(void)
 	int i;
 	const char *extensions[] = {".avif", ".bmp", ".gif", ".heif", ".heix", ".jpeg", ".jpg", ".png", ".tga", ".tif", ".tiff", ".wbmp", ".webp", ".xbm", ".xpm"};
 
-	printf("Supported image format file extensions in current environment:\n");
+	fprintf(stderr, "Supported image format file extensions in current environment:\n");
 
 	for (i = 0; i < 15; i++) {
 		if (gdSupportsFileType(extensions[i], 1)) {
-			printf("%s ", extensions[i]);
+			fprintf(stderr, "%s ", extensions[i]);
 		}
 	}
-	printf("\n");
+	fprintf(stderr, "\n");
 }
 #endif
