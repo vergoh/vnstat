@@ -1244,7 +1244,7 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 
 	datalist_i = datalist;
 	current = pdata.monthbegin;
-	prev = 0;
+	prev = -24;
 
 	/* draw data */
 	for (i = 0; i < PERCENTILEENTRYCOUNT; i++, current += 3600) {
@@ -1253,8 +1253,10 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 			if (i >= prev + 24 && i % 24 == 0 && current < pdata.dataend) {
 				d = localtime(&current);
 				strftime(datebuff, DATEBUFFLEN, "%d", d);
-				drawpole(ic, x + i, y, height, 1, ic->cbgoffset);
-				gdImageString(ic->im, font, x + i - 4 - (ic->large), y + 5, (unsigned char *)datebuff, ic->cline);
+				if (i > 0) {
+					drawpole(ic, x + i, y + 4, height, 1, ic->cbgoffset);
+				}
+				gdImageString(ic->im, font, x + 12 + i - 4 - (ic->large), y + 5, (unsigned char *)datebuff, ic->cline);
 				prev = i;
 			}
 			continue;
@@ -1264,7 +1266,10 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 			d = localtime(&current);
 			strftime(datebuff, DATEBUFFLEN, "%d", d);
 			drawpole(ic, x + i, y, height, 1, ic->cbgoffset);
-			gdImageString(ic->im, font, x + i - 4 - (ic->large), y + 5, (unsigned char *)datebuff, ic->ctext);
+			if (i > 0) {
+				gdImageLine(ic->im, x + i, y + 1, x + i, y + 4, ic->ctext);
+			}
+			gdImageString(ic->im, font, x + 12 + i - 4 - (ic->large), y + 5, (unsigned char *)datebuff, ic->ctext);
 			prev = i;
 		}
 
