@@ -6,6 +6,11 @@
    - Daemon didn't try to import legacy databases when --noadd was used and no
      current version database initially existed resulting in the process
      exiting even when something could have been done
+   - Daemon didn't try to import legacy databases when --initdb was used and
+     no current version database initially existed, this behaviour can still
+     be enabled by using --noadd in combination with --initdb
+   - Using --nodaemon and --initdb at the same time didn't result in an error
+     being shown
  - New
    - Add 95th percentile output as --95%, also available via --alert, --json,
      --xml and image output, requires 5MinuteHours configuration to be set to

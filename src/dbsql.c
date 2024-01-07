@@ -40,6 +40,8 @@ int db_open(const int createifnotfound, const int readonly)
 	if (stat(dbfilename, &filestat) != 0) {
 		if (errno == ENOENT && createifnotfound && !readonly) {
 			createdb = 1;
+			if (debug)
+				printf("\"%s\" doesn't exist, creating new database\n", dbfilename);
 		} else {
 			if (debug)
 				printf("Error (debug): Handling database \"%s\" failed: %s\n", dbfilename, strerror(errno));
@@ -49,6 +51,8 @@ int db_open(const int createifnotfound, const int readonly)
 		if (filestat.st_size == 0) {
 			if (createifnotfound) {
 				createdb = 1;
+				if (debug)
+					printf("\"%s\" exists but is 0 sized, creating new database\n", dbfilename);
 			} else {
 				printf("Error: Database \"%s\" contains 0 bytes and isn't a valid database, exiting.\n", dbfilename);
 				exit(EXIT_FAILURE);

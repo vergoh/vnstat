@@ -269,7 +269,7 @@ void initdstate(DSTATE *s)
 	debug = 0;		   /* debug disabled by default */
 	disableprinte = 0; /* let printe() output be visible */
 	stderrprinte = 0;  /* use stdout for printe() output */
-	s->rundaemon = 0;  /* daemon disabled by default */
+	s->rundaemon = -1;  /* daemon disabled by default */
 
 	s->running = 0;
 	s->dbsaved = 1;
@@ -315,9 +315,13 @@ void preparedatabase(DSTATE *s)
 		exit(EXIT_FAILURE);
 	}
 
+	if (s->initdb && s->noadd) {
+		return;
+	}
+
 	if (s->dbifcount == 0) {
 		s->dbifcount += importlegacydbs();
-		if (s->dbifcount > 0 && !cfg.alwaysadd) {
+		if ((s->dbifcount > 0 && !cfg.alwaysadd) || s->initdb) {
 			return;
 		}
 	}
@@ -841,7 +845,7 @@ void handleintsignals(DSTATE *s)
 			if (!db_open_rw(1)) {
 				snprintf(errorstring, 1024, "Opening database after SIGHUP failed (%s), exiting.", strerror(errno));
 				printe(PT_Error);
-				if (s->rundaemon && !debug) {
+				if (s->rundaemon == 1 && !debug) {
 					close(pidfile);
 					unlink(cfg.pidfile);
 				}
@@ -850,7 +854,7 @@ void handleintsignals(DSTATE *s)
 			if (!db_removedisabledresolutionentries()) {
 				snprintf(errorstring, 1024, "Disabled resolution entry cleanup after SIGHUP failed (%s), exiting.", strerror(errno));
 				printe(PT_Error);
-				if (s->rundaemon && !debug) {
+				if (s->rundaemon == 1 && !debug) {
 					close(pidfile);
 					unlink(cfg.pidfile);
 				}
@@ -860,7 +864,7 @@ void handleintsignals(DSTATE *s)
 				if (!db_vacuum()) {
 					snprintf(errorstring, 1024, "Database vacuum after SIGHUP failed (%s), exiting.", strerror(errno));
 					printe(PT_Error);
-					if (s->rundaemon && !debug) {
+					if (s->rundaemon == 1 && !debug) {
 						close(pidfile);
 						unlink(cfg.pidfile);
 					}
@@ -905,7 +909,7 @@ void preparedirs(const DSTATE *s)
 		updatedirowner(cfg.dbdir, s->user, s->group);
 	}
 
-	if (!cfg.createdirs || !s->rundaemon) {
+	if (!cfg.createdirs || s->rundaemon != 1) {
 		return;
 	}
 
@@ -1060,7 +1064,7 @@ __attribute__((noreturn)) void errorexitdaemon(DSTATE *s, const int fataldberror
 	datacache_clear(&s->dcache);
 	ibwflush();
 
-	if (s->rundaemon && !debug) {
+	if (s->rundaemon == 1 && !debug) {
 		close(pidfile);
 		unlink(cfg.pidfile);
 	}

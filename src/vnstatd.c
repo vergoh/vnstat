@@ -84,6 +84,9 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
+	detectboot(&s);
+	preparedatabase(&s);
+
 	if (s.initdb) {
 		db_close();
 		if (debug) {
@@ -91,9 +94,6 @@ int main(int argc, char *argv[])
 		}
 		exit(EXIT_SUCCESS);
 	}
-
-	detectboot(&s);
-	preparedatabase(&s);
 
 	if (cfg.fiveminutehours == 0 && cfg.hourlydays == 0 && cfg.dailydays == 0 && cfg.monthlymonths == 0 && cfg.yearlyyears == 0 && cfg.topdayentries == 0) {
 		printf("Error: All data resolutions have been disabled in data retention configuration:");
@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
 	setsignaltraps();
 
 	/* start as daemon if requested, debug can't be enabled at the same time */
-	if (s.rundaemon && !debug) {
+	if (s.rundaemon == 1 && !debug) {
 		if (!db_close()) {
 			printf("Error: Failed to close database \"%s/%s\" before starting daemon: %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
 			printf("Exiting...\n");
@@ -239,7 +239,7 @@ int main(int argc, char *argv[])
 	datacache_clear(&s.dcache);
 	ibwflush();
 
-	if (s.rundaemon && !debug) {
+	if (s.rundaemon == 1 && !debug) {
 		close(pidfile);
 		unlink(cfg.pidfile);
 	}
@@ -263,10 +263,11 @@ void showhelp(void)
 	printf("      -g, --group <group>      set daemon process group\n");
 	printf("      -t, --timestamp          timestamp prints when running in foreground\n");
 	printf("      --config <config file>   select used config file\n");
-	printf("      --initdb                 create empty database and exit\n");
+	printf("      --initdb                 create database if it doesn't exist and exit\n");
 	printf("      --alwaysadd [mode]       automatically start monitoring all new interfaces\n");
 	printf("      --noadd                  disable discovery of interfaces when database\n");
-	printf("                               contains none\n");
+	printf("                               contains none, disable legacy data import when used\n");
+	printf("                               in combination with --initdb\n");
 	printf("      --noremove               disable removal of never seen interfaces\n");
 	printf("      --startempty             start even when database is empty\n\n");
 
@@ -292,6 +293,7 @@ void parseargs(DSTATE *s, int argc, char **argv)
 			s->rundaemon = 1;
 			s->showhelp = 0;
 		} else if ((strcmp(argv[currentarg], "-n") == 0) || (strcmp(argv[currentarg], "--nodaemon") == 0)) {
+			s->rundaemon = 0;
 			s->showhelp = 0;
 		} else if ((strcmp(argv[currentarg], "-s") == 0) || (strcmp(argv[currentarg], "--sync") == 0)) {
 			s->sync = 1;
@@ -374,13 +376,18 @@ void parseargs(DSTATE *s, int argc, char **argv)
 		cfg.alwaysadd = 0;
 	}
 
-	if (s->rundaemon && debug) {
+	if (s->rundaemon == 1 && debug) {
 		printf("Error: --daemon and --debug can't both be used at the same time.\n");
 		exit(EXIT_FAILURE);
 	}
 
-	if (s->rundaemon && s->initdb) {
+	if (s->rundaemon == 1 && s->initdb) {
 		printf("Error: --daemon and --initdb can't both be used at the same time.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (s->rundaemon == 0 && s->initdb) {
+		printf("Error: --nodaemon and --initdb can't both be used at the same time.\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -395,7 +402,7 @@ void parseargs(DSTATE *s, int argc, char **argv)
 		exit(EXIT_SUCCESS);
 	}
 
-	if (!s->rundaemon && pidfiledefined) {
+	if (s->rundaemon != 1 && pidfiledefined) {
 		printf("Error: --pidfile can only be used together with --daemon\n");
 		exit(EXIT_FAILURE);
 	}

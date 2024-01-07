@@ -130,9 +130,12 @@ can only be used when the process is started as root.
 
 .TP
 .B "--initdb"
-Create a new empty database without interface data and exit. If the database
-already exists then access to it is only verified. The daemon will not stay
-running when this option is used. This option cannot be used in combination with
+Create a new database, import data from found legacy databases if
+.B "--noadd"
+option isn't used and exit without creating database entries for
+available interfaces if no legacy data was imported. If the database already
+exists then access to it is only verified. The daemon will not stay running
+when this option is used. This option cannot be used in combination with
 .BR "-d, --daemon" ,
 .B "-n, --nodaemon"
 or
@@ -140,11 +143,21 @@ or
 
 .TP
 .B "--noadd"
-Disable the automatic creation of new database entries for all currently available
+When used in combination with
+.B "-d, --daemon"
+or
+.BR "-n, --nodaemon" ,
+disable the automatic creation of new database entries for all currently available
 interfaces when the daemon is started with no existing database or with a database
 containing zero interfaces. The daemon will still create an empty database if one doesn't
 already exist. Pseudo interfaces lo, lo0 and sit0 are always excluded from getting
 added regardless of this option.
+
+.IP
+When used in combination with
+.BR "--initdb" ,
+create only an empty database if one doesn't already exist without importing data
+from possible legacy databases and exit.
 
 .TP
 .B "-n, --nodaemon"
