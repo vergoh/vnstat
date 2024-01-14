@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # vnstat.cgi -- example cgi for vnStat image output
-# copyright (c) 2008-2023 Teemu Toivola <tst at iki dot fi>
+# copyright (c) 2008-2024 Teemu Toivola <tst at iki dot fi>
 #
 # based on mailgraph.cgi
 # copyright (c) 2000-2007 ETH Zurich
@@ -55,7 +55,7 @@ my $scriptname = '';
 ################
 
 
-my $VERSION = "1.17";
+my $VERSION = "1.18";
 my $cssbody = "body { background-color: $bgcolor; }";
 my $csscommonstyle = "a { text-decoration: underline; }\na:link { color: #b0b0b0; }\na:visited { color: #b0b0b0; }\na:hover { color: #000000; }\nsmall { font-size: 8px; color: #cbcbcb; }\nimg { border: 0; vertical-align: top; }\ntable { border: 0; }\ntable td { vertical-align: top; }\nsmall { display: block; }\n";
 my $metarefresh = "";
@@ -363,6 +363,15 @@ sub main
 		}
 		elsif ($query =~ /^(\d+)-y-l$/) {
 			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_y_l.png", "-y 0");
+		}
+		elsif ($query =~ /^(\d+)-95rx$/) {
+			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_95rx.png", "--95 0");
+		}
+		elsif ($query =~ /^(\d+)-95tx$/) {
+			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_95tx.png", "--95 1");
+		}
+		elsif ($query =~ /^(\d+)-95total$/) {
+			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_95total.png", "--95 2");
 		}
 		elsif ($query =~ /^(\d+)-f$/) {
 			print_single_interface_html($1);
