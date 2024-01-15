@@ -229,6 +229,40 @@ START_TEST(preparedatabase_exits_with_no_database_and_noadd)
 }
 END_TEST
 
+START_TEST(preparedatabase_returns_with_no_database_and_noadd_and_initdb)
+{
+	DSTATE s;
+
+	initdstate(&s);
+	s.noadd = 1;
+	s.initdb = 1;
+	suppress_output();
+	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	ck_assert_int_eq(clean_testdbdir(), 1);
+
+	preparedatabase(&s);
+}
+END_TEST
+
+START_TEST(preparedatabase_returns_with_no_database_and_noadd_and_startempty)
+{
+	DSTATE s;
+
+	initdstate(&s);
+	s.noadd = 1;
+	s.startempty = 1;
+	suppress_output();
+	strncpy_nt(cfg.dbdir, TESTDBDIR, 512);
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	ck_assert_int_eq(clean_testdbdir(), 1);
+
+	ck_assert_int_eq(s.sync, 0);
+	preparedatabase(&s);
+	ck_assert_int_eq(s.sync, 1);
+}
+END_TEST
+
 START_TEST(preparedatabase_with_no_database_creates_database)
 {
 	int ret;
@@ -1550,6 +1584,8 @@ void add_daemon_tests(Suite *s)
 	tcase_add_exit_test(tc_daemon, preparedatabase_exits_with_no_database_dir, 1);
 	tcase_add_exit_test(tc_daemon, preparedatabase_exits_with_no_database, 1);
 	tcase_add_exit_test(tc_daemon, preparedatabase_exits_with_no_database_and_noadd, 1);
+	tcase_add_test(tc_daemon, preparedatabase_returns_with_no_database_and_noadd_and_initdb);
+	tcase_add_test(tc_daemon, preparedatabase_returns_with_no_database_and_noadd_and_startempty);
 	tcase_add_test(tc_daemon, preparedatabase_with_no_database_creates_database);
 	tcase_add_test(tc_daemon, setsignaltraps_does_not_exit);
 	tcase_add_exit_test(tc_daemon, filldatabaselist_exits_with_no_database_dir, 1);

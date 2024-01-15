@@ -624,6 +624,27 @@ START_TEST(vnstat_handletrafficmeters_livetraffic_does_not_crash)
 	PARAMS p;
 	initparams(&p);
 	p.livetraffic = 1;
+	p.livemode = 0;
+	p.defaultiface = 0;
+	cfg.qmode = 1;
+	cfg.ostyle = 0;
+	cfg.sampletime = 0;
+	strncpy_nt(p.interface, "someiface", 32);
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_proc_net_dev("w", "someiface", 0, 0, 0, 0);
+
+	suppress_output();
+	handletrafficmeters(&p);
+}
+END_TEST
+
+START_TEST(vnstat_handletrafficmeters_livetraffic_does_not_crash_with_alternative_mode)
+{
+	PARAMS p;
+	initparams(&p);
+	p.livetraffic = 1;
+	p.livemode = 1;
 	p.defaultiface = 0;
 	cfg.qmode = 1;
 	cfg.ostyle = 0;
@@ -1276,6 +1297,75 @@ START_TEST(parsealertargs_knows_the_64_bit_limit_regardless_of_used_unit)
 }
 END_TEST
 
+START_TEST(parsealertargs_knows_not_to_support_estimates_with_95th_percentile)
+{
+	int ret;
+	PARAMS p;
+	char *argv[] = {"--alert", "2", "2", "p", "total", "10", "MiB/s", NULL};
+
+	defaultcfg();
+	initparams(&p);
+	debug = 1;
+	suppress_output();
+
+	ret = parsealertargs(&p, argv);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(p.alertoutput, 2);
+	ck_assert_int_eq(p.alertexit, 2);
+	ck_assert_int_eq(p.alerttype, 5);
+	ck_assert_int_eq(p.alertcondition, 0);
+	ck_assert_int_eq(p.alertlimit, 0);
+	ck_assert_int_eq(p.alertrateunit, -1);
+	ck_assert_int_eq(p.alertrateunitmode, -1);
+}
+END_TEST
+
+START_TEST(parsealertargs_knows_not_to_support_estimate_outputs_with_95th_percentile)
+{
+	int ret;
+	PARAMS p;
+	char *argv[] = {"--alert", "1", "0", "p", "total_estimate", "10", "MiB/s", NULL};
+
+	defaultcfg();
+	initparams(&p);
+	debug = 1;
+	suppress_output();
+
+	ret = parsealertargs(&p, argv);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_int_eq(p.alertoutput, 1);
+	ck_assert_int_eq(p.alertexit, 0);
+	ck_assert_int_eq(p.alerttype, 5);
+	ck_assert_int_eq(p.alertcondition, 6);
+	ck_assert_int_eq(p.alertlimit, 0);
+	ck_assert_int_eq(p.alertrateunit, -1);
+	ck_assert_int_eq(p.alertrateunitmode, -1);
+}
+END_TEST
+
+START_TEST(parsealertargs_knows_95th_percentile_rate_units)
+{
+	int ret;
+	PARAMS p;
+	char *argv[] = {"--alert", "1", "0", "p", "total", "10", "MiB/s", NULL};
+
+	defaultcfg();
+	initparams(&p);
+	debug = 1;
+	suppress_output();
+
+	ret = parsealertargs(&p, argv);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(p.alertoutput, 1);
+	ck_assert_int_eq(p.alertexit, 0);
+	ck_assert_int_eq(p.alerttype, 5);
+	ck_assert_int_eq(p.alertcondition, 3);
+	ck_assert_int_eq(p.alertlimit, 10485760);
+	ck_assert_int_eq(p.alertrateunit, 0);
+	ck_assert_int_eq(p.alertrateunitmode, 0);
+}
+END_TEST
+
 START_TEST(handleshowalert_requires_interface_to_be_specified)
 {
 	PARAMS p;
@@ -1527,6 +1617,7 @@ void add_cli_tests(Suite *s)
 	tcase_add_test(tc_cli, vnstat_handletrafficmeters_can_handle_interface_merge_using_first_interface);
 	tcase_add_test(tc_cli, vnstat_handletrafficmeters_can_calculate_traffic_and_output_json);
 	tcase_add_test(tc_cli, vnstat_handletrafficmeters_livetraffic_does_not_crash);
+	tcase_add_test(tc_cli, vnstat_handletrafficmeters_livetraffic_does_not_crash_with_alternative_mode);
 	tcase_add_test(tc_cli, vnstat_handletrafficmeters_livetraffic_does_not_crash_with_interface_merge);
 	tcase_add_test(tc_cli, vnstat_handletrafficmeters_livetraffic_does_not_crash_with_json);
 	tcase_add_test(tc_cli, handleifselection_does_nothing_when_interface_has_already_been_selected);
@@ -1557,6 +1648,9 @@ void add_cli_tests(Suite *s)
 	tcase_add_test(tc_cli, parsealertargs_can_validate_limit_as_non_zero);
 	tcase_add_test(tc_cli, parsealertargs_can_validate_limit_unit);
 	tcase_add_test(tc_cli, parsealertargs_knows_the_64_bit_limit_regardless_of_used_unit);
+	tcase_add_test(tc_cli, parsealertargs_knows_not_to_support_estimates_with_95th_percentile);
+	tcase_add_test(tc_cli, parsealertargs_knows_not_to_support_estimate_outputs_with_95th_percentile);
+	tcase_add_test(tc_cli, parsealertargs_knows_95th_percentile_rate_units);
 	tcase_add_exit_test(tc_cli, handleshowalert_requires_interface_to_be_specified, 1);
 	tcase_add_test(tc_cli, validateinterface_does_not_use_alias_if_interface_names_matches);
 	tcase_add_test(tc_cli, validateinterface_supports_interface_merges);

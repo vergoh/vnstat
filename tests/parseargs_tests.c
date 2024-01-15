@@ -674,7 +674,7 @@ END_TEST
 START_TEST(vnstat_parseargs_dbiflist_gives_help)
 {
 	PARAMS p;
-	char *argv[] = {"vnstat", "--dbiflist", "unknown", NULL};
+	char *argv[] = {"vnstat", "--dbiflist", "?", NULL};
 	int argc = sizeof(argv) / sizeof(char *) - 1;
 
 	initparams(&p);
@@ -924,6 +924,63 @@ START_TEST(vnstat_parseargs_query_with_s_changes_querymode)
 }
 END_TEST
 
+START_TEST(vnstat_parseargs_95th)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--95th", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	initparams(&p);
+	cfg.qmode = 2;
+	suppress_output();
+	parseargs(&p, argc, argv);
+	ck_assert_int_eq(p.query, 1);
+	ck_assert_int_eq(cfg.qmode, 13);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_95p)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--95%", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	initparams(&p);
+	cfg.qmode = 2;
+	suppress_output();
+	parseargs(&p, argc, argv);
+	ck_assert_int_eq(p.query, 1);
+	ck_assert_int_eq(cfg.qmode, 13);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_95)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--95", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	initparams(&p);
+	cfg.qmode = 2;
+	suppress_output();
+	parseargs(&p, argc, argv);
+	ck_assert_int_eq(p.query, 1);
+	ck_assert_int_eq(cfg.qmode, 13);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_alert_gives_help)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--alert", "?", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	initparams(&p);
+	suppress_output();
+	parseargs(&p, argc, argv);
+}
+END_TEST
+
 void add_parseargs_tests(Suite *s)
 {
 	TCase *tc_pa = tcase_create("ParseArgs");
@@ -992,5 +1049,9 @@ void add_parseargs_tests(Suite *s)
 	tcase_add_test(tc_pa, vnstat_parseargs_query_without_mode_does_not_change_querymode);
 	tcase_add_test(tc_pa, vnstat_parseargs_query_with_a_changes_querymode);
 	tcase_add_test(tc_pa, vnstat_parseargs_query_with_s_changes_querymode);
+	tcase_add_test(tc_pa, vnstat_parseargs_95th);
+	tcase_add_test(tc_pa, vnstat_parseargs_95p);
+	tcase_add_test(tc_pa, vnstat_parseargs_95);
+	tcase_add_exit_test(tc_pa, vnstat_parseargs_alert_gives_help, 1);
 	suite_add_tcase(s, tc_pa);
 }
