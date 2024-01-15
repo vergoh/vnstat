@@ -128,7 +128,7 @@ void showihelp(const IPARAMS *p)
 	printf("      -s,  --summary                     output summary\n");
 	printf("      -hs, --hsummary [graph]            output horizontal summary with graph\n");
 	printf("      -vs, --vsummary [graph]            output vertical summary with graph\n");
-	printf("      --95%% <mode>                       output 95th percentile graph\n\n");
+	printf("      --95th <mode>                      output 95th percentile graph\n\n");
 
 	printf("      -nh, --noheader                    remove header from output\n");
 	printf("      -ne, --noedge                      remove edge from output\n");
@@ -443,7 +443,7 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 					printf("Summary graph changed: %d\n", cfg.summarygraph);
 				currentarg++;
 			}
-		} else if ((strcmp(argv[currentarg], "--95") == 0) || (strcmp(argv[currentarg], "--95%") == 0) || (strcmp(argv[currentarg], "--95th") == 0)) {
+		} else if ((strcmp(argv[currentarg], "--95th") == 0) || (strcmp(argv[currentarg], "--95") == 0) || (strcmp(argv[currentarg], "--95%") == 0)) {
 			cfg.qmode = 130;
 			if (currentarg + 1 < argc && (strlen(argv[currentarg + 1]) == 1 || ishelprequest(argv[currentarg + 1]))) {
 				if (!isdigit(argv[currentarg + 1][0]) || atoi(argv[currentarg + 1]) > 2 || atoi(argv[currentarg + 1]) < 0) {

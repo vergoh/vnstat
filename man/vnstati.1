@@ -6,7 +6,7 @@ vnstati \- image output support for vnStat
 
 .B vnstati
 .RB [ \-5bcdDehiLmosStvy? ]
-.RB [ \-\-95%
+.RB [ \-\-95th
 .IR mode ]
 .RB [ \-5g
 .RI [ limit ]
@@ -103,7 +103,7 @@ with the later being limited to png image format.
 .SH OPTIONS
 
 .TP
-.BI "--95% " mode
+.BI "--95th " mode
 Show 95th percentile output graph for the ongoing month. This output uses the 5 minute resolution
 data of the ongoing month to calculate the 95th percentile traffic rate for received, transmitted
 or total as selected using the mandatory
@@ -115,9 +115,7 @@ resolution traffic rate bar graph averaged from the 5 minute resolution data of 
 is presented. This output requires the
 .B 5MinuteHours
 configuration option to have a value of at least 744 for storing all the necessary data, otherwise 100% coverage
-isn't possible. Available modes: 0 = received, 1 = transmitted, 2 = total. This option can also be used as
-.B "--95"
-with the % being optional.
+isn't possible. Available modes: 0 = received, 1 = transmitted, 2 = total.
 
 .TP
 .B "--altdate"

@@ -12,7 +12,7 @@
    - Using --nodaemon and --initdb at the same time didn't result in an error
      being shown
  - New
-   - Add 95th percentile output as --95%, also available via --alert, --json,
+   - Add 95th percentile output as --95th, also available via --alert, --json,
      --xml and image output, requires 5MinuteHours configuration to be set to
      at least 744 for storing all the necessary data
    - Add --json support for --alert

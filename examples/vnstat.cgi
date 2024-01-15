@@ -365,13 +365,13 @@ sub main
 			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_y_l.png", "-y 0");
 		}
 		elsif ($query =~ /^(\d+)-95rx$/) {
-			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_95rx.png", "--95 0");
+			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_95rx.png", "--95th 0");
 		}
 		elsif ($query =~ /^(\d+)-95tx$/) {
-			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_95tx.png", "--95 1");
+			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_95tx.png", "--95th 1");
 		}
 		elsif ($query =~ /^(\d+)-95total$/) {
-			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_95total.png", "--95 2");
+			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_95total.png", "--95th 2");
 		}
 		elsif ($query =~ /^(\d+)-f$/) {
 			print_single_interface_html($1);

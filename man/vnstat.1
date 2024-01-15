@@ -7,7 +7,7 @@ vnstat \- a console-based network traffic monitor
 
 .B vnstat
 .RB [ \-5bDedhlmqstvy? ]
-.RB [ \-\-95% ]
+.RB [ \-\-95th ]
 .RB [ \-\-add ]
 .RB [ \-\-alert
 .IR "output exit type condition limit unit" ]
@@ -105,16 +105,14 @@ time sleeping between data updates.
 .SH OPTIONS
 
 .TP
-.B "--95%"
+.B "--95th"
 Show 95th percentile output for the ongoing month. This output uses the 5 minute resolution
 data of the ongoing month to calculate the 95th percentile traffic rate for received, transmitted
 and total. In addition, the minimum, average and maximum traffic rates for received, transmitted
 and total are also shown. This output requires the
 .B 5MinuteHours
 configuration option to have a value of at least 744 for storing all the necessary data, otherwise 100% coverage
-isn't possible. This option can also be used as
-.B "--95"
-with the % being optional.
+isn't possible.
 
 .TP
 .B "--add"
