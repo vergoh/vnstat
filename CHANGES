@@ -1,4 +1,4 @@
-2.12 / <not released yet>
+2.12 / 21-Jan-2024
 
  - Fixed
    - QueryMode documentation in configuration file didn't match implementation
