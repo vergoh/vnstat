@@ -28,7 +28,8 @@ vnstat_SOURCES = src/vnstat.c \
   src/ibw.c src/ibw.h \
   src/fs.c src/fs.h \
   src/id.c src/id.h \
-  src/traffic.c src/traffic.h
+  src/traffic.c src/traffic.h \
+  src/clicommon.c src/clicommon.h
 
 vnstatd_SOURCES = src/vnstatd.c src/vnstatd.h \
   src/ifinfo.c src/ifinfo.h \
@@ -54,7 +55,8 @@ vnstati_SOURCES = src/vnstati.c src/vnstati.h \
   src/misc.c src/misc.h \
   src/fs.c src/fs.h \
   src/id.c src/id.h \
-  src/cfg.c src/cfg.h
+  src/cfg.c src/cfg.h \
+  src/clicommon.c src/clicommon.h
 
 if HAVE_CHECK
 TESTS = check_vnstat
@@ -102,7 +104,8 @@ check_vnstat_SOURCES += src/cfg.c src/cfg.h \
   src/fs.c src/fs.h \
   src/id.c src/id.h \
   src/vnstat_func.c src/vnstat_func.h \
-  src/traffic.c src/traffic.h
+  src/traffic.c src/traffic.h \
+  src/clicommon.c src/clicommon.h
 
 if HAVE_LIBGD
 check_vnstat_CFLAGS += -DHAVE_IMAGE

@@ -138,9 +138,9 @@ am__check_vnstat_SOURCES_DIST = tests/vnstat_tests.c \
 	src/ifinfo.c src/ifinfo.h src/iflist.c src/iflist.h src/misc.c \
 	src/misc.h src/fs.c src/fs.h src/id.c src/id.h \
 	src/vnstat_func.c src/vnstat_func.h src/traffic.c \
-	src/traffic.h tests/image_tests.c tests/image_tests.h \
-	src/image.c src/image.h src/image_support.c \
-	src/image_support.h
+	src/traffic.h src/clicommon.c src/clicommon.h \
+	tests/image_tests.c tests/image_tests.h src/image.c \
+	src/image.h src/image_support.c src/image_support.h
 am__dirstamp = $(am__leading_dot)dirstamp
 @HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@am__objects_1 = tests/check_vnstat-image_tests.$(OBJEXT) \
 @HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@	src/check_vnstat-image.$(OBJEXT) \
@@ -180,6 +180,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @HAVE_CHECK_TRUE@	src/check_vnstat-id.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	src/check_vnstat-vnstat_func.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	src/check_vnstat-traffic.$(OBJEXT) \
+@HAVE_CHECK_TRUE@	src/check_vnstat-clicommon.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	$(am__objects_1)
 check_vnstat_OBJECTS = $(am_check_vnstat_OBJECTS)
 am__DEPENDENCIES_1 =
@@ -192,7 +193,7 @@ am_vnstat_OBJECTS = src/vnstat.$(OBJEXT) src/vnstat_func.$(OBJEXT) \
 	src/percentile.$(OBJEXT) src/common.$(OBJEXT) \
 	src/misc.$(OBJEXT) src/cfg.$(OBJEXT) src/cfgoutput.$(OBJEXT) \
 	src/ibw.$(OBJEXT) src/fs.$(OBJEXT) src/id.$(OBJEXT) \
-	src/traffic.$(OBJEXT)
+	src/traffic.$(OBJEXT) src/clicommon.$(OBJEXT)
 vnstat_OBJECTS = $(am_vnstat_OBJECTS)
 vnstat_LDADD = $(LDADD)
 am_vnstatd_OBJECTS = src/vnstatd.$(OBJEXT) src/ifinfo.$(OBJEXT) \
@@ -207,7 +208,7 @@ am_vnstati_OBJECTS = src/vnstati.$(OBJEXT) src/iflist.$(OBJEXT) \
 	src/percentile.$(OBJEXT) src/image.$(OBJEXT) \
 	src/image_support.$(OBJEXT) src/dbsql.$(OBJEXT) \
 	src/common.$(OBJEXT) src/misc.$(OBJEXT) src/fs.$(OBJEXT) \
-	src/id.$(OBJEXT) src/cfg.$(OBJEXT)
+	src/id.$(OBJEXT) src/cfg.$(OBJEXT) src/clicommon.$(OBJEXT)
 vnstati_OBJECTS = $(am_vnstati_OBJECTS)
 vnstati_DEPENDENCIES =
 AM_V_P = $(am__v_P_@AM_V@)
@@ -228,6 +229,7 @@ am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = src/$(DEPDIR)/cfg.Po src/$(DEPDIR)/cfgoutput.Po \
 	src/$(DEPDIR)/check_vnstat-cfg.Po \
 	src/$(DEPDIR)/check_vnstat-cfgoutput.Po \
+	src/$(DEPDIR)/check_vnstat-clicommon.Po \
 	src/$(DEPDIR)/check_vnstat-common.Po \
 	src/$(DEPDIR)/check_vnstat-daemon.Po \
 	src/$(DEPDIR)/check_vnstat-datacache.Po \
@@ -247,11 +249,12 @@ am__depfiles_remade = src/$(DEPDIR)/cfg.Po src/$(DEPDIR)/cfgoutput.Po \
 	src/$(DEPDIR)/check_vnstat-percentile.Po \
 	src/$(DEPDIR)/check_vnstat-traffic.Po \
 	src/$(DEPDIR)/check_vnstat-vnstat_func.Po \
-	src/$(DEPDIR)/common.Po src/$(DEPDIR)/daemon.Po \
-	src/$(DEPDIR)/datacache.Po src/$(DEPDIR)/dbaccess.Po \
-	src/$(DEPDIR)/dbjson.Po src/$(DEPDIR)/dbshow.Po \
-	src/$(DEPDIR)/dbsql.Po src/$(DEPDIR)/dbxml.Po \
-	src/$(DEPDIR)/fs.Po src/$(DEPDIR)/ibw.Po src/$(DEPDIR)/id.Po \
+	src/$(DEPDIR)/clicommon.Po src/$(DEPDIR)/common.Po \
+	src/$(DEPDIR)/daemon.Po src/$(DEPDIR)/datacache.Po \
+	src/$(DEPDIR)/dbaccess.Po src/$(DEPDIR)/dbjson.Po \
+	src/$(DEPDIR)/dbshow.Po src/$(DEPDIR)/dbsql.Po \
+	src/$(DEPDIR)/dbxml.Po src/$(DEPDIR)/fs.Po \
+	src/$(DEPDIR)/ibw.Po src/$(DEPDIR)/id.Po \
 	src/$(DEPDIR)/ifinfo.Po src/$(DEPDIR)/iflist.Po \
 	src/$(DEPDIR)/image.Po src/$(DEPDIR)/image_support.Po \
 	src/$(DEPDIR)/misc.Po src/$(DEPDIR)/percentile.Po \
@@ -719,7 +722,8 @@ vnstat_SOURCES = src/vnstat.c \
   src/ibw.c src/ibw.h \
   src/fs.c src/fs.h \
   src/id.c src/id.h \
-  src/traffic.c src/traffic.h
+  src/traffic.c src/traffic.h \
+  src/clicommon.c src/clicommon.h
 
 vnstatd_SOURCES = src/vnstatd.c src/vnstatd.h \
   src/ifinfo.c src/ifinfo.h \
@@ -745,7 +749,8 @@ vnstati_SOURCES = src/vnstati.c src/vnstati.h \
   src/misc.c src/misc.h \
   src/fs.c src/fs.h \
   src/id.c src/id.h \
-  src/cfg.c src/cfg.h
+  src/cfg.c src/cfg.h \
+  src/clicommon.c src/clicommon.h
 
 @HAVE_CHECK_TRUE@check_vnstat_CFLAGS = @CFLAG_EXTRAS@ @CHECK_CFLAGS@ \
 @HAVE_CHECK_TRUE@	-DPROCNETDEV=\"testdir/proc/dev\" \
@@ -784,6 +789,7 @@ vnstati_SOURCES = src/vnstati.c src/vnstati.h \
 @HAVE_CHECK_TRUE@	src/misc.c src/misc.h src/fs.c src/fs.h \
 @HAVE_CHECK_TRUE@	src/id.c src/id.h src/vnstat_func.c \
 @HAVE_CHECK_TRUE@	src/vnstat_func.h src/traffic.c src/traffic.h \
+@HAVE_CHECK_TRUE@	src/clicommon.c src/clicommon.h \
 @HAVE_CHECK_TRUE@	$(am__append_4)
 all: all-recursive
 
@@ -1036,6 +1042,8 @@ src/check_vnstat-vnstat_func.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/check_vnstat-traffic.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
+src/check_vnstat-clicommon.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
 tests/check_vnstat-image_tests.$(OBJEXT): tests/$(am__dirstamp) \
 	tests/$(DEPDIR)/$(am__dirstamp)
 src/check_vnstat-image.$(OBJEXT): src/$(am__dirstamp) \
@@ -1072,6 +1080,8 @@ src/ibw.$(OBJEXT): src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 src/fs.$(OBJEXT): src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 src/id.$(OBJEXT): src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 src/traffic.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/clicommon.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 
 vnstat$(EXEEXT): $(vnstat_OBJECTS) $(vnstat_DEPENDENCIES) $(EXTRA_vnstat_DEPENDENCIES) 
@@ -1111,6 +1121,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/cfgoutput.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-cfg.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-cfgoutput.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-clicommon.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-daemon.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-datacache.Po@am__quote@ # am--include-marker
@@ -1130,6 +1141,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-percentile.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-traffic.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-vnstat_func.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/clicommon.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/daemon.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/datacache.Po@am__quote@ # am--include-marker
@@ -1666,6 +1678,20 @@ src/check_vnstat-traffic.obj: src/traffic.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/traffic.c' object='src/check_vnstat-traffic.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o src/check_vnstat-traffic.obj `if test -f 'src/traffic.c'; then $(CYGPATH_W) 'src/traffic.c'; else $(CYGPATH_W) '$(srcdir)/src/traffic.c'; fi`
+
+src/check_vnstat-clicommon.o: src/clicommon.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT src/check_vnstat-clicommon.o -MD -MP -MF src/$(DEPDIR)/check_vnstat-clicommon.Tpo -c -o src/check_vnstat-clicommon.o `test -f 'src/clicommon.c' || echo '$(srcdir)/'`src/clicommon.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/check_vnstat-clicommon.Tpo src/$(DEPDIR)/check_vnstat-clicommon.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/clicommon.c' object='src/check_vnstat-clicommon.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o src/check_vnstat-clicommon.o `test -f 'src/clicommon.c' || echo '$(srcdir)/'`src/clicommon.c
+
+src/check_vnstat-clicommon.obj: src/clicommon.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT src/check_vnstat-clicommon.obj -MD -MP -MF src/$(DEPDIR)/check_vnstat-clicommon.Tpo -c -o src/check_vnstat-clicommon.obj `if test -f 'src/clicommon.c'; then $(CYGPATH_W) 'src/clicommon.c'; else $(CYGPATH_W) '$(srcdir)/src/clicommon.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/check_vnstat-clicommon.Tpo src/$(DEPDIR)/check_vnstat-clicommon.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/clicommon.c' object='src/check_vnstat-clicommon.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o src/check_vnstat-clicommon.obj `if test -f 'src/clicommon.c'; then $(CYGPATH_W) 'src/clicommon.c'; else $(CYGPATH_W) '$(srcdir)/src/clicommon.c'; fi`
 
 tests/check_vnstat-image_tests.o: tests/image_tests.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT tests/check_vnstat-image_tests.o -MD -MP -MF tests/$(DEPDIR)/check_vnstat-image_tests.Tpo -c -o tests/check_vnstat-image_tests.o `test -f 'tests/image_tests.c' || echo '$(srcdir)/'`tests/image_tests.c
@@ -2361,6 +2387,7 @@ distclean: distclean-recursive
 	-rm -f src/$(DEPDIR)/cfgoutput.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-cfg.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-cfgoutput.Po
+	-rm -f src/$(DEPDIR)/check_vnstat-clicommon.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-common.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-daemon.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-datacache.Po
@@ -2380,6 +2407,7 @@ distclean: distclean-recursive
 	-rm -f src/$(DEPDIR)/check_vnstat-percentile.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-traffic.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-vnstat_func.Po
+	-rm -f src/$(DEPDIR)/clicommon.Po
 	-rm -f src/$(DEPDIR)/common.Po
 	-rm -f src/$(DEPDIR)/daemon.Po
 	-rm -f src/$(DEPDIR)/datacache.Po
@@ -2470,6 +2498,7 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f src/$(DEPDIR)/cfgoutput.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-cfg.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-cfgoutput.Po
+	-rm -f src/$(DEPDIR)/check_vnstat-clicommon.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-common.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-daemon.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-datacache.Po
@@ -2489,6 +2518,7 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f src/$(DEPDIR)/check_vnstat-percentile.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-traffic.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-vnstat_func.Po
+	-rm -f src/$(DEPDIR)/clicommon.Po
 	-rm -f src/$(DEPDIR)/common.Po
 	-rm -f src/$(DEPDIR)/daemon.Po
 	-rm -f src/$(DEPDIR)/datacache.Po

@@ -18,9 +18,6 @@ my $servername = '';
 # temporary directory where to store the images
 my $tmp_dir = '/tmp/vnstatcgi';
 
-# location of "vnstat" binary
-my $vnstat_cmd = '/usr/bin/vnstat';
-
 # location of "vnstati" binary
 my $vnstati_cmd = '/usr/bin/vnstati';
 
@@ -55,7 +52,7 @@ my $scriptname = '';
 ################
 
 
-my $VERSION = "1.18";
+my $VERSION = "1.19";
 my $cssbody = "body { background-color: $bgcolor; }";
 my $csscommonstyle = "a { text-decoration: underline; }\na:link { color: #b0b0b0; }\na:visited { color: #b0b0b0; }\na:hover { color: #000000; }\nsmall { font-size: 8px; color: #cbcbcb; }\nimg { border: 0; vertical-align: top; }\ntable { border: 0; }\ntable td { vertical-align: top; }\nsmall { display: block; }\n";
 my $metarefresh = "";
@@ -279,7 +276,7 @@ sub main
 	}
 
 	if (not defined $vnStatCGI::interfaces) {
-		our @interfaces = `$vnstat_cmd --dbiflist 1`;
+		our @interfaces = `$vnstati_cmd --dbiflist 1`;
 	}
 	chomp @vnStatCGI::interfaces;
 	my @interfaces = @vnStatCGI::interfaces;

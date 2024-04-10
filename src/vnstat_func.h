@@ -32,7 +32,6 @@ void showoneinterface(PARAMS *p);
 void handletrafficmeters(PARAMS *p);
 void handleifselection(PARAMS *p);
 void showiflist(const int mode);
-void showdbiflist(const int mode);
 void validateinterface(PARAMS *p);
 
 #endif

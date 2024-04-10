@@ -21,6 +21,7 @@ vnStat image output - Copyright (C) 2007-2024 Teemu Toivola <tst@iki.fi>
 #include "image.h"
 #include "cfg.h"
 #include "misc.h"
+#include "clicommon.h"
 #include "vnstati.h"
 
 int main(int argc, char *argv[])
@@ -545,6 +546,23 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 				if (debug)
 					printf("Invert colors changed: %d\n", ic->invert);
 			}
+		} else if (strcmp(argv[currentarg], "--dbiflist") == 0) {
+			cfg.qmode = 0;
+			if (currentarg + 1 < argc && (strlen(argv[currentarg + 1]) == 1 || ishelprequest(argv[currentarg + 1]))) {
+				if (!isdigit(argv[currentarg + 1][0]) || atoi(argv[currentarg + 1]) > 2 || atoi(argv[currentarg + 1]) < 0) {
+					if (!ishelprequest(argv[currentarg + 1]))
+						printf("Error: Invalid mode parameter \"%s\".\n", argv[currentarg + 1]);
+					printf(" Valid parameters for --dbiflist:\n");
+					printf("    0 - show verbose (default)\n");
+					printf("    1 - show one interface per line\n");
+					printf("    2 - show only interface count\n");
+					exit(EXIT_FAILURE);
+				}
+				cfg.qmode = atoi(argv[currentarg + 1]);
+				currentarg++;
+			}
+			showdbiflist(cfg.qmode);
+			exit(EXIT_SUCCESS);
 		} else if ((strcmp(argv[currentarg], "-v") == 0) || (strcmp(argv[currentarg], "--version")) == 0) {
 			printf("vnStat image output %s by Teemu Toivola <tst at iki dot fi> (SQLite %s, LibGD %d.%d.%d)\n", getversion(), sqlite3_libversion(), GD_MAJOR_VERSION, GD_MINOR_VERSION, GD_RELEASE_VERSION);
 			exit(EXIT_SUCCESS);
