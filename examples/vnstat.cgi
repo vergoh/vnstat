@@ -45,22 +45,30 @@ my $darkmode = '0';
 # page auto refresh interval in seconds, set 0 to disable
 my $pagerefresh = '0';
 
+# number of images to show per row on the index page when more than one interface exists, set '0' for auto fit
+my $indeximagesperrow = '1';
+
+# image output to use on index page when more than one interface exists
+my $indeximageoutput = 'hs';
+
 # cgi script file name for httpd
 # fill to override automatic detection
 my $scriptname = '';
 
-################
+
+################ no user configurable settings below this line ################
 
 
 my $VERSION = "1.19";
-my $cssbody = "body { background-color: $bgcolor; }";
-my $csscommonstyle = "a { text-decoration: underline; }\na:link { color: #b0b0b0; }\na:visited { color: #b0b0b0; }\na:hover { color: #000000; }\nsmall { font-size: 8px; color: #cbcbcb; }\nimg { border: 0; vertical-align: top; }\ntable { border: 0; }\ntable td { vertical-align: top; }\nsmall { display: block; }\n";
+my $cssbody = "body { background-color: $bgcolor; text-align: left; display: block; }";
+my $csscommonstyle = "a { text-decoration: underline; }\ntable { border: 0px; border-spacing: 0px; display: inline; }\ntd { vertical-align: top; padding: 0px; }\nimg { border: 0px; vertical-align: top; margin: 4px 4px; }";
+my $csscolors = "a:link { color: #b0b0b0; }\na:visited { color: #b0b0b0; }\na:hover { color: #000000; }\nsmall { display: inline; font-size: 8px; color: #cbcbcb; padding: 0px 4px; }";
 my $metarefresh = "";
 
 if ($darkmode == '1' or $darkmode == '2') {
 	$bgcolor = "black";
-	$cssbody = "body { background-color: $bgcolor; }";
-	$csscommonstyle = "a { text-decoration: underline; }\na:link { color: #707070; }\na:visited { color: #707070; }\na:hover { color: #ffffff; }\nsmall { font-size: 8px; color: #606060; }\nimg { border: 0; vertical-align: top; }\ntable { border: 0; }\ntable td { vertical-align: top; }\nsmall { display: block; }\n";
+	$cssbody = "body { background-color: $bgcolor; text-align: left; display: block; }";
+	$csscolors = "a:link { color: #707070; }\na:visited { color: #707070; }\na:hover { color: #ffffff; }\nsmall { display: inline; font-size: 8px; color: #606060; padding: 0px 4px; }";
 }
 
 sub graph
@@ -143,19 +151,29 @@ sub print_interface_list_html
 <style>
 <!--
 $csscommonstyle
+$csscolors
 $cssbody
 -->
 </style>
 </head>
 HEADER
-
+	print "<body>\n<br>\n";
+	my $lineended = 0;
 	for my $i (0..$#interfaces) {
-		print "<p><a href=\"${scriptname}?${i}-f\"><img src=\"${scriptname}?${i}-hs\" alt=\"$interfaces[${i}] summary\"></a></p>\n";
+		print "<a href=\"${scriptname}?${i}-f\"><img src=\"${scriptname}?${i}-$indeximageoutput\" alt=\"$interfaces[${i}]\"></a>";
+		if ($indeximagesperrow > 0 && ($i + 1) % $indeximagesperrow == 0) {
+			print "<br>\n";
+			$lineended = 1;
+		} else {
+			$lineended = 0;
+		}
+	}
+	if (!$lineended) {
+		print "<br>\n";
 	}
 
 	print <<FOOTER;
-<small style=\"padding: 4px 4px\">Images generated using <a href="https://humdi.net/vnstat/">vnStat</a> image output.</small>
-<br><br>
+<small>Images generated using <a href="https://humdi.net/vnstat/">vnStat</a> image output.</small><br>
 </body>
 </html>
 FOOTER
@@ -178,26 +196,27 @@ sub print_single_interface_html
 <style>
 <!--
 $csscommonstyle
+$csscolors
 $cssbody
 -->
 </style>
 </head>
 HEADER
-
-	print "<table><tr><td>\n";
+	print "<body>\n<br>\n";
+	print "<table>\n<tr><td>\n";
 	print "<img src=\"${scriptname}?${interface}-s\" alt=\"$interfaces[${interface}] summary\"><br>\n";
-	print "<a href=\"${scriptname}?s-${interface}-d-l\"><img src=\"${scriptname}?${interface}-d\" alt=\"$interfaces[${interface}] daily\" style=\"margin: 4px 0px\"></a><br>\n";
+	print "<a href=\"${scriptname}?s-${interface}-d-l\"><img src=\"${scriptname}?${interface}-d\" alt=\"$interfaces[${interface}] daily\"></a><br>\n";
 	print "<a href=\"${scriptname}?s-${interface}-t-l\"><img src=\"${scriptname}?${interface}-t\" alt=\"$interfaces[${interface}] top 10\"></a><br>\n";
 	print "</td><td>\n";
 	print "<a href=\"${scriptname}?s-${interface}-h\"><img src=\"${scriptname}?${interface}-hg\" alt=\"$interfaces[${interface}] hourly\"></a><br>\n";
-	print "<a href=\"${scriptname}?s-${interface}-5\"><img src=\"${scriptname}?${interface}-5g\" alt=\"$interfaces[${interface}] 5 minute\" style=\"margin: 4px 0px\"></a><br>\n";
+	print "<a href=\"${scriptname}?s-${interface}-5\"><img src=\"${scriptname}?${interface}-5g\" alt=\"$interfaces[${interface}] 5 minute\"></a><br>\n";
 	print "<a href=\"${scriptname}?s-${interface}-m-l\"><img src=\"${scriptname}?${interface}-m\" alt=\"$interfaces[${interface}] monthly\"></a><br>\n";
-	print "<a href=\"${scriptname}?s-${interface}-y-l\"><img src=\"${scriptname}?${interface}-y\" alt=\"$interfaces[${interface}] yearly\" style=\"margin: 4px 0px\"></a><br>\n";
+	print "<a href=\"${scriptname}?s-${interface}-y-l\"><img src=\"${scriptname}?${interface}-y\" alt=\"$interfaces[${interface}] yearly\"></a><br>\n";
 	print "</td></tr>\n</table>\n";
 
 	print <<FOOTER;
-<small style=\"padding: 12px 4px\">Images generated using <a href="https://humdi.net/vnstat/">vnStat</a> image output.</small>
-<br><br>
+<br>
+<small>Images generated using <a href="https://humdi.net/vnstat/">vnStat</a> image output.</small><br>
 </body>
 </html>
 FOOTER
@@ -244,19 +263,20 @@ sub print_single_image_html
 <style>
 <!--
 $csscommonstyle
+$csscolors
 $cssbody
 -->
 </style>
 </head>
 HEADER
-
-	print "<table><tr><td>\n";
+	print "<body>\n<br>\n";
+	print "<table>\n<tr><td>\n";
 	print "<img src=\"${scriptname}?${image}\" alt=\"$interfaces[${interface}] ", lc($content), "\">\n";
 	print "</td></tr>\n</table>\n";
 
 	print <<FOOTER;
-<small style=\"padding: 12px 4px\">Image generated using <a href="https://humdi.net/vnstat/">vnStat</a> image output.</small>
-<br><br>
+<br>
+<small>Image generated using <a href="https://humdi.net/vnstat/">vnStat</a> image output.</small><br>
 </body>
 </html>
 FOOTER
@@ -287,7 +307,7 @@ sub main
 	}
 
 	if ($aligncenter != '0') {
-		$cssbody = "html { display: table; width: 100%; }\nbody { background-color: $bgcolor; display: table-cell; text-align: center; vertical-align: middle; }\ntable { margin-left: auto; margin-right: auto; margin-top: 10px; }";
+		$cssbody = "body { background-color: $bgcolor; text-align: center; display: block; }";
 	}
 
 	if ($pagerefresh != '0') {

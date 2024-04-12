@@ -1,7 +1,17 @@
 2.13 / <not released yet>
 
+ - Fixed
+   - Opening of body html tag was missing on some pages in image output
+     example cgi (examples/vnstat.cgi)
  - New
    - Add --dbiflist also to vnstati command
+   - Image output example cgi (examples/vnstat.cgi) improvements
+     - Remove dependency to vnstat command
+     - Add option for selecting how many images are shown per row on the index
+       page when the database has more than one interface
+     - Add option for selecting which image output is used on the index page
+       when the database has more than one interface
+     - Harmonize layout style between pages
 
 
 2.12 / 21-Jan-2024
