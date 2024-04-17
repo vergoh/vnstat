@@ -45,10 +45,16 @@ my $darkmode = '0';
 # page auto refresh interval in seconds, set 0 to disable
 my $pagerefresh = '0';
 
+# interfaces to be shown on the index page when more than one interface exists, regular expression, leave empty to disable filter
+my $indexshowninterfaces = '';
+
+# interfaces to be hidden from the index page when more than one interface exists, regular expression, leave empty to disable filter
+my $indexhiddeninterfaces = '';
+
 # number of images to show per row on the index page when more than one interface exists, set '0' for auto fit
 my $indeximagesperrow = '1';
 
-# image output to use on index page when more than one interface exists
+# image output to use on the index page when more than one interface exists
 my $indeximageoutput = 'hs';
 
 # cgi script file name for httpd
@@ -158,10 +164,18 @@ $cssbody
 </head>
 HEADER
 	print "<body>\n<br>\n";
+	my $interfacesshown = 0;
 	my $lineended = 0;
 	for my $i (0..$#interfaces) {
+		if (length($indexshowninterfaces) > 0 && $interfaces[${i}] !~ /$indexshowninterfaces/) {
+			next;
+		}
+		if (length($indexhiddeninterfaces) > 0 && $interfaces[${i}] =~ /$indexhiddeninterfaces/) {
+			next;
+		}
 		print "<a href=\"${scriptname}?${i}-f\"><img src=\"${scriptname}?${i}-$indeximageoutput\" alt=\"$interfaces[${i}]\"></a>";
-		if ($indeximagesperrow > 0 && ($i + 1) % $indeximagesperrow == 0) {
+		$interfacesshown++;
+		if ($indeximagesperrow > 0 && $interfacesshown % $indeximagesperrow == 0) {
 			print "<br>\n";
 			$lineended = 1;
 		} else {

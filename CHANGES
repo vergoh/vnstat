@@ -11,6 +11,9 @@
        page when the database has more than one interface
      - Add option for selecting which image output is used on the index page
        when the database has more than one interface
+     - Add options for selecting which interfaces are shown or hidden from the
+       index page without disabling access to all interface specific page when
+       the database has more than one interface
      - Harmonize layout style between pages
 
 
