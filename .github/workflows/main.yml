@@ -19,7 +19,7 @@ jobs:
       CFLAGS: "${{ matrix.compiler == 'gcc' && '-Wall -Wextra -O2' || '-Weverything -Wno-padded' }}"
       CPARAMS: "${{ matrix.compiler == 'gcc' && '--enable-werror' || ' ' }}"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: dependencies
         run: sudo make -f .github/Makefile.CI dependencies_ubuntu
@@ -46,7 +46,7 @@ jobs:
       ASAN_OPTIONS: strict_string_checks=1:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1
       UBSAN_OPTIONS: print_stacktrace=1:print_summary=1:halt_on_error=1
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: dependencies
         run: sudo make -f .github/Makefile.CI dependencies_ubuntu
@@ -74,7 +74,7 @@ jobs:
       CC: clang
       CFLAGS: '-Wall -Wextra'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: dependencies
         run: sudo make -f .github/Makefile.CI dependencies_ubuntu_analyzer
@@ -93,7 +93,7 @@ jobs:
       CC: clang
       CFLAGS: '-Weverything -Wno-padded -Wno-poison-system-directories'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: dependencies
         run: make -f .github/Makefile.CI dependencies_macos
@@ -115,7 +115,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Check spelling
         uses: crate-ci/typos@master
