@@ -58,7 +58,8 @@ docker run -d \
 
 For more details regarding container usage, available environment variables and
 a docker-compose.yml example, see the [vergoh/vnstat-docker](https://github.com/vergoh/vnstat-docker)
-git repository or [Docker Hub](https://hub.docker.com/r/vergoh/vnstat).
+git repository or [Docker Hub](https://hub.docker.com/r/vergoh/vnstat). The same
+container images are also being published as `ghcr.io/vergoh/vnstat`.
 
 ## Contacting the author
 
