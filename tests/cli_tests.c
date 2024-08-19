@@ -1080,7 +1080,7 @@ START_TEST(parsealertargs_can_validate_exit_range)
 {
 	int ret;
 	PARAMS p;
-	char *argv[] = {"--alert", "1", "4", "y", "total", "5", "KiB", NULL};
+	char *argv[] = {"--alert", "1", "6", "y", "total", "5", "KiB", NULL};
 
 	defaultcfg();
 	initparams(&p);
@@ -1089,7 +1089,7 @@ START_TEST(parsealertargs_can_validate_exit_range)
 	ret = parsealertargs(&p, argv);
 	ck_assert_int_eq(ret, 0);
 	ck_assert_int_eq(p.alertoutput, 1);
-	ck_assert_int_eq(p.alertexit, 4);
+	ck_assert_int_eq(p.alertexit, 6);
 	ck_assert_int_eq(p.alerttype, 0);
 	ck_assert_int_eq(p.alertcondition, 0);
 	ck_assert_int_eq(p.alertlimit, 0);

@@ -1,5 +1,5 @@
 '\" t
-.TH VNSTAT 1 "JANUARY 2024" "version 2.12" "User Manuals"
+.TH VNSTAT 1 "AUGUST 2024" "version 2.13" "User Manuals"
 .SH NAME
 vnstat \- a console-based network traffic monitor
 
@@ -145,13 +145,16 @@ is exceeded.
 
 .IP
 .I exit
-parameter takes a number from 0 to 3 and controls the exit status of the
+parameter takes a number from 0 to 5 and controls the exit status of the
 command. '0' always uses exit status 0, '1' always uses exit status 1, '2'
 uses exit status 1 if usage estimate exceeds
 .I limit
 but otherwise exit status 0 and '3' uses exit status 1 if
 .I limit
-is exceeded but otherwise exit status 0.
+is exceeded but otherwise exit status 0. '4' and '5' are equivalents of '2'
+and '3' with the difference that exit status 2 is used instead of exit
+status 1 when the condition is met. This can help differentiate alerts from
+errors as errors will always use exit status 1.
 
 .IP
 .I type

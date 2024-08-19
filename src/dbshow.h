@@ -23,7 +23,9 @@ typedef enum AlertExit {
 	AE_Always_Exit_0 = 0,
 	AE_Always_Exit_1,
 	AE_Exit_1_On_Estimate,
-	AE_Exit_1_On_Limit
+	AE_Exit_1_On_Limit,
+	AE_Exit_2_On_Estimate,
+	AE_Exit_2_On_Limit
 } AlertExit;
 
 typedef enum AlertType {

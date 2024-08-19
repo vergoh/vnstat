@@ -633,7 +633,7 @@ int parsealertargs(PARAMS *p, char **argv)
 		return 0;
 	}
 	p->alertexit = (unsigned int)atoi(argv[currentarg]);
-	if (p->alertexit > 3) {
+	if (p->alertexit > 5) {
 		printf("Error: Exit parameter out of range for %s.\n", argv[0]);
 		showalerthelp();
 		return 0;
@@ -714,11 +714,11 @@ int parsealertargs(PARAMS *p, char **argv)
 	currentarg++;
 
 	if ((p->alertcondition == AC_RX_Estimate || p->alertcondition == AC_TX_Estimate || p->alertcondition == AC_Total_Estimate) &&
-		(p->alertoutput == AO_Output_On_Estimate || p->alertexit == AE_Exit_1_On_Estimate)) {
+		(p->alertoutput == AO_Output_On_Estimate || p->alertexit == AE_Exit_1_On_Estimate || p->alertexit == AE_Exit_2_On_Estimate)) {
 		if (p->alertoutput == AO_Output_On_Estimate) {
 			printf("Error: Estimate conditions cannot be used in combination with output parameter \"2\".\n");
 		}
-		if (p->alertexit == AE_Exit_1_On_Estimate) {
+		if (p->alertexit == AE_Exit_1_On_Estimate || p->alertexit == AE_Exit_2_On_Estimate) {
 			printf("Error: Estimate conditions cannot be used in combination with exit parameter \"2\".\n");
 		}
 		showalerthelp();
@@ -844,7 +844,9 @@ void showalerthelp(void)
 	printf("    0 - always use exit status 0\n");
 	printf("    1 - always use exit status 1\n");
 	printf("    2 - use exit status 1 if usage estimate exceeds limit\n");
-	printf("    3 - use exit status 1 if limit is exceeded\n\n");
+	printf("    3 - use exit status 1 if limit is exceeded\n");
+	printf("    4 - use exit status 2 if usage estimate exceeds limit\n");
+	printf("    5 - use exit status 2 if limit is exceeded\n\n");
 
 	printf(" <type>\n");
 	printf("    h, hour, hourly        d, day, daily        p, 95, 95%%\n");
@@ -904,11 +906,18 @@ void handleshowalert(PARAMS *p)
 
 	alert = showalert(p->interface, p->alertoutput, p->alertexit, p->alerttype, p->alertcondition, p->alertlimit);
 
-	if ((alert || p->alertexit == AE_Always_Exit_1) && p->alertexit != AE_Always_Exit_0) {
+	if (p->alertexit == AE_Always_Exit_0) {
+		exit(EXIT_SUCCESS);
+	} else if (p->alertexit == AE_Always_Exit_1) {
 		exit(EXIT_FAILURE);
 	}
 
-	exit(EXIT_SUCCESS);
+	if (alert >= 0 || alert <= 2) {
+		exit(alert);
+	}
+
+	printf("Error: Unexpected alert evaluation result: %d\n", alert);
+	exit(EXIT_FAILURE);
 }
 
 void handleremoveinterface(const PARAMS *p)

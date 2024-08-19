@@ -1123,10 +1123,18 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit a
 		adata.estimateexceeded = 1;
 	}
 
-	if (adata.limitexceeded && aexit == AE_Exit_1_On_Limit) {
-		ret = 1;
-	} else if (adata.estimateexceeded && aexit == AE_Exit_1_On_Estimate) {
-		ret = 1;
+	if (adata.limitexceeded) {
+		if (aexit == AE_Exit_1_On_Limit) {
+			ret = 1;
+		} else if (aexit == AE_Exit_2_On_Limit) {
+			ret = 2;
+		}
+	} else if (adata.estimateexceeded) {
+		if (aexit == AE_Exit_1_On_Estimate) {
+			ret = 1;
+		} else if (aexit == AE_Exit_2_On_Estimate) {
+			ret = 2;
+		}
 	}
 
 	if (output != AO_No_Output) {
