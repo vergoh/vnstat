@@ -912,7 +912,7 @@ void handleshowalert(PARAMS *p)
 		exit(EXIT_FAILURE);
 	}
 
-	if (alert >= 0 || alert <= 2) {
+	if (alert >= 0 && alert <= 2) {
 		exit(alert);
 	}
 

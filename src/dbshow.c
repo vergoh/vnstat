@@ -1129,7 +1129,9 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit a
 		} else if (aexit == AE_Exit_2_On_Limit) {
 			ret = 2;
 		}
-	} else if (adata.estimateexceeded) {
+	}
+
+	if (adata.estimateexceeded) {
 		if (aexit == AE_Exit_1_On_Estimate) {
 			ret = 1;
 		} else if (aexit == AE_Exit_2_On_Estimate) {
