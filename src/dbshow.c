@@ -67,7 +67,7 @@ void showdb(const char *interface, int qmode, const char *databegin, const char 
 
 void showsummary(const interfaceinfo *ifaceinfo, const int shortmode)
 {
-	struct tm *d;
+	const struct tm *d;
 	char datebuff[DATEBUFFLEN];
 	char todaystr[DATEBUFFLEN], yesterdaystr[DATEBUFFLEN];
 	char fieldseparator[8];
@@ -303,11 +303,11 @@ void showlist(const interfaceinfo *ifaceinfo, const char *listname, const char *
 	ListType listtype = LT_None;
 	int offset = 0, i = 1;
 	int estimatevisible = 0;
-	struct tm *d;
+	const struct tm *d;
 	time_t current;
 	char datebuff[DATEBUFFLEN], daybuff[DATEBUFFLEN];
 	char titlename[16], colname[8], stampformat[64];
-	uint64_t e_rx = 0, e_tx = 0, e_secs = 0;
+	uint64_t e_rx = 0, e_tx = 0, e_secs;
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
 
@@ -584,7 +584,7 @@ void showlist(const interfaceinfo *ifaceinfo, const char *listname, const char *
 
 void showoneline(const interfaceinfo *ifaceinfo)
 {
-	struct tm *d;
+	const struct tm *d;
 	char daytemp[DATEBUFFLEN];
 	uint64_t div;
 	dbdatalist *datalist = NULL;
@@ -688,7 +688,7 @@ void showhours(const interfaceinfo *ifaceinfo)
 	uint64_t max = 1;
 	char matrix[HGLINES][81]; /* width is one over 80 so that snprintf can write the end char */
 	char unit[4];
-	struct tm *d;
+	const struct tm *d;
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
 	HOURDATA hourdata[24];
@@ -841,7 +841,7 @@ void showhours(const interfaceinfo *ifaceinfo)
 	for (i = 0; i <= 7; i++) {
 		s = (int)tmax + i + 1;
 		for (j = 0; j < 3; j++) {
-			printf("%02d %" DECCONV "10.*f %" DECCONV "10.*f", ((unsigned int)s + (j * 8)) % 24,
+			printf("%02u %" DECCONV "10.*f %" DECCONV "10.*f", ((unsigned int)s + (j * 8)) % 24,
 					 declen, (double)hourdata[((unsigned int)s + (j * 8)) % 24].rx / (double)div,
 					 declen, (double)hourdata[((unsigned int)s + (j * 8)) % 24].tx / (double)div);
 
@@ -869,7 +869,7 @@ void showhours(const interfaceinfo *ifaceinfo)
 
 void show95thpercentile(const interfaceinfo *ifaceinfo)
 {
-	struct tm *d;
+	const struct tm *d;
 	char datebuff[DATEBUFFLEN];
 	percentiledata pdata;
 

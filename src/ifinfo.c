@@ -130,7 +130,7 @@ int getiflist_linux(iflist **ifl, const int getspeed, const int validate)
 	char interface[MAXIFLEN];
 	FILE *fp;
 	DIR *dp;
-	struct dirent *di;
+	const struct dirent *di;
 	char procline[512];
 	uint32_t bwlimit = 0;
 
@@ -218,7 +218,8 @@ int getiflist_bsd(iflist **ifl, const int getspeed, const int validate)
 int readproc(const char *iface)
 {
 	FILE *fp;
-	char temp[4][64], procline[512], *proclineptr, ifaceid[MAXIFLEN + 1];
+	char temp[4][64], procline[512], ifaceid[MAXIFLEN + 1];
+	const char *proclineptr;
 	int check;
 
 	if ((fp = fopen(PROCNETDEV, "r")) == NULL) {

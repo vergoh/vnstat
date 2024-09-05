@@ -6,7 +6,7 @@ int getpercentiledata(percentiledata *pdata, const char *iface, const uint64_t u
 {
 	uint32_t entry = 0, entrylimit;
 	uint64_t *rxdata, *txdata, *sumdata;
-	struct tm *d;
+	const struct tm *d;
 	char datebuff[DATEBUFFLEN];
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;

@@ -344,7 +344,7 @@ void jsoninterfaceinfo(const interfaceinfo *ifaceinfo)
 
 void jsondate(const time_t *date, const int type)
 {
-	struct tm *d;
+	const struct tm *d;
 
 	d = localtime(date);
 

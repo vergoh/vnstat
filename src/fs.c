@@ -88,7 +88,8 @@ int mkpath(const char *dir, const mode_t mode)
 void preparevnstatdir(const char *dir, const char *user, const char *group)
 {
 	size_t i, len, lastslash = 0;
-	char *path, *base;
+	char *path;
+	const char *base;
 
 	if (dir == NULL) {
 		return;
@@ -164,7 +165,7 @@ void updatedirowner(const char *dir, const char *user, const char *group)
 void updatedirownerid(const char *dir, const uid_t uid, const gid_t gid)
 {
 	DIR *d;
-	struct dirent *di;
+	const struct dirent *di;
 	struct stat statbuf;
 	char entryname[512];
 	int dir_fd, file_fd;

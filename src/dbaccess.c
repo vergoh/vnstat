@@ -32,7 +32,7 @@ int insertlegacydata(DATA *data, const char *iface)
 {
 	int i, year;
 	time_t yeartime;
-	struct tm *stm;
+	const struct tm *stm;
 	uint64_t rx, tx;
 
 	if (!db_begintransaction()) {

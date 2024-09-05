@@ -120,7 +120,7 @@ void colorinitcheck(const char *color, const int value, const char *cfgtext, con
 
 void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int height)
 {
-	struct tm *d;
+	const struct tm *d;
 	char datestring[64], buffer[512];
 	gdFontPtr datefont;
 

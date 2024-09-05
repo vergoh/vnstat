@@ -227,7 +227,7 @@ unsigned int addinterfaces(DSTATE *s)
 void detectboot(DSTATE *s)
 {
 	char buffer[32];
-	char *btime_buffer;
+	const char *btime_buffer;
 	uint64_t current_btime, db_btime;
 
 	current_btime = getbtime();
@@ -359,7 +359,7 @@ void preparedatabase(DSTATE *s)
 unsigned int importlegacydbs(void)
 {
 	DIR *dir;
-	struct dirent *di;
+	const struct dirent *di;
 	unsigned int importcount = 0;
 
 	if ((dir = opendir(cfg.dbdir)) == NULL) {
@@ -787,7 +787,7 @@ void cleanremovedinterfaces(DSTATE *s)
 
 void rescandatabaseforinterfaces(DSTATE *s)
 {
-	short interface_already_monitored = 0;
+	short interface_already_monitored;
 	uint64_t dbifcount = s->dbifcount;
 	datacache *iterator = NULL;
 	iflist *dbifl = NULL, *dbifl_iterator = NULL;
@@ -1076,7 +1076,7 @@ short getcurrenthour(void)
 {
 	int ret = 0;
 	time_t current;
-	struct tm *stm;
+	const struct tm *stm;
 	char buffer[4];
 
 	current = time(NULL);

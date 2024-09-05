@@ -119,7 +119,7 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 	double ratediv;
 	uint64_t max = 1, scaleunit = 0;
 	char buffer[32];
-	struct tm *d;
+	const struct tm *d;
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
 	HOURDATA hourdata[24];
@@ -315,10 +315,10 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	int width, height, headermod, i = 1, rowcount = 0;
 	int estimateavailable = 0, estimatevisible = 0;
 	int32_t limit;
-	uint64_t e_rx = 0, e_tx = 0, e_secs = 0;
+	uint64_t e_rx = 0, e_tx = 0, e_secs;
 	char buffer[512], datebuff[16], daybuff[16];
 	char stampformat[64], titlename[16], colname[8];
-	struct tm *d;
+	const struct tm *d;
 	time_t current;
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
@@ -703,7 +703,7 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 
 void drawsummary_alltime(IMAGECONTENT *ic, const int x, const int y)
 {
-	struct tm *d;
+	const struct tm *d;
 	char buffer[512], datebuff[16], daytemp[32];
 	gdFontPtr titlefont;
 
@@ -736,7 +736,7 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 	double rxp, txp, mod;
 	char buffer[512], datebuff[16], daytemp[32];
 	time_t yesterday;
-	struct tm *d = NULL;
+	const struct tm *d = NULL;
 	dbdatalist *datalist = NULL;
 	dbdatalist *data_current = NULL, *data_previous = NULL;
 	dbdatalistinfo datainfo;
@@ -932,7 +932,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	time_t timestamp;
 	double ratediv, e;
 	char buffer[32];
-	struct tm *d;
+	const struct tm *d;
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
 	gdFontPtr font;
@@ -1142,7 +1142,7 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 	int i, l, x = xpos, y = ypos, s = 0, step = 0, prev = 0, last = 0, color;
 	uint64_t scaleunit, max, percentile;
 	double ratediv, percentileratediv;
-	struct tm *d;
+	const struct tm *d;
 	time_t current;
 	char datebuff[DATEBUFFLEN];
 	dbdatalist *datalist = NULL, *datalist_i = NULL;

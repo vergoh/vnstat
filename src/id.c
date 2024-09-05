@@ -3,7 +3,7 @@
 
 uid_t getuser(const char *user)
 {
-	struct passwd *pw;
+	const struct passwd *pw;
 	uid_t uid;
 
 	if (!strlen(user)) {
@@ -32,7 +32,7 @@ uid_t getuser(const char *user)
 
 gid_t getgroup(const char *group)
 {
-	struct group *gr;
+	const struct group *gr;
 	gid_t gid;
 
 	if (!strlen(group)) {
