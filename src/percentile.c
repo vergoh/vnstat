@@ -60,7 +60,7 @@ int getpercentiledata(percentiledata *pdata, const char *iface, const uint64_t u
 	pdata->maxtx = datainfo.maxtx;
 	pdata->max = datainfo.max;
 
-	entrylimit = lrint(datainfo.count * (float)0.95) - 1;
+	entrylimit = (uint32_t)lrint(datainfo.count * (double)0.95) - 1;
 
 	if (debug) {
 		printf("Entry expectation: %" PRIu32 "\n", pdata->countexpectation);
@@ -134,9 +134,9 @@ int getpercentiledata(percentiledata *pdata, const char *iface, const uint64_t u
 
 int compare_uint64_t(const void *a, const void *b)
 {
-	if (*(uint64_t *)a < *(uint64_t *)b) {
+	if (*(const uint64_t *)a < *(const uint64_t *)b) {
 		return -1;
-	} else if (*(uint64_t *)a > *(uint64_t *)b) {
+	} else if (*(const uint64_t *)a > *(const uint64_t *)b) {
 		return 1;
 	}
 	return 0;

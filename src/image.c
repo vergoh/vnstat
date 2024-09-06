@@ -738,7 +738,7 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 	time_t yesterday;
 	const struct tm *d = NULL;
 	dbdatalist *datalist = NULL;
-	dbdatalist *data_current = NULL, *data_previous = NULL;
+	const dbdatalist *data_current = NULL, *data_previous = NULL;
 	dbdatalistinfo datainfo;
 	gdFontPtr titlefont;
 
@@ -1304,9 +1304,9 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 		printf("s:   %d\n", s);
 		printf("l:   %d\n", l);
 		printf("h:   %d\n", height);
-		printf("p:   %" PRIu64 "\n", (uint64_t)(percentile / percentileratediv));
+		printf("p:   %" PRIu64 "\n", (uint64_t)((double)percentile / percentileratediv));
 		printf("max: %" PRIu64 "\n", max);
-		printf("max rate: %s\n", gettrafficrate(max * ratediv, 3600, 0));
+		printf("max rate: %s\n", gettrafficrate((uint64_t)((double)max * ratediv), 3600, 0));
 		printf("per rate: %s\n", gettrafficrate(percentile, 300, 0));
 	}
 

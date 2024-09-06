@@ -912,7 +912,7 @@ void show95thpercentile(const interfaceinfo *ifaceinfo)
 	if (pdata.count == pdata.countexpectation) {
 		printf(", 100%% coverage)");
 	} else {
-		printf(", %0.1f%% coverage)", (float)pdata.count / (float)pdata.countexpectation * 100.0);
+		printf(", %0.1f%% coverage)", pdata.count / (double)pdata.countexpectation * 100.0);
 	}
 	printf("\n\n");
 
@@ -1059,7 +1059,7 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit a
 			if (type != AT_Percentile) {
 				adata.used = adata.datalist->rx;
 			} else {
-				adata.used = (uint64_t)(adata.pdata.rxpercentile / (double)300);
+				adata.used = (uint64_t)((double)adata.pdata.rxpercentile / (double)300);
 			}
 			snprintf(adata.conditionname, 16, "rx");
 			if (type != AT_Percentile && cfg.estimatevisible) {
@@ -1071,7 +1071,7 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit a
 			if (type != AT_Percentile) {
 				adata.used = adata.datalist->tx;
 			} else {
-				adata.used = (uint64_t)(adata.pdata.txpercentile / (double)300);
+				adata.used = (uint64_t)((double)adata.pdata.txpercentile / (double)300);
 			}
 			snprintf(adata.conditionname, 16, "tx");
 			if (type != AT_Percentile && cfg.estimatevisible) {
@@ -1083,7 +1083,7 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit a
 			if (type != AT_Percentile) {
 				adata.used = adata.datalist->rx + adata.datalist->tx;
 			} else {
-				adata.used = (uint64_t)(adata.pdata.sumpercentile / (double)300);
+				adata.used = (uint64_t)((double)adata.pdata.sumpercentile / (double)300);
 			}
 			snprintf(adata.conditionname, 16, "total");
 			if (type != AT_Percentile && cfg.estimatevisible) {
@@ -1309,17 +1309,17 @@ void alertoutput(const alertdata *adata, const AlertOutput output, const AlertTy
 
 			snprintf(linebuffer, 128, "%" PRIu32 " entries", adata->pdata.count);
 			if (condition == AC_RX) {
-				snprintf(buffer, 32, ", %" PRIu32 " (%0.1f%%) over limit", adata->pdata.countrxoveruserlimit, (float)adata->pdata.countrxoveruserlimit / (float)adata->pdata.count * 100.0);
+				snprintf(buffer, 32, ", %" PRIu32 " (%0.1f%%) over limit", adata->pdata.countrxoveruserlimit, adata->pdata.countrxoveruserlimit / (double)adata->pdata.count * 100.0);
 			} else if (condition == AC_TX) {
-				snprintf(buffer, 32, ", %" PRIu32 " (%0.1f%%) over limit", adata->pdata.counttxoveruserlimit, (float)adata->pdata.counttxoveruserlimit / (float)adata->pdata.count * 100.0);
+				snprintf(buffer, 32, ", %" PRIu32 " (%0.1f%%) over limit", adata->pdata.counttxoveruserlimit, adata->pdata.counttxoveruserlimit / (double)adata->pdata.count * 100.0);
 			} else if (condition == AC_Total) {
-				snprintf(buffer, 32, ", %" PRIu32 " (%0.1f%%) over limit", adata->pdata.countsumoveruserlimit, (float)adata->pdata.countsumoveruserlimit / (float)adata->pdata.count * 100.0);
+				snprintf(buffer, 32, ", %" PRIu32 " (%0.1f%%) over limit", adata->pdata.countsumoveruserlimit, adata->pdata.countsumoveruserlimit / (double)adata->pdata.count * 100.0);
 			}
 			strncat(linebuffer, buffer, 32);
 			if (adata->pdata.count == adata->pdata.countexpectation) {
 				snprintf(buffer, 32, ", 100%% coverage");
 			} else {
-				snprintf(buffer, 32, ", %0.1f%% coverage", (float)adata->pdata.count / (float)adata->pdata.countexpectation * 100.0);
+				snprintf(buffer, 32, ", %0.1f%% coverage", adata->pdata.count / (double)adata->pdata.countexpectation * 100.0);
 			}
 			strncat(linebuffer, buffer, 32);
 			printf("%*s%s\n", (int)(5 + (61 - strlen(linebuffer)) / 2), " ", linebuffer);

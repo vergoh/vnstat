@@ -137,15 +137,15 @@ void jsonpercentile(const interfaceinfo *ifaceinfo)
 	printf("\"seen\":%" PRIu32 ",", pdata.count);
 	printf("\"expected\":%" PRIu32 ",", pdata.countexpectation);
 	printf("\"missing\":%" PRIu32 ",", pdata.countexpectation - pdata.count);
-	printf("\"coverage_percentage\":%0.1f", (float)pdata.count / (float)pdata.countexpectation * 100.0);
+	printf("\"coverage_percentage\":%0.1f", pdata.count / (double)pdata.countexpectation * 100.0);
 	printf("},");
 
 	jsonpercentileminavgmax(&pdata);
 
 	printf("\"95th_percentile\":{");
-	printf("\"rx_bytes_per_second\":%" PRIu64 ",", (uint64_t)(pdata.rxpercentile / (double)300));
-	printf("\"tx_bytes_per_second\":%" PRIu64 ",", (uint64_t)(pdata.txpercentile / (double)300));
-	printf("\"total_bytes_per_second\":%" PRIu64 "", (uint64_t)(pdata.sumpercentile / (double)300));
+	printf("\"rx_bytes_per_second\":%" PRIu64 ",", (uint64_t)((double)pdata.rxpercentile / (double)300));
+	printf("\"tx_bytes_per_second\":%" PRIu64 ",", (uint64_t)((double)pdata.txpercentile / (double)300));
+	printf("\"total_bytes_per_second\":%" PRIu64 "", (uint64_t)((double)pdata.sumpercentile / (double)300));
 	printf("}");
 
 	printf("}");
@@ -154,21 +154,21 @@ void jsonpercentile(const interfaceinfo *ifaceinfo)
 void jsonpercentileminavgmax(const percentiledata *pdata)
 {
 	printf("\"minimum\":{");
-	printf("\"rx_bytes_per_second\":%" PRIu64 ",", (uint64_t)(pdata->minrx / (double)300));
-	printf("\"tx_bytes_per_second\":%" PRIu64 ",", (uint64_t)(pdata->mintx / (double)300));
-	printf("\"total_bytes_per_second\":%" PRIu64 "", (uint64_t)(pdata->min / (double)300));
+	printf("\"rx_bytes_per_second\":%" PRIu64 ",", (uint64_t)((double)pdata->minrx / (double)300));
+	printf("\"tx_bytes_per_second\":%" PRIu64 ",", (uint64_t)((double)pdata->mintx / (double)300));
+	printf("\"total_bytes_per_second\":%" PRIu64 "", (uint64_t)((double)pdata->min / (double)300));
 	printf("},");
 
 	printf("\"average\":{");
-	printf("\"rx_bytes_per_second\":%" PRIu64 ",", (uint64_t)(pdata->sumrx / (double)(pdata->count * 300)));
-	printf("\"tx_bytes_per_second\":%" PRIu64 ",", (uint64_t)(pdata->sumtx / (double)(pdata->count * 300)));
-	printf("\"total_bytes_per_second\":%" PRIu64 "", (uint64_t)((pdata->sumrx + pdata->sumtx) / (double)(pdata->count * 300)));
+	printf("\"rx_bytes_per_second\":%" PRIu64 ",", (uint64_t)((double)pdata->sumrx / (double)(pdata->count * 300)));
+	printf("\"tx_bytes_per_second\":%" PRIu64 ",", (uint64_t)((double)pdata->sumtx / (double)(pdata->count * 300)));
+	printf("\"total_bytes_per_second\":%" PRIu64 "", (uint64_t)(((double)pdata->sumrx + (double)pdata->sumtx) / (double)(pdata->count * 300)));
 	printf("},");
 
 	printf("\"maximum\":{");
-	printf("\"rx_bytes_per_second\":%" PRIu64 ",", (uint64_t)(pdata->maxrx / (double)300));
-	printf("\"tx_bytes_per_second\":%" PRIu64 ",", (uint64_t)(pdata->maxtx / (double)300));
-	printf("\"total_bytes_per_second\":%" PRIu64 "", (uint64_t)(pdata->max / (double)300));
+	printf("\"rx_bytes_per_second\":%" PRIu64 ",", (uint64_t)((double)pdata->maxrx / (double)300));
+	printf("\"tx_bytes_per_second\":%" PRIu64 ",", (uint64_t)((double)pdata->maxtx / (double)300));
+	printf("\"total_bytes_per_second\":%" PRIu64 "", (uint64_t)((double)pdata->max / (double)300));
 	printf("},");
 }
 
@@ -313,16 +313,16 @@ void jsonpercentilealert(const alertdata *adata, const AlertCondition condition,
 	printf("\"seen\":%" PRIu32 ",", adata->pdata.count);
 	printf("\"expected\":%" PRIu32 ",", adata->pdata.countexpectation);
 	printf("\"missing\":%" PRIu32 ",", adata->pdata.countexpectation - adata->pdata.count);
-	printf("\"coverage_percentage\":%0.1f,", (float)adata->pdata.count / (float)adata->pdata.countexpectation * 100.0);
+	printf("\"coverage_percentage\":%0.1f,", adata->pdata.count / (double)adata->pdata.countexpectation * 100.0);
 	if (condition == AC_RX) {
 		printf("\"over_limit\":%" PRIu32 ",", adata->pdata.countrxoveruserlimit);
-		printf("\"over_limit_percentage\":%0.1f", (float)adata->pdata.countrxoveruserlimit / (float)adata->pdata.count * 100.0);
+		printf("\"over_limit_percentage\":%0.1f", adata->pdata.countrxoveruserlimit / (double)adata->pdata.count * 100.0);
 	} else if (condition == AC_TX) {
 		printf("\"over_limit\":%" PRIu32 ",", adata->pdata.counttxoveruserlimit);
-		printf("\"over_limit_percentage\":%0.1f", (float)adata->pdata.counttxoveruserlimit / (float)adata->pdata.count * 100.0);
+		printf("\"over_limit_percentage\":%0.1f", adata->pdata.counttxoveruserlimit / (double)adata->pdata.count * 100.0);
 	} else if (condition == AC_Total) {
 		printf("\"over_limit\":%" PRIu32 ",", adata->pdata.countsumoveruserlimit);
-		printf("\"over_limit_percentage\":%0.1f", (float)adata->pdata.countsumoveruserlimit / (float)adata->pdata.count * 100.0);
+		printf("\"over_limit_percentage\":%0.1f", adata->pdata.countsumoveruserlimit / (double)adata->pdata.count * 100.0);
 	}
 	printf("}");
 

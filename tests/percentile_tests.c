@@ -146,8 +146,8 @@ END_TEST
 
 START_TEST(getpercentiledata_can_provide_data_with_many_entries)
 {
-	int ret, i;
-	uint64_t entry;
+	int ret;
+	uint64_t entry, i;
 	percentiledata pdata;
 
 	entry = get_timestamp(2001, 1, 1, 0, 0);
@@ -199,8 +199,8 @@ END_TEST
 
 START_TEST(getpercentiledata_can_provide_data_with_many_entries_and_order_does_not_matter)
 {
-	int ret, i;
-	uint64_t entry;
+	int ret;
+	uint64_t entry, i;
 	percentiledata pdata;
 
 	entry = get_timestamp(2001, 1, 1, 0, 0);
@@ -252,8 +252,8 @@ END_TEST
 
 START_TEST(getpercentiledata_can_check_limit)
 {
-	int ret, i;
-	uint64_t entry;
+	int ret;
+	uint64_t entry, i;
 	percentiledata pdata;
 
 	entry = get_timestamp(2001, 1, 1, 0, 0);

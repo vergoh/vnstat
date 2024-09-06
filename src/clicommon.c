@@ -14,7 +14,7 @@ void showdbiflist(const int mode)
 	}
 
 	if (mode == 2) {
-		dbifcount = db_getinterfacecount();
+		dbifcount = (int)db_getinterfacecount();
 		printf("%d\n", dbifcount);
 		db_close();
 		return;
