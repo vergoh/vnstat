@@ -6,6 +6,7 @@ dist_man_MANS = man/vnstat.1 man/vnstat.conf.5 man/vnstatd.8 man/vnstati.1
 EXTRA_DIST = cfg examples UPGRADE CHANGES FAQ INSTALL_BSD UNINSTALL
 
 bin_PROGRAMS = vnstat
+vnstat_LDADD = -lcurl -lcjson -lpcap -lsqlite3 -lm
 sbin_PROGRAMS = vnstatd
 if HAVE_LIBGD
 bin_PROGRAMS += vnstati
@@ -29,7 +30,9 @@ vnstat_SOURCES = src/vnstat.c \
   src/fs.c src/fs.h \
   src/id.c src/id.h \
   src/traffic.c src/traffic.h \
-  src/clicommon.c src/clicommon.h
+  src/clicommon.c src/clicommon.h \
+  src/ip_geolocation.c src/ip_geolocation.h \
+  src/packet_capture.c src/packet_capture.h
 
 vnstatd_SOURCES = src/vnstatd.c src/vnstatd.h \
   src/ifinfo.c src/ifinfo.h \
