@@ -1,0 +1,34 @@
+checking for a BSD-compatible install... /usr/bin/install -c
+checking whether sleep supports fractional seconds... yes
+checking filesystem timestamp resolution... 2
+checking whether build environment is sane... yes
+checking for a race-free mkdir -p... mkdir -p
+checking for gawk... no
+checking for mawk... no
+checking for nawk... no
+checking for awk... awk
+checking whether make sets $(MAKE)... yes
+checking whether make supports nested variables... yes
+checking xargs -n works... yes
+checking whether to enable maintainer-specific portions of Makefiles... no
+checking for gcc... gcc
+checking whether the C compiler works... yes
+checking for C compiler default output file name... a.out
+checking for suffix of executables... 
+checking whether we are cross compiling... no
+checking for suffix of object files... o
+checking whether the compiler supports GNU C... yes
+checking whether gcc accepts -g... yes
+checking for gcc option to enable C11 features... none needed
+checking whether gcc understands -c and -o together... yes
+checking whether make supports the include directive... yes (GNU style)
+checking dependency style of gcc... gcc3
+checking whether make sets $(MAKE)... (cached) yes
+checking for pow in -lm... yes
+checking for sqlite3_prepare_v2 in -lsqlite3... yes
+checking for gcc options needed to detect all undeclared functions... none needed
+checking for gdImagePng in -lgd... yes
+checking whether GD_NEAREST_NEIGHBOUR is declared... yes
+checking whether gdImageFile is declared... yes
+./configure: line 5209: syntax error near unexpected token `CHECK,'
+./configure: line 5209: `PKG_CHECK_MODULES(CHECK, check >= 0.9.6, , AC_MSG_NOTICE([testcases can not be execute without check installed]))'
