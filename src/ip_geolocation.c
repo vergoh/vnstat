@@ -1,13 +1,16 @@
+
 #include "ip_geolocation.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <curl/curl.h>
 #include <cjson/cJSON.h> // cJSON 헤더 추가
-#include <arpa/inet.h>  // for inet_ntop and INET_ADDRSTRLEN //chag
-#include <netinet/ip.h> // for struct ip //chag
+#include <arpa/inet.h>  // for inet_ntop and INET_ADDRSTRLEN //chagju
+#include <netinet/ip.h> // for struct ip //chagju
 
+//김태영 created file
 
+//"창주" 주석이 있는것은 창주 lines, 주석이 없으면 태영 lines
 
 // Geolocation 데이터를 가져와 결과를 출력하는 함수
 void get_geolocation_with_output(const char *ip, const char *api_key) {
@@ -47,7 +50,7 @@ void filter_ip_address(struct ip *ip_header, const char *api_key) {
            ip_str,
            strlen(country) > 0 ? country : "Unknown",
            strlen(city) > 0 ? city : "Unknown");
-}//창주
+}//창주 37~51
 
 // 콜백 함수: libcurl이 데이터를 수신할 때 호출
 static size_t write_callback(void *contents, size_t size, size_t nmemb, void *userp) {

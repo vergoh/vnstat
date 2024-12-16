@@ -6,12 +6,12 @@ dist_man_MANS = man/vnstat.1 man/vnstat.conf.5 man/vnstatd.8 man/vnstati.1
 EXTRA_DIST = cfg examples UPGRADE CHANGES FAQ INSTALL_BSD UNINSTALL
 
 bin_PROGRAMS = vnstat
-vnstat_LDADD = -lcurl -lcjson -lpcap -lsqlite3 -lm
+vnstat_LDADD = -lcurl -lcjson -lpcap -lsqlite3 -lm -L/opt/homebrew/lib
+
 sbin_PROGRAMS = vnstatd
 if HAVE_LIBGD
 bin_PROGRAMS += vnstati
 endif
-vnstat_LDADD = -lcurl -lpcap -lsqlite3 -lm /opt/homebrew/Cellar/cjson/1.7.18/lib/libcjson.dylib
 
 vnstat_SOURCES = src/vnstat.c \
   src/vnstat_func.c src/vnstat_func.h \

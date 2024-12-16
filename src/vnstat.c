@@ -49,7 +49,7 @@ void get_traffic_data(const char *ip, const char *dev, unsigned long *bytes_sent
     }
 
     pcap_close(handle);
-}//창주
+}//창주 17~52
 
 
 void handle_address() {
@@ -88,7 +88,7 @@ void handle_address() {
     } else {
         printf("No IPs captured.\n");
     }
-}
+} //태영 55~91
 
 void handle_filter(const char *filter_ip) {
     const char *api_key = "64fbc6778aa7dd9fd832966450af25df";  // ipstack API 키
@@ -139,7 +139,7 @@ void handle_filter(const char *filter_ip) {
         printf("No IPs captured.\n");
     }
 }
-//창주
+//창주 93~141
 
 
 int main(int argc, char *argv[])
@@ -193,7 +193,7 @@ int main(int argc, char *argv[])
                 }
             }
         }
-    }
+    } //태영 154~177
 
 
     /* 기본 설정 및 기존 동작 */
