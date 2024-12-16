@@ -1,5 +1,5 @@
 SUBDIRS = .
-AM_CFLAGS = @CFLAG_EXTRAS@
+AM_CFLAGS = @CFLAG_EXTRAS@ -I/opt/homebrew/opt/cjson/include
 
 dist_man_MANS = man/vnstat.1 man/vnstat.conf.5 man/vnstatd.8 man/vnstati.1
 
@@ -11,7 +11,7 @@ sbin_PROGRAMS = vnstatd
 if HAVE_LIBGD
 bin_PROGRAMS += vnstati
 endif
-vnstati_LDADD = @IMAGELIBS@
+vnstat_LDADD = -lcurl -lpcap -lsqlite3 -lm /opt/homebrew/Cellar/cjson/1.7.18/lib/libcjson.dylib
 
 vnstat_SOURCES = src/vnstat.c \
   src/vnstat_func.c src/vnstat_func.h \

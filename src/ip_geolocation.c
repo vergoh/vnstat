@@ -4,6 +4,10 @@
 #include <string.h>
 #include <curl/curl.h>
 #include <cjson/cJSON.h> // cJSON 헤더 추가
+#include <arpa/inet.h>  // for inet_ntop and INET_ADDRSTRLEN //chag
+#include <netinet/ip.h> // for struct ip //chag
+
+
 
 // Geolocation 데이터를 가져와 결과를 출력하는 함수
 void get_geolocation_with_output(const char *ip, const char *api_key) {
@@ -29,6 +33,22 @@ struct Memory {
     size_t size;
 };
 
+// IP 주소가 특정 범위에 속하는지 확인하는 예시 함수
+void filter_ip_address(struct ip *ip_header, const char *api_key) {
+    char ip_str[INET_ADDRSTRLEN];
+    char country[50] = {0};
+    char city[50] = {0};
+    inet_ntop(AF_INET, &ip_header->ip_src, ip_str, INET_ADDRSTRLEN);
+
+    get_geolocation(ip_str, api_key, country, city);
+
+    // 예시: IP가 특정 범위에 있을 경우, 지리 정보 확인
+    printf("Filtered IP: %s, Country: %s, City: %s\n",
+           ip_str,
+           strlen(country) > 0 ? country : "Unknown",
+           strlen(city) > 0 ? city : "Unknown");
+}//창주
+
 // 콜백 함수: libcurl이 데이터를 수신할 때 호출
 static size_t write_callback(void *contents, size_t size, size_t nmemb, void *userp) {
     size_t total_size = size * nmemb;
@@ -48,6 +68,7 @@ static size_t write_callback(void *contents, size_t size, size_t nmemb, void *us
     return total_size;
 }
 
+// Geolocation API를 호출하여 IP의 위치 정보 추출
 void get_geolocation(const char* ip, const char* api_key, char *country, char *city) {
     if (!ip || !api_key || !country || !city) {
         fprintf(stderr, "Invalid parameters passed to get_geolocation.\n");

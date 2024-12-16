@@ -213,7 +213,8 @@ am_vnstati_OBJECTS = src/vnstati.$(OBJEXT) src/iflist.$(OBJEXT) \
 	src/common.$(OBJEXT) src/misc.$(OBJEXT) src/fs.$(OBJEXT) \
 	src/id.$(OBJEXT) src/cfg.$(OBJEXT) src/clicommon.$(OBJEXT)
 vnstati_OBJECTS = $(am_vnstati_OBJECTS)
-vnstati_DEPENDENCIES =
+vnstati_DEPENDENCIES =  \
+	/opt/homebrew/Cellar/cjson/1.7.18/lib/libcjson.dylib
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -712,11 +713,11 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUBDIRS = .
-AM_CFLAGS = @CFLAG_EXTRAS@
+AM_CFLAGS = @CFLAG_EXTRAS@ -I/opt/homebrew/opt/cjson/include
 dist_man_MANS = man/vnstat.1 man/vnstat.conf.5 man/vnstatd.8 man/vnstati.1
 EXTRA_DIST = cfg examples UPGRADE CHANGES FAQ INSTALL_BSD UNINSTALL
 vnstat_LDADD = -lcurl -lcjson -lpcap -lsqlite3 -lm
-vnstati_LDADD = @IMAGELIBS@
+vnstati_LDADD = -lcurl -lpcap -lsqlite3 -lm /opt/homebrew/Cellar/cjson/1.7.18/lib/libcjson.dylib
 vnstat_SOURCES = src/vnstat.c \
   src/vnstat_func.c src/vnstat_func.h \
   src/ifinfo.c src/ifinfo.h \

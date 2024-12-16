@@ -4,8 +4,13 @@
 #include <stdlib.h>
 #include <arpa/inet.h>
 #include <string.h>
+#include <netinet/ip.h>  // IP 헤더 정의
+#include <netinet/tcp.h> // TCP 헤더 정의
+#include <arpa/inet.h>   // ntohs 함수 사용
+#include <stdio.h>       // 기본 출력 함수
 
-#define MAX_CAPTURED_IPS 3 // 캡처할 서로 다른 IP 개수 제한
+
+#define MAX_CAPTURED_IPS 10 // 캡처할 서로 다른 IP 개수 제한 (창주)
 
 static char **captured_ips = NULL; // 캡처된 IP 배열
 static int captured_count = 0;     // 캡처된 서로 다른 IP의 개수
@@ -13,8 +18,13 @@ static int captured_count = 0;     // 캡처된 서로 다른 IP의 개수
 // 패킷 처리 콜백 함수
 void packet_handler(u_char *user, const struct pcap_pkthdr *header, const u_char *packet) {
     struct ip *ip_header = (struct ip *)(packet + 14); // Ethernet 헤더를 건너뜀 (14바이트)
-
+    struct tcphdr *tcp_handler = (struct tcphdr *)(packet + 14 + (ip_header->ip_hl << 2)); //필터링 된 패킷 처리 (창주)
+    
     // 발신 IP 추출
+    if (ip_header->ip_src.s_addr == 0xC0A80001 && ntohs(tcp_handler->th_dport) == 80) { // 192.168.0.1:80
+        printf("Captured packet from IP 192.168.0.1 and port 80\n");
+    }
+
     const char *source_ip = inet_ntoa(ip_header->ip_src);
     if (!source_ip) {
         fprintf(stderr, "Error: Failed to extract source IP.\n");
