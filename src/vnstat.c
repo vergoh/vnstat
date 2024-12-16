@@ -184,10 +184,14 @@ int main(int argc, char *argv[])
                     return 1;
                 }
             } else if (strcmp(argv[currentarg], "-monitor") == 0) { //ip 차단 창주
-                handle_packet_capture("en0"); // 네트워크 인터페이스 지정
-                return 0;
+                if (currentarg + 1 < argc) {
+                    handle_packet_capture(argv[currentarg + 1]); // 네트워크 인터페이스 지정
+                    return 0;
+                } else {
+                    printf("Error: Interface name missing for -monitor.\n");
+                    return 1;
+                }
             }
-
         }
     }
 

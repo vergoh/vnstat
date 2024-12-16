@@ -1,4 +1,5 @@
 #include "packet_capture.h"
+#include "traffic.h"
 #include <netinet/ip.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -98,6 +99,34 @@ const char** start_packet_capture(const char *dev, int *out_count) {
     }
 
     return (const char **)captured_ips;
+}
+
+void handle_packet_capture(const char *dev) {
+    char errbuf[PCAP_ERRBUF_SIZE];
+    pcap_t *handle = pcap_open_live(dev, BUFSIZ, 1, 1000, errbuf);
+
+    if (!handle) {
+        fprintf(stderr, "Error opening device %s: %s\n", dev, errbuf);
+        return;
+    }
+
+    const u_char *packet;
+    struct pcap_pkthdr header;
+    struct ip *ip_header;
+
+    while ((packet = pcap_next(handle, &header)) != NULL) {
+        struct ip *ip_header = (struct ip *)(packet + 14); // Ethernet 헤더는 14바이트
+        char src_ip[INET_ADDRSTRLEN];
+        char dst_ip[INET_ADDRSTRLEN];
+
+        inet_ntop(AF_INET, &ip_header->ip_src, src_ip, INET_ADDRSTRLEN);
+        inet_ntop(AF_INET, &ip_header->ip_dst, dst_ip, INET_ADDRSTRLEN);
+
+        monitor_ip_traffic(src_ip, 0, header.len); // 송신 트래픽
+        monitor_ip_traffic(dst_ip, header.len, 0); // 수신 트래픽
+    }
+
+    pcap_close(handle);
 }
 
 // 캡처된 IP 메모리 해제 함수

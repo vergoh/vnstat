@@ -2,6 +2,103 @@
 #include "ifinfo.h"
 #include "misc.h"
 #include "traffic.h"
+#include <arpa/inet.h> 
+#include <netinet/in.h> 
+#include <time.h> 
+#include <netinet/ip.h>
+#include <pcap.h>
+
+#define MAX_IP_GROUP 256
+#define DEFAULT_TRAFFIC_THRESHOLD 1024 * 1024 // 1MB
+#define DEFAULT_WARNING_LIMIT 3 // 경고 횟수 제한 창주(3)
+
+
+unsigned long TRAFFIC_THRESHOLD = DEFAULT_TRAFFIC_THRESHOLD;
+unsigned int WARNING_LIMIT = DEFAULT_WARNING_LIMIT;
+
+void set_traffic_settings(unsigned long threshold, unsigned int warnings) {
+    TRAFFIC_THRESHOLD = threshold;
+    WARNING_LIMIT = warnings;
+}
+
+typedef struct {
+    char ip[INET_ADDRSTRLEN]; // IP 주소
+    unsigned long bytes_sent; // 송신된 바이트
+    unsigned long bytes_received; // 수신된 바이트
+    time_t last_detected; // 마지막 트래픽 감지 시간
+    int warning_count; // 경고 횟수
+    int is_blocked; // 차단 여부 (0: 정상, 1: 차단됨)
+} TrafficInfo;
+
+TrafficInfo monitored_ips[MAX_IP_GROUP];
+int monitored_count = 0; //창주(10)
+
+void monitor_ip_traffic(const char *ip, unsigned long sent, unsigned long received) {
+    int found = 0;
+
+    // IP 검색
+    for (int i = 0; i < monitored_count; i++) {
+        if (strcmp(monitored_ips[i].ip, ip) == 0) {
+            found = 1;
+            monitored_ips[i].bytes_sent += sent;
+            monitored_ips[i].bytes_received += received;
+
+            // 차단된 상태인지 확인
+            if (monitored_ips[i].is_blocked) {
+                printf("Blocked IP tried to access: %s\n", ip);
+                return;
+            }
+
+            // 트래픽 초과 확인
+            if (monitored_ips[i].bytes_received > TRAFFIC_THRESHOLD || monitored_ips[i].bytes_sent > TRAFFIC_THRESHOLD) {
+                monitored_ips[i].warning_count++;
+
+                if (monitored_ips[i].warning_count >= WARNING_LIMIT) {
+                    monitored_ips[i].is_blocked = 1;
+                    printf("IP blocked due to repeated high traffic: %s\n", ip);
+                } else {
+                    printf("High traffic from IP: %s. Warning issued.\n", ip);
+                }
+            }
+            return;
+        }
+    }
+
+    // 새로운 IP 추가
+    if (!found && monitored_count < MAX_IP_GROUP) {
+        strncpy(monitored_ips[monitored_count].ip, ip, INET_ADDRSTRLEN);
+        monitored_ips[monitored_count].bytes_sent = sent;
+        monitored_ips[monitored_count].bytes_received = received;
+        monitored_ips[monitored_count].last_detected = time(NULL);
+        monitored_ips[monitored_count].warning_count = 0;
+        monitored_ips[monitored_count].is_blocked = 0;
+        monitored_count++;
+        printf("New IP added to monitoring: %s\n", ip);
+    }
+} //창주(42)
+
+void list_monitored_ips() {
+    printf("Monitored IPs:\n");
+    for (int i = 0; i < monitored_count; i++) {
+        printf("IP: %s, Sent: %lu bytes, Received: %lu bytes, Warnings: %d, Blocked: %d\n",
+               monitored_ips[i].ip,
+               monitored_ips[i].bytes_sent,
+               monitored_ips[i].bytes_received,
+               monitored_ips[i].warning_count,
+               monitored_ips[i].is_blocked);
+    }
+}
+
+
+void block_ip(const char *ip) {
+    char cmd[256];
+	#ifdef __APPLE__
+	    snprintf(cmd, sizeof(cmd), "sudo pfctl -t blocklist -T add %s", ip);
+	#else
+	    snprintf(cmd, sizeof(cmd), "sudo iptables -A INPUT -s %s -j DROP", ip);
+	#endif
+		system(cmd);
+} //창주(8)
 
 void trafficmeter(const char *iface, unsigned int sampletime)
 {
