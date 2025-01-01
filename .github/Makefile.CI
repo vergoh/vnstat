@@ -11,4 +11,3 @@ dependencies_ubuntu_analyzer: dependencies_ubuntu
 
 dependencies_macos:
 	brew install sqlite gd check
-	brew link gd

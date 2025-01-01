@@ -91,7 +91,8 @@ jobs:
     runs-on: macos-14
     env:
       CC: clang
-      CFLAGS: '-Weverything -Wno-padded -Wno-poison-system-directories'
+      CFLAGS: '-I/opt/homebrew/include -Weverything -Wno-padded -Wno-poison-system-directories'
+      LDFLAGS: '-L/opt/homebrew/lib'
     steps:
       - uses: actions/checkout@v4
 
