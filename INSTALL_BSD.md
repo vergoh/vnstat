@@ -59,7 +59,7 @@ Finally make vnStat monitor the selected interface(s). Configure init
 scripts so that the following command is executed once during system
 startup:
 
-    /usr/local/sbin/vnstatd -d
+    /usr/local/sbin/vnstatd --daemon
 
 One suitable place is for example `/etc/rc.local`.
 
@@ -115,7 +115,7 @@ Now it's time to add a crontab entry for vnStat. Do that by executing the
 command `crontab -e` and add the following line (without leading spaces,
 remember to change the path):
 
-    @reboot ~/bin/vnstatd -d
+    @reboot ~/bin/vnstatd --daemon
 
 If you found yourself using a strange editor then `man vi` may help.
 
@@ -123,7 +123,7 @@ Make sure the configuration file (`~/.vnstatrc`) has the log option either
 disabled or set to a file that is located in a place where you have write
 permissions, such as your home dir. Then try starting the daemon with
 
-    vnstatd -d
+    vnstatd --daemon
 
 After that wait for (or generate) at least 1 byte of network traffic
 (and 5 min for the next database file save).

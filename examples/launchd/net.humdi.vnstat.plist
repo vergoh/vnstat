@@ -7,7 +7,7 @@
     <key>ProgramArguments</key>
     <array>
         <string>/usr/local/libexec/vnstatd</string>
-        <string>-n</string>
+        <string>--nodaemon</string>
     </array>
     <key>KeepAlive</key>
     <dict>

@@ -34,7 +34,7 @@ start()
 		echo
 		return 0
 	fi
-	daemon $VNSTATD_BIN -d
+	daemon $VNSTATD_BIN --daemon
 	RETVAL=$?
 	echo
 	return $RETVAL

@@ -6,7 +6,7 @@ StartLimitIntervalSec=20
 StartLimitBurst=4
 
 [Service]
-ExecStart=/usr/sbin/vnstatd -n
+ExecStart=/usr/sbin/vnstatd --nodaemon
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=on-failure
 RestartSec=2

@@ -58,7 +58,7 @@ See the `vnstat.conf` man page for documentation about available options.
 Finally, make vnStat monitor available interfaces. Configure init scripts
 so that the following command is executed once during system startup:
 
-    vnstatd -d
+    vnstatd --daemon
 
 The `examples` directory contains suitable files for most commonly used
 service managers. Refer to your operating system / distribution
@@ -167,7 +167,7 @@ running automatically after a system startup. Do that by executing the
 command `crontab -e` and add the following line (without leading spaces,
 remember to change the path):
 
-    @reboot ~/bin/vnstatd -d
+    @reboot ~/bin/vnstatd --daemon
 
 If you found yourself using a strange editor then `man vi` may help.
 
@@ -175,7 +175,7 @@ Make sure the configuration file (`~/.vnstatrc`) has the log option either
 disabled or set to a file that is located in a place where you have write
 permissions, such as your home dir. Then try starting the daemon with
 
-    vnstatd -d
+    vnstatd --daemon
 
 After that wait for (or generate) at least 1 byte of network traffic
 (and 5 min for the next database file save).

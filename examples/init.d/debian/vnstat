@@ -12,7 +12,7 @@ PATH=/usr/sbin:/usr/bin:/sbin:/bin
 DESC="vnStat daemon"
 NAME=vnstatd
 DAEMON=/usr/sbin/$NAME
-DAEMON_ARGS="-d"
+DAEMON_ARGS="--daemon"
 PIDFILE=/var/run/vnstat/vnstat.pid
 SCRIPTNAME=/etc/init.d/vnstat
 
