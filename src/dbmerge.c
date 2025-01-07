@@ -8,7 +8,7 @@
 
 int dbmerge(const char *srcdbfile, const char *srciface, const char *dstdbfile, const char *dstiface, const int execute)
 {
-	int srcifcount = 0, newdb = 0, i = 0, result = 0;
+	int newdb = 0, i = 0, result = 0;
 	size_t maxlen = 11; // strlen("Destination") by default as it's the longest header
 	iflist *srcdbifl = NULL, *dstdbifl = NULL, *dbifl_i = NULL;
 	sqlite3 *srcdb = NULL, *dstdb = NULL;
@@ -25,14 +25,12 @@ int dbmerge(const char *srcdbfile, const char *srciface, const char *dstdbfile, 
 			db_close();
 			return 0;
 		} else {
-			srcifcount = 1;
 			if (strlen(srciface) > maxlen) {
 				maxlen = strlen(srciface);
 			}
 		}
 	} else {
-		srcifcount = db_getiflist(&srcdbifl);
-		if (srcifcount <= 0) {
+		if (db_getiflist(&srcdbifl) <= 0) {
 			printf("Error: Source database \"%s\" has no interfaces.\n", srcdbfile);
 			db_close();
 			return 0;
