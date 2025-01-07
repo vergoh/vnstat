@@ -114,12 +114,7 @@ int loadcfg(const char *cfgfile, const ConfigType type)
 	rewind(fd);
 
 	/* parse every config file line */
-	while (!feof(fd)) {
-
-		cfgline[0] = '\0';
-		if (fgets(cfgline, 512, fd) == NULL) {
-			break;
-		}
+	while (fgets(cfgline, 512, fd) != NULL) {
 
 		linelen = (unsigned int)strlen(cfgline);
 		if (linelen <= 2 || cfgline[0] == '#' || cfgline[0] == ';') {

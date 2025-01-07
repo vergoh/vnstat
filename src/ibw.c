@@ -202,14 +202,7 @@ int ibwcfgread(FILE *fd)
 	rewind(fd);
 
 	/* cycle all lines */
-	while (!feof(fd)) {
-
-		cfgline[0] = '\0';
-
-		/* get current line */
-		if (fgets(cfgline, 512, fd) == NULL) {
-			break;
-		}
+	while (fgets(cfgline, 512, fd) != NULL) {
 
 		linelen = (int)strlen(cfgline);
 
