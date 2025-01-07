@@ -6,10 +6,12 @@
 #include "dbxml.h"
 #include "dbjson.h"
 #include "dbshow.h"
+#include "dbmerge.h"
 #include "misc.h"
 #include "cfg.h"
 #include "cfgoutput.h"
 #include "clicommon.h"
+#include "fs.h"
 #include "vnstat_func.h"
 
 void initparams(PARAMS *p)
@@ -52,6 +54,10 @@ void initparams(PARAMS *p)
 	p->alertlimit = 0;
 	p->alertrateunit = -1;
 	p->alertrateunitmode = -1;
+
+	p->merge = 0;
+	p->mergesrc[0] = '\0';
+	p->mergedst[0] = '\0';
 
 	/* load default config */
 	defaultcfg();
@@ -118,7 +124,8 @@ void showlonghelp(const PARAMS *p)
 	printf("      --add                        add interface to database\n");
 	printf("      --remove                     remove interface from database\n");
 	printf("      --rename <name>              rename interface in database\n");
-	printf("      --setalias <alias>           set alias for interface\n\n");
+	printf("      --setalias <alias>           set alias for interface\n");
+	printf("      --merge <src> <dst>          merge data from one database to another\n\n");
 
 	printf("Misc:\n");
 
@@ -137,7 +144,7 @@ void showlonghelp(const PARAMS *p)
 	printf("      --style <mode>               select output style (0-4)\n");
 	printf("      --iflist [mode]              show list of available interfaces\n");
 	printf("      --dbiflist [mode]            show list of interfaces in database\n");
-	printf("      --dbdir <directory>          select database directory\n");
+	printf("      --dbdir <directory>          select database directory\n"); // TODO: --db / --dbfile
 	printf("      --locale <locale>            set locale\n");
 	printf("      --config <config file>       select config file\n");
 	printf("      --showconfig                 dump config file with current settings\n");
@@ -557,6 +564,19 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 				currentarg += 6;
 				p->alert = 1;
 			}
+		} else if (strcmp(argv[currentarg], "--merge") == 0) {
+			if (currentarg + 2 < argc) {
+				p->merge = 1;
+				strncpy_nt(p->mergesrc, argv[currentarg + 1], 512);
+				strncpy_nt(p->mergedst, argv[currentarg + 2], 512);
+				if (debug)
+					printf("merge from \"%s\" to \"%s\"\n", p->mergesrc, p->mergedst);
+				currentarg += 2;
+			} else {
+				printf("Error: Invalid or missing parameters for %s.\n", argv[currentarg]);
+				// TODO: add help to explain supported parameters
+				exit(EXIT_FAILURE);
+			}
 		} else if ((strcmp(argv[currentarg], "-v") == 0) || (strcmp(argv[currentarg], "--version") == 0)) {
 			printf("vnStat %s by Teemu Toivola <tst at iki dot fi> (SQLite %s)\n", getversion(), sqlite3_libversion());
 			exit(EXIT_SUCCESS);
@@ -882,6 +902,84 @@ void showstylehelp(void)
 	printf("    3 - average traffic rate in all outputs if available\n");
 	printf("    4 - disable terminal control characters in -l / --live\n");
 	printf("        and -tr / --traffic, show raw values in --oneline\n");
+}
+
+void handlemerge(PARAMS *p)
+{
+	char srcdb[512], srciface[512], dstdb[512], dstiface[512];
+
+	srcdb[0] = '\0';
+	srciface[0] = '\0';
+	dstdb[0] = '\0';
+	dstiface[0] = '\0';
+
+	if (!p->merge) {
+		return;
+	}
+
+	if (strcmp(p->mergesrc, p->mergedst) == 0) {
+		printf("Error: Merge source and destination are the same.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (!strlen(p->mergesrc)) {
+		printf("Error: Merge source database not provided.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (!parsedatabaseinterface(p->mergesrc, srcdb, srciface)) {
+		printf("Error: Invalid merge source database input.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (!strlen(p->mergedst)) {
+		printf("Error: Merge destination database not provided.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (!parsedatabaseinterface(p->mergedst, dstdb, dstiface)) {
+		printf("Error: Invalid merge destination database input.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (strlen(srciface) == 0 && strlen(dstiface) > 0) {
+		printf("Error: Merging all source interfaces to one destination interface isn't supported.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (debug) {
+		printf("src \"%s\" -> %s - %s\n", p->mergesrc, srcdb, srciface);
+		printf("dst \"%s\" -> %s - %s\n", p->mergedst, dstdb, dstiface);
+	}
+
+	if (!fileexists(srcdb)) {
+		printf("Error: Merge source database \"%s\" doesn't exist.\n", srcdb);
+		exit(EXIT_FAILURE);
+	}
+
+	if (!dbmerge(srcdb, srciface, dstdb, dstiface, p->force)) {
+		exit(EXIT_FAILURE);
+	}
+}
+
+int parsedatabaseinterface(const char *input, char *database, char *interface)
+{
+	char *charptr;
+	size_t len;
+
+	charptr = strchr(input, ':');
+	if (charptr != NULL) {
+		len = strlen(input) - strlen(charptr) + 1;
+		if (len > 512) {
+			return 0;
+		}
+		strncpy_nt(database, input, len);
+		strncpy_nt(interface, input+len, 512);
+	} else {
+		strncpy_nt(database, input, 512);
+	}
+
+	return 1;
 }
 
 void handleshowalert(PARAMS *p)

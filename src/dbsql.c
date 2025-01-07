@@ -20,46 +20,55 @@ int db_open_rw(const int createifnotfound)
 
 int db_open(const int createifnotfound, const int readonly)
 {
-	int rc, createdb = 0;
 	char dbfilename[530];
 
 #ifdef CHECK_VNSTAT
 	/* use ram based database when testing for shorter test execution times by reducing disk i/o */
 	snprintf(dbfilename, 530, ":memory:");
-	createdb = 1;
 #else
+	snprintf(dbfilename, 530, "%s/%s", cfg.dbdir, DATABASEFILE);
+#endif
+
+	return db_open_filename(dbfilename, createifnotfound, readonly);
+}
+
+int db_open_filename(const char *dbfilename, const int createifnotfound, const int readonly)
+{
+	int rc, createdb = 0;
 	struct stat filestat;
 
-	if (db != NULL) {
-		return 1;
-	}
-
-	snprintf(dbfilename, 530, "%s/%s", cfg.dbdir, DATABASEFILE);
-
-	/* create database if file doesn't exist */
-	if (stat(dbfilename, &filestat) != 0) {
-		if (errno == ENOENT && createifnotfound && !readonly) {
-			createdb = 1;
-			if (debug)
-				printf("\"%s\" doesn't exist, creating new database\n", dbfilename);
-		} else {
-			if (debug)
-				printf("Error (debug): Handling database \"%s\" failed: %s\n", dbfilename, strerror(errno));
-			return 0;
-		}
+	if (strcmp(dbfilename, ":memory:") == 0) {
+		createdb = 1;
 	} else {
-		if (filestat.st_size == 0) {
-			if (createifnotfound) {
+		if (db != NULL) {
+			return 1;
+		}
+
+		/* create database if file doesn't exist */
+		if (stat(dbfilename, &filestat) != 0) {
+			if (errno == ENOENT && createifnotfound && !readonly) {
 				createdb = 1;
 				if (debug)
-					printf("\"%s\" exists but is 0 sized, creating new database\n", dbfilename);
+					printf("\"%s\" doesn't exist, creating new database\n", dbfilename);
 			} else {
-				printf("Error: Database \"%s\" contains 0 bytes and isn't a valid database, exiting.\n", dbfilename);
-				exit(EXIT_FAILURE);
+				if (debug)
+					printf("Error (debug): Handling database \"%s\" failed: %s\n", dbfilename, strerror(errno));
+				return 0;
+			}
+		} else {
+			if (filestat.st_size == 0) {
+				if (createifnotfound) {
+					createdb = 1;
+					if (debug)
+						printf("\"%s\" exists but is 0 sized, creating new database\n", dbfilename);
+				} else {
+					printf("Error: Database \"%s\" contains 0 bytes and isn't a valid database, exiting.\n", dbfilename);
+					exit(EXIT_FAILURE);
+				}
 			}
 		}
 	}
-#endif
+
 	db_errcode = 0;
 	db_intransaction = 0;
 	if (readonly) {

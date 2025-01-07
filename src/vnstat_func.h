@@ -1,5 +1,5 @@
-#ifndef VNSTAT_FUNC__H
-#define VNSTAT_FUNC__H
+#ifndef VNSTAT_FUNC_H
+#define VNSTAT_FUNC_H
 
 typedef struct {
 	int query, setalias;
@@ -13,6 +13,8 @@ typedef struct {
 	unsigned int alert, alertoutput, alertexit, alerttype, alertcondition;
 	int alertrateunit, alertrateunitmode;
 	uint64_t alertlimit;
+	unsigned int merge;
+	char mergesrc[512], mergedst[512];
 } PARAMS;
 
 void initparams(PARAMS *p);
@@ -22,6 +24,8 @@ void parseargs(PARAMS *p, const int argc, char **argv);
 int parsealertargs(PARAMS *p, char **argv);
 void showalerthelp(void);
 void showstylehelp(void);
+void handlemerge(PARAMS *p);
+int parsedatabaseinterface(const char *input, char *database, char *interface);
 void handleshowalert(PARAMS *p);
 void handleremoveinterface(const PARAMS *p);
 void handlerenameinterface(const PARAMS *p);

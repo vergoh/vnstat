@@ -17,6 +17,7 @@ vnstat_SOURCES = src/vnstat.c \
   src/ifinfo.c src/ifinfo.h \
   src/iflist.c src/iflist.h \
   src/dbsql.c src/dbsql.h \
+  src/dbmerge.c src/dbmerge.h \
   src/dbxml.c src/dbxml.h \
   src/dbjson.c src/dbjson.h \
   src/dbshow.c src/dbshow.h \
@@ -91,6 +92,7 @@ check_vnstat_SOURCES += src/cfg.c src/cfg.h \
   src/common.c src/common.h \
   src/daemon.c src/daemon.h \
   src/dbsql.c src/dbsql.h \
+  src/dbmerge.c src/dbmerge.h \
   src/dbaccess.c src/dbaccess.h \
   src/datacache.c src/datacache.h \
   src/dbshow.c src/dbshow.h \

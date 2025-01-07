@@ -131,14 +131,14 @@ am__check_vnstat_SOURCES_DIST = tests/vnstat_tests.c \
 	tests/percentile_tests.h tests/daemon_tests.c \
 	tests/daemon_tests.h src/cfg.c src/cfg.h src/cfgoutput.c \
 	src/cfgoutput.h src/common.c src/common.h src/daemon.c \
-	src/daemon.h src/dbsql.c src/dbsql.h src/dbaccess.c \
-	src/dbaccess.h src/datacache.c src/datacache.h src/dbshow.c \
-	src/dbshow.h src/percentile.c src/percentile.h src/dbjson.c \
-	src/dbjson.h src/dbxml.c src/dbxml.h src/ibw.c src/ibw.h \
-	src/ifinfo.c src/ifinfo.h src/iflist.c src/iflist.h src/misc.c \
-	src/misc.h src/fs.c src/fs.h src/id.c src/id.h \
-	src/vnstat_func.c src/vnstat_func.h src/traffic.c \
-	src/traffic.h src/clicommon.c src/clicommon.h \
+	src/daemon.h src/dbsql.c src/dbsql.h src/dbmerge.c \
+	src/dbmerge.h src/dbaccess.c src/dbaccess.h src/datacache.c \
+	src/datacache.h src/dbshow.c src/dbshow.h src/percentile.c \
+	src/percentile.h src/dbjson.c src/dbjson.h src/dbxml.c \
+	src/dbxml.h src/ibw.c src/ibw.h src/ifinfo.c src/ifinfo.h \
+	src/iflist.c src/iflist.h src/misc.c src/misc.h src/fs.c \
+	src/fs.h src/id.c src/id.h src/vnstat_func.c src/vnstat_func.h \
+	src/traffic.c src/traffic.h src/clicommon.c src/clicommon.h \
 	tests/image_tests.c tests/image_tests.h src/image.c \
 	src/image.h src/image_support.c src/image_support.h
 am__dirstamp = $(am__leading_dot)dirstamp
@@ -166,6 +166,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @HAVE_CHECK_TRUE@	src/check_vnstat-common.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	src/check_vnstat-daemon.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	src/check_vnstat-dbsql.$(OBJEXT) \
+@HAVE_CHECK_TRUE@	src/check_vnstat-dbmerge.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	src/check_vnstat-dbaccess.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	src/check_vnstat-datacache.$(OBJEXT) \
 @HAVE_CHECK_TRUE@	src/check_vnstat-dbshow.$(OBJEXT) \
@@ -189,11 +190,11 @@ check_vnstat_LINK = $(CCLD) $(check_vnstat_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 am_vnstat_OBJECTS = src/vnstat.$(OBJEXT) src/vnstat_func.$(OBJEXT) \
 	src/ifinfo.$(OBJEXT) src/iflist.$(OBJEXT) src/dbsql.$(OBJEXT) \
-	src/dbxml.$(OBJEXT) src/dbjson.$(OBJEXT) src/dbshow.$(OBJEXT) \
-	src/percentile.$(OBJEXT) src/common.$(OBJEXT) \
-	src/misc.$(OBJEXT) src/cfg.$(OBJEXT) src/cfgoutput.$(OBJEXT) \
-	src/ibw.$(OBJEXT) src/fs.$(OBJEXT) src/id.$(OBJEXT) \
-	src/traffic.$(OBJEXT) src/clicommon.$(OBJEXT)
+	src/dbmerge.$(OBJEXT) src/dbxml.$(OBJEXT) src/dbjson.$(OBJEXT) \
+	src/dbshow.$(OBJEXT) src/percentile.$(OBJEXT) \
+	src/common.$(OBJEXT) src/misc.$(OBJEXT) src/cfg.$(OBJEXT) \
+	src/cfgoutput.$(OBJEXT) src/ibw.$(OBJEXT) src/fs.$(OBJEXT) \
+	src/id.$(OBJEXT) src/traffic.$(OBJEXT) src/clicommon.$(OBJEXT)
 vnstat_OBJECTS = $(am_vnstat_OBJECTS)
 vnstat_LDADD = $(LDADD)
 am_vnstatd_OBJECTS = src/vnstatd.$(OBJEXT) src/ifinfo.$(OBJEXT) \
@@ -235,6 +236,7 @@ am__depfiles_remade = src/$(DEPDIR)/cfg.Po src/$(DEPDIR)/cfgoutput.Po \
 	src/$(DEPDIR)/check_vnstat-datacache.Po \
 	src/$(DEPDIR)/check_vnstat-dbaccess.Po \
 	src/$(DEPDIR)/check_vnstat-dbjson.Po \
+	src/$(DEPDIR)/check_vnstat-dbmerge.Po \
 	src/$(DEPDIR)/check_vnstat-dbshow.Po \
 	src/$(DEPDIR)/check_vnstat-dbsql.Po \
 	src/$(DEPDIR)/check_vnstat-dbxml.Po \
@@ -252,9 +254,9 @@ am__depfiles_remade = src/$(DEPDIR)/cfg.Po src/$(DEPDIR)/cfgoutput.Po \
 	src/$(DEPDIR)/clicommon.Po src/$(DEPDIR)/common.Po \
 	src/$(DEPDIR)/daemon.Po src/$(DEPDIR)/datacache.Po \
 	src/$(DEPDIR)/dbaccess.Po src/$(DEPDIR)/dbjson.Po \
-	src/$(DEPDIR)/dbshow.Po src/$(DEPDIR)/dbsql.Po \
-	src/$(DEPDIR)/dbxml.Po src/$(DEPDIR)/fs.Po \
-	src/$(DEPDIR)/ibw.Po src/$(DEPDIR)/id.Po \
+	src/$(DEPDIR)/dbmerge.Po src/$(DEPDIR)/dbshow.Po \
+	src/$(DEPDIR)/dbsql.Po src/$(DEPDIR)/dbxml.Po \
+	src/$(DEPDIR)/fs.Po src/$(DEPDIR)/ibw.Po src/$(DEPDIR)/id.Po \
 	src/$(DEPDIR)/ifinfo.Po src/$(DEPDIR)/iflist.Po \
 	src/$(DEPDIR)/image.Po src/$(DEPDIR)/image_support.Po \
 	src/$(DEPDIR)/misc.Po src/$(DEPDIR)/percentile.Po \
@@ -711,6 +713,7 @@ vnstat_SOURCES = src/vnstat.c \
   src/ifinfo.c src/ifinfo.h \
   src/iflist.c src/iflist.h \
   src/dbsql.c src/dbsql.h \
+  src/dbmerge.c src/dbmerge.h \
   src/dbxml.c src/dbxml.h \
   src/dbjson.c src/dbjson.h \
   src/dbshow.c src/dbshow.h \
@@ -779,15 +782,15 @@ vnstati_SOURCES = src/vnstati.c src/vnstati.h \
 @HAVE_CHECK_TRUE@	tests/daemon_tests.h src/cfg.c src/cfg.h \
 @HAVE_CHECK_TRUE@	src/cfgoutput.c src/cfgoutput.h src/common.c \
 @HAVE_CHECK_TRUE@	src/common.h src/daemon.c src/daemon.h \
-@HAVE_CHECK_TRUE@	src/dbsql.c src/dbsql.h src/dbaccess.c \
-@HAVE_CHECK_TRUE@	src/dbaccess.h src/datacache.c \
-@HAVE_CHECK_TRUE@	src/datacache.h src/dbshow.c src/dbshow.h \
-@HAVE_CHECK_TRUE@	src/percentile.c src/percentile.h \
-@HAVE_CHECK_TRUE@	src/dbjson.c src/dbjson.h src/dbxml.c \
-@HAVE_CHECK_TRUE@	src/dbxml.h src/ibw.c src/ibw.h src/ifinfo.c \
-@HAVE_CHECK_TRUE@	src/ifinfo.h src/iflist.c src/iflist.h \
-@HAVE_CHECK_TRUE@	src/misc.c src/misc.h src/fs.c src/fs.h \
-@HAVE_CHECK_TRUE@	src/id.c src/id.h src/vnstat_func.c \
+@HAVE_CHECK_TRUE@	src/dbsql.c src/dbsql.h src/dbmerge.c \
+@HAVE_CHECK_TRUE@	src/dbmerge.h src/dbaccess.c src/dbaccess.h \
+@HAVE_CHECK_TRUE@	src/datacache.c src/datacache.h src/dbshow.c \
+@HAVE_CHECK_TRUE@	src/dbshow.h src/percentile.c \
+@HAVE_CHECK_TRUE@	src/percentile.h src/dbjson.c src/dbjson.h \
+@HAVE_CHECK_TRUE@	src/dbxml.c src/dbxml.h src/ibw.c src/ibw.h \
+@HAVE_CHECK_TRUE@	src/ifinfo.c src/ifinfo.h src/iflist.c \
+@HAVE_CHECK_TRUE@	src/iflist.h src/misc.c src/misc.h src/fs.c \
+@HAVE_CHECK_TRUE@	src/fs.h src/id.c src/id.h src/vnstat_func.c \
 @HAVE_CHECK_TRUE@	src/vnstat_func.h src/traffic.c src/traffic.h \
 @HAVE_CHECK_TRUE@	src/clicommon.c src/clicommon.h \
 @HAVE_CHECK_TRUE@	$(am__append_4)
@@ -1014,6 +1017,8 @@ src/check_vnstat-daemon.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/check_vnstat-dbsql.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
+src/check_vnstat-dbmerge.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
 src/check_vnstat-dbaccess.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/check_vnstat-datacache.$(OBJEXT): src/$(am__dirstamp) \
@@ -1063,6 +1068,8 @@ src/ifinfo.$(OBJEXT): src/$(am__dirstamp) \
 src/iflist.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/dbsql.$(OBJEXT): src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
+src/dbmerge.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
 src/dbxml.$(OBJEXT): src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 src/dbjson.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
@@ -1127,6 +1134,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-datacache.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-dbaccess.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-dbjson.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-dbmerge.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-dbshow.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-dbsql.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-dbxml.Po@am__quote@ # am--include-marker
@@ -1147,6 +1155,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/datacache.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/dbaccess.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/dbjson.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/dbmerge.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/dbshow.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/dbsql.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/dbxml.Po@am__quote@ # am--include-marker
@@ -1482,6 +1491,20 @@ src/check_vnstat-dbsql.obj: src/dbsql.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/dbsql.c' object='src/check_vnstat-dbsql.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o src/check_vnstat-dbsql.obj `if test -f 'src/dbsql.c'; then $(CYGPATH_W) 'src/dbsql.c'; else $(CYGPATH_W) '$(srcdir)/src/dbsql.c'; fi`
+
+src/check_vnstat-dbmerge.o: src/dbmerge.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT src/check_vnstat-dbmerge.o -MD -MP -MF src/$(DEPDIR)/check_vnstat-dbmerge.Tpo -c -o src/check_vnstat-dbmerge.o `test -f 'src/dbmerge.c' || echo '$(srcdir)/'`src/dbmerge.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/check_vnstat-dbmerge.Tpo src/$(DEPDIR)/check_vnstat-dbmerge.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/dbmerge.c' object='src/check_vnstat-dbmerge.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o src/check_vnstat-dbmerge.o `test -f 'src/dbmerge.c' || echo '$(srcdir)/'`src/dbmerge.c
+
+src/check_vnstat-dbmerge.obj: src/dbmerge.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT src/check_vnstat-dbmerge.obj -MD -MP -MF src/$(DEPDIR)/check_vnstat-dbmerge.Tpo -c -o src/check_vnstat-dbmerge.obj `if test -f 'src/dbmerge.c'; then $(CYGPATH_W) 'src/dbmerge.c'; else $(CYGPATH_W) '$(srcdir)/src/dbmerge.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/check_vnstat-dbmerge.Tpo src/$(DEPDIR)/check_vnstat-dbmerge.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/dbmerge.c' object='src/check_vnstat-dbmerge.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o src/check_vnstat-dbmerge.obj `if test -f 'src/dbmerge.c'; then $(CYGPATH_W) 'src/dbmerge.c'; else $(CYGPATH_W) '$(srcdir)/src/dbmerge.c'; fi`
 
 src/check_vnstat-dbaccess.o: src/dbaccess.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT src/check_vnstat-dbaccess.o -MD -MP -MF src/$(DEPDIR)/check_vnstat-dbaccess.Tpo -c -o src/check_vnstat-dbaccess.o `test -f 'src/dbaccess.c' || echo '$(srcdir)/'`src/dbaccess.c
@@ -2393,6 +2416,7 @@ distclean: distclean-recursive
 	-rm -f src/$(DEPDIR)/check_vnstat-datacache.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-dbaccess.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-dbjson.Po
+	-rm -f src/$(DEPDIR)/check_vnstat-dbmerge.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-dbshow.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-dbsql.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-dbxml.Po
@@ -2413,6 +2437,7 @@ distclean: distclean-recursive
 	-rm -f src/$(DEPDIR)/datacache.Po
 	-rm -f src/$(DEPDIR)/dbaccess.Po
 	-rm -f src/$(DEPDIR)/dbjson.Po
+	-rm -f src/$(DEPDIR)/dbmerge.Po
 	-rm -f src/$(DEPDIR)/dbshow.Po
 	-rm -f src/$(DEPDIR)/dbsql.Po
 	-rm -f src/$(DEPDIR)/dbxml.Po
@@ -2504,6 +2529,7 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f src/$(DEPDIR)/check_vnstat-datacache.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-dbaccess.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-dbjson.Po
+	-rm -f src/$(DEPDIR)/check_vnstat-dbmerge.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-dbshow.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-dbsql.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-dbxml.Po
@@ -2524,6 +2550,7 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f src/$(DEPDIR)/datacache.Po
 	-rm -f src/$(DEPDIR)/dbaccess.Po
 	-rm -f src/$(DEPDIR)/dbjson.Po
+	-rm -f src/$(DEPDIR)/dbmerge.Po
 	-rm -f src/$(DEPDIR)/dbshow.Po
 	-rm -f src/$(DEPDIR)/dbsql.Po
 	-rm -f src/$(DEPDIR)/dbxml.Po

@@ -31,6 +31,7 @@ typedef struct interfaceinfo {
 int db_open_ro(void);
 int db_open_rw(const int createifnotfound);
 int db_open(const int createifnotfound, const int readonly);
+int db_open_filename(const char *dbfilename, const int createifnotfound, const int readonly);
 int db_validate(const int readonly);
 int db_setpragmas(void);
 int db_close(void);

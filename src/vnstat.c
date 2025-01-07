@@ -1,5 +1,5 @@
 /*
-vnStat - Copyright (C) 2002-2024 Teemu Toivola <tst@iki.fi>
+vnStat - Copyright (C) 2002-2025 Teemu Toivola <tst@iki.fi>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -73,6 +73,12 @@ int main(int argc, char *argv[])
 	strncpy_nt(p.alias, "none", 32);
 
 	parseargs(&p, argc, argv);
+
+	/* bypass normal database handling as databases for merge are provided from command line */
+	if (p.merge) {
+		handlemerge(&p);
+		return 0;
+	}
 
 	/* open database and see if it contains any interfaces */
 	if (!p.traffic && !p.livetraffic) {

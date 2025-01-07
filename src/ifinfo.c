@@ -482,7 +482,7 @@ int isifavailable(const char *iface)
 
 int isifvalid(const char *iface)
 {
-	if (strstr(iface, ":") != NULL) {
+	if (strchr(iface, ':') != NULL) {
 		return 0;
 	} else if (strcmp(iface, "lo") == 0) {
 		return 0;
