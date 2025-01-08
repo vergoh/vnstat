@@ -254,7 +254,7 @@ int mergeinterface(sqlite3 *srcdb, const char *srciface, sqlite3 *dstdb, const c
 	return 1;
 }
 
-int mergedata(const char *table, const sqlite3_int64 ifaceid, const uint64_t rx, const uint64_t tx, const uint64_t timestamp)
+int mergedata(const char *table, const sqlite3_int64 ifaceid, const uint64_t rx, const uint64_t tx, const time_t timestamp)
 {
 	int i, tableindex = -1;
 	char sql[1024], entrydate[64], *dgen;
@@ -271,7 +271,7 @@ int mergedata(const char *table, const sqlite3_int64 ifaceid, const uint64_t rx,
 		return 0;
 	}
 
-	snprintf(entrydate, 64, "datetime(%" PRIu64 ", 'unixepoch')", timestamp);
+	snprintf(entrydate, 64, "datetime(%" PRId64 ", 'unixepoch')", (int64_t)timestamp);
 	dgen = db_get_date_generator(tableindex, 1, entrydate);
 
 	sqlite3_snprintf(1024, sql, "insert or ignore into %s (interface, date, rx, tx) values (%" PRId64 ", %s, 0, 0)", table, (int64_t)ifaceid, dgen);
