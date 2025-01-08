@@ -85,7 +85,7 @@ void setuser(const char *user)
 	}
 
 	if (debug)
-		printf("switching to user id %d.\n", uid);
+		printf("switching to user id %u.\n", uid);
 
 	if (setuid(uid) != 0) {
 		perror("Error: setuid");
@@ -119,7 +119,7 @@ void setgroup(const char *group)
 	}
 
 	if (debug)
-		printf("switching to group id %d.\n", gid);
+		printf("switching to group id %u.\n", gid);
 
 	if (setgid(gid) != 0) {
 		perror("Error: setgid");

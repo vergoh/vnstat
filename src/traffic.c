@@ -78,7 +78,7 @@ void trafficmeter(const char *iface, unsigned int sampletime)
 	/* show the difference in a readable format or json */
 	if (!json) {
 		if (cfg.ostyle != 4) {
-			printf("%" PRIu64 " packets sampled in %d seconds\n", rxp + txp, sampletime);
+			printf("%" PRIu64 " packets sampled in %u seconds\n", rxp + txp, sampletime);
 		}
 		printf("Traffic average for %s\n\n", iface);
 

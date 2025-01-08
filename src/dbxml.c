@@ -181,7 +181,7 @@ void xmldate(const time_t *date, const int type)
 		default:
 			break;
 	}
-	printf("<timestamp>%" PRId64 "</timestamp>", (uint64_t)*date);
+	printf("<timestamp>%" PRId64 "</timestamp>", (int64_t)*date);
 }
 
 void xmlheader(void)

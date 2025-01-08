@@ -368,7 +368,7 @@ void jsondate(const time_t *date, const int type)
 		default:
 			break;
 	}
-	printf("\"timestamp\":%" PRId64 "", (uint64_t)*date);
+	printf("\"timestamp\":%" PRId64 "", (int64_t)*date);
 }
 
 void jsonheader(const char *version)

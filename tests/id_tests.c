@@ -75,7 +75,7 @@ START_TEST(setuser_with_current_user)
 
 	if (pw != NULL) {
 		suppress_output();
-		snprintf(temp, 16, "%d", getuser(""));
+		snprintf(temp, 16, "%u", getuser(""));
 		setuser(temp);
 	} else {
 		printf("Note: skipping test setuser_with_current_user due to non-existing user\n");
@@ -99,7 +99,7 @@ START_TEST(setgroup_with_current_group)
 
 	if (gr != NULL) {
 		suppress_output();
-		snprintf(temp, 16, "%d", getgroup(""));
+		snprintf(temp, 16, "%u", getgroup(""));
 		setgroup(temp);
 	} else {
 		printf("Note: skipping test setgroup_with_current_group due to non-existing group\n");
