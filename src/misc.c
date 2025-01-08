@@ -65,19 +65,15 @@ void sighandler(int sig)
 
 	if (debug) {
 		switch (sig) {
-
 			case SIGHUP:
 				snprintf(errorstring, 1024, "DEBUG: SIGHUP (%d)", sig);
 				break;
-
 			case SIGTERM:
 				snprintf(errorstring, 1024, "DEBUG: SIGTERM (%d)", sig);
 				break;
-
 			case SIGINT:
 				snprintf(errorstring, 1024, "DEBUG: SIGINT (%d)", sig);
 				break;
-
 			default:
 				snprintf(errorstring, 1024, "DEBUG: Unknown signal %d", sig);
 				break;
@@ -444,6 +440,7 @@ int issametimeslot(const ListType listtype, const time_t entry, const time_t upd
 			}
 			break;
 		case LT_None:
+		default:
 			return 0;
 	}
 

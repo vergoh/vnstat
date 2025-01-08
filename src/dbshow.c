@@ -1007,6 +1007,7 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit a
 	adata.datalist = NULL;
 
 	switch (type) {
+		default:
 		case AT_None:
 			return 0;
 		case AT_Hour:
@@ -1053,6 +1054,7 @@ int showalert(const char *interface, const AlertOutput output, const AlertExit a
 
 	// "limit" and "used" are always in either bytes or bytes/second
 	switch (condition) {
+		default:
 		case AC_None:
 			return 0;
 		case AC_RX:
@@ -1178,6 +1180,7 @@ void alertoutput(const alertdata *adata, const AlertOutput output, const AlertTy
 		}
 		if (adata->timestamp) {
 			switch (type) {
+				default:
 				case AT_None:
 					break;
 				case AT_Percentile:

@@ -1327,6 +1327,8 @@ START_TEST(db_getdata_range_can_get_months_without_range_defined)
 				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2000-06-01");
 				break;
+			default:
+				break;
 		}
 		datalist_i = datalist_i->next;
 		i++;
@@ -1361,6 +1363,8 @@ START_TEST(db_getdata_range_can_get_months_with_range_matching_existing_data)
 			case 5:
 				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2000-06-01");
+				break;
+			default:
 				break;
 		}
 		datalist_i = datalist_i->next;
@@ -1397,6 +1401,8 @@ START_TEST(db_getdata_range_can_get_months_with_range_past_existing_data)
 				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2000-06-01");
 				break;
+			default:
+				break;
 		}
 		datalist_i = datalist_i->next;
 		i++;
@@ -1431,6 +1437,8 @@ START_TEST(db_getdata_range_can_get_months_with_range_limiting_begin_and_end)
 			case 2:
 				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2000-04-01");
+				break;
+			default:
 				break;
 		}
 		datalist_i = datalist_i->next;
@@ -1467,6 +1475,8 @@ START_TEST(db_getdata_range_can_get_months_with_range_limiting_begin)
 				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2000-06-01");
 				break;
+			default:
+				break;
 		}
 		datalist_i = datalist_i->next;
 		i++;
@@ -1501,6 +1511,8 @@ START_TEST(db_getdata_range_can_get_months_with_range_limiting_begin_with_limit)
 			case 2:
 				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2000-05-01");
+				break;
+			default:
 				break;
 		}
 		datalist_i = datalist_i->next;
@@ -1537,6 +1549,8 @@ START_TEST(db_getdata_range_can_get_months_with_range_limiting_end)
 				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2000-04-01");
 				break;
+			default:
+				break;
 		}
 		datalist_i = datalist_i->next;
 		i++;
@@ -1572,6 +1586,8 @@ START_TEST(db_getdata_range_can_get_months_with_range_limiting_end_with_limit)
 				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2000-04-01");
 				break;
+			default:
+				break;
 		}
 		datalist_i = datalist_i->next;
 		i++;
@@ -1602,6 +1618,8 @@ START_TEST(db_getdata_range_can_get_months_with_range_on_same_month)
 			case 0:
 				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2000-04-01");
+				break;
+			default:
 				break;
 		}
 		datalist_i = datalist_i->next;
@@ -1637,6 +1655,8 @@ START_TEST(db_getdata_range_can_get_months_with_range_past_first_day_of_month)
 			case 2:
 				strftime(timestamp, 64, "%Y-%m-%d", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2000-05-01");
+				break;
+			default:
 				break;
 		}
 		datalist_i = datalist_i->next;
@@ -1691,6 +1711,8 @@ START_TEST(db_getdata_range_can_get_hours_without_range_defined)
 				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2002-02-04 23:00");
 				break;
+			default:
+				break;
 		}
 		datalist_i = datalist_i->next;
 		i++;
@@ -1725,6 +1747,8 @@ START_TEST(db_getdata_range_can_get_hours_with_range_matching_existing_data)
 			case 71:
 				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2002-02-04 23:00");
+				break;
+			default:
 				break;
 		}
 		datalist_i = datalist_i->next;
@@ -1761,6 +1785,8 @@ START_TEST(db_getdata_range_can_get_hours_with_range_past_existing_data)
 				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2002-02-04 23:00");
 				break;
+			default:
+				break;
 		}
 		datalist_i = datalist_i->next;
 		i++;
@@ -1795,6 +1821,8 @@ START_TEST(db_getdata_range_can_get_hours_with_range_limiting_begin_and_end)
 			case 21:
 				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2002-02-03 17:00");
+				break;
+			default:
 				break;
 		}
 		datalist_i = datalist_i->next;
@@ -1831,6 +1859,8 @@ START_TEST(db_getdata_range_can_get_hours_with_range_limiting_begin)
 				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2002-02-04 23:00");
 				break;
+			default:
+				break;
 		}
 		datalist_i = datalist_i->next;
 		i++;
@@ -1865,6 +1895,8 @@ START_TEST(db_getdata_range_can_get_hours_with_range_limiting_begin_with_limit)
 			case 10:
 				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2002-02-03 06:00");
+				break;
+			default:
 				break;
 		}
 		datalist_i = datalist_i->next;
@@ -1901,6 +1933,8 @@ START_TEST(db_getdata_range_can_get_hours_with_range_limiting_end)
 				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2002-02-02 20:00");
 				break;
+			default:
+				break;
 		}
 		datalist_i = datalist_i->next;
 		i++;
@@ -1936,6 +1970,8 @@ START_TEST(db_getdata_range_can_get_hours_with_range_limiting_end_with_limit)
 				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2002-02-02 20:00");
 				break;
+			default:
+				break;
 		}
 		datalist_i = datalist_i->next;
 		i++;
@@ -1966,6 +2002,8 @@ START_TEST(db_getdata_range_can_get_hours_with_range_on_same_hour)
 			case 0:
 				strftime(timestamp, 64, "%Y-%m-%d %H:%M", localtime(&datalist_i->timestamp));
 				ck_assert_str_eq(timestamp, "2002-02-02 20:00");
+				break;
+			default:
 				break;
 		}
 		datalist_i = datalist_i->next;
@@ -2017,6 +2055,8 @@ START_TEST(db_getdata_range_with_merged_interfaces)
 				ck_assert_str_eq(timestamp, "2000-02-01");
 				ck_assert_int_eq(datalist_i->rx, 80);
 				ck_assert_int_eq(datalist_i->tx, 180);
+				break;
+			default:
 				break;
 		}
 		datalist_i = datalist_i->next;
@@ -2073,6 +2113,8 @@ START_TEST(db_getdata_range_with_long_merged_interfaces)
 				ck_assert_int_eq(datalist_i->rx, 260);
 				ck_assert_int_eq(datalist_i->tx, 520);
 				break;
+			default:
+				break;
 		}
 		datalist_i = datalist_i->next;
 		i++;
@@ -2091,6 +2133,8 @@ START_TEST(db_getdata_range_with_long_merged_interfaces)
 				ck_assert_str_eq(timestamp, "2010-09-01");
 				ck_assert_int_eq(datalist_i->rx, 240);
 				ck_assert_int_eq(datalist_i->tx, 480);
+				break;
+			default:
 				break;
 		}
 		datalist_i = datalist_i->next;
@@ -2134,6 +2178,8 @@ START_TEST(db_addtraffic_without_monthrotate)
 				ck_assert_str_eq(timestamp, "2000-02-01");
 				ck_assert_int_eq(datalist_i->rx, 20);
 				ck_assert_int_eq(datalist_i->tx, 40);
+				break;
+			default:
 				break;
 		}
 		datalist_i = datalist_i->next;
@@ -2184,6 +2230,8 @@ START_TEST(db_addtraffic_with_monthrotate)
 				ck_assert_int_eq(datalist_i->rx, 14);
 				ck_assert_int_eq(datalist_i->tx, 28);
 				break;
+			default:
+				break;
 		}
 		datalist_i = datalist_i->next;
 		i++;
@@ -2228,6 +2276,8 @@ START_TEST(db_addtraffic_without_monthrotate_utc)
 				ck_assert_str_eq(timestamp, "2000-02-01");
 				ck_assert_int_eq(datalist_i->rx, 20);
 				ck_assert_int_eq(datalist_i->tx, 40);
+				break;
+			default:
 				break;
 		}
 		datalist_i = datalist_i->next;
@@ -2279,6 +2329,8 @@ START_TEST(db_addtraffic_with_monthrotate_utc)
 				ck_assert_str_eq(timestamp, "2000-02-01");
 				ck_assert_int_eq(datalist_i->rx, 14);
 				ck_assert_int_eq(datalist_i->tx, 28);
+				break;
+			default:
 				break;
 		}
 		datalist_i = datalist_i->next;

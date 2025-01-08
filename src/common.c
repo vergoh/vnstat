@@ -38,6 +38,7 @@ int printe(const PrintType type)
 			case PT_Error:
 			case PT_Config:
 			case PT_ShortMultiline:
+			default:
 				result = logprint(type);
 				break;
 		}
@@ -59,6 +60,7 @@ int printe(const PrintType type)
 			case PT_Info:
 				fprintf(output, "Info: %s\n", errorstring);
 				break;
+			default:
 			case PT_Infoless:
 				fprintf(output, "%s\n", errorstring);
 				break;
@@ -109,6 +111,7 @@ int logprint(const PrintType type)
 		strftime(timestamp, 22, DATETIMEFORMAT, localtime(&current));
 
 		switch (type) {
+			default:
 			case PT_Info:
 			case PT_Infoless:
 				snprintf(buffer, 1060, "[%s] %s\n", timestamp, errorstring);
@@ -157,6 +160,7 @@ int logprint(const PrintType type)
 			case PT_Info:
 			case PT_Infoless:
 			case PT_ShortMultiline:
+			default:
 				syslog(LOG_NOTICE, "%s", errorstring);
 				break;
 		}
