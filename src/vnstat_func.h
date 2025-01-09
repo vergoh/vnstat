@@ -7,7 +7,7 @@ typedef struct {
 	int livetraffic, defaultiface, removeiface, renameiface, livemode;
 	int32_t limit;
 	uint64_t dbifcount;
-	char interface[MAXIFPARAMLEN], alias[32], newifname[MAXIFLEN], filename[512];
+	char interface[MAXIFPARAMLEN], alias[32], newifname[MAXIFLEN];
 	char definterface[MAXIFPARAMLEN], cfgfile[512], *ifacelist, jsonmode, xmlmode;
 	char databegin[18], dataend[18];
 	unsigned int alert, alertoutput, alertexit, alerttype, alertcondition;

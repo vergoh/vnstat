@@ -378,6 +378,7 @@ void defaultcfg(void)
 	cfg.yearlyyears = YEARLYYEARS;
 	cfg.topdayentries = TOPDAYENTRIES;
 
+	cfg.dbfile[0] = '\0';
 	strncpy_nt(cfg.dbdir, DATABASEDIR, 512);
 	strncpy_nt(cfg.dbtzmodifier, DATABASELOCALTIMEMODIFIER, 14);
 	strncpy_nt(cfg.iface, DEFIFACE, MAXIFPARAMLEN);

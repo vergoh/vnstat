@@ -22,12 +22,17 @@ int db_open(const int createifnotfound, const int readonly)
 {
 	char dbfilename[530];
 
+	if (strlen(cfg.dbfile) > 0) {
+		strncpy_nt(dbfilename, cfg.dbfile, 530);
+	} else {
 #ifdef CHECK_VNSTAT
-	/* use ram based database when testing for shorter test execution times by reducing disk i/o */
-	snprintf(dbfilename, 530, ":memory:");
+		/* use ram based database when testing for shorter test execution times by reducing disk i/o */
+		snprintf(dbfilename, 530, ":memory:");
 #else
-	snprintf(dbfilename, 530, "%s/%s", cfg.dbdir, DATABASEFILE);
+		snprintf(dbfilename, 530, "%s/%s", cfg.dbdir, DATABASEFILE);
+		strncpy_nt(cfg.dbfile, dbfilename, 530);
 #endif
+	}
 
 	return db_open_filename(dbfilename, createifnotfound, readonly);
 }

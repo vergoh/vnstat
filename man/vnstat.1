@@ -1,5 +1,5 @@
 '\" t
-.TH VNSTAT 1 "AUGUST 2024" "version 2.13" "User Manuals"
+.TH VNSTAT 1 "JANUARY 2025" "version 2.13" "User Manuals"
 .SH NAME
 vnstat \- a console-based network traffic monitor
 
@@ -17,6 +17,8 @@ vnstat \- a console-based network traffic monitor
 .IR file ]
 .RB [ \-\-days
 .RI [ limit ]]
+.RB [ \-\-db
+.IR file ]
 .RB [ \-\-dbdir
 .IR directory ]
 .RB [ \-\-dbiflist
@@ -237,11 +239,23 @@ parameter is used. All entries stored in the database will be shown if
 is set to 0.
 
 .TP
+.BI "--db " file
+Use
+.I file
+as database file instead of searching for a database from the directory specified in
+the configuration file or the hardcoded default if no configuration file is available.
+This option overrides
+.BR "--dbdir" .
+
+.TP
 .BI "--dbdir " directory
 Use
 .I directory
 as database directory instead of using the directory specified in the configuration
-file or the hardcoded default if no configuration file is available.
+file or the hardcoded default if no configuration file is available. This option is
+ignored if
+.B "--db"
+is also defined.
 
 .TP
 .BI "--dbiflist " [mode]

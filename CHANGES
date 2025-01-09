@@ -5,6 +5,7 @@
      example cgi (examples/vnstat.cgi)
  - New
    - Add database data merge support as --merge (work in progress)
+   - Add --db for specifying database file for queries (vnstat and vnstati)
    - Add exit status 2 options to --alert for making it possible to
      differentiate alerts from errors (exit status 1)
    - Add --dbiflist also to vnstati command

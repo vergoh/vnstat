@@ -38,7 +38,6 @@ void initparams(PARAMS *p)
 	p->interface[0] = '\0';
 	p->alias[0] = '\0';
 	p->newifname[0] = '\0';
-	p->filename[0] = '\0';
 	p->definterface[0] = '\0';
 	p->cfgfile[0] = '\0';
 	p->jsonmode = 'a';
@@ -143,8 +142,9 @@ void showlonghelp(const PARAMS *p)
 	printf("      --limit <limit>              set output entry limit\n");
 	printf("      --style <mode>               select output style (0-4)\n");
 	printf("      --iflist [mode]              show list of available interfaces\n");
+	printf("      --db <file>                  select database file\n");
 	printf("      --dbiflist [mode]            show list of interfaces in database\n");
-	printf("      --dbdir <directory>          select database directory\n"); // TODO: --db / --dbfile
+	printf("      --dbdir <directory>          select database directory\n");
 	printf("      --locale <locale>            set locale\n");
 	printf("      --config <config file>       select config file\n");
 	printf("      --showconfig                 dump config file with current settings\n");
@@ -210,7 +210,7 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 				printf("Error: Alias for %s missing.\n", argv[currentarg]);
 				exit(EXIT_FAILURE);
 			}
-		} else if ((strcmp(argv[currentarg], "--style")) == 0) {
+		} else if (strcmp(argv[currentarg], "--style") == 0) {
 			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {
 				cfg.ostyle = atoi(argv[currentarg + 1]);
 				if (cfg.ostyle > 4 || cfg.ostyle < 0) {
@@ -226,7 +226,17 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 				showstylehelp();
 				exit(EXIT_FAILURE);
 			}
-		} else if ((strcmp(argv[currentarg], "--dbdir")) == 0) {
+		} else if ((strcmp(argv[currentarg], "--db") == 0) || (strcmp(argv[currentarg], "--dbfile") == 0)) {
+			if (currentarg + 1 < argc) {
+				strncpy_nt(cfg.dbfile, argv[currentarg + 1], 530);
+				if (debug)
+					printf("DatabaseFile: \"%s\"\n", cfg.dbfile);
+				currentarg++;
+			} else {
+				printf("Error: File for %s missing.\n", argv[currentarg]);
+				exit(EXIT_FAILURE);
+			}
+		} else if (strcmp(argv[currentarg], "--dbdir") == 0) {
 			if (currentarg + 1 < argc) {
 				strncpy_nt(cfg.dbdir, argv[currentarg + 1], 512);
 				if (debug)
@@ -236,7 +246,7 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 				printf("Error: Directory for %s missing.\n", argv[currentarg]);
 				exit(EXIT_FAILURE);
 			}
-		} else if ((strcmp(argv[currentarg], "--locale")) == 0) {
+		} else if (strcmp(argv[currentarg], "--locale") == 0) {
 			if (currentarg + 1 < argc) {
 				setlocale(LC_ALL, argv[currentarg + 1]);
 				if (debug)
@@ -1042,7 +1052,7 @@ void handleremoveinterface(const PARAMS *p)
 
 #ifndef CHECK_VNSTAT
 	if (!db_close() || !db_open_rw(0)) {
-		printf("Error: Handling database \"%s/%s\" failing: %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
+		printf("Error: Handling database \"%s\" failing: %s\n", cfg.dbfile, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 #endif
@@ -1094,7 +1104,7 @@ void handlerenameinterface(const PARAMS *p)
 
 #ifndef CHECK_VNSTAT
 	if (!db_close() || !db_open_rw(0)) {
-		printf("Error: Handling database \"%s/%s\" failing: %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
+		printf("Error: Handling database \"%s\" failing: %s\n", cfg.dbfile, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 #endif
@@ -1146,7 +1156,7 @@ void handleaddinterface(PARAMS *p)
 
 #ifndef CHECK_VNSTAT
 	if (!db_close() || !db_open_rw(0)) {
-		printf("Error: Handling database \"%s/%s\" failing: %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
+		printf("Error: Handling database \"%s\" failing: %s\n", cfg.dbfile, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 #endif
@@ -1187,7 +1197,7 @@ void handlesetalias(const PARAMS *p)
 
 #ifndef CHECK_VNSTAT
 	if (!db_close() || !db_open_rw(0)) {
-		printf("Error: Handling database \"%s/%s\" failing: %s\n", cfg.dbdir, DATABASEFILE, strerror(errno));
+		printf("Error: Handling database \"%s\" failing: %s\n", cfg.dbfile, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 #endif

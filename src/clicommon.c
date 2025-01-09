@@ -9,7 +9,7 @@ void showdbiflist(const int mode)
 	iflist *dbifl = NULL, *dbifl_i = NULL;
 
 	if (db == NULL && !db_open_ro()) {
-		printf("Error: Failed to open database \"%s/%s\" in read-only mode.\n", cfg.dbdir, DATABASEFILE);
+		printf("Error: Failed to open database \"%s\" in read-only mode: %s\n", cfg.dbfile, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
@@ -22,7 +22,7 @@ void showdbiflist(const int mode)
 
 	dbifcount = db_getiflist(&dbifl);
 	if (dbifcount < 0) {
-		printf("Error: Failed to get interface list from database \"%s/%s\".\n", cfg.dbdir, DATABASEFILE);
+		printf("Error: Failed to get interface list from database \"%s\".\n", cfg.dbfile);
 		exit(EXIT_FAILURE);
 	}
 

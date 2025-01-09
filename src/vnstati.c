@@ -159,6 +159,8 @@ void showihelp(const IPARAMS *p)
 	printf("      -D,  --debug                       show some additional debug information\n");
 	printf("      -v,  --version                     show version\n");
 	printf("      --limit <limit>                    set list entry limit\n");
+	printf("      --db <file>                        select database file\n");
+	printf("      --dbiflist [mode]                  show list of interfaces in database\n");
 	printf("      --dbdir <directory>                select database directory\n");
 	printf("      --style <mode>                     select output style (0-3)\n");
 	printf("      --locale <locale>                  set locale\n");
@@ -272,7 +274,17 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 				if (debug)
 					printf("Transparency changed: %d\n", cfg.transbg);
 			}
-		} else if ((strcmp(argv[currentarg], "--dbdir")) == 0) {
+		} else if ((strcmp(argv[currentarg], "--db") == 0) || (strcmp(argv[currentarg], "--dbfile") == 0)) {
+			if (currentarg + 1 < argc) {
+				strncpy_nt(cfg.dbfile, argv[currentarg + 1], 530);
+				if (debug)
+					printf("DatabaseFile: \"%s\"\n", cfg.dbfile);
+				currentarg++;
+			} else {
+				fprintf(stderr, "Error: File for %s missing.\n", argv[currentarg]);
+				exit(EXIT_FAILURE);
+			}
+		} else if (strcmp(argv[currentarg], "--dbdir") == 0) {
 			if (currentarg + 1 < argc) {
 				strncpy_nt(cfg.dbdir, argv[currentarg + 1], 512);
 				if (debug)
@@ -282,7 +294,7 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 				fprintf(stderr, "Error: Directory for --dbdir missing.\n");
 				exit(EXIT_FAILURE);
 			}
-		} else if ((strcmp(argv[currentarg], "--locale")) == 0) {
+		} else if (strcmp(argv[currentarg], "--locale") == 0) {
 			if (currentarg + 1 < argc) {
 				setlocale(LC_ALL, argv[currentarg + 1]);
 				if (debug)
@@ -295,7 +307,7 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 		} else if (strcmp(argv[currentarg], "--config") == 0) {
 			/* config has already been parsed earlier so nothing to do here */
 			currentarg++;
-		} else if ((strcmp(argv[currentarg], "--headertext")) == 0) {
+		} else if (strcmp(argv[currentarg], "--headertext") == 0) {
 			if (currentarg + 1 < argc) {
 				strncpy_nt(ic->headertext, argv[currentarg + 1], 65);
 				if (debug)
@@ -650,7 +662,7 @@ void handledatabase(IPARAMS *p, IMAGECONTENT *ic)
 	iflist *dbifl = NULL;
 
 	if (!db_open_ro()) {
-		fprintf(stderr, "Error: Failed to open database \"%s/%s\" in read-only mode.\n", cfg.dbdir, DATABASEFILE);
+		fprintf(stderr, "Error: Failed to open database \"%s\" in read-only mode: %s\n", cfg.dbfile, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 	if (strlen(p->interface)) {

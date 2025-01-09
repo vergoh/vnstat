@@ -340,7 +340,7 @@ typedef struct {
 	char dformat[64], mformat[64], tformat[64], hformat[64];
 	char iface[MAXIFPARAMLEN];
 	char locale[32];
-	char dbdir[512], dbtzmodifier[14];
+	char dbfile[530], dbdir[512], dbtzmodifier[14];
 	char rxchar[2], txchar[2], rxhourchar[2], txhourchar[2], estimatetext[10];
 	char cbg[8], cedge[8], cheader[8], cheadertitle[8], cheaderdate[8], ctext[8];
 	char cline[8], clinel[8], cpercentileline[8], cvnstat[8], crx[8], crxd[8], ctx[8], ctxd[8], ctotal[8];

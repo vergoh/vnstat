@@ -25,7 +25,7 @@ vnStat - Copyright (C) 2002-2025 Teemu Toivola <tst@iki.fi>
 
 int main(int argc, char *argv[])
 {
-	int currentarg;
+	int currentarg, dbfiledefined = 0;
 	DIR *dir = NULL;
 	PARAMS p;
 
@@ -82,13 +82,18 @@ int main(int argc, char *argv[])
 
 	/* open database and see if it contains any interfaces */
 	if (!p.traffic && !p.livetraffic) {
-		if ((dir = opendir(cfg.dbdir)) != NULL) {
-			if (debug)
-				printf("Dir OK\n");
-			closedir(dir);
+		if (strlen(cfg.dbfile) > 0) {
+			dbfiledefined = 1;
+		}
+		if (dbfiledefined || (dir = opendir(cfg.dbdir)) != NULL) {
+			if (dir != NULL) {
+				if (debug)
+					printf("Dir OK\n");
+				closedir(dir);
+			}
 			if (!db_open_ro()) {
-				printf("Error: Failed to open database \"%s/%s\" in read-only mode.\n", cfg.dbdir, DATABASEFILE);
-				if (errno == ENOENT) {
+				printf("Error: Failed to open database \"%s\" in read-only mode: %s\n", cfg.dbfile, strerror(errno));
+				if (!dbfiledefined && errno == ENOENT) {
 					printf("The vnStat daemon should have created the database when started.\n");
 					printf("Check that it is configured and running. See also \"man vnstatd\".\n");
 				}
