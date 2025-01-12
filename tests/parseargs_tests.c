@@ -69,7 +69,7 @@ START_TEST(vnstat_parseargs_can_modify_settings)
 {
 	PARAMS p;
 	char *argv[] = {"vnstat", "--debug", "--traffic", "12", "--add", "--rename", "aname", "--config",
-					"does_nothing", "-l", "1", "--remove", "-i", "ethsomething", "--style", "0", "--dbdir",
+					"does_nothing", "-l", "1", "--remove", "-i", "ethsomething", "--style", "0", "--db", "/path/dbfile.db", "--dbdir",
 					"dbsomewhere", "-q", "-d", "1", "-m", "2", "-t", "3", "-s", "-y", "4", "-hg", "-h", "5", "-5", "6",
 					"--oneline", "b", "--xml", "h", "7", "--json", "d", "7", "-ru", "--rateunit", "0",
 					"--force", "--setalias", "super", "--begin", "2000-01-01",
@@ -83,6 +83,7 @@ START_TEST(vnstat_parseargs_can_modify_settings)
 	ck_assert_str_eq(p.interface, "ethsomething");
 	ck_assert_int_eq(p.defaultiface, 0);
 	ck_assert_int_eq(cfg.ostyle, 4);
+	ck_assert_str_eq(cfg.dbfile, "/path/dbfile.db");
 	ck_assert_str_eq(cfg.dbdir, "dbsomewhere");
 	ck_assert_int_eq(p.query, 1);
 	ck_assert_int_eq(p.force, 1);
@@ -165,6 +166,18 @@ START_TEST(vnstat_parseargs_style_checks_parameter)
 {
 	PARAMS p;
 	char *argv[] = {"vnstat", "--style", "9001", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	initparams(&p);
+	suppress_output();
+	parseargs(&p, argc, argv);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_db_requires_parameter)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--db", NULL};
 	int argc = sizeof(argv) / sizeof(char *) - 1;
 
 	initparams(&p);
@@ -981,6 +994,58 @@ START_TEST(vnstat_parseargs_alert_gives_help)
 }
 END_TEST
 
+START_TEST(vnstat_parseargs_merge_gives_help_when_asked)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--merge", "?", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	initparams(&p);
+	suppress_output();
+	parseargs(&p, argc, argv);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_merge_gives_help_without_parameters)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--merge", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	initparams(&p);
+	suppress_output();
+	parseargs(&p, argc, argv);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_merge_gives_help_with_wrong_parameter_count)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--merge", "somefile", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	initparams(&p);
+	suppress_output();
+	parseargs(&p, argc, argv);
+}
+END_TEST
+
+START_TEST(vnstat_parseargs_merge_can_be_configured)
+{
+	PARAMS p;
+	char *argv[] = {"vnstat", "--merge", "/path/sourcefile", "/another_path/destinationfile", NULL};
+	int argc = sizeof(argv) / sizeof(char *) - 1;
+
+	initparams(&p);
+	debug = 1;
+	suppress_output();
+	parseargs(&p, argc, argv);
+	ck_assert_int_eq(p.merge, 1);
+	ck_assert_str_eq(p.mergesrc, "/path/sourcefile");
+	ck_assert_str_eq(p.mergedst, "/another_path/destinationfile");
+}
+END_TEST
+
 void add_parseargs_tests(Suite *s)
 {
 	TCase *tc_pa = tcase_create("ParseArgs");
@@ -997,6 +1062,7 @@ void add_parseargs_tests(Suite *s)
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_does_not_allow_too_long_interface_merges, 1);
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_style_requires_parameter, 1);
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_style_checks_parameter, 1);
+	tcase_add_exit_test(tc_pa, vnstat_parseargs_db_requires_parameter, 1);
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_knows_that_update_is_not_supported, 1);
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_dbdir_requires_a_directory, 1);
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_oneline_gives_help, 1);
@@ -1053,5 +1119,9 @@ void add_parseargs_tests(Suite *s)
 	tcase_add_test(tc_pa, vnstat_parseargs_95p);
 	tcase_add_test(tc_pa, vnstat_parseargs_95);
 	tcase_add_exit_test(tc_pa, vnstat_parseargs_alert_gives_help, 1);
+	tcase_add_exit_test(tc_pa, vnstat_parseargs_merge_gives_help_when_asked, 1);
+	tcase_add_exit_test(tc_pa, vnstat_parseargs_merge_gives_help_without_parameters, 1);
+	tcase_add_exit_test(tc_pa, vnstat_parseargs_merge_gives_help_with_wrong_parameter_count, 1);
+	tcase_add_test(tc_pa, vnstat_parseargs_merge_can_be_configured);
 	suite_add_tcase(s, tc_pa);
 }

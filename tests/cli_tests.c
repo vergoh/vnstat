@@ -46,6 +46,7 @@ START_TEST(vnstat_handlers_do_nothing_by_default)
 	handleaddinterface(&p);
 	handlesetalias(&p);
 	handletrafficmeters(&p);
+	handlemerge(&p);
 	ck_assert_int_eq(memcmp(&p, &b, sizeof(PARAMS)), 0);
 }
 END_TEST
@@ -1580,6 +1581,148 @@ START_TEST(validateinterface_knows_when_to_give_up_searching)
 }
 END_TEST
 
+START_TEST(handlemerge_source_and_destination_cannot_be_the_same)
+{
+	PARAMS p;
+
+	defaultcfg();
+	initparams(&p);
+	debug = 1;
+
+	p.merge = 1;
+	strncpy_nt(p.mergesrc, "fileA", 512);
+	strncpy_nt(p.mergedst, "fileA", 512);
+
+	suppress_output();
+	handlemerge(&p);
+}
+END_TEST
+
+START_TEST(handlemerge_source_needs_to_be_provided)
+{
+	PARAMS p;
+
+	defaultcfg();
+	initparams(&p);
+	debug = 1;
+
+	p.merge = 1;
+	strncpy_nt(p.mergedst, "fileA", 512);
+
+	suppress_output();
+	handlemerge(&p);
+}
+END_TEST
+
+START_TEST(handlemerge_destination_needs_to_be_provided)
+{
+	PARAMS p;
+
+	defaultcfg();
+	initparams(&p);
+	debug = 1;
+
+	p.merge = 1;
+	strncpy_nt(p.mergesrc, "fileA", 512);
+
+	suppress_output();
+	handlemerge(&p);
+}
+END_TEST
+
+START_TEST(handlemerge_all_to_one_merge_is_not_supported)
+{
+	PARAMS p;
+
+	defaultcfg();
+	initparams(&p);
+	debug = 1;
+
+	p.merge = 1;
+	strncpy_nt(p.mergesrc, "fileA", 512);
+	strncpy_nt(p.mergedst, "fileB:all_to_one", 512);
+
+	suppress_output();
+	handlemerge(&p);
+}
+END_TEST
+
+START_TEST(handlemerge_source_file_must_exist)
+{
+	PARAMS p;
+
+	defaultcfg();
+	initparams(&p);
+	debug = 1;
+
+	p.merge = 1;
+	strncpy_nt(p.mergesrc, "fileA_really_does_not_exist", 512);
+	strncpy_nt(p.mergedst, "fileB", 512);
+
+	suppress_output();
+	handlemerge(&p);
+}
+END_TEST
+
+START_TEST(handlemerge_reports_merge_failure)
+{
+	PARAMS p;
+
+	defaultcfg();
+	initparams(&p);
+	debug = 1;
+
+	p.merge = 1;
+	strncpy_nt(p.mergesrc, "Makefile", 512);
+	strncpy_nt(p.mergedst, "fileB", 512);
+
+	suppress_output();
+	handlemerge(&p);
+}
+END_TEST
+
+START_TEST(parsedatabaseinterface_can_parse_strings)
+{
+	int ret;
+	char database[512], interface[512];
+
+	database[0] = '\0';
+	interface[0] = '\0';
+	ret = parsedatabaseinterface("teststring", database, interface);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_str_eq(database, "teststring");
+	ck_assert_str_eq(interface, "");
+
+	database[0] = '\0';
+	interface[0] = '\0';
+	ret = parsedatabaseinterface("file.db:someinterface", database, interface);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_str_eq(database, "file.db");
+	ck_assert_str_eq(interface, "someinterface");
+
+	database[0] = '\0';
+	interface[0] = '\0';
+	ret = parsedatabaseinterface("file.db:someinterface:and_stuff", database, interface);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_str_eq(database, "file.db");
+	ck_assert_str_eq(interface, "someinterface:and_stuff");
+}
+END_TEST
+
+START_TEST(parsedatabaseinterface_knows_too_long_strings)
+{
+	int ret;
+	char database[512], interface[512];
+
+	database[0] = '\0';
+	interface[0] = '\0';
+	ret = parsedatabaseinterface("longstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislongstringislong:string", database, interface);
+	ck_assert_int_eq(ret, 0);
+	ck_assert_str_eq(database, "");
+	ck_assert_str_eq(interface, "");
+}
+END_TEST
+
 void add_cli_tests(Suite *s)
 {
 	TCase *tc_cli = tcase_create("CLI");
@@ -1658,5 +1801,13 @@ void add_cli_tests(Suite *s)
 	tcase_add_exit_test(tc_cli, validateinterface_detects_if_not_all_interfaces_are_unique_for_merge, 1);
 	tcase_add_test(tc_cli, validateinterface_uses_all_matching_methods_if_no_match_for_exact_name_is_found);
 	tcase_add_exit_test(tc_cli, validateinterface_knows_when_to_give_up_searching, 1);
+	tcase_add_exit_test(tc_cli, handlemerge_source_and_destination_cannot_be_the_same, 1);
+	tcase_add_exit_test(tc_cli, handlemerge_source_needs_to_be_provided, 1);
+	tcase_add_exit_test(tc_cli, handlemerge_destination_needs_to_be_provided, 1);
+	tcase_add_exit_test(tc_cli, handlemerge_all_to_one_merge_is_not_supported, 1);
+	tcase_add_exit_test(tc_cli, handlemerge_source_file_must_exist, 1);
+	tcase_add_exit_test(tc_cli, handlemerge_reports_merge_failure, 1);
+	tcase_add_test(tc_cli, parsedatabaseinterface_can_parse_strings);
+	tcase_add_test(tc_cli, parsedatabaseinterface_knows_too_long_strings);
 	suite_add_tcase(s, tc_cli);
 }
