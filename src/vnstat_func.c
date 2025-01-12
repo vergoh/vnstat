@@ -575,7 +575,7 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 				p->alert = 1;
 			}
 		} else if (strcmp(argv[currentarg], "--merge") == 0) {
-			if (currentarg + 2 < argc) {
+			if ((currentarg + 2 < argc) && (!ishelprequest(argv[currentarg + 1]))) {
 				p->merge = 1;
 				strncpy_nt(p->mergesrc, argv[currentarg + 1], 512);
 				strncpy_nt(p->mergedst, argv[currentarg + 2], 512);
@@ -584,7 +584,9 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 				currentarg += 2;
 			} else {
 				printf("Error: Invalid or missing parameters for %s.\n", argv[currentarg]);
-				// TODO: add help to explain supported parameters
+				printf("Usage: --merge <source> <destination>\n");
+				printf("  <source> / <destination> can either be paths to database files for merging\n");
+				printf("  all interfaces or file:interface for merging only a specific interface.\n");
 				exit(EXIT_FAILURE);
 			}
 		} else if ((strcmp(argv[currentarg], "-v") == 0) || (strcmp(argv[currentarg], "--version") == 0)) {

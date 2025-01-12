@@ -49,6 +49,8 @@ vnstat \- a console-based network traffic monitor
 .RB [ \-\-locale
 .IR locale ]
 .RB [ \-\-longhelp ]
+.RB [ \-\-merge
+.IR "source destination" ]
 .RB [ \-\-months
 .RI [ limit ]]
 .RB [ \-\-oneline
@@ -427,6 +429,53 @@ default if no configuration file is available.
 .TP
 .B "--longhelp"
 Show complete options list.
+
+.TP
+.BI "--merge " "source destination"
+Merge interface data from
+.I source
+database to
+.I destination
+database. Unless interfaces are specified, all interfaces from
+.I source
+will be merged to
+.IR destination .
+A new database will be created if
+.I destination
+doesn't exist. If an interface of the same name doesn't exist in
+.I destination
+then a direct copy action for the data from
+.I source
+will be executed. If an interface of the same name already exists in
+.I destination
+then an additive merge action will be executed. The
+.I source
+database is always accessed as read-only and will never be modified by the merge actions. Changes
+to the
+.I destination
+database cannot be reversed as subtraction actions aren't supported. Execution of the merge needs
+to be acknowledged with an additional parameter. If this additional parameter isn't provided then
+a preview of the actions with additional guidance will be shown.
+
+.IP
+Both
+.I source
+and
+.I destination
+can either refer directly to database files or use an alternative
+.I file:interface
+syntax where the database file is suffixed with
+.I ":"
+followed with an interface name. When used as
+.IR source ,
+the alternative syntax allows specifying one interface to be merged from
+.I source
+to
+.I destination
+instead of all interfaces being merged. Additionally, it's possible to use
+the alternative syntax in
+.I destination
+for specifying to which interface the data will be merged to.
 
 .TP
 .BI "-m, --months " [limit]
