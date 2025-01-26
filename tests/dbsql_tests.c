@@ -1287,6 +1287,54 @@ START_TEST(db_validate_with_high_version)
 }
 END_TEST
 
+START_TEST(db_getdata_returns_data_in_order_regardless_of_input_order)
+{
+	int ret;
+	dbdatalist *datalist = NULL, *datalist_i = NULL;
+	dbdatalistinfo datainfo;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("ethorder");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addtraffic_dated("ethorder", 5, 6, get_timestamp(2015, 3, 5, 15, 0));
+	ck_assert_int_eq(ret, 1);
+	ret = db_addtraffic_dated("ethorder", 3, 4, get_timestamp(2012, 6, 10, 15, 0));
+	ck_assert_int_eq(ret, 1);
+	ret = db_addtraffic_dated("ethorder", 7, 8, get_timestamp(2017, 2, 4, 15, 0));
+	ck_assert_int_eq(ret, 1);
+	ret = db_addtraffic_dated("ethorder", 1, 2, get_timestamp(1995, 7, 20, 15, 0));
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getdata(&datalist, &datainfo, "ethorder", "day", 10);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 4);
+	datalist_i = datalist;
+
+	ck_assert_int_lt(datalist->timestamp, datalist->next->timestamp);
+	ck_assert_int_lt(datalist->next->timestamp, datalist->next->next->timestamp);
+	ck_assert_int_lt(datalist->next->next->timestamp, datalist->next->next->next->timestamp);
+
+	ck_assert_int_eq(datalist_i->rx, 1);
+	ck_assert_int_eq(datalist_i->tx, 2);
+	datalist_i = datalist_i->next;
+	ck_assert_int_eq(datalist_i->rx, 3);
+	ck_assert_int_eq(datalist_i->tx, 4);
+	datalist_i = datalist_i->next;
+	ck_assert_int_eq(datalist_i->rx, 5);
+	ck_assert_int_eq(datalist_i->tx, 6);
+	datalist_i = datalist_i->next;
+	ck_assert_int_eq(datalist_i->rx, 7);
+	ck_assert_int_eq(datalist_i->tx, 8);
+
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 void range_test_month_setup(void)
 {
 	int ret, i;
@@ -4333,6 +4381,7 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_validate_with_no_version);
 	tcase_add_test(tc_dbsql, db_validate_with_low_version);
 	tcase_add_test(tc_dbsql, db_validate_with_high_version);
+	tcase_add_test(tc_dbsql, db_getdata_returns_data_in_order_regardless_of_input_order);
 	tcase_add_test(tc_dbsql, db_getdata_range_can_get_months_without_range_defined);
 	tcase_add_test(tc_dbsql, db_getdata_range_can_get_months_with_range_matching_existing_data);
 	tcase_add_test(tc_dbsql, db_getdata_range_can_get_months_with_range_past_existing_data);

@@ -75,6 +75,7 @@ check_vnstat_SOURCES = tests/vnstat_tests.c tests/vnstat_tests.h \
   tests/common_tests.c tests/common_tests.h \
   tests/database_tests.c tests/database_tests.h \
   tests/dbsql_tests.c tests/dbsql_tests.h \
+  tests/dbmerge_tests.c tests/dbmerge_tests.h \
   tests/datacache_tests.c tests/datacache_tests.h \
   tests/config_tests.c tests/config_tests.h \
   tests/ifinfo_tests.c tests/ifinfo_tests.h \

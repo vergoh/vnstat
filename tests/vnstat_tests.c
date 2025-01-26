@@ -3,6 +3,7 @@
 #include "vnstat_tests.h"
 #include "common_tests.h"
 #include "dbsql_tests.h"
+#include "dbmerge_tests.h"
 #include "database_tests.h"
 #include "config_tests.h"
 #include "ifinfo_tests.h"
@@ -49,6 +50,7 @@ Suite *test_suite(void)
 
 	add_common_tests(s);
 	add_dbsql_tests(s);
+	add_dbmerge_tests(s);
 	add_database_tests(s);
 	add_config_tests(s);
 	add_ifinfo_tests(s);
@@ -89,7 +91,7 @@ void setup(void) {
 }
 
 void teardown(void) {
-	return;
+	fflush(stdout);
 }
 
 void suppress_output(void)

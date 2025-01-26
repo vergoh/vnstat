@@ -1339,22 +1339,22 @@ int db_getdata_range(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *
 			if (resultlimit > 0) {
 				snprintf(limit, 64, "limit %" PRIu32 "", resultlimit);
 			}
-			sqlite3_snprintf(768, sql, "select * from (select id, strftime('%%s', date, 'utc') as unixdate, sum(rx) as rx, sum(tx) as tx from day where interface in (%s) %s %s group by date order by rx+tx desc, unixdate asc %s) order by rx+tx asc, unixdate desc", ifaceidin, dbegin, dend, limit);
+			sqlite3_snprintf(768, sql, "select * from (select id, strftime('%%s', date, 'utc') as unixdate, sum(rx) as rx, sum(tx) as tx, date from day where interface in (%s) %s %s group by date order by rx+tx desc, date asc %s) order by rx+tx asc, date desc", ifaceidin, dbegin, dend, limit);
 		} else {
-			sqlite3_snprintf(768, sql, "select * from (select id, strftime('%%s', date, 'utc') as unixdate, sum(rx) as rx, sum(tx) as tx from top where interface in (%s) group by date order by rx+tx desc, unixdate asc %s) order by rx+tx asc, unixdate desc", ifaceidin, limit);
+			sqlite3_snprintf(768, sql, "select * from (select id, strftime('%%s', date, 'utc') as unixdate, sum(rx) as rx, sum(tx) as tx, date from top where interface in (%s) group by date order by rx+tx desc, date asc %s) order by rx+tx asc, date desc", ifaceidin, limit);
 		}
 	} else if (strcmp(table, "percentile") == 0) {
 		/* 'percentile' is a meta table collected from 'fiveminute' grouped as hours requiring as different query */
 		if (strlen(dbegin) && strlen(limit)) {
-			sqlite3_snprintf(768, sql, "select * from (select id, strftime('%%s', date, 'utc') as unixdate, sum(rx), sum(tx) from fiveminute where interface in (%s) %s %s group by strftime('%%Y-%%m-%%d %%H', date, 'utc') order by unixdate asc %s) order by unixdate desc", ifaceidin, dbegin, dend, limit);
+			sqlite3_snprintf(768, sql, "select * from (select id, strftime('%%s', date, 'utc') as unixdate, sum(rx), sum(tx), date from fiveminute where interface in (%s) %s %s group by strftime('%%Y-%%m-%%d %%H', date, 'utc') order by date asc %s) order by date desc", ifaceidin, dbegin, dend, limit);
 		} else {
-			sqlite3_snprintf(768, sql, "select id, strftime('%%s', date, 'utc') as unixdate, sum(rx), sum(tx) from fiveminute where interface in (%s) %s %s group by strftime('%%Y-%%m-%%d %%H', date, 'utc') order by unixdate desc %s", ifaceidin, dbegin, dend, limit);
+			sqlite3_snprintf(768, sql, "select id, strftime('%%s', date, 'utc') as unixdate, sum(rx), sum(tx) from fiveminute where interface in (%s) %s %s group by strftime('%%Y-%%m-%%d %%H', date, 'utc') order by date desc %s", ifaceidin, dbegin, dend, limit);
 		}
 	} else {
 		if (strlen(dbegin) && strlen(limit)) {
-			sqlite3_snprintf(768, sql, "select * from (select id, strftime('%%s', date, 'utc') as unixdate, sum(rx), sum(tx) from %s where interface in (%s) %s %s group by date order by unixdate asc %s) order by unixdate desc", table, ifaceidin, dbegin, dend, limit);
+			sqlite3_snprintf(768, sql, "select * from (select id, strftime('%%s', date, 'utc') as unixdate, sum(rx), sum(tx), date from %s where interface in (%s) %s %s group by date order by date asc %s) order by date desc", table, ifaceidin, dbegin, dend, limit);
 		} else {
-			sqlite3_snprintf(768, sql, "select id, strftime('%%s', date, 'utc') as unixdate, sum(rx), sum(tx) from %s where interface in (%s) %s %s group by date order by unixdate desc %s", table, ifaceidin, dbegin, dend, limit);
+			sqlite3_snprintf(768, sql, "select id, strftime('%%s', date, 'utc') as unixdate, sum(rx), sum(tx) from %s where interface in (%s) %s %s group by date order by date desc %s", table, ifaceidin, dbegin, dend, limit);
 		}
 	}
 	free(ifaceidin);
@@ -1368,8 +1368,8 @@ int db_getdata_range(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *
 	}
 
 	rc = sqlite3_column_count(sqlstmt);
-	if (rc != 4) {
-		snprintf(errorstring, 1024, "Get data returned unexpected column count %d instead of 4: \"%s\"", rc, sql);
+	if (rc < 4) {
+		snprintf(errorstring, 1024, "Get data returned unexpected column count %d instead of at least 4: \"%s\"", rc, sql);
 		printe(PT_Error);
 		sqlite3_finalize(sqlstmt);
 		return 0;

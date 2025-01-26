@@ -4,8 +4,6 @@
 #include "iflist.h"
 #include "dbmerge.h"
 
-// TODO: tests
-
 int dbmerge(const char *srcdbfile, const char *srciface, const char *dstdbfile, const char *dstiface, const int execute)
 {
 	int newdb = 0, i = 0, result = 0;
@@ -178,16 +176,19 @@ int mergeinterface(sqlite3 *srcdb, const char *srciface, sqlite3 *dstdb, const c
 
 	db = srcdb;
 	if (!db_getinterfaceinfo(srciface, &srcifinfo)) {
+		printf("Error: Failed to get interface information for source interface \"%s\".\n", srciface);
 		return 0;
 	}
 
 	db = dstdb;
 	dstifaceid = db_getinterfaceid(dstiface, 1);
 	if (dstifaceid == 0) {
+		printf("Error: Failed to get interface id for destination interface \"%s\".\n", dstiface);
 		return 0;
 	}
 
 	if (!db_getinterfaceinfo(dstiface, &dstifinfo)) {
+		printf("Error: Failed to get interface information for destination interface \"%s\".\n", dstiface);
 		return 0;
 	}
 
@@ -197,10 +198,12 @@ int mergeinterface(sqlite3 *srcdb, const char *srciface, sqlite3 *dstdb, const c
 
 	if (srcifinfo.created < dstifinfo.created) {
 		if (!db_setcreation(dstiface, srcifinfo.created)) {
+			printf("Error: Failed to set destination interface \"%s\" creation time.\n", dstiface);
 			db_rollbacktransaction();
 			return 0;
 		}
 		if (!db_setalias(dstiface, srcifinfo.alias)) {
+			printf("Error: Failed to set destination interface \"%s\" alias.\n", dstiface);
 			db_rollbacktransaction();
 			return 0;
 		}
@@ -208,16 +211,19 @@ int mergeinterface(sqlite3 *srcdb, const char *srciface, sqlite3 *dstdb, const c
 
 	if (srcifinfo.updated > dstifinfo.updated || (dstifinfo.rxcounter == 0 && dstifinfo.txcounter == 0)) {
 		if (!db_setupdated(dstiface, srcifinfo.updated)) {
+			printf("Error: Failed to set destination interface \"%s\" update timestamp.\n", dstiface);
 			db_rollbacktransaction();
 			return 0;
 		}
 		if (!db_setcounters(dstiface, srcifinfo.rxcounter, srcifinfo.txcounter)) {
+			printf("Error: Failed to set destination interface \"%s\" counters.\n", dstiface);
 			db_rollbacktransaction();
 			return 0;
 		}
 	}
 
 	if (!db_settotal(dstiface, srcifinfo.rxtotal+dstifinfo.rxtotal, srcifinfo.txtotal+dstifinfo.txtotal)) {
+		printf("Error: Failed to set destination interface \"%s\" traffic totals.\n", dstiface);
 		db_rollbacktransaction();
 		return 0;
 	}
@@ -225,7 +231,7 @@ int mergeinterface(sqlite3 *srcdb, const char *srciface, sqlite3 *dstdb, const c
 	for (i = 0; i < 6; i++) {
 		db = srcdb;
 		if (!db_getdata(&datalist, &datainfo, srciface, datatables[i], 0)) {
-			printf("Error: Failed to fetch %s data for interface \"%s\".\n", datatables[i], srciface);
+			printf("Error: Failed to fetch %s data for source interface \"%s\".\n", datatables[i], srciface);
 			db_rollbacktransaction();
 			return 0;
 		}
@@ -237,6 +243,7 @@ int mergeinterface(sqlite3 *srcdb, const char *srciface, sqlite3 *dstdb, const c
 		datalist_i = datalist;
 		while (datalist_i != NULL) {
 			if (!mergedata(datatables[i], dstifaceid, datalist_i->rx, datalist_i->tx, datalist_i->timestamp)) {
+				printf("Error: Failed to merge %s data to destination interface \"%s\",\n", datatables[i], dstiface);
 				dbdatalistfree(&datalist);
 				db_rollbacktransaction();
 				return 0;
@@ -267,7 +274,13 @@ int mergedata(const char *table, const sqlite3_int64 ifaceid, const uint64_t rx,
 		}
 	}
 
-	if (tableindex == -1 || timestamp == 0) {
+	if (tableindex == -1) {
+		printf("Error: Invalid database table \"%s\" for data merge.\n", table);
+		return 0;
+	}
+
+	if (timestamp == 0) {
+		printf("Error: Invalid timestamp %" PRId64 " for data merge.\n", (int64_t)timestamp);
 		return 0;
 	}
 
