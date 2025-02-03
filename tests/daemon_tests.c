@@ -1363,6 +1363,46 @@ START_TEST(processifinfo_does_not_add_traffic_when_over_limit)
 }
 END_TEST
 
+START_TEST(processifinfo_adds_traffic_when_over_limit_with_64bit)
+{
+	int ret;
+	DSTATE s;
+	initdstate(&s);
+	suppress_output();
+	debug = 1;
+
+	ifinfo.rx = MAX32 + 1111111;
+	ifinfo.tx = MAX32 + 2222222;
+	ifinfo.timestamp = 250;
+	cfg.trafficlessentries = 0;
+
+	ck_assert_int_eq(datacache_count(&s.dcache), 0);
+	ret = datacache_add(&s.dcache, "ethsomething", 0);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(s.dcache->syncneeded, 0);
+	ck_assert_int_eq(s.dcache->currx, 0);
+	ck_assert_int_eq(s.dcache->curtx, 0);
+	s.dcache->updated = 249;
+	s.dcache->currx = MAX32 + 1;
+	s.dcache->curtx = MAX32 + 1;
+
+	ret = ibwadd("ethsomething", 1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = processifinfo(&s, &s.dcache);
+	ck_assert_int_eq(ret, 1);
+
+	ck_assert_int_eq(s.dcache->syncneeded, 0);
+	ck_assert(s.dcache->currx == (MAX32 + 1111111));
+	ck_assert(s.dcache->curtx == (MAX32 + 2222222));
+	ck_assert_ptr_ne(s.dcache->log, NULL);
+	ck_assert_int_eq(s.dcache->log->rx, 1111110);
+	ck_assert_int_eq(s.dcache->log->tx, 2222221);
+
+	datacache_clear(&s.dcache);
+}
+END_TEST
+
 START_TEST(processifinfo_adds_zero_traffic_when_over_limit)
 {
 	int ret;
@@ -1633,6 +1673,7 @@ void add_daemon_tests(Suite *s)
 	tcase_add_test(tc_daemon, processifinfo_syncs_if_timestamps_match);
 	tcase_add_test(tc_daemon, processifinfo_adds_traffic);
 	tcase_add_test(tc_daemon, processifinfo_does_not_add_traffic_when_over_limit);
+	tcase_add_test(tc_daemon, processifinfo_adds_traffic_when_over_limit_with_64bit);
 	tcase_add_test(tc_daemon, processifinfo_adds_zero_traffic_when_over_limit);
 	tcase_add_test(tc_daemon, datacache_status_can_handle_nothing);
 	tcase_add_test(tc_daemon, datacache_status_can_show_limits);
