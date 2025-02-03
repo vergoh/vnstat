@@ -587,6 +587,8 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 				printf("Usage: --merge <source> <destination>\n");
 				printf("  <source> / <destination> can either be paths to database files for merging\n");
 				printf("  all interfaces or file:interface for merging only a specific interface.\n");
+				printf("  A preview of the merge operation will be shown without files being modified\n");
+				printf("  when executed without --force.\n");
 				exit(EXIT_FAILURE);
 			}
 		} else if ((strcmp(argv[currentarg], "-v") == 0) || (strcmp(argv[currentarg], "--version") == 0)) {
