@@ -1,4 +1,4 @@
-2.13 / <not released yet>
+2.13 / 8-Feb-2025
 
  - Fixed
    - Opening of body html tag was missing on some pages in image output
