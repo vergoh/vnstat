@@ -553,7 +553,7 @@ int processifinfo(DSTATE *s, datacache **dc)
 	uint64_t maxtransfer;
 	uint32_t maxbw;
 	time_t interval;
-	short detected64bit = 0, noreset64bit = 0;
+	short detected64bit = 0;
 
 	if ((*dc)->syncneeded) { /* if --sync was used during startup */
 		(*dc)->currx = ifinfo.rx;
@@ -583,10 +583,6 @@ int processifinfo(DSTATE *s, datacache **dc)
 			detected64bit = 1;
 		}
 
-		if ((ifinfo.rx > MAX32 && ifinfo.rx >= (*dc)->currx) || (ifinfo.tx > MAX32 && ifinfo.tx >= (*dc)->curtx)) {
-			noreset64bit = 1;
-		}
-
 		rxchange = countercalc(&(*dc)->currx, &ifinfo.rx, ifinfo.is64bit);
 		txchange = countercalc(&(*dc)->curtx, &ifinfo.tx, ifinfo.is64bit);
 
@@ -600,16 +596,10 @@ int processifinfo(DSTATE *s, datacache **dc)
 			}
 		}
 
-		/* trust interface data without limits when counters are 64-bit and over maximum 32-bit range without both having overflown */
-		if (noreset64bit) {
-			maxbw = 0;
-		} else {
-			/* get bandwidth limit for current interface */
-			ibwget((*dc)->interface, &maxbw);
-		}
+		/* get bandwidth limit for current interface */
+		ibwget((*dc)->interface, &maxbw);
 
 		if (maxbw > 0) {
-
 			/* calculate maximum possible transfer since last update based on set maximum rate */
 			/* and add 2% in order to be on the safe side */
 			maxtransfer = (uint64_t)(ceilf(((float)maxbw / (float)8) * (float)interval * (float)1.02)) * 1024 * 1024;

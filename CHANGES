@@ -3,8 +3,6 @@
  - Fixed
    - Opening of body html tag was missing on some pages in image output
      example cgi (examples/vnstat.cgi)
-   - Unnecessary bandwidth limit configuration sanity check removed when
-     interface counters are in 64-bit range without overflow detected
  - New
    - Add database data merge support as --merge
    - Add --db for specifying database file for queries (vnstat and vnstati)
