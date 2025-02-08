@@ -316,6 +316,7 @@ int getratespacing(const int len, const int unitmode, const int unitindex)
 int getpadding(const int len, const char *str)
 {
 #if defined(HAVE_MBSTOWCS) && defined(HAVE_WCSWIDTH)
+	int width, padding;
 	wchar_t wbuffer[64];
 	if (!cfg.utflocale) {
 		return len;
@@ -323,7 +324,17 @@ int getpadding(const int len, const char *str)
 	if ((int)mbstowcs(wbuffer, str, 64) < 0) {
 		return len;
 	}
-	return len + ((int)strlen(str) - wcswidth(wbuffer, 64));
+	width = wcswidth(wbuffer, 64);
+	if (width < 0) {
+		return len;
+	} else {
+		padding = len + ((int)strlen(str) - width);
+		if (padding < 0) {
+			return len;
+		} else {
+			return padding;
+		}
+	}
 #else
 	return len;
 #endif

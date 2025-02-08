@@ -220,6 +220,7 @@ int isleapyear(const int year)
 
 time_t mosecs(time_t month, time_t updated)
 {
+	time_t motime;
 	struct tm d;
 
 	if (localtime_r(&month, &d) == NULL) {
@@ -230,7 +231,12 @@ time_t mosecs(time_t month, time_t updated)
 	d.tm_hour = d.tm_min = d.tm_sec = 0;
 
 	if ((updated - month) > 0) {
-		return updated - mktime(&d);
+		motime = mktime(&d);
+		if (motime >= 0) {
+			return updated - motime;
+		} else {
+			return 1;
+		}
 	} else {
 		return 1;
 	}

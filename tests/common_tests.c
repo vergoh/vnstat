@@ -96,13 +96,13 @@ START_TEST(mosecs_return_values)
 {
 	time_t a, b;
 	cfg.monthrotate = 1;
-	ck_assert_int_eq(mosecs(0, 0), 1);
+	ck_assert_int_eq(mosecs(1736000000, 1736000000), 1);
 
-	a = mosecs(172800, 173000);
+	a = mosecs(1736000000, 1736100000);
 	ck_assert_int_gt(a, 1);
 
 	cfg.monthrotate = 2;
-	b = mosecs(172800, 173000);
+	b = mosecs(1736000000, 1736100000);
 	ck_assert_int_gt(b, 1);
 
 	ck_assert_int_gt(a, b);
@@ -122,8 +122,8 @@ START_TEST(mosecs_does_not_change_tz)
 	timezone_before_call = timezone;
 
 	ck_assert_int_eq(cfg.monthrotate, 1);
-	ck_assert_int_ne(mosecs(1, 2), 0);
-	ck_assert_int_ne(mosecs(1, 2), 1);
+	ck_assert_int_ne(mosecs(1736100000, 1736200000), 0);
+	ck_assert_int_ne(mosecs(1736100000, 1736200000), 1);
 	ck_assert_int_eq(timezone_before_call, timezone);
 }
 END_TEST
@@ -138,8 +138,8 @@ START_TEST(mosecs_does_not_change_struct_tm_pointer_content)
 
 	ck_assert_int_eq(cfg.monthrotate, 1);
 	ck_assert_int_eq(current, mktime(stm));
-	ck_assert_int_ne(mosecs(1, 2), 0);
-	ck_assert_int_ne(mosecs(1, 2), 1);
+	ck_assert_int_ne(mosecs(1736100000, 1736200000), 0);
+	ck_assert_int_ne(mosecs(1736100000, 1736200000), 1);
 	ck_assert_int_eq(current, mktime(stm));
 }
 END_TEST
