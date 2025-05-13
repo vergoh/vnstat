@@ -1339,9 +1339,9 @@ int db_getdata_range(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *
 			if (resultlimit > 0) {
 				snprintf(limit, 64, "limit %" PRIu32 "", resultlimit);
 			}
-			sqlite3_snprintf(768, sql, "select * from (select id, strftime('%%s', date, 'utc') as unixdate, sum(rx) as rx, sum(tx) as tx, date from day where interface in (%s) %s %s group by date order by rx+tx desc, date asc %s) order by rx+tx asc, date desc", ifaceidin, dbegin, dend, limit);
+			sqlite3_snprintf(768, sql, "select * from (select id, strftime('%%s', date, 'utc') as unixdate, sum(rx) as sumrx, sum(tx) as sumtx, date from day where interface in (%s) %s %s group by date order by sumrx+sumtx desc, date asc %s) order by sumrx+sumtx asc, date desc", ifaceidin, dbegin, dend, limit);
 		} else {
-			sqlite3_snprintf(768, sql, "select * from (select id, strftime('%%s', date, 'utc') as unixdate, sum(rx) as rx, sum(tx) as tx, date from top where interface in (%s) group by date order by rx+tx desc, date asc %s) order by rx+tx asc, date desc", ifaceidin, limit);
+			sqlite3_snprintf(768, sql, "select * from (select id, strftime('%%s', date, 'utc') as unixdate, sum(rx) as sumrx, sum(tx) as sumtx, date from top where interface in (%s) group by date order by sumrx+sumtx desc, date asc %s) order by sumrx+sumtx asc, date desc", ifaceidin, limit);
 		}
 	} else if (strcmp(table, "percentile") == 0) {
 		/* 'percentile' is a meta table collected from 'fiveminute' grouped as hours requiring as different query */

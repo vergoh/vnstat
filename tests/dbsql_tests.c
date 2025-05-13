@@ -2999,6 +2999,90 @@ START_TEST(top_list_returns_items_in_correct_order)
 }
 END_TEST
 
+START_TEST(top_list_correctly_orders_summed_interfaces)
+{
+	int ret;
+	dbdatalist *datalist = NULL, *datalist_iterator = NULL;
+	dbdatalistinfo datainfo;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addinterface("eth1");
+	ck_assert_int_eq(ret, 1);
+
+
+	ret = db_addtraffic_dated("eth0", 301, 200, get_timestamp(2000, 2, 20, 0, 0));
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addtraffic_dated("eth0", 151, 152, get_timestamp(2000, 2, 21, 0, 0));
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addtraffic_dated("eth1", 300, 250, get_timestamp(2000, 2, 19, 0, 0));
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_addtraffic_dated("eth1", 161, 162, get_timestamp(2000, 2, 21, 0, 0));
+	ck_assert_int_eq(ret, 1);
+
+	// more or equal number of entries requested than what is in the database
+	ret = db_getdata(&datalist, &datainfo, "eth0+eth1", "top", 10);
+	ck_assert_int_eq(ret, 1);
+
+	ck_assert_int_eq(datainfo.count, 3);
+	ck_assert_int_eq(datainfo.maxrx, 312);
+	ck_assert_int_eq(datainfo.maxtx, 314);
+	ck_assert_int_eq(datainfo.minrx, 300);
+	ck_assert_int_eq(datainfo.mintx, 200);
+
+	datalist_iterator = datalist;
+
+	ck_assert_int_eq(datalist_iterator->rx, 312);
+	ck_assert_int_eq(datalist_iterator->tx, 314);
+
+	datalist_iterator = datalist_iterator->next;
+
+	ck_assert_int_eq(datalist_iterator->rx, 300);
+	ck_assert_int_eq(datalist_iterator->tx, 250);
+
+	datalist_iterator = datalist_iterator->next;
+
+	ck_assert_int_eq(datalist_iterator->rx, 301);
+	ck_assert_int_eq(datalist_iterator->tx, 200);
+
+	dbdatalistfree(&datalist);
+
+	// less entries requested than is in the database, verify that order is correctly evaluated as
+	// sum of values of all entries instead of only those that would end up on the top list as standalone
+	// values, 2000-02-20 being such case in the input data
+	ret = db_getdata(&datalist, &datainfo, "eth0+eth1", "top", 2);
+	ck_assert_int_eq(ret, 1);
+
+	ck_assert_int_eq(datainfo.count, 2);
+	ck_assert_int_eq(datainfo.maxrx, 312);
+	ck_assert_int_eq(datainfo.maxtx, 314);
+	ck_assert_int_eq(datainfo.minrx, 300);
+	ck_assert_int_eq(datainfo.mintx, 250);
+
+	datalist_iterator = datalist;
+
+	ck_assert_int_eq(datalist_iterator->rx, 312);
+	ck_assert_int_eq(datalist_iterator->tx, 314);
+
+	datalist_iterator = datalist_iterator->next;
+
+	ck_assert_int_eq(datalist_iterator->rx, 300);
+	ck_assert_int_eq(datalist_iterator->tx, 250);
+
+	dbdatalistfree(&datalist);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 START_TEST(db_setinterfacebyalias_sets_nothing_when_there_is_no_match)
 {
 	int ret;
@@ -4424,6 +4508,7 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, getqueryinterfacecount_can_count);
 	tcase_add_test(tc_dbsql, getqueryinterfacecount_can_reject_query_due_to_some_characters);
 	tcase_add_test(tc_dbsql, top_list_returns_items_in_correct_order);
+	tcase_add_test(tc_dbsql, top_list_correctly_orders_summed_interfaces);
 	tcase_add_test(tc_dbsql, db_setinterfacebyalias_sets_nothing_when_there_is_no_match);
 	tcase_add_test(tc_dbsql, db_setinterfacebyalias_can_set);
 	tcase_add_test(tc_dbsql, db_setinterfacebyalias_sets_highest_traffic_interface_if_alias_is_not_unique);
