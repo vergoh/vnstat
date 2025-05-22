@@ -3,6 +3,8 @@
  - Fixed
    - Some higher traffic days could be missing from top days output when the
      interface merge syntax (interface1+interface2) was used
+ - New
+   - Increase debug verbosity if -D / --debug is used multiples times
 
 
 2.13 / 8-Feb-2025

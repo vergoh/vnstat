@@ -281,7 +281,7 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 				currentarg++;
 			}
 		} else if ((strcmp(argv[currentarg], "-D") == 0) || (strcmp(argv[currentarg], "--debug") == 0)) {
-			debug = 1;
+			;
 		} else if ((strcmp(argv[currentarg], "-d") == 0) || (strcmp(argv[currentarg], "--days") == 0)) {
 			cfg.qmode = 1;
 			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {

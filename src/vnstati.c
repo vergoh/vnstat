@@ -37,8 +37,12 @@ int main(int argc, char *argv[])
 	if (argc > 1) {
 		for (currentarg = 1; currentarg < argc; currentarg++) {
 			if ((strcmp(argv[currentarg], "-D") == 0) || (strcmp(argv[currentarg], "--debug") == 0)) {
-				debug = 1;
-				printf("Debug enabled, vnstati %s, SQLite %s, LibGD %d.%d.%d\n", VERSION, sqlite3_libversion(), GD_MAJOR_VERSION, GD_MINOR_VERSION, GD_RELEASE_VERSION);
+				if (!debug) {
+					printf("Debug enabled, vnstati %s, SQLite %s, LibGD %d.%d.%d\n", VERSION, sqlite3_libversion(), GD_MAJOR_VERSION, GD_MINOR_VERSION, GD_RELEASE_VERSION);
+				}
+				if (debug < 2) {
+					debug += 1;
+				}
 			} else if (strcmp(argv[currentarg], "--config") == 0) {
 				if (currentarg + 1 < argc) {
 					strncpy_nt(p.cfgfile, argv[currentarg + 1], 512);
@@ -324,7 +328,7 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 		} else if ((strcmp(argv[currentarg], "-S") == 0) || (strcmp(argv[currentarg], "--small")) == 0) {
 			cfg.largefonts = 0;
 		} else if ((strcmp(argv[currentarg], "-D") == 0) || (strcmp(argv[currentarg], "--debug")) == 0) {
-			debug = 1;
+			;
 		} else if ((strcmp(argv[currentarg], "-d") == 0) || (strcmp(argv[currentarg], "--days")) == 0) {
 			cfg.qmode = 1;
 			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {

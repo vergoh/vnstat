@@ -38,8 +38,12 @@ int main(int argc, char *argv[])
 	if (argc > 1) {
 		for (currentarg = 1; currentarg < argc; currentarg++) {
 			if ((strcmp(argv[currentarg], "-D") == 0) || (strcmp(argv[currentarg], "--debug") == 0)) {
-				debug = 1;
-				printf("Debug enabled, vnstatd %s, SQLite %s\n", VERSION, sqlite3_libversion());
+				if (!debug) {
+					printf("Debug enabled, vnstatd %s, SQLite %s\n", VERSION, sqlite3_libversion());
+				}
+				if (debug < 2) {
+					debug += 1;
+				}
 			} else if (strcmp(argv[currentarg], "--config") == 0) {
 				if (currentarg + 1 < argc) {
 					strncpy_nt(s.cfgfile, argv[currentarg + 1], 512);
@@ -288,7 +292,7 @@ void parseargs(DSTATE *s, int argc, char **argv)
 			/* config has already been parsed earlier so nothing to do here */
 			currentarg++;
 		} else if ((strcmp(argv[currentarg], "-D") == 0) || (strcmp(argv[currentarg], "--debug") == 0)) {
-			debug = 1;
+			;
 		} else if ((strcmp(argv[currentarg], "-d") == 0) || (strcmp(argv[currentarg], "--daemon") == 0)) {
 			s->rundaemon = 1;
 			s->showhelp = 0;
