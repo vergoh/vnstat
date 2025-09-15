@@ -291,11 +291,8 @@ void parseargs(DSTATE *s, int argc, char **argv)
 		} else if (strcmp(argv[currentarg], "--config") == 0) {
 			/* config has already been parsed earlier so nothing to do here */
 			currentarg++;
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wextra-semi-stmt"
 		} else if ((strcmp(argv[currentarg], "-D") == 0) || (strcmp(argv[currentarg], "--debug") == 0)) {
 			;
-#pragma clang diagnostic pop
 		} else if ((strcmp(argv[currentarg], "-d") == 0) || (strcmp(argv[currentarg], "--daemon") == 0)) {
 			s->rundaemon = 1;
 			s->showhelp = 0;

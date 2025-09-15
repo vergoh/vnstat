@@ -327,11 +327,8 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 			cfg.largefonts = 1;
 		} else if ((strcmp(argv[currentarg], "-S") == 0) || (strcmp(argv[currentarg], "--small")) == 0) {
 			cfg.largefonts = 0;
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wextra-semi-stmt"
 		} else if ((strcmp(argv[currentarg], "-D") == 0) || (strcmp(argv[currentarg], "--debug")) == 0) {
 			;
-#pragma clang diagnostic pop
 		} else if ((strcmp(argv[currentarg], "-d") == 0) || (strcmp(argv[currentarg], "--days")) == 0) {
 			cfg.qmode = 1;
 			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {
