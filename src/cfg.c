@@ -446,7 +446,7 @@ void defaultcfg(void)
 int opencfgfile(const char *cfgfile, FILE **fd)
 {
 	char buffer[512];
-	int i, tryhome;
+	int i;
 
 	/* clear buffer */
 	for (i = 0; i < 512; i++) {
@@ -454,7 +454,14 @@ int opencfgfile(const char *cfgfile, FILE **fd)
 	}
 	cfg.cfgfile[0] = '\0';
 
-	/* possible config files: 1) --config   2) $HOME/.vnstatrc   3) /etc/vnstat.conf   4) none */
+	/* possible config files:
+		1) --config
+		2) $XDG_CONFIG_HOME/vnstat/vnstat.conf
+		3) $HOME/.config/vnstat/vnstat.conf
+		4) $HOME/.vnstatrc
+		5) /etc/vnstat.conf
+		6) none
+	*/
 
 	if (cfgfile[0] != '\0') {
 
@@ -470,26 +477,45 @@ int opencfgfile(const char *cfgfile, FILE **fd)
 		}
 
 	} else {
+		/* try to open first available config file */
 
-		if (getenv("HOME")) {
-			strncpy_nt(buffer, getenv("HOME"), 500);
-			strcat(buffer, "/.vnstatrc");
-			tryhome = 1;
-		} else {
-			tryhome = 0;
+		if (getenv("XDG_CONFIG_HOME")) {
+			/* $XDG_CONFIG_HOME/vnstat/vnstat.conf */
+			strncpy_nt(buffer, getenv("XDG_CONFIG_HOME"), 492);
+			strcat(buffer, "/vnstat/vnstat.conf");
+			if ((*fd = fopen(buffer, "r")) != NULL) {
+				strncpy_nt(cfg.cfgfile, buffer, 512);
+			}
 		}
 
-		/* try to open first available config file */
-		if (tryhome && (*fd = fopen(buffer, "r")) != NULL) {
-			strncpy_nt(cfg.cfgfile, buffer, 512);
-		} else if ((*fd = fopen("/etc/vnstat.conf", "r")) != NULL) {
-			snprintf(cfg.cfgfile, 512, "/etc/vnstat.conf");
-		} else if ((*fd = fopen("/usr/local/etc/vnstat.conf", "r")) != NULL) {
-			snprintf(cfg.cfgfile, 512, "/usr/local/etc/vnstat.conf");
-		} else {
-			if (debug)
-				printf("Config file: none\n");
-			return 1;
+		if (cfg.cfgfile[0] == '\0' && getenv("HOME")) {
+			/* $HOME/.config/vnstat/vnstat.conf */
+			strncpy_nt(buffer, getenv("HOME"), 484);
+			strcat(buffer, "/.config/vnstat/vnstat.conf");
+			if ((*fd = fopen(buffer, "r")) != NULL) {
+				strncpy_nt(cfg.cfgfile, buffer, 512);
+			}
+
+			/* $HOME/.vnstatrc */
+			if (cfg.cfgfile[0] == '\0') {
+				strncpy_nt(buffer, getenv("HOME"), 500);
+				strcat(buffer, "/.vnstatrc");
+				if ((*fd = fopen(buffer, "r")) != NULL) {
+					strncpy_nt(cfg.cfgfile, buffer, 512);
+				}
+			}
+		}
+
+		if (cfg.cfgfile[0] == '\0') {
+			if ((*fd = fopen("/etc/vnstat.conf", "r")) != NULL) {
+				snprintf(cfg.cfgfile, 512, "/etc/vnstat.conf");
+			} else if ((*fd = fopen("/usr/local/etc/vnstat.conf", "r")) != NULL) {
+				snprintf(cfg.cfgfile, 512, "/usr/local/etc/vnstat.conf");
+			} else {
+				if (debug)
+					printf("Config file: none\n");
+				return 1;
+			}
 		}
 		if (debug)
 			printf("Config file: %s\n", cfg.cfgfile);

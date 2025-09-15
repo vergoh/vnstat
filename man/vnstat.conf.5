@@ -1,4 +1,4 @@
-.TH VNSTAT.CONF 5 "FEBRUARY 2025" "version 2.13" "User Manuals"
+.TH VNSTAT.CONF 5 "SEPTEMBER 2025" "version 2.14" "User Manuals"
 .SH NAME
 vnstat.conf \- vnStat configuration file
 
@@ -603,10 +603,24 @@ Set background color as transparent. 1 = enabled, 0 = disabled.
 .SH FILES
 
 .TP
-.I /etc/vnstat.conf
-Config file that will be used unless
+.I $XDG_CONFIG_HOME/vnstat/vnstat.conf
+1st option if not overriden using a command line parameter.
+
+.TP
+.I $HOME/.config/vnstat/vnstat.conf
+2nd option if not overriden using a command line parameter.
+
+.TP
 .I $HOME/.vnstatrc
-exists or alternative value is given as command line parameter.
+3rd option if not overriden using a command line parameter.
+
+.TP
+.I /etc/vnstat.conf
+4th option if not overriden using a command line parameter.
+
+.TP
+.I /usr/local/etc/vnstat.conf
+5th option if not overriden using a command line parameter.
 
 .SH RESTRICTIONS
 

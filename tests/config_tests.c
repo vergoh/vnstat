@@ -165,6 +165,23 @@ START_TEST(printcfgfile_experimental)
 }
 END_TEST
 
+START_TEST(opencfgfile_with_all_envs_set)
+{
+	FILE *fd;
+	int ret;
+
+	debug = 1;
+	setenv("XDG_CONFIG_HOME", "does_not_exist", 1);
+	setenv("HOME", "does_not_exist_either", 1);
+	suppress_output();
+	ret = opencfgfile("\0", &fd);
+	ck_assert_int_ne(ret, 0);
+	if (ret == 2) {
+		fclose(fd);
+	}
+}
+END_TEST
+
 START_TEST(loadcfg_included_default)
 {
 	defaultcfg();
@@ -687,6 +704,7 @@ void add_config_tests(Suite *s)
 	tcase_add_test(tc_config, validatecfg_is_not_stupid_with_5_minute_result_count_if_there_is_no_data_limit);
 	tcase_add_test(tc_config, printcfgfile_default);
 	tcase_add_test(tc_config, printcfgfile_experimental);
+	tcase_add_test(tc_config, opencfgfile_with_all_envs_set);
 	tcase_add_test(tc_config, loadcfg_included_default);
 	tcase_add_test(tc_config, loadcfg_no_file);
 	tcase_add_test(tc_config, loadcfg_nonexistent_file);
