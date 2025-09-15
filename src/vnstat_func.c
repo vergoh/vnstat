@@ -280,8 +280,11 @@ void parseargs(PARAMS *p, const int argc, char **argv)
 				}
 				currentarg++;
 			}
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wextra-semi-stmt"
 		} else if ((strcmp(argv[currentarg], "-D") == 0) || (strcmp(argv[currentarg], "--debug") == 0)) {
 			;
+#pragma clang diagnostic pop
 		} else if ((strcmp(argv[currentarg], "-d") == 0) || (strcmp(argv[currentarg], "--days") == 0)) {
 			cfg.qmode = 1;
 			if (currentarg + 1 < argc && isdigit(argv[currentarg + 1][0])) {
