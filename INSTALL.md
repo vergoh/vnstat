@@ -62,7 +62,8 @@ so that the following command is executed once during system startup:
 
 The `examples` directory contains suitable files for most commonly used
 service managers. Refer to your operating system / distribution
-documentation if unsure which service manager is being used.
+documentation if unsure which service manager is being used. Most
+distributions support systemd.
 
  * systemd
 
@@ -82,14 +83,14 @@ documentation if unsure which service manager is being used.
 
  * init.d
 
-   * Debian
+   * legacy Debian
     ~~~
     cp -v examples/init.d/debian/vnstat /etc/init.d/
     update-rc.d vnstat defaults
     service vnstat start
     ~~~
 
-   * Red Hat / CentOS
+   * legacy Red Hat / CentOS
     ~~~
     cp -v examples/init.d/redhat/vnstat /etc/init.d/
     chkconfig vnstat on
@@ -128,7 +129,7 @@ Copy all needed binaries to some directory included in your PATH
     mkdir ~/.vnstat
 
 Check that the binaries got installed to a suitable location and are of the
-correct version:
+expected version:
 
     vnstat --version
 
@@ -138,7 +139,7 @@ version then check the content of the PATH variable and try again.
 Next open the configuration file `~/.vnstatrc` with your favorite text editor
 and locate the following line:
 
-    DatabaseDir "/var/lib/vnstat"
+    ;DatabaseDir "/var/lib/vnstat"
 
 and replace it with
 

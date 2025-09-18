@@ -87,7 +87,7 @@ Copy all needed binaries to some directory included in your PATH
 Next open the configuration file `~/.vnstatrc` with your favorite text editor
 and locate the following line:
 
-    DatabaseDir "/var/lib/vnstat"
+    ;DatabaseDir "/var/lib/vnstat"
 
 and replace it with
 
