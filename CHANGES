@@ -5,7 +5,7 @@
      interface merge syntax (interface1+interface2) was used
  - New
    - Increase debug verbosity if -D / --debug is used multiples times
-   - XDG Base Directory support for configuration file,
+   - Add XDG Base Directory support for configuration file,
      $XDG_CONFIG_HOME/vnstat/vnstat.conf and $HOME/.config/vnstat/vnstat.conf
      are tried before $HOME/.vnstatrc, /etc/vnstat.conf and
      /usr/local/etc/vnstat.conf
