@@ -10,6 +10,27 @@
 #include "fs.h"
 #include "id.h"
 #include "daemon.h"
+#include <limits.h>
+#include <sys/resource.h>
+
+static int max_open_fds(void)
+{
+	struct rlimit rl;
+	long maxfd;
+
+	if (getrlimit(RLIMIT_NOFILE, &rl) == 0 && rl.rlim_cur != RLIM_INFINITY)
+		return (int)rl.rlim_cur;
+
+	maxfd = sysconf(_SC_OPEN_MAX);
+	if (maxfd > 0)
+		return (int)maxfd;
+
+#ifdef OPEN_MAX
+	return OPEN_MAX;
+#else
+	return 256;
+#endif
+}
 
 void daemonize(void)
 {
@@ -50,7 +71,7 @@ void daemonize(void)
 	}
 
 	/* close all descriptors except lock file */
-	for (i = getdtablesize(); i >= 0; --i) {
+	for (i = max_open_fds(); i >= 0; --i) {
 		if (i != pidfile) {
 			close(i);
 		}
