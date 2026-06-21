@@ -8,7 +8,6 @@
 #include "cfg.h"
 #include "ibw.h"
 #include "fs.h"
-#include "id.h"
 #include "daemon.h"
 #include <limits.h>
 #include <sys/resource.h>
