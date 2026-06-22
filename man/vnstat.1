@@ -1,5 +1,5 @@
 '\" t
-.TH VNSTAT 1 "MAY 2025" "version 2.14" "User Manuals"
+.TH VNSTAT 1 "JUNE 2026" "version 2.14" "User Manuals"
 .SH NAME
 vnstat \- a console-based network traffic monitor
 
@@ -310,7 +310,7 @@ is set to 0.
 Show traffic statistics on a hourly basis. The length of the list will be limited
 to 24 entries unless configured otherwise or unless the optional
 .I limit
-parameter is used. All entries store in the database will be shown if the
+parameter is used. All entries stored in the database will be shown if the
 .I limit
 is set to 0.
 
@@ -650,15 +650,13 @@ Show a command option summary.
 
 .TP
 .I /var/lib/vnstat/
-Default database directory.
+Default database directory on Linux. On BSD systems the compile-time default is
+.I /var/db/vnstat
+unless overridden at build time.
 
 .TP
-.I /etc/vnstat.conf
-Config file that will be used unless
-.I $HOME/.vnstatrc
-exists. See
-.BR vnstat.conf (5)
-for more information.
+Configuration file locations and search order are described in
+.BR vnstat.conf (5).
 
 .SH EXAMPLES
 

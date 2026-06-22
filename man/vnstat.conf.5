@@ -1,10 +1,12 @@
-.TH VNSTAT.CONF 5 "SEPTEMBER 2025" "version 2.14" "User Manuals"
+.TH VNSTAT.CONF 5 "JUNE 2026" "version 2.14" "User Manuals"
 .SH NAME
 vnstat.conf \- vnStat configuration file
 
 .SH SYNOPSIS
 
-.B /etc/vnstat.conf
+Configuration file locations are platform- and environment-dependent. See
+.B FILES
+below.
 
 .SH DESCRIPTION
 
@@ -144,7 +146,7 @@ output, 3 = rate column is visible in all outputs where it is supported.
 .B QueryMode
 Default query mode when no parameters are given. 0 = summary, 1 = days,
 2 = months, 3 = top, 4 = single summary, 5 = short, 6 = years, 7 = hours graph,
-8 = xml, 9 = one line, 10 = json, 11 = hours and 12 = 5 minute. (vnstat only)
+8 = xml, 9 = one line, 10 = json, 11 = hours, 12 = 5 minute and 13 = 95th percentile. (vnstat only)
 
 .TP
 .B RateUnit
@@ -314,8 +316,9 @@ Specify log file path and name to be used if UseLogging is set to 1.
 
 .TP
 .B MaxBandwidth
-Maximum bandwidth for all interfaces. If the interface specific traffic
-exceeds the given value then the data is assumed to be invalid and rejected.
+Maximum bandwidth for all interfaces. If traffic since the previous update
+would exceed the maximum possible transfer for the configured rate then the
+delta for that interval is discarded and counters are synchronized instead.
 Set to 0 in order to disable the feature. Value range: 0..400000
 
 .TP
@@ -383,9 +386,10 @@ minutes depending on the current activity state.
 
 .TP
 .B SaveInterval
-How often in minutes cached interface data is saved to file.
-Value range: (
-.BR UpdateInterval " / 60 )..60"
+How often in minutes cached interface data is saved to file. The value in
+minutes multiplied by 60 must be at least
+.B UpdateInterval
+seconds. Value range: 1..60
 
 .TP
 .B SaveOnStatusChange
@@ -602,25 +606,41 @@ Set background color as transparent. 1 = enabled, 0 = disabled.
 
 .SH FILES
 
+.PP
+No configuration file is required. Built-in defaults are used if no file is
+found during automatic search.
+
+.TP
+.I --config
+Command-line option path, when given, overrides automatic search.
+
 .TP
 .I $XDG_CONFIG_HOME/vnstat/vnstat.conf
-1st option if not overridden using a command line parameter.
+Used only when the
+.I XDG_CONFIG_HOME
+environment variable is set and
+.B --config
+has not been used.
 
 .TP
 .I $HOME/.config/vnstat/vnstat.conf
-2nd option if not overridden using a command line parameter.
+Used when the
+.I HOME
+environment variable is set and no earlier location was found.
 
 .TP
 .I $HOME/.vnstatrc
-3rd option if not overridden using a command line parameter.
+Used when the
+.I HOME
+environment variable is set and no earlier location was found.
 
 .TP
 .I /etc/vnstat.conf
-4th option if not overridden using a command line parameter.
+Used when no earlier location was found.
 
 .TP
 .I /usr/local/etc/vnstat.conf
-5th option if not overridden using a command line parameter.
+Used when no earlier location was found.
 
 .SH RESTRICTIONS
 
