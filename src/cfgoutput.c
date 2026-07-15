@@ -203,7 +203,11 @@ void printcfgfile(void)
 	defaultcomment(cfg.monthrotate == MONTHROTATE);
 	printf("MonthRotate %d\n", cfg.monthrotate);
 	defaultcomment(cfg.monthrotateyears == MONTHROTATEYEARS);
-	printf("MonthRotateAffectsYears %d\n\n", cfg.monthrotateyears);
+	printf("MonthRotateAffectsYears %d\n", cfg.monthrotateyears);
+	printf("# visibility of note about MonthRotate in outputs showing monthly data\n");
+	printf("# 0 = never, 1 = when MonthRotate != 1, 2 = always\n");
+	defaultcomment(cfg.monthrotatevisible == MONTHROTATEVISIBLE);
+	printf("MonthRotateVisible %d\n\n", cfg.monthrotatevisible);
 
 	printf("# filesystem disk space check (1 = enabled, 0 = disabled)\n");
 	defaultcomment(cfg.spacecheck == USESPACECHECK);

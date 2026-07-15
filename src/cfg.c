@@ -16,6 +16,7 @@ int loadcfg(const char *cfgfile, const ConfigType type)
 		 {"Locale", cfg.locale, 0, 32, 0},
 		 {"MonthRotate", 0, &cfg.monthrotate, 0, 0},
 		 {"MonthRotateAffectsYears", 0, &cfg.monthrotateyears, 0, 0},
+		 {"MonthRotateVisible", 0, &cfg.monthrotatevisible, 0, 0},
 		 {"DayFormat", cfg.dformat, 0, 64, 0},
 		 {"MonthFormat", cfg.mformat, 0, 64, 0},
 		 {"TopFormat", cfg.tformat, 0, 64, 0},
@@ -200,6 +201,7 @@ void validatecfg(const ConfigType type)
 	validatebool("LiveSpinner", &cfg.livespinner, LIVESPINNER);
 	validateint("MonthRotate", &cfg.monthrotate, MONTHROTATE, 1, 28);
 	validatebool("MonthRotateAffectsYears", &cfg.monthrotateyears, MONTHROTATEYEARS);
+	validateint("MonthRotateVisible", &cfg.monthrotatevisible, MONTHROTATEVISIBLE, 0, 2);
 	validateint("MaxBandwidth", &cfg.maxbw, DEFMAXBW, 0, BWMAX);
 	validatebool("CheckDiskSpace", &cfg.spacecheck, USESPACECHECK);
 	validateint("TimeSyncWait", &cfg.timesyncwait, TIMESYNCWAIT, 0, 60);
@@ -342,6 +344,7 @@ void defaultcfg(void)
 	cfg.livespinner = LIVESPINNER;
 	cfg.monthrotate = MONTHROTATE;
 	cfg.monthrotateyears = MONTHROTATEYEARS;
+	cfg.monthrotatevisible = MONTHROTATEVISIBLE;
 	cfg.unitmode = UNITMODE;
 	cfg.rateunitmode = RATEUNITMODE;
 	cfg.ostyle = OSTYLE;

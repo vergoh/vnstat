@@ -340,6 +340,7 @@ void jsoninterfaceinfo(const interfaceinfo *ifaceinfo)
 	printf("\"updated\":{");
 	jsondate(&ifaceinfo->updated, 2);
 	printf("},");
+	printf("\"monthrotate\":%" PRId32 ",", cfg.monthrotate);
 }
 
 void jsondate(const time_t *date, const int type)

@@ -1272,7 +1272,9 @@ void handleshowdata(PARAMS *p)
 		}
 		iflistfree(&dbifl);
 
-		if (cfg.qmode == 8) {
+		if (cfg.qmode == 0) {
+			showmonthrotatenote();
+		} else if (cfg.qmode == 8) {
 			xmlfooter();
 		} else if (cfg.qmode == 10) {
 			jsonfooter();
@@ -1301,6 +1303,9 @@ void showoneinterface(PARAMS *p)
 	}
 	if (cfg.qmode != 8 && cfg.qmode != 10) {
 		showdb(p->interface, cfg.qmode, p->databegin, p->dataend);
+		if (cfg.qmode == 0 || cfg.qmode == 2 || cfg.qmode == 4 || cfg.qmode == 5) {
+			showmonthrotatenote();
+		}
 	} else if (cfg.qmode == 8) {
 		xmlheader();
 		showxml(p->interface, p->xmlmode, p->databegin, p->dataend);

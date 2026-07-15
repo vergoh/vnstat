@@ -594,3 +594,50 @@ void indent(int i)
 		printf("%*s", i, " ");
 	}
 }
+
+int ismonthrotatenoteneeded(void)
+{
+	if (cfg.monthrotatevisible == 0) {
+		return 0;
+	}
+	if (cfg.monthrotatevisible == 2) {
+		return 1;
+	}
+	/* auto: show when MonthRotate is not the default first day of month */
+	return (cfg.monthrotate != 1);
+}
+
+void getmonthrotatenote(char *buf, const size_t buflen)
+{
+	const char *suffix;
+	int day, ones;
+
+	day = cfg.monthrotate;
+	ones = day % 10;
+
+	if (day >= 11 && day <= 13) {
+		suffix = "th";
+	} else if (ones == 1) {
+		suffix = "st";
+	} else if (ones == 2) {
+		suffix = "nd";
+	} else if (ones == 3) {
+		suffix = "rd";
+	} else {
+		suffix = "th";
+	}
+
+	snprintf(buf, buflen, "Monthly data begins on the %d%s of each indicated month.", day, suffix);
+}
+
+void showmonthrotatenote(void)
+{
+	char note[96];
+
+	if (!ismonthrotatenoteneeded()) {
+		return;
+	}
+
+	getmonthrotatenote(note, sizeof(note));
+	printf("\n%s\n", note);
+}

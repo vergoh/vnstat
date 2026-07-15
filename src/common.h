@@ -77,6 +77,9 @@ and most can be changed later from the config file.
 /* on which day should months change */
 #define MONTHROTATE 1
 #define MONTHROTATEYEARS 0
+/* MonthRotate note visibility */
+/* 0 = never, 1 = when MonthRotate != 1, 2 = always */
+#define MONTHROTATEVISIBLE 1
 
 /* date output formats for -d, -m, -t and image header*/
 /* see 'man date' for control codes      1.x values     <1.8 values */
@@ -345,7 +348,7 @@ typedef struct {
 	char cbg[8], cedge[8], cheader[8], cheadertitle[8], cheaderdate[8], ctext[8];
 	char cline[8], clinel[8], cpercentileline[8], cvnstat[8], crx[8], crxd[8], ctx[8], ctxd[8], ctotal[8];
 	int32_t unitmode, rateunitmode, rateunit, bvar, qmode, ifacematchmethod, sampletime, hourlyrate, summaryrate;
-	int32_t monthrotate, monthrotateyears, maxbw, spacecheck, trafficlessentries, transbg, ostyle;
+	int32_t monthrotate, monthrotateyears, monthrotatevisible, maxbw, spacecheck, trafficlessentries, transbg, ostyle;
 	int32_t defaultdecimals, hourlydecimals, hourlystyle, is64bit, waldb, dbsynchronous, useutc, imagescale;
 	int32_t largefonts, linespaceadjust, estimatebarvisible, estimatestyle, estimatevisible, barshowsrate, fivegresultcount;
 	int32_t fivegheight, summarygraph, hourlygmode, alwaysadd, livespinner;

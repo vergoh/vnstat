@@ -1,6 +1,8 @@
 
 # New configuration settings
 
+ * 2.14: MonthRotateVisible
+
  * 2.13: (none)
 
  * 2.12: CPercentileLine, CTotal, LiveSpinner

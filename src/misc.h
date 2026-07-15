@@ -44,5 +44,8 @@ uint64_t getperiodseconds(const ListType listtype, const time_t entry, const tim
 void getestimates(uint64_t *rx, uint64_t *tx, const ListType listtype, const time_t updated, const time_t created, dbdatalist **dbdata);
 int ishelprequest(const char *arg);
 void indent(int i);
+int ismonthrotatenoteneeded(void);
+void getmonthrotatenote(char *buf, const size_t buflen);
+void showmonthrotatenote(void);
 
 #endif

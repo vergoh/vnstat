@@ -359,6 +359,14 @@ also affecting yearly data. Applicable only when
 has a value greater than one. 1 = enabled, 0 = disabled.
 
 .TP
+.B MonthRotateVisible
+Control visibility of a note documenting on which day of the month monthly data
+begins. The note is shown in text and image outputs that include monthly data.
+0 = never, 1 = when
+.B MonthRotate
+is not 1, 2 = always. (vnstat and vnstati only)
+
+.TP
 .B OfflineSaveInterval
 How often in minutes cached interface data is saved to file when all monitored
 interfaces are offline. Value range:

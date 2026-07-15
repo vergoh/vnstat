@@ -313,10 +313,10 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	ListType listtype = LT_None;
 	int textx, texty, offsetx = 0;
 	int width, height, headermod, i = 1, rowcount = 0;
-	int estimateavailable = 0, estimatevisible = 0;
+	int estimateavailable = 0, estimatevisible = 0, monthrotatenotevisible = 0;
 	int32_t limit;
 	uint64_t e_rx = 0, e_tx = 0, e_secs;
-	char buffer[512], datebuff[16], daybuff[16];
+	char buffer[512], datebuff[16], daybuff[16], monthrotatenote[96];
 	char stampformat[64], titlename[16], colname[8];
 	const struct tm *d;
 	time_t current;
@@ -384,6 +384,11 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		}
 	}
 
+	if (listtype == LT_Month && ismonthrotatenoteneeded()) {
+		monthrotatenotevisible = 1;
+		getmonthrotatenote(monthrotatenote, sizeof(monthrotatenote));
+	}
+
 	if (listtype == LT_Top) {
 		if (limit > 0 && datainfo.count < (uint32_t)limit) {
 			limit = (int32_t)datainfo.count;
@@ -423,11 +428,16 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		height = 62 + 3 * ic->lineheight;
 	}
 
+	if (ismonthrotatenoteneeded()) {
+		height += ic->lineheight * 2;
+	}
+
 	height += (ic->lineheight + cfg.linespaceadjust) * rowcount - cfg.linespaceadjust;
 
 	// "no data available"
 	if (!datainfo.count) {
 		height = 98 + (ic->large * 12);
+		monthrotatenotevisible = 0;
 	}
 
 	if (!ic->showheader) {
@@ -638,12 +648,24 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		}
 	}
 
+	if (monthrotatenotevisible) {
+		texty += ic->lineheight * 2;
+		gdImageString(ic->im, ic->font, textx + ic->font->w, texty, (unsigned char *)monthrotatenote, ic->ctext);
+	}
+
 	dbdatalistfree(&datalist);
 }
 
 void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 {
 	int width, height, headermod;
+	int monthrotatenotevisible = 0;
+	char monthrotatenote[96];
+
+	monthrotatenotevisible = ismonthrotatenoteneeded();
+	if (monthrotatenotevisible) {
+		getmonthrotatenote(monthrotatenote, sizeof(monthrotatenote));
+	}
 
 	switch (layout) {
 		// horizontal
@@ -661,6 +683,10 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 			width = 83 * ic->font->w + 2 + (ic->large * 2);
 			height = 56 + 12 * ic->lineheight;
 			break;
+	}
+
+	if (monthrotatenotevisible) {
+		height += ic->lineheight * 2;
 	}
 
 	if (!ic->showheader) {
@@ -683,20 +709,30 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 		// horizontal
 		case 1:
 			if (cfg.summarygraph == 1) {
-				drawfiveminutes(ic, 496 + (ic->large * 174), height - 30 - (ic->large * 8), israte, 422 + (ic->large * 154), height - 68 + headermod - (ic->large * 8));
+				drawfiveminutes(ic, 496 + (ic->large * 174), height - 30 - (ic->large * 8) - (monthrotatenotevisible * ic->lineheight), israte, 422 + (ic->large * 154), height - 68 + headermod - (ic->large * 8) - (monthrotatenotevisible * (ic->lineheight + 2)));
 			} else {
 				drawhours(ic, 500 + (ic->large * 160), 46 + (ic->large * 40) - headermod, israte);
+			}
+			if (monthrotatenotevisible) {
+				gdImageString(ic->im, ic->font, 13 - (ic->large * 4) + (ic->font->w * 2) + + ic->showedge, height - 12 - ic->showedge - ic->lineheight, (unsigned char *)monthrotatenote, ic->ctext);
 			}
 			break;
 		// vertical
 		case 2:
 			if (cfg.summarygraph == 1) {
+				//drawfiveminutes(ic, 8 + (ic->large * 14), height - 31 - (ic->large * 6) - (monthrotatenotevisible * (ic->lineheight * 2)), israte, 422 + (ic->large * 154), 132 + (ic->large * 35));
 				drawfiveminutes(ic, 8 + (ic->large * 14), height - 31 - (ic->large * 6), israte, 422 + (ic->large * 154), 132 + (ic->large * 35));
 			} else {
-				drawhours(ic, 12, 215 + (ic->large * 84) - headermod, israte);
+				drawhours(ic, 12, 215 + (ic->large * 84) - headermod + (monthrotatenotevisible * (ic->lineheight * 2)), israte);
+			}
+			if (monthrotatenotevisible) {
+				gdImageString(ic->im, ic->font, 13 - (ic->large * 4) + (ic->font->w * 2) + ic->showedge, 215 + (ic->large * 84) - headermod - (ic->lineheight * (1 + ic->large * 2)), (unsigned char *)monthrotatenote, ic->ctext);
 			}
 			break;
 		default:
+			if (monthrotatenotevisible) {
+				gdImageString(ic->im, ic->font, 13 - (ic->large * 4) + (ic->font->w * 2) + + ic->showedge, height - 12 - ic->showedge - ic->lineheight, (unsigned char *)monthrotatenote, ic->ctext);
+			}
 			break;
 	}
 }

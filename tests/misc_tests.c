@@ -1043,6 +1043,78 @@ START_TEST(ishelprequest_knows_what_a_help_request_is)
 }
 END_TEST
 
+START_TEST(ismonthrotatenoteneeded_follows_visibility_and_day)
+{
+	cfg.monthrotatevisible = 0;
+	cfg.monthrotate = 1;
+	ck_assert_int_eq(ismonthrotatenoteneeded(), 0);
+	cfg.monthrotate = 10;
+	ck_assert_int_eq(ismonthrotatenoteneeded(), 0);
+
+	cfg.monthrotatevisible = 1;
+	cfg.monthrotate = 1;
+	ck_assert_int_eq(ismonthrotatenoteneeded(), 0);
+	cfg.monthrotate = 10;
+	ck_assert_int_eq(ismonthrotatenoteneeded(), 1);
+
+	cfg.monthrotatevisible = 2;
+	cfg.monthrotate = 1;
+	ck_assert_int_eq(ismonthrotatenoteneeded(), 1);
+	cfg.monthrotate = 10;
+	ck_assert_int_eq(ismonthrotatenoteneeded(), 1);
+}
+END_TEST
+
+START_TEST(getmonthrotatenote_uses_english_ordinals)
+{
+	char note[96];
+
+	cfg.monthrotate = 1;
+	getmonthrotatenote(note, sizeof(note));
+	ck_assert_str_eq(note, "Monthly data begins on the 1st of each indicated month.");
+
+	cfg.monthrotate = 2;
+	getmonthrotatenote(note, sizeof(note));
+	ck_assert_str_eq(note, "Monthly data begins on the 2nd of each indicated month.");
+
+	cfg.monthrotate = 3;
+	getmonthrotatenote(note, sizeof(note));
+	ck_assert_str_eq(note, "Monthly data begins on the 3rd of each indicated month.");
+
+	cfg.monthrotate = 4;
+	getmonthrotatenote(note, sizeof(note));
+	ck_assert_str_eq(note, "Monthly data begins on the 4th of each indicated month.");
+
+	cfg.monthrotate = 11;
+	getmonthrotatenote(note, sizeof(note));
+	ck_assert_str_eq(note, "Monthly data begins on the 11th of each indicated month.");
+
+	cfg.monthrotate = 12;
+	getmonthrotatenote(note, sizeof(note));
+	ck_assert_str_eq(note, "Monthly data begins on the 12th of each indicated month.");
+
+	cfg.monthrotate = 13;
+	getmonthrotatenote(note, sizeof(note));
+	ck_assert_str_eq(note, "Monthly data begins on the 13th of each indicated month.");
+
+	cfg.monthrotate = 21;
+	getmonthrotatenote(note, sizeof(note));
+	ck_assert_str_eq(note, "Monthly data begins on the 21st of each indicated month.");
+
+	cfg.monthrotate = 22;
+	getmonthrotatenote(note, sizeof(note));
+	ck_assert_str_eq(note, "Monthly data begins on the 22nd of each indicated month.");
+
+	cfg.monthrotate = 23;
+	getmonthrotatenote(note, sizeof(note));
+	ck_assert_str_eq(note, "Monthly data begins on the 23rd of each indicated month.");
+
+	cfg.monthrotate = 28;
+	getmonthrotatenote(note, sizeof(note));
+	ck_assert_str_eq(note, "Monthly data begins on the 28th of each indicated month.");
+}
+END_TEST
+
 void add_misc_tests(Suite *s)
 {
 	TCase *tc_misc = tcase_create("Misc");
@@ -1085,5 +1157,7 @@ void add_misc_tests(Suite *s)
 	tcase_add_test(tc_misc, getestimates_still_has_a_crystal_ball_when_created_mid_month_period);
 	tcase_add_test(tc_misc, getestimates_still_has_a_crystal_ball_when_created_mid_year_period);
 	tcase_add_test(tc_misc, ishelprequest_knows_what_a_help_request_is);
+	tcase_add_test(tc_misc, ismonthrotatenoteneeded_follows_visibility_and_day);
+	tcase_add_test(tc_misc, getmonthrotatenote_uses_english_ordinals);
 	suite_add_tcase(s, tc_misc);
 }
