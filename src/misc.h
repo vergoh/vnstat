@@ -3,7 +3,9 @@
 
 #define UNITPREFIXCOUNT 7
 
-#include "dbsql.h"
+#include <stddef.h>
+#include <stdint.h>
+#include <time.h>
 
 typedef enum RequestType {
 	RT_Normal = 1,
@@ -20,6 +22,8 @@ typedef enum ListType {
 	LT_Year,
 	LT_Top
 } ListType;
+
+struct dbdatalist;
 
 int spacecheck(const char *path);
 void sighandler(int sig);
@@ -41,7 +45,7 @@ void eraseline(void);
 int validatedatetime(const char *str);
 int issametimeslot(const ListType listtype, const time_t entry, const time_t updated);
 uint64_t getperiodseconds(const ListType listtype, const time_t entry, const time_t updated, const time_t created, const short isongoing);
-void getestimates(uint64_t *rx, uint64_t *tx, const ListType listtype, const time_t updated, const time_t created, dbdatalist **dbdata);
+void getestimates(uint64_t *rx, uint64_t *tx, const ListType listtype, const time_t updated, const time_t created, struct dbdatalist **dbdata);
 int ishelprequest(const char *arg);
 void indent(int i);
 int ismonthrotatenoteneeded(void);
