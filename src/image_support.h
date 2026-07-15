@@ -1,6 +1,7 @@
 #ifndef IMAGE_SUPPORT_H
 #define IMAGE_SUPPORT_H
 
+#include <stdint.h>
 #include "image.h"
 
 void imageinit(IMAGECONTENT *ic, const int width, const int height);

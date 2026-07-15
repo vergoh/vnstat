@@ -1,6 +1,9 @@
 #ifndef PERCENTILE_H
 #define PERCENTILE_H
 
+#include <stdint.h>
+#include <time.h>
+
 typedef struct percentiledata {
 	time_t monthbegin, databegin, dataend;
 	uint32_t count, countexpectation;

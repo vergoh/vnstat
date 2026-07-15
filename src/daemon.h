@@ -1,6 +1,10 @@
 #ifndef DAEMON_H
 #define DAEMON_H
 
+#include <stdint.h>
+#include <time.h>
+#include "datacache.h"
+
 typedef struct {
 	int updateinterval, saveinterval;
 	short running, dodbsave, rundaemon;

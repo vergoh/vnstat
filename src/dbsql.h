@@ -2,6 +2,7 @@
 #define DBSQL_H
 
 #include <sqlite3.h>
+#include "common.h"
 #include "iflist.h"
 
 typedef struct dbdatalist {

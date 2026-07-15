@@ -1,6 +1,8 @@
 #ifndef IBW_H
 #define IBW_H
 
+#include "common.h"
+
 int ibwloadcfg(const char *cfgfile);
 int ibwadd(const char *iface, const uint32_t limit);
 void ibwlist(void);

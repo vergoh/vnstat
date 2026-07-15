@@ -1,6 +1,9 @@
 #ifndef DBACCESS_H
 #define DBACCESS_H
 
+#include <stdint.h>
+#include <time.h>
+
 /* legacy database version */
 /* import is supported only from version 3 */
 /* 1 = 1.0, 2 = 1.1-1.2, 3 = 1.3-1.8 */

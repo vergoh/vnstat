@@ -7,6 +7,7 @@
 #include <gdfontmb.h> /* gdFontGetMediumBold() */
 #include <gdfontl.h>  /* gdFontGetLarge() */
 #include <gdfontg.h>  /* gdFontGetGiant() */
+#include "dbsql.h"
 
 /* rectangle size */
 #define YBEGINOFFSET (-1)

@@ -1,6 +1,9 @@
 #ifndef DATACACHE_H
 #define DATACACHE_H
 
+#include <stdint.h>
+#include <time.h>
+
 typedef struct datacache {
 	char interface[32];
 	short active;
