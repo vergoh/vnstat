@@ -1,6 +1,8 @@
 2.14 / <not released yet>
 
  - Fixed
+   - Buffer overflow in -hg / --hoursgraph text output when UnitMode was
+     configured with non-default value of either 1 or 2
    - Some higher traffic days could be missing from top days output when the
      interface merge syntax (interface1+interface2) was used
  - New

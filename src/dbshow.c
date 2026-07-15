@@ -688,6 +688,7 @@ void showhours(const interfaceinfo *ifaceinfo)
 	uint64_t max = 1;
 	char matrix[HGLINES][81]; /* width is one over 80 so that snprintf can write the end char */
 	char unit[4];
+	const int unitmodepadding = cfg.unitmode == 0 ? 1 : 2;
 	const struct tm *d;
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
@@ -763,8 +764,8 @@ void showhours(const interfaceinfo *ifaceinfo)
 	/* structure */
 	snprintf(matrix[11], 81, " -+--------------------------------------------------------------------------->");
 	for (i = 0; i < 3; i++) {
-		snprintf(matrix[14] + (i * 28), 14, " h %*srx (%s)", 1 + cfg.unitmode, " ", unit);
-		snprintf(matrix[14] + (i * 28) + 15 + cfg.unitmode, 10, "tx (%s)", unit);
+		snprintf(matrix[14] + (i * 28), 14, " h %*srx (%s)", unitmodepadding, " ", unit);
+		snprintf(matrix[14] + (i * 28) + 14 + unitmodepadding, 11 - unitmodepadding, "tx (%s)", unit);
 	}
 
 	for (i = 10; i > 1; i--)
@@ -780,7 +781,7 @@ void showhours(const interfaceinfo *ifaceinfo)
 		i = snprintf(matrix[0], 81, " %s (%s)", ifaceinfo->alias, ifaceinfo->name);
 	}
 	if (ifaceinfo->active == 0) {
-		snprintf(matrix[0] + i + 1, 81, " [disabled]");
+		snprintf(matrix[0] + i, 81 - i, " [disabled]");
 	}
 
 	/* time to the corner */
