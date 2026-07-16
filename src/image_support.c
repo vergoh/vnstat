@@ -711,7 +711,8 @@ void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const ui
 	int ybeginoffset = YBEGINOFFSET, yendoffset;
 
 	if (ic->fontctx.mode == FONT_TTF) {
-		yendoffset = YBEGINOFFSET + ic->fontctx.ch - 3;
+		ybeginoffset = 0;
+		yendoffset = ic->fontctx.ascent - 1; /* match digit/value text height */
 	} else {
 		yendoffset = YBEGINOFFSET + ic->fontctx.ch - 6 - ic->large;
 	}

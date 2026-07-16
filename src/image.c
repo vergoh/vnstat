@@ -571,8 +571,8 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 				imagestring(ic, FONT_ROLE_BODY, rate_edge - imagetextwidth(ic, FONT_ROLE_BODY, ratebuf), texty, ratebuf, ic->ctext);
 			}
 
-			/* center bar vertically in TTF glyph box (yend = ch-3, YBEGINOFFSET = -1) */
-			bar_y = texty + 1;
+			/* bar spans ascent band at texty (same vertical band as value text) */
+			bar_y = texty;
 			if (listtype == LT_Top) {
 				if (cfg.ostyle > 2) {
 					drawbar(ic, textx + (71 * ic->fontctx.cw) + 2, bar_y, 9 * ic->fontctx.cw - 1, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
@@ -623,7 +623,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 			strncpy_nt(totalbuf, getvalue(e_rx + e_tx, 10, RT_Estimate), 64);
 
 			if (cfg.estimatestyle) {
-				bar_y = texty - ic->lineheight + 1;
+				bar_y = texty - ic->lineheight;
 				if (cfg.ostyle > 2) {
 					drawbar(ic, textx + (67 * ic->fontctx.cw) - 2, bar_y, 13 * ic->fontctx.cw + 1, e_rx, e_tx, datainfo.max, 1);
 					drawbar(ic, textx + (67 * ic->fontctx.cw) - 2, bar_y, 13 * ic->fontctx.cw + 1, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
