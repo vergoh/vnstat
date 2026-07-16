@@ -634,7 +634,13 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 			}
 
 			texty += 8;
-			imagestring(ic, FONT_ROLE_BODY, textx, texty, cfg.estimatetext, ic->ctext);
+			/* match builtin: right-align label with date column */
+			if (strlen(datebuff) <= 9) {
+				snprintf(buffer, 32, " %9s", cfg.estimatetext);
+			} else {
+				snprintf(buffer, 32, "  %9s", cfg.estimatetext);
+			}
+			imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
 			imagestring(ic, FONT_ROLE_BODY, rx_edge - imagetextwidth(ic, FONT_ROLE_BODY, rxbuf), texty, rxbuf, ic->ctext);
 			imagestring(ic, FONT_ROLE_BODY, tx_edge - imagetextwidth(ic, FONT_ROLE_BODY, txbuf), texty, txbuf, ic->ctext);
 			imagestring(ic, FONT_ROLE_BODY, total_edge - imagetextwidth(ic, FONT_ROLE_BODY, totalbuf), texty, totalbuf, ic->ctext);
@@ -655,7 +661,8 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 			strncpy_nt(totalbuf, getvalue(datainfo.sumrx + datainfo.sumtx, 10, RT_Normal), 64);
 
 			texty += 8;
-			imagestring(ic, FONT_ROLE_BODY, textx, texty, datebuff, ic->ctext);
+			snprintf(buffer, 32, " %9s", datebuff);
+			imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
 			imagestring(ic, FONT_ROLE_BODY, rx_edge - imagetextwidth(ic, FONT_ROLE_BODY, rxbuf), texty, rxbuf, ic->ctext);
 			imagestring(ic, FONT_ROLE_BODY, tx_edge - imagetextwidth(ic, FONT_ROLE_BODY, txbuf), texty, txbuf, ic->ctext);
 			imagestring(ic, FONT_ROLE_BODY, total_edge - imagetextwidth(ic, FONT_ROLE_BODY, totalbuf), texty, totalbuf, ic->ctext);
