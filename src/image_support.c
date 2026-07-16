@@ -178,7 +178,10 @@ static int imagettftextwidth(const IMAGECONTENT *ic, const double ptsize, const 
 		return 0;
 	}
 
-	return brect[2] - brect[0];
+	/* Pen-origin to right edge. Do not use brect[2]-brect[0]: a positive left
+	 * bearing (common on digit-leading strings) would shrink the width and
+	 * shift right-aligned values like "155.27 GiB" off the unit column. */
+	return brect[2];
 }
 
 static int imagettftextheight(const IMAGECONTENT *ic, const double ptsize, const char *text)
