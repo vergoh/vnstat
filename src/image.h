@@ -21,9 +21,28 @@
 
 #define SCALEMINPIXELS 25
 
+typedef enum {
+	FONT_BUILTIN = 0,
+	FONT_TTF /* unused until Phase 2 */
+} fontmode_t;
+
+typedef enum {
+	FONT_ROLE_BODY = 0, /* Small / Large */
+	FONT_ROLE_AXIS,     /* Tiny / Small — graph labels + header date */
+	FONT_ROLE_TITLE,    /* Large / Giant — summary section titles */
+	FONT_ROLE_HEADER,   /* always Giant — layoutinit title bar */
+	FONT_ROLE_FOOTER    /* always Tiny — credit line */
+} fontrole_t;
+
+typedef struct {
+	fontmode_t mode;
+	gdFontPtr body, axis, title, header, footer;
+	int cw, ch; /* body metrics (= body->w / body->h) */
+} IMAGEFONT;
+
 typedef struct {
 	gdImagePtr im;
-	gdFontPtr font;
+	IMAGEFONT fontctx;
 	interfaceinfo interface;
 	int cbackground, cedge, cheader, cheadertitle, cheaderdate, ctext, cline, clinel, cpercentileline, cvnstat;
 	int crx, crxd, ctx, ctxd, ctotal, cbgoffset, cbgoffsetmore, showheader, showedge, showlegend, altdate;
@@ -38,6 +57,12 @@ typedef struct {
 } HOURDATA;
 
 void initimagecontent(IMAGECONTENT *ic);
+void imagefontinit(IMAGECONTENT *ic, const int largefonts);
+void imagestring(IMAGECONTENT *ic, const fontrole_t role, const int x, const int y, const char *text, const int color);
+void imagestringup(IMAGECONTENT *ic, const fontrole_t role, const int x, const int y, const char *text, const int color);
+int imagetextwidth(IMAGECONTENT *ic, const fontrole_t role, const char *text);
+int imagefontwidth(IMAGECONTENT *ic, const fontrole_t role);
+int imagefontheight(IMAGECONTENT *ic, const fontrole_t role);
 void drawimage(IMAGECONTENT *ic);
 #if HAVE_DECL_GD_NEAREST_NEIGHBOUR
 void scaleimage(IMAGECONTENT *ic);

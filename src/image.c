@@ -9,7 +9,7 @@
 void initimagecontent(IMAGECONTENT *ic)
 {
 	ic->im = NULL;
-	ic->font = gdFontGetSmall();
+	imagefontinit(ic, 0);
 	ic->lineheight = 12;
 	ic->large = 0;
 	ic->invert = 0;
@@ -123,13 +123,6 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
 	HOURDATA hourdata[24];
-	gdFontPtr font;
-
-	if (ic->large) {
-		font = gdFontGetSmall();
-	} else {
-		font = gdFontGetTiny();
-	}
 
 	for (i = 0; i < 24; i++) {
 		hourdata[i].rx = hourdata[i].tx = 0;
@@ -143,7 +136,7 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 	}
 
 	if (!db_getdata_range(&datalist, &datainfo, ic->interface.name, "hour", 24, buffer, "") || datainfo.count == 0) {
-		gdImageString(ic->im, ic->font, x + (28 * ic->font->w), y + 54 - (ic->large * 18), (unsigned char *)"no hour data available", ic->ctext);
+		imagestring(ic, FONT_ROLE_BODY, x + (28 * ic->fontctx.cw), y + 54 - (ic->large * 18), "no hour data available", ic->ctext);
 		return 0;
 	}
 
@@ -233,7 +226,7 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 	for (i = step; i * s <= (124 + extray + 4); i = i + step) {
 		gdImageDashedLine(ic->im, xt, y + 124 - (i * s), xt + 424 + extrax, y + 124 - (i * s), ic->cline);
 		gdImageDashedLine(ic->im, xt, y + 124 - prev - (step * s) / 2, xt + 424 + extrax, y + 124 - prev - (step * s) / 2, ic->clinel);
-		gdImageString(ic->im, font, x + 16 - (ic->large * 3), y + 121 - (i * s) - (ic->large * 3), (unsigned char *)getimagevalue(scaleunit * (unsigned int)i, 3, israte), ic->ctext);
+		imagestring(ic, FONT_ROLE_AXIS, x + 16 - (ic->large * 3), y + 121 - (i * s) - (ic->large * 3), getimagevalue(scaleunit * (unsigned int)i, 3, israte), ic->ctext);
 		prev = i * s;
 	}
 	if ((prev + (step * s) / 2) <= (124 + extray + 4)) {
@@ -241,7 +234,7 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 	}
 
 	/* scale text */
-	gdImageStringUp(ic->im, font, x - 2 - (ic->large * 14), y + 58 + (israte * 10) - (extray / 2), (unsigned char *)getimagescale(scaleunit * (unsigned int)step, israte), ic->ctext);
+	imagestringup(ic, FONT_ROLE_AXIS, x - 2 - (ic->large * 14), y + 58 + (israte * 10) - (extray / 2), getimagescale(scaleunit * (unsigned int)step, israte), ic->ctext);
 
 	/* axis */
 	gdImageLine(ic->im, xt - 4, y + 124, xt + 430 + extrax, y + 124, ic->ctext);
@@ -274,7 +267,7 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 		} else {
 			chour = ic->ctext;
 		}
-		gdImageString(ic->im, font, xt, y + 128, (unsigned char *)buffer, chour);
+		imagestring(ic, FONT_ROLE_AXIS, xt, y + 128, buffer, chour);
 		drawpoles(ic, xt - 2, y - extray, 124 + extray, hourdata[s].rx, hourdata[s].tx, max);
 		gdImageLine(ic->im, xt - 4 - (ic->large * 3), y + 124, xt + 12 + (ic->large * 3), y + 124, chour);
 		if (s == 0 && i != 23) {
@@ -346,7 +339,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		snprintf(colname, 8, "day");
 		strncpy_nt(stampformat, cfg.tformat, 64);
 		limit = cfg.listtop;
-		offsetx = 5 * ic->font->w;
+		offsetx = 5 * ic->fontctx.cw;
 	} else if (strcmp(listname, "hour") == 0) {
 		listtype = LT_Hour;
 		strncpy_nt(colname, listname, 8);
@@ -415,7 +408,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	}
 	rowcount += datainfo.count;
 
-	width = 83 * ic->font->w + 2 + (ic->large * 2);
+	width = 83 * ic->fontctx.cw + 2 + (ic->large * 2);
 	height = 62 + 3 * ic->lineheight;
 
 	// less space needed when no estimate or sum is shown
@@ -455,7 +448,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	if (datainfo.count) {
 		if (listtype == LT_Top) {
 			if (cfg.ostyle <= 2) {
-				drawlegend(ic, 66 * ic->font->w + 2, 40 - headermod, 0);
+				drawlegend(ic, 66 * ic->fontctx.cw + 2, 40 - headermod, 0);
 			}
 			current = time(NULL);
 			d = localtime(&current);
@@ -463,12 +456,12 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		} else { // everything else
 			if (cfg.ostyle > 2) {
 				if (estimateavailable && cfg.barshowsrate) {
-					drawlegend(ic, 72 * ic->font->w, 40 - headermod, 1);
+					drawlegend(ic, 72 * ic->fontctx.cw, 40 - headermod, 1);
 				} else {
-					drawlegend(ic, 72 * ic->font->w, 40 - headermod, 0);
+					drawlegend(ic, 72 * ic->fontctx.cw, 40 - headermod, 0);
 				}
 			} else {
-				drawlegend(ic, 64 * ic->font->w + 1, 40 - headermod, 0);
+				drawlegend(ic, 64 * ic->fontctx.cw + 1, 40 - headermod, 0);
 			}
 		}
 	}
@@ -483,26 +476,26 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	}
 	if (cfg.ostyle > 2) {
 		strcat(buffer, "       avg. rate");
-		gdImageString(ic->im, ic->font, textx, texty, (unsigned char *)buffer, ic->ctext);
-		gdImageLine(ic->im, textx + 2, texty + ic->lineheight + 4, textx + (65 * ic->font->w) + offsetx + 2, texty + ic->lineheight + 4, ic->cline);
+		imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
+		gdImageLine(ic->im, textx + 2, texty + ic->lineheight + 4, textx + (65 * ic->fontctx.cw) + offsetx + 2, texty + ic->lineheight + 4, ic->cline);
 	} else {
-		gdImageString(ic->im, ic->font, textx, texty, (unsigned char *)buffer, ic->ctext);
-		gdImageLine(ic->im, textx + 2, texty + ic->lineheight + 4, textx + (50 * ic->font->w) + offsetx - 4, texty + ic->lineheight + 4, ic->cline);
+		imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
+		gdImageLine(ic->im, textx + 2, texty + ic->lineheight + 4, textx + (50 * ic->fontctx.cw) + offsetx - 4, texty + ic->lineheight + 4, ic->cline);
 	}
 
 	texty += ic->lineheight + 8;
 
 	if (datainfo.count) {
-		gdImageLine(ic->im, textx + (24 * ic->font->w) + offsetx, texty - 6 - ic->lineheight, textx + (24 * ic->font->w) + offsetx, texty + ((ic->lineheight + cfg.linespaceadjust) * rowcount) - cfg.linespaceadjust + 5 - (ic->large * 2), ic->cline);
-		gdImageLine(ic->im, textx + (37 * ic->font->w) + offsetx, texty - 6 - ic->lineheight, textx + (37 * ic->font->w) + offsetx, texty + ((ic->lineheight + cfg.linespaceadjust) * rowcount) - cfg.linespaceadjust + 5 - (ic->large * 2), ic->cline);
+		gdImageLine(ic->im, textx + (24 * ic->fontctx.cw) + offsetx, texty - 6 - ic->lineheight, textx + (24 * ic->fontctx.cw) + offsetx, texty + ((ic->lineheight + cfg.linespaceadjust) * rowcount) - cfg.linespaceadjust + 5 - (ic->large * 2), ic->cline);
+		gdImageLine(ic->im, textx + (37 * ic->fontctx.cw) + offsetx, texty - 6 - ic->lineheight, textx + (37 * ic->fontctx.cw) + offsetx, texty + ((ic->lineheight + cfg.linespaceadjust) * rowcount) - cfg.linespaceadjust + 5 - (ic->large * 2), ic->cline);
 		if (cfg.ostyle > 2) {
-			gdImageLine(ic->im, textx + (50 * ic->font->w) + offsetx, texty - 6 - ic->lineheight, textx + (50 * ic->font->w) + offsetx, texty + ((ic->lineheight + cfg.linespaceadjust) * rowcount) - cfg.linespaceadjust + 5 - (ic->large * 2), ic->cline);
+			gdImageLine(ic->im, textx + (50 * ic->fontctx.cw) + offsetx, texty - 6 - ic->lineheight, textx + (50 * ic->fontctx.cw) + offsetx, texty + ((ic->lineheight + cfg.linespaceadjust) * rowcount) - cfg.linespaceadjust + 5 - (ic->large * 2), ic->cline);
 		}
 	} else {
-		gdImageLine(ic->im, textx + (24 * ic->font->w) + offsetx, texty - 6 - ic->lineheight, textx + (24 * ic->font->w) + offsetx, texty - 4, ic->cline);
-		gdImageLine(ic->im, textx + (37 * ic->font->w) + offsetx, texty - 6 - ic->lineheight, textx + (37 * ic->font->w) + offsetx, texty - 4, ic->cline);
+		gdImageLine(ic->im, textx + (24 * ic->fontctx.cw) + offsetx, texty - 6 - ic->lineheight, textx + (24 * ic->fontctx.cw) + offsetx, texty - 4, ic->cline);
+		gdImageLine(ic->im, textx + (37 * ic->fontctx.cw) + offsetx, texty - 6 - ic->lineheight, textx + (37 * ic->fontctx.cw) + offsetx, texty - 4, ic->cline);
 		if (cfg.ostyle > 2) {
-			gdImageLine(ic->im, textx + (50 * ic->font->w) + offsetx, texty - 6 - ic->lineheight, textx + (50 * ic->font->w) + offsetx, texty - 4, ic->cline);
+			gdImageLine(ic->im, textx + (50 * ic->fontctx.cw) + offsetx, texty - 6 - ic->lineheight, textx + (50 * ic->fontctx.cw) + offsetx, texty - 4, ic->cline);
 		}
 	}
 
@@ -513,7 +506,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 			strftime(datebuff, 16, cfg.dformat, d);
 			if (strcmp(daybuff, datebuff) != 0) {
 				snprintf(buffer, 32, " %s", datebuff);
-				gdImageString(ic->im, ic->font, textx, texty, (unsigned char *)buffer, ic->ctext);
+				imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
 				texty += ic->lineheight + cfg.linespaceadjust;
 				strcpy(daybuff, datebuff);
 			}
@@ -528,9 +521,9 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 			}
 			if (strcmp(datebuff, daybuff) == 0) {
 				if (cfg.ostyle > 2) {
-					gdImageFilledRectangle(ic->im, textx + 2, texty + 2 - (ic->large * 1), textx + (65 * ic->font->w) + offsetx + 2, texty + 11 + (ic->large * 3), ic->cbgoffset);
+					gdImageFilledRectangle(ic->im, textx + 2, texty + 2 - (ic->large * 1), textx + (65 * ic->fontctx.cw) + offsetx + 2, texty + 11 + (ic->large * 3), ic->cbgoffset);
 				} else {
-					gdImageFilledRectangle(ic->im, textx + 2, texty + 2 - (ic->large * 1), textx + (50 * ic->font->w) + offsetx - 4, texty + 11 + (ic->large * 3), ic->cbgoffset);
+					gdImageFilledRectangle(ic->im, textx + 2, texty + 2 - (ic->large * 1), textx + (50 * ic->fontctx.cw) + offsetx - 4, texty + 11 + (ic->large * 3), ic->cbgoffset);
 				}
 			}
 		} else {
@@ -555,22 +548,22 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 			}
 			strncat(buffer, gettrafficrate(datalist_i->rx + datalist_i->tx, (time_t)e_secs, 14), 32);
 		}
-		gdImageString(ic->im, ic->font, textx, texty, (unsigned char *)buffer, ic->ctext);
+		imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
 		if (listtype == LT_Top) {
 			if (cfg.ostyle > 2) {
-				drawbar(ic, textx + (71 * ic->font->w) + 2, texty + 4, 9 * ic->font->w - 1, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+				drawbar(ic, textx + (71 * ic->fontctx.cw) + 2, texty + 4, 9 * ic->fontctx.cw - 1, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 			} else {
-				drawbar(ic, textx + (56 * ic->font->w), texty + 4, 23 * ic->font->w + 3, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+				drawbar(ic, textx + (56 * ic->fontctx.cw), texty + 4, 23 * ic->fontctx.cw + 3, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 			}
 		} else { // everything else
 			if (cfg.ostyle > 2) {
 				if (datalist_i->next == NULL && estimateavailable && cfg.barshowsrate) {
-					drawbar(ic, textx + (67 * ic->font->w) - 2, texty + 4, 13 * ic->font->w + 1, e_rx, e_tx, datainfo.max, 0);
+					drawbar(ic, textx + (67 * ic->fontctx.cw) - 2, texty + 4, 13 * ic->fontctx.cw + 1, e_rx, e_tx, datainfo.max, 0);
 				} else {
-					drawbar(ic, textx + (67 * ic->font->w) - 2, texty + 4, 13 * ic->font->w + 1, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+					drawbar(ic, textx + (67 * ic->fontctx.cw) - 2, texty + 4, 13 * ic->fontctx.cw + 1, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 				}
 			} else {
-				drawbar(ic, textx + (51 * ic->font->w) - 2, texty + 4, 28 * ic->font->w + 3, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+				drawbar(ic, textx + (51 * ic->fontctx.cw) - 2, texty + 4, 28 * ic->fontctx.cw + 3, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 			}
 		}
 		texty += ic->lineheight + cfg.linespaceadjust;
@@ -583,18 +576,18 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	}
 
 	if (!datainfo.count) {
-		i = 17 * ic->font->w;
+		i = 17 * ic->fontctx.cw;
 		if (cfg.ostyle > 2) {
-			i += 8 * ic->font->w;
+			i += 8 * ic->fontctx.cw;
 		}
-		gdImageString(ic->im, ic->font, textx + i, texty, (unsigned char *)"no data available", ic->ctext);
+		imagestring(ic, FONT_ROLE_BODY, textx + i, texty, "no data available", ic->ctext);
 		texty += ic->lineheight;
 	}
 
 	if (cfg.ostyle > 2) {
-		gdImageLine(ic->im, textx + 2, texty + 5 - (ic->large * 2), textx + (65 * ic->font->w) + offsetx + 2, texty + 5 - (ic->large * 2), ic->cline);
+		gdImageLine(ic->im, textx + 2, texty + 5 - (ic->large * 2), textx + (65 * ic->fontctx.cw) + offsetx + 2, texty + 5 - (ic->large * 2), ic->cline);
 	} else {
-		gdImageLine(ic->im, textx + 2, texty + 5 - (ic->large * 2), textx + (50 * ic->font->w) + offsetx - 4, texty + 5 - (ic->large * 2), ic->cline);
+		gdImageLine(ic->im, textx + 2, texty + 5 - (ic->large * 2), textx + (50 * ic->fontctx.cw) + offsetx - 4, texty + 5 - (ic->large * 2), ic->cline);
 	}
 
 	buffer[0] = '\0';
@@ -614,11 +607,11 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 
 		if (cfg.estimatestyle) {
 			if (cfg.ostyle > 2) {
-				drawbar(ic, textx + (67 * ic->font->w) - 2, texty - ic->lineheight + 4, 13 * ic->font->w + 1, e_rx, e_tx, datainfo.max, 1);
-				drawbar(ic, textx + (67 * ic->font->w) - 2, texty - ic->lineheight + 4, 13 * ic->font->w + 1, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+				drawbar(ic, textx + (67 * ic->fontctx.cw) - 2, texty - ic->lineheight + 4, 13 * ic->fontctx.cw + 1, e_rx, e_tx, datainfo.max, 1);
+				drawbar(ic, textx + (67 * ic->fontctx.cw) - 2, texty - ic->lineheight + 4, 13 * ic->fontctx.cw + 1, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 			} else {
-				drawbar(ic, textx + (51 * ic->font->w) - 2, texty - ic->lineheight + 4, 28 * ic->font->w + 3, e_rx, e_tx, datainfo.max, 1);
-				drawbar(ic, textx + (51 * ic->font->w) - 2, texty - ic->lineheight + 4, 28 * ic->font->w + 3, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+				drawbar(ic, textx + (51 * ic->fontctx.cw) - 2, texty - ic->lineheight + 4, 28 * ic->fontctx.cw + 3, e_rx, e_tx, datainfo.max, 1);
+				drawbar(ic, textx + (51 * ic->fontctx.cw) - 2, texty - ic->lineheight + 4, 28 * ic->fontctx.cw + 3, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 			}
 		}
 
@@ -639,18 +632,18 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 
 	if (strlen(buffer) > 0) {
 		texty += 8;
-		gdImageString(ic->im, ic->font, textx, texty, (unsigned char *)buffer, ic->ctext);
+		imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
 
-		gdImageLine(ic->im, textx + (24 * ic->font->w) + offsetx, texty - 6, textx + (24 * ic->font->w) + offsetx, texty + ic->lineheight - (ic->large * 2), ic->cline);
-		gdImageLine(ic->im, textx + (37 * ic->font->w) + offsetx, texty - 6, textx + (37 * ic->font->w) + offsetx, texty + ic->lineheight - (ic->large * 2), ic->cline);
+		gdImageLine(ic->im, textx + (24 * ic->fontctx.cw) + offsetx, texty - 6, textx + (24 * ic->fontctx.cw) + offsetx, texty + ic->lineheight - (ic->large * 2), ic->cline);
+		gdImageLine(ic->im, textx + (37 * ic->fontctx.cw) + offsetx, texty - 6, textx + (37 * ic->fontctx.cw) + offsetx, texty + ic->lineheight - (ic->large * 2), ic->cline);
 		if (cfg.ostyle > 2) {
-			gdImageLine(ic->im, textx + (50 * ic->font->w) + offsetx, texty - 6, textx + (50 * ic->font->w) + offsetx, texty + ic->lineheight - (ic->large * 2), ic->cline);
+			gdImageLine(ic->im, textx + (50 * ic->fontctx.cw) + offsetx, texty - 6, textx + (50 * ic->fontctx.cw) + offsetx, texty + ic->lineheight - (ic->large * 2), ic->cline);
 		}
 	}
 
 	if (monthrotatenotevisible) {
 		texty += ic->lineheight * 2;
-		gdImageString(ic->im, ic->font, textx + ic->font->w, texty, (unsigned char *)monthrotatenote, ic->ctext);
+		imagestring(ic, FONT_ROLE_BODY, textx + ic->fontctx.cw, texty, monthrotatenote, ic->ctext);
 	}
 
 	dbdatalistfree(&datalist);
@@ -670,17 +663,17 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 	switch (layout) {
 		// horizontal
 		case 1:
-			width = 163 * ic->font->w + 2 + (ic->large * 2);
+			width = 163 * ic->fontctx.cw + 2 + (ic->large * 2);
 			height = 56 + 12 * ic->lineheight;
 			break;
 		// vertical
 		case 2:
-			width = 83 * ic->font->w + 2 + (ic->large * 2);
+			width = 83 * ic->fontctx.cw + 2 + (ic->large * 2);
 			height = 370 + (ic->large * 90);
 			break;
 		// no hours
 		default:
-			width = 83 * ic->font->w + 2 + (ic->large * 2);
+			width = 83 * ic->fontctx.cw + 2 + (ic->large * 2);
 			height = 56 + 12 * ic->lineheight;
 			break;
 	}
@@ -714,7 +707,7 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 				drawhours(ic, 500 + (ic->large * 160), 46 + (ic->large * 40) - headermod, israte);
 			}
 			if (monthrotatenotevisible) {
-				gdImageString(ic->im, ic->font, 13 - (ic->large * 4) + (ic->font->w * 2) + + ic->showedge, height - 12 - ic->showedge - ic->lineheight, (unsigned char *)monthrotatenote, ic->ctext);
+				imagestring(ic, FONT_ROLE_BODY, 13 - (ic->large * 4) + (ic->fontctx.cw * 2) + + ic->showedge, height - 12 - ic->showedge - ic->lineheight, monthrotatenote, ic->ctext);
 			}
 			break;
 		// vertical
@@ -726,12 +719,12 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 				drawhours(ic, 12, 215 + (ic->large * 84) - headermod + (monthrotatenotevisible * (ic->lineheight * 2)), israte);
 			}
 			if (monthrotatenotevisible) {
-				gdImageString(ic->im, ic->font, 13 - (ic->large * 4) + (ic->font->w * 2) + ic->showedge, 215 + (ic->large * 84) - headermod - (ic->lineheight * (1 + ic->large * 2)), (unsigned char *)monthrotatenote, ic->ctext);
+				imagestring(ic, FONT_ROLE_BODY, 13 - (ic->large * 4) + (ic->fontctx.cw * 2) + ic->showedge, 215 + (ic->large * 84) - headermod - (ic->lineheight * (1 + ic->large * 2)), monthrotatenote, ic->ctext);
 			}
 			break;
 		default:
 			if (monthrotatenotevisible) {
-				gdImageString(ic->im, ic->font, 13 - (ic->large * 4) + (ic->font->w * 2) + + ic->showedge, height - 12 - ic->showedge - ic->lineheight, (unsigned char *)monthrotatenote, ic->ctext);
+				imagestring(ic, FONT_ROLE_BODY, 13 - (ic->large * 4) + (ic->fontctx.cw * 2) + + ic->showedge, height - 12 - ic->showedge - ic->lineheight, monthrotatenote, ic->ctext);
 			}
 			break;
 	}
@@ -741,29 +734,22 @@ void drawsummary_alltime(IMAGECONTENT *ic, const int x, const int y)
 {
 	const struct tm *d;
 	char buffer[512], datebuff[16], daytemp[32];
-	gdFontPtr titlefont;
 
-	if (ic->large) {
-		titlefont = gdFontGetGiant();
-	} else {
-		titlefont = gdFontGetLarge();
-	}
-
-	gdImageString(ic->im, titlefont, x + 12 + (ic->large * 10), y, (unsigned char *)"all time", ic->ctext);
+	imagestring(ic, FONT_ROLE_TITLE, x + 12 + (ic->large * 10), y, "all time", ic->ctext);
 	snprintf(buffer, 4, "rx ");
 	strncat(buffer, getvalue(ic->interface.rxtotal, 12, RT_Normal), 32);
-	gdImageString(ic->im, ic->font, x, y + (2 * ic->lineheight), (unsigned char *)buffer, ic->ctext);
+	imagestring(ic, FONT_ROLE_BODY, x, y + (2 * ic->lineheight), buffer, ic->ctext);
 	snprintf(buffer, 4, "tx ");
 	strncat(buffer, getvalue(ic->interface.txtotal, 12, RT_Normal), 32);
-	gdImageString(ic->im, ic->font, x, y + (3 * ic->lineheight), (unsigned char *)buffer, ic->ctext);
+	imagestring(ic, FONT_ROLE_BODY, x, y + (3 * ic->lineheight), buffer, ic->ctext);
 	snprintf(buffer, 4, " = ");
 	strncat(buffer, getvalue(ic->interface.rxtotal + ic->interface.txtotal, 12, RT_Normal), 32);
-	gdImageString(ic->im, ic->font, x, y + (4 * ic->lineheight) + 2 + (ic->large * 4), (unsigned char *)buffer, ic->ctext);
+	imagestring(ic, FONT_ROLE_BODY, x, y + (4 * ic->lineheight) + 2 + (ic->large * 4), buffer, ic->ctext);
 	d = localtime(&ic->interface.created);
 	strftime(datebuff, 16, cfg.tformat, d);
 	snprintf(daytemp, 24, "since %s", datebuff);
 	snprintf(buffer, 32, "%23s", daytemp);
-	gdImageString(ic->im, ic->font, x - 8 * ic->font->w, y + (5 * ic->lineheight) + 10 + (ic->large * 4), (unsigned char *)buffer, ic->ctext);
+	imagestring(ic, FONT_ROLE_BODY, x - 8 * ic->fontctx.cw, y + (5 * ic->lineheight) + 10 + (ic->large * 4), buffer, ic->ctext);
 }
 
 void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *mode)
@@ -776,13 +762,6 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 	dbdatalist *datalist = NULL;
 	const dbdatalist *data_current = NULL, *data_previous = NULL;
 	dbdatalistinfo datainfo;
-	gdFontPtr titlefont;
-
-	if (ic->large) {
-		titlefont = gdFontGetGiant();
-	} else {
-		titlefont = gdFontGetLarge();
-	}
 
 	yesterday = ic->current - 86400;
 
@@ -798,7 +777,7 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 
 	if (!db_getdata(&datalist, &datainfo, ic->interface.name, mode, 2) || datalist == NULL) {
 		snprintf(buffer, 512, "no %s data available", mode);
-		gdImageString(ic->im, ic->font, 20 * ic->font->w, y + 30, (unsigned char *)buffer, ic->ctext);
+		imagestring(ic, FONT_ROLE_BODY, 20 * ic->fontctx.cw, y + 30, buffer, ic->ctext);
 		return;
 	} else if (datalist->next == NULL) {
 		data_current = datalist;
@@ -851,7 +830,7 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 	}
 
 	snprintf(buffer, 32, "%*s", getpadding(12, daytemp), daytemp);
-	gdImageString(ic->im, titlefont, textx - 54 + (ic->large * (ic->font->w * 3 - 4)), texty - 1, (unsigned char *)buffer, ic->ctext);
+	imagestring(ic, FONT_ROLE_TITLE, textx - 54 + (ic->large * (ic->fontctx.cw * 3 - 4)), texty - 1, buffer, ic->ctext);
 
 	if (cfg.summaryrate) {
 		d = localtime(&ic->interface.updated);
@@ -860,20 +839,20 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 		} else if (mode[0] == 'm') {
 			snprintf(buffer, 16, "%15s", gettrafficrate(data_current->rx + data_current->tx, (time_t)getperiodseconds(LT_Month, data_current->timestamp, ic->interface.updated, ic->interface.created, 1), 15));
 		}
-		gdImageString(ic->im, ic->font, textx - 74, texty + 4 * ic->lineheight + 10, (unsigned char *)buffer, ic->ctext);
+		imagestring(ic, FONT_ROLE_BODY, textx - 74, texty + 4 * ic->lineheight + 10, buffer, ic->ctext);
 	} else {
 		texty += 7;
 	}
 
 	snprintf(buffer, 4, "rx ");
 	strncat(buffer, getvalue(data_current->rx, 12, RT_Normal), 32);
-	gdImageString(ic->im, ic->font, textx - 74, texty + ic->lineheight + 6, (unsigned char *)buffer, ic->ctext);
+	imagestring(ic, FONT_ROLE_BODY, textx - 74, texty + ic->lineheight + 6, buffer, ic->ctext);
 	snprintf(buffer, 4, "tx ");
 	strncat(buffer, getvalue(data_current->tx, 12, RT_Normal), 32);
-	gdImageString(ic->im, ic->font, textx - 74, texty + 2 * ic->lineheight + 6, (unsigned char *)buffer, ic->ctext);
+	imagestring(ic, FONT_ROLE_BODY, textx - 74, texty + 2 * ic->lineheight + 6, buffer, ic->ctext);
 	snprintf(buffer, 4, " = ");
 	strncat(buffer, getvalue(data_current->rx + data_current->tx, 12, RT_Normal), 32);
-	gdImageString(ic->im, ic->font, textx - 74, texty + 3 * ic->lineheight + 8, (unsigned char *)buffer, ic->ctext);
+	imagestring(ic, FONT_ROLE_BODY, textx - 74, texty + 3 * ic->lineheight + 8, buffer, ic->ctext);
 
 	/* previous entry */
 	if (data_previous != NULL) {
@@ -914,7 +893,7 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 		}
 
 		snprintf(buffer, 32, "%*s", getpadding(12, daytemp), daytemp);
-		gdImageString(ic->im, titlefont, textx - 54 + (ic->large * (ic->font->w * 3 - 4)), texty - 1, (unsigned char *)buffer, ic->ctext);
+		imagestring(ic, FONT_ROLE_TITLE, textx - 54 + (ic->large * (ic->fontctx.cw * 3 - 4)), texty - 1, buffer, ic->ctext);
 
 		if (cfg.summaryrate) {
 			if (mode[0] == 'd') {
@@ -922,20 +901,20 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 			} else if (mode[0] == 'm') {
 				snprintf(buffer, 16, "%15s", gettrafficrate(data_previous->rx + data_previous->tx, dmonth(d->tm_mon) * 86400, 15));
 			}
-			gdImageString(ic->im, ic->font, textx - 74, texty + 4 * ic->lineheight + 10, (unsigned char *)buffer, ic->ctext);
+			imagestring(ic, FONT_ROLE_BODY, textx - 74, texty + 4 * ic->lineheight + 10, buffer, ic->ctext);
 		} else {
 			texty += 7;
 		}
 
 		snprintf(buffer, 4, "rx ");
 		strncat(buffer, getvalue(data_previous->rx, 12, RT_Normal), 32);
-		gdImageString(ic->im, ic->font, textx - 74, texty + ic->lineheight + 6, (unsigned char *)buffer, ic->ctext);
+		imagestring(ic, FONT_ROLE_BODY, textx - 74, texty + ic->lineheight + 6, buffer, ic->ctext);
 		snprintf(buffer, 4, "tx ");
 		strncat(buffer, getvalue(data_previous->tx, 12, RT_Normal), 32);
-		gdImageString(ic->im, ic->font, textx - 74, texty + 2 * ic->lineheight + 6, (unsigned char *)buffer, ic->ctext);
+		imagestring(ic, FONT_ROLE_BODY, textx - 74, texty + 2 * ic->lineheight + 6, buffer, ic->ctext);
 		snprintf(buffer, 4, " = ");
 		strncat(buffer, getvalue(data_previous->rx + data_previous->tx, 12, RT_Normal), 32);
-		gdImageString(ic->im, ic->font, textx - 74, texty + 3 * ic->lineheight + 8, (unsigned char *)buffer, ic->ctext);
+		imagestring(ic, FONT_ROLE_BODY, textx - 74, texty + 3 * ic->lineheight + 8, buffer, ic->ctext);
 	}
 
 	data_current = NULL;
@@ -971,17 +950,10 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	const struct tm *d;
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
-	gdFontPtr font;
-
-	if (ic->large) {
-		font = gdFontGetSmall();
-	} else {
-		font = gdFontGetTiny();
-	}
 
 	if (!db_getdata(&datalist, &datainfo, ic->interface.name, "fiveminute", (uint32_t)resultcount) || datainfo.count == 0) {
-		x = (resultcount + FIVEMINEXTRASPACE + (ic->large * 14)) / 2 - (13 * ic->font->w);
-		gdImageString(ic->im, ic->font, x, y - (height / 2) - ic->font->h, (unsigned char *)"no 5 minute data available", ic->ctext);
+		x = (resultcount + FIVEMINEXTRASPACE + (ic->large * 14)) / 2 - (13 * ic->fontctx.cw);
+		imagestring(ic, FONT_ROLE_BODY, x, y - (height / 2) - ic->fontctx.ch, "no 5 minute data available", ic->ctext);
 		return 0;
 	}
 
@@ -1025,7 +997,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	x += 5;
 	y -= txh + FIVEMINHEIGHTOFFSET;
 	gdImageLine(ic->im, x, y, x + (resultcount + FIVEMINWIDTHPADDING), y, ic->ctext);
-	gdImageString(ic->im, font, x - 21 - (ic->large * 3), y - 4 - (ic->large * 3), (unsigned char *)"  0", ic->ctext);
+	imagestring(ic, FONT_ROLE_AXIS, x - 21 - (ic->large * 3), y - 4 - (ic->large * 3), "  0", ic->ctext);
 
 	/* scale values */
 	scaleunit = getscale(max, israte);
@@ -1054,7 +1026,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	for (i = step; i * s <= rxh; i = i + step) {
 		gdImageDashedLine(ic->im, x, y - (i * s), x + (resultcount + FIVEMINWIDTHPADDING), y - (i * s), ic->cline);
 		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + (resultcount + FIVEMINWIDTHPADDING), y - prev - (step * s) / 2, ic->clinel);
-		gdImageString(ic->im, font, x - 21 - (ic->large * 3), y - 3 - (i * s) - (ic->large * 3), (unsigned char *)getimagevalue(scaleunit * (unsigned int)i, 3, israte), ic->ctext);
+		imagestring(ic, FONT_ROLE_AXIS, x - 21 - (ic->large * 3), y - 3 - (i * s) - (ic->large * 3), getimagevalue(scaleunit * (unsigned int)i, 3, israte), ic->ctext);
 		prev = i * s;
 	}
 	if ((prev + (step * s) / 2) <= rxh) {
@@ -1068,7 +1040,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	for (i = step; i * s <= txh; i = i + step) {
 		gdImageDashedLine(ic->im, x, y + (i * s), x + (resultcount + FIVEMINWIDTHPADDING), y + (i * s), ic->cline);
 		gdImageDashedLine(ic->im, x, y + prev + (step * s) / 2, x + (resultcount + FIVEMINWIDTHPADDING), y + prev + (step * s) / 2, ic->clinel);
-		gdImageString(ic->im, font, x - 21 - (ic->large * 3), y - 3 + (i * s) - (ic->large * 3), (unsigned char *)getimagevalue(scaleunit * (unsigned int)i, 3, israte), ic->ctext);
+		imagestring(ic, FONT_ROLE_AXIS, x - 21 - (ic->large * 3), y - 3 + (i * s) - (ic->large * 3), getimagevalue(scaleunit * (unsigned int)i, 3, israte), ic->ctext);
 		prev = i * s;
 	}
 	if ((prev + (step * s) / 2) <= txh) {
@@ -1078,7 +1050,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	y--; // y is now back on center line
 
 	/* scale text */
-	gdImageStringUp(ic->im, font, x - 39 - (ic->large * 14), ypos - height / 2 + (israte * 10), (unsigned char *)getimagescale(scaleunit * (unsigned int)step, israte), ic->ctext);
+	imagestringup(ic, FONT_ROLE_AXIS, x - 39 - (ic->large * 14), ypos - height / 2 + (israte * 10), getimagescale(scaleunit * (unsigned int)step, israte), ic->ctext);
 
 	timestamp = datainfo.maxtime - (resultcount * 300);
 
@@ -1106,12 +1078,12 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 					gdImageLine(ic->im, x + i, y + txh - 1 + FIVEMINHEIGHTOFFSET, x + i, y - rxh - 1, ic->cbgoffset);
 				}
 
-				if (i > font->w) {
+				if (i > imagefontwidth(ic, FONT_ROLE_AXIS)) {
 					snprintf(buffer, 32, "%02d", d->tm_hour);
 					if (datalist_i->timestamp > timestamp) {
-						gdImageString(ic->im, font, x + i - font->w + 1, y + txh + font->h - (ic->large * 5), (unsigned char *)buffer, ic->cline);
+						imagestring(ic, FONT_ROLE_AXIS, x + i - imagefontwidth(ic, FONT_ROLE_AXIS) + 1, y + txh + imagefontheight(ic, FONT_ROLE_AXIS) - (ic->large * 5), buffer, ic->cline);
 					} else {
-						gdImageString(ic->im, font, x + i - font->w + 1, y + txh + font->h - (ic->large * 5), (unsigned char *)buffer, ic->ctext);
+						imagestring(ic, FONT_ROLE_AXIS, x + i - imagefontwidth(ic, FONT_ROLE_AXIS) + 1, y + txh + imagefontheight(ic, FONT_ROLE_AXIS) - (ic->large * 5), buffer, ic->ctext);
 					}
 				}
 			} else {
@@ -1184,21 +1156,14 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
 	percentiledata pdata;
-	gdFontPtr font;
 
 	if (cfg.fiveminutehours < PERCENTILEENTRYCOUNT) {
 		fprintf(stderr, "\nWarning: Configuration \"5MinuteHours\" needs to be at least %d for 100%% coverage.\n", PERCENTILEENTRYCOUNT);
 		fprintf(stderr, "         \"5MinuteHours\" is currently set at %d.\n\n", cfg.fiveminutehours);
 	}
 
-	if (ic->large) {
-		font = gdFontGetSmall();
-	} else {
-		font = gdFontGetTiny();
-	}
-
 	if (!getpercentiledata(&pdata, ic->interface.name, 0)) {
-		gdImageString(ic->im, ic->font, x + 320 - (ic->large * 30), y - 120, (unsigned char *)"failed to get percentile data", ic->ctext);
+		imagestring(ic, FONT_ROLE_BODY, x + 320 - (ic->large * 30), y - 120, "failed to get percentile data", ic->ctext);
 		return;
 	}
 
@@ -1215,7 +1180,7 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 	strftime(datebuff, DATEBUFFLEN, "%Y-%m-%d", d);
 
 	if (!db_getdata_range(&datalist, &datainfo, ic->interface.name, "percentile", PERCENTILEENTRYCOUNT, datebuff, "") || datainfo.count == 0) {
-		gdImageString(ic->im, ic->font, x + 320 - (ic->large * 30), y - 120, (unsigned char *)"no percentile data available", ic->ctext);
+		imagestring(ic, FONT_ROLE_BODY, x + 320 - (ic->large * 30), y - 120, "no percentile data available", ic->ctext);
 		return;
 	}
 
@@ -1253,7 +1218,7 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 	}
 
 	/* scale text */
-	gdImageStringUp(ic->im, font, x - 2 - (ic->large * 14), y - (height / 2), (unsigned char *)getimagescale(scaleunit * (unsigned int)step, 1), ic->ctext);
+	imagestringup(ic, FONT_ROLE_AXIS, x - 2 - (ic->large * 14), y - (height / 2), getimagescale(scaleunit * (unsigned int)step, 1), ic->ctext);
 
 	/* axis */
 	x += 36;
@@ -1271,7 +1236,7 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 	for (i = step; i * s <= height; i = i + step) {
 		gdImageDashedLine(ic->im, x, y - (i * s), x + (PERCENTILEENTRYCOUNT + PERCENTILEMINWIDTHFULLPADDING) - 5, y - (i * s), ic->cline);
 		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + (PERCENTILEENTRYCOUNT + PERCENTILEMINWIDTHFULLPADDING) - 5, y - prev - (step * s) / 2, ic->clinel);
-		gdImageString(ic->im, font, x - 22 - (ic->large * 3), y - 4 - (i * s) - (ic->large * 3), (unsigned char *)getimagevalue(scaleunit * (unsigned int)i, 3, 1), ic->ctext);
+		imagestring(ic, FONT_ROLE_AXIS, x - 22 - (ic->large * 3), y - 4 - (i * s) - (ic->large * 3), getimagevalue(scaleunit * (unsigned int)i, 3, 1), ic->ctext);
 		prev = i * s;
 	}
 	if ((prev + (step * s) / 2) <= height) {
@@ -1292,7 +1257,7 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 				if (i > 0) {
 					drawpole(ic, x + i, y + 4, height, 1, ic->cbgoffset);
 				}
-				gdImageString(ic->im, font, x + 12 + i - 4 - (ic->large), y + 5, (unsigned char *)datebuff, ic->cline);
+				imagestring(ic, FONT_ROLE_AXIS, x + 12 + i - 4 - (ic->large), y + 5, datebuff, ic->cline);
 				prev = i;
 			}
 			continue;
@@ -1305,7 +1270,7 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 			if (i > 0) {
 				gdImageLine(ic->im, x + i, y + 1, x + i, y + 4, ic->ctext);
 			}
-			gdImageString(ic->im, font, x + 12 + i - 4 - (ic->large), y + 5, (unsigned char *)datebuff, ic->ctext);
+			imagestring(ic, FONT_ROLE_AXIS, x + 12 + i - 4 - (ic->large), y + 5, datebuff, ic->ctext);
 			prev = i;
 		}
 

@@ -3,7 +3,6 @@
 #include "misc.h"
 #include "image.h"
 #include "image_support.h"
-#include "vnstati.h"
 
 void imageinit(IMAGECONTENT *ic, const int width, const int height)
 {
@@ -118,17 +117,72 @@ void colorinitcheck(const char *color, const int value, const char *cfgtext, con
 	}
 }
 
+static gdFontPtr imagerolefont(const IMAGECONTENT *ic, const fontrole_t role)
+{
+	switch (role) {
+		case FONT_ROLE_AXIS:
+			return ic->fontctx.axis;
+		case FONT_ROLE_TITLE:
+			return ic->fontctx.title;
+		case FONT_ROLE_HEADER:
+			return ic->fontctx.header;
+		case FONT_ROLE_FOOTER:
+			return ic->fontctx.footer;
+		case FONT_ROLE_BODY:
+		default:
+			return ic->fontctx.body;
+	}
+}
+
+void imagefontinit(IMAGECONTENT *ic, const int largefonts)
+{
+	ic->fontctx.mode = FONT_BUILTIN;
+	ic->fontctx.header = gdFontGetGiant();
+	ic->fontctx.footer = gdFontGetTiny();
+
+	if (largefonts) {
+		ic->fontctx.body = gdFontGetLarge();
+		ic->fontctx.axis = gdFontGetSmall();
+		ic->fontctx.title = gdFontGetGiant();
+	} else {
+		ic->fontctx.body = gdFontGetSmall();
+		ic->fontctx.axis = gdFontGetTiny();
+		ic->fontctx.title = gdFontGetLarge();
+	}
+
+	ic->fontctx.cw = ic->fontctx.body->w;
+	ic->fontctx.ch = ic->fontctx.body->h;
+}
+
+void imagestring(IMAGECONTENT *ic, const fontrole_t role, const int x, const int y, const char *text, const int color)
+{
+	gdImageString(ic->im, imagerolefont(ic, role), x, y, (unsigned char *)text, color);
+}
+
+void imagestringup(IMAGECONTENT *ic, const fontrole_t role, const int x, const int y, const char *text, const int color)
+{
+	gdImageStringUp(ic->im, imagerolefont(ic, role), x, y, (unsigned char *)text, color);
+}
+
+int imagetextwidth(IMAGECONTENT *ic, const fontrole_t role, const char *text)
+{
+	return ((int)strlen(text)) * imagerolefont(ic, role)->w;
+}
+
+int imagefontwidth(IMAGECONTENT *ic, const fontrole_t role)
+{
+	return imagerolefont(ic, role)->w;
+}
+
+int imagefontheight(IMAGECONTENT *ic, const fontrole_t role)
+{
+	return imagerolefont(ic, role)->h;
+}
+
 void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int height)
 {
 	const struct tm *d;
 	char datestring[64], buffer[512];
-	gdFontPtr datefont;
-
-	if (ic->large) {
-		datefont = gdFontGetSmall();
-	} else {
-		datefont = gdFontGetTiny();
-	}
 
 	/* get time in given format */
 	d = localtime(&ic->interface.updated);
@@ -154,18 +208,18 @@ void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int 
 		}
 
 		gdImageFilledRectangle(ic->im, 2 + ic->showedge, 2 + ic->showedge, width - 3 - ic->showedge, 24, ic->cheader);
-		gdImageString(ic->im, gdFontGetGiant(), 12, 5 + ic->showedge, (unsigned char *)buffer, ic->cheadertitle);
+		imagestring(ic, FONT_ROLE_HEADER, 12, 5 + ic->showedge, buffer, ic->cheadertitle);
 	}
 
 	/* date */
 	if (!ic->showheader || ic->altdate) {
-		gdImageString(ic->im, datefont, 5 + ic->showedge, height - 12 - ic->showedge - (ic->large * 3), (unsigned char *)datestring, ic->cvnstat);
+		imagestring(ic, FONT_ROLE_AXIS, 5 + ic->showedge, height - 12 - ic->showedge - (ic->large * 3), datestring, ic->cvnstat);
 	} else {
-		gdImageString(ic->im, datefont, width - (((int)strlen(datestring)) * datefont->w + 12), 9 + ic->showedge - (ic->large * 3), (unsigned char *)datestring, ic->cheaderdate);
+		imagestring(ic, FONT_ROLE_AXIS, width - (imagetextwidth(ic, FONT_ROLE_AXIS, datestring) + 12), 9 + ic->showedge - (ic->large * 3), datestring, ic->cheaderdate);
 	}
 
 	/* generator */
-	gdImageString(ic->im, gdFontGetTiny(), width - 114 - ic->showedge, height - 12 - ic->showedge, (unsigned char *)"vnStat / Teemu Toivola", ic->cvnstat);
+	imagestring(ic, FONT_ROLE_FOOTER, width - 114 - ic->showedge, height - 12 - ic->showedge, "vnStat / Teemu Toivola", ic->cvnstat);
 }
 
 void drawlegend(IMAGECONTENT *ic, const int x, const int y, const short israte)
@@ -175,21 +229,21 @@ void drawlegend(IMAGECONTENT *ic, const int x, const int y, const short israte)
 	}
 
 	if (!israte) {
-		gdImageString(ic->im, ic->font, x, y, (unsigned char *)"rx     tx", ic->ctext);
+		imagestring(ic, FONT_ROLE_BODY, x, y, "rx     tx", ic->ctext);
 
-		gdImageFilledRectangle(ic->im, x - 12 - (ic->large * 2), y + 4, x - 12 + ic->font->w - (ic->large * 2), y + 4 + ic->font->w, ic->crx);
-		gdImageRectangle(ic->im, x - 12 - (ic->large * 2), y + 4, x - 12 + ic->font->w - (ic->large * 2), y + 4 + ic->font->w, ic->ctext);
+		gdImageFilledRectangle(ic->im, x - 12 - (ic->large * 2), y + 4, x - 12 + ic->fontctx.cw - (ic->large * 2), y + 4 + ic->fontctx.cw, ic->crx);
+		gdImageRectangle(ic->im, x - 12 - (ic->large * 2), y + 4, x - 12 + ic->fontctx.cw - (ic->large * 2), y + 4 + ic->fontctx.cw, ic->ctext);
 
-		gdImageFilledRectangle(ic->im, x + 30 + (ic->large * 12), y + 4, x + 30 + ic->font->w + (ic->large * 12), y + 4 + ic->font->w, ic->ctx);
-		gdImageRectangle(ic->im, x + 30 + (ic->large * 12), y + 4, x + 30 + ic->font->w + (ic->large * 12), y + 4 + ic->font->w, ic->ctext);
+		gdImageFilledRectangle(ic->im, x + 30 + (ic->large * 12), y + 4, x + 30 + ic->fontctx.cw + (ic->large * 12), y + 4 + ic->fontctx.cw, ic->ctx);
+		gdImageRectangle(ic->im, x + 30 + (ic->large * 12), y + 4, x + 30 + ic->fontctx.cw + (ic->large * 12), y + 4 + ic->fontctx.cw, ic->ctext);
 	} else {
-		gdImageString(ic->im, ic->font, x - 12, y, (unsigned char *)"rx   tx rate", ic->ctext);
+		imagestring(ic, FONT_ROLE_BODY, x - 12, y, "rx   tx rate", ic->ctext);
 
-		gdImageFilledRectangle(ic->im, x - 22 - (ic->large * 3), y + 4, x - 22 + ic->font->w - (ic->large * 3), y + 4 + ic->font->w, ic->crx);
-		gdImageRectangle(ic->im, x - 22 - (ic->large * 3), y + 4, x - 22 + ic->font->w - (ic->large * 3), y + 4 + ic->font->w, ic->ctext);
+		gdImageFilledRectangle(ic->im, x - 22 - (ic->large * 3), y + 4, x - 22 + ic->fontctx.cw - (ic->large * 3), y + 4 + ic->fontctx.cw, ic->crx);
+		gdImageRectangle(ic->im, x - 22 - (ic->large * 3), y + 4, x - 22 + ic->fontctx.cw - (ic->large * 3), y + 4 + ic->fontctx.cw, ic->ctext);
 
-		gdImageFilledRectangle(ic->im, x + 8 + (ic->large * 7), y + 4, x + 8 + ic->font->w + (ic->large * 7), y + 4 + ic->font->w, ic->ctx);
-		gdImageRectangle(ic->im, x + 8 + (ic->large * 7), y + 4, x + 8 + ic->font->w + (ic->large * 7), y + 4 + ic->font->w, ic->ctext);
+		gdImageFilledRectangle(ic->im, x + 8 + (ic->large * 7), y + 4, x + 8 + ic->fontctx.cw + (ic->large * 7), y + 4 + ic->fontctx.cw, ic->ctx);
+		gdImageRectangle(ic->im, x + 8 + (ic->large * 7), y + 4, x + 8 + ic->fontctx.cw + (ic->large * 7), y + 4 + ic->fontctx.cw, ic->ctext);
 	}
 }
 
@@ -211,20 +265,20 @@ void drawpercentilelegend(IMAGECONTENT *ic, const int x, const int y, const int 
 	}
 
 	snprintf(percentiletext, 64, "%s     95th percentile: %s", modetext, gettrafficrate(percentile, 300, 0));
-	gdImageString(ic->im, ic->font, x, y, (unsigned char *)percentiletext, ic->ctext);
+	imagestring(ic, FONT_ROLE_BODY, x, y, percentiletext, ic->ctext);
 
-	gdImageFilledRectangle(ic->im, x - 12 - (ic->large * 2), y + 4, x - 12 + ic->font->w - (ic->large * 2), y + 4 + ic->font->w, color);
-	gdImageRectangle(ic->im, x - 12 - (ic->large * 2), y + 4, x - 12 + ic->font->w - (ic->large * 2), y + 4 + ic->font->w, ic->ctext);
+	gdImageFilledRectangle(ic->im, x - 12 - (ic->large * 2), y + 4, x - 12 + ic->fontctx.cw - (ic->large * 2), y + 4 + ic->fontctx.cw, color);
+	gdImageRectangle(ic->im, x - 12 - (ic->large * 2), y + 4, x - 12 + ic->fontctx.cw - (ic->large * 2), y + 4 + ic->fontctx.cw, ic->ctext);
 
-	gdImageFilledRectangle(ic->im, x + 30 + (ic->large * 12) + xoffset, y + 4, x + 30 + ic->font->w + (ic->large * 12) + xoffset, y + 4 + ic->font->w, ic->cpercentileline);
-	gdImageRectangle(ic->im, x + 30 + (ic->large * 12) + xoffset, y + 4, x + 30 + ic->font->w + (ic->large * 12) + xoffset, y + 4 + ic->font->w, ic->ctext);
+	gdImageFilledRectangle(ic->im, x + 30 + (ic->large * 12) + xoffset, y + 4, x + 30 + ic->fontctx.cw + (ic->large * 12) + xoffset, y + 4 + ic->fontctx.cw, ic->cpercentileline);
+	gdImageRectangle(ic->im, x + 30 + (ic->large * 12) + xoffset, y + 4, x + 30 + ic->fontctx.cw + (ic->large * 12) + xoffset, y + 4 + ic->fontctx.cw, ic->ctext);
 }
 
 void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max, const short isestimate)
 {
 	int rxl, txl, width = len, overlap = 0;
 	int crx = ic->crx, ctx = ic->ctx, crxd = ic->crxd, ctxd = ic->ctxd;
-	int ybeginoffset = YBEGINOFFSET, yendoffset = YBEGINOFFSET + ic->font->h - 6 - ic->large;
+	int ybeginoffset = YBEGINOFFSET, yendoffset = YBEGINOFFSET + ic->fontctx.ch - 6 - ic->large;
 
 	if (isestimate) {
 

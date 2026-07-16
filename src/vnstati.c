@@ -615,14 +615,13 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 	}
 
 	if (cfg.largefonts) {
-		ic->font = gdFontGetLarge();
 		ic->lineheight = 16;
 		ic->large = 1;
 	} else {
-		ic->font = gdFontGetSmall();
 		ic->lineheight = 12;
 		ic->large = 0;
 	}
+	imagefontinit(ic, cfg.largefonts);
 }
 
 void validateinput(const IPARAMS *p)
