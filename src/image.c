@@ -469,6 +469,202 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	textx = 10;
 	texty = ic->fontctx.header_h + 16 - headermod;
 
+	if (ic->fontctx.mode == FONT_TTF) {
+		const int colpad = 4;
+		int rx_edge = textx + (24 * ic->fontctx.cw) + offsetx - colpad;
+		int tx_edge = textx + (37 * ic->fontctx.cw) + offsetx - colpad;
+		int total_edge = textx + (50 * ic->fontctx.cw) + offsetx - colpad;
+		int rate_edge = textx + (65 * ic->fontctx.cw) + offsetx - colpad;
+		char rxbuf[64], txbuf[64], totalbuf[64], ratebuf[64];
+
+		/* column headers */
+		if (listtype == LT_Top) {
+			imagestring(ic, FONT_ROLE_BODY, textx, texty, "   #      day", ic->ctext);
+		} else {
+			snprintf(buffer, 512, " %8s", colname);
+			imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
+		}
+		imagestring(ic, FONT_ROLE_BODY, rx_edge - imagetextwidth(ic, FONT_ROLE_BODY, "rx"), texty, "rx", ic->ctext);
+		imagestring(ic, FONT_ROLE_BODY, tx_edge - imagetextwidth(ic, FONT_ROLE_BODY, "tx"), texty, "tx", ic->ctext);
+		imagestring(ic, FONT_ROLE_BODY, total_edge - imagetextwidth(ic, FONT_ROLE_BODY, "total"), texty, "total", ic->ctext);
+		if (cfg.ostyle > 2) {
+			imagestring(ic, FONT_ROLE_BODY, rate_edge - imagetextwidth(ic, FONT_ROLE_BODY, "avg. rate"), texty, "avg. rate", ic->ctext);
+			i = texty + ic->fontctx.ch + (ic->lineheight + 8 - ic->fontctx.ch) / 2;
+			gdImageLine(ic->im, textx + 2, i, textx + (65 * ic->fontctx.cw) + offsetx + 2, i, ic->cline);
+		} else {
+			i = texty + ic->fontctx.ch + (ic->lineheight + 8 - ic->fontctx.ch) / 2;
+			gdImageLine(ic->im, textx + 2, i, textx + (50 * ic->fontctx.cw) + offsetx - 4, i, ic->cline);
+		}
+
+		texty += ic->lineheight + 8;
+
+		if (datainfo.count) {
+			gdImageLine(ic->im, textx + (24 * ic->fontctx.cw) + offsetx, texty - 6 - ic->lineheight, textx + (24 * ic->fontctx.cw) + offsetx, texty + ((ic->lineheight + cfg.linespaceadjust) * rowcount) - cfg.linespaceadjust + 5 - (ic->large * 2), ic->cline);
+			gdImageLine(ic->im, textx + (37 * ic->fontctx.cw) + offsetx, texty - 6 - ic->lineheight, textx + (37 * ic->fontctx.cw) + offsetx, texty + ((ic->lineheight + cfg.linespaceadjust) * rowcount) - cfg.linespaceadjust + 5 - (ic->large * 2), ic->cline);
+			if (cfg.ostyle > 2) {
+				gdImageLine(ic->im, textx + (50 * ic->fontctx.cw) + offsetx, texty - 6 - ic->lineheight, textx + (50 * ic->fontctx.cw) + offsetx, texty + ((ic->lineheight + cfg.linespaceadjust) * rowcount) - cfg.linespaceadjust + 5 - (ic->large * 2), ic->cline);
+			}
+		} else {
+			gdImageLine(ic->im, textx + (24 * ic->fontctx.cw) + offsetx, texty - 6 - ic->lineheight, textx + (24 * ic->fontctx.cw) + offsetx, texty - 4, ic->cline);
+			gdImageLine(ic->im, textx + (37 * ic->fontctx.cw) + offsetx, texty - 6 - ic->lineheight, textx + (37 * ic->fontctx.cw) + offsetx, texty - 4, ic->cline);
+			if (cfg.ostyle > 2) {
+				gdImageLine(ic->im, textx + (50 * ic->fontctx.cw) + offsetx, texty - 6 - ic->lineheight, textx + (50 * ic->fontctx.cw) + offsetx, texty - 4, ic->cline);
+			}
+		}
+
+		while (datalist_i != NULL) {
+			d = localtime(&datalist_i->timestamp);
+
+			if (listtype == LT_5min || listtype == LT_Hour) {
+				strftime(datebuff, 16, cfg.dformat, d);
+				if (strcmp(daybuff, datebuff) != 0) {
+					snprintf(buffer, 32, " %s", datebuff);
+					imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
+					texty += ic->lineheight + cfg.linespaceadjust;
+					strcpy(daybuff, datebuff);
+				}
+			}
+
+			if (listtype == LT_Top) {
+				if (strftime(datebuff, 16, stampformat, d) <= 8) {
+					snprintf(buffer, 32, "  %2d   %*s", i, getpadding(8, datebuff), datebuff);
+				} else {
+					snprintf(buffer, 32, "  %2d  %-*s", i, getpadding(11, datebuff), datebuff);
+				}
+				if (strcmp(datebuff, daybuff) == 0) {
+					if (cfg.ostyle > 2) {
+						gdImageFilledRectangle(ic->im, textx + 2, texty + 2, textx + (65 * ic->fontctx.cw) + offsetx + 2, texty + ic->fontctx.ch - 2, ic->cbgoffset);
+					} else {
+						gdImageFilledRectangle(ic->im, textx + 2, texty + 2, textx + (50 * ic->fontctx.cw) + offsetx - 4, texty + ic->fontctx.ch - 2, ic->cbgoffset);
+					}
+				}
+			} else {
+				if (strftime(datebuff, 16, stampformat, d) <= 8) {
+					snprintf(buffer, 32, "  %*s", getpadding(8, datebuff), datebuff);
+				} else {
+					snprintf(buffer, 32, " %-*s", getpadding(11, datebuff), datebuff);
+				}
+			}
+			imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
+
+			strncpy_nt(rxbuf, getvalue(datalist_i->rx, 10, RT_Normal), 64);
+			imagestring(ic, FONT_ROLE_BODY, rx_edge - imagetextwidth(ic, FONT_ROLE_BODY, rxbuf), texty, rxbuf, ic->ctext);
+			strncpy_nt(txbuf, getvalue(datalist_i->tx, 10, RT_Normal), 64);
+			imagestring(ic, FONT_ROLE_BODY, tx_edge - imagetextwidth(ic, FONT_ROLE_BODY, txbuf), texty, txbuf, ic->ctext);
+			strncpy_nt(totalbuf, getvalue(datalist_i->rx + datalist_i->tx, 10, RT_Normal), 64);
+			imagestring(ic, FONT_ROLE_BODY, total_edge - imagetextwidth(ic, FONT_ROLE_BODY, totalbuf), texty, totalbuf, ic->ctext);
+			if (cfg.ostyle > 2) {
+				if (datalist_i->next == NULL && issametimeslot(listtype, datalist_i->timestamp, ic->interface.updated)) {
+					e_secs = getperiodseconds(listtype, datalist_i->timestamp, ic->interface.updated, ic->interface.created, 1);
+				} else {
+					e_secs = getperiodseconds(listtype, datalist_i->timestamp, ic->interface.updated, ic->interface.created, 0);
+				}
+				strncpy_nt(ratebuf, gettrafficrate(datalist_i->rx + datalist_i->tx, (time_t)e_secs, 14), 64);
+				imagestring(ic, FONT_ROLE_BODY, rate_edge - imagetextwidth(ic, FONT_ROLE_BODY, ratebuf), texty, ratebuf, ic->ctext);
+			}
+
+			if (listtype == LT_Top) {
+				if (cfg.ostyle > 2) {
+					drawbar(ic, textx + (71 * ic->fontctx.cw) + 2, texty + 4, 9 * ic->fontctx.cw - 1, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+				} else {
+					drawbar(ic, textx + (56 * ic->fontctx.cw), texty + 4, 23 * ic->fontctx.cw + 3, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+				}
+			} else {
+				if (cfg.ostyle > 2) {
+					if (datalist_i->next == NULL && estimateavailable && cfg.barshowsrate) {
+						drawbar(ic, textx + (67 * ic->fontctx.cw) - 2, texty + 4, 13 * ic->fontctx.cw + 1, e_rx, e_tx, datainfo.max, 0);
+					} else {
+						drawbar(ic, textx + (67 * ic->fontctx.cw) - 2, texty + 4, 13 * ic->fontctx.cw + 1, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+					}
+				} else {
+					drawbar(ic, textx + (51 * ic->fontctx.cw) - 2, texty + 4, 28 * ic->fontctx.cw + 3, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+				}
+			}
+			texty += ic->lineheight + cfg.linespaceadjust;
+			if (datalist_i->next == NULL) {
+				texty -= cfg.linespaceadjust;
+				break;
+			}
+			datalist_i = datalist_i->next;
+			i++;
+		}
+
+		if (!datainfo.count) {
+			i = 17 * ic->fontctx.cw;
+			if (cfg.ostyle > 2) {
+				i += 8 * ic->fontctx.cw;
+			}
+			imagestring(ic, FONT_ROLE_BODY, textx + i, texty, "no data available", ic->ctext);
+			texty += ic->lineheight;
+		}
+
+		i = texty - ic->lineheight + ic->fontctx.ch + (ic->lineheight + 8 - ic->fontctx.ch) / 2;
+		if (cfg.ostyle > 2) {
+			gdImageLine(ic->im, textx + 2, i, textx + (65 * ic->fontctx.cw) + offsetx + 2, i, ic->cline);
+		} else {
+			gdImageLine(ic->im, textx + 2, i, textx + (50 * ic->fontctx.cw) + offsetx - 4, i, ic->cline);
+		}
+
+		buffer[0] = '\0';
+
+		if (estimatevisible) {
+			strncpy_nt(rxbuf, getvalue(e_rx, 10, RT_Estimate), 64);
+			strncpy_nt(txbuf, getvalue(e_tx, 10, RT_Estimate), 64);
+			strncpy_nt(totalbuf, getvalue(e_rx + e_tx, 10, RT_Estimate), 64);
+
+			if (cfg.estimatestyle) {
+				if (cfg.ostyle > 2) {
+					drawbar(ic, textx + (67 * ic->fontctx.cw) - 2, texty - ic->lineheight + 4, 13 * ic->fontctx.cw + 1, e_rx, e_tx, datainfo.max, 1);
+					drawbar(ic, textx + (67 * ic->fontctx.cw) - 2, texty - ic->lineheight + 4, 13 * ic->fontctx.cw + 1, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+				} else {
+					drawbar(ic, textx + (51 * ic->fontctx.cw) - 2, texty - ic->lineheight + 4, 28 * ic->fontctx.cw + 3, e_rx, e_tx, datainfo.max, 1);
+					drawbar(ic, textx + (51 * ic->fontctx.cw) - 2, texty - ic->lineheight + 4, 28 * ic->fontctx.cw + 3, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+				}
+			}
+
+			texty += 8;
+			imagestring(ic, FONT_ROLE_BODY, textx, texty, cfg.estimatetext, ic->ctext);
+			imagestring(ic, FONT_ROLE_BODY, rx_edge - imagetextwidth(ic, FONT_ROLE_BODY, rxbuf), texty, rxbuf, ic->ctext);
+			imagestring(ic, FONT_ROLE_BODY, tx_edge - imagetextwidth(ic, FONT_ROLE_BODY, txbuf), texty, txbuf, ic->ctext);
+			imagestring(ic, FONT_ROLE_BODY, total_edge - imagetextwidth(ic, FONT_ROLE_BODY, totalbuf), texty, totalbuf, ic->ctext);
+
+			gdImageLine(ic->im, textx + (24 * ic->fontctx.cw) + offsetx, texty - 6, textx + (24 * ic->fontctx.cw) + offsetx, texty + ic->lineheight - (ic->large * 2), ic->cline);
+			gdImageLine(ic->im, textx + (37 * ic->fontctx.cw) + offsetx, texty - 6, textx + (37 * ic->fontctx.cw) + offsetx, texty + ic->lineheight - (ic->large * 2), ic->cline);
+			if (cfg.ostyle > 2) {
+				gdImageLine(ic->im, textx + (50 * ic->fontctx.cw) + offsetx, texty - 6, textx + (50 * ic->fontctx.cw) + offsetx, texty + ic->lineheight - (ic->large * 2), ic->cline);
+			}
+		} else if (strlen(ic->dataend) > 0 && datainfo.count > 1 && listtype != LT_Top) {
+			if (datainfo.count < 100) {
+				snprintf(datebuff, 16, "sum of %" PRIu32 "", datainfo.count);
+			} else {
+				snprintf(datebuff, 16, "sum");
+			}
+			strncpy_nt(rxbuf, getvalue(datainfo.sumrx, 10, RT_Normal), 64);
+			strncpy_nt(txbuf, getvalue(datainfo.sumtx, 10, RT_Normal), 64);
+			strncpy_nt(totalbuf, getvalue(datainfo.sumrx + datainfo.sumtx, 10, RT_Normal), 64);
+
+			texty += 8;
+			imagestring(ic, FONT_ROLE_BODY, textx, texty, datebuff, ic->ctext);
+			imagestring(ic, FONT_ROLE_BODY, rx_edge - imagetextwidth(ic, FONT_ROLE_BODY, rxbuf), texty, rxbuf, ic->ctext);
+			imagestring(ic, FONT_ROLE_BODY, tx_edge - imagetextwidth(ic, FONT_ROLE_BODY, txbuf), texty, txbuf, ic->ctext);
+			imagestring(ic, FONT_ROLE_BODY, total_edge - imagetextwidth(ic, FONT_ROLE_BODY, totalbuf), texty, totalbuf, ic->ctext);
+
+			gdImageLine(ic->im, textx + (24 * ic->fontctx.cw) + offsetx, texty - 6, textx + (24 * ic->fontctx.cw) + offsetx, texty + ic->lineheight - (ic->large * 2), ic->cline);
+			gdImageLine(ic->im, textx + (37 * ic->fontctx.cw) + offsetx, texty - 6, textx + (37 * ic->fontctx.cw) + offsetx, texty + ic->lineheight - (ic->large * 2), ic->cline);
+			if (cfg.ostyle > 2) {
+				gdImageLine(ic->im, textx + (50 * ic->fontctx.cw) + offsetx, texty - 6, textx + (50 * ic->fontctx.cw) + offsetx, texty + ic->lineheight - (ic->large * 2), ic->cline);
+			}
+		}
+
+		if (monthrotatenotevisible) {
+			texty += ic->lineheight * 2;
+			imagestring(ic, FONT_ROLE_BODY, textx + ic->fontctx.cw, texty, monthrotatenote, ic->ctext);
+		}
+
+		dbdatalistfree(&datalist);
+		return;
+	}
+
 	if (listtype == LT_Top) { // top
 		snprintf(buffer, 512, "   #      day        rx           tx          total");
 	} else { // everything else
@@ -477,19 +673,11 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	if (cfg.ostyle > 2) {
 		strcat(buffer, "       avg. rate");
 		imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
-		if (ic->fontctx.mode == FONT_TTF) {
-			i = texty + ic->fontctx.ch + (ic->lineheight + 8 - ic->fontctx.ch) / 2;
-		} else {
-			i = texty + ic->lineheight + 4;
-		}
+		i = texty + ic->lineheight + 4;
 		gdImageLine(ic->im, textx + 2, i, textx + (65 * ic->fontctx.cw) + offsetx + 2, i, ic->cline);
 	} else {
 		imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
-		if (ic->fontctx.mode == FONT_TTF) {
-			i = texty + ic->fontctx.ch + (ic->lineheight + 8 - ic->fontctx.ch) / 2;
-		} else {
-			i = texty + ic->lineheight + 4;
-		}
+		i = texty + ic->lineheight + 4;
 		gdImageLine(ic->im, textx + 2, i, textx + (50 * ic->fontctx.cw) + offsetx - 4, i, ic->cline);
 	}
 
