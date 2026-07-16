@@ -184,23 +184,6 @@ static int imagettftextwidth(const IMAGECONTENT *ic, const double ptsize, const 
 	return brect[2];
 }
 
-static int imagettftextheight(const IMAGECONTENT *ic, const double ptsize, const char *text)
-{
-	int brect[8];
-	char *err;
-
-	if (text == NULL || text[0] == '\0') {
-		return 0;
-	}
-
-	err = imagettfbbox(ic, ptsize, 0.0, text, brect);
-	if (err != NULL) {
-		return 0;
-	}
-
-	return brect[1] - brect[7];
-}
-
 static int imagettfinitmetrics(IMAGECONTENT *ic)
 {
 	int brect[8], template_cw, digit_cw, value_w;
@@ -525,27 +508,54 @@ void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int 
 
 		if (ic->fontctx.mode == FONT_TTF) {
 			int title_h, date_h;
-
 #if HAVE_DECL_GDIMAGESTRINGFT
-			title_h = imagettftextheight(ic, ic->fontctx.ptsize * ic->fontctx.title_scale, buffer);
-			if (title_h < 1) {
-				title_h = imagefontheight(ic, FONT_ROLE_HEADER);
-			}
-#else
-			title_h = imagefontheight(ic, FONT_ROLE_HEADER);
+			int brect[8], ink_h, ink_top, ink_bot;
+			char *err;
 #endif
+
+			title_h = imagefontheight(ic, FONT_ROLE_HEADER);
 			date_h = imagefontheight(ic, FONT_ROLE_AXIS);
 
-			title_y = rect_top + (rect_bottom - rect_top - title_h) / 2 - 2;
-			date_y = rect_top + (rect_bottom - rect_top - date_h) / 2 - 2;
+			/* Center the ascent→baseline band (ignore descenders like 'y' in "daily")
+			 * so cap-height titles get equal padding above/below in the header bar. */
+#if HAVE_DECL_GDIMAGESTRINGFT
+			err = imagettfbbox(ic, ic->fontctx.ptsize * ic->fontctx.title_scale, 0.0, buffer, brect);
+			if (err == NULL) {
+				ink_h = -brect[7];
+				if (ink_h < 1) {
+					ink_h = ic->fontctx.header_ascent;
+				}
+				title_y = rect_top + (rect_bottom - rect_top - ink_h) / 2 - ic->fontctx.header_ascent - brect[7];
+				ink_top = title_y + ic->fontctx.header_ascent + brect[7];
+				ink_bot = title_y + ic->fontctx.header_ascent; /* baseline; descenders may extend below */
+				if (ink_top < rect_top + 1) {
+					title_y += (rect_top + 1) - ink_top;
+					ink_bot += (rect_top + 1) - ink_top;
+				}
+				if (ink_bot > rect_bottom - 1) {
+					title_y -= ink_bot - (rect_bottom - 1);
+				}
+			} else {
+				title_y = rect_top + (rect_bottom - rect_top - title_h) / 2;
+				if (title_y < rect_top + 1) {
+					title_y = rect_top + 1;
+				}
+				if (title_y + title_h > rect_bottom - 1) {
+					title_y = rect_bottom - title_h - 1;
+				}
+			}
+#else
+			title_y = rect_top + (rect_bottom - rect_top - title_h) / 2;
 			if (title_y < rect_top + 1) {
 				title_y = rect_top + 1;
 			}
-			if (date_y < rect_top + 1) {
-				date_y = rect_top + 1;
-			}
 			if (title_y + title_h > rect_bottom - 1) {
 				title_y = rect_bottom - title_h - 1;
+			}
+#endif
+			date_y = rect_top + (rect_bottom - rect_top - date_h) / 2;
+			if (date_y < rect_top + 1) {
+				date_y = rect_top + 1;
 			}
 			if (date_y + date_h > rect_bottom - 1) {
 				date_y = rect_bottom - date_h - 1;
