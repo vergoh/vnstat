@@ -553,6 +553,34 @@ void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int 
 				title_y = rect_bottom - title_h - 1;
 			}
 #endif
+			/* Same ascent→baseline centering for the header date. */
+#if HAVE_DECL_GDIMAGESTRINGFT
+			err = imagettfbbox(ic, ic->fontctx.ptsize * ic->fontctx.axis_scale, 0.0, datestring, brect);
+			if (err == NULL) {
+				ink_h = -brect[7];
+				if (ink_h < 1) {
+					ink_h = ic->fontctx.axis_ascent;
+				}
+				date_y = rect_top + (rect_bottom - rect_top - ink_h) / 2 - ic->fontctx.axis_ascent - brect[7];
+				ink_top = date_y + ic->fontctx.axis_ascent + brect[7];
+				ink_bot = date_y + ic->fontctx.axis_ascent;
+				if (ink_top < rect_top + 1) {
+					date_y += (rect_top + 1) - ink_top;
+					ink_bot += (rect_top + 1) - ink_top;
+				}
+				if (ink_bot > rect_bottom - 1) {
+					date_y -= ink_bot - (rect_bottom - 1);
+				}
+			} else {
+				date_y = rect_top + (rect_bottom - rect_top - date_h) / 2;
+				if (date_y < rect_top + 1) {
+					date_y = rect_top + 1;
+				}
+				if (date_y + date_h > rect_bottom - 1) {
+					date_y = rect_bottom - date_h - 1;
+				}
+			}
+#else
 			date_y = rect_top + (rect_bottom - rect_top - date_h) / 2;
 			if (date_y < rect_top + 1) {
 				date_y = rect_top + 1;
@@ -560,6 +588,7 @@ void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int 
 			if (date_y + date_h > rect_bottom - 1) {
 				date_y = rect_bottom - date_h - 1;
 			}
+#endif
 		}
 
 		gdImageFilledRectangle(ic->im, 2 + ic->showedge, rect_top, width - 3 - ic->showedge, rect_bottom, ic->cheader);
