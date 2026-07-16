@@ -634,13 +634,13 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 			}
 
 			texty += 8;
-			/* match builtin: right-align label with date column */
-			if (strlen(datebuff) <= 9) {
-				snprintf(buffer, 32, " %9s", cfg.estimatetext);
+			/* right-align label to the visible date string edge (no trailing field pad) */
+			if (strlen(datebuff) <= 8) {
+				snprintf(buffer, 32, "  %*s", getpadding(8, datebuff), datebuff);
 			} else {
-				snprintf(buffer, 32, "  %9s", cfg.estimatetext);
+				snprintf(buffer, 32, " %s", datebuff);
 			}
-			imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
+			imagestring(ic, FONT_ROLE_BODY, textx + imagetextwidth(ic, FONT_ROLE_BODY, buffer) - imagetextwidth(ic, FONT_ROLE_BODY, cfg.estimatetext), texty, cfg.estimatetext, ic->ctext);
 			imagestring(ic, FONT_ROLE_BODY, rx_edge - imagetextwidth(ic, FONT_ROLE_BODY, rxbuf), texty, rxbuf, ic->ctext);
 			imagestring(ic, FONT_ROLE_BODY, tx_edge - imagetextwidth(ic, FONT_ROLE_BODY, txbuf), texty, txbuf, ic->ctext);
 			imagestring(ic, FONT_ROLE_BODY, total_edge - imagetextwidth(ic, FONT_ROLE_BODY, totalbuf), texty, totalbuf, ic->ctext);
@@ -651,18 +651,28 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 				gdImageLine(ic->im, textx + (50 * ic->fontctx.cw) + offsetx, texty - 6, textx + (50 * ic->fontctx.cw) + offsetx, texty + ic->lineheight - (ic->large * 2), ic->cline);
 			}
 		} else if (strlen(ic->dataend) > 0 && datainfo.count > 1 && listtype != LT_Top) {
-			if (datainfo.count < 100) {
-				snprintf(datebuff, 16, "sum of %" PRIu32 "", datainfo.count);
+			int date_right;
+			char sumlabel[16];
+
+			/* datebuff still holds last row stamp — measure its right edge first */
+			if (strlen(datebuff) <= 8) {
+				snprintf(buffer, 32, "  %*s", getpadding(8, datebuff), datebuff);
 			} else {
-				snprintf(datebuff, 16, "sum");
+				snprintf(buffer, 32, " %s", datebuff);
+			}
+			date_right = textx + imagetextwidth(ic, FONT_ROLE_BODY, buffer);
+
+			if (datainfo.count < 100) {
+				snprintf(sumlabel, 16, "sum of %" PRIu32 "", datainfo.count);
+			} else {
+				snprintf(sumlabel, 16, "sum");
 			}
 			strncpy_nt(rxbuf, getvalue(datainfo.sumrx, 10, RT_Normal), 64);
 			strncpy_nt(txbuf, getvalue(datainfo.sumtx, 10, RT_Normal), 64);
 			strncpy_nt(totalbuf, getvalue(datainfo.sumrx + datainfo.sumtx, 10, RT_Normal), 64);
 
 			texty += 8;
-			snprintf(buffer, 32, " %9s", datebuff);
-			imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
+			imagestring(ic, FONT_ROLE_BODY, date_right - imagetextwidth(ic, FONT_ROLE_BODY, sumlabel), texty, sumlabel, ic->ctext);
 			imagestring(ic, FONT_ROLE_BODY, rx_edge - imagetextwidth(ic, FONT_ROLE_BODY, rxbuf), texty, rxbuf, ic->ctext);
 			imagestring(ic, FONT_ROLE_BODY, tx_edge - imagetextwidth(ic, FONT_ROLE_BODY, txbuf), texty, txbuf, ic->ctext);
 			imagestring(ic, FONT_ROLE_BODY, total_edge - imagetextwidth(ic, FONT_ROLE_BODY, totalbuf), texty, totalbuf, ic->ctext);
