@@ -261,6 +261,7 @@ static int imagettfinitmetrics(IMAGECONTENT *ic)
 	if (ic->fontctx.header_ch < 1) {
 		ic->fontctx.header_ch = 1;
 	}
+	ic->fontctx.header_ascent = -brect[7];
 	ic->fontctx.header_h = ic->fontctx.header_ch + 16;
 	if (ic->fontctx.header_h < 24) {
 		ic->fontctx.header_h = 24;
@@ -275,6 +276,7 @@ static int imagettfinitmetrics(IMAGECONTENT *ic)
 	if (ic->fontctx.axis_ch < 1) {
 		ic->fontctx.axis_ch = 1;
 	}
+	ic->fontctx.axis_ascent = -brect[7];
 
 	ic->lineheight = ic->fontctx.ch + 2;
 
@@ -289,6 +291,8 @@ int imagefontinit(IMAGECONTENT *ic, const int largefonts)
 	ic->fontctx.title_scale = 1.5;
 	ic->fontctx.axis_scale = 0.83;
 	ic->fontctx.ascent = 0;
+	ic->fontctx.header_ascent = 0;
+	ic->fontctx.axis_ascent = 0;
 	ic->fontctx.ttfpath[0] = '\0';
 	ic->fontctx.ptsize = 0.0;
 
@@ -357,7 +361,7 @@ void imagefontcleanup(void)
 void imagestring(IMAGECONTENT *ic, const fontrole_t role, const int x, const int y, const char *text, const int color)
 {
 #if HAVE_DECL_GDIMAGESTRINGFT
-	int brect[8], baseline_y;
+	int brect[8], baseline_y, ascent;
 	double ptsize;
 	char *err;
 #endif
@@ -372,15 +376,21 @@ void imagestring(IMAGECONTENT *ic, const fontrole_t role, const int x, const int
 	}
 
 #if HAVE_DECL_GDIMAGESTRINGFT
-	ptsize = imageroleptsize(ic, role);
-	err = imagettfbbox(ic, ptsize, 0.0, text, brect);
-	if (err != NULL) {
-		if (debug) {
-			printf("gdImageStringFT measure failed: %s\n", err);
-		}
-		return;
+	switch (role) {
+		case FONT_ROLE_AXIS:
+			ascent = ic->fontctx.axis_ascent;
+			break;
+		case FONT_ROLE_TITLE:
+		case FONT_ROLE_HEADER:
+			ascent = ic->fontctx.header_ascent;
+			break;
+		case FONT_ROLE_BODY:
+		default:
+			ascent = ic->fontctx.ascent;
+			break;
 	}
-	baseline_y = y - brect[7];
+	ptsize = imageroleptsize(ic, role);
+	baseline_y = y + ascent;
 	err = gdImageStringFT(ic->im, brect, color, ic->fontctx.ttfpath, ptsize, 0.0, x, baseline_y, (char *)text);
 	if (err != NULL && debug) {
 		printf("gdImageStringFT failed: %s\n", err);

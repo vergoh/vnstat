@@ -38,7 +38,9 @@ typedef struct {
 	fontmode_t mode;
 	gdFontPtr body, axis, title, header, footer;
 	int cw, ch; /* body metrics for layout */
-	int ascent; /* body ascender for TTF top-left → baseline */
+	int ascent; /* body: shared TTF baseline offset from y */
+	int header_ascent; /* title/header role baseline offset */
+	int axis_ascent; /* axis role baseline offset */
 	int header_ch; /* measured header/title glyph height */
 	int axis_ch; /* measured axis/date glyph height */
 	int header_h; /* title bar height in pixels */
