@@ -310,7 +310,25 @@ isn't specific, mode 1 will be used.
 
 .TP
 .B "-L, --large"
-Use large fonts in output.
+Use large fonts in output. When a TrueType font is selected with
+.B "--font"
+or
+.BR FontFile ,
+this multiplies the font size by 1.5.
+
+.TP
+.BI "--font " "file[:size]|:size"
+Use TrueType font
+.I file
+for image text, optionally with point
+.IR size .
+Specifying only
+.BI : size
+overrides the configured
+.B FontSize
+while keeping
+.BR FontFile .
+libGD must provide FreeType support and the font file must be readable.
 
 .TP
 .BI "--limit " limit
@@ -489,7 +507,12 @@ file /home/me/vnstat.cfg to standard output (stdout).
 .SH RESTRICTIONS
 
 Depending on the built-in fonts provided by the GD library, not all characters
-may end up shown correctly when a UTF-8 locale is used.
+may end up shown correctly when a UTF-8 locale is used. Configuring a Unicode
+capable TrueType font with
+.B FontFile
+or
+.B "--font"
+avoids this limitation for rendered text.
 .PP
 Using long date output formats may cause misalignment in shown columns if the
 length of the date exceeds the fixed size allocation.

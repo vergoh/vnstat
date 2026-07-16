@@ -591,8 +591,30 @@ Show hours with rate instead of transferred amount. 1 = enabled, 0 = disabled.
 Scale output to given percent. Value range: 50..500
 
 .TP
+.B FontFile
+Path to a TrueType (TTF) font file used for image text rendering. Leave empty
+to use the libGD built-in bitmap fonts (default). When set, libGD must have
+been built with FreeType support and the file must be readable; otherwise
+.B vnstati
+exits with an error. A monospace font generally preserves list column
+alignment better than a proportional font.
+
+.TP
+.B FontSize
+Point size used for the body text when
+.B FontFile
+is set. Value range: 6..72. Default: 12. Title and axis labels use fixed
+ratios relative to this size. Has no effect when
+.B FontFile
+is empty.
+
+.TP
 .B LargeFonts
-Increase the size of used fonts. 1 = enabled, 0 = disabled.
+Increase the size of used fonts. 1 = enabled, 0 = disabled. When a
+.B FontFile
+is configured, this multiplies
+.B FontSize
+by 1.5 instead of switching built-in font faces.
 
 .TP
 .B LineSpacingAdjustment

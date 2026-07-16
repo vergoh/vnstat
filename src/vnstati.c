@@ -85,6 +85,7 @@ int main(int argc, char *argv[])
 	db_close();
 
 	if (ic.im == NULL) {
+		imagefontcleanup();
 		return 1;
 	}
 
@@ -92,6 +93,7 @@ int main(int argc, char *argv[])
 	scaleimage(&ic);
 #endif
 	writeoutput(&p, &ic);
+	imagefontcleanup();
 
 	if (debug)
 		printf("File written, all done\n");
@@ -150,6 +152,7 @@ void showihelp(const IPARAMS *p)
 		printf(" (default)");
 	}
 	printf("\n");
+	printf("      --font <file[:size]|:size>         use TTF font file and/or size\n");
 	printf("      -o,  --output <file>               select output filename\n");
 	printf("      -c,  --cache <minutes>             update output only when too old\n");
 	printf("      -i,  --iface <interface>           select interface");
@@ -323,6 +326,58 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 			}
 		} else if (strcmp(argv[currentarg], "--altdate") == 0) {
 			ic->altdate = 1;
+		} else if (strcmp(argv[currentarg], "--font") == 0) {
+			if (currentarg + 1 < argc) {
+				const char *spec = argv[currentarg + 1];
+				const char *colon = strrchr(spec, ':');
+				int size_only = 0, has_size = 0;
+				int fontsize = 0;
+
+				if (colon != NULL && colon[1] != '\0') {
+					const char *p = colon + 1;
+					has_size = 1;
+					while (*p != '\0') {
+						if (!isdigit((unsigned char)*p)) {
+							has_size = 0;
+							break;
+						}
+						p++;
+					}
+					if (has_size) {
+						fontsize = atoi(colon + 1);
+						if (fontsize < 6 || fontsize > 72) {
+							fprintf(stderr, "Error: Invalid font size \"%s\" for --font. Supported value range: 6 <= N <= 72\n", colon + 1);
+							exit(EXIT_FAILURE);
+						}
+						if (colon == spec) {
+							size_only = 1;
+						}
+					}
+				}
+
+				if (size_only) {
+					cfg.fontsize = fontsize;
+				} else if (has_size) {
+					size_t pathlen = (size_t)(colon - spec);
+					if (pathlen == 0 || pathlen >= sizeof(cfg.fontfile)) {
+						fprintf(stderr, "Error: Invalid font file path for --font.\n");
+						exit(EXIT_FAILURE);
+					}
+					memcpy(cfg.fontfile, spec, pathlen);
+					cfg.fontfile[pathlen] = '\0';
+					cfg.fontsize = fontsize;
+				} else {
+					strncpy_nt(cfg.fontfile, spec, 512);
+				}
+
+				if (debug) {
+					printf("Font: file \"%s\", size %d\n", cfg.fontfile, cfg.fontsize);
+				}
+				currentarg++;
+			} else {
+				fprintf(stderr, "Error: Font parameter for --font missing.\n");
+				exit(EXIT_FAILURE);
+			}
 		} else if ((strcmp(argv[currentarg], "-L") == 0) || (strcmp(argv[currentarg], "--large")) == 0) {
 			cfg.largefonts = 1;
 		} else if ((strcmp(argv[currentarg], "-S") == 0) || (strcmp(argv[currentarg], "--small")) == 0) {
@@ -621,7 +676,9 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 		ic->lineheight = 12;
 		ic->large = 0;
 	}
-	imagefontinit(ic, cfg.largefonts);
+	if (!imagefontinit(ic, cfg.largefonts)) {
+		exit(EXIT_FAILURE);
+	}
 }
 
 void validateinput(const IPARAMS *p)

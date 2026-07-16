@@ -305,7 +305,11 @@ void printcfgfile(void)
 	defaultcomment(cfg.linespaceadjust == LINESPACEADJUST);
 	printf("LineSpacingAdjustment %d\n", cfg.linespaceadjust);
 	defaultcomment(cfg.imagescale == IMAGESCALE);
-	printf("ImageScale %d\n\n", cfg.imagescale);
+	printf("ImageScale %d\n", cfg.imagescale);
+	defaultcomment(strcmp(cfg.fontfile, FONTFILE) == 0);
+	printf("FontFile \"%s\"\n", cfg.fontfile);
+	defaultcomment(cfg.fontsize == FONTSIZE);
+	printf("FontSize %d\n\n", cfg.fontsize);
 
 	printf("# 5 minutes graph size control\n");
 	defaultcomment(cfg.fivegresultcount == FIVEGRESULTCOUNT);

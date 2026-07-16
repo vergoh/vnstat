@@ -409,16 +409,16 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	rowcount += datainfo.count;
 
 	width = 83 * ic->fontctx.cw + 2 + (ic->large * 2);
-	height = 62 + 3 * ic->lineheight;
+	height = 62 + (ic->fontctx.header_h - 24) + 3 * ic->lineheight;
 
 	// less space needed when no estimate or sum is shown
 	if (!estimatevisible && !(strlen(ic->dataend) > 0 && datainfo.count > 1 && listtype != LT_Top)) {
-		height = 62 + 2 * ic->lineheight;
+		height = 62 + (ic->fontctx.header_h - 24) + 2 * ic->lineheight;
 	}
 
 	// exception for 5min and Hour when having sum shown
 	if ((listtype == LT_5min || listtype == LT_Hour) && datainfo.count > 1 && strlen(ic->dataend) > 0) {
-		height = 62 + 3 * ic->lineheight;
+		height = 62 + (ic->fontctx.header_h - 24) + 3 * ic->lineheight;
 	}
 
 	if (ismonthrotatenoteneeded()) {
@@ -429,13 +429,13 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 
 	// "no data available"
 	if (!datainfo.count) {
-		height = 98 + (ic->large * 12);
+		height = 98 + (ic->large * 12) + (ic->fontctx.header_h - 24);
 		monthrotatenotevisible = 0;
 	}
 
 	if (!ic->showheader) {
-		headermod = 26;
-		height -= 22;
+		headermod = ic->fontctx.header_h + 2;
+		height -= ic->fontctx.header_h - 2;
 	} else {
 		headermod = 0;
 	}
@@ -448,7 +448,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	if (datainfo.count) {
 		if (listtype == LT_Top) {
 			if (cfg.ostyle <= 2) {
-				drawlegend(ic, 66 * ic->fontctx.cw + 2, 40 - headermod, 0);
+				drawlegend(ic, 66 * ic->fontctx.cw + 2, ic->fontctx.header_h + 16 - headermod, 0);
 			}
 			current = time(NULL);
 			d = localtime(&current);
@@ -456,18 +456,18 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		} else { // everything else
 			if (cfg.ostyle > 2) {
 				if (estimateavailable && cfg.barshowsrate) {
-					drawlegend(ic, 72 * ic->fontctx.cw, 40 - headermod, 1);
+					drawlegend(ic, 72 * ic->fontctx.cw, ic->fontctx.header_h + 16 - headermod, 1);
 				} else {
-					drawlegend(ic, 72 * ic->fontctx.cw, 40 - headermod, 0);
+					drawlegend(ic, 72 * ic->fontctx.cw, ic->fontctx.header_h + 16 - headermod, 0);
 				}
 			} else {
-				drawlegend(ic, 64 * ic->fontctx.cw + 1, 40 - headermod, 0);
+				drawlegend(ic, 64 * ic->fontctx.cw + 1, ic->fontctx.header_h + 16 - headermod, 0);
 			}
 		}
 	}
 
 	textx = 10;
-	texty = 40 - headermod;
+	texty = ic->fontctx.header_h + 16 - headermod;
 
 	if (listtype == LT_Top) { // top
 		snprintf(buffer, 512, "   #      day        rx           tx          total");
@@ -521,9 +521,9 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 			}
 			if (strcmp(datebuff, daybuff) == 0) {
 				if (cfg.ostyle > 2) {
-					gdImageFilledRectangle(ic->im, textx + 2, texty + 2 - (ic->large * 1), textx + (65 * ic->fontctx.cw) + offsetx + 2, texty + 11 + (ic->large * 3), ic->cbgoffset);
+					gdImageFilledRectangle(ic->im, textx + 2, texty + 2, textx + (65 * ic->fontctx.cw) + offsetx + 2, texty + ic->fontctx.ch - 2, ic->cbgoffset);
 				} else {
-					gdImageFilledRectangle(ic->im, textx + 2, texty + 2 - (ic->large * 1), textx + (50 * ic->fontctx.cw) + offsetx - 4, texty + 11 + (ic->large * 3), ic->cbgoffset);
+					gdImageFilledRectangle(ic->im, textx + 2, texty + 2, textx + (50 * ic->fontctx.cw) + offsetx - 4, texty + ic->fontctx.ch - 2, ic->cbgoffset);
 				}
 			}
 		} else {

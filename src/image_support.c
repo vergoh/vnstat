@@ -134,11 +134,124 @@ static gdFontPtr imagerolefont(const IMAGECONTENT *ic, const fontrole_t role)
 	}
 }
 
-void imagefontinit(IMAGECONTENT *ic, const int largefonts)
+static int imageroleusesbuiltin(const IMAGECONTENT *ic, const fontrole_t role)
 {
-	ic->fontctx.mode = FONT_BUILTIN;
+	if (ic->fontctx.mode != FONT_TTF || role == FONT_ROLE_FOOTER) {
+		return 1;
+	}
+	return 0;
+}
+
+static double imageroleptsize(const IMAGECONTENT *ic, const fontrole_t role)
+{
+	switch (role) {
+		case FONT_ROLE_AXIS:
+			return ic->fontctx.ptsize * ic->fontctx.axis_scale;
+		case FONT_ROLE_TITLE:
+		case FONT_ROLE_HEADER:
+			return ic->fontctx.ptsize * ic->fontctx.title_scale;
+		case FONT_ROLE_BODY:
+		default:
+			return ic->fontctx.ptsize;
+	}
+}
+
+#if HAVE_DECL_GDIMAGESTRINGFT
+static int fontcache_ready = 0;
+
+static char *imagettfbbox(const IMAGECONTENT *ic, const double ptsize, const double angle, const char *text, int *brect)
+{
+	return gdImageStringFT(NULL, brect, 0, ic->fontctx.ttfpath, ptsize, angle, 0, 0, (char *)text);
+}
+
+static int imagettftextwidth(const IMAGECONTENT *ic, const double ptsize, const char *text)
+{
+	int brect[8];
+	char *err;
+
+	if (text == NULL || text[0] == '\0') {
+		return 0;
+	}
+
+	err = imagettfbbox(ic, ptsize, 0.0, text, brect);
+	if (err != NULL) {
+		return 0;
+	}
+
+	return brect[2] - brect[0];
+}
+
+static int imagettfinitmetrics(IMAGECONTENT *ic)
+{
+	int i, digit_w, max_w = 0, brect[8];
+	char digit[2], *err;
+	const char *errprefix = "Error: Unable to use FontFile";
+
+	if (gdFontCacheSetup() != 0) {
+		fprintf(stderr, "Error: gdFontCacheSetup failed.\n");
+		return 0;
+	}
+	fontcache_ready = 1;
+
+	for (i = 0; i < 10; i++) {
+		digit[0] = (char)('0' + i);
+		digit[1] = '\0';
+		err = imagettfbbox(ic, ic->fontctx.ptsize, 0.0, digit, brect);
+		if (err != NULL) {
+			fprintf(stderr, "%s \"%s\": %s\n", errprefix, ic->fontctx.ttfpath, err);
+			return 0;
+		}
+		digit_w = brect[2] - brect[0];
+		if (digit_w > max_w) {
+			max_w = digit_w;
+		}
+	}
+
+	err = imagettfbbox(ic, ic->fontctx.ptsize, 0.0, "Ay", brect);
+	if (err != NULL) {
+		fprintf(stderr, "%s \"%s\": %s\n", errprefix, ic->fontctx.ttfpath, err);
+		return 0;
+	}
+
+	ic->fontctx.cw = max_w;
+	if (ic->fontctx.cw < 1) {
+		ic->fontctx.cw = 1;
+	}
+	ic->fontctx.ch = brect[1] - brect[7];
+	if (ic->fontctx.ch < 1) {
+		ic->fontctx.ch = 1;
+	}
+	ic->fontctx.ascent = -brect[7];
+	ic->fontctx.scale = (double)ic->fontctx.cw / 6.0;
+
+	err = imagettfbbox(ic, ic->fontctx.ptsize * ic->fontctx.title_scale, 0.0, "Ay", brect);
+	if (err != NULL) {
+		fprintf(stderr, "%s \"%s\": %s\n", errprefix, ic->fontctx.ttfpath, err);
+		return 0;
+	}
+	ic->fontctx.header_h = (brect[1] - brect[7]) + 8;
+	if (ic->fontctx.header_h < 24) {
+		ic->fontctx.header_h = 24;
+	}
+
+	ic->lineheight = ic->fontctx.ch;
+	if (ic->lineheight < (int)(12.0 * ic->fontctx.scale + 0.5)) {
+		ic->lineheight = (int)(12.0 * ic->fontctx.scale + 0.5);
+	}
+
+	return 1;
+}
+#endif
+
+int imagefontinit(IMAGECONTENT *ic, const int largefonts)
+{
 	ic->fontctx.header = gdFontGetGiant();
 	ic->fontctx.footer = gdFontGetTiny();
+	ic->fontctx.title_scale = 1.5;
+	ic->fontctx.axis_scale = 0.83;
+	ic->fontctx.ascent = 0;
+	ic->fontctx.ttfpath[0] = '\0';
+	ic->fontctx.ptsize = 0.0;
 
 	if (largefonts) {
 		ic->fontctx.body = gdFontGetLarge();
@@ -150,39 +263,183 @@ void imagefontinit(IMAGECONTENT *ic, const int largefonts)
 		ic->fontctx.title = gdFontGetLarge();
 	}
 
-	ic->fontctx.cw = ic->fontctx.body->w;
-	ic->fontctx.ch = ic->fontctx.body->h;
+	if (cfg.fontfile[0] == '\0') {
+		ic->fontctx.mode = FONT_BUILTIN;
+		ic->fontctx.cw = ic->fontctx.body->w;
+		ic->fontctx.ch = ic->fontctx.body->h;
+		ic->fontctx.header_h = 24;
+		ic->fontctx.scale = (double)ic->fontctx.cw / 6.0;
+		ic->lineheight = largefonts ? 16 : 12;
+		return 1;
+	}
+
+#if HAVE_DECL_GDIMAGESTRINGFT
+	if (access(cfg.fontfile, R_OK) != 0) {
+		fprintf(stderr, "Error: Unable to read FontFile \"%s\": %s\n", cfg.fontfile, strerror(errno));
+		return 0;
+	}
+
+	ic->fontctx.mode = FONT_TTF;
+	strncpy_nt(ic->fontctx.ttfpath, cfg.fontfile, 512);
+	ic->fontctx.ptsize = (double)cfg.fontsize;
+	if (largefonts) {
+		ic->fontctx.ptsize *= 1.5;
+	}
+
+	if (!imagettfinitmetrics(ic)) {
+		return 0;
+	}
+
+	if (debug) {
+		printf("TTF font: \"%s\" size %.1f cw %d ch %d scale %.3f lineheight %d header_h %d\n",
+			   ic->fontctx.ttfpath, ic->fontctx.ptsize, ic->fontctx.cw, ic->fontctx.ch,
+			   ic->fontctx.scale, ic->lineheight, ic->fontctx.header_h);
+	}
+
+	return 1;
+#else
+	fprintf(stderr, "Error: FontFile is set but libGD was built without FreeType/TTF support.\n");
+	return 0;
+#endif
+}
+
+void imagefontcleanup(void)
+{
+#if HAVE_DECL_GDIMAGESTRINGFT
+	if (fontcache_ready) {
+		gdFontCacheShutdown();
+		fontcache_ready = 0;
+	}
+#endif
 }
 
 void imagestring(IMAGECONTENT *ic, const fontrole_t role, const int x, const int y, const char *text, const int color)
 {
-	gdImageString(ic->im, imagerolefont(ic, role), x, y, (unsigned char *)text, color);
+#if HAVE_DECL_GDIMAGESTRINGFT
+	int brect[8], baseline_y;
+	double ptsize;
+	char *err;
+#endif
+
+	if (text == NULL || text[0] == '\0') {
+		return;
+	}
+
+	if (imageroleusesbuiltin(ic, role)) {
+		gdImageString(ic->im, imagerolefont(ic, role), x, y, (unsigned char *)text, color);
+		return;
+	}
+
+#if HAVE_DECL_GDIMAGESTRINGFT
+	ptsize = imageroleptsize(ic, role);
+	err = imagettfbbox(ic, ptsize, 0.0, text, brect);
+	if (err != NULL) {
+		if (debug) {
+			printf("gdImageStringFT measure failed: %s\n", err);
+		}
+		return;
+	}
+	baseline_y = y - brect[7];
+	err = gdImageStringFT(ic->im, brect, color, ic->fontctx.ttfpath, ptsize, 0.0, x, baseline_y, (char *)text);
+	if (err != NULL && debug) {
+		printf("gdImageStringFT failed: %s\n", err);
+	}
+#else
+	(void)x;
+	(void)y;
+	(void)color;
+#endif
 }
 
 void imagestringup(IMAGECONTENT *ic, const fontrole_t role, const int x, const int y, const char *text, const int color)
 {
-	gdImageStringUp(ic->im, imagerolefont(ic, role), x, y, (unsigned char *)text, color);
+#if HAVE_DECL_GDIMAGESTRINGFT
+	int brect[8];
+	double ptsize;
+	char *err;
+#endif
+
+	if (text == NULL || text[0] == '\0') {
+		return;
+	}
+
+	if (imageroleusesbuiltin(ic, role)) {
+		gdImageStringUp(ic->im, imagerolefont(ic, role), x, y, (unsigned char *)text, color);
+		return;
+	}
+
+#if HAVE_DECL_GDIMAGESTRINGFT
+	/* Phase 2: functional vertical TTF; graph layout polish is Phase 3 */
+	ptsize = imageroleptsize(ic, role);
+	err = gdImageStringFT(ic->im, brect, color, ic->fontctx.ttfpath, ptsize, M_PI / 2.0, x, y, (char *)text);
+	if (err != NULL && debug) {
+		printf("gdImageStringFT (vertical) failed: %s\n", err);
+	}
+#else
+	(void)x;
+	(void)y;
+	(void)color;
+#endif
 }
 
 int imagetextwidth(IMAGECONTENT *ic, const fontrole_t role, const char *text)
 {
-	return ((int)strlen(text)) * imagerolefont(ic, role)->w;
+	if (text == NULL || text[0] == '\0') {
+		return 0;
+	}
+
+	if (imageroleusesbuiltin(ic, role)) {
+		return ((int)strlen(text)) * imagerolefont(ic, role)->w;
+	}
+
+#if HAVE_DECL_GDIMAGESTRINGFT
+	return imagettftextwidth(ic, imageroleptsize(ic, role), text);
+#else
+	return 0;
+#endif
 }
 
 int imagefontwidth(IMAGECONTENT *ic, const fontrole_t role)
 {
-	return imagerolefont(ic, role)->w;
+	if (imageroleusesbuiltin(ic, role)) {
+		return imagerolefont(ic, role)->w;
+	}
+
+	switch (role) {
+		case FONT_ROLE_AXIS:
+			return (int)(ic->fontctx.cw * ic->fontctx.axis_scale + 0.5);
+		case FONT_ROLE_TITLE:
+		case FONT_ROLE_HEADER:
+			return (int)(ic->fontctx.cw * ic->fontctx.title_scale + 0.5);
+		case FONT_ROLE_BODY:
+		default:
+			return ic->fontctx.cw;
+	}
 }
 
 int imagefontheight(IMAGECONTENT *ic, const fontrole_t role)
 {
-	return imagerolefont(ic, role)->h;
+	if (imageroleusesbuiltin(ic, role)) {
+		return imagerolefont(ic, role)->h;
+	}
+
+	switch (role) {
+		case FONT_ROLE_AXIS:
+			return (int)(ic->fontctx.ch * ic->fontctx.axis_scale + 0.5);
+		case FONT_ROLE_TITLE:
+		case FONT_ROLE_HEADER:
+			return (int)(ic->fontctx.ch * ic->fontctx.title_scale + 0.5);
+		case FONT_ROLE_BODY:
+		default:
+			return ic->fontctx.ch;
+	}
 }
 
 void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int height)
 {
 	const struct tm *d;
 	char datestring[64], buffer[512];
+	int header_bottom, title_y, date_y;
 
 	/* get time in given format */
 	d = localtime(&ic->interface.updated);
@@ -192,6 +449,15 @@ void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int 
 	gdImageFill(ic->im, 0, 0, ic->cbackground);
 	if (ic->showedge) {
 		gdImageRectangle(ic->im, 0, 0, width - 1, height - 1, ic->cedge);
+	}
+
+	header_bottom = ic->fontctx.header_h;
+	title_y = 5 + ic->showedge;
+	if (ic->fontctx.mode == FONT_TTF) {
+		title_y = 4 + ic->showedge + (ic->fontctx.header_h - imagefontheight(ic, FONT_ROLE_HEADER)) / 2;
+		if (title_y < 2 + ic->showedge) {
+			title_y = 2 + ic->showedge;
+		}
 	}
 
 	/* titlebox with title */
@@ -207,15 +473,19 @@ void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int 
 			}
 		}
 
-		gdImageFilledRectangle(ic->im, 2 + ic->showedge, 2 + ic->showedge, width - 3 - ic->showedge, 24, ic->cheader);
-		imagestring(ic, FONT_ROLE_HEADER, 12, 5 + ic->showedge, buffer, ic->cheadertitle);
+		gdImageFilledRectangle(ic->im, 2 + ic->showedge, 2 + ic->showedge, width - 3 - ic->showedge, header_bottom, ic->cheader);
+		imagestring(ic, FONT_ROLE_HEADER, 12, title_y, buffer, ic->cheadertitle);
 	}
 
 	/* date */
+	date_y = 9 + ic->showedge - (ic->large * 3);
+	if (ic->fontctx.mode == FONT_TTF && ic->showheader && !ic->altdate) {
+		date_y = 4 + ic->showedge + (ic->fontctx.header_h - imagefontheight(ic, FONT_ROLE_AXIS)) / 2;
+	}
 	if (!ic->showheader || ic->altdate) {
 		imagestring(ic, FONT_ROLE_AXIS, 5 + ic->showedge, height - 12 - ic->showedge - (ic->large * 3), datestring, ic->cvnstat);
 	} else {
-		imagestring(ic, FONT_ROLE_AXIS, width - (imagetextwidth(ic, FONT_ROLE_AXIS, datestring) + 12), 9 + ic->showedge - (ic->large * 3), datestring, ic->cheaderdate);
+		imagestring(ic, FONT_ROLE_AXIS, width - (imagetextwidth(ic, FONT_ROLE_AXIS, datestring) + 12), date_y, datestring, ic->cheaderdate);
 	}
 
 	/* generator */

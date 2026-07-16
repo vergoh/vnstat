@@ -23,7 +23,7 @@
 
 typedef enum {
 	FONT_BUILTIN = 0,
-	FONT_TTF /* unused until Phase 2 */
+	FONT_TTF
 } fontmode_t;
 
 typedef enum {
@@ -37,7 +37,14 @@ typedef enum {
 typedef struct {
 	fontmode_t mode;
 	gdFontPtr body, axis, title, header, footer;
-	int cw, ch; /* body metrics (= body->w / body->h) */
+	int cw, ch; /* body metrics for layout */
+	int ascent; /* body ascender for TTF top-left → baseline */
+	int header_h; /* title bar height in pixels */
+	char ttfpath[512];
+	double ptsize; /* effective body point size after LargeFonts */
+	double scale; /* cw / 6.0 relative to small builtin */
+	double title_scale; /* title/header size ratio vs body */
+	double axis_scale; /* axis label size ratio vs body */
 } IMAGEFONT;
 
 typedef struct {
@@ -57,7 +64,8 @@ typedef struct {
 } HOURDATA;
 
 void initimagecontent(IMAGECONTENT *ic);
-void imagefontinit(IMAGECONTENT *ic, const int largefonts);
+int imagefontinit(IMAGECONTENT *ic, const int largefonts);
+void imagefontcleanup(void);
 void imagestring(IMAGECONTENT *ic, const fontrole_t role, const int x, const int y, const char *text, const int color);
 void imagestringup(IMAGECONTENT *ic, const fontrole_t role, const int x, const int y, const char *text, const int color);
 int imagetextwidth(IMAGECONTENT *ic, const fontrole_t role, const char *text);
