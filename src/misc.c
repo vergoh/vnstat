@@ -157,11 +157,7 @@ char *getvalue(const uint64_t bytes, const int len, const RequestType type)
 	}
 
 	if ((type == RT_Estimate) && (bytes == 0)) {
-		declen = len - (int)strlen(getunitprefix(2)) - 2;
-		if (declen < 2) {
-			declen = 2;
-		}
-		snprintf(buffer, 64, "%*s  %*s", declen, "--", (int)strlen(getunitprefix(2)), " ");
+		snprintf(buffer, 64, "%*s", len, "--");
 	} else {
 		for (i = UNITPREFIXCOUNT - 1; i > 0; i--) {
 			limit = (uint64_t)(pow(p, i - 1)) * 1000;

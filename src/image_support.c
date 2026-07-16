@@ -556,7 +556,7 @@ void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int 
 
 void drawlegend(IMAGECONTENT *ic, const int x, const int y, const short israte)
 {
-	int sq, sq_y, gap, tx_x, rate_x;
+	int sq, sq_y;
 
 	if (!ic->showlegend) {
 		return;
@@ -564,33 +564,32 @@ void drawlegend(IMAGECONTENT *ic, const int x, const int y, const short israte)
 
 	sq = ic->fontctx.cw;
 	if (ic->fontctx.mode == FONT_TTF) {
+		int gap, sep, x_cur, label_w;
+
 		sq_y = y + (ic->fontctx.ch - sq) / 2;
 		if (sq_y < y) {
 			sq_y = y;
 		}
 		gap = 4;
+		sep = sq + 2 * gap;
+		x_cur = israte ? (x - 12) : x;
 
-		if (!israte) {
-			imagestring(ic, FONT_ROLE_BODY, x, y, "rx", ic->ctext);
-			gdImageFilledRectangle(ic->im, x - gap - sq, sq_y, x - gap - 1, sq_y + sq - 1, ic->crx);
-			gdImageRectangle(ic->im, x - gap - sq, sq_y, x - gap - 1, sq_y + sq - 1, ic->ctext);
+		/* [sq][gap][rx][sep][sq][gap][tx] — both labels share y */
+		gdImageFilledRectangle(ic->im, x_cur, sq_y, x_cur + sq - 1, sq_y + sq - 1, ic->crx);
+		gdImageRectangle(ic->im, x_cur, sq_y, x_cur + sq - 1, sq_y + sq - 1, ic->ctext);
+		x_cur += sq + gap;
+		imagestring(ic, FONT_ROLE_BODY, x_cur, y, "rx", ic->ctext);
+		label_w = imagetextwidth(ic, FONT_ROLE_BODY, "rx");
+		x_cur += label_w + sep;
 
-			tx_x = x + imagetextwidth(ic, FONT_ROLE_BODY, "rx") + 12;
-			imagestring(ic, FONT_ROLE_BODY, tx_x, y, "tx", ic->ctext);
-			gdImageFilledRectangle(ic->im, tx_x - gap - sq, sq_y, tx_x - gap - 1, sq_y + sq - 1, ic->ctx);
-			gdImageRectangle(ic->im, tx_x - gap - sq, sq_y, tx_x - gap - 1, sq_y + sq - 1, ic->ctext);
-		} else {
-			imagestring(ic, FONT_ROLE_BODY, x - 12, y, "rx", ic->ctext);
-			gdImageFilledRectangle(ic->im, x - 12 - gap - sq, sq_y, x - 12 - gap - 1, sq_y + sq - 1, ic->crx);
-			gdImageRectangle(ic->im, x - 12 - gap - sq, sq_y, x - 12 - gap - 1, sq_y + sq - 1, ic->ctext);
+		gdImageFilledRectangle(ic->im, x_cur, sq_y, x_cur + sq - 1, sq_y + sq - 1, ic->ctx);
+		gdImageRectangle(ic->im, x_cur, sq_y, x_cur + sq - 1, sq_y + sq - 1, ic->ctext);
+		x_cur += sq + gap;
+		imagestring(ic, FONT_ROLE_BODY, x_cur, y, "tx", ic->ctext);
 
-			tx_x = x - 12 + imagetextwidth(ic, FONT_ROLE_BODY, "rx") + 12;
-			imagestring(ic, FONT_ROLE_BODY, tx_x, y, "tx", ic->ctext);
-			gdImageFilledRectangle(ic->im, tx_x - gap - sq, sq_y, tx_x - gap - 1, sq_y + sq - 1, ic->ctx);
-			gdImageRectangle(ic->im, tx_x - gap - sq, sq_y, tx_x - gap - 1, sq_y + sq - 1, ic->ctext);
-
-			rate_x = tx_x + imagetextwidth(ic, FONT_ROLE_BODY, "tx") + 8;
-			imagestring(ic, FONT_ROLE_BODY, rate_x, y, "rate", ic->ctext);
+		if (israte) {
+			label_w = imagetextwidth(ic, FONT_ROLE_BODY, "tx");
+			imagestring(ic, FONT_ROLE_BODY, x_cur + label_w + gap, y, "rate", ic->ctext);
 		}
 		return;
 	}

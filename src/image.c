@@ -470,23 +470,31 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	texty = ic->fontctx.header_h + 16 - headermod;
 
 	if (ic->fontctx.mode == FONT_TTF) {
-		const int colpad = 4;
+		const int colpad = 8;
+		const char *sample = "00.00 GiB";
 		int rx_edge = textx + (24 * ic->fontctx.cw) + offsetx - colpad;
 		int tx_edge = textx + (37 * ic->fontctx.cw) + offsetx - colpad;
 		int total_edge = textx + (50 * ic->fontctx.cw) + offsetx - colpad;
 		int rate_edge = textx + (65 * ic->fontctx.cw) + offsetx - colpad;
+		int rx_dec, tx_dec, total_dec, sample_w, prefix_w, bar_y;
 		char rxbuf[64], txbuf[64], totalbuf[64], ratebuf[64];
 
-		/* column headers */
+		sample_w = imagetextwidth(ic, FONT_ROLE_BODY, sample);
+		prefix_w = imagetextwidth(ic, FONT_ROLE_BODY, "00");
+		rx_dec = rx_edge - sample_w + prefix_w;
+		tx_dec = tx_edge - sample_w + prefix_w;
+		total_dec = total_edge - sample_w + prefix_w;
+
+		/* column headers — 'r'/'t' on decimal; 'o' of total on decimal */
 		if (listtype == LT_Top) {
 			imagestring(ic, FONT_ROLE_BODY, textx, texty, "   #      day", ic->ctext);
 		} else {
 			snprintf(buffer, 512, " %8s", colname);
 			imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
 		}
-		imagestring(ic, FONT_ROLE_BODY, rx_edge - imagetextwidth(ic, FONT_ROLE_BODY, "rx"), texty, "rx", ic->ctext);
-		imagestring(ic, FONT_ROLE_BODY, tx_edge - imagetextwidth(ic, FONT_ROLE_BODY, "tx"), texty, "tx", ic->ctext);
-		imagestring(ic, FONT_ROLE_BODY, total_edge - imagetextwidth(ic, FONT_ROLE_BODY, "total"), texty, "total", ic->ctext);
+		imagestring(ic, FONT_ROLE_BODY, rx_dec, texty, "rx", ic->ctext);
+		imagestring(ic, FONT_ROLE_BODY, tx_dec, texty, "tx", ic->ctext);
+		imagestring(ic, FONT_ROLE_BODY, total_dec - imagetextwidth(ic, FONT_ROLE_BODY, "t"), texty, "total", ic->ctext);
 		if (cfg.ostyle > 2) {
 			imagestring(ic, FONT_ROLE_BODY, rate_edge - imagetextwidth(ic, FONT_ROLE_BODY, "avg. rate"), texty, "avg. rate", ic->ctext);
 			i = texty + ic->fontctx.ch + (ic->lineheight + 8 - ic->fontctx.ch) / 2;
@@ -563,21 +571,23 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 				imagestring(ic, FONT_ROLE_BODY, rate_edge - imagetextwidth(ic, FONT_ROLE_BODY, ratebuf), texty, ratebuf, ic->ctext);
 			}
 
+			/* center bar vertically in TTF glyph box (yend = ch-3, YBEGINOFFSET = -1) */
+			bar_y = texty + 1;
 			if (listtype == LT_Top) {
 				if (cfg.ostyle > 2) {
-					drawbar(ic, textx + (71 * ic->fontctx.cw) + 2, texty + 4, 9 * ic->fontctx.cw - 1, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+					drawbar(ic, textx + (71 * ic->fontctx.cw) + 2, bar_y, 9 * ic->fontctx.cw - 1, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 				} else {
-					drawbar(ic, textx + (56 * ic->fontctx.cw), texty + 4, 23 * ic->fontctx.cw + 3, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+					drawbar(ic, textx + (56 * ic->fontctx.cw), bar_y, 23 * ic->fontctx.cw + 3, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 				}
 			} else {
 				if (cfg.ostyle > 2) {
 					if (datalist_i->next == NULL && estimateavailable && cfg.barshowsrate) {
-						drawbar(ic, textx + (67 * ic->fontctx.cw) - 2, texty + 4, 13 * ic->fontctx.cw + 1, e_rx, e_tx, datainfo.max, 0);
+						drawbar(ic, textx + (67 * ic->fontctx.cw) - 2, bar_y, 13 * ic->fontctx.cw + 1, e_rx, e_tx, datainfo.max, 0);
 					} else {
-						drawbar(ic, textx + (67 * ic->fontctx.cw) - 2, texty + 4, 13 * ic->fontctx.cw + 1, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+						drawbar(ic, textx + (67 * ic->fontctx.cw) - 2, bar_y, 13 * ic->fontctx.cw + 1, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 					}
 				} else {
-					drawbar(ic, textx + (51 * ic->fontctx.cw) - 2, texty + 4, 28 * ic->fontctx.cw + 3, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+					drawbar(ic, textx + (51 * ic->fontctx.cw) - 2, bar_y, 28 * ic->fontctx.cw + 3, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 				}
 			}
 			texty += ic->lineheight + cfg.linespaceadjust;
@@ -613,12 +623,13 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 			strncpy_nt(totalbuf, getvalue(e_rx + e_tx, 10, RT_Estimate), 64);
 
 			if (cfg.estimatestyle) {
+				bar_y = texty - ic->lineheight + 1;
 				if (cfg.ostyle > 2) {
-					drawbar(ic, textx + (67 * ic->fontctx.cw) - 2, texty - ic->lineheight + 4, 13 * ic->fontctx.cw + 1, e_rx, e_tx, datainfo.max, 1);
-					drawbar(ic, textx + (67 * ic->fontctx.cw) - 2, texty - ic->lineheight + 4, 13 * ic->fontctx.cw + 1, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+					drawbar(ic, textx + (67 * ic->fontctx.cw) - 2, bar_y, 13 * ic->fontctx.cw + 1, e_rx, e_tx, datainfo.max, 1);
+					drawbar(ic, textx + (67 * ic->fontctx.cw) - 2, bar_y, 13 * ic->fontctx.cw + 1, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 				} else {
-					drawbar(ic, textx + (51 * ic->fontctx.cw) - 2, texty - ic->lineheight + 4, 28 * ic->fontctx.cw + 3, e_rx, e_tx, datainfo.max, 1);
-					drawbar(ic, textx + (51 * ic->fontctx.cw) - 2, texty - ic->lineheight + 4, 28 * ic->fontctx.cw + 3, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+					drawbar(ic, textx + (51 * ic->fontctx.cw) - 2, bar_y, 28 * ic->fontctx.cw + 3, e_rx, e_tx, datainfo.max, 1);
+					drawbar(ic, textx + (51 * ic->fontctx.cw) - 2, bar_y, 28 * ic->fontctx.cw + 3, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 				}
 			}
 
