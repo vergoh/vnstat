@@ -477,10 +477,20 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	if (cfg.ostyle > 2) {
 		strcat(buffer, "       avg. rate");
 		imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
-		gdImageLine(ic->im, textx + 2, texty + ic->lineheight + 4, textx + (65 * ic->fontctx.cw) + offsetx + 2, texty + ic->lineheight + 4, ic->cline);
+		if (ic->fontctx.mode == FONT_TTF) {
+			i = texty + ic->fontctx.ch + (ic->lineheight + 8 - ic->fontctx.ch) / 2;
+		} else {
+			i = texty + ic->lineheight + 4;
+		}
+		gdImageLine(ic->im, textx + 2, i, textx + (65 * ic->fontctx.cw) + offsetx + 2, i, ic->cline);
 	} else {
 		imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
-		gdImageLine(ic->im, textx + 2, texty + ic->lineheight + 4, textx + (50 * ic->fontctx.cw) + offsetx - 4, texty + ic->lineheight + 4, ic->cline);
+		if (ic->fontctx.mode == FONT_TTF) {
+			i = texty + ic->fontctx.ch + (ic->lineheight + 8 - ic->fontctx.ch) / 2;
+		} else {
+			i = texty + ic->lineheight + 4;
+		}
+		gdImageLine(ic->im, textx + 2, i, textx + (50 * ic->fontctx.cw) + offsetx - 4, i, ic->cline);
 	}
 
 	texty += ic->lineheight + 8;
@@ -584,10 +594,16 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		texty += ic->lineheight;
 	}
 
-	if (cfg.ostyle > 2) {
-		gdImageLine(ic->im, textx + 2, texty + 5 - (ic->large * 2), textx + (65 * ic->fontctx.cw) + offsetx + 2, texty + 5 - (ic->large * 2), ic->cline);
+	/* Rule centered between last data row and estimate/sum (drawn at texty + 8). */
+	if (ic->fontctx.mode == FONT_TTF) {
+		i = texty - ic->lineheight + ic->fontctx.ch + (ic->lineheight + 8 - ic->fontctx.ch) / 2;
 	} else {
-		gdImageLine(ic->im, textx + 2, texty + 5 - (ic->large * 2), textx + (50 * ic->fontctx.cw) + offsetx - 4, texty + 5 - (ic->large * 2), ic->cline);
+		i = texty + 5 - (ic->large * 2);
+	}
+	if (cfg.ostyle > 2) {
+		gdImageLine(ic->im, textx + 2, i, textx + (65 * ic->fontctx.cw) + offsetx + 2, i, ic->cline);
+	} else {
+		gdImageLine(ic->im, textx + 2, i, textx + (50 * ic->fontctx.cw) + offsetx - 4, i, ic->cline);
 	}
 
 	buffer[0] = '\0';

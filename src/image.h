@@ -39,6 +39,8 @@ typedef struct {
 	gdFontPtr body, axis, title, header, footer;
 	int cw, ch; /* body metrics for layout */
 	int ascent; /* body ascender for TTF top-left → baseline */
+	int header_ch; /* measured header/title glyph height */
+	int axis_ch; /* measured axis/date glyph height */
 	int header_h; /* title bar height in pixels */
 	char ttfpath[512];
 	double ptsize; /* effective body point size after LargeFonts */
