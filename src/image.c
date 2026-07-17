@@ -945,12 +945,20 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 
 void drawsummary_alltime(IMAGECONTENT *ic, const int x, const int y)
 {
+	int title_x;
 	const struct tm *d;
 	char buffer[512], datebuff[16], daytemp[32];
 
-	imagestring(ic, FONT_ROLE_TITLE, x + 12 + imageextrapx(ic, 10), y, "all time", ic->ctext);
 	snprintf(buffer, 4, "rx ");
 	strncat(buffer, getvalue(ic->interface.rxtotal, 12, RT_Normal), 32);
+
+	if (ic->fontctx.mode == FONT_TTF) {
+		title_x = x + imagetextwidth(ic, FONT_ROLE_BODY, buffer) - imagetextwidth(ic, FONT_ROLE_TITLE, "all time");
+	} else {
+		title_x = x + 12 + imageextrapx(ic, 10);
+	}
+	imagestring(ic, FONT_ROLE_TITLE, title_x, y, "all time", ic->ctext);
+
 	imagestring(ic, FONT_ROLE_BODY, x, y + (2 * ic->lineheight), buffer, ic->ctext);
 	snprintf(buffer, 4, "tx ");
 	strncat(buffer, getvalue(ic->interface.txtotal, 12, RT_Normal), 32);
@@ -967,7 +975,8 @@ void drawsummary_alltime(IMAGECONTENT *ic, const int x, const int y)
 
 void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *mode)
 {
-	int textx, texty, offset = 0, bodyoff, title_x, title_y, donut_x, donut_y, donut_size, donut_hole;
+	int textx, texty, body_texty, offset = 0, bodyoff, title_x, title_y, donut_x, donut_y, donut_size, donut_hole;
+	int y_tx, y_eq, value_right;
 	double rxp, txp, mod;
 	char buffer[512], datebuff[16], daytemp[32];
 	time_t yesterday;
@@ -1023,30 +1032,10 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 
 	textx = x + offset;
 	texty = y;
+	body_texty = texty + (cfg.summaryrate ? 0 : 7);
+	donut_size = 49 + imageextrapx(ic, 10);
 	donut_hole = 15 + imageextrapx(ic, 3);
-
-	if (ic->fontctx.mode == FONT_TTF) {
-		/* Size tracks the body block; avoid imageextrapx blowing up the diameter. */
-		donut_size = 3 * ic->lineheight + 4;
-		donut_hole = ic->lineheight;
-		donut_x = textx + 8 * ic->fontctx.cw;
-		/* Center on rx..rate (or rx..=) body block; title at digest top, left of values. */
-		if (cfg.summaryrate) {
-			donut_y = texty + (5 * ic->lineheight + 16) / 2;
-		} else {
-			donut_y = texty + 7 + (4 * ic->lineheight + 14) / 2;
-		}
-		title_x = textx - bodyoff;
-		title_y = texty + 2;
-	} else {
-		donut_size = 49 + imageextrapx(ic, 10);
-		donut_x = textx + 50 + imageextrapx(ic, 40);
-		donut_y = texty + 45 + imageextrapx(ic, 10);
-		title_x = textx - 54 + imageextrapx(ic, ic->fontctx.cw * 3 - 4);
-		title_y = texty - 1;
-	}
-
-	drawdonut(ic, donut_x, donut_y, (float)rxp, (float)txp, donut_size, donut_hole);
+	donut_x = textx + 50 + imageextrapx(ic, 40);
 
 	if (mode[0] == 'd') {
 		/* get formatted date for today */
@@ -1066,27 +1055,46 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 		strftime(daytemp, 16, cfg.mformat, d);
 	}
 
+	/* rx line used for title right-align and later drawn as body */
+	snprintf(buffer, 4, "rx ");
+	strncat(buffer, getvalue(data_current->rx, 12, RT_Normal), 32);
+
 	if (ic->fontctx.mode == FONT_TTF) {
-		snprintf(buffer, 32, "%s", daytemp);
+		y_tx = body_texty + 2 * ic->lineheight + 6;
+		y_eq = body_texty + 3 * ic->lineheight + 8;
+		donut_y = (y_tx + y_eq) / 2 + imagefontheight(ic, FONT_ROLE_BODY) / 2;
+
+		value_right = textx - bodyoff + imagetextwidth(ic, FONT_ROLE_BODY, buffer);
+		title_x = value_right - imagetextwidth(ic, FONT_ROLE_TITLE, daytemp);
+		title_y = body_texty + ic->lineheight + 6 - imagefontheight(ic, FONT_ROLE_TITLE) - 8;
+		if (title_y < texty) {
+			title_y = texty;
+		}
+		drawdonut(ic, donut_x, donut_y, (float)rxp, (float)txp, donut_size, donut_hole);
+		imagestring(ic, FONT_ROLE_TITLE, title_x, title_y, daytemp, ic->ctext);
 	} else {
-		snprintf(buffer, 32, "%*s", getpadding(12, daytemp), daytemp);
+		char titlebuf[32];
+
+		donut_y = texty + 45 + imageextrapx(ic, 10);
+		title_x = textx - 54 + imageextrapx(ic, ic->fontctx.cw * 3 - 4);
+		title_y = texty - 1;
+		drawdonut(ic, donut_x, donut_y, (float)rxp, (float)txp, donut_size, donut_hole);
+		snprintf(titlebuf, 32, "%*s", getpadding(12, daytemp), daytemp);
+		imagestring(ic, FONT_ROLE_TITLE, title_x, title_y, titlebuf, ic->ctext);
 	}
-	imagestring(ic, FONT_ROLE_TITLE, title_x, title_y, buffer, ic->ctext);
 
 	if (cfg.summaryrate) {
 		d = localtime(&ic->interface.updated);
 		if (mode[0] == 'd') {
-			snprintf(buffer, 16, "%15s", gettrafficrate(data_current->rx + data_current->tx, (time_t)getperiodseconds(LT_Day, data_current->timestamp, ic->interface.updated, ic->interface.created, 1), 15));
+			snprintf(datebuff, 16, "%15s", gettrafficrate(data_current->rx + data_current->tx, (time_t)getperiodseconds(LT_Day, data_current->timestamp, ic->interface.updated, ic->interface.created, 1), 15));
 		} else if (mode[0] == 'm') {
-			snprintf(buffer, 16, "%15s", gettrafficrate(data_current->rx + data_current->tx, (time_t)getperiodseconds(LT_Month, data_current->timestamp, ic->interface.updated, ic->interface.created, 1), 15));
+			snprintf(datebuff, 16, "%15s", gettrafficrate(data_current->rx + data_current->tx, (time_t)getperiodseconds(LT_Month, data_current->timestamp, ic->interface.updated, ic->interface.created, 1), 15));
 		}
-		imagestring(ic, FONT_ROLE_BODY, textx - bodyoff, texty + 4 * ic->lineheight + 10, buffer, ic->ctext);
+		imagestring(ic, FONT_ROLE_BODY, textx - bodyoff, texty + 4 * ic->lineheight + 10, datebuff, ic->ctext);
 	} else {
 		texty += 7;
 	}
 
-	snprintf(buffer, 4, "rx ");
-	strncat(buffer, getvalue(data_current->rx, 12, RT_Normal), 32);
 	imagestring(ic, FONT_ROLE_BODY, textx - bodyoff, texty + ic->lineheight + 6, buffer, ic->ctext);
 	snprintf(buffer, 4, "tx ");
 	strncat(buffer, getvalue(data_current->tx, 12, RT_Normal), 32);
@@ -1112,28 +1120,12 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 		}
 
 		if (ic->fontctx.mode == FONT_TTF) {
-			textx += 26 * ic->fontctx.cw;
+			textx += 30 * ic->fontctx.cw;
 		} else {
 			textx += 180 + imageextrapx(ic, 60);
 		}
 
-		if (ic->fontctx.mode == FONT_TTF) {
-			donut_x = textx + 8 * ic->fontctx.cw;
-			title_x = textx - bodyoff;
-			title_y = y + 2;
-			if (cfg.summaryrate) {
-				donut_y = y + (5 * ic->lineheight + 16) / 2;
-			} else {
-				donut_y = y + 7 + (4 * ic->lineheight + 14) / 2;
-			}
-		} else {
-			donut_x = textx + 50 + imageextrapx(ic, 40);
-			donut_y = texty + 45 + imageextrapx(ic, 10);
-			title_x = textx - 54 + imageextrapx(ic, ic->fontctx.cw * 3 - 4);
-			title_y = texty - 1;
-		}
-
-		drawdonut(ic, donut_x, donut_y, (float)rxp, (float)txp, donut_size, donut_hole);
+		donut_x = textx + 50 + imageextrapx(ic, 40);
 
 		if (mode[0] == 'd') {
 			/* get formatted date for yesterday */
@@ -1153,26 +1145,46 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 			strftime(daytemp, 16, cfg.mformat, d);
 		}
 
+		snprintf(buffer, 4, "rx ");
+		strncat(buffer, getvalue(data_previous->rx, 12, RT_Normal), 32);
+
 		if (ic->fontctx.mode == FONT_TTF) {
-			snprintf(buffer, 32, "%s", daytemp);
+			/* texty already includes no-rate +7 from the current column when applicable */
+			body_texty = cfg.summaryrate ? y : (y + 7);
+			y_tx = body_texty + 2 * ic->lineheight + 6;
+			y_eq = body_texty + 3 * ic->lineheight + 8;
+			donut_y = (y_tx + y_eq) / 2 + imagefontheight(ic, FONT_ROLE_BODY) / 2;
+
+			value_right = textx - bodyoff + imagetextwidth(ic, FONT_ROLE_BODY, buffer);
+			title_x = value_right - imagetextwidth(ic, FONT_ROLE_TITLE, daytemp);
+			title_y = body_texty + ic->lineheight + 6 - imagefontheight(ic, FONT_ROLE_TITLE) - 8;
+			if (title_y < y) {
+				title_y = y;
+			}
+			drawdonut(ic, donut_x, donut_y, (float)rxp, (float)txp, donut_size, donut_hole);
+			imagestring(ic, FONT_ROLE_TITLE, title_x, title_y, daytemp, ic->ctext);
 		} else {
-			snprintf(buffer, 32, "%*s", getpadding(12, daytemp), daytemp);
+			char titlebuf[32];
+
+			donut_y = texty + 45 + imageextrapx(ic, 10);
+			title_x = textx - 54 + imageextrapx(ic, ic->fontctx.cw * 3 - 4);
+			title_y = texty - 1;
+			drawdonut(ic, donut_x, donut_y, (float)rxp, (float)txp, donut_size, donut_hole);
+			snprintf(titlebuf, 32, "%*s", getpadding(12, daytemp), daytemp);
+			imagestring(ic, FONT_ROLE_TITLE, title_x, title_y, titlebuf, ic->ctext);
 		}
-		imagestring(ic, FONT_ROLE_TITLE, title_x, title_y, buffer, ic->ctext);
 
 		if (cfg.summaryrate) {
 			if (mode[0] == 'd') {
-				snprintf(buffer, 16, "%15s", gettrafficrate(data_previous->rx + data_previous->tx, 86400, 15));
+				snprintf(datebuff, 16, "%15s", gettrafficrate(data_previous->rx + data_previous->tx, 86400, 15));
 			} else if (mode[0] == 'm') {
-				snprintf(buffer, 16, "%15s", gettrafficrate(data_previous->rx + data_previous->tx, dmonth(d->tm_mon) * 86400, 15));
+				snprintf(datebuff, 16, "%15s", gettrafficrate(data_previous->rx + data_previous->tx, dmonth(d->tm_mon) * 86400, 15));
 			}
-			imagestring(ic, FONT_ROLE_BODY, textx - bodyoff, texty + 4 * ic->lineheight + 10, buffer, ic->ctext);
+			imagestring(ic, FONT_ROLE_BODY, textx - bodyoff, texty + 4 * ic->lineheight + 10, datebuff, ic->ctext);
 		} else {
 			texty += 7;
 		}
 
-		snprintf(buffer, 4, "rx ");
-		strncat(buffer, getvalue(data_previous->rx, 12, RT_Normal), 32);
 		imagestring(ic, FONT_ROLE_BODY, textx - bodyoff, texty + ic->lineheight + 6, buffer, ic->ctext);
 		snprintf(buffer, 4, "tx ");
 		strncat(buffer, getvalue(data_previous->tx, 12, RT_Normal), 32);
