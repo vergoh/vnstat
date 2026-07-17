@@ -875,7 +875,7 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 
 	if (ic->fontctx.mode == FONT_TTF) {
 		/* Extra bottom pad so rate/legend clear the footer */
-		height += ic->lineheight;
+		height += 2 * ic->lineheight;
 	}
 
 	imageinit(ic, width, height);
@@ -883,17 +883,17 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 
 	if (ic->fontctx.mode == FONT_TTF) {
 		alltime_x = 64 * ic->fontctx.cw;
-		legend_x = 68 * ic->fontctx.cw;
+		legend_x = 67 * ic->fontctx.cw;
 		graph_x = 83 * ic->fontctx.cw;
 		fivegraph_x = graph_x;
 		/* body at textx - (12*cw+2) stays near the builtin left margin (~26). */
 		digest_x = (12 * ic->fontctx.cw + 2) + 26;
 		/* Clear tall header title; builtin keeps y=30. */
 		digest_day_y = ic->fontctx.header_h + 10 - headermod;
-		digest_month_y = digest_day_y - 1 + 7 * ic->lineheight;
+		digest_month_y = digest_day_y - 1 + 8 * ic->lineheight;
 		alltime_y = digest_day_y + 27 + imageextrapx(ic, 10);
 		/* Under all-time "since" line, matching builtin legend vs since gap */
-		legend_y = alltime_y + 5 * ic->lineheight + 28;
+		legend_y = alltime_y + 7 * ic->lineheight + 28;
 	} else {
 		alltime_x = 385 + imageextrapx(ic, 125);
 		legend_x = 410 + imageextrapx(ic, 132);
@@ -1061,7 +1061,7 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 	if (ic->fontctx.mode == FONT_TTF) {
 		body_left = textx - bodyoff;
 		col_right = body_left + imagetextwidth(ic, FONT_ROLE_BODY, "rx 999.99 YiB");
-		title_x = col_right - imagetextwidth(ic, FONT_ROLE_TITLE, daytemp);
+		title_x = col_right - imagetextwidth(ic, FONT_ROLE_TITLE, daytemp) / 2;
 		title_y = texty;
 		y_tx = texty + 3 * ic->lineheight;
 		y_eq = texty + 4 * ic->lineheight + 2;
@@ -1165,7 +1165,7 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 		if (ic->fontctx.mode == FONT_TTF) {
 			body_left = textx - bodyoff;
 			col_right = body_left + imagetextwidth(ic, FONT_ROLE_BODY, "rx 999.99 YiB");
-			title_x = col_right - imagetextwidth(ic, FONT_ROLE_TITLE, daytemp);
+			title_x = col_right - imagetextwidth(ic, FONT_ROLE_TITLE, daytemp) / 2;
 			title_y = y;
 			y_tx = y + 3 * ic->lineheight;
 			y_eq = y + 4 * ic->lineheight + 2;
