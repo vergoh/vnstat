@@ -670,10 +670,8 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 	}
 
 	if (cfg.largefonts) {
-		ic->lineheight = 16;
 		ic->large = 1;
 	} else {
-		ic->lineheight = 12;
 		ic->large = 0;
 	}
 	if (!imagefontinit(ic, cfg.largefonts)) {

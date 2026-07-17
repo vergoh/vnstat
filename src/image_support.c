@@ -200,6 +200,7 @@ static int imagettfinitmetrics(IMAGECONTENT *ic)
 	err = imagettfbbox(ic, ic->fontctx.ptsize, 0.0, "  0000-00-00   000.00 GiB   000.00 GiB   000.00 GiB", brect);
 	if (err != NULL) {
 		fprintf(stderr, "%s \"%s\": %s\n", errprefix, ic->fontctx.ttfpath, err);
+		imagefontcleanup();
 		return 0;
 	}
 	template_cw = (brect[2] - brect[0] + 50) / 51; /* ceil average, template length 51 */
@@ -207,6 +208,7 @@ static int imagettfinitmetrics(IMAGECONTENT *ic)
 	err = imagettfbbox(ic, ic->fontctx.ptsize, 0.0, "0123456789", brect);
 	if (err != NULL) {
 		fprintf(stderr, "%s \"%s\": %s\n", errprefix, ic->fontctx.ttfpath, err);
+		imagefontcleanup();
 		return 0;
 	}
 	digit_cw = (brect[2] - brect[0] + 9) / 10;
@@ -229,6 +231,7 @@ static int imagettfinitmetrics(IMAGECONTENT *ic)
 	err = imagettfbbox(ic, ic->fontctx.ptsize, 0.0, "Ayjp", brect);
 	if (err != NULL) {
 		fprintf(stderr, "%s \"%s\": %s\n", errprefix, ic->fontctx.ttfpath, err);
+		imagefontcleanup();
 		return 0;
 	}
 	ic->fontctx.ch = brect[1] - brect[7];
@@ -241,6 +244,7 @@ static int imagettfinitmetrics(IMAGECONTENT *ic)
 	err = imagettfbbox(ic, ic->fontctx.ptsize * ic->fontctx.title_scale, 0.0, "Ayjp", brect);
 	if (err != NULL) {
 		fprintf(stderr, "%s \"%s\": %s\n", errprefix, ic->fontctx.ttfpath, err);
+		imagefontcleanup();
 		return 0;
 	}
 	ic->fontctx.header_ch = brect[1] - brect[7];
@@ -256,6 +260,7 @@ static int imagettfinitmetrics(IMAGECONTENT *ic)
 	err = imagettfbbox(ic, ic->fontctx.ptsize * ic->fontctx.axis_scale, 0.0, "Ayjp", brect);
 	if (err != NULL) {
 		fprintf(stderr, "%s \"%s\": %s\n", errprefix, ic->fontctx.ttfpath, err);
+		imagefontcleanup();
 		return 0;
 	}
 	ic->fontctx.axis_ch = brect[1] - brect[7];
@@ -472,6 +477,67 @@ int imagefontheight(IMAGECONTENT *ic, const fontrole_t role)
 	}
 }
 
+/* Center role text vertically in [rect_top, rect_bottom] (TTF ink-band aware). */
+static int imagecentery(IMAGECONTENT *ic, const fontrole_t role, const char *text, const int rect_top, const int rect_bottom)
+{
+	int text_h, y;
+
+#if HAVE_DECL_GDIMAGESTRINGFT
+	if (ic->fontctx.mode == FONT_TTF && !imageroleusesbuiltin(ic, role)) {
+		int brect[8], ink_h, ink_top, ink_bot, ascent;
+		char *err;
+		double ptsize = imageroleptsize(ic, role);
+
+		switch (role) {
+			case FONT_ROLE_AXIS:
+				ascent = ic->fontctx.axis_ascent;
+				break;
+			case FONT_ROLE_TITLE:
+			case FONT_ROLE_HEADER:
+				ascent = ic->fontctx.header_ascent;
+				break;
+			case FONT_ROLE_BODY:
+			default:
+				ascent = ic->fontctx.ascent;
+				break;
+		}
+
+		/* Center the ascent→baseline band (ignore descenders) so cap-height
+		 * text gets equal padding above/below in the header bar. */
+		err = imagettfbbox(ic, ptsize, 0.0, text, brect);
+		if (err == NULL) {
+			ink_h = -brect[7];
+			if (ink_h < 1) {
+				ink_h = ascent;
+			}
+			y = rect_top + (rect_bottom - rect_top - ink_h) / 2 - ascent - brect[7];
+			ink_top = y + ascent + brect[7];
+			ink_bot = y + ascent; /* baseline; descenders may extend below */
+			if (ink_top < rect_top + 1) {
+				y += (rect_top + 1) - ink_top;
+				ink_bot += (rect_top + 1) - ink_top;
+			}
+			if (ink_bot > rect_bottom - 1) {
+				y -= ink_bot - (rect_bottom - 1);
+			}
+			return y;
+		}
+	}
+#else
+	(void)text;
+#endif
+
+	text_h = imagefontheight(ic, role);
+	y = rect_top + (rect_bottom - rect_top - text_h) / 2;
+	if (y < rect_top + 1) {
+		y = rect_top + 1;
+	}
+	if (y + text_h > rect_bottom - 1) {
+		y = rect_bottom - text_h - 1;
+	}
+	return y;
+}
+
 void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int height)
 {
 	const struct tm *d;
@@ -507,88 +573,8 @@ void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int 
 		}
 
 		if (ic->fontctx.mode == FONT_TTF) {
-			int title_h, date_h;
-#if HAVE_DECL_GDIMAGESTRINGFT
-			int brect[8], ink_h, ink_top, ink_bot;
-			char *err;
-#endif
-
-			title_h = imagefontheight(ic, FONT_ROLE_HEADER);
-			date_h = imagefontheight(ic, FONT_ROLE_AXIS);
-
-			/* Center the ascent→baseline band (ignore descenders like 'y' in "daily")
-			 * so cap-height titles get equal padding above/below in the header bar. */
-#if HAVE_DECL_GDIMAGESTRINGFT
-			err = imagettfbbox(ic, ic->fontctx.ptsize * ic->fontctx.title_scale, 0.0, buffer, brect);
-			if (err == NULL) {
-				ink_h = -brect[7];
-				if (ink_h < 1) {
-					ink_h = ic->fontctx.header_ascent;
-				}
-				title_y = rect_top + (rect_bottom - rect_top - ink_h) / 2 - ic->fontctx.header_ascent - brect[7];
-				ink_top = title_y + ic->fontctx.header_ascent + brect[7];
-				ink_bot = title_y + ic->fontctx.header_ascent; /* baseline; descenders may extend below */
-				if (ink_top < rect_top + 1) {
-					title_y += (rect_top + 1) - ink_top;
-					ink_bot += (rect_top + 1) - ink_top;
-				}
-				if (ink_bot > rect_bottom - 1) {
-					title_y -= ink_bot - (rect_bottom - 1);
-				}
-			} else {
-				title_y = rect_top + (rect_bottom - rect_top - title_h) / 2;
-				if (title_y < rect_top + 1) {
-					title_y = rect_top + 1;
-				}
-				if (title_y + title_h > rect_bottom - 1) {
-					title_y = rect_bottom - title_h - 1;
-				}
-			}
-#else
-			title_y = rect_top + (rect_bottom - rect_top - title_h) / 2;
-			if (title_y < rect_top + 1) {
-				title_y = rect_top + 1;
-			}
-			if (title_y + title_h > rect_bottom - 1) {
-				title_y = rect_bottom - title_h - 1;
-			}
-#endif
-			/* Same ascent→baseline centering for the header date. */
-#if HAVE_DECL_GDIMAGESTRINGFT
-			err = imagettfbbox(ic, ic->fontctx.ptsize * ic->fontctx.axis_scale, 0.0, datestring, brect);
-			if (err == NULL) {
-				ink_h = -brect[7];
-				if (ink_h < 1) {
-					ink_h = ic->fontctx.axis_ascent;
-				}
-				date_y = rect_top + (rect_bottom - rect_top - ink_h) / 2 - ic->fontctx.axis_ascent - brect[7];
-				ink_top = date_y + ic->fontctx.axis_ascent + brect[7];
-				ink_bot = date_y + ic->fontctx.axis_ascent;
-				if (ink_top < rect_top + 1) {
-					date_y += (rect_top + 1) - ink_top;
-					ink_bot += (rect_top + 1) - ink_top;
-				}
-				if (ink_bot > rect_bottom - 1) {
-					date_y -= ink_bot - (rect_bottom - 1);
-				}
-			} else {
-				date_y = rect_top + (rect_bottom - rect_top - date_h) / 2;
-				if (date_y < rect_top + 1) {
-					date_y = rect_top + 1;
-				}
-				if (date_y + date_h > rect_bottom - 1) {
-					date_y = rect_bottom - date_h - 1;
-				}
-			}
-#else
-			date_y = rect_top + (rect_bottom - rect_top - date_h) / 2;
-			if (date_y < rect_top + 1) {
-				date_y = rect_top + 1;
-			}
-			if (date_y + date_h > rect_bottom - 1) {
-				date_y = rect_bottom - date_h - 1;
-			}
-#endif
+			title_y = imagecentery(ic, FONT_ROLE_HEADER, buffer, rect_top, rect_bottom);
+			date_y = imagecentery(ic, FONT_ROLE_AXIS, datestring, rect_top, rect_bottom);
 		}
 
 		gdImageFilledRectangle(ic->im, 2 + ic->showedge, rect_top, width - 3 - ic->showedge, rect_bottom, ic->cheader);
