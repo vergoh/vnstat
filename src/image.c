@@ -265,7 +265,11 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 		} else {
 			chour = ic->ctext;
 		}
-		imagestring(ic, FONT_ROLE_AXIS, xt, y + 128, buffer, chour);
+		if (ic->fontctx.mode == FONT_TTF) {
+			imagestring(ic, FONT_ROLE_AXIS, xt - imagefontwidth(ic, FONT_ROLE_AXIS) / 2, y + 132, buffer, chour);
+		} else {
+			imagestring(ic, FONT_ROLE_AXIS, xt, y + 128, buffer, chour);
+		}
 		drawpoles(ic, xt - 2, y - extray, 124 + extray, hourdata[s].rx, hourdata[s].tx, max);
 		gdImageLine(ic->im, xt - 4 - imageextrapx(ic, 3), y + 124, xt + 12 + imageextrapx(ic, 3), y + 124, chour);
 		if (s == 0 && i != 23) {
