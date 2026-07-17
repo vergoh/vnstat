@@ -75,6 +75,7 @@ void imagestringup(IMAGECONTENT *ic, const fontrole_t role, const int x, const i
 int imagetextwidth(IMAGECONTENT *ic, const fontrole_t role, const char *text);
 int imagefontwidth(IMAGECONTENT *ic, const fontrole_t role);
 int imagefontheight(IMAGECONTENT *ic, const fontrole_t role);
+int imageextrapx(const IMAGECONTENT *ic, const int extra);
 void drawimage(IMAGECONTENT *ic);
 #if HAVE_DECL_GD_NEAREST_NEIGHBOUR
 void scaleimage(IMAGECONTENT *ic);

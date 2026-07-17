@@ -396,7 +396,7 @@ void imagestring(IMAGECONTENT *ic, const fontrole_t role, const int x, const int
 void imagestringup(IMAGECONTENT *ic, const fontrole_t role, const int x, const int y, const char *text, const int color)
 {
 #if HAVE_DECL_GDIMAGESTRINGFT
-	int brect[8];
+	int brect[8], ascent, pen_x;
 	double ptsize;
 	char *err;
 #endif
@@ -411,9 +411,24 @@ void imagestringup(IMAGECONTENT *ic, const fontrole_t role, const int x, const i
 	}
 
 #if HAVE_DECL_GDIMAGESTRINGFT
-	/* Phase 2: functional vertical TTF; graph layout polish is Phase 3 */
+	/* At angle π/2 glyphs extend left of the pen by roughly ascent; shift so
+	 * the visual left edge matches gdImageStringUp's x anchor. */
+	switch (role) {
+		case FONT_ROLE_AXIS:
+			ascent = ic->fontctx.axis_ascent;
+			break;
+		case FONT_ROLE_TITLE:
+		case FONT_ROLE_HEADER:
+			ascent = ic->fontctx.header_ascent;
+			break;
+		case FONT_ROLE_BODY:
+		default:
+			ascent = ic->fontctx.ascent;
+			break;
+	}
 	ptsize = imageroleptsize(ic, role);
-	err = gdImageStringFT(ic->im, brect, color, ic->fontctx.ttfpath, ptsize, M_PI / 2.0, x, y, (char *)text);
+	pen_x = x + ascent;
+	err = gdImageStringFT(ic->im, brect, color, ic->fontctx.ttfpath, ptsize, M_PI / 2.0, pen_x, y, (char *)text);
 	if (err != NULL && debug) {
 		printf("gdImageStringFT (vertical) failed: %s\n", err);
 	}
@@ -422,6 +437,26 @@ void imagestringup(IMAGECONTENT *ic, const fontrole_t role, const int x, const i
 	(void)y;
 	(void)color;
 #endif
+}
+
+int imageextrapx(const IMAGECONTENT *ic, const int extra)
+{
+	double t;
+
+	if (extra == 0) {
+		return 0;
+	}
+
+	if (ic->fontctx.mode == FONT_BUILTIN) {
+		return ic->large * extra;
+	}
+
+	/* Map scale 1.0 (small cw=6) .. 8/6 (large cw=8) onto 0 .. extra. */
+	t = (ic->fontctx.scale - 1.0) / (8.0 / 6.0 - 1.0);
+	if (t < 0.0) {
+		t = 0.0;
+	}
+	return (int)lrint(t * (double)extra);
 }
 
 int imagetextwidth(IMAGECONTENT *ic, const fontrole_t role, const char *text)
@@ -557,7 +592,7 @@ void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int 
 	rect_top = 2 + ic->showedge;
 	rect_bottom = ic->fontctx.header_h;
 	title_y = 5 + ic->showedge;
-	date_y = 9 + ic->showedge - (ic->large * 3);
+	date_y = 9 + ic->showedge - imageextrapx(ic, 3);
 
 	/* titlebox with title */
 	if (ic->showheader) {
@@ -583,7 +618,7 @@ void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int 
 
 	/* date */
 	if (!ic->showheader || ic->altdate) {
-		imagestring(ic, FONT_ROLE_AXIS, 5 + ic->showedge, height - 12 - ic->showedge - (ic->large * 3), datestring, ic->cvnstat);
+		imagestring(ic, FONT_ROLE_AXIS, 5 + ic->showedge, height - 12 - ic->showedge - imageextrapx(ic, 3), datestring, ic->cvnstat);
 	} else {
 		imagestring(ic, FONT_ROLE_AXIS, width - (imagetextwidth(ic, FONT_ROLE_AXIS, datestring) + 12), date_y, datestring, ic->cheaderdate);
 	}
@@ -637,19 +672,19 @@ void drawlegend(IMAGECONTENT *ic, const int x, const int y, const short israte)
 	if (!israte) {
 		imagestring(ic, FONT_ROLE_BODY, x, y, "rx     tx", ic->ctext);
 
-		gdImageFilledRectangle(ic->im, x - 12 - (ic->large * 2), sq_y, x - 12 + sq - (ic->large * 2), sq_y + sq, ic->crx);
-		gdImageRectangle(ic->im, x - 12 - (ic->large * 2), sq_y, x - 12 + sq - (ic->large * 2), sq_y + sq, ic->ctext);
+		gdImageFilledRectangle(ic->im, x - 12 - imageextrapx(ic, 2), sq_y, x - 12 + sq - imageextrapx(ic, 2), sq_y + sq, ic->crx);
+		gdImageRectangle(ic->im, x - 12 - imageextrapx(ic, 2), sq_y, x - 12 + sq - imageextrapx(ic, 2), sq_y + sq, ic->ctext);
 
-		gdImageFilledRectangle(ic->im, x + 30 + (ic->large * 12), sq_y, x + 30 + sq + (ic->large * 12), sq_y + sq, ic->ctx);
-		gdImageRectangle(ic->im, x + 30 + (ic->large * 12), sq_y, x + 30 + sq + (ic->large * 12), sq_y + sq, ic->ctext);
+		gdImageFilledRectangle(ic->im, x + 30 + imageextrapx(ic, 12), sq_y, x + 30 + sq + imageextrapx(ic, 12), sq_y + sq, ic->ctx);
+		gdImageRectangle(ic->im, x + 30 + imageextrapx(ic, 12), sq_y, x + 30 + sq + imageextrapx(ic, 12), sq_y + sq, ic->ctext);
 	} else {
 		imagestring(ic, FONT_ROLE_BODY, x - 12, y, "rx   tx rate", ic->ctext);
 
-		gdImageFilledRectangle(ic->im, x - 22 - (ic->large * 3), sq_y, x - 22 + sq - (ic->large * 3), sq_y + sq, ic->crx);
-		gdImageRectangle(ic->im, x - 22 - (ic->large * 3), sq_y, x - 22 + sq - (ic->large * 3), sq_y + sq, ic->ctext);
+		gdImageFilledRectangle(ic->im, x - 22 - imageextrapx(ic, 3), sq_y, x - 22 + sq - imageextrapx(ic, 3), sq_y + sq, ic->crx);
+		gdImageRectangle(ic->im, x - 22 - imageextrapx(ic, 3), sq_y, x - 22 + sq - imageextrapx(ic, 3), sq_y + sq, ic->ctext);
 
-		gdImageFilledRectangle(ic->im, x + 8 + (ic->large * 7), sq_y, x + 8 + sq + (ic->large * 7), sq_y + sq, ic->ctx);
-		gdImageRectangle(ic->im, x + 8 + (ic->large * 7), sq_y, x + 8 + sq + (ic->large * 7), sq_y + sq, ic->ctext);
+		gdImageFilledRectangle(ic->im, x + 8 + imageextrapx(ic, 7), sq_y, x + 8 + sq + imageextrapx(ic, 7), sq_y + sq, ic->ctx);
+		gdImageRectangle(ic->im, x + 8 + imageextrapx(ic, 7), sq_y, x + 8 + sq + imageextrapx(ic, 7), sq_y + sq, ic->ctext);
 	}
 }
 
@@ -667,7 +702,7 @@ void drawpercentilelegend(IMAGECONTENT *ic, const int x, const int y, const int 
 	} else {
 		snprintf(modetext, 6, "total");
 		color = ic->ctotal;
-		xoffset = 18 + (ic->large * 6);
+		xoffset = 18 + imageextrapx(ic, 6);
 	}
 
 	snprintf(percentiletext, 64, "%s     95th percentile: %s", modetext, gettrafficrate(percentile, 300, 0));
@@ -683,11 +718,11 @@ void drawpercentilelegend(IMAGECONTENT *ic, const int x, const int y, const int 
 		sq_y = y + 4;
 	}
 
-	gdImageFilledRectangle(ic->im, x - 12 - (ic->large * 2), sq_y, x - 12 + sq - (ic->large * 2), sq_y + sq, color);
-	gdImageRectangle(ic->im, x - 12 - (ic->large * 2), sq_y, x - 12 + sq - (ic->large * 2), sq_y + sq, ic->ctext);
+	gdImageFilledRectangle(ic->im, x - 12 - imageextrapx(ic, 2), sq_y, x - 12 + sq - imageextrapx(ic, 2), sq_y + sq, color);
+	gdImageRectangle(ic->im, x - 12 - imageextrapx(ic, 2), sq_y, x - 12 + sq - imageextrapx(ic, 2), sq_y + sq, ic->ctext);
 
-	gdImageFilledRectangle(ic->im, x + 30 + (ic->large * 12) + xoffset, sq_y, x + 30 + sq + (ic->large * 12) + xoffset, sq_y + sq, ic->cpercentileline);
-	gdImageRectangle(ic->im, x + 30 + (ic->large * 12) + xoffset, sq_y, x + 30 + sq + (ic->large * 12) + xoffset, sq_y + sq, ic->ctext);
+	gdImageFilledRectangle(ic->im, x + 30 + imageextrapx(ic, 12) + xoffset, sq_y, x + 30 + sq + imageextrapx(ic, 12) + xoffset, sq_y + sq, ic->cpercentileline);
+	gdImageRectangle(ic->im, x + 30 + imageextrapx(ic, 12) + xoffset, sq_y, x + 30 + sq + imageextrapx(ic, 12) + xoffset, sq_y + sq, ic->ctext);
 }
 
 void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max, const short isestimate)
@@ -700,7 +735,7 @@ void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const ui
 		ybeginoffset = 0;
 		yendoffset = ic->fontctx.ascent - 1; /* match digit/value text height */
 	} else {
-		yendoffset = YBEGINOFFSET + ic->fontctx.ch - 6 - ic->large;
+		yendoffset = YBEGINOFFSET + ic->fontctx.ch - 6 - imageextrapx(ic, 1);
 	}
 
 	if (isestimate) {
@@ -764,19 +799,21 @@ void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const ui
 
 void drawpoles(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max)
 {
-	int l;
+	int l, pad;
+
+	pad = imageextrapx(ic, 2);
 
 	if (rx > 0) {
 		l = (int)lrint(((double)rx / (double)max) * len);
 		if (l > 0) {
-			gdImageFilledRectangle(ic->im, x - (ic->large * 2), y + (len - l), x + 7 + (ic->large * 0), y + len, ic->crx);
+			gdImageFilledRectangle(ic->im, x - pad, y + (len - l), x + 7, y + len, ic->crx);
 		}
 	}
 
 	if (tx > 0) {
 		l = (int)lrint(((double)tx / (double)max) * len);
 		if (l > 0) {
-			gdImageFilledRectangle(ic->im, x + 5 - (ic->large * 0), y + (len - l), x + 12 + (ic->large * 2), y + len, ic->ctx);
+			gdImageFilledRectangle(ic->im, x + 5, y + (len - l), x + 12 + pad, y + len, ic->ctx);
 		}
 	}
 }
