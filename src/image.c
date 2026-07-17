@@ -1066,7 +1066,7 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 		y_tx = texty + 3 * ic->lineheight;
 		y_eq = texty + 4 * ic->lineheight + 2;
 		donut_y = (y_tx + y_eq) / 2 + imagefontheight(ic, FONT_ROLE_BODY) / 2;
-		donut_x = col_right + 8 + donut_size / 2;
+		donut_x = col_right + donut_size;
 
 		drawdonut(ic, donut_x, donut_y, (float)rxp, (float)txp, donut_size, donut_hole);
 		imagestring(ic, FONT_ROLE_TITLE, title_x, title_y, daytemp, ic->ctext);
@@ -1170,7 +1170,7 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 			y_tx = y + 3 * ic->lineheight;
 			y_eq = y + 4 * ic->lineheight + 2;
 			donut_y = (y_tx + y_eq) / 2 + imagefontheight(ic, FONT_ROLE_BODY) / 2;
-			donut_x = col_right + 8 + donut_size / 2;
+			donut_x = col_right + donut_size;
 
 			drawdonut(ic, donut_x, donut_y, (float)rxp, (float)txp, donut_size, donut_hole);
 			imagestring(ic, FONT_ROLE_TITLE, title_x, title_y, daytemp, ic->ctext);
