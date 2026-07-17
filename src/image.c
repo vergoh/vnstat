@@ -874,8 +874,13 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 	}
 
 	if (ic->fontctx.mode == FONT_TTF) {
-		/* Extra bottom pad so rate/legend clear the footer */
-		height += 2 * ic->lineheight;
+		if (layout == 2) {
+			/* Graph is top-anchored at ie(84); trim unmatched ie(90) and skip -s footer pad */
+			height -= imageextrapx(ic, 6);
+		} else {
+			/* Extra bottom pad so rate/legend clear the footer */
+			height += 2 * ic->lineheight;
+		}
 	}
 
 	imageinit(ic, width, height);
