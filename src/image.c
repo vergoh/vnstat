@@ -476,7 +476,10 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		int tx_edge = textx + (37 * ic->fontctx.cw) + offsetx - colpad;
 		int total_edge = textx + (50 * ic->fontctx.cw) + offsetx - colpad;
 		int rate_edge = textx + (65 * ic->fontctx.cw) + offsetx - colpad;
-		int rx_dec, tx_dec, total_dec, sample_w, prefix_w, bar_y;
+		int rx_dec, tx_dec, total_dec, sample_w, prefix_w, bar_y, date_right;
+		/* short stamp field: "  " + 8 cells (rows) / " " + 8 cells (header) */
+		const int date_field_right = textx + 10 * ic->fontctx.cw;
+		const int header_field_right = textx + 9 * ic->fontctx.cw;
 		char rxbuf[64], txbuf[64], totalbuf[64], ratebuf[64];
 
 		sample_w = imagetextwidth(ic, FONT_ROLE_BODY, sample);
@@ -489,8 +492,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		if (listtype == LT_Top) {
 			imagestring(ic, FONT_ROLE_BODY, textx, texty, "   #      day", ic->ctext);
 		} else {
-			snprintf(buffer, 512, " %8s", colname);
-			imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
+			imagestring(ic, FONT_ROLE_BODY, header_field_right - imagetextwidth(ic, FONT_ROLE_BODY, colname), texty, colname, ic->ctext);
 		}
 		imagestring(ic, FONT_ROLE_BODY, rx_dec, texty, "rx", ic->ctext);
 		imagestring(ic, FONT_ROLE_BODY, tx_dec, texty, "tx", ic->ctext);
@@ -534,11 +536,8 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 			}
 
 			if (listtype == LT_Top) {
-				if (strftime(datebuff, 16, stampformat, d) <= 8) {
-					snprintf(buffer, 32, "  %2d   %*s", i, getpadding(8, datebuff), datebuff);
-				} else {
-					snprintf(buffer, 32, "  %2d  %-*s", i, getpadding(11, datebuff), datebuff);
-				}
+				int short_stamp = (strftime(datebuff, 16, stampformat, d) <= 8);
+
 				if (strcmp(datebuff, daybuff) == 0) {
 					if (cfg.ostyle > 2) {
 						gdImageFilledRectangle(ic->im, textx + 2, texty + 2, textx + (65 * ic->fontctx.cw) + offsetx + 2, texty + ic->fontctx.ch - 2, ic->cbgoffset);
@@ -546,14 +545,23 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 						gdImageFilledRectangle(ic->im, textx + 2, texty + 2, textx + (50 * ic->fontctx.cw) + offsetx - 4, texty + ic->fontctx.ch - 2, ic->cbgoffset);
 					}
 				}
+				if (short_stamp) {
+					snprintf(buffer, 32, "  %2d", i);
+					imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
+					/* "  %2d   " (7 cells) + 8-char date field */
+					imagestring(ic, FONT_ROLE_BODY, textx + 15 * ic->fontctx.cw - imagetextwidth(ic, FONT_ROLE_BODY, datebuff), texty, datebuff, ic->ctext);
+				} else {
+					snprintf(buffer, 32, "  %2d  %-*s", i, getpadding(11, datebuff), datebuff);
+					imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
+				}
 			} else {
 				if (strftime(datebuff, 16, stampformat, d) <= 8) {
-					snprintf(buffer, 32, "  %*s", getpadding(8, datebuff), datebuff);
+					imagestring(ic, FONT_ROLE_BODY, date_field_right - imagetextwidth(ic, FONT_ROLE_BODY, datebuff), texty, datebuff, ic->ctext);
 				} else {
 					snprintf(buffer, 32, " %-*s", getpadding(11, datebuff), datebuff);
+					imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
 				}
 			}
-			imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
 
 			strncpy_nt(rxbuf, getvalue(datalist_i->rx, 10, RT_Normal), 64);
 			imagestring(ic, FONT_ROLE_BODY, rx_edge - imagetextwidth(ic, FONT_ROLE_BODY, rxbuf), texty, rxbuf, ic->ctext);
@@ -634,13 +642,14 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 			}
 
 			texty += 8;
-			/* right-align label to the visible date string edge (no trailing field pad) */
+			/* short stamps: digit-cell field edge; long: visible date string edge */
 			if (strlen(datebuff) <= 8) {
-				snprintf(buffer, 32, "  %*s", getpadding(8, datebuff), datebuff);
+				date_right = date_field_right;
 			} else {
 				snprintf(buffer, 32, " %s", datebuff);
+				date_right = textx + imagetextwidth(ic, FONT_ROLE_BODY, buffer);
 			}
-			imagestring(ic, FONT_ROLE_BODY, textx + imagetextwidth(ic, FONT_ROLE_BODY, buffer) - imagetextwidth(ic, FONT_ROLE_BODY, cfg.estimatetext), texty, cfg.estimatetext, ic->ctext);
+			imagestring(ic, FONT_ROLE_BODY, date_right - imagetextwidth(ic, FONT_ROLE_BODY, cfg.estimatetext), texty, cfg.estimatetext, ic->ctext);
 			imagestring(ic, FONT_ROLE_BODY, rx_edge - imagetextwidth(ic, FONT_ROLE_BODY, rxbuf), texty, rxbuf, ic->ctext);
 			imagestring(ic, FONT_ROLE_BODY, tx_edge - imagetextwidth(ic, FONT_ROLE_BODY, txbuf), texty, txbuf, ic->ctext);
 			imagestring(ic, FONT_ROLE_BODY, total_edge - imagetextwidth(ic, FONT_ROLE_BODY, totalbuf), texty, totalbuf, ic->ctext);
@@ -651,16 +660,15 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 				gdImageLine(ic->im, textx + (50 * ic->fontctx.cw) + offsetx, texty - 6, textx + (50 * ic->fontctx.cw) + offsetx, texty + ic->lineheight - (ic->large * 2), ic->cline);
 			}
 		} else if (strlen(ic->dataend) > 0 && datainfo.count > 1 && listtype != LT_Top) {
-			int date_right;
 			char sumlabel[16];
 
-			/* datebuff still holds last row stamp — measure its right edge first */
+			/* datebuff still holds last row stamp */
 			if (strlen(datebuff) <= 8) {
-				snprintf(buffer, 32, "  %*s", getpadding(8, datebuff), datebuff);
+				date_right = date_field_right;
 			} else {
 				snprintf(buffer, 32, " %s", datebuff);
+				date_right = textx + imagetextwidth(ic, FONT_ROLE_BODY, buffer);
 			}
-			date_right = textx + imagetextwidth(ic, FONT_ROLE_BODY, buffer);
 
 			if (datainfo.count < 100) {
 				snprintf(sumlabel, 16, "sum of %" PRIu32 "", datainfo.count);
