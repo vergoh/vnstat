@@ -831,7 +831,8 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 
 void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 {
-	int width, height, headermod, digest_x, alltime_x, legend_x, graph_x, fivegraph_x;
+	int width, height, headermod, header_extra, digest_x, alltime_x, legend_x, legend_y, graph_x, fivegraph_x;
+	int digest_day_y, digest_month_y, alltime_y;
 	int monthrotatenotevisible = 0;
 	char monthrotatenote[96];
 
@@ -864,9 +865,17 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 
 	if (!ic->showheader) {
 		headermod = ic->fontctx.header_h + 2;
+		header_extra = 0;
 		height -= ic->fontctx.header_h - 2;
 	} else {
 		headermod = 0;
+		header_extra = ic->fontctx.header_h - 24;
+		height += header_extra;
+	}
+
+	if (ic->fontctx.mode == FONT_TTF) {
+		/* Extra bottom pad so rate/legend clear the footer */
+		height += ic->lineheight;
 	}
 
 	imageinit(ic, width, height);
@@ -879,19 +888,29 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 		fivegraph_x = graph_x;
 		/* body at textx - (12*cw+2) stays near the builtin left margin (~26). */
 		digest_x = (12 * ic->fontctx.cw + 2) + 26;
+		/* Clear tall header title; builtin keeps y=30. */
+		digest_day_y = ic->fontctx.header_h + 10 - headermod;
+		digest_month_y = digest_day_y - 1 + 7 * ic->lineheight;
+		alltime_y = digest_day_y + 27 + imageextrapx(ic, 10);
+		/* Under all-time "since" line, matching builtin legend vs since gap */
+		legend_y = alltime_y + 5 * ic->lineheight + 28;
 	} else {
 		alltime_x = 385 + imageextrapx(ic, 125);
 		legend_x = 410 + imageextrapx(ic, 132);
 		graph_x = 500 + imageextrapx(ic, 160);
 		fivegraph_x = 496 + imageextrapx(ic, 174);
 		digest_x = 100;
+		digest_day_y = 30 + header_extra - headermod;
+		digest_month_y = 29 + 7 * ic->lineheight + header_extra - headermod;
+		alltime_y = 57 + header_extra - headermod + imageextrapx(ic, 10);
+		legend_y = 155 - headermod + imageextrapx(ic, 40);
 	}
 
-	drawsummary_alltime(ic, alltime_x, 57 - headermod + imageextrapx(ic, 10));
-	drawlegend(ic, legend_x, 155 - headermod + imageextrapx(ic, 40), 0);
+	drawsummary_alltime(ic, alltime_x, alltime_y);
+	drawlegend(ic, legend_x, legend_y, 0);
 
-	drawsummary_digest(ic, digest_x, 30 - headermod, "day");
-	drawsummary_digest(ic, digest_x, 29 + 7 * ic->lineheight - headermod, "month");
+	drawsummary_digest(ic, digest_x, digest_day_y, "day");
+	drawsummary_digest(ic, digest_x, digest_month_y, "month");
 
 	switch (layout) {
 		// horizontal
@@ -899,7 +918,7 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 			if (cfg.summarygraph == 1) {
 				drawfiveminutes(ic, fivegraph_x, height - 30 - imageextrapx(ic, 8) - (monthrotatenotevisible * ic->lineheight), israte, 422 + imageextrapx(ic, 154), height - 68 + headermod - imageextrapx(ic, 8) - (monthrotatenotevisible * (ic->lineheight + 2)));
 			} else {
-				drawhours(ic, graph_x, 46 + imageextrapx(ic, 40) - headermod, israte);
+				drawhours(ic, graph_x, 46 + header_extra + imageextrapx(ic, 40) - headermod, israte);
 			}
 			if (monthrotatenotevisible) {
 				imagestring(ic, FONT_ROLE_BODY, 13 - imageextrapx(ic, 4) + (ic->fontctx.cw * 2) + ic->showedge, height - 12 - ic->showedge - ic->lineheight, monthrotatenote, ic->ctext);
@@ -910,10 +929,10 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 			if (cfg.summarygraph == 1) {
 				drawfiveminutes(ic, 8 + imageextrapx(ic, 14), height - 31 - imageextrapx(ic, 6), israte, 422 + imageextrapx(ic, 154), 132 + imageextrapx(ic, 35));
 			} else {
-				drawhours(ic, 12, 215 + imageextrapx(ic, 84) - headermod + (monthrotatenotevisible * (ic->lineheight * 2)), israte);
+				drawhours(ic, 12, 215 + header_extra + imageextrapx(ic, 84) - headermod + (monthrotatenotevisible * (ic->lineheight * 2)), israte);
 			}
 			if (monthrotatenotevisible) {
-				imagestring(ic, FONT_ROLE_BODY, 13 - imageextrapx(ic, 4) + (ic->fontctx.cw * 2) + ic->showedge, 215 + imageextrapx(ic, 84) - headermod - (ic->lineheight * (1 + imageextrapx(ic, 2))), monthrotatenote, ic->ctext);
+				imagestring(ic, FONT_ROLE_BODY, 13 - imageextrapx(ic, 4) + (ic->fontctx.cw * 2) + ic->showedge, 215 + header_extra + imageextrapx(ic, 84) - headermod - (ic->lineheight * (1 + imageextrapx(ic, 2))), monthrotatenote, ic->ctext);
 			}
 			break;
 		default:
@@ -948,7 +967,7 @@ void drawsummary_alltime(IMAGECONTENT *ic, const int x, const int y)
 
 void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *mode)
 {
-	int textx, texty, offset = 0, bodyoff;
+	int textx, texty, offset = 0, bodyoff, title_x, title_y, donut_x, donut_y, donut_size, donut_hole;
 	double rxp, txp, mod;
 	char buffer[512], datebuff[16], daytemp[32];
 	time_t yesterday;
@@ -1004,8 +1023,30 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 
 	textx = x + offset;
 	texty = y;
+	donut_hole = 15 + imageextrapx(ic, 3);
 
-	drawdonut(ic, textx + 50 + imageextrapx(ic, 40), texty + 45 + imageextrapx(ic, 10), (float)rxp, (float)txp, 49 + imageextrapx(ic, 10), 15 + imageextrapx(ic, 3));
+	if (ic->fontctx.mode == FONT_TTF) {
+		/* Size tracks the body block; avoid imageextrapx blowing up the diameter. */
+		donut_size = 3 * ic->lineheight + 4;
+		donut_hole = ic->lineheight;
+		donut_x = textx + 8 * ic->fontctx.cw;
+		/* Center on rx..rate (or rx..=) body block; title at digest top, left of values. */
+		if (cfg.summaryrate) {
+			donut_y = texty + (5 * ic->lineheight + 16) / 2;
+		} else {
+			donut_y = texty + 7 + (4 * ic->lineheight + 14) / 2;
+		}
+		title_x = textx - bodyoff;
+		title_y = texty + 2;
+	} else {
+		donut_size = 49 + imageextrapx(ic, 10);
+		donut_x = textx + 50 + imageextrapx(ic, 40);
+		donut_y = texty + 45 + imageextrapx(ic, 10);
+		title_x = textx - 54 + imageextrapx(ic, ic->fontctx.cw * 3 - 4);
+		title_y = texty - 1;
+	}
+
+	drawdonut(ic, donut_x, donut_y, (float)rxp, (float)txp, donut_size, donut_hole);
 
 	if (mode[0] == 'd') {
 		/* get formatted date for today */
@@ -1025,8 +1066,12 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 		strftime(daytemp, 16, cfg.mformat, d);
 	}
 
-	snprintf(buffer, 32, "%*s", getpadding(12, daytemp), daytemp);
-	imagestring(ic, FONT_ROLE_TITLE, textx - 54 + imageextrapx(ic, ic->fontctx.cw * 3 - 4), texty - 1, buffer, ic->ctext);
+	if (ic->fontctx.mode == FONT_TTF) {
+		snprintf(buffer, 32, "%s", daytemp);
+	} else {
+		snprintf(buffer, 32, "%*s", getpadding(12, daytemp), daytemp);
+	}
+	imagestring(ic, FONT_ROLE_TITLE, title_x, title_y, buffer, ic->ctext);
 
 	if (cfg.summaryrate) {
 		d = localtime(&ic->interface.updated);
@@ -1067,12 +1112,28 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 		}
 
 		if (ic->fontctx.mode == FONT_TTF) {
-			textx += 30 * ic->fontctx.cw;
+			textx += 26 * ic->fontctx.cw;
 		} else {
 			textx += 180 + imageextrapx(ic, 60);
 		}
 
-		drawdonut(ic, textx + 50 + imageextrapx(ic, 40), texty + 45 + imageextrapx(ic, 10), (float)rxp, (float)txp, 49 + imageextrapx(ic, 10), 15 + imageextrapx(ic, 3));
+		if (ic->fontctx.mode == FONT_TTF) {
+			donut_x = textx + 8 * ic->fontctx.cw;
+			title_x = textx - bodyoff;
+			title_y = y + 2;
+			if (cfg.summaryrate) {
+				donut_y = y + (5 * ic->lineheight + 16) / 2;
+			} else {
+				donut_y = y + 7 + (4 * ic->lineheight + 14) / 2;
+			}
+		} else {
+			donut_x = textx + 50 + imageextrapx(ic, 40);
+			donut_y = texty + 45 + imageextrapx(ic, 10);
+			title_x = textx - 54 + imageextrapx(ic, ic->fontctx.cw * 3 - 4);
+			title_y = texty - 1;
+		}
+
+		drawdonut(ic, donut_x, donut_y, (float)rxp, (float)txp, donut_size, donut_hole);
 
 		if (mode[0] == 'd') {
 			/* get formatted date for yesterday */
@@ -1092,8 +1153,12 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 			strftime(daytemp, 16, cfg.mformat, d);
 		}
 
-		snprintf(buffer, 32, "%*s", getpadding(12, daytemp), daytemp);
-		imagestring(ic, FONT_ROLE_TITLE, textx - 54 + imageextrapx(ic, ic->fontctx.cw * 3 - 4), texty - 1, buffer, ic->ctext);
+		if (ic->fontctx.mode == FONT_TTF) {
+			snprintf(buffer, 32, "%s", daytemp);
+		} else {
+			snprintf(buffer, 32, "%*s", getpadding(12, daytemp), daytemp);
+		}
+		imagestring(ic, FONT_ROLE_TITLE, title_x, title_y, buffer, ic->ctext);
 
 		if (cfg.summaryrate) {
 			if (mode[0] == 'd') {
