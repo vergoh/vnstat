@@ -834,12 +834,15 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 	int width, height, headermod, header_extra, digest_x, alltime_x, legend_x, legend_y, graph_x, fivegraph_x;
 	int digest_day_y, digest_month_y, alltime_y;
 	int monthrotatenotevisible = 0;
+	int vs_fiveg_bottom;
 	char monthrotatenote[96];
 
 	monthrotatenotevisible = ismonthrotatenoteneeded();
 	if (monthrotatenotevisible) {
 		getmonthrotatenote(monthrotatenote, sizeof(monthrotatenote));
 	}
+
+	vs_fiveg_bottom = 31 + imageextrapx(ic, 6);
 
 	switch (layout) {
 		// horizontal
@@ -875,8 +878,26 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 
 	if (ic->fontctx.mode == FONT_TTF) {
 		if (layout == 2) {
-			/* Graph is top-anchored at ie(84); trim unmatched ie(90) and skip -s footer pad */
-			height -= imageextrapx(ic, 6);
+			if (cfg.summarygraph == 1) {
+				int bottom_margin;
+
+				/* Axis labels sit below the 5-min plot; grow margin + canvas together */
+				bottom_margin = ic->fontctx.axis_ch + 4 + 12 + ic->showedge;
+				if (bottom_margin > vs_fiveg_bottom) {
+					height += bottom_margin - vs_fiveg_bottom;
+					vs_fiveg_bottom = bottom_margin;
+				}
+			} else {
+				int graph_y, needed;
+
+				graph_y = 215 + header_extra + imageextrapx(ic, 84) - headermod
+					+ (monthrotatenotevisible * (ic->lineheight * 2));
+				/* labels at graph_y+128; Tiny footer at height-12-showedge */
+				needed = graph_y + 128 + ic->fontctx.axis_ch + 4 + 12 + ic->showedge;
+				if (height < needed) {
+					height = needed;
+				}
+			}
 		} else {
 			/* Extra bottom pad so rate/legend clear the footer */
 			height += 2 * ic->lineheight;
@@ -932,7 +953,7 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 		// vertical
 		case 2:
 			if (cfg.summarygraph == 1) {
-				drawfiveminutes(ic, 8 + imageextrapx(ic, 14), height - 31 - imageextrapx(ic, 6), israte, 422 + imageextrapx(ic, 154), 132 + imageextrapx(ic, 35));
+				drawfiveminutes(ic, 8 + imageextrapx(ic, 14), height - vs_fiveg_bottom, israte, 422 + imageextrapx(ic, 154), 132 + imageextrapx(ic, 35));
 			} else {
 				drawhours(ic, 12, 215 + header_extra + imageextrapx(ic, 84) - headermod + (monthrotatenotevisible * (ic->lineheight * 2)), israte);
 			}
