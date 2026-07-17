@@ -923,7 +923,7 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 		digest_month_y = digest_day_y - 1 + 8 * ic->lineheight;
 		alltime_y = digest_day_y + 27 + imageextrapx(ic, 10);
 		/* Under all-time "since" line, matching builtin legend vs since gap */
-		legend_y = alltime_y + 7 * ic->lineheight + 28;
+		legend_y = alltime_y + 9 * ic->lineheight;
 	} else {
 		alltime_x = 385 + imageextrapx(ic, 125);
 		legend_x = 410 + imageextrapx(ic, 132);
@@ -996,14 +996,14 @@ void drawsummary_alltime(IMAGECONTENT *ic, const int x, const int y)
 	imagestring(ic, FONT_ROLE_BODY, x, y + (3 * ic->lineheight), buffer, ic->ctext);
 	snprintf(buffer, 4, " = ");
 	strncat(buffer, getvalue(ic->interface.rxtotal + ic->interface.txtotal, 12, RT_Normal), 32);
-	imagestring(ic, FONT_ROLE_BODY, x, y + (4 * ic->lineheight) + 2 + imageextrapx(ic, 4), buffer, ic->ctext);
+	imagestring(ic, FONT_ROLE_BODY, x, y + (4.5 * ic->lineheight), buffer, ic->ctext);
 	d = localtime(&ic->interface.created);
 	strftime(datebuff, 16, cfg.tformat, d);
 	snprintf(daytemp, 24, "since %s", datebuff);
 	if (ic->fontctx.mode == FONT_TTF) {
 		/* buffer still holds the "=" line drawn above */
 		since_x = x + imagetextwidth(ic, FONT_ROLE_BODY, buffer) - imagetextwidth(ic, FONT_ROLE_BODY, daytemp);
-		imagestring(ic, FONT_ROLE_BODY, since_x, y + (5 * ic->lineheight) + 10 + imageextrapx(ic, 4), daytemp, ic->ctext);
+		imagestring(ic, FONT_ROLE_BODY, since_x, y + (6 * ic->lineheight), daytemp, ic->ctext);
 	} else {
 		snprintf(buffer, 32, "%23s", daytemp);
 		imagestring(ic, FONT_ROLE_BODY, x - 8 * ic->fontctx.cw, y + (5 * ic->lineheight) + 10 + imageextrapx(ic, 4), buffer, ic->ctext);
