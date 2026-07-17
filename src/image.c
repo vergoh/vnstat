@@ -971,7 +971,8 @@ void drawsummary_alltime(IMAGECONTENT *ic, const int x, const int y)
 	strftime(datebuff, 16, cfg.tformat, d);
 	snprintf(daytemp, 24, "since %s", datebuff);
 	if (ic->fontctx.mode == FONT_TTF) {
-		since_x = col_right - imagetextwidth(ic, FONT_ROLE_BODY, daytemp);
+		/* buffer still holds the "=" line drawn above */
+		since_x = x + imagetextwidth(ic, FONT_ROLE_BODY, buffer) - imagetextwidth(ic, FONT_ROLE_BODY, daytemp);
 		imagestring(ic, FONT_ROLE_BODY, since_x, y + (5 * ic->lineheight) + 10 + imageextrapx(ic, 4), daytemp, ic->ctext);
 	} else {
 		snprintf(buffer, 32, "%23s", daytemp);
@@ -1071,6 +1072,14 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 		drawdonut(ic, donut_x, donut_y, (float)rxp, (float)txp, donut_size, donut_hole);
 		imagestring(ic, FONT_ROLE_TITLE, title_x, title_y, daytemp, ic->ctext);
 
+		imagestring(ic, FONT_ROLE_BODY, body_left, texty + 2 * ic->lineheight, buffer, ic->ctext);
+		snprintf(buffer, 4, "tx ");
+		strncat(buffer, getvalue(data_current->tx, 12, RT_Normal), 32);
+		imagestring(ic, FONT_ROLE_BODY, body_left, texty + 3 * ic->lineheight, buffer, ic->ctext);
+		snprintf(buffer, 4, " = ");
+		strncat(buffer, getvalue(data_current->rx + data_current->tx, 12, RT_Normal), 32);
+		imagestring(ic, FONT_ROLE_BODY, body_left, texty + 4 * ic->lineheight + 2, buffer, ic->ctext);
+
 		if (cfg.summaryrate) {
 			d = localtime(&ic->interface.updated);
 			if (mode[0] == 'd') {
@@ -1082,17 +1091,10 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 				rateptr++;
 			}
 			strncpy_nt(ratebuf, rateptr, 64);
-			rate_x = col_right - imagetextwidth(ic, FONT_ROLE_BODY, ratebuf);
+			/* buffer still holds the "=" line */
+			rate_x = body_left + imagetextwidth(ic, FONT_ROLE_BODY, buffer) - imagetextwidth(ic, FONT_ROLE_BODY, ratebuf);
 			imagestring(ic, FONT_ROLE_BODY, rate_x, texty + 5 * ic->lineheight + 10, ratebuf, ic->ctext);
 		}
-
-		imagestring(ic, FONT_ROLE_BODY, body_left, texty + 2 * ic->lineheight, buffer, ic->ctext);
-		snprintf(buffer, 4, "tx ");
-		strncat(buffer, getvalue(data_current->tx, 12, RT_Normal), 32);
-		imagestring(ic, FONT_ROLE_BODY, body_left, texty + 3 * ic->lineheight, buffer, ic->ctext);
-		snprintf(buffer, 4, " = ");
-		strncat(buffer, getvalue(data_current->rx + data_current->tx, 12, RT_Normal), 32);
-		imagestring(ic, FONT_ROLE_BODY, body_left, texty + 4 * ic->lineheight + 2, buffer, ic->ctext);
 	} else {
 		char titlebuf[32];
 
@@ -1175,6 +1177,14 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 			drawdonut(ic, donut_x, donut_y, (float)rxp, (float)txp, donut_size, donut_hole);
 			imagestring(ic, FONT_ROLE_TITLE, title_x, title_y, daytemp, ic->ctext);
 
+			imagestring(ic, FONT_ROLE_BODY, body_left, y + 2 * ic->lineheight, buffer, ic->ctext);
+			snprintf(buffer, 4, "tx ");
+			strncat(buffer, getvalue(data_previous->tx, 12, RT_Normal), 32);
+			imagestring(ic, FONT_ROLE_BODY, body_left, y + 3 * ic->lineheight, buffer, ic->ctext);
+			snprintf(buffer, 4, " = ");
+			strncat(buffer, getvalue(data_previous->rx + data_previous->tx, 12, RT_Normal), 32);
+			imagestring(ic, FONT_ROLE_BODY, body_left, y + 4 * ic->lineheight + 2, buffer, ic->ctext);
+
 			if (cfg.summaryrate) {
 				if (mode[0] == 'd') {
 					rateptr = gettrafficrate(data_previous->rx + data_previous->tx, 86400, 1);
@@ -1185,17 +1195,10 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 					rateptr++;
 				}
 				strncpy_nt(ratebuf, rateptr, 64);
-				rate_x = col_right - imagetextwidth(ic, FONT_ROLE_BODY, ratebuf);
+				/* buffer still holds the "=" line */
+				rate_x = body_left + imagetextwidth(ic, FONT_ROLE_BODY, buffer) - imagetextwidth(ic, FONT_ROLE_BODY, ratebuf);
 				imagestring(ic, FONT_ROLE_BODY, rate_x, y + 5 * ic->lineheight + 10, ratebuf, ic->ctext);
 			}
-
-			imagestring(ic, FONT_ROLE_BODY, body_left, y + 2 * ic->lineheight, buffer, ic->ctext);
-			snprintf(buffer, 4, "tx ");
-			strncat(buffer, getvalue(data_previous->tx, 12, RT_Normal), 32);
-			imagestring(ic, FONT_ROLE_BODY, body_left, y + 3 * ic->lineheight, buffer, ic->ctext);
-			snprintf(buffer, 4, " = ");
-			strncat(buffer, getvalue(data_previous->rx + data_previous->tx, 12, RT_Normal), 32);
-			imagestring(ic, FONT_ROLE_BODY, body_left, y + 4 * ic->lineheight + 2, buffer, ic->ctext);
 		} else {
 			char titlebuf[32];
 
