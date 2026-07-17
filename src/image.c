@@ -305,7 +305,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 {
 	ListType listtype = LT_None;
 	int textx, texty, offsetx = 0;
-	int width, height, headermod, i = 1, rowcount = 0;
+	int width, height, headermod, i = 1, liney, rowcount = 0;
 	int estimateavailable = 0, estimatevisible = 0, monthrotatenotevisible = 0;
 	int32_t limit;
 	uint64_t e_rx = 0, e_tx = 0, e_secs;
@@ -499,11 +499,11 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		imagestring(ic, FONT_ROLE_BODY, total_dec - imagetextwidth(ic, FONT_ROLE_BODY, "t"), texty, "total", ic->ctext);
 		if (cfg.ostyle > 2) {
 			imagestring(ic, FONT_ROLE_BODY, rate_edge - imagetextwidth(ic, FONT_ROLE_BODY, "avg. rate"), texty, "avg. rate", ic->ctext);
-			i = texty + ic->fontctx.ch + (ic->lineheight + 8 - ic->fontctx.ch) / 2;
-			gdImageLine(ic->im, textx + 2, i, textx + (65 * ic->fontctx.cw) + offsetx + 2, i, ic->cline);
+			liney = texty + ic->fontctx.ch + (ic->lineheight + 8 - ic->fontctx.ch) / 2;
+			gdImageLine(ic->im, textx + 2, liney, textx + (65 * ic->fontctx.cw) + offsetx + 2, liney, ic->cline);
 		} else {
-			i = texty + ic->fontctx.ch + (ic->lineheight + 8 - ic->fontctx.ch) / 2;
-			gdImageLine(ic->im, textx + 2, i, textx + (50 * ic->fontctx.cw) + offsetx - 4, i, ic->cline);
+			liney = texty + ic->fontctx.ch + (ic->lineheight + 8 - ic->fontctx.ch) / 2;
+			gdImageLine(ic->im, textx + 2, liney, textx + (50 * ic->fontctx.cw) + offsetx - 4, liney, ic->cline);
 		}
 
 		texty += ic->lineheight + 8;
@@ -616,11 +616,11 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 			texty += ic->lineheight;
 		}
 
-		i = texty - ic->lineheight + ic->fontctx.ch + (ic->lineheight + 8 - ic->fontctx.ch) / 2;
+		liney = texty - ic->lineheight + ic->fontctx.ch + (ic->lineheight + 8 - ic->fontctx.ch) / 2;
 		if (cfg.ostyle > 2) {
-			gdImageLine(ic->im, textx + 2, i, textx + (65 * ic->fontctx.cw) + offsetx + 2, i, ic->cline);
+			gdImageLine(ic->im, textx + 2, liney, textx + (65 * ic->fontctx.cw) + offsetx + 2, liney, ic->cline);
 		} else {
-			gdImageLine(ic->im, textx + 2, i, textx + (50 * ic->fontctx.cw) + offsetx - 4, i, ic->cline);
+			gdImageLine(ic->im, textx + 2, liney, textx + (50 * ic->fontctx.cw) + offsetx - 4, liney, ic->cline);
 		}
 
 		buffer[0] = '\0';
@@ -709,12 +709,12 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	if (cfg.ostyle > 2) {
 		strcat(buffer, "       avg. rate");
 		imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
-		i = texty + ic->lineheight + 4;
-		gdImageLine(ic->im, textx + 2, i, textx + (65 * ic->fontctx.cw) + offsetx + 2, i, ic->cline);
+		liney = texty + ic->lineheight + 4;
+		gdImageLine(ic->im, textx + 2, liney, textx + (65 * ic->fontctx.cw) + offsetx + 2, liney, ic->cline);
 	} else {
 		imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
-		i = texty + ic->lineheight + 4;
-		gdImageLine(ic->im, textx + 2, i, textx + (50 * ic->fontctx.cw) + offsetx - 4, i, ic->cline);
+		liney = texty + ic->lineheight + 4;
+		gdImageLine(ic->im, textx + 2, liney, textx + (50 * ic->fontctx.cw) + offsetx - 4, liney, ic->cline);
 	}
 
 	texty += ic->lineheight + 8;
@@ -820,14 +820,14 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 
 	/* Rule centered between last data row and estimate/sum (drawn at texty + 8). */
 	if (ic->fontctx.mode == FONT_TTF) {
-		i = texty - ic->lineheight + ic->fontctx.ch + (ic->lineheight + 8 - ic->fontctx.ch) / 2;
+		liney = texty - ic->lineheight + ic->fontctx.ch + (ic->lineheight + 8 - ic->fontctx.ch) / 2;
 	} else {
-		i = texty + 5 - (ic->large * 2);
+		liney = texty + 5 - (ic->large * 2);
 	}
 	if (cfg.ostyle > 2) {
-		gdImageLine(ic->im, textx + 2, i, textx + (65 * ic->fontctx.cw) + offsetx + 2, i, ic->cline);
+		gdImageLine(ic->im, textx + 2, liney, textx + (65 * ic->fontctx.cw) + offsetx + 2, liney, ic->cline);
 	} else {
-		gdImageLine(ic->im, textx + 2, i, textx + (50 * ic->fontctx.cw) + offsetx - 4, i, ic->cline);
+		gdImageLine(ic->im, textx + 2, liney, textx + (50 * ic->fontctx.cw) + offsetx - 4, liney, ic->cline);
 	}
 
 	buffer[0] = '\0';
