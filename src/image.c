@@ -222,9 +222,24 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 	xt = x + 36;
 
 	for (i = step; i * s <= (124 + extray + 4); i = i + step) {
+		const char *val;
+		int label_y;
+
 		gdImageDashedLine(ic->im, xt, y + 124 - (i * s), xt + 424 + extrax, y + 124 - (i * s), ic->cline);
 		gdImageDashedLine(ic->im, xt, y + 124 - prev - (step * s) / 2, xt + 424 + extrax, y + 124 - prev - (step * s) / 2, ic->clinel);
-		imagestring(ic, FONT_ROLE_AXIS, x + 16 - imageextrapx(ic, 3), y + 121 - (i * s) - imageextrapx(ic, 3), getimagevalue(scaleunit * (unsigned int)i, 3, israte), ic->ctext);
+		val = getimagevalue(scaleunit * (unsigned int)i, 3, israte);
+		label_y = y + 121 - (i * s) - imageextrapx(ic, 3);
+		if (ic->fontctx.mode == FONT_TTF) {
+			int label_gap = 4;
+
+			while (*val == ' ') {
+				val++;
+			}
+			/* Right-align to the fixed Y-axis; do not move xt with font size */
+			imagestring(ic, FONT_ROLE_AXIS, xt - label_gap - imagetextwidth(ic, FONT_ROLE_AXIS, val), label_y, val, ic->ctext);
+		} else {
+			imagestring(ic, FONT_ROLE_AXIS, x + 16 - imageextrapx(ic, 3), label_y, val, ic->ctext);
+		}
 		prev = i * s;
 	}
 	if ((prev + (step * s) / 2) <= (124 + extray + 4)) {
