@@ -263,7 +263,8 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 	drawarrowup(ic, xt, y - 9 - extray);
 	drawarrowright(ic, xt + 429 + extrax, y + 124);
 
-	xt = x + 440 + extrax;
+	/* Rightmost hour column relative to y-axis (440 assumed GRAPH_AXIS_BASE gutter) */
+	xt = xt + (440 - GRAPH_AXIS_BASE) + extrax;
 
 	/* keep alignment when midnight line isn't shown s*/
 	if (cfg.hourlygmode || tmax - 23 == 0) {
@@ -323,7 +324,11 @@ void drawhourly(IMAGECONTENT *ic, const int israte)
 	layoutinit(ic, " / hourly", width, height);
 
 	if (drawhours(ic, 12, 46 - headermod + imageextrapx(ic, 40), israte)) {
-		drawlegend(ic, width / 2 - imageextrapx(ic, 10), 183 - headermod + imageextrapx(ic, 46), 0);
+		if (ic->fontctx.mode == FONT_TTF) {
+			drawlegend(ic, width / 2 - imageextrapx(ic, 10), height - ic->showedge - ic->fontctx.ch * 1.5, 0);
+		} else {
+			drawlegend(ic, width / 2 - imageextrapx(ic, 10), 183 - headermod + imageextrapx(ic, 46), 0);
+		}
 	}
 }
 
