@@ -988,23 +988,60 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 	}
 }
 
+/* Matches old left-aligned "rx " + getvalue(..., 12) width ("  999.99 YiB" pad). */
+static const char summary_stack_sample[] = "rx   999.99 YiB";
+
+static void drawsummary_stack_ttf(IMAGECONTENT *ic, const int body_left, const int value_edge,
+	const int y_rx, const int y_tx, const int y_eq, const uint64_t rx, const uint64_t tx)
+{
+	const int label_edge = body_left + imagetextwidth(ic, FONT_ROLE_BODY, "rx");
+	/* Shift values right by 2*cw; callers keep donut/title anchors on value_edge. */
+	const int padded_edge = value_edge + 2 * ic->fontctx.cw;
+	char valbuf[64];
+
+	imagestring(ic, FONT_ROLE_BODY, label_edge - imagetextwidth(ic, FONT_ROLE_BODY, "rx"), y_rx, "rx", ic->ctext);
+	strncpy_nt(valbuf, getvalue(rx, 12, RT_Normal), 64);
+	imagestring(ic, FONT_ROLE_BODY, padded_edge - imagetextwidth(ic, FONT_ROLE_BODY, valbuf), y_rx, valbuf, ic->ctext);
+
+	imagestring(ic, FONT_ROLE_BODY, label_edge - imagetextwidth(ic, FONT_ROLE_BODY, "tx"), y_tx, "tx", ic->ctext);
+	strncpy_nt(valbuf, getvalue(tx, 12, RT_Normal), 64);
+	imagestring(ic, FONT_ROLE_BODY, padded_edge - imagetextwidth(ic, FONT_ROLE_BODY, valbuf), y_tx, valbuf, ic->ctext);
+
+	imagestring(ic, FONT_ROLE_BODY, label_edge - imagetextwidth(ic, FONT_ROLE_BODY, "="), y_eq, "=", ic->ctext);
+	strncpy_nt(valbuf, getvalue(rx + tx, 12, RT_Normal), 64);
+	imagestring(ic, FONT_ROLE_BODY, padded_edge - imagetextwidth(ic, FONT_ROLE_BODY, valbuf), y_eq, valbuf, ic->ctext);
+}
+
 void drawsummary_alltime(IMAGECONTENT *ic, const int x, const int y)
 {
 	int title_x, col_right, since_x;
 	const struct tm *d;
 	char buffer[512], datebuff[16], daytemp[32];
 
-	snprintf(buffer, 4, "rx ");
-	strncat(buffer, getvalue(ic->interface.rxtotal, 12, RT_Normal), 32);
-
 	if (ic->fontctx.mode == FONT_TTF) {
-		col_right = x + imagetextwidth(ic, FONT_ROLE_BODY, "rx 999.99 YiB");
+		col_right = x + imagetextwidth(ic, FONT_ROLE_BODY, summary_stack_sample);
 		title_x = col_right - imagetextwidth(ic, FONT_ROLE_TITLE, "all time");
-	} else {
-		title_x = x + 12 + imageextrapx(ic, 10);
+		imagestring(ic, FONT_ROLE_TITLE, title_x, y, "all time", ic->ctext);
+
+		drawsummary_stack_ttf(ic, x, col_right,
+			y + (2 * ic->lineheight),
+			y + (3 * ic->lineheight),
+			y + (4.5 * ic->lineheight),
+			ic->interface.rxtotal, ic->interface.txtotal);
+
+		d = localtime(&ic->interface.created);
+		strftime(datebuff, 16, cfg.tformat, d);
+		snprintf(daytemp, 24, "since %s", datebuff);
+		since_x = col_right + 2 * ic->fontctx.cw - imagetextwidth(ic, FONT_ROLE_BODY, daytemp);
+		imagestring(ic, FONT_ROLE_BODY, since_x, y + (6 * ic->lineheight), daytemp, ic->ctext);
+		return;
 	}
+
+	title_x = x + 12 + imageextrapx(ic, 10);
 	imagestring(ic, FONT_ROLE_TITLE, title_x, y, "all time", ic->ctext);
 
+	snprintf(buffer, 4, "rx ");
+	strncat(buffer, getvalue(ic->interface.rxtotal, 12, RT_Normal), 32);
 	imagestring(ic, FONT_ROLE_BODY, x, y + (2 * ic->lineheight), buffer, ic->ctext);
 	snprintf(buffer, 4, "tx ");
 	strncat(buffer, getvalue(ic->interface.txtotal, 12, RT_Normal), 32);
@@ -1015,14 +1052,8 @@ void drawsummary_alltime(IMAGECONTENT *ic, const int x, const int y)
 	d = localtime(&ic->interface.created);
 	strftime(datebuff, 16, cfg.tformat, d);
 	snprintf(daytemp, 24, "since %s", datebuff);
-	if (ic->fontctx.mode == FONT_TTF) {
-		/* buffer still holds the "=" line drawn above */
-		since_x = x + imagetextwidth(ic, FONT_ROLE_BODY, buffer) - imagetextwidth(ic, FONT_ROLE_BODY, daytemp);
-		imagestring(ic, FONT_ROLE_BODY, since_x, y + (6 * ic->lineheight), daytemp, ic->ctext);
-	} else {
-		snprintf(buffer, 32, "%23s", daytemp);
-		imagestring(ic, FONT_ROLE_BODY, x - 8 * ic->fontctx.cw, y + (5 * ic->lineheight) + 10 + imageextrapx(ic, 4), buffer, ic->ctext);
-	}
+	snprintf(buffer, 32, "%23s", daytemp);
+	imagestring(ic, FONT_ROLE_BODY, x - 8 * ic->fontctx.cw, y + (5 * ic->lineheight) + 10 + imageextrapx(ic, 4), buffer, ic->ctext);
 }
 
 void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *mode)
@@ -1106,7 +1137,7 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 
 	if (ic->fontctx.mode == FONT_TTF) {
 		body_left = textx - bodyoff;
-		col_right = body_left + imagetextwidth(ic, FONT_ROLE_BODY, "rx 999.99 YiB");
+		col_right = body_left + imagetextwidth(ic, FONT_ROLE_BODY, summary_stack_sample);
 		title_x = col_right - imagetextwidth(ic, FONT_ROLE_TITLE, daytemp) / 2;
 		title_y = texty;
 		y_tx = texty + 3 * ic->lineheight;
@@ -1117,13 +1148,11 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 		drawdonut(ic, donut_x, donut_y, (float)rxp, (float)txp, donut_size, donut_hole);
 		imagestring(ic, FONT_ROLE_TITLE, title_x, title_y, daytemp, ic->ctext);
 
-		imagestring(ic, FONT_ROLE_BODY, body_left, texty + 2 * ic->lineheight, buffer, ic->ctext);
-		snprintf(buffer, 4, "tx ");
-		strncat(buffer, getvalue(data_current->tx, 12, RT_Normal), 32);
-		imagestring(ic, FONT_ROLE_BODY, body_left, texty + 3 * ic->lineheight, buffer, ic->ctext);
-		snprintf(buffer, 4, " = ");
-		strncat(buffer, getvalue(data_current->rx + data_current->tx, 12, RT_Normal), 32);
-		imagestring(ic, FONT_ROLE_BODY, body_left, texty + 4 * ic->lineheight + 2, buffer, ic->ctext);
+		drawsummary_stack_ttf(ic, body_left, col_right,
+			texty + 2 * ic->lineheight,
+			texty + 3 * ic->lineheight,
+			texty + 4 * ic->lineheight + 2,
+			data_current->rx, data_current->tx);
 
 		if (cfg.summaryrate) {
 			d = localtime(&ic->interface.updated);
@@ -1136,8 +1165,7 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 				rateptr++;
 			}
 			strncpy_nt(ratebuf, rateptr, 64);
-			/* buffer still holds the "=" line */
-			rate_x = body_left + imagetextwidth(ic, FONT_ROLE_BODY, buffer) - imagetextwidth(ic, FONT_ROLE_BODY, ratebuf);
+			rate_x = col_right + 2 * ic->fontctx.cw - imagetextwidth(ic, FONT_ROLE_BODY, ratebuf);
 			imagestring(ic, FONT_ROLE_BODY, rate_x, texty + 5 * ic->lineheight + 10, ratebuf, ic->ctext);
 		}
 	} else {
@@ -1211,7 +1239,7 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 
 		if (ic->fontctx.mode == FONT_TTF) {
 			body_left = textx - bodyoff;
-			col_right = body_left + imagetextwidth(ic, FONT_ROLE_BODY, "rx 999.99 YiB");
+			col_right = body_left + imagetextwidth(ic, FONT_ROLE_BODY, summary_stack_sample);
 			title_x = col_right - imagetextwidth(ic, FONT_ROLE_TITLE, daytemp) / 2;
 			title_y = y;
 			y_tx = y + 3 * ic->lineheight;
@@ -1222,13 +1250,11 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 			drawdonut(ic, donut_x, donut_y, (float)rxp, (float)txp, donut_size, donut_hole);
 			imagestring(ic, FONT_ROLE_TITLE, title_x, title_y, daytemp, ic->ctext);
 
-			imagestring(ic, FONT_ROLE_BODY, body_left, y + 2 * ic->lineheight, buffer, ic->ctext);
-			snprintf(buffer, 4, "tx ");
-			strncat(buffer, getvalue(data_previous->tx, 12, RT_Normal), 32);
-			imagestring(ic, FONT_ROLE_BODY, body_left, y + 3 * ic->lineheight, buffer, ic->ctext);
-			snprintf(buffer, 4, " = ");
-			strncat(buffer, getvalue(data_previous->rx + data_previous->tx, 12, RT_Normal), 32);
-			imagestring(ic, FONT_ROLE_BODY, body_left, y + 4 * ic->lineheight + 2, buffer, ic->ctext);
+			drawsummary_stack_ttf(ic, body_left, col_right,
+				y + 2 * ic->lineheight,
+				y + 3 * ic->lineheight,
+				y + 4 * ic->lineheight + 2,
+				data_previous->rx, data_previous->tx);
 
 			if (cfg.summaryrate) {
 				if (mode[0] == 'd') {
@@ -1240,8 +1266,7 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 					rateptr++;
 				}
 				strncpy_nt(ratebuf, rateptr, 64);
-				/* buffer still holds the "=" line */
-				rate_x = body_left + imagetextwidth(ic, FONT_ROLE_BODY, buffer) - imagetextwidth(ic, FONT_ROLE_BODY, ratebuf);
+				rate_x = col_right + 2 * ic->fontctx.cw - imagetextwidth(ic, FONT_ROLE_BODY, ratebuf);
 				imagestring(ic, FONT_ROLE_BODY, rate_x, y + 5 * ic->lineheight + 10, ratebuf, ic->ctext);
 			}
 		} else {
