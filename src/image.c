@@ -896,6 +896,9 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 		case 1:
 			width = 163 * ic->fontctx.cw + 2 + imageextrapx(ic, 2);
 			height = 56 + 12 * ic->lineheight;
+			if (ic->fontctx.mode == FONT_TTF) {
+				height += ic->lineheight;
+			}
 			break;
 		// vertical
 		case 2:
@@ -906,6 +909,9 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 		default:
 			width = 83 * ic->fontctx.cw + 2 + imageextrapx(ic, 2);
 			height = 56 + 12 * ic->lineheight;
+			if (ic->fontctx.mode == FONT_TTF) {
+				height += ic->lineheight;
+			}
 			break;
 	}
 
