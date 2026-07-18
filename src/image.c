@@ -228,8 +228,8 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 		int label_y, line_y;
 
 		line_y = y + 124 - (i * s);
-		gdImageDashedLine(ic->im, xt, line_y, xt + 424 + extrax, line_y, ic->cline);
-		gdImageDashedLine(ic->im, xt, y + 124 - prev - (step * s) / 2, xt + 424 + extrax, y + 124 - prev - (step * s) / 2, ic->clinel);
+		imagedrawdashedhline(ic, xt, xt + 424 + extrax, line_y, ic->cline);
+		imagedrawdashedhline(ic, xt, xt + 424 + extrax, y + 124 - prev - (step * s) / 2, ic->clinel);
 		val = getimagevalue(scaleunit * (unsigned int)i, 3, israte);
 		if (ic->fontctx.mode == FONT_TTF) {
 			while (*val == ' ') {
@@ -245,7 +245,7 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 		prev = i * s;
 	}
 	if ((prev + (step * s) / 2) <= (124 + extray + 4)) {
-		gdImageDashedLine(ic->im, xt, y + 124 - prev - (step * s) / 2, xt + 424 + extrax, y + 124 - prev - (step * s) / 2, ic->clinel);
+		imagedrawdashedhline(ic, xt, xt + 424 + extrax, y + 124 - prev - (step * s) / 2, ic->clinel);
 	}
 
 	/* scale text */
@@ -256,8 +256,8 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 	}
 
 	/* axis */
-	gdImageLine(ic->im, xt - 4, y + 124, xt + 430 + extrax, y + 124, ic->ctext);
-	gdImageLine(ic->im, xt, y - 10 - extray, xt, y + 124 + 4, ic->ctext);
+	imagedrawhline(ic, xt - 4, xt + 430 + extrax, y + 124, ic->ctext);
+	imagedrawvline(ic, xt, y - 10 - extray, y + 124 + 4, ic->ctext);
 
 	/* arrows */
 	drawarrowup(ic, xt, y - 9 - extray);
@@ -293,10 +293,10 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 			imagestring(ic, FONT_ROLE_AXIS, xt, y + 128, buffer, chour);
 		}
 		drawpoles(ic, xt - 2, y - extray, 124 + extray, hourdata[s].rx, hourdata[s].tx, max);
-		gdImageLine(ic->im, xt - 4 - imageextrapx(ic, 3), y + 124, xt + 12 + imageextrapx(ic, 3), y + 124, chour);
+		imagedrawhline(ic, xt - 4 - imageextrapx(ic, 3), xt + 12 + imageextrapx(ic, 3), y + 124, chour);
 		if (s == 0 && i != 23) {
 			/* midnight line */
-			gdImageLine(ic->im, xt - 5 - imageextrapx(ic, 3), y - 5 - extray, xt - 5 - imageextrapx(ic, 3), y + 124 - 1, ic->clinel);
+			imagedrawvline(ic, xt - 5 - imageextrapx(ic, 3), y - 5 - extray, y + 124 - 1, ic->clinel);
 			xt--;
 		}
 		xt = xt - (17 + imageextrapx(ic, 6));
@@ -316,7 +316,7 @@ void drawhourly(IMAGECONTENT *ic, const int israte)
 	height = 200 + imageextrapx(ic, 48);
 
 	if (!ic->showheader) {
-		headermod = ic->fontctx.header_h + 2;
+		headermod = ic->fontctx.header_h + imageuipx(ic, 2);
 		height -= ic->fontctx.header_h - 2;
 	}
 
@@ -360,7 +360,7 @@ static void listcolumns_init(IMAGECONTENT *ic, const int textx, const int offset
 	cols->date_field_right = cols->header_field_right = 0;
 
 	if (ic->fontctx.mode == FONT_TTF) {
-		const int colpad = 8;
+		const int colpad = imageuipx(ic, 8);
 		const char *sample = "00.00 GiB";
 		int sample_w, prefix_w;
 
@@ -406,15 +406,15 @@ static int list_mid_rule_y(const IMAGECONTENT *ic, const int texty)
 static void list_draw_hline(IMAGECONTENT *ic, const ListColumns *cols, const int y, const int withrate)
 {
 	int x2 = withrate ? cols->hline_right_rate : cols->hline_right_norate;
-	gdImageLine(ic->im, cols->textx + 2, y, x2, y, ic->cline);
+	imagedrawhline(ic, cols->textx + imageuipx(ic, 2), x2, y, ic->cline);
 }
 
 static void list_draw_vdividers(IMAGECONTENT *ic, const ListColumns *cols, const int y1, const int y2, const int withrate)
 {
-	gdImageLine(ic->im, cols->d24, y1, cols->d24, y2, ic->cline);
-	gdImageLine(ic->im, cols->d37, y1, cols->d37, y2, ic->cline);
+	imagedrawvline(ic, cols->d24, y1, y2, ic->cline);
+	imagedrawvline(ic, cols->d37, y1, y2, ic->cline);
 	if (withrate) {
-		gdImageLine(ic->im, cols->d50, y1, cols->d50, y2, ic->cline);
+		imagedrawvline(ic, cols->d50, y1, y2, ic->cline);
 	}
 }
 
@@ -527,7 +527,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	}
 	rowcount += datainfo.count;
 
-	width = 83 * ic->fontctx.cw + 2 + imageextrapx(ic, 2);
+	width = 83 * ic->fontctx.cw + imageuipx(ic, 2) + imageextrapx(ic, 2);
 	height = 62 + (ic->fontctx.header_h - 24) + 3 * ic->lineheight;
 
 	// less space needed when no estimate or sum is shown
@@ -553,7 +553,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	}
 
 	if (!ic->showheader) {
-		headermod = ic->fontctx.header_h + 2;
+		headermod = ic->fontctx.header_h + imageuipx(ic, 2);
 		height -= ic->fontctx.header_h - 2;
 	} else {
 		headermod = 0;
@@ -646,10 +646,12 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 				int short_stamp = (strftime(datebuff, 16, stampformat, d) <= 8);
 
 				if (strcmp(datebuff, daybuff) == 0) {
+					int pad2 = imageuipx(ic, 2);
+
 					if (cfg.ostyle > 2) {
-						gdImageFilledRectangle(ic->im, textx + 2, texty + 2, textx + (65 * ic->fontctx.cw) + offsetx + 2, texty + ic->fontctx.ch - 2, ic->cbgoffset);
+						gdImageFilledRectangle(ic->im, textx + pad2, texty + pad2, textx + (65 * ic->fontctx.cw) + offsetx + pad2, texty + ic->fontctx.ch - pad2, ic->cbgoffset);
 					} else {
-						gdImageFilledRectangle(ic->im, textx + 2, texty + 2, textx + (50 * ic->fontctx.cw) + offsetx - 4, texty + ic->fontctx.ch - 2, ic->cbgoffset);
+						gdImageFilledRectangle(ic->im, textx + pad2, texty + pad2, textx + (50 * ic->fontctx.cw) + offsetx - imageuipx(ic, 4), texty + ic->fontctx.ch - pad2, ic->cbgoffset);
 					}
 				}
 				if (short_stamp) {
@@ -693,10 +695,12 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 					snprintf(buffer, 32, "  %2d  %-*s ", i, getpadding(11, datebuff), datebuff);
 				}
 				if (strcmp(datebuff, daybuff) == 0) {
+					int pad2 = imageuipx(ic, 2);
+
 					if (cfg.ostyle > 2) {
-						gdImageFilledRectangle(ic->im, textx + 2, texty + 2, textx + (65 * ic->fontctx.cw) + offsetx + 2, texty + ic->fontctx.ch - 2, ic->cbgoffset);
+						gdImageFilledRectangle(ic->im, textx + pad2, texty + pad2, textx + (65 * ic->fontctx.cw) + offsetx + pad2, texty + ic->fontctx.ch - pad2, ic->cbgoffset);
 					} else {
-						gdImageFilledRectangle(ic->im, textx + 2, texty + 2, textx + (50 * ic->fontctx.cw) + offsetx - 4, texty + ic->fontctx.ch - 2, ic->cbgoffset);
+						gdImageFilledRectangle(ic->im, textx + pad2, texty + pad2, textx + (50 * ic->fontctx.cw) + offsetx - imageuipx(ic, 4), texty + ic->fontctx.ch - pad2, ic->cbgoffset);
 					}
 				}
 			} else {
@@ -899,7 +903,7 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 	switch (layout) {
 		// horizontal
 		case 1:
-			width = 163 * ic->fontctx.cw + 2 + imageextrapx(ic, 2);
+			width = 163 * ic->fontctx.cw + imageuipx(ic, 2) + imageextrapx(ic, 2);
 			height = 56 + 12 * ic->lineheight;
 			if (ic->fontctx.mode == FONT_TTF) {
 				height += ic->lineheight;
@@ -907,12 +911,12 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 			break;
 		// vertical
 		case 2:
-			width = 83 * ic->fontctx.cw + 2 + imageextrapx(ic, 2);
+			width = 83 * ic->fontctx.cw + imageuipx(ic, 2) + imageextrapx(ic, 2);
 			height = 370 + imageextrapx(ic, 90);
 			break;
 		// no hours
 		default:
-			width = 83 * ic->fontctx.cw + 2 + imageextrapx(ic, 2);
+			width = 83 * ic->fontctx.cw + imageuipx(ic, 2) + imageextrapx(ic, 2);
 			height = 56 + 12 * ic->lineheight;
 			if (ic->fontctx.mode == FONT_TTF) {
 				height += ic->lineheight;
@@ -933,7 +937,7 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 	}
 
 	if (!ic->showheader) {
-		headermod = ic->fontctx.header_h + 2;
+		headermod = ic->fontctx.header_h + imageuipx(ic, 2);
 		header_extra = 0;
 		height -= ic->fontctx.header_h - 2;
 	} else {
@@ -1486,8 +1490,8 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 
 	/* axis */
 	x += axis_left;
-	gdImageLine(ic->im, x, y, x + (plot_w + FIVEMINWIDTHFULLPADDING), y, ic->ctext);
-	gdImageLine(ic->im, x + 4, y + 4, x + 4, y - height, ic->ctext);
+	imagedrawhline(ic, x, x + (plot_w + FIVEMINWIDTHFULLPADDING), y, ic->ctext);
+	imagedrawvline(ic, x + 4, y + 4, y - height, ic->ctext);
 
 	/* arrows */
 	drawarrowup(ic, x + 4, y - 1 - height);
@@ -1515,7 +1519,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	/* center line; y-axis is at x-1 after this advance (drawn at previous x+4) */
 	x += GRAPH_AXIS_PLOT_PAD;
 	y -= txh + FIVEMINHEIGHTOFFSET;
-	gdImageLine(ic->im, x, y, x + (plot_w + FIVEMINWIDTHPADDING), y, ic->ctext);
+	imagedrawhline(ic, x, x + (plot_w + FIVEMINWIDTHPADDING), y, ic->ctext);
 	if (ic->fontctx.mode == FONT_TTF) {
 		const int yaxis_x = x - 1;
 
@@ -1563,8 +1567,8 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 		int label_y, line_y;
 
 		line_y = y - (i * s);
-		gdImageDashedLine(ic->im, x, line_y, x + (plot_w + FIVEMINWIDTHPADDING), line_y, ic->cline);
-		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + (plot_w + FIVEMINWIDTHPADDING), y - prev - (step * s) / 2, ic->clinel);
+		imagedrawdashedhline(ic, x, x + (plot_w + FIVEMINWIDTHPADDING), line_y, ic->cline);
+		imagedrawdashedhline(ic, x, x + (plot_w + FIVEMINWIDTHPADDING), y - prev - (step * s) / 2, ic->clinel);
 		val = getimagevalue(scaleunit * (unsigned int)i, 3, israte);
 		if (ic->fontctx.mode == FONT_TTF) {
 			const int yaxis_x = x - 1;
@@ -1582,7 +1586,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 		prev = i * s;
 	}
 	if ((prev + (step * s) / 2) <= rxh) {
-		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + (plot_w + FIVEMINWIDTHPADDING), y - prev - (step * s) / 2, ic->clinel);
+		imagedrawdashedhline(ic, x, x + (plot_w + FIVEMINWIDTHPADDING), y - prev - (step * s) / 2, ic->clinel);
 	}
 
 	y += 2; // adjust to start below center line
@@ -1594,8 +1598,8 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 		int label_y, line_y;
 
 		line_y = y + (i * s);
-		gdImageDashedLine(ic->im, x, line_y, x + (plot_w + FIVEMINWIDTHPADDING), line_y, ic->cline);
-		gdImageDashedLine(ic->im, x, y + prev + (step * s) / 2, x + (plot_w + FIVEMINWIDTHPADDING), y + prev + (step * s) / 2, ic->clinel);
+		imagedrawdashedhline(ic, x, x + (plot_w + FIVEMINWIDTHPADDING), line_y, ic->cline);
+		imagedrawdashedhline(ic, x, x + (plot_w + FIVEMINWIDTHPADDING), y + prev + (step * s) / 2, ic->clinel);
 		val = getimagevalue(scaleunit * (unsigned int)i, 3, israte);
 		if (ic->fontctx.mode == FONT_TTF) {
 			const int yaxis_x = x - 1;
@@ -1612,7 +1616,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 		prev = i * s;
 	}
 	if ((prev + (step * s) / 2) <= txh) {
-		gdImageDashedLine(ic->im, x, y + prev + (step * s) / 2, x + (plot_w + FIVEMINWIDTHPADDING), y + prev + (step * s) / 2, ic->clinel);
+		imagedrawdashedhline(ic, x, x + (plot_w + FIVEMINWIDTHPADDING), y + prev + (step * s) / 2, ic->clinel);
 	}
 
 	y--; // y is now back on center line
@@ -1646,9 +1650,9 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 		if (d->tm_min == 0 && i > 2) {
 			if (d->tm_hour % 2 == 0) {
 				if (d->tm_hour == 0) {
-					gdImageLine(ic->im, px, y + txh - 1 + FIVEMINHEIGHTOFFSET, px, y - rxh - 1, ic->cline);
+					imagedrawvline(ic, px, y + txh - 1 + FIVEMINHEIGHTOFFSET, y - rxh - 1, ic->cline);
 				} else {
-					gdImageLine(ic->im, px, y + txh - 1 + FIVEMINHEIGHTOFFSET, px, y - rxh - 1, ic->cbgoffset);
+					imagedrawvline(ic, px, y + txh - 1 + FIVEMINHEIGHTOFFSET, y - rxh - 1, ic->cbgoffset);
 				}
 
 				if (i * barwidth > imagefontwidth(ic, FONT_ROLE_AXIS)) {
@@ -1671,7 +1675,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 					imagestring(ic, FONT_ROLE_AXIS, label_x, label_y, buffer, label_color);
 				}
 			} else {
-				gdImageLine(ic->im, px, y + txh - 1 + FIVEMINHEIGHTOFFSET, px, y - rxh - 1, ic->cbgoffset);
+				imagedrawvline(ic, px, y + txh - 1 + FIVEMINHEIGHTOFFSET, y - rxh - 1, ic->cbgoffset);
 			}
 			gdImageSetPixel(ic->im, px, y, ic->ctext);
 		}
@@ -1890,8 +1894,8 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 
 	/* axis */
 	x += graph_axis_left(ic);
-	gdImageLine(ic->im, x, y, x + (plot_w + PERCENTILEMINWIDTHFULLPADDING), y, ic->ctext);
-	gdImageLine(ic->im, x + 4, y + 4, x + 4, y - height, ic->ctext);
+	imagedrawhline(ic, x, x + (plot_w + PERCENTILEMINWIDTHFULLPADDING), y, ic->ctext);
+	imagedrawvline(ic, x + 4, y + 4, y - height, ic->ctext);
 
 	/* arrows */
 	drawarrowup(ic, x + 4, y - 4 - height);
@@ -1903,8 +1907,8 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 
 	for (i = step; i * s <= height; i = i + step) {
 		line_y = y - (i * s);
-		gdImageDashedLine(ic->im, x, line_y, x + (plot_w + PERCENTILEMINWIDTHFULLPADDING) - 5, line_y, ic->cline);
-		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + (plot_w + PERCENTILEMINWIDTHFULLPADDING) - 5, y - prev - (step * s) / 2, ic->clinel);
+		imagedrawdashedhline(ic, x, x + (plot_w + PERCENTILEMINWIDTHFULLPADDING) - 5, line_y, ic->cline);
+		imagedrawdashedhline(ic, x, x + (plot_w + PERCENTILEMINWIDTHFULLPADDING) - 5, y - prev - (step * s) / 2, ic->clinel);
 		val = getimagevalue(scaleunit * (unsigned int)i, 3, 1);
 		if (ic->fontctx.mode == FONT_TTF) {
 			const int yaxis_x = x - 1;
@@ -1921,7 +1925,7 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 		prev = i * s;
 	}
 	if ((prev + (step * s) / 2) <= height) {
-		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + (plot_w + PERCENTILEMINWIDTHFULLPADDING) - 5, y - prev - (step * s) / 2, ic->clinel);
+		imagedrawdashedhline(ic, x, x + (plot_w + PERCENTILEMINWIDTHFULLPADDING) - 5, y - prev - (step * s) / 2, ic->clinel);
 	}
 
 	datalist_i = datalist;
@@ -1960,7 +1964,7 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 			strftime(datebuff, DATEBUFFLEN, "%d", d);
 			drawpole(ic, px, y, height, 1, ic->cbgoffset);
 			if (i > 0) {
-				gdImageLine(ic->im, px, y + 1, px, y + 4, ic->ctext);
+				imagedrawvline(ic, px, y + 1, y + 4, ic->ctext);
 			}
 			if (ic->fontctx.mode == FONT_TTF) {
 				label_x = px + 12 * barwidth - imagetextwidth(ic, FONT_ROLE_AXIS, datebuff) / 2;
@@ -2000,7 +2004,7 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 	} else if (l == 0) {
 		l = 1;
 	}
-	gdImageLine(ic->im, x, y - l, x + (last + 1) * barwidth - 1, y - l, ic->cpercentileline);
+	imagedrawhline(ic, x, x + (last + 1) * barwidth - 1, y - l, ic->cpercentileline);
 
 	if (debug) {
 		printf("s:   %d\n", s);

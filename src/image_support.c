@@ -252,7 +252,7 @@ static int imagettfinitmetrics(IMAGECONTENT *ic)
 		ic->fontctx.header_ch = 1;
 	}
 	ic->fontctx.header_ascent = -brect[7];
-	ic->fontctx.header_h = ic->fontctx.header_ch + 16;
+	ic->fontctx.header_h = ic->fontctx.header_ch + imageuipx(ic, 16);
 	if (ic->fontctx.header_h < 24) {
 		ic->fontctx.header_h = 24;
 	}
@@ -466,6 +466,103 @@ int imageextrapx(const IMAGECONTENT *ic, const int extra)
 	return (int)lrint(t * (double)extra);
 }
 
+/* Scale a design-time pixel (usually 1 or 2) with body point size.
+ * Builtin fonts and default FontSize (12pt) → returns base unchanged.
+ * Larger TTF → grows with ptsize/FONTSIZE (e.g. base=1 at 40pt → 3).
+ * Uses ptsize rather than fontctx.scale (cw/6): TTF cell width is already
+ * wider than the builtin baseline at 12pt, so scale would thicken too early.
+ * Builtin large uses imageextrapx() for layout fattening, not this. */
+int imageuipx(const IMAGECONTENT *ic, const int base)
+{
+	int n;
+
+	if (base <= 0) {
+		return 0;
+	}
+
+	if (ic->fontctx.mode == FONT_BUILTIN) {
+		return base;
+	}
+
+	n = (int)lrint((double)base * ic->fontctx.ptsize / (double)FONTSIZE);
+	if (n < base) {
+		return base;
+	}
+	return n;
+}
+
+void imagedrawhline(IMAGECONTENT *ic, const int x1, const int x2, const int y, const int color)
+{
+	int t, y1, y2, xa, xb;
+
+	t = imageuipx(ic, 1);
+	y1 = y - (t - 1) / 2;
+	y2 = y1 + t - 1;
+	if (x1 <= x2) {
+		xa = x1;
+		xb = x2;
+	} else {
+		xa = x2;
+		xb = x1;
+	}
+	gdImageFilledRectangle(ic->im, xa, y1, xb, y2, color);
+}
+
+void imagedrawvline(IMAGECONTENT *ic, const int x, const int y1, const int y2, const int color)
+{
+	int t, x1, x2, ya, yb;
+
+	t = imageuipx(ic, 1);
+	x1 = x - (t - 1) / 2;
+	x2 = x1 + t - 1;
+	if (y1 <= y2) {
+		ya = y1;
+		yb = y2;
+	} else {
+		ya = y2;
+		yb = y1;
+	}
+	gdImageFilledRectangle(ic->im, x1, ya, x2, yb, color);
+}
+
+void imagedrawrect(IMAGECONTENT *ic, const int x1, const int y1, const int x2, const int y2, const int color)
+{
+	int t, xa, xb, ya, yb;
+
+	t = imageuipx(ic, 1);
+	if (x1 <= x2) {
+		xa = x1;
+		xb = x2;
+	} else {
+		xa = x2;
+		xb = x1;
+	}
+	if (y1 <= y2) {
+		ya = y1;
+		yb = y2;
+	} else {
+		ya = y2;
+		yb = y1;
+	}
+
+	/* Outer edge of the border sits on the given rectangle. */
+	gdImageFilledRectangle(ic->im, xa, ya, xb, ya + t - 1, color);
+	gdImageFilledRectangle(ic->im, xa, yb - t + 1, xb, yb, color);
+	gdImageFilledRectangle(ic->im, xa, ya, xa + t - 1, yb, color);
+	gdImageFilledRectangle(ic->im, xb - t + 1, ya, xb, yb, color);
+}
+
+void imagedrawdashedhline(IMAGECONTENT *ic, const int x1, const int x2, const int y, const int color)
+{
+	int t, i, y0;
+
+	t = imageuipx(ic, 1);
+	y0 = y - (t - 1) / 2;
+	for (i = 0; i < t; i++) {
+		gdImageDashedLine(ic->im, x1, y0 + i, x2, y0 + i, color);
+	}
+}
+
 /* Pixels from graph xpos to axis base (builtin historical GRAPH_AXIS_BASE). */
 int graph_axis_left(const IMAGECONTENT *ic)
 {
@@ -586,6 +683,8 @@ static int imagecentery(IMAGECONTENT *ic, const fontrole_t role, const char *tex
 		 * text gets equal padding above/below in the header bar. */
 		err = imagettfbbox(ic, ptsize, 0.0, text, brect);
 		if (err == NULL) {
+			int clamp = imageuipx(ic, 1);
+
 			ink_h = -brect[7];
 			if (ink_h < 1) {
 				ink_h = ascent;
@@ -593,12 +692,12 @@ static int imagecentery(IMAGECONTENT *ic, const fontrole_t role, const char *tex
 			y = rect_top + (rect_bottom - rect_top - ink_h) / 2 - ascent - brect[7];
 			ink_top = y + ascent + brect[7];
 			ink_bot = y + ascent; /* baseline; descenders may extend below */
-			if (ink_top < rect_top + 1) {
-				y += (rect_top + 1) - ink_top;
-				ink_bot += (rect_top + 1) - ink_top;
+			if (ink_top < rect_top + clamp) {
+				y += (rect_top + clamp) - ink_top;
+				ink_bot += (rect_top + clamp) - ink_top;
 			}
-			if (ink_bot > rect_bottom - 1) {
-				y -= ink_bot - (rect_bottom - 1);
+			if (ink_bot > rect_bottom - clamp) {
+				y -= ink_bot - (rect_bottom - clamp);
 			}
 			return y;
 		}
@@ -609,11 +708,15 @@ static int imagecentery(IMAGECONTENT *ic, const fontrole_t role, const char *tex
 
 	text_h = imagefontheight(ic, role);
 	y = rect_top + (rect_bottom - rect_top - text_h) / 2;
-	if (y < rect_top + 1) {
-		y = rect_top + 1;
-	}
-	if (y + text_h > rect_bottom - 1) {
-		y = rect_bottom - text_h - 1;
+	{
+		int clamp = imageuipx(ic, 1);
+
+		if (y < rect_top + clamp) {
+			y = rect_top + clamp;
+		}
+		if (y + text_h > rect_bottom - clamp) {
+			y = rect_bottom - text_h - clamp;
+		}
 	}
 	return y;
 }
@@ -623,21 +726,27 @@ void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int 
 	const struct tm *d;
 	char datestring[64], buffer[512];
 	int rect_top, rect_bottom, title_y, date_y;
+	int pad, edge_t, inset, footer_y;
 
 	/* get time in given format */
 	d = localtime(&ic->interface.updated);
 	strftime(datestring, 64, cfg.hformat, d);
 
+	pad = imageuipx(ic, 2);
+	edge_t = imageuipx(ic, 1);
+	inset = pad + ic->showedge * edge_t;
+	footer_y = height - imageuipx(ic, 12) - ic->showedge * edge_t;
+
 	/* background, edges */
 	gdImageFill(ic->im, 0, 0, ic->cbackground);
 	if (ic->showedge) {
-		gdImageRectangle(ic->im, 0, 0, width - 1, height - 1, ic->cedge);
+		imagedrawrect(ic, 0, 0, width - 1, height - 1, ic->cedge);
 	}
 
-	rect_top = 2 + ic->showedge;
+	rect_top = inset;
 	rect_bottom = ic->fontctx.header_h;
-	title_y = 5 + ic->showedge;
-	date_y = 9 + ic->showedge - imageextrapx(ic, 3);
+	title_y = imageuipx(ic, 5) + ic->showedge * edge_t;
+	date_y = imageuipx(ic, 9) + ic->showedge * edge_t - imageextrapx(ic, 3);
 
 	/* titlebox with title */
 	if (ic->showheader) {
@@ -657,19 +766,19 @@ void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int 
 			date_y = imagecentery(ic, FONT_ROLE_AXIS, datestring, rect_top, rect_bottom);
 		}
 
-		gdImageFilledRectangle(ic->im, 2 + ic->showedge, rect_top, width - 3 - ic->showedge, rect_bottom, ic->cheader);
-		imagestring(ic, FONT_ROLE_HEADER, 12, title_y, buffer, ic->cheadertitle);
+		gdImageFilledRectangle(ic->im, inset, rect_top, width - 1 - inset, rect_bottom, ic->cheader);
+		imagestring(ic, FONT_ROLE_HEADER, imageuipx(ic, 12), title_y, buffer, ic->cheadertitle);
 	}
 
 	/* date */
 	if (!ic->showheader || ic->altdate) {
-		imagestring(ic, FONT_ROLE_AXIS, 5 + ic->showedge, height - 12 - ic->showedge - imageextrapx(ic, 3), datestring, ic->cvnstat);
+		imagestring(ic, FONT_ROLE_AXIS, imageuipx(ic, 5) + ic->showedge * edge_t, footer_y - imageextrapx(ic, 3), datestring, ic->cvnstat);
 	} else {
-		imagestring(ic, FONT_ROLE_AXIS, width - (imagetextwidth(ic, FONT_ROLE_AXIS, datestring) + 12), date_y, datestring, ic->cheaderdate);
+		imagestring(ic, FONT_ROLE_AXIS, width - (imagetextwidth(ic, FONT_ROLE_AXIS, datestring) + imageuipx(ic, 12)), date_y, datestring, ic->cheaderdate);
 	}
 
 	/* generator */
-	imagestring(ic, FONT_ROLE_FOOTER, width - 114 - ic->showedge, height - 12 - ic->showedge, "vnStat / Teemu Toivola", ic->cvnstat);
+	imagestring(ic, FONT_ROLE_FOOTER, width - 114 - ic->showedge * edge_t, footer_y, "vnStat / Teemu Toivola", ic->cvnstat);
 }
 
 void drawlegend(IMAGECONTENT *ic, const int x, const int y, const short israte)
@@ -688,20 +797,20 @@ void drawlegend(IMAGECONTENT *ic, const int x, const int y, const short israte)
 		if (sq_y < y) {
 			sq_y = y;
 		}
-		gap = 4;
+		gap = imageuipx(ic, 4);
 		sep = sq + 2 * gap;
 		x_cur = israte ? (x - 12) : x;
 
 		/* [sq][gap][rx][sep][sq][gap][tx] — both labels share y */
 		gdImageFilledRectangle(ic->im, x_cur, sq_y, x_cur + sq - 1, sq_y + sq - 1, ic->crx);
-		gdImageRectangle(ic->im, x_cur, sq_y, x_cur + sq - 1, sq_y + sq - 1, ic->ctext);
+		imagedrawrect(ic, x_cur, sq_y, x_cur + sq - 1, sq_y + sq - 1, ic->ctext);
 		x_cur += sq + gap;
 		imagestring(ic, FONT_ROLE_BODY, x_cur, y, "rx", ic->ctext);
 		label_w = imagetextwidth(ic, FONT_ROLE_BODY, "rx");
 		x_cur += label_w + sep;
 
 		gdImageFilledRectangle(ic->im, x_cur, sq_y, x_cur + sq - 1, sq_y + sq - 1, ic->ctx);
-		gdImageRectangle(ic->im, x_cur, sq_y, x_cur + sq - 1, sq_y + sq - 1, ic->ctext);
+		imagedrawrect(ic, x_cur, sq_y, x_cur + sq - 1, sq_y + sq - 1, ic->ctext);
 		x_cur += sq + gap;
 		imagestring(ic, FONT_ROLE_BODY, x_cur, y, "tx", ic->ctext);
 
@@ -758,20 +867,20 @@ void drawpercentilelegend(IMAGECONTENT *ic, const int x, const int y, const int 
 		if (sq_y < y) {
 			sq_y = y;
 		}
-		gap = 4;
+		gap = imageuipx(ic, 4);
 		sep = sq + 2 * gap;
 		x_cur = x;
 
 		/* [sq][gap][mode][sep][sq][gap][95th percentile: rate] */
 		gdImageFilledRectangle(ic->im, x_cur, sq_y, x_cur + sq - 1, sq_y + sq - 1, color);
-		gdImageRectangle(ic->im, x_cur, sq_y, x_cur + sq - 1, sq_y + sq - 1, ic->ctext);
+		imagedrawrect(ic, x_cur, sq_y, x_cur + sq - 1, sq_y + sq - 1, ic->ctext);
 		x_cur += sq + gap;
 		imagestring(ic, FONT_ROLE_BODY, x_cur, y, modetext, ic->ctext);
 		label_w = imagetextwidth(ic, FONT_ROLE_BODY, modetext);
 		x_cur += label_w + sep;
 
 		gdImageFilledRectangle(ic->im, x_cur, sq_y, x_cur + sq - 1, sq_y + sq - 1, ic->cpercentileline);
-		gdImageRectangle(ic->im, x_cur, sq_y, x_cur + sq - 1, sq_y + sq - 1, ic->ctext);
+		imagedrawrect(ic, x_cur, sq_y, x_cur + sq - 1, sq_y + sq - 1, ic->ctext);
 		x_cur += sq + gap;
 		snprintf(percentiletext, 64, "95th percentile: %s", gettrafficrate(percentile, 300, 0));
 		imagestring(ic, FONT_ROLE_BODY, x_cur, y, percentiletext, ic->ctext);
