@@ -853,14 +853,19 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 /* Pixels per 5-minute sample. Builtin -L doubles; TTF widens when 2-hour labels need a gap. */
 static int fiveg_barwidth(IMAGECONTENT *ic)
 {
-	int need, slot = 24; /* hour labels every 2 hours = 24 samples */
+	int label_w, gap, need, slot = 24; /* hour labels every 2 hours = 24 samples */
 
 	if (ic->fontctx.mode == FONT_BUILTIN) {
 		return 1 + imageextrapx(ic, 1);
 	}
 
-	/* Keep ~4px between adjacent labels so mid sizes (e.g. 16pt) are not cramped */
-	need = imagetextwidth(ic, FONT_ROLE_AXIS, "00") + 4;
+	/* Gap grows with label size (min 4px) so large fonts stay readable between hours */
+	label_w = imagetextwidth(ic, FONT_ROLE_AXIS, "00");
+	gap = label_w / 4;
+	if (gap < 4) {
+		gap = 4;
+	}
+	need = label_w + gap;
 	return (need + slot - 1) / slot;
 }
 
@@ -947,12 +952,12 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 		}
 	}
 
-	/* Scale fiveg plot height with barwidth to keep aspect ratio */
+	/* Scale fiveg plot height with barwidth to keep aspect ratio (stable base, not chrome) */
 	if (cfg.summarygraph == 1 && (layout == 1 || layout == 2) && fiveg_barwidth_val > 1) {
 		int fiveg_h;
 
 		if (layout == 2) {
-			fiveg_h = 132 + imageextrapx(ic, 35);
+			fiveg_h = 132;
 		} else {
 			fiveg_h = height - 68 + headermod - imageextrapx(ic, 8) - (monthrotatenotevisible * (ic->lineheight + 2));
 		}
@@ -1010,7 +1015,7 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 		// vertical
 		case 2:
 			if (cfg.summarygraph == 1) {
-				drawfiveminutes(ic, 8 + imageextrapx(ic, 14), height - vs_fiveg_bottom, israte, 422 + imageextrapx(ic, 154), (132 + imageextrapx(ic, 35)) * fiveg_barwidth_val);
+				drawfiveminutes(ic, 8 + imageextrapx(ic, 14), height - vs_fiveg_bottom, israte, 422 + imageextrapx(ic, 154), 132 * fiveg_barwidth_val + imageextrapx(ic, 35));
 			} else {
 				drawhours(ic, 12, 215 + header_extra + imageextrapx(ic, 84) - headermod + (monthrotatenotevisible * (ic->lineheight * 2)), israte);
 			}
@@ -1346,19 +1351,32 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 
 void drawfivegraph(IMAGECONTENT *ic, const int israte, const int resultcount, const int height)
 {
-	int imagewidth, imageheight = height, headermod = 0, header_extra = 0;
-	int bottom, legend_y, graph_height, barwidth;
+	int imagewidth, imageheight, headermod = 0, header_extra = 0;
+	int bottom, legend_y, graph_height, barwidth, base_graph, top;
 
 	barwidth = fiveg_barwidth(ic);
 	imagewidth = resultcount * barwidth + FIVEMINEXTRASPACE + imageextrapx(ic, 14);
 
+	/* Plot height from configured size (default top 38 + bottom 30), then * barwidth.
+	 * Do not derive from imageheight - chrome, or large fonts shrink the plot first. */
+	base_graph = height - 68;
+	if (base_graph < 1) {
+		base_graph = 1;
+	}
+	graph_height = base_graph * barwidth;
+
 	if (!ic->showheader) {
 		headermod = ic->fontctx.header_h - 2;
+		top = 38 - headermod;
+		if (top < 2) {
+			top = 2;
+		}
 	} else {
 		header_extra = ic->fontctx.header_h - 24;
-		if (header_extra > 0) {
-			imageheight += header_extra;
+		if (header_extra < 0) {
+			header_extra = 0;
 		}
+		top = 38 + header_extra;
 	}
 
 	bottom = 30 + imageextrapx(ic, 8);
@@ -1369,24 +1387,16 @@ void drawfivegraph(IMAGECONTENT *ic, const int israte, const int resultcount, co
 		/* Labels at ypos+8; leave room for legend + footer */
 		needed_bottom = 8 + ic->fontctx.axis_ch + 4 + ic->fontctx.ch + 4 + 12 + ic->showedge;
 		if (needed_bottom > bottom) {
-			imageheight += needed_bottom - bottom;
 			bottom = needed_bottom;
 		}
-		legend_y = imageheight - ic->showedge - ic->fontctx.ch * 1.5;
-	} else {
-		legend_y = imageheight - 17 - imageextrapx(ic, 2);
 	}
 
-	/* top = 38 + header_extra - headermod; growing bottom does not pull plot into header */
-	graph_height = imageheight - bottom - 38 - header_extra + headermod;
+	imageheight = top + graph_height + bottom;
 
-	/* Keep data-area aspect ratio when bars widen */
-	if (barwidth > 1) {
-		int extra_h = graph_height * (barwidth - 1);
-
-		imageheight += extra_h;
-		graph_height += extra_h;
-		legend_y += extra_h;
+	if (ic->fontctx.mode == FONT_TTF) {
+		legend_y = imageheight - ic->showedge - (int)(ic->fontctx.ch * 1.5);
+	} else {
+		legend_y = imageheight - 17 - imageextrapx(ic, 2);
 	}
 
 	imageinit(ic, imagewidth, imageheight);
@@ -1474,8 +1484,16 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	if (s == 0) {
 		s = 1; // force to show something when there's not much or any traffic, scale is likely to be wrong in this case
 	}
-	while (s * step < SCALEMINPIXELS) {
-		step++;
+	{
+		int min_step_px = SCALEMINPIXELS;
+
+		/* Tall TTF axis digits need more vertical space between scale labels */
+		if (ic->fontctx.mode == FONT_TTF && ic->fontctx.axis_ch + 4 > min_step_px) {
+			min_step_px = ic->fontctx.axis_ch + 4;
+		}
+		while (s * step < min_step_px) {
+			step++;
+		}
 	}
 
 	if (debug) {
