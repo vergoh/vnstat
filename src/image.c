@@ -1308,19 +1308,44 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 
 void drawfivegraph(IMAGECONTENT *ic, const int israte, const int resultcount, const int height)
 {
-	int imagewidth, imageheight = height, headermod = 0;
+	int imagewidth, imageheight = height, headermod = 0, header_extra = 0;
+	int bottom, legend_y, graph_height;
 
 	imagewidth = resultcount + FIVEMINEXTRASPACE + imageextrapx(ic, 14);
 
 	if (!ic->showheader) {
 		headermod = ic->fontctx.header_h - 2;
+	} else {
+		header_extra = ic->fontctx.header_h - 24;
+		if (header_extra > 0) {
+			imageheight += header_extra;
+		}
 	}
+
+	bottom = 30 + imageextrapx(ic, 8);
+
+	if (ic->fontctx.mode == FONT_TTF) {
+		int needed_bottom;
+
+		/* Labels at ypos+8; leave room for legend + footer */
+		needed_bottom = 8 + ic->fontctx.axis_ch + 4 + ic->fontctx.ch + 4 + 12 + ic->showedge;
+		if (needed_bottom > bottom) {
+			imageheight += needed_bottom - bottom;
+			bottom = needed_bottom;
+		}
+		legend_y = imageheight - ic->showedge - ic->fontctx.ch * 1.5;
+	} else {
+		legend_y = imageheight - 17 - imageextrapx(ic, 2);
+	}
+
+	/* top = 38 + header_extra - headermod; growing bottom does not pull plot into header */
+	graph_height = imageheight - bottom - 38 - header_extra + headermod;
 
 	imageinit(ic, imagewidth, imageheight);
 	layoutinit(ic, " / 5 minute", imagewidth, imageheight);
 
-	if (drawfiveminutes(ic, 8 + imageextrapx(ic, 14), imageheight - 30 - imageextrapx(ic, 8), israte, resultcount, imageheight - 68 + headermod - imageextrapx(ic, 8))) {
-		drawlegend(ic, imagewidth / 2 - imageextrapx(ic, 10), imageheight - 17 - imageextrapx(ic, 2), 0);
+	if (drawfiveminutes(ic, 8 + imageextrapx(ic, 14), imageheight - bottom, israte, resultcount, graph_height)) {
+		drawlegend(ic, imagewidth / 2 - imageextrapx(ic, 10), legend_y, 0);
 	}
 }
 
@@ -1377,11 +1402,17 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 		t = txh;
 	}
 
-	/* center line */
+	/* center line; y-axis is at x-1 after this advance (drawn at previous x+4) */
 	x += 5;
 	y -= txh + FIVEMINHEIGHTOFFSET;
 	gdImageLine(ic->im, x, y, x + (resultcount + FIVEMINWIDTHPADDING), y, ic->ctext);
-	imagestring(ic, FONT_ROLE_AXIS, x - 21 - imageextrapx(ic, 3), y - 4 - imageextrapx(ic, 3), "  0", ic->ctext);
+	if (ic->fontctx.mode == FONT_TTF) {
+		const int yaxis_x = x - 1, label_gap = 6;
+
+		imagestring(ic, FONT_ROLE_AXIS, yaxis_x - label_gap - imagetextwidth(ic, FONT_ROLE_AXIS, "0"), y - 4 - imageextrapx(ic, 3), "0", ic->ctext);
+	} else {
+		imagestring(ic, FONT_ROLE_AXIS, x - 21 - imageextrapx(ic, 3), y - 4 - imageextrapx(ic, 3), "  0", ic->ctext);
+	}
 
 	/* scale values */
 	scaleunit = getscale(max, israte);
@@ -1408,9 +1439,24 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	/* upper part scale values */
 	y--; // adjust to start above center line
 	for (i = step; i * s <= rxh; i = i + step) {
+		const char *val;
+		int label_y;
+
 		gdImageDashedLine(ic->im, x, y - (i * s), x + (resultcount + FIVEMINWIDTHPADDING), y - (i * s), ic->cline);
 		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + (resultcount + FIVEMINWIDTHPADDING), y - prev - (step * s) / 2, ic->clinel);
-		imagestring(ic, FONT_ROLE_AXIS, x - 21 - imageextrapx(ic, 3), y - 3 - (i * s) - imageextrapx(ic, 3), getimagevalue(scaleunit * (unsigned int)i, 3, israte), ic->ctext);
+		val = getimagevalue(scaleunit * (unsigned int)i, 3, israte);
+		label_y = y - 3 - (i * s) - imageextrapx(ic, 3);
+		if (ic->fontctx.mode == FONT_TTF) {
+			const int yaxis_x = x - 1, label_gap = 6;
+
+			while (*val == ' ') {
+				val++;
+			}
+			/* Right-align to the fixed Y-axis; do not move x with font size */
+			imagestring(ic, FONT_ROLE_AXIS, yaxis_x - label_gap - imagetextwidth(ic, FONT_ROLE_AXIS, val), label_y, val, ic->ctext);
+		} else {
+			imagestring(ic, FONT_ROLE_AXIS, x - 21 - imageextrapx(ic, 3), label_y, val, ic->ctext);
+		}
 		prev = i * s;
 	}
 	if ((prev + (step * s) / 2) <= rxh) {
@@ -1422,9 +1468,23 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 
 	/* lower part scale values */
 	for (i = step; i * s <= txh; i = i + step) {
+		const char *val;
+		int label_y;
+
 		gdImageDashedLine(ic->im, x, y + (i * s), x + (resultcount + FIVEMINWIDTHPADDING), y + (i * s), ic->cline);
 		gdImageDashedLine(ic->im, x, y + prev + (step * s) / 2, x + (resultcount + FIVEMINWIDTHPADDING), y + prev + (step * s) / 2, ic->clinel);
-		imagestring(ic, FONT_ROLE_AXIS, x - 21 - imageextrapx(ic, 3), y - 3 + (i * s) - imageextrapx(ic, 3), getimagevalue(scaleunit * (unsigned int)i, 3, israte), ic->ctext);
+		val = getimagevalue(scaleunit * (unsigned int)i, 3, israte);
+		label_y = y - 3 + (i * s) - imageextrapx(ic, 3);
+		if (ic->fontctx.mode == FONT_TTF) {
+			const int yaxis_x = x - 1, label_gap = 6;
+
+			while (*val == ' ') {
+				val++;
+			}
+			imagestring(ic, FONT_ROLE_AXIS, yaxis_x - label_gap - imagetextwidth(ic, FONT_ROLE_AXIS, val), label_y, val, ic->ctext);
+		} else {
+			imagestring(ic, FONT_ROLE_AXIS, x - 21 - imageextrapx(ic, 3), label_y, val, ic->ctext);
+		}
 		prev = i * s;
 	}
 	if ((prev + (step * s) / 2) <= txh) {
@@ -1463,12 +1523,23 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 				}
 
 				if (i > imagefontwidth(ic, FONT_ROLE_AXIS)) {
+					int label_x, label_y, label_color;
+
 					snprintf(buffer, 32, "%02d", d->tm_hour);
-					if (datalist_i->timestamp > timestamp) {
-						imagestring(ic, FONT_ROLE_AXIS, x + i - imagefontwidth(ic, FONT_ROLE_AXIS) + 1, y + txh + imagefontheight(ic, FONT_ROLE_AXIS) - imageextrapx(ic, 5), buffer, ic->cline);
+					if (ic->fontctx.mode == FONT_TTF) {
+						label_x = x + i - imagetextwidth(ic, FONT_ROLE_AXIS, buffer) / 2;
+						/* Hourly uses axis+8; keep labels clear of the x-axis line */
+						label_y = y + txh + FIVEMINHEIGHTOFFSET + 8;
 					} else {
-						imagestring(ic, FONT_ROLE_AXIS, x + i - imagefontwidth(ic, FONT_ROLE_AXIS) + 1, y + txh + imagefontheight(ic, FONT_ROLE_AXIS) - imageextrapx(ic, 5), buffer, ic->ctext);
+						label_x = x + i - imagefontwidth(ic, FONT_ROLE_AXIS) + 1;
+						label_y = y + txh + imagefontheight(ic, FONT_ROLE_AXIS) - imageextrapx(ic, 5);
 					}
+					if (datalist_i->timestamp > timestamp) {
+						label_color = ic->cline;
+					} else {
+						label_color = ic->ctext;
+					}
+					imagestring(ic, FONT_ROLE_AXIS, label_x, label_y, buffer, label_color);
 				}
 			} else {
 				gdImageLine(ic->im, x + i, y + txh - 1 + FIVEMINHEIGHTOFFSET, x + i, y - rxh - 1, ic->cbgoffset);
