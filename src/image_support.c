@@ -269,6 +269,11 @@ static int imagettfinitmetrics(IMAGECONTENT *ic)
 	}
 	ic->fontctx.axis_ascent = -brect[7];
 
+	ic->fontctx.axis_num4_w = imagettftextwidth(ic, ic->fontctx.ptsize * ic->fontctx.axis_scale, "9999");
+	if (ic->fontctx.axis_num4_w < 1) {
+		ic->fontctx.axis_num4_w = 1;
+	}
+
 	ic->lineheight = ic->fontctx.ch + 2;
 
 	return 1;
@@ -284,6 +289,7 @@ int imagefontinit(IMAGECONTENT *ic, const int largefonts)
 	ic->fontctx.ascent = 0;
 	ic->fontctx.header_ascent = 0;
 	ic->fontctx.axis_ascent = 0;
+	ic->fontctx.axis_num4_w = 0;
 	ic->fontctx.ttfpath[0] = '\0';
 	ic->fontctx.ptsize = 0.0;
 
@@ -303,6 +309,7 @@ int imagefontinit(IMAGECONTENT *ic, const int largefonts)
 		ic->fontctx.ch = ic->fontctx.body->h;
 		ic->fontctx.header_ch = ic->fontctx.header->h;
 		ic->fontctx.axis_ch = ic->fontctx.axis->h;
+		ic->fontctx.axis_num4_w = 4 * ic->fontctx.axis->w;
 		ic->fontctx.header_h = 24;
 		ic->fontctx.scale = (double)ic->fontctx.cw / 6.0;
 		ic->lineheight = largefonts ? 16 : 12;
@@ -457,6 +464,44 @@ int imageextrapx(const IMAGECONTENT *ic, const int extra)
 		t = 0.0;
 	}
 	return (int)lrint(t * (double)extra);
+}
+
+/* Pixels from graph xpos to axis base (builtin historical GRAPH_AXIS_BASE). */
+int graph_axis_left(const IMAGECONTENT *ic)
+{
+	if (ic->fontctx.mode == FONT_BUILTIN) {
+		return GRAPH_AXIS_BASE;
+	}
+
+	/* 4-digit field + gap to y-axis; unit text sits at xpos in the left margin
+	 * and uses the spare column vs 3-char scale values. */
+	return ic->fontctx.axis_num4_w + GRAPH_AXIS_LABEL_GAP;
+}
+
+int graph_xpos_margin(const IMAGECONTENT *ic)
+{
+	if (ic->fontctx.mode == FONT_BUILTIN) {
+		return 8 + imageextrapx(ic, 14);
+	}
+	return 8;
+}
+
+/* Non-plot width for 5-minute / percentile style graphs (left margin + chrome + right). */
+int graph_extra_space(const IMAGECONTENT *ic)
+{
+	if (ic->fontctx.mode == FONT_BUILTIN) {
+		return FIVEMINEXTRASPACE + imageextrapx(ic, 14);
+	}
+	return graph_xpos_margin(ic) + graph_axis_left(ic) + GRAPH_AXIS_PLOT_PAD + GRAPH_EXTRA_RIGHT;
+}
+
+/* How much narrower the TTF left gutter is vs old 36 + imageextrapx(14) fattening. */
+int graph_axis_left_delta(const IMAGECONTENT *ic)
+{
+	if (ic->fontctx.mode != FONT_TTF) {
+		return 0;
+	}
+	return GRAPH_AXIS_BASE + imageextrapx(ic, 14) - graph_axis_left(ic);
 }
 
 int imagetextwidth(IMAGECONTENT *ic, const fontrole_t role, const char *text)

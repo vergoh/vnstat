@@ -21,6 +21,12 @@
 
 #define SCALEMINPIXELS 25
 
+/* Graph y-axis left chrome: builtin keeps a 36px advance; TTF sizes from 4 digits. */
+#define GRAPH_AXIS_BASE 36
+#define GRAPH_AXIS_LABEL_GAP 4
+#define GRAPH_AXIS_PLOT_PAD 5
+#define GRAPH_EXTRA_RIGHT 29 /* FIVEMINEXTRASPACE - 8 - GRAPH_AXIS_BASE - GRAPH_AXIS_PLOT_PAD */
+
 typedef enum {
 	FONT_BUILTIN = 0,
 	FONT_TTF
@@ -43,6 +49,7 @@ typedef struct {
 	int axis_ascent; /* axis role baseline offset */
 	int header_ch; /* measured header/title glyph height */
 	int axis_ch; /* measured axis/date glyph height */
+	int axis_num4_w; /* width of "9999" at axis size (TTF gutter) */
 	int header_h; /* title bar height in pixels */
 	char ttfpath[512];
 	double ptsize; /* effective body point size after LargeFonts */
@@ -76,6 +83,10 @@ int imagetextwidth(IMAGECONTENT *ic, const fontrole_t role, const char *text);
 int imagefontwidth(IMAGECONTENT *ic, const fontrole_t role);
 int imagefontheight(IMAGECONTENT *ic, const fontrole_t role);
 int imageextrapx(const IMAGECONTENT *ic, const int extra);
+int graph_axis_left(const IMAGECONTENT *ic);
+int graph_xpos_margin(const IMAGECONTENT *ic);
+int graph_extra_space(const IMAGECONTENT *ic);
+int graph_axis_left_delta(const IMAGECONTENT *ic);
 void drawimage(IMAGECONTENT *ic);
 #if HAVE_DECL_GD_NEAREST_NEIGHBOUR
 void scaleimage(IMAGECONTENT *ic);

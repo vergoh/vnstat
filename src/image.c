@@ -205,7 +205,9 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 		}
 	}
 
-	x += imageextrapx(ic, 14);
+	if (ic->fontctx.mode == FONT_BUILTIN) {
+		x += imageextrapx(ic, 14);
+	}
 	extrax = imageextrapx(ic, 145);
 	extray = imageextrapx(ic, 35);
 
@@ -219,7 +221,7 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 		step = 1;
 	}
 
-	xt = x + 36;
+	xt = x + graph_axis_left(ic);
 
 	for (i = step; i * s <= (124 + extray + 4); i = i + step) {
 		const char *val;
@@ -230,14 +232,12 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 		gdImageDashedLine(ic->im, xt, y + 124 - prev - (step * s) / 2, xt + 424 + extrax, y + 124 - prev - (step * s) / 2, ic->clinel);
 		val = getimagevalue(scaleunit * (unsigned int)i, 3, israte);
 		if (ic->fontctx.mode == FONT_TTF) {
-			int label_gap = 4;
-
 			while (*val == ' ') {
 				val++;
 			}
 			/* Right-align; vertically center on the scale line like builtin */
 			label_y = line_y - ic->fontctx.axis_ascent / 2;
-			imagestring(ic, FONT_ROLE_AXIS, xt - label_gap - imagetextwidth(ic, FONT_ROLE_AXIS, val), label_y, val, ic->ctext);
+			imagestring(ic, FONT_ROLE_AXIS, xt - GRAPH_AXIS_LABEL_GAP - imagetextwidth(ic, FONT_ROLE_AXIS, val), label_y, val, ic->ctext);
 		} else {
 			label_y = line_y - 3 - imageextrapx(ic, 3);
 			imagestring(ic, FONT_ROLE_AXIS, x + 16 - imageextrapx(ic, 3), label_y, val, ic->ctext);
@@ -249,7 +249,11 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 	}
 
 	/* scale text */
-	imagestringup(ic, FONT_ROLE_AXIS, x - 2 - imageextrapx(ic, 14), y + 58 + (israte * 10) - (extray / 2), getimagescale(scaleunit * (unsigned int)step, israte), ic->ctext);
+	if (ic->fontctx.mode == FONT_TTF) {
+		imagestringup(ic, FONT_ROLE_AXIS, x, y + 58 + (israte * 10) - (extray / 2), getimagescale(scaleunit * (unsigned int)step, israte), ic->ctext);
+	} else {
+		imagestringup(ic, FONT_ROLE_AXIS, x - 2 - imageextrapx(ic, 14), y + 58 + (israte * 10) - (extray / 2), getimagescale(scaleunit * (unsigned int)step, israte), ic->ctext);
+	}
 
 	/* axis */
 	gdImageLine(ic->im, xt - 4, y + 124, xt + 430 + extrax, y + 124, ic->ctext);
@@ -305,6 +309,9 @@ void drawhourly(IMAGECONTENT *ic, const int israte)
 	int width, height, headermod = 0;
 
 	width = 500 + imageextrapx(ic, 168);
+	if (ic->fontctx.mode == FONT_TTF) {
+		width -= graph_axis_left_delta(ic);
+	}
 	height = 200 + imageextrapx(ic, 48);
 
 	if (!ic->showheader) {
@@ -966,6 +973,14 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 		}
 	}
 
+	/* Horizontal summary: shrink canvas by the TTF y-axis gutter savings */
+	if (ic->fontctx.mode == FONT_TTF && layout == 1) {
+		width -= graph_axis_left_delta(ic);
+		if (width < 1) {
+			width = 1;
+		}
+	}
+
 	imageinit(ic, width, height);
 	layoutinit(ic, "", width, height);
 
@@ -1015,9 +1030,29 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 		// vertical
 		case 2:
 			if (cfg.summarygraph == 1) {
-				drawfiveminutes(ic, 8 + imageextrapx(ic, 14), height - vs_fiveg_bottom, israte, 422 + imageextrapx(ic, 154), 132 * fiveg_barwidth_val + imageextrapx(ic, 35));
+				int fiveg_samples = 422 + imageextrapx(ic, 154);
+				int fiveg_w = fiveg_samples * fiveg_barwidth_val + graph_extra_space(ic);
+				int fiveg_x = graph_xpos_margin(ic);
+
+				if (ic->fontctx.mode == FONT_TTF) {
+					fiveg_x = (width - fiveg_w) / 2 + graph_xpos_margin(ic);
+					if (fiveg_x < 0) {
+						fiveg_x = 0;
+					}
+				}
+				drawfiveminutes(ic, fiveg_x, height - vs_fiveg_bottom, israte, fiveg_samples, 132 * fiveg_barwidth_val + imageextrapx(ic, 35));
 			} else {
-				drawhours(ic, 12, 215 + header_extra + imageextrapx(ic, 84) - headermod + (monthrotatenotevisible * (ic->lineheight * 2)), israte);
+				int hours_x = 12;
+
+				if (ic->fontctx.mode == FONT_TTF) {
+					int hours_w = 500 + imageextrapx(ic, 168) - graph_axis_left_delta(ic);
+
+					hours_x = (width - hours_w) / 2 + 12;
+					if (hours_x < 0) {
+						hours_x = 0;
+					}
+				}
+				drawhours(ic, hours_x, 215 + header_extra + imageextrapx(ic, 84) - headermod + (monthrotatenotevisible * (ic->lineheight * 2)), israte);
 			}
 			if (monthrotatenotevisible) {
 				imagestring(ic, FONT_ROLE_BODY, 13 - imageextrapx(ic, 4) + (ic->fontctx.cw * 2) + ic->showedge, 215 + header_extra + imageextrapx(ic, 84) - headermod - (ic->lineheight * (1 + imageextrapx(ic, 2))), monthrotatenote, ic->ctext);
@@ -1355,7 +1390,7 @@ void drawfivegraph(IMAGECONTENT *ic, const int israte, const int resultcount, co
 	int bottom, legend_y, graph_height, barwidth, base_graph, top;
 
 	barwidth = fiveg_barwidth(ic);
-	imagewidth = resultcount * barwidth + FIVEMINEXTRASPACE + imageextrapx(ic, 14);
+	imagewidth = resultcount * barwidth + graph_extra_space(ic);
 
 	/* Plot height from configured size (default top 38 + bottom 30), then * barwidth.
 	 * Do not derive from imageheight - chrome, or large fonts shrink the plot first. */
@@ -1402,7 +1437,7 @@ void drawfivegraph(IMAGECONTENT *ic, const int israte, const int resultcount, co
 	imageinit(ic, imagewidth, imageheight);
 	layoutinit(ic, " / 5 minute", imagewidth, imageheight);
 
-	if (drawfiveminutes(ic, 8 + imageextrapx(ic, 14), imageheight - bottom, israte, resultcount, graph_height)) {
+	if (drawfiveminutes(ic, graph_xpos_margin(ic), imageheight - bottom, israte, resultcount, graph_height)) {
 		drawlegend(ic, imagewidth / 2 - imageextrapx(ic, 10), legend_y, 0);
 	}
 }
@@ -1410,7 +1445,7 @@ void drawfivegraph(IMAGECONTENT *ic, const int israte, const int resultcount, co
 int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte, const int resultcount, const int height)
 {
 	int x = xpos, y = ypos, i = 0, t = 0, rxh = 0, txh = 0, step = 0, s = 0, prev = 0;
-	int barwidth, plot_w, b, px;
+	int barwidth, plot_w, b, px, axis_left, unit_x;
 	uint64_t scaleunit, max;
 	time_t timestamp;
 	double ratediv, e;
@@ -1421,9 +1456,11 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 
 	barwidth = fiveg_barwidth(ic);
 	plot_w = resultcount * barwidth;
+	axis_left = graph_axis_left(ic);
+	unit_x = xpos;
 
 	if (!db_getdata(&datalist, &datainfo, ic->interface.name, "fiveminute", (uint32_t)resultcount) || datainfo.count == 0) {
-		x = (plot_w + FIVEMINEXTRASPACE + imageextrapx(ic, 14)) / 2 - (13 * ic->fontctx.cw);
+		x = (plot_w + graph_extra_space(ic)) / 2 - (13 * ic->fontctx.cw);
 		imagestring(ic, FONT_ROLE_BODY, x, y - (height / 2) - ic->fontctx.ch, "no 5 minute data available", ic->ctext);
 		return 0;
 	}
@@ -1437,7 +1474,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	}
 
 	/* axis */
-	x += 36;
+	x += axis_left;
 	gdImageLine(ic->im, x, y, x + (plot_w + FIVEMINWIDTHFULLPADDING), y, ic->ctext);
 	gdImageLine(ic->im, x + 4, y + 4, x + 4, y - height, ic->ctext);
 
@@ -1465,14 +1502,14 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	}
 
 	/* center line; y-axis is at x-1 after this advance (drawn at previous x+4) */
-	x += 5;
+	x += GRAPH_AXIS_PLOT_PAD;
 	y -= txh + FIVEMINHEIGHTOFFSET;
 	gdImageLine(ic->im, x, y, x + (plot_w + FIVEMINWIDTHPADDING), y, ic->ctext);
 	if (ic->fontctx.mode == FONT_TTF) {
-		const int yaxis_x = x - 1, label_gap = 6;
+		const int yaxis_x = x - 1;
 
 		/* Center on the line like builtin Tiny (top + half ascent) */
-		imagestring(ic, FONT_ROLE_AXIS, yaxis_x - label_gap - imagetextwidth(ic, FONT_ROLE_AXIS, "0"), y - ic->fontctx.axis_ascent / 2, "0", ic->ctext);
+		imagestring(ic, FONT_ROLE_AXIS, yaxis_x - GRAPH_AXIS_LABEL_GAP - imagetextwidth(ic, FONT_ROLE_AXIS, "0"), y - ic->fontctx.axis_ascent / 2, "0", ic->ctext);
 	} else {
 		imagestring(ic, FONT_ROLE_AXIS, x - 21 - imageextrapx(ic, 3), y - 4 - imageextrapx(ic, 3), "  0", ic->ctext);
 	}
@@ -1519,14 +1556,14 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + (plot_w + FIVEMINWIDTHPADDING), y - prev - (step * s) / 2, ic->clinel);
 		val = getimagevalue(scaleunit * (unsigned int)i, 3, israte);
 		if (ic->fontctx.mode == FONT_TTF) {
-			const int yaxis_x = x - 1, label_gap = 6;
+			const int yaxis_x = x - 1;
 
 			while (*val == ' ') {
 				val++;
 			}
 			/* Right-align; vertically center on the scale line like builtin */
 			label_y = line_y - ic->fontctx.axis_ascent / 2;
-			imagestring(ic, FONT_ROLE_AXIS, yaxis_x - label_gap - imagetextwidth(ic, FONT_ROLE_AXIS, val), label_y, val, ic->ctext);
+			imagestring(ic, FONT_ROLE_AXIS, yaxis_x - GRAPH_AXIS_LABEL_GAP - imagetextwidth(ic, FONT_ROLE_AXIS, val), label_y, val, ic->ctext);
 		} else {
 			label_y = line_y - 3 - imageextrapx(ic, 3);
 			imagestring(ic, FONT_ROLE_AXIS, x - 21 - imageextrapx(ic, 3), label_y, val, ic->ctext);
@@ -1550,13 +1587,13 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 		gdImageDashedLine(ic->im, x, y + prev + (step * s) / 2, x + (plot_w + FIVEMINWIDTHPADDING), y + prev + (step * s) / 2, ic->clinel);
 		val = getimagevalue(scaleunit * (unsigned int)i, 3, israte);
 		if (ic->fontctx.mode == FONT_TTF) {
-			const int yaxis_x = x - 1, label_gap = 6;
+			const int yaxis_x = x - 1;
 
 			while (*val == ' ') {
 				val++;
 			}
 			label_y = line_y - ic->fontctx.axis_ascent / 2;
-			imagestring(ic, FONT_ROLE_AXIS, yaxis_x - label_gap - imagetextwidth(ic, FONT_ROLE_AXIS, val), label_y, val, ic->ctext);
+			imagestring(ic, FONT_ROLE_AXIS, yaxis_x - GRAPH_AXIS_LABEL_GAP - imagetextwidth(ic, FONT_ROLE_AXIS, val), label_y, val, ic->ctext);
 		} else {
 			label_y = line_y - 3 - imageextrapx(ic, 3);
 			imagestring(ic, FONT_ROLE_AXIS, x - 21 - imageextrapx(ic, 3), label_y, val, ic->ctext);
@@ -1570,7 +1607,11 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	y--; // y is now back on center line
 
 	/* scale text */
-	imagestringup(ic, FONT_ROLE_AXIS, x - 39 - imageextrapx(ic, 14), ypos - height / 2 + (israte * 10), getimagescale(scaleunit * (unsigned int)step, israte), ic->ctext);
+	if (ic->fontctx.mode == FONT_TTF) {
+		imagestringup(ic, FONT_ROLE_AXIS, unit_x, ypos - height / 2 + (israte * 10), getimagescale(scaleunit * (unsigned int)step, israte), ic->ctext);
+	} else {
+		imagestringup(ic, FONT_ROLE_AXIS, x - 39 - imageextrapx(ic, 14), ypos - height / 2 + (israte * 10), getimagescale(scaleunit * (unsigned int)step, israte), ic->ctext);
+	}
 
 	timestamp = datainfo.maxtime - (resultcount * 300);
 
@@ -1690,7 +1731,7 @@ void draw95thpercentilegraph(IMAGECONTENT *ic, const int mode)
 	uint64_t percentile = 0;
 
 	barwidth = percentile_barwidth(ic);
-	imagewidth = PERCENTILEENTRYCOUNT * barwidth + 78 + imageextrapx(ic, 14);
+	imagewidth = PERCENTILEENTRYCOUNT * barwidth + graph_extra_space(ic);
 
 	/* Plot height from base size (default top 38 + bottom 30), then * barwidth.
 	 * Do not derive from imageheight - chrome, or large fonts shrink the plot first. */
@@ -1737,7 +1778,7 @@ void draw95thpercentilegraph(IMAGECONTENT *ic, const int mode)
 	imageinit(ic, imagewidth, imageheight);
 	layoutinit(ic, " / 95th percentile", imagewidth, imageheight);
 
-	if (drawpercentile(ic, mode, 8 + imageextrapx(ic, 14), imageheight - bottom, graph_height, &percentile)) {
+	if (drawpercentile(ic, mode, graph_xpos_margin(ic), imageheight - bottom, graph_height, &percentile)) {
 		drawpercentilelegend(ic, imagewidth / 2 - imageextrapx(ic, 50), legend_y, mode, percentile);
 	}
 }
@@ -1830,10 +1871,14 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 	}
 
 	/* scale text */
-	imagestringup(ic, FONT_ROLE_AXIS, x - 2 - imageextrapx(ic, 14), y - (height / 2), getimagescale(scaleunit * (unsigned int)step, 1), ic->ctext);
+	if (ic->fontctx.mode == FONT_TTF) {
+		imagestringup(ic, FONT_ROLE_AXIS, x, y - (height / 2), getimagescale(scaleunit * (unsigned int)step, 1), ic->ctext);
+	} else {
+		imagestringup(ic, FONT_ROLE_AXIS, x - 2 - imageextrapx(ic, 14), y - (height / 2), getimagescale(scaleunit * (unsigned int)step, 1), ic->ctext);
+	}
 
 	/* axis */
-	x += 36;
+	x += graph_axis_left(ic);
 	gdImageLine(ic->im, x, y, x + (plot_w + PERCENTILEMINWIDTHFULLPADDING), y, ic->ctext);
 	gdImageLine(ic->im, x + 4, y + 4, x + 4, y - height, ic->ctext);
 
@@ -1842,7 +1887,7 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 	drawarrowright(ic, x + 1 + (plot_w + PERCENTILEMINWIDTHFULLPADDING), y);
 
 	/* adjust cursor to first point on graph */
-	x += 5;
+	x += GRAPH_AXIS_PLOT_PAD;
 	y -= 1;
 
 	for (i = step; i * s <= height; i = i + step) {
@@ -1851,14 +1896,14 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + (plot_w + PERCENTILEMINWIDTHFULLPADDING) - 5, y - prev - (step * s) / 2, ic->clinel);
 		val = getimagevalue(scaleunit * (unsigned int)i, 3, 1);
 		if (ic->fontctx.mode == FONT_TTF) {
-			const int yaxis_x = x - 1, label_gap = 6;
+			const int yaxis_x = x - 1;
 
 			while (*val == ' ') {
 				val++;
 			}
 			/* Right-align; vertically center on the scale line like builtin */
 			label_y = line_y - ic->fontctx.axis_ascent / 2;
-			imagestring(ic, FONT_ROLE_AXIS, yaxis_x - label_gap - imagetextwidth(ic, FONT_ROLE_AXIS, val), label_y, val, ic->ctext);
+			imagestring(ic, FONT_ROLE_AXIS, yaxis_x - GRAPH_AXIS_LABEL_GAP - imagetextwidth(ic, FONT_ROLE_AXIS, val), label_y, val, ic->ctext);
 		} else {
 			imagestring(ic, FONT_ROLE_AXIS, x - 22 - imageextrapx(ic, 3), y - 4 - (i * s) - imageextrapx(ic, 3), val, ic->ctext);
 		}
