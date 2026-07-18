@@ -1409,7 +1409,8 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	if (ic->fontctx.mode == FONT_TTF) {
 		const int yaxis_x = x - 1, label_gap = 6;
 
-		imagestring(ic, FONT_ROLE_AXIS, yaxis_x - label_gap - imagetextwidth(ic, FONT_ROLE_AXIS, "0"), y - 4 - imageextrapx(ic, 3), "0", ic->ctext);
+		/* Center on the line like builtin Tiny (top + half ascent) */
+		imagestring(ic, FONT_ROLE_AXIS, yaxis_x - label_gap - imagetextwidth(ic, FONT_ROLE_AXIS, "0"), y - ic->fontctx.axis_ascent / 2, "0", ic->ctext);
 	} else {
 		imagestring(ic, FONT_ROLE_AXIS, x - 21 - imageextrapx(ic, 3), y - 4 - imageextrapx(ic, 3), "  0", ic->ctext);
 	}
@@ -1440,21 +1441,23 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	y--; // adjust to start above center line
 	for (i = step; i * s <= rxh; i = i + step) {
 		const char *val;
-		int label_y;
+		int label_y, line_y;
 
-		gdImageDashedLine(ic->im, x, y - (i * s), x + (resultcount + FIVEMINWIDTHPADDING), y - (i * s), ic->cline);
+		line_y = y - (i * s);
+		gdImageDashedLine(ic->im, x, line_y, x + (resultcount + FIVEMINWIDTHPADDING), line_y, ic->cline);
 		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + (resultcount + FIVEMINWIDTHPADDING), y - prev - (step * s) / 2, ic->clinel);
 		val = getimagevalue(scaleunit * (unsigned int)i, 3, israte);
-		label_y = y - 3 - (i * s) - imageextrapx(ic, 3);
 		if (ic->fontctx.mode == FONT_TTF) {
 			const int yaxis_x = x - 1, label_gap = 6;
 
 			while (*val == ' ') {
 				val++;
 			}
-			/* Right-align to the fixed Y-axis; do not move x with font size */
+			/* Right-align; vertically center on the scale line like builtin */
+			label_y = line_y - ic->fontctx.axis_ascent / 2;
 			imagestring(ic, FONT_ROLE_AXIS, yaxis_x - label_gap - imagetextwidth(ic, FONT_ROLE_AXIS, val), label_y, val, ic->ctext);
 		} else {
+			label_y = line_y - 3 - imageextrapx(ic, 3);
 			imagestring(ic, FONT_ROLE_AXIS, x - 21 - imageextrapx(ic, 3), label_y, val, ic->ctext);
 		}
 		prev = i * s;
@@ -1469,20 +1472,22 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	/* lower part scale values */
 	for (i = step; i * s <= txh; i = i + step) {
 		const char *val;
-		int label_y;
+		int label_y, line_y;
 
-		gdImageDashedLine(ic->im, x, y + (i * s), x + (resultcount + FIVEMINWIDTHPADDING), y + (i * s), ic->cline);
+		line_y = y + (i * s);
+		gdImageDashedLine(ic->im, x, line_y, x + (resultcount + FIVEMINWIDTHPADDING), line_y, ic->cline);
 		gdImageDashedLine(ic->im, x, y + prev + (step * s) / 2, x + (resultcount + FIVEMINWIDTHPADDING), y + prev + (step * s) / 2, ic->clinel);
 		val = getimagevalue(scaleunit * (unsigned int)i, 3, israte);
-		label_y = y - 3 + (i * s) - imageextrapx(ic, 3);
 		if (ic->fontctx.mode == FONT_TTF) {
 			const int yaxis_x = x - 1, label_gap = 6;
 
 			while (*val == ' ') {
 				val++;
 			}
+			label_y = line_y - ic->fontctx.axis_ascent / 2;
 			imagestring(ic, FONT_ROLE_AXIS, yaxis_x - label_gap - imagetextwidth(ic, FONT_ROLE_AXIS, val), label_y, val, ic->ctext);
 		} else {
+			label_y = line_y - 3 - imageextrapx(ic, 3);
 			imagestring(ic, FONT_ROLE_AXIS, x - 21 - imageextrapx(ic, 3), label_y, val, ic->ctext);
 		}
 		prev = i * s;
