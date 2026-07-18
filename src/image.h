@@ -21,7 +21,7 @@
 
 #define SCALEMINPIXELS 25
 
-/* Graph y-axis left chrome: builtin keeps a 36px advance; TTF sizes from 4 digits. */
+/* Graph y-axis left chrome: builtin keeps a 36px advance; TTF sizes from 5 digits. */
 #define GRAPH_AXIS_BASE 36
 #define GRAPH_AXIS_LABEL_GAP 4
 #define GRAPH_AXIS_PLOT_PAD 5
@@ -49,7 +49,7 @@ typedef struct {
 	int axis_ascent; /* axis role baseline offset */
 	int header_ch; /* measured header/title glyph height */
 	int axis_ch; /* measured axis/date glyph height */
-	int axis_num4_w; /* width of "9999" at axis size (TTF gutter) */
+	int axis_num5_w; /* width of "99999" at axis size (TTF gutter) */
 	int header_h; /* title bar height in pixels */
 	char ttfpath[512];
 	double ptsize; /* effective body point size after LargeFonts */

@@ -269,9 +269,9 @@ static int imagettfinitmetrics(IMAGECONTENT *ic)
 	}
 	ic->fontctx.axis_ascent = -brect[7];
 
-	ic->fontctx.axis_num4_w = imagettftextwidth(ic, ic->fontctx.ptsize * ic->fontctx.axis_scale, "9999");
-	if (ic->fontctx.axis_num4_w < 1) {
-		ic->fontctx.axis_num4_w = 1;
+	ic->fontctx.axis_num5_w = imagettftextwidth(ic, ic->fontctx.ptsize * ic->fontctx.axis_scale, "99999");
+	if (ic->fontctx.axis_num5_w < 1) {
+		ic->fontctx.axis_num5_w = 1;
 	}
 
 	ic->lineheight = ic->fontctx.ch + 2;
@@ -289,7 +289,7 @@ int imagefontinit(IMAGECONTENT *ic, const int largefonts)
 	ic->fontctx.ascent = 0;
 	ic->fontctx.header_ascent = 0;
 	ic->fontctx.axis_ascent = 0;
-	ic->fontctx.axis_num4_w = 0;
+	ic->fontctx.axis_num5_w = 0;
 	ic->fontctx.ttfpath[0] = '\0';
 	ic->fontctx.ptsize = 0.0;
 
@@ -309,7 +309,7 @@ int imagefontinit(IMAGECONTENT *ic, const int largefonts)
 		ic->fontctx.ch = ic->fontctx.body->h;
 		ic->fontctx.header_ch = ic->fontctx.header->h;
 		ic->fontctx.axis_ch = ic->fontctx.axis->h;
-		ic->fontctx.axis_num4_w = 4 * ic->fontctx.axis->w;
+		ic->fontctx.axis_num5_w = 5 * ic->fontctx.axis->w;
 		ic->fontctx.header_h = 24;
 		ic->fontctx.scale = (double)ic->fontctx.cw / 6.0;
 		ic->lineheight = largefonts ? 16 : 12;
@@ -571,9 +571,9 @@ int graph_axis_left(const IMAGECONTENT *ic)
 		return GRAPH_AXIS_BASE;
 	}
 
-	/* 4-digit field + gap to y-axis; unit text sits at xpos in the left margin
-	 * and uses the spare column vs 3-char scale values. */
-	return ic->fontctx.axis_num4_w + GRAPH_AXIS_LABEL_GAP;
+	/* 5-digit field + gap to y-axis; unit text sits at xpos in the left margin
+	 * and uses the spare column vs 4-char scale values. */
+	return ic->fontctx.axis_num5_w + GRAPH_AXIS_LABEL_GAP;
 }
 
 int graph_xpos_margin(const IMAGECONTENT *ic)
