@@ -496,7 +496,8 @@ void imagedrawhline(IMAGECONTENT *ic, const int x1, const int x2, const int y, c
 	int t, y1, y2, xa, xb;
 
 	t = imageuipx(ic, 1);
-	y1 = y - (t - 1) / 2;
+	/* Center on y; use t/2 so even thicknesses do not grow only downward. */
+	y1 = y - t / 2;
 	y2 = y1 + t - 1;
 	if (x1 <= x2) {
 		xa = x1;
@@ -513,7 +514,7 @@ void imagedrawvline(IMAGECONTENT *ic, const int x, const int y1, const int y2, c
 	int t, x1, x2, ya, yb;
 
 	t = imageuipx(ic, 1);
-	x1 = x - (t - 1) / 2;
+	x1 = x - t / 2;
 	x2 = x1 + t - 1;
 	if (y1 <= y2) {
 		ya = y1;
@@ -557,7 +558,7 @@ void imagedrawdashedhline(IMAGECONTENT *ic, const int x1, const int x2, const in
 	int t, i, y0;
 
 	t = imageuipx(ic, 1);
-	y0 = y - (t - 1) / 2;
+	y0 = y - t / 2;
 	for (i = 0; i < t; i++) {
 		gdImageDashedLine(ic->im, x1, y0 + i, x2, y0 + i, color);
 	}

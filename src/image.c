@@ -423,7 +423,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	ListType listtype = LT_None;
 	ListColumns cols;
 	int textx, texty, offsetx = 0;
-	int width, height, headermod, i = 1, liney, rowcount = 0;
+	int width, height, headermod, i = 1, liney, mid_y, v_top, rowcount = 0;
 	int estimateavailable = 0, estimatevisible = 0, monthrotatenotevisible = 0;
 	int32_t limit;
 	uint64_t e_rx = 0, e_tx = 0, e_secs;
@@ -617,13 +617,14 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	liney = list_header_rule_y(ic, texty);
 	list_draw_hline(ic, &cols, liney, cfg.ostyle > 2);
 	texty += ic->lineheight + 8;
+	/* Top of vdividers: into the column-header row (day/rx/tx/total), above the rule. */
+	v_top = texty - 6 - ic->lineheight;
 
+	/* End vdividers on the mid rule so they meet that hline. Avoid imageextrapx()
+	 * for the end Y: for TTF it grows with cw and leaves a gap. */
 	if (datainfo.count) {
-		list_draw_vdividers(ic, &cols, texty - 6 - ic->lineheight,
-			texty + ((ic->lineheight + cfg.linespaceadjust) * rowcount) - cfg.linespaceadjust + 5 - imageextrapx(ic, 2),
-			cfg.ostyle > 2);
-	} else {
-		list_draw_vdividers(ic, &cols, texty - 6 - ic->lineheight, texty - 4, cfg.ostyle > 2);
+		mid_y = list_mid_rule_y(ic, texty + ((ic->lineheight + cfg.linespaceadjust) * rowcount) - cfg.linespaceadjust);
+		list_draw_vdividers(ic, &cols, v_top, mid_y, cfg.ostyle > 2);
 	}
 
 	while (datalist_i != NULL) {
@@ -764,12 +765,17 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		texty += ic->lineheight;
 	}
 
-	list_draw_hline(ic, &cols, list_mid_rule_y(ic, texty), cfg.ostyle > 2);
+	mid_y = list_mid_rule_y(ic, texty);
+	list_draw_hline(ic, &cols, mid_y, cfg.ostyle > 2);
+	if (!datainfo.count) {
+		list_draw_vdividers(ic, &cols, v_top, mid_y, cfg.ostyle > 2);
+	}
 
 	buffer[0] = '\0';
 
 	if (estimatevisible) {
 		int bar_y = list_bar_y(ic, texty - ic->lineheight);
+		int footer_end;
 
 		if (cfg.estimatestyle) {
 			if (cfg.ostyle > 2) {
@@ -813,8 +819,15 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 			imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
 		}
 
-		list_draw_vdividers(ic, &cols, texty - 6, texty + ic->lineheight - imageextrapx(ic, 2), cfg.ostyle > 2);
+		if (ic->fontctx.mode == FONT_TTF) {
+			footer_end = texty + ic->fontctx.ch;
+		} else {
+			footer_end = texty + ic->lineheight - imageextrapx(ic, 2);
+		}
+		list_draw_vdividers(ic, &cols, mid_y, footer_end, cfg.ostyle > 2);
 	} else if (strlen(ic->dataend) > 0 && datainfo.count > 1 && listtype != LT_Top) {
+		int footer_end;
+
 		texty += 8;
 		if (ic->fontctx.mode == FONT_TTF) {
 			char sumlabel[16];
@@ -855,7 +868,12 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 			imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
 		}
 
-		list_draw_vdividers(ic, &cols, texty - 6, texty + ic->lineheight - imageextrapx(ic, 2), cfg.ostyle > 2);
+		if (ic->fontctx.mode == FONT_TTF) {
+			footer_end = texty + ic->fontctx.ch;
+		} else {
+			footer_end = texty + ic->lineheight - imageextrapx(ic, 2);
+		}
+		list_draw_vdividers(ic, &cols, mid_y, footer_end, cfg.ostyle > 2);
 	}
 
 	if (monthrotatenotevisible) {
