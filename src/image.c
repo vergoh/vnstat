@@ -991,14 +991,14 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 	layoutinit(ic, "", width, height);
 
 	if (ic->fontctx.mode == FONT_TTF) {
-		alltime_x = 64 * ic->fontctx.cw;
-		legend_x = 67 * ic->fontctx.cw;
-		graph_x = 83 * ic->fontctx.cw;
+		alltime_x = 66 * ic->fontctx.cw;
+		legend_x = 69 * ic->fontctx.cw;
+		graph_x = 84 * ic->fontctx.cw;
 		fivegraph_x = graph_x;
 		/* body at textx - (12*cw+2) stays near the builtin left margin (~26). */
-		digest_x = (12 * ic->fontctx.cw + 2) + 26;
+		digest_x = (14 * ic->fontctx.cw + 2) + 26;
 		/* Clear tall header title; builtin keeps y=30. */
-		digest_day_y = ic->fontctx.header_h + 10 - headermod;
+		digest_day_y = ic->fontctx.header_h + 15 - headermod;
 		digest_month_y = digest_day_y - 1 + 8 * ic->lineheight;
 		alltime_y = digest_day_y + 27 + imageextrapx(ic, 10);
 		/* Under all-time "since" line, matching builtin legend vs since gap */
