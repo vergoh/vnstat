@@ -89,6 +89,6 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 void drawfivegraph(IMAGECONTENT *ic, const int israte, const int resultcount, const int height);
 int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte, const int resultcount, const int height);
 void draw95thpercentilegraph(IMAGECONTENT *ic, const int mode);
-void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int ypos, const int height);
+int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int ypos, const int height, uint64_t *percentile);
 
 #endif

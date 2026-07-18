@@ -705,18 +705,38 @@ void drawpercentilelegend(IMAGECONTENT *ic, const int x, const int y, const int 
 		xoffset = 18 + imageextrapx(ic, 6);
 	}
 
-	snprintf(percentiletext, 64, "%s     95th percentile: %s", modetext, gettrafficrate(percentile, 300, 0));
-	imagestring(ic, FONT_ROLE_BODY, x, y, percentiletext, ic->ctext);
-
 	sq = ic->fontctx.cw;
 	if (ic->fontctx.mode == FONT_TTF) {
+		int gap, sep, x_cur, label_w;
+
 		sq_y = y + (ic->fontctx.ch - sq) / 2;
 		if (sq_y < y) {
 			sq_y = y;
 		}
-	} else {
-		sq_y = y + 4;
+		gap = 4;
+		sep = sq + 2 * gap;
+		x_cur = x;
+
+		/* [sq][gap][mode][sep][sq][gap][95th percentile: rate] */
+		gdImageFilledRectangle(ic->im, x_cur, sq_y, x_cur + sq - 1, sq_y + sq - 1, color);
+		gdImageRectangle(ic->im, x_cur, sq_y, x_cur + sq - 1, sq_y + sq - 1, ic->ctext);
+		x_cur += sq + gap;
+		imagestring(ic, FONT_ROLE_BODY, x_cur, y, modetext, ic->ctext);
+		label_w = imagetextwidth(ic, FONT_ROLE_BODY, modetext);
+		x_cur += label_w + sep;
+
+		gdImageFilledRectangle(ic->im, x_cur, sq_y, x_cur + sq - 1, sq_y + sq - 1, ic->cpercentileline);
+		gdImageRectangle(ic->im, x_cur, sq_y, x_cur + sq - 1, sq_y + sq - 1, ic->ctext);
+		x_cur += sq + gap;
+		snprintf(percentiletext, 64, "95th percentile: %s", gettrafficrate(percentile, 300, 0));
+		imagestring(ic, FONT_ROLE_BODY, x_cur, y, percentiletext, ic->ctext);
+		return;
 	}
+
+	snprintf(percentiletext, 64, "%s     95th percentile: %s", modetext, gettrafficrate(percentile, 300, 0));
+	imagestring(ic, FONT_ROLE_BODY, x, y, percentiletext, ic->ctext);
+
+	sq_y = y + 4;
 
 	gdImageFilledRectangle(ic->im, x - 12 - imageextrapx(ic, 2), sq_y, x - 12 + sq - imageextrapx(ic, 2), sq_y + sq, color);
 	gdImageRectangle(ic->im, x - 12 - imageextrapx(ic, 2), sq_y, x - 12 + sq - imageextrapx(ic, 2), sq_y + sq, ic->ctext);

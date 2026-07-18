@@ -1664,34 +1664,100 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	return 1;
 }
 
+/* Pixels per hour. Builtin -L doubles; TTF widens when day labels need a gap. */
+static int percentile_barwidth(IMAGECONTENT *ic)
+{
+	int label_w, gap, need, slot = 24; /* day labels every 24 hours */
+
+	if (ic->fontctx.mode == FONT_BUILTIN) {
+		return 1 + imageextrapx(ic, 1);
+	}
+
+	/* Gap grows with label size (min 4px) so large fonts stay readable between days */
+	label_w = imagetextwidth(ic, FONT_ROLE_AXIS, "00");
+	gap = label_w / 4;
+	if (gap < 4) {
+		gap = 4;
+	}
+	need = label_w + gap;
+	return (need + slot - 1) / slot;
+}
+
 void draw95thpercentilegraph(IMAGECONTENT *ic, const int mode)
 {
-	int imagewidth, imageheight = 300, headermod = 0;
+	int imagewidth, imageheight, headermod = 0, header_extra = 0;
+	int bottom, legend_y, graph_height, barwidth, base_graph, top;
+	uint64_t percentile = 0;
 
-	/* width needed for all percentile entries + decoration depending on font size */
-	imagewidth = PERCENTILEENTRYCOUNT + 78 + imageextrapx(ic, 14);
+	barwidth = percentile_barwidth(ic);
+	imagewidth = PERCENTILEENTRYCOUNT * barwidth + 78 + imageextrapx(ic, 14);
+
+	/* Plot height from base size (default top 38 + bottom 30), then * barwidth.
+	 * Do not derive from imageheight - chrome, or large fonts shrink the plot first. */
+	base_graph = 300 - 68;
+	if (base_graph < 1) {
+		base_graph = 1;
+	}
+	graph_height = base_graph * barwidth;
 
 	if (!ic->showheader) {
 		headermod = ic->fontctx.header_h - 2;
+		top = 38 - headermod;
+		if (top < 2) {
+			top = 2;
+		}
+	} else {
+		header_extra = ic->fontctx.header_h - 24;
+		if (header_extra < 0) {
+			header_extra = 0;
+		}
+		top = 38 + header_extra;
+	}
+
+	bottom = 30 + imageextrapx(ic, 8);
+
+	if (ic->fontctx.mode == FONT_TTF) {
+		int needed_bottom;
+
+		/* Labels at ypos+8; leave room for legend + footer */
+		needed_bottom = 8 + ic->fontctx.axis_ch + 4 + ic->fontctx.ch + 4 + 12 + ic->showedge;
+		if (needed_bottom > bottom) {
+			bottom = needed_bottom;
+		}
+	}
+
+	imageheight = top + graph_height + bottom;
+
+	if (ic->fontctx.mode == FONT_TTF) {
+		legend_y = imageheight - ic->showedge - (int)(ic->fontctx.ch * 1.5);
+	} else {
+		legend_y = imageheight - 17 - imageextrapx(ic, 2);
 	}
 
 	imageinit(ic, imagewidth, imageheight);
 	layoutinit(ic, " / 95th percentile", imagewidth, imageheight);
 
-	drawpercentile(ic, mode, 8 + imageextrapx(ic, 14), imageheight - 30 - imageextrapx(ic, 8), imageheight - 68 + headermod - imageextrapx(ic, 8));
+	if (drawpercentile(ic, mode, 8 + imageextrapx(ic, 14), imageheight - bottom, graph_height, &percentile)) {
+		drawpercentilelegend(ic, imagewidth / 2 - imageextrapx(ic, 50), legend_y, mode, percentile);
+	}
 }
 
-void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int ypos, const int height)
+int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int ypos, const int height, uint64_t *percentile)
 {
-	int i, l, x = xpos, y = ypos, s = 0, step = 0, prev = 0, last = 0, color;
-	uint64_t scaleunit, max, percentile;
+	int i, l, b, x = xpos, y = ypos, s = 0, step = 1, prev = 0, last = 0, color;
+	int barwidth, plot_w, px, label_x, label_y, line_y;
+	uint64_t scaleunit, max, percentile_val;
 	double ratediv, percentileratediv;
 	const struct tm *d;
+	const char *val;
 	time_t current;
 	char datebuff[DATEBUFFLEN];
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
 	percentiledata pdata;
+
+	barwidth = percentile_barwidth(ic);
+	plot_w = PERCENTILEENTRYCOUNT * barwidth;
 
 	if (cfg.fiveminutehours < PERCENTILEENTRYCOUNT) {
 		fprintf(stderr, "\nWarning: Configuration \"5MinuteHours\" needs to be at least %d for 100%% coverage.\n", PERCENTILEENTRYCOUNT);
@@ -1699,8 +1765,8 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 	}
 
 	if (!getpercentiledata(&pdata, ic->interface.name, 0)) {
-		imagestring(ic, FONT_ROLE_BODY, x + 320 - imageextrapx(ic, 30), y - 120, "failed to get percentile data", ic->ctext);
-		return;
+		imagestring(ic, FONT_ROLE_BODY, x + plot_w / 2 - 30 * ic->fontctx.cw / 2, y - height / 2 - ic->fontctx.ch, "failed to get percentile data", ic->ctext);
+		return 0;
 	}
 
 	/* hourly/percentile bytes to rate */
@@ -1716,41 +1782,51 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 	strftime(datebuff, DATEBUFFLEN, "%Y-%m-%d", d);
 
 	if (!db_getdata_range(&datalist, &datainfo, ic->interface.name, "percentile", PERCENTILEENTRYCOUNT, datebuff, "") || datainfo.count == 0) {
-		imagestring(ic, FONT_ROLE_BODY, x + 320 - imageextrapx(ic, 30), y - 120, "no percentile data available", ic->ctext);
-		return;
+		imagestring(ic, FONT_ROLE_BODY, x + plot_w / 2 - 30 * ic->fontctx.cw / 2, y - height / 2 - ic->fontctx.ch, "no percentile data available", ic->ctext);
+		return 0;
 	}
 
 	if (debug) {
 		printf("mode:  %d - %d\n", mode, cfg.qmode);
 		printf("count: %" PRIu32 "\n", datainfo.count);
+		printf("barwidth: %d\n", barwidth);
 	}
 
 	if (mode == 0) {
 		color = ic->crx;
-		percentile = pdata.rxpercentile;
+		percentile_val = pdata.rxpercentile;
 		max = (uint64_t)((double)datainfo.maxrx / ratediv);
 	} else if (mode == 1) {
 		color = ic->ctx;
-		percentile = pdata.txpercentile;
+		percentile_val = pdata.txpercentile;
 		max = (uint64_t)((double)datainfo.maxtx / ratediv);
 	} else {
 		color = ic->ctotal;
-		percentile = pdata.sumpercentile;
+		percentile_val = pdata.sumpercentile;
 		max = (uint64_t)((double)datainfo.max / ratediv);
 	}
 
-	if ((uint64_t)((double)(percentile) / percentileratediv) > max) {
-		max = (uint64_t)((double)(percentile) / percentileratediv);
+	if ((uint64_t)((double)(percentile_val) / percentileratediv) > max) {
+		max = (uint64_t)((double)(percentile_val) / percentileratediv);
 	}
 
 	/* scale values */
 	scaleunit = getscale(max, 1);
 
 	s = (int)lrint(((double)scaleunit / (double)max) * height);
-	if (s < SCALEMINPIXELS) {
-		step = 2;
-	} else {
-		step = 1;
+	if (s == 0) {
+		s = 1;
+	}
+	{
+		int min_step_px = SCALEMINPIXELS;
+
+		/* Tall TTF axis digits need more vertical space between scale labels */
+		if (ic->fontctx.mode == FONT_TTF && ic->fontctx.axis_ch + 4 > min_step_px) {
+			min_step_px = ic->fontctx.axis_ch + 4;
+		}
+		while (s * step < min_step_px) {
+			step++;
+		}
 	}
 
 	/* scale text */
@@ -1758,25 +1834,38 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 
 	/* axis */
 	x += 36;
-	gdImageLine(ic->im, x, y, x + (PERCENTILEENTRYCOUNT + PERCENTILEMINWIDTHFULLPADDING), y, ic->ctext);
+	gdImageLine(ic->im, x, y, x + (plot_w + PERCENTILEMINWIDTHFULLPADDING), y, ic->ctext);
 	gdImageLine(ic->im, x + 4, y + 4, x + 4, y - height, ic->ctext);
 
 	/* arrows */
 	drawarrowup(ic, x + 4, y - 4 - height);
-	drawarrowright(ic, x + 1 + (PERCENTILEENTRYCOUNT + PERCENTILEMINWIDTHFULLPADDING), y);
+	drawarrowright(ic, x + 1 + (plot_w + PERCENTILEMINWIDTHFULLPADDING), y);
 
 	/* adjust cursor to first point on graph */
 	x += 5;
 	y -= 1;
 
 	for (i = step; i * s <= height; i = i + step) {
-		gdImageDashedLine(ic->im, x, y - (i * s), x + (PERCENTILEENTRYCOUNT + PERCENTILEMINWIDTHFULLPADDING) - 5, y - (i * s), ic->cline);
-		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + (PERCENTILEENTRYCOUNT + PERCENTILEMINWIDTHFULLPADDING) - 5, y - prev - (step * s) / 2, ic->clinel);
-		imagestring(ic, FONT_ROLE_AXIS, x - 22 - imageextrapx(ic, 3), y - 4 - (i * s) - imageextrapx(ic, 3), getimagevalue(scaleunit * (unsigned int)i, 3, 1), ic->ctext);
+		line_y = y - (i * s);
+		gdImageDashedLine(ic->im, x, line_y, x + (plot_w + PERCENTILEMINWIDTHFULLPADDING) - 5, line_y, ic->cline);
+		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + (plot_w + PERCENTILEMINWIDTHFULLPADDING) - 5, y - prev - (step * s) / 2, ic->clinel);
+		val = getimagevalue(scaleunit * (unsigned int)i, 3, 1);
+		if (ic->fontctx.mode == FONT_TTF) {
+			const int yaxis_x = x - 1, label_gap = 6;
+
+			while (*val == ' ') {
+				val++;
+			}
+			/* Right-align; vertically center on the scale line like builtin */
+			label_y = line_y - ic->fontctx.axis_ascent / 2;
+			imagestring(ic, FONT_ROLE_AXIS, yaxis_x - label_gap - imagetextwidth(ic, FONT_ROLE_AXIS, val), label_y, val, ic->ctext);
+		} else {
+			imagestring(ic, FONT_ROLE_AXIS, x - 22 - imageextrapx(ic, 3), y - 4 - (i * s) - imageextrapx(ic, 3), val, ic->ctext);
+		}
 		prev = i * s;
 	}
 	if ((prev + (step * s) / 2) <= height) {
-		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + (PERCENTILEENTRYCOUNT + PERCENTILEMINWIDTHFULLPADDING) - 5, y - prev - (step * s) / 2, ic->clinel);
+		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + (plot_w + PERCENTILEMINWIDTHFULLPADDING) - 5, y - prev - (step * s) / 2, ic->clinel);
 	}
 
 	datalist_i = datalist;
@@ -1785,15 +1874,26 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 
 	/* draw data */
 	for (i = 0; i < PERCENTILEENTRYCOUNT; i++, current += 3600) {
+		px = x + i * barwidth;
+
 		if (datalist_i == NULL || current < datalist_i->timestamp) {
-			gdImageSetPixel(ic->im, x + i, y + 1, ic->cbgoffset);
+			for (b = 0; b < barwidth; b++) {
+				gdImageSetPixel(ic->im, px + b, y + 1, ic->cbgoffset);
+			}
 			if (i >= prev + 24 && i % 24 == 0 && current < pdata.dataend) {
 				d = localtime(&current);
 				strftime(datebuff, DATEBUFFLEN, "%d", d);
 				if (i > 0) {
-					drawpole(ic, x + i, y + 4, height, 1, ic->cbgoffset);
+					drawpole(ic, px, y + 4, height, 1, ic->cbgoffset);
 				}
-				imagestring(ic, FONT_ROLE_AXIS, x + 12 + i - 4 - imageextrapx(ic, 1), y + 5, datebuff, ic->cline);
+				if (ic->fontctx.mode == FONT_TTF) {
+					label_x = px + 12 * barwidth - imagetextwidth(ic, FONT_ROLE_AXIS, datebuff) / 2;
+					label_y = y + 8;
+				} else {
+					label_x = px + 12 - 4 - imageextrapx(ic, 1);
+					label_y = y + 5;
+				}
+				imagestring(ic, FONT_ROLE_AXIS, label_x, label_y, datebuff, ic->cline);
 				prev = i;
 			}
 			continue;
@@ -1802,11 +1902,18 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 		if (i >= prev + 24 && i % 24 == 0) {
 			d = localtime(&current);
 			strftime(datebuff, DATEBUFFLEN, "%d", d);
-			drawpole(ic, x + i, y, height, 1, ic->cbgoffset);
+			drawpole(ic, px, y, height, 1, ic->cbgoffset);
 			if (i > 0) {
-				gdImageLine(ic->im, x + i, y + 1, x + i, y + 4, ic->ctext);
+				gdImageLine(ic->im, px, y + 1, px, y + 4, ic->ctext);
 			}
-			imagestring(ic, FONT_ROLE_AXIS, x + 12 + i - 4 - imageextrapx(ic, 1), y + 5, datebuff, ic->ctext);
+			if (ic->fontctx.mode == FONT_TTF) {
+				label_x = px + 12 * barwidth - imagetextwidth(ic, FONT_ROLE_AXIS, datebuff) / 2;
+				label_y = y + 8;
+			} else {
+				label_x = px + 12 - 4 - imageextrapx(ic, 1);
+				label_y = y + 5;
+			}
+			imagestring(ic, FONT_ROLE_AXIS, label_x, label_y, datebuff, ic->ctext);
 			prev = i;
 		}
 
@@ -1820,7 +1927,9 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 		if (l > height) {
 			l = height;
 		}
-		drawpole(ic, x + i, y, l, 1, color);
+		for (b = 0; b < barwidth; b++) {
+			drawpole(ic, px + b, y, l, 1, color);
+		}
 
 		last = i;
 		datalist_i = datalist_i->next;
@@ -1829,24 +1938,27 @@ void drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int 
 	dbdatalistfree(&datalist);
 
 	/* 95th percentile line */
-	l = (int)lrint(((double)(percentile) / percentileratediv / (double)max) * height);
+	l = (int)lrint(((double)(percentile_val) / percentileratediv / (double)max) * height);
 	if (l > height) {
 		l = height;
 	} else if (l == 0) {
 		l = 1;
 	}
-	gdImageLine(ic->im, x, y - l, x + last, y - l, ic->cpercentileline);
+	gdImageLine(ic->im, x, y - l, x + (last + 1) * barwidth - 1, y - l, ic->cpercentileline);
 
 	if (debug) {
 		printf("s:   %d\n", s);
 		printf("l:   %d\n", l);
 		printf("h:   %d\n", height);
-		printf("p:   %" PRIu64 "\n", (uint64_t)((double)percentile / percentileratediv));
+		printf("p:   %" PRIu64 "\n", (uint64_t)((double)percentile_val / percentileratediv));
 		printf("max: %" PRIu64 "\n", max);
 		printf("max rate: %s\n", gettrafficrate((uint64_t)((double)max * ratediv), 3600, 0));
-		printf("per rate: %s\n", gettrafficrate(percentile, 300, 0));
+		printf("per rate: %s\n", gettrafficrate(percentile_val, 300, 0));
 	}
 
-	/* finally add legend with percentile text */
-	drawpercentilelegend(ic, x + 300 - imageextrapx(ic, 50), y + 14 + imageextrapx(ic, 6), mode, percentile);
+	if (percentile != NULL) {
+		*percentile = percentile_val;
+	}
+
+	return 1;
 }
