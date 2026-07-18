@@ -903,6 +903,52 @@ static int fiveg_barwidth(IMAGECONTENT *ic)
 	return (need + slot - 1) / slot;
 }
 
+/* Matches old left-aligned "rx " + getvalue(..., 12) width ("  999.99 YiB" pad). */
+static const char summary_stack_sample[] = "rx   999.99 YiB";
+
+/* Left inset of digest/all-time stacks (digest_x - bodyoff). */
+static int summary_ttf_content_left(const IMAGECONTENT *ic)
+{
+	const int digest_x = (14 * ic->fontctx.cw + 2) + 26;
+	const int bodyoff = 12 * ic->fontctx.cw + 2;
+
+	return digest_x - bodyoff;
+}
+
+/* Right edge of a value stack including the +2*cw pad used for values/since/rate. */
+static int summary_ttf_stack_right(IMAGECONTENT *ic, const int body_left)
+{
+	return body_left + imagetextwidth(ic, FONT_ROLE_BODY, summary_stack_sample) + 2 * ic->fontctx.cw;
+}
+
+/* Right edge of TTF drawlegend at legend_x (non-rate). */
+static int summary_ttf_legend_right(IMAGECONTENT *ic, const int legend_x)
+{
+	const int sq = ic->fontctx.cw;
+	const int gap = imageuipx(ic, 4);
+	const int sep = sq + 2 * gap;
+	int x_cur = legend_x;
+
+	x_cur += sq + gap;
+	x_cur += imagetextwidth(ic, FONT_ROLE_BODY, "rx") + sep;
+	x_cur += sq + gap;
+	x_cur += imagetextwidth(ic, FONT_ROLE_BODY, "tx");
+	return x_cur;
+}
+
+/* Right ink of the second digest column donut (normal two-entry case). */
+static int summary_ttf_digest_right(IMAGECONTENT *ic, const int digest_x)
+{
+	const int bodyoff = 12 * ic->fontctx.cw + 2;
+	const int donut_size = 49 + imageextrapx(ic, 10);
+	const int textx = digest_x + 30 * ic->fontctx.cw;
+	const int body_left = textx - bodyoff;
+	const int col_right = body_left + imagetextwidth(ic, FONT_ROLE_BODY, summary_stack_sample);
+
+	/* Center at col_right + donut_size; radius donut_size/2. */
+	return col_right + donut_size + donut_size / 2;
+}
+
 void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 {
 	int width, height, headermod, header_extra, digest_x, alltime_x, legend_x, legend_y, graph_x, fivegraph_x;
@@ -918,10 +964,13 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 
 	vs_fiveg_bottom = 31 + imageextrapx(ic, 6);
 
+	if (cfg.summarygraph == 1 && (layout == 1 || layout == 2)) {
+		fiveg_barwidth_val = fiveg_barwidth(ic);
+	}
+
 	switch (layout) {
 		// horizontal
 		case 1:
-			width = 163 * ic->fontctx.cw + imageuipx(ic, 2) + imageextrapx(ic, 2);
 			height = 56 + 12 * ic->lineheight;
 			if (ic->fontctx.mode == FONT_TTF) {
 				height += ic->lineheight;
@@ -929,25 +978,15 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 			break;
 		// vertical
 		case 2:
-			width = 83 * ic->fontctx.cw + imageuipx(ic, 2) + imageextrapx(ic, 2);
 			height = 370 + imageextrapx(ic, 90);
 			break;
 		// no hours
 		default:
-			width = 83 * ic->fontctx.cw + imageuipx(ic, 2) + imageextrapx(ic, 2);
 			height = 56 + 12 * ic->lineheight;
 			if (ic->fontctx.mode == FONT_TTF) {
 				height += ic->lineheight;
 			}
 			break;
-	}
-
-	/* Multi-pixel bars widen the 5-min plot; grow canvas so it is not clipped */
-	if (cfg.summarygraph == 1 && (layout == 1 || layout == 2)) {
-		int fiveg_samples = 422 + imageextrapx(ic, 154);
-
-		fiveg_barwidth_val = fiveg_barwidth(ic);
-		width += (fiveg_barwidth_val - 1) * fiveg_samples;
 	}
 
 	if (monthrotatenotevisible) {
@@ -1006,18 +1045,9 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 		}
 	}
 
-	/* Horizontal summary: shrink canvas by the TTF y-axis gutter savings */
-	if (ic->fontctx.mode == FONT_TTF && layout == 1) {
-		width -= graph_axis_left_delta(ic);
-		if (width < 1) {
-			width = 1;
-		}
-	}
-
-	imageinit(ic, width, height);
-	layoutinit(ic, "", width, height);
-
 	if (ic->fontctx.mode == FONT_TTF) {
+		int content_left, content_right, r;
+
 		alltime_x = 66 * ic->fontctx.cw;
 		legend_x = 69 * ic->fontctx.cw;
 		graph_x = 84 * ic->fontctx.cw;
@@ -1030,7 +1060,69 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 		alltime_y = digest_day_y + 27 + imageextrapx(ic, 10);
 		/* Under all-time "since" line, matching builtin legend vs since gap */
 		legend_y = alltime_y + 9 * ic->lineheight;
+
+		content_left = summary_ttf_content_left(ic);
+		content_right = summary_ttf_stack_right(ic, alltime_x);
+		r = summary_ttf_legend_right(ic, legend_x);
+		if (r > content_right) {
+			content_right = r;
+		}
+		r = summary_ttf_digest_right(ic, digest_x);
+		if (r > content_right) {
+			content_right = r;
+		}
+
+		if (layout == 1) {
+			if (cfg.summarygraph == 1) {
+				int fiveg_samples = 422 + imageextrapx(ic, 154);
+
+				r = fivegraph_x + fiveg_samples * fiveg_barwidth_val + graph_extra_space(ic) - graph_xpos_margin(ic);
+			} else {
+				r = graph_x + (500 + imageextrapx(ic, 168) - graph_axis_left_delta(ic)) - 12;
+			}
+			if (r > content_right) {
+				content_right = r;
+			}
+		}
+
+		width = content_right + content_left;
+		if (width < 1) {
+			width = 1;
+		}
+
+		/* Vertical graph may be wider than the text block (esp. multi-pixel 5-min bars). */
+		if (layout == 2) {
+			int graph_w;
+
+			if (cfg.summarygraph == 1) {
+				graph_w = (422 + imageextrapx(ic, 154)) * fiveg_barwidth_val + graph_extra_space(ic);
+			} else {
+				graph_w = 500 + imageextrapx(ic, 168) - graph_axis_left_delta(ic);
+			}
+			if (width < graph_w) {
+				width = graph_w;
+			}
+		}
 	} else {
+		switch (layout) {
+			case 1:
+				width = 163 * ic->fontctx.cw + imageuipx(ic, 2) + imageextrapx(ic, 2);
+				break;
+			case 2:
+				width = 83 * ic->fontctx.cw + imageuipx(ic, 2) + imageextrapx(ic, 2);
+				break;
+			default:
+				width = 83 * ic->fontctx.cw + imageuipx(ic, 2) + imageextrapx(ic, 2);
+				break;
+		}
+
+		/* Multi-pixel bars widen the 5-min plot; grow canvas so it is not clipped */
+		if (cfg.summarygraph == 1 && (layout == 1 || layout == 2)) {
+			int fiveg_samples = 422 + imageextrapx(ic, 154);
+
+			width += (fiveg_barwidth_val - 1) * fiveg_samples;
+		}
+
 		alltime_x = 385 + imageextrapx(ic, 125);
 		legend_x = 410 + imageextrapx(ic, 132);
 		graph_x = 500 + imageextrapx(ic, 160);
@@ -1041,6 +1133,9 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 		alltime_y = 57 + header_extra - headermod + imageextrapx(ic, 10);
 		legend_y = 155 - headermod + imageextrapx(ic, 40);
 	}
+
+	imageinit(ic, width, height);
+	layoutinit(ic, "", width, height);
 
 	drawsummary_alltime(ic, alltime_x, alltime_y);
 	drawlegend(ic, legend_x, legend_y, 0);
@@ -1098,9 +1193,6 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 			break;
 	}
 }
-
-/* Matches old left-aligned "rx " + getvalue(..., 12) width ("  999.99 YiB" pad). */
-static const char summary_stack_sample[] = "rx   999.99 YiB";
 
 static void drawsummary_stack_ttf(IMAGECONTENT *ic, const int body_left, const int value_edge,
 	const int y_rx, const int y_tx, const int y_eq, const uint64_t rx, const uint64_t tx)
