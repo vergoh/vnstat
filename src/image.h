@@ -27,6 +27,10 @@
 #define GRAPH_AXIS_PLOT_PAD 5
 #define GRAPH_EXTRA_RIGHT 29 /* FIVEMINEXTRASPACE - 8 - GRAPH_AXIS_BASE - GRAPH_AXIS_PLOT_PAD */
 
+/* Hourly graph canvas: plot span from y-axis to rightmost hour column. */
+#define HOURLY_CANVAS_BASE 500
+#define HOURLY_PLOT_SPAN (440 - GRAPH_AXIS_BASE)
+
 typedef enum {
 	FONT_BUILTIN = 0,
 	FONT_TTF
@@ -91,7 +95,9 @@ void imagedrawdashedhline(IMAGECONTENT *ic, const int x1, const int x2, const in
 int graph_axis_left(const IMAGECONTENT *ic);
 int graph_xpos_margin(const IMAGECONTENT *ic);
 int graph_extra_space(const IMAGECONTENT *ic);
-int graph_axis_left_delta(const IMAGECONTENT *ic);
+int hourly_graph_width(const IMAGECONTENT *ic);
+void graph_draw_axis_value(IMAGECONTENT *ic, const int axis_x, const int line_y, const char *val, const int builtin_x, const int builtin_y);
+void graph_draw_axis_unit(IMAGECONTENT *ic, const int x_ttf, const int x_builtin, const int y, const char *text);
 void drawimage(IMAGECONTENT *ic);
 #if HAVE_DECL_GD_NEAREST_NEIGHBOUR
 void scaleimage(IMAGECONTENT *ic);

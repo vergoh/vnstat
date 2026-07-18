@@ -593,13 +593,47 @@ int graph_extra_space(const IMAGECONTENT *ic)
 	return graph_xpos_margin(ic) + graph_axis_left(ic) + GRAPH_AXIS_PLOT_PAD + GRAPH_EXTRA_RIGHT;
 }
 
-/* How much narrower the TTF left gutter is vs old 36 + imageextrapx(14) fattening. */
-int graph_axis_left_delta(const IMAGECONTENT *ic)
+/* Standalone hourly canvas width: left margin + axis gutter + plot + right pad. */
+int hourly_graph_width(const IMAGECONTENT *ic)
 {
-	if (ic->fontctx.mode != FONT_TTF) {
-		return 0;
+	const int left = 12 + (ic->fontctx.mode == FONT_BUILTIN ? imageextrapx(ic, 14) : 0);
+	const int plot = HOURLY_PLOT_SPAN + imageextrapx(ic, 145);
+	/* 48 = HOURLY_CANVAS_BASE - 12 - GRAPH_AXIS_BASE - HOURLY_PLOT_SPAN */
+	const int right = (HOURLY_CANVAS_BASE - 12 - GRAPH_AXIS_BASE - HOURLY_PLOT_SPAN)
+		+ imageextrapx(ic, 168) - imageextrapx(ic, 14) - imageextrapx(ic, 145);
+
+	return left + graph_axis_left(ic) + plot + right;
+}
+
+/* Numeric label on a horizontal scale line (TTF right-align + ascent center;
+ * builtin keeps historical x/y via builtin_x / builtin_y). */
+void graph_draw_axis_value(IMAGECONTENT *ic, const int axis_x, const int line_y, const char *val, const int builtin_x, const int builtin_y)
+{
+	int label_y;
+
+	if (val == NULL || val[0] == '\0') {
+		return;
 	}
-	return GRAPH_AXIS_BASE + imageextrapx(ic, 14) - graph_axis_left(ic);
+
+	if (ic->fontctx.mode == FONT_TTF) {
+		while (*val == ' ') {
+			val++;
+		}
+		label_y = line_y - ic->fontctx.axis_ascent / 2;
+		imagestring(ic, FONT_ROLE_AXIS, axis_x - GRAPH_AXIS_LABEL_GAP - imagetextwidth(ic, FONT_ROLE_AXIS, val), label_y, val, ic->ctext);
+	} else {
+		imagestring(ic, FONT_ROLE_AXIS, builtin_x, builtin_y, val, ic->ctext);
+	}
+}
+
+/* Vertical unit label; callers pass mode-specific x (anchors differ per graph). */
+void graph_draw_axis_unit(IMAGECONTENT *ic, const int x_ttf, const int x_builtin, const int y, const char *text)
+{
+	if (ic->fontctx.mode == FONT_TTF) {
+		imagestringup(ic, FONT_ROLE_AXIS, x_ttf, y, text, ic->ctext);
+	} else {
+		imagestringup(ic, FONT_ROLE_AXIS, x_builtin, y, text, ic->ctext);
+	}
 }
 
 int imagetextwidth(IMAGECONTENT *ic, const fontrole_t role, const char *text)

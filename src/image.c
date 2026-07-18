@@ -225,23 +225,13 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 
 	for (i = step; i * s <= (124 + extray + 4); i = i + step) {
 		const char *val;
-		int label_y, line_y;
+		int line_y;
 
 		line_y = y + 124 - (i * s);
 		imagedrawdashedhline(ic, xt, xt + 424 + extrax, line_y, ic->cline);
 		imagedrawdashedhline(ic, xt, xt + 424 + extrax, y + 124 - prev - (step * s) / 2, ic->clinel);
 		val = getimagevalue(scaleunit * (unsigned int)i, 3, israte);
-		if (ic->fontctx.mode == FONT_TTF) {
-			while (*val == ' ') {
-				val++;
-			}
-			/* Right-align; vertically center on the scale line like builtin */
-			label_y = line_y - ic->fontctx.axis_ascent / 2;
-			imagestring(ic, FONT_ROLE_AXIS, xt - GRAPH_AXIS_LABEL_GAP - imagetextwidth(ic, FONT_ROLE_AXIS, val), label_y, val, ic->ctext);
-		} else {
-			label_y = line_y - 3 - imageextrapx(ic, 3);
-			imagestring(ic, FONT_ROLE_AXIS, x + 16 - imageextrapx(ic, 3), label_y, val, ic->ctext);
-		}
+		graph_draw_axis_value(ic, xt, line_y, val, x + 16 - imageextrapx(ic, 3), line_y - 3 - imageextrapx(ic, 3));
 		prev = i * s;
 	}
 	if ((prev + (step * s) / 2) <= (124 + extray + 4)) {
@@ -249,11 +239,7 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 	}
 
 	/* scale text */
-	if (ic->fontctx.mode == FONT_TTF) {
-		imagestringup(ic, FONT_ROLE_AXIS, x, y + 58 + (israte * 10) - (extray / 2), getimagescale(scaleunit * (unsigned int)step, israte), ic->ctext);
-	} else {
-		imagestringup(ic, FONT_ROLE_AXIS, x - 2 - imageextrapx(ic, 14), y + 58 + (israte * 10) - (extray / 2), getimagescale(scaleunit * (unsigned int)step, israte), ic->ctext);
-	}
+	graph_draw_axis_unit(ic, x, x - 2 - imageextrapx(ic, 14), y + 58 + (israte * 10) - (extray / 2), getimagescale(scaleunit * (unsigned int)step, israte));
 
 	/* axis */
 	imagedrawhline(ic, xt - 4, xt + 430 + extrax, y + 124, ic->ctext);
@@ -263,8 +249,8 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 	drawarrowup(ic, xt, y - 9 - extray);
 	drawarrowright(ic, xt + 429 + extrax, y + 124);
 
-	/* Rightmost hour column relative to y-axis (440 assumed GRAPH_AXIS_BASE gutter) */
-	xt = xt + (440 - GRAPH_AXIS_BASE) + extrax;
+	/* Rightmost hour column relative to y-axis */
+	xt = xt + HOURLY_PLOT_SPAN + extrax;
 
 	/* keep alignment when midnight line isn't shown s*/
 	if (cfg.hourlygmode || tmax - 23 == 0) {
@@ -309,10 +295,7 @@ void drawhourly(IMAGECONTENT *ic, const int israte)
 {
 	int width, height, headermod = 0;
 
-	width = 500 + imageextrapx(ic, 168);
-	if (ic->fontctx.mode == FONT_TTF) {
-		width -= graph_axis_left_delta(ic);
-	}
+	width = hourly_graph_width(ic);
 	height = 200 + imageextrapx(ic, 48);
 
 	if (!ic->showheader) {
@@ -949,6 +932,107 @@ static int summary_ttf_digest_right(IMAGECONTENT *ic, const int digest_x)
 	return col_right + donut_size + donut_size / 2;
 }
 
+static void summary_ttf_set_positions(IMAGECONTENT *ic, const int headermod,
+	int *digest_x, int *alltime_x, int *legend_x, int *graph_x, int *fivegraph_x,
+	int *digest_day_y, int *digest_month_y, int *alltime_y, int *legend_y)
+{
+	*alltime_x = 66 * ic->fontctx.cw;
+	*legend_x = 69 * ic->fontctx.cw;
+	*graph_x = 84 * ic->fontctx.cw;
+	*fivegraph_x = *graph_x;
+	/* body at textx - (12*cw+2) stays near the builtin left margin (~26). */
+	*digest_x = (14 * ic->fontctx.cw + 2) + 26;
+	/* Clear tall header title; builtin keeps y=30. */
+	*digest_day_y = ic->fontctx.header_h + 15 - headermod;
+	*digest_month_y = *digest_day_y - 1 + 8 * ic->lineheight;
+	*alltime_y = *digest_day_y + 27 + imageextrapx(ic, 10);
+	/* Under all-time "since" line, matching builtin legend vs since gap */
+	*legend_y = *alltime_y + 9 * ic->lineheight;
+}
+
+static int summary_ttf_compute_width(IMAGECONTENT *ic, const int layout,
+	const int digest_x, const int alltime_x, const int legend_x, const int graph_x, const int fivegraph_x,
+	const int fiveg_barwidth_val)
+{
+	int content_left, content_right, r, width;
+
+	content_left = summary_ttf_content_left(ic);
+	content_right = summary_ttf_stack_right(ic, alltime_x);
+	r = summary_ttf_legend_right(ic, legend_x);
+	if (r > content_right) {
+		content_right = r;
+	}
+	r = summary_ttf_digest_right(ic, digest_x);
+	if (r > content_right) {
+		content_right = r;
+	}
+
+	if (layout == 1) {
+		if (cfg.summarygraph == 1) {
+			int fiveg_samples = 422 + imageextrapx(ic, 154);
+
+			r = fivegraph_x + fiveg_samples * fiveg_barwidth_val + graph_extra_space(ic) - graph_xpos_margin(ic);
+		} else {
+			r = graph_x + hourly_graph_width(ic) - 12;
+		}
+		if (r > content_right) {
+			content_right = r;
+		}
+	}
+
+	width = content_right + content_left;
+	if (width < 1) {
+		width = 1;
+	}
+
+	/* Vertical graph may be wider than the text block (esp. multi-pixel 5-min bars). */
+	if (layout == 2) {
+		int graph_w;
+
+		if (cfg.summarygraph == 1) {
+			graph_w = (422 + imageextrapx(ic, 154)) * fiveg_barwidth_val + graph_extra_space(ic);
+		} else {
+			graph_w = hourly_graph_width(ic);
+		}
+		if (width < graph_w) {
+			width = graph_w;
+		}
+	}
+
+	return width;
+}
+
+static void summary_ttf_adjust_height(IMAGECONTENT *ic, const int layout,
+	const int header_extra, const int headermod, const int monthrotatenotevisible,
+	int *height, int *vs_fiveg_bottom)
+{
+	if (layout == 2) {
+		if (cfg.summarygraph == 1) {
+			int bottom_margin;
+
+			/* Axis labels sit below the 5-min plot; grow margin + canvas together */
+			bottom_margin = ic->fontctx.axis_ch + 4 + 12 + ic->showedge;
+			if (bottom_margin > *vs_fiveg_bottom) {
+				*height += bottom_margin - *vs_fiveg_bottom;
+				*vs_fiveg_bottom = bottom_margin;
+			}
+		} else {
+			int graph_y, needed;
+
+			graph_y = 215 + header_extra + imageextrapx(ic, 84) - headermod
+				+ (monthrotatenotevisible * (ic->lineheight * 2));
+			/* labels at graph_y+128; Tiny footer at height-12-showedge */
+			needed = graph_y + 128 + ic->fontctx.axis_ch + 4 + 12 + ic->showedge;
+			if (*height < needed) {
+				*height = needed;
+			}
+		}
+	} else {
+		/* Extra bottom pad so rate/legend clear the footer */
+		*height += 2 * ic->lineheight;
+	}
+}
+
 void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 {
 	int width, height, headermod, header_extra, digest_x, alltime_x, legend_x, legend_y, graph_x, fivegraph_x;
@@ -1004,31 +1088,7 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 	}
 
 	if (ic->fontctx.mode == FONT_TTF) {
-		if (layout == 2) {
-			if (cfg.summarygraph == 1) {
-				int bottom_margin;
-
-				/* Axis labels sit below the 5-min plot; grow margin + canvas together */
-				bottom_margin = ic->fontctx.axis_ch + 4 + 12 + ic->showedge;
-				if (bottom_margin > vs_fiveg_bottom) {
-					height += bottom_margin - vs_fiveg_bottom;
-					vs_fiveg_bottom = bottom_margin;
-				}
-			} else {
-				int graph_y, needed;
-
-				graph_y = 215 + header_extra + imageextrapx(ic, 84) - headermod
-					+ (monthrotatenotevisible * (ic->lineheight * 2));
-				/* labels at graph_y+128; Tiny footer at height-12-showedge */
-				needed = graph_y + 128 + ic->fontctx.axis_ch + 4 + 12 + ic->showedge;
-				if (height < needed) {
-					height = needed;
-				}
-			}
-		} else {
-			/* Extra bottom pad so rate/legend clear the footer */
-			height += 2 * ic->lineheight;
-		}
+		summary_ttf_adjust_height(ic, layout, header_extra, headermod, monthrotatenotevisible, &height, &vs_fiveg_bottom);
 	}
 
 	/* Scale fiveg plot height with barwidth to keep aspect ratio (stable base, not chrome) */
@@ -1046,63 +1106,9 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 	}
 
 	if (ic->fontctx.mode == FONT_TTF) {
-		int content_left, content_right, r;
-
-		alltime_x = 66 * ic->fontctx.cw;
-		legend_x = 69 * ic->fontctx.cw;
-		graph_x = 84 * ic->fontctx.cw;
-		fivegraph_x = graph_x;
-		/* body at textx - (12*cw+2) stays near the builtin left margin (~26). */
-		digest_x = (14 * ic->fontctx.cw + 2) + 26;
-		/* Clear tall header title; builtin keeps y=30. */
-		digest_day_y = ic->fontctx.header_h + 15 - headermod;
-		digest_month_y = digest_day_y - 1 + 8 * ic->lineheight;
-		alltime_y = digest_day_y + 27 + imageextrapx(ic, 10);
-		/* Under all-time "since" line, matching builtin legend vs since gap */
-		legend_y = alltime_y + 9 * ic->lineheight;
-
-		content_left = summary_ttf_content_left(ic);
-		content_right = summary_ttf_stack_right(ic, alltime_x);
-		r = summary_ttf_legend_right(ic, legend_x);
-		if (r > content_right) {
-			content_right = r;
-		}
-		r = summary_ttf_digest_right(ic, digest_x);
-		if (r > content_right) {
-			content_right = r;
-		}
-
-		if (layout == 1) {
-			if (cfg.summarygraph == 1) {
-				int fiveg_samples = 422 + imageextrapx(ic, 154);
-
-				r = fivegraph_x + fiveg_samples * fiveg_barwidth_val + graph_extra_space(ic) - graph_xpos_margin(ic);
-			} else {
-				r = graph_x + (500 + imageextrapx(ic, 168) - graph_axis_left_delta(ic)) - 12;
-			}
-			if (r > content_right) {
-				content_right = r;
-			}
-		}
-
-		width = content_right + content_left;
-		if (width < 1) {
-			width = 1;
-		}
-
-		/* Vertical graph may be wider than the text block (esp. multi-pixel 5-min bars). */
-		if (layout == 2) {
-			int graph_w;
-
-			if (cfg.summarygraph == 1) {
-				graph_w = (422 + imageextrapx(ic, 154)) * fiveg_barwidth_val + graph_extra_space(ic);
-			} else {
-				graph_w = 500 + imageextrapx(ic, 168) - graph_axis_left_delta(ic);
-			}
-			if (width < graph_w) {
-				width = graph_w;
-			}
-		}
+		summary_ttf_set_positions(ic, headermod, &digest_x, &alltime_x, &legend_x, &graph_x, &fivegraph_x,
+			&digest_day_y, &digest_month_y, &alltime_y, &legend_y);
+		width = summary_ttf_compute_width(ic, layout, digest_x, alltime_x, legend_x, graph_x, fivegraph_x, fiveg_barwidth_val);
 	} else {
 		switch (layout) {
 			case 1:
@@ -1173,7 +1179,7 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 				int hours_x = 12;
 
 				if (ic->fontctx.mode == FONT_TTF) {
-					int hours_w = 500 + imageextrapx(ic, 168) - graph_axis_left_delta(ic);
+					int hours_w = hourly_graph_width(ic);
 
 					hours_x = (width - hours_w) / 2 + 12;
 					if (hours_x < 0) {
@@ -1630,14 +1636,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	x += GRAPH_AXIS_PLOT_PAD;
 	y -= txh + FIVEMINHEIGHTOFFSET;
 	imagedrawhline(ic, x, x + (plot_w + FIVEMINWIDTHPADDING), y, ic->ctext);
-	if (ic->fontctx.mode == FONT_TTF) {
-		const int yaxis_x = x - 1;
-
-		/* Center on the line like builtin Tiny (top + half ascent) */
-		imagestring(ic, FONT_ROLE_AXIS, yaxis_x - GRAPH_AXIS_LABEL_GAP - imagetextwidth(ic, FONT_ROLE_AXIS, "0"), y - ic->fontctx.axis_ascent / 2, "0", ic->ctext);
-	} else {
-		imagestring(ic, FONT_ROLE_AXIS, x - 21 - imageextrapx(ic, 3), y - 4 - imageextrapx(ic, 3), "  0", ic->ctext);
-	}
+	graph_draw_axis_value(ic, x - 1, y, "  0", x - 21 - imageextrapx(ic, 3), y - 4 - imageextrapx(ic, 3));
 
 	/* scale values */
 	scaleunit = getscale(max, israte);
@@ -1674,25 +1673,13 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	y--; // adjust to start above center line
 	for (i = step; i * s <= rxh; i = i + step) {
 		const char *val;
-		int label_y, line_y;
+		int line_y;
 
 		line_y = y - (i * s);
 		imagedrawdashedhline(ic, x, x + (plot_w + FIVEMINWIDTHPADDING), line_y, ic->cline);
 		imagedrawdashedhline(ic, x, x + (plot_w + FIVEMINWIDTHPADDING), y - prev - (step * s) / 2, ic->clinel);
 		val = getimagevalue(scaleunit * (unsigned int)i, 3, israte);
-		if (ic->fontctx.mode == FONT_TTF) {
-			const int yaxis_x = x - 1;
-
-			while (*val == ' ') {
-				val++;
-			}
-			/* Right-align; vertically center on the scale line like builtin */
-			label_y = line_y - ic->fontctx.axis_ascent / 2;
-			imagestring(ic, FONT_ROLE_AXIS, yaxis_x - GRAPH_AXIS_LABEL_GAP - imagetextwidth(ic, FONT_ROLE_AXIS, val), label_y, val, ic->ctext);
-		} else {
-			label_y = line_y - 3 - imageextrapx(ic, 3);
-			imagestring(ic, FONT_ROLE_AXIS, x - 21 - imageextrapx(ic, 3), label_y, val, ic->ctext);
-		}
+		graph_draw_axis_value(ic, x - 1, line_y, val, x - 21 - imageextrapx(ic, 3), line_y - 3 - imageextrapx(ic, 3));
 		prev = i * s;
 	}
 	if ((prev + (step * s) / 2) <= rxh) {
@@ -1705,24 +1692,13 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	/* lower part scale values */
 	for (i = step; i * s <= txh; i = i + step) {
 		const char *val;
-		int label_y, line_y;
+		int line_y;
 
 		line_y = y + (i * s);
 		imagedrawdashedhline(ic, x, x + (plot_w + FIVEMINWIDTHPADDING), line_y, ic->cline);
 		imagedrawdashedhline(ic, x, x + (plot_w + FIVEMINWIDTHPADDING), y + prev + (step * s) / 2, ic->clinel);
 		val = getimagevalue(scaleunit * (unsigned int)i, 3, israte);
-		if (ic->fontctx.mode == FONT_TTF) {
-			const int yaxis_x = x - 1;
-
-			while (*val == ' ') {
-				val++;
-			}
-			label_y = line_y - ic->fontctx.axis_ascent / 2;
-			imagestring(ic, FONT_ROLE_AXIS, yaxis_x - GRAPH_AXIS_LABEL_GAP - imagetextwidth(ic, FONT_ROLE_AXIS, val), label_y, val, ic->ctext);
-		} else {
-			label_y = line_y - 3 - imageextrapx(ic, 3);
-			imagestring(ic, FONT_ROLE_AXIS, x - 21 - imageextrapx(ic, 3), label_y, val, ic->ctext);
-		}
+		graph_draw_axis_value(ic, x - 1, line_y, val, x - 21 - imageextrapx(ic, 3), line_y - 3 - imageextrapx(ic, 3));
 		prev = i * s;
 	}
 	if ((prev + (step * s) / 2) <= txh) {
@@ -1732,11 +1708,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	y--; // y is now back on center line
 
 	/* scale text */
-	if (ic->fontctx.mode == FONT_TTF) {
-		imagestringup(ic, FONT_ROLE_AXIS, unit_x, ypos - height / 2 + (israte * 10), getimagescale(scaleunit * (unsigned int)step, israte), ic->ctext);
-	} else {
-		imagestringup(ic, FONT_ROLE_AXIS, x - 39 - imageextrapx(ic, 14), ypos - height / 2 + (israte * 10), getimagescale(scaleunit * (unsigned int)step, israte), ic->ctext);
-	}
+	graph_draw_axis_unit(ic, unit_x, x - 39 - imageextrapx(ic, 14), ypos - height / 2 + (israte * 10), getimagescale(scaleunit * (unsigned int)step, israte));
 
 	timestamp = datainfo.maxtime - (resultcount * 300);
 
@@ -1996,11 +1968,7 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 	}
 
 	/* scale text */
-	if (ic->fontctx.mode == FONT_TTF) {
-		imagestringup(ic, FONT_ROLE_AXIS, x, y - (height / 2), getimagescale(scaleunit * (unsigned int)step, 1), ic->ctext);
-	} else {
-		imagestringup(ic, FONT_ROLE_AXIS, x - 2 - imageextrapx(ic, 14), y - (height / 2), getimagescale(scaleunit * (unsigned int)step, 1), ic->ctext);
-	}
+	graph_draw_axis_unit(ic, x, x - 2 - imageextrapx(ic, 14), y - (height / 2), getimagescale(scaleunit * (unsigned int)step, 1));
 
 	/* axis */
 	x += graph_axis_left(ic);
@@ -2020,18 +1988,7 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 		imagedrawdashedhline(ic, x, x + (plot_w + PERCENTILEMINWIDTHFULLPADDING) - 5, line_y, ic->cline);
 		imagedrawdashedhline(ic, x, x + (plot_w + PERCENTILEMINWIDTHFULLPADDING) - 5, y - prev - (step * s) / 2, ic->clinel);
 		val = getimagevalue(scaleunit * (unsigned int)i, 3, 1);
-		if (ic->fontctx.mode == FONT_TTF) {
-			const int yaxis_x = x - 1;
-
-			while (*val == ' ') {
-				val++;
-			}
-			/* Right-align; vertically center on the scale line like builtin */
-			label_y = line_y - ic->fontctx.axis_ascent / 2;
-			imagestring(ic, FONT_ROLE_AXIS, yaxis_x - GRAPH_AXIS_LABEL_GAP - imagetextwidth(ic, FONT_ROLE_AXIS, val), label_y, val, ic->ctext);
-		} else {
-			imagestring(ic, FONT_ROLE_AXIS, x - 22 - imageextrapx(ic, 3), y - 4 - (i * s) - imageextrapx(ic, 3), val, ic->ctext);
-		}
+		graph_draw_axis_value(ic, x - 1, line_y, val, x - 22 - imageextrapx(ic, 3), line_y - 4 - imageextrapx(ic, 3));
 		prev = i * s;
 	}
 	if ((prev + (step * s) / 2) <= height) {
