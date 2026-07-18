@@ -223,21 +223,23 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 
 	for (i = step; i * s <= (124 + extray + 4); i = i + step) {
 		const char *val;
-		int label_y;
+		int label_y, line_y;
 
-		gdImageDashedLine(ic->im, xt, y + 124 - (i * s), xt + 424 + extrax, y + 124 - (i * s), ic->cline);
+		line_y = y + 124 - (i * s);
+		gdImageDashedLine(ic->im, xt, line_y, xt + 424 + extrax, line_y, ic->cline);
 		gdImageDashedLine(ic->im, xt, y + 124 - prev - (step * s) / 2, xt + 424 + extrax, y + 124 - prev - (step * s) / 2, ic->clinel);
 		val = getimagevalue(scaleunit * (unsigned int)i, 3, israte);
-		label_y = y + 121 - (i * s) - imageextrapx(ic, 3);
 		if (ic->fontctx.mode == FONT_TTF) {
 			int label_gap = 4;
 
 			while (*val == ' ') {
 				val++;
 			}
-			/* Right-align to the fixed Y-axis; do not move xt with font size */
+			/* Right-align; vertically center on the scale line like builtin */
+			label_y = line_y - ic->fontctx.axis_ascent / 2;
 			imagestring(ic, FONT_ROLE_AXIS, xt - label_gap - imagetextwidth(ic, FONT_ROLE_AXIS, val), label_y, val, ic->ctext);
 		} else {
+			label_y = line_y - 3 - imageextrapx(ic, 3);
 			imagestring(ic, FONT_ROLE_AXIS, x + 16 - imageextrapx(ic, 3), label_y, val, ic->ctext);
 		}
 		prev = i * s;
