@@ -850,12 +850,26 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	dbdatalistfree(&datalist);
 }
 
+/* Pixels per 5-minute sample. Builtin -L doubles; TTF widens when 2-hour labels need a gap. */
+static int fiveg_barwidth(IMAGECONTENT *ic)
+{
+	int need, slot = 24; /* hour labels every 2 hours = 24 samples */
+
+	if (ic->fontctx.mode == FONT_BUILTIN) {
+		return 1 + imageextrapx(ic, 1);
+	}
+
+	/* Keep ~4px between adjacent labels so mid sizes (e.g. 16pt) are not cramped */
+	need = imagetextwidth(ic, FONT_ROLE_AXIS, "00") + 4;
+	return (need + slot - 1) / slot;
+}
+
 void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 {
 	int width, height, headermod, header_extra, digest_x, alltime_x, legend_x, legend_y, graph_x, fivegraph_x;
 	int digest_day_y, digest_month_y, alltime_y;
 	int monthrotatenotevisible = 0;
-	int vs_fiveg_bottom;
+	int vs_fiveg_bottom, fiveg_barwidth_val = 1;
 	char monthrotatenote[96];
 
 	monthrotatenotevisible = ismonthrotatenoteneeded();
@@ -881,6 +895,14 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 			width = 83 * ic->fontctx.cw + 2 + imageextrapx(ic, 2);
 			height = 56 + 12 * ic->lineheight;
 			break;
+	}
+
+	/* Multi-pixel bars widen the 5-min plot; grow canvas so it is not clipped */
+	if (cfg.summarygraph == 1 && (layout == 1 || layout == 2)) {
+		int fiveg_samples = 422 + imageextrapx(ic, 154);
+
+		fiveg_barwidth_val = fiveg_barwidth(ic);
+		width += (fiveg_barwidth_val - 1) * fiveg_samples;
 	}
 
 	if (monthrotatenotevisible) {
@@ -922,6 +944,20 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 		} else {
 			/* Extra bottom pad so rate/legend clear the footer */
 			height += 2 * ic->lineheight;
+		}
+	}
+
+	/* Scale fiveg plot height with barwidth to keep aspect ratio */
+	if (cfg.summarygraph == 1 && (layout == 1 || layout == 2) && fiveg_barwidth_val > 1) {
+		int fiveg_h;
+
+		if (layout == 2) {
+			fiveg_h = 132 + imageextrapx(ic, 35);
+		} else {
+			fiveg_h = height - 68 + headermod - imageextrapx(ic, 8) - (monthrotatenotevisible * (ic->lineheight + 2));
+		}
+		if (fiveg_h > 0) {
+			height += (fiveg_barwidth_val - 1) * fiveg_h;
 		}
 	}
 
@@ -974,7 +1010,7 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 		// vertical
 		case 2:
 			if (cfg.summarygraph == 1) {
-				drawfiveminutes(ic, 8 + imageextrapx(ic, 14), height - vs_fiveg_bottom, israte, 422 + imageextrapx(ic, 154), 132 + imageextrapx(ic, 35));
+				drawfiveminutes(ic, 8 + imageextrapx(ic, 14), height - vs_fiveg_bottom, israte, 422 + imageextrapx(ic, 154), (132 + imageextrapx(ic, 35)) * fiveg_barwidth_val);
 			} else {
 				drawhours(ic, 12, 215 + header_extra + imageextrapx(ic, 84) - headermod + (monthrotatenotevisible * (ic->lineheight * 2)), israte);
 			}
@@ -1311,9 +1347,10 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 void drawfivegraph(IMAGECONTENT *ic, const int israte, const int resultcount, const int height)
 {
 	int imagewidth, imageheight = height, headermod = 0, header_extra = 0;
-	int bottom, legend_y, graph_height;
+	int bottom, legend_y, graph_height, barwidth;
 
-	imagewidth = resultcount + FIVEMINEXTRASPACE + imageextrapx(ic, 14);
+	barwidth = fiveg_barwidth(ic);
+	imagewidth = resultcount * barwidth + FIVEMINEXTRASPACE + imageextrapx(ic, 14);
 
 	if (!ic->showheader) {
 		headermod = ic->fontctx.header_h - 2;
@@ -1343,6 +1380,15 @@ void drawfivegraph(IMAGECONTENT *ic, const int israte, const int resultcount, co
 	/* top = 38 + header_extra - headermod; growing bottom does not pull plot into header */
 	graph_height = imageheight - bottom - 38 - header_extra + headermod;
 
+	/* Keep data-area aspect ratio when bars widen */
+	if (barwidth > 1) {
+		int extra_h = graph_height * (barwidth - 1);
+
+		imageheight += extra_h;
+		graph_height += extra_h;
+		legend_y += extra_h;
+	}
+
 	imageinit(ic, imagewidth, imageheight);
 	layoutinit(ic, " / 5 minute", imagewidth, imageheight);
 
@@ -1354,6 +1400,7 @@ void drawfivegraph(IMAGECONTENT *ic, const int israte, const int resultcount, co
 int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte, const int resultcount, const int height)
 {
 	int x = xpos, y = ypos, i = 0, t = 0, rxh = 0, txh = 0, step = 0, s = 0, prev = 0;
+	int barwidth, plot_w, b, px;
 	uint64_t scaleunit, max;
 	time_t timestamp;
 	double ratediv, e;
@@ -1362,8 +1409,11 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
 	dbdatalistinfo datainfo;
 
+	barwidth = fiveg_barwidth(ic);
+	plot_w = resultcount * barwidth;
+
 	if (!db_getdata(&datalist, &datainfo, ic->interface.name, "fiveminute", (uint32_t)resultcount) || datainfo.count == 0) {
-		x = (resultcount + FIVEMINEXTRASPACE + imageextrapx(ic, 14)) / 2 - (13 * ic->fontctx.cw);
+		x = (plot_w + FIVEMINEXTRASPACE + imageextrapx(ic, 14)) / 2 - (13 * ic->fontctx.cw);
 		imagestring(ic, FONT_ROLE_BODY, x, y - (height / 2) - ic->fontctx.ch, "no 5 minute data available", ic->ctext);
 		return 0;
 	}
@@ -1378,12 +1428,12 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 
 	/* axis */
 	x += 36;
-	gdImageLine(ic->im, x, y, x + (resultcount + FIVEMINWIDTHFULLPADDING), y, ic->ctext);
+	gdImageLine(ic->im, x, y, x + (plot_w + FIVEMINWIDTHFULLPADDING), y, ic->ctext);
 	gdImageLine(ic->im, x + 4, y + 4, x + 4, y - height, ic->ctext);
 
 	/* arrows */
 	drawarrowup(ic, x + 4, y - 1 - height);
-	drawarrowright(ic, x + 1 + (resultcount + FIVEMINWIDTHFULLPADDING), y);
+	drawarrowright(ic, x + 1 + (plot_w + FIVEMINWIDTHFULLPADDING), y);
 
 	max = datainfo.maxrx + datainfo.maxtx;
 
@@ -1407,7 +1457,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	/* center line; y-axis is at x-1 after this advance (drawn at previous x+4) */
 	x += 5;
 	y -= txh + FIVEMINHEIGHTOFFSET;
-	gdImageLine(ic->im, x, y, x + (resultcount + FIVEMINWIDTHPADDING), y, ic->ctext);
+	gdImageLine(ic->im, x, y, x + (plot_w + FIVEMINWIDTHPADDING), y, ic->ctext);
 	if (ic->fontctx.mode == FONT_TTF) {
 		const int yaxis_x = x - 1, label_gap = 6;
 
@@ -1435,6 +1485,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 		printf("max divided: %" PRIu64 "\n", max);
 		printf("scaleunit:   %" PRIu64 "\nstep: %d\n", scaleunit, step);
 		printf("pixels per step: %d\n", s);
+		printf("barwidth: %d\n", barwidth);
 		printf("mintime: %" PRIu64 "\nmaxtime: %" PRIu64 "\n", (uint64_t)datainfo.mintime, (uint64_t)datainfo.maxtime);
 		printf("count: %u\n", datainfo.count);
 	}
@@ -1446,8 +1497,8 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 		int label_y, line_y;
 
 		line_y = y - (i * s);
-		gdImageDashedLine(ic->im, x, line_y, x + (resultcount + FIVEMINWIDTHPADDING), line_y, ic->cline);
-		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + (resultcount + FIVEMINWIDTHPADDING), y - prev - (step * s) / 2, ic->clinel);
+		gdImageDashedLine(ic->im, x, line_y, x + (plot_w + FIVEMINWIDTHPADDING), line_y, ic->cline);
+		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + (plot_w + FIVEMINWIDTHPADDING), y - prev - (step * s) / 2, ic->clinel);
 		val = getimagevalue(scaleunit * (unsigned int)i, 3, israte);
 		if (ic->fontctx.mode == FONT_TTF) {
 			const int yaxis_x = x - 1, label_gap = 6;
@@ -1465,7 +1516,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 		prev = i * s;
 	}
 	if ((prev + (step * s) / 2) <= rxh) {
-		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + (resultcount + FIVEMINWIDTHPADDING), y - prev - (step * s) / 2, ic->clinel);
+		gdImageDashedLine(ic->im, x, y - prev - (step * s) / 2, x + (plot_w + FIVEMINWIDTHPADDING), y - prev - (step * s) / 2, ic->clinel);
 	}
 
 	y += 2; // adjust to start below center line
@@ -1477,8 +1528,8 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 		int label_y, line_y;
 
 		line_y = y + (i * s);
-		gdImageDashedLine(ic->im, x, line_y, x + (resultcount + FIVEMINWIDTHPADDING), line_y, ic->cline);
-		gdImageDashedLine(ic->im, x, y + prev + (step * s) / 2, x + (resultcount + FIVEMINWIDTHPADDING), y + prev + (step * s) / 2, ic->clinel);
+		gdImageDashedLine(ic->im, x, line_y, x + (plot_w + FIVEMINWIDTHPADDING), line_y, ic->cline);
+		gdImageDashedLine(ic->im, x, y + prev + (step * s) / 2, x + (plot_w + FIVEMINWIDTHPADDING), y + prev + (step * s) / 2, ic->clinel);
 		val = getimagevalue(scaleunit * (unsigned int)i, 3, israte);
 		if (ic->fontctx.mode == FONT_TTF) {
 			const int yaxis_x = x - 1, label_gap = 6;
@@ -1495,7 +1546,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 		prev = i * s;
 	}
 	if ((prev + (step * s) / 2) <= txh) {
-		gdImageDashedLine(ic->im, x, y + prev + (step * s) / 2, x + (resultcount + FIVEMINWIDTHPADDING), y + prev + (step * s) / 2, ic->clinel);
+		gdImageDashedLine(ic->im, x, y + prev + (step * s) / 2, x + (plot_w + FIVEMINWIDTHPADDING), y + prev + (step * s) / 2, ic->clinel);
 	}
 
 	y--; // y is now back on center line
@@ -1520,25 +1571,26 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 
 		timestamp += 300;
 		d = localtime(&timestamp);
+		px = x + i * barwidth;
 
 		if (d->tm_min == 0 && i > 2) {
 			if (d->tm_hour % 2 == 0) {
 				if (d->tm_hour == 0) {
-					gdImageLine(ic->im, x + i, y + txh - 1 + FIVEMINHEIGHTOFFSET, x + i, y - rxh - 1, ic->cline);
+					gdImageLine(ic->im, px, y + txh - 1 + FIVEMINHEIGHTOFFSET, px, y - rxh - 1, ic->cline);
 				} else {
-					gdImageLine(ic->im, x + i, y + txh - 1 + FIVEMINHEIGHTOFFSET, x + i, y - rxh - 1, ic->cbgoffset);
+					gdImageLine(ic->im, px, y + txh - 1 + FIVEMINHEIGHTOFFSET, px, y - rxh - 1, ic->cbgoffset);
 				}
 
-				if (i > imagefontwidth(ic, FONT_ROLE_AXIS)) {
+				if (i * barwidth > imagefontwidth(ic, FONT_ROLE_AXIS)) {
 					int label_x, label_y, label_color;
 
 					snprintf(buffer, 32, "%02d", d->tm_hour);
 					if (ic->fontctx.mode == FONT_TTF) {
-						label_x = x + i - imagetextwidth(ic, FONT_ROLE_AXIS, buffer) / 2;
+						label_x = px - imagetextwidth(ic, FONT_ROLE_AXIS, buffer) / 2;
 						/* Hourly uses axis+8; keep labels clear of the x-axis line */
 						label_y = y + txh + FIVEMINHEIGHTOFFSET + 8;
 					} else {
-						label_x = x + i - imagefontwidth(ic, FONT_ROLE_AXIS) + 1;
+						label_x = px - imagefontwidth(ic, FONT_ROLE_AXIS) + 1;
 						label_y = y + txh + imagefontheight(ic, FONT_ROLE_AXIS) - imageextrapx(ic, 5);
 					}
 					if (datalist_i->timestamp > timestamp) {
@@ -1549,14 +1601,14 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 					imagestring(ic, FONT_ROLE_AXIS, label_x, label_y, buffer, label_color);
 				}
 			} else {
-				gdImageLine(ic->im, x + i, y + txh - 1 + FIVEMINHEIGHTOFFSET, x + i, y - rxh - 1, ic->cbgoffset);
+				gdImageLine(ic->im, px, y + txh - 1 + FIVEMINHEIGHTOFFSET, px, y - rxh - 1, ic->cbgoffset);
 			}
-			gdImageSetPixel(ic->im, x + i, y, ic->ctext);
+			gdImageSetPixel(ic->im, px, y, ic->ctext);
 		}
 
 		if (datalist_i->timestamp > timestamp) {
-			gdImageSetPixel(ic->im, x + i, y, ic->cline);
-			gdImageSetPixel(ic->im, x + i, y + txh + FIVEMINHEIGHTOFFSET, ic->cline);
+			gdImageSetPixel(ic->im, px, y, ic->cline);
+			gdImageSetPixel(ic->im, px, y + txh + FIVEMINHEIGHTOFFSET, ic->cline);
 			continue;
 		}
 
@@ -1574,13 +1626,17 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 		if (t > rxh) {
 			t = rxh;
 		}
-		drawpole(ic, x + i, y - 1, t, 1, ic->crx);
+		for (b = 0; b < barwidth; b++) {
+			drawpole(ic, px + b, y - 1, t, 1, ic->crx);
+		}
 
 		t = (int)lrint(((double)datalist_i->tx / e / (double)datainfo.maxtx) * txh);
 		if (t > txh) {
 			t = txh;
 		}
-		drawpole(ic, x + i, y + 1, t, 2, ic->ctx);
+		for (b = 0; b < barwidth; b++) {
+			drawpole(ic, px + b, y + 1, t, 2, ic->ctx);
+		}
 
 		datalist_i = datalist_i->next;
 	}
