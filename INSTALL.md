@@ -12,7 +12,8 @@
    - usually available by default but can be restricted for example
      by grsecurity and similar security enhancement suites or settings
  - sqlite3     (library and development files)
- - libgd       (optional, image output)
+ - libgd       (optional, image output; for TrueType fonts in images,
+                libgd must be built with FreeType support)
  - check       (optional, test suite)
  - pkg-config  (optional, for check detection)
  - autotools   (optional, for recreating configure and makefiles)
@@ -28,7 +29,9 @@ the daemon (`vnstatd`) and image output (`vnstati`). Executing
 will compile `vnstat` and `vnstatd`. The optional image output capable binary
 `vnstati` will also be compiled if the required additional libgd library is
 found to be available and `--disable-image-output` isn't given as parameter
-for `./configure`.
+for `./configure`. Image text uses libGD built-in bitmap fonts by default.
+Optional TrueType fonts (`FontFile` / `FontSize` in the configuration, or
+`vnstati --font`) require a FreeType enabled libgd and a readable `.ttf` file.
 
 An example cgi (`vnstat.cgi`) to be used with a http server with the image
 output support has been provided in the `examples` directory. Configuration

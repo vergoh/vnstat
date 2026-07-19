@@ -429,172 +429,172 @@ START_TEST(libgd_output_comparison)
 	/* line 1 */
 	x = 40;
 	y = 80;
-	gdImageStringUp(ic.im, gdFontGetSmall(), 1, y + 105, (unsigned char *)"libgd bug workaround", ic.ctext);
+	imagestringup(&ic, FONT_ROLE_AXIS, 1, y + 105, "libgd bug workaround", ic.ctext);
 	drawdonut_libgd_bug_workaround(&ic, x, y, (float)0, (float)0, 49, 15);
 	drawdonut_libgd_bug_workaround(&ic, x + 55, y, (float)50, (float)50, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"0/0 - 50/50", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "0/0 - 50/50", ic.ctext);
 
 	x += 130;
 	drawdonut_libgd_bug_workaround(&ic, x, y, (float)100, (float)0, 49, 15);
 	drawdonut_libgd_bug_workaround(&ic, x + 55, y, (float)0, (float)100, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"100/0 - 0/100", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "100/0 - 0/100", ic.ctext);
 
 	x += 130;
 	drawdonut_libgd_bug_workaround(&ic, x, y, (float)60, (float)40, 49, 15);
 	drawdonut_libgd_bug_workaround(&ic, x + 55, y, (float)40, (float)60, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"60/40 - 40/60", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "60/40 - 40/60", ic.ctext);
 
 	x += 130;
 	drawdonut_libgd_bug_workaround(&ic, x, y, (float)75, (float)25, 49, 15);
 	drawdonut_libgd_bug_workaround(&ic, x + 55, y, (float)25, (float)75, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"75/25 - 25/75", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "75/25 - 25/75", ic.ctext);
 
 	x += 130;
 	drawdonut_libgd_bug_workaround(&ic, x, y, (float)90, (float)10, 49, 15);
 	drawdonut_libgd_bug_workaround(&ic, x + 55, y, (float)10, (float)90, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"90/10 - 10/90", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "90/10 - 10/90", ic.ctext);
 
 	x += 130;
 	drawdonut_libgd_bug_workaround(&ic, x, y, (float)95, (float)5, 49, 15);
 	drawdonut_libgd_bug_workaround(&ic, x + 55, y, (float)5, (float)95, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"95/5 - 5/95", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "95/5 - 5/95", ic.ctext);
 
 	x += 130;
 	drawdonut_libgd_bug_workaround(&ic, x, y, (float)99, (float)1, 49, 15);
 	drawdonut_libgd_bug_workaround(&ic, x + 55, y, (float)1, (float)99, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"99/1 - 1/99", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "99/1 - 1/99", ic.ctext);
 
 	x += 130;
 	drawdonut_libgd_bug_workaround(&ic, x, y, (float)99.9, (float)0.1, 49, 15);
 	drawdonut_libgd_bug_workaround(&ic, x + 55, y, (float)0.1, (float)99.9, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"99.9/0.1 - 0.1/99.9", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "99.9/0.1 - 0.1/99.9", ic.ctext);
 
 	/* line 2 */
 	x = 40;
 	y = 160;
 	drawdonut_libgd_bug_workaround(&ic, x, y, (float)0, (float)0, 49, 15);
 	drawdonut_libgd_bug_workaround(&ic, x + 55, y, (float)25, (float)25, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"0/0 - 25/25", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "0/0 - 25/25", ic.ctext);
 
 	x += 130;
 	drawdonut_libgd_bug_workaround(&ic, x, y, (float)50, (float)0, 49, 15);
 	drawdonut_libgd_bug_workaround(&ic, x + 55, y, (float)0, (float)50, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"50/0 - 0/50", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "50/0 - 0/50", ic.ctext);
 
 	x += 130;
 	drawdonut_libgd_bug_workaround(&ic, x, y, (float)40, (float)30, 49, 15);
 	drawdonut_libgd_bug_workaround(&ic, x + 55, y, (float)30, (float)40, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"40/30 - 30/40", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "40/30 - 30/40", ic.ctext);
 
 	x += 130;
 	drawdonut_libgd_bug_workaround(&ic, x, y, (float)30, (float)20, 49, 15);
 	drawdonut_libgd_bug_workaround(&ic, x + 55, y, (float)20, (float)30, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"30/20 - 20/30", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "30/20 - 20/30", ic.ctext);
 
 	x += 130;
 	drawdonut_libgd_bug_workaround(&ic, x, y, (float)20, (float)10, 49, 15);
 	drawdonut_libgd_bug_workaround(&ic, x + 55, y, (float)10, (float)20, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"20/10 - 10/20", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "20/10 - 10/20", ic.ctext);
 
 	x += 130;
 	drawdonut_libgd_bug_workaround(&ic, x, y, (float)15, (float)5, 49, 15);
 	drawdonut_libgd_bug_workaround(&ic, x + 55, y, (float)5, (float)15, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"15/5 - 5/15", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "15/5 - 5/15", ic.ctext);
 
 	x += 130;
 	drawdonut_libgd_bug_workaround(&ic, x, y, (float)10, (float)1, 49, 15);
 	drawdonut_libgd_bug_workaround(&ic, x + 55, y, (float)1, (float)10, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"10/1 - 1/10", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "10/1 - 1/10", ic.ctext);
 
 	x += 130;
 	drawdonut_libgd_bug_workaround(&ic, x, y, (float)1, (float)0.1, 49, 15);
 	drawdonut_libgd_bug_workaround(&ic, x + 55, y, (float)0.1, (float)1, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"1.0/0.1 - 0.1/1.0", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "1.0/0.1 - 0.1/1.0", ic.ctext);
 
 	/* line 3 */
 	x = 40;
 	y = 270;
-	gdImageStringUp(ic.im, gdFontGetSmall(), 1, y + 105, (unsigned char *)"libgd native", ic.ctext);
+	imagestringup(&ic, FONT_ROLE_AXIS, 1, y + 105, "libgd native", ic.ctext);
 	drawdonut_libgd_native(&ic, x, y, (float)0, (float)0, 49, 15);
 	drawdonut_libgd_native(&ic, x + 55, y, (float)50, (float)50, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"0/0 - 50/50", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "0/0 - 50/50", ic.ctext);
 
 	x += 130;
 	drawdonut_libgd_native(&ic, x, y, (float)100, (float)0, 49, 15);
 	drawdonut_libgd_native(&ic, x + 55, y, (float)0, (float)100, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"100/0 - 0/100", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "100/0 - 0/100", ic.ctext);
 
 	x += 130;
 	drawdonut_libgd_native(&ic, x, y, (float)60, (float)40, 49, 15);
 	drawdonut_libgd_native(&ic, x + 55, y, (float)40, (float)60, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"60/40 - 40/60", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "60/40 - 40/60", ic.ctext);
 
 	x += 130;
 	drawdonut_libgd_native(&ic, x, y, (float)75, (float)25, 49, 15);
 	drawdonut_libgd_native(&ic, x + 55, y, (float)25, (float)75, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"75/25 - 25/75", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "75/25 - 25/75", ic.ctext);
 
 	x += 130;
 	drawdonut_libgd_native(&ic, x, y, (float)90, (float)10, 49, 15);
 	drawdonut_libgd_native(&ic, x + 55, y, (float)10, (float)90, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"90/10 - 10/90", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "90/10 - 10/90", ic.ctext);
 
 	x += 130;
 	drawdonut_libgd_native(&ic, x, y, (float)95, (float)5, 49, 15);
 	drawdonut_libgd_native(&ic, x + 55, y, (float)5, (float)95, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"95/5 - 5/95", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "95/5 - 5/95", ic.ctext);
 
 	x += 130;
 	drawdonut_libgd_native(&ic, x, y, (float)99, (float)1, 49, 15);
 	drawdonut_libgd_native(&ic, x + 55, y, (float)1, (float)99, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"99/1 - 1/99", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "99/1 - 1/99", ic.ctext);
 
 	x += 130;
 	drawdonut_libgd_native(&ic, x, y, (float)99.9, (float)0.1, 49, 15);
 	drawdonut_libgd_native(&ic, x + 55, y, (float)0.1, (float)99.9, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"99.9/0.1 - 0.1/99.9", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "99.9/0.1 - 0.1/99.9", ic.ctext);
 
 	/* line 4 */
 	x = 40;
 	y = 350;
 	drawdonut_libgd_native(&ic, x, y, (float)0, (float)0, 49, 15);
 	drawdonut_libgd_native(&ic, x + 55, y, (float)25, (float)25, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"0/0 - 25/25", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "0/0 - 25/25", ic.ctext);
 
 	x += 130;
 	drawdonut_libgd_native(&ic, x, y, (float)50, (float)0, 49, 15);
 	drawdonut_libgd_native(&ic, x + 55, y, (float)0, (float)50, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"50/0 - 0/50", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "50/0 - 0/50", ic.ctext);
 
 	x += 130;
 	drawdonut_libgd_native(&ic, x, y, (float)40, (float)30, 49, 15);
 	drawdonut_libgd_native(&ic, x + 55, y, (float)30, (float)40, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"40/30 - 30/40", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "40/30 - 30/40", ic.ctext);
 
 	x += 130;
 	drawdonut_libgd_native(&ic, x, y, (float)30, (float)20, 49, 15);
 	drawdonut_libgd_native(&ic, x + 55, y, (float)20, (float)30, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"30/20 - 20/30", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "30/20 - 20/30", ic.ctext);
 
 	x += 130;
 	drawdonut_libgd_native(&ic, x, y, (float)20, (float)10, 49, 15);
 	drawdonut_libgd_native(&ic, x + 55, y, (float)10, (float)20, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"20/10 - 10/20", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "20/10 - 10/20", ic.ctext);
 
 	x += 130;
 	drawdonut_libgd_native(&ic, x, y, (float)15, (float)5, 49, 15);
 	drawdonut_libgd_native(&ic, x + 55, y, (float)5, (float)15, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"15/5 - 5/15", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "15/5 - 5/15", ic.ctext);
 
 	x += 130;
 	drawdonut_libgd_native(&ic, x, y, (float)10, (float)1, 49, 15);
 	drawdonut_libgd_native(&ic, x + 55, y, (float)1, (float)10, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"10/1 - 1/10", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "10/1 - 1/10", ic.ctext);
 
 	x += 130;
 	drawdonut_libgd_native(&ic, x, y, (float)1, (float)0.1, 49, 15);
 	drawdonut_libgd_native(&ic, x + 55, y, (float)0.1, (float)1, 49, 15);
-	gdImageString(ic.im, gdFontGetSmall(), x - 20, y + 30, (unsigned char *)"1.0/0.1 - 0.1/1.0", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, x - 20, y + 30, "1.0/0.1 - 0.1/1.0", ic.ctext);
 
 	gdImagePng(ic.im, pngout);
 	ret = fclose(pngout);
@@ -625,7 +625,7 @@ START_TEST(element_output_check)
 	x = 40;
 	y = 70;
 
-	gdImageStringUp(ic.im, gdFontGetSmall(), 1, y + 15, (unsigned char *)"50.0%", ic.ctext);
+	imagestringup(&ic, FONT_ROLE_AXIS, 1, y + 15, "50.0%", ic.ctext);
 
 	for (f = 50.0; f >= 0; f -= (float)0.2) {
 
@@ -637,7 +637,7 @@ START_TEST(element_output_check)
 			y += 60;
 
 			snprintf(buffer, 6, "%3.1f%%", (double)f - 0.2);
-			gdImageStringUp(ic.im, gdFontGetSmall(), 1, y + 15, (unsigned char *)buffer, ic.ctext);
+			imagestringup(&ic, FONT_ROLE_AXIS, 1, y + 15, buffer, ic.ctext);
 		}
 	}
 
@@ -703,20 +703,20 @@ START_TEST(element_output_check)
 		drawpole(&ic, 1050 + i, 821, i % 50, 2, ic.ctx);
 	}
 
-	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 400, (unsigned char *)"Color: ctext", ic.ctext);
-	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 420, (unsigned char *)"Color: cedge", ic.cedge);
-	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 440, (unsigned char *)"Color: cheader", ic.cheader);
-	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 460, (unsigned char *)"Color: cheadertitle", ic.cheadertitle);
-	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 480, (unsigned char *)"Color: cheaderdate", ic.cheaderdate);
-	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 500, (unsigned char *)"Color: cline", ic.cline);
-	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 520, (unsigned char *)"Color: clinel", ic.clinel);
-	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 540, (unsigned char *)"Color: cbackground", ic.cbackground);
-	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 560, (unsigned char *)"Color: cvnstat", ic.cvnstat);
-	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 580, (unsigned char *)"Color: cbgoffset", ic.cbgoffset);
-	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 600, (unsigned char *)"Color: crx", ic.crx);
-	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 620, (unsigned char *)"Color: crxd", ic.crxd);
-	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 640, (unsigned char *)"Color: ctx", ic.ctx);
-	gdImageString(ic.im, gdFontGetMediumBold(), 1280, 660, (unsigned char *)"Color: ctxd", ic.ctxd);
+	imagestring(&ic, FONT_ROLE_BODY, 1280, 400, "Color: ctext", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, 1280, 420, "Color: cedge", ic.cedge);
+	imagestring(&ic, FONT_ROLE_BODY, 1280, 440, "Color: cheader", ic.cheader);
+	imagestring(&ic, FONT_ROLE_BODY, 1280, 460, "Color: cheadertitle", ic.cheadertitle);
+	imagestring(&ic, FONT_ROLE_BODY, 1280, 480, "Color: cheaderdate", ic.cheaderdate);
+	imagestring(&ic, FONT_ROLE_BODY, 1280, 500, "Color: cline", ic.cline);
+	imagestring(&ic, FONT_ROLE_BODY, 1280, 520, "Color: clinel", ic.clinel);
+	imagestring(&ic, FONT_ROLE_BODY, 1280, 540, "Color: cbackground", ic.cbackground);
+	imagestring(&ic, FONT_ROLE_BODY, 1280, 560, "Color: cvnstat", ic.cvnstat);
+	imagestring(&ic, FONT_ROLE_BODY, 1280, 580, "Color: cbgoffset", ic.cbgoffset);
+	imagestring(&ic, FONT_ROLE_BODY, 1280, 600, "Color: crx", ic.crx);
+	imagestring(&ic, FONT_ROLE_BODY, 1280, 620, "Color: crxd", ic.crxd);
+	imagestring(&ic, FONT_ROLE_BODY, 1280, 640, "Color: ctx", ic.ctx);
+	imagestring(&ic, FONT_ROLE_BODY, 1280, 660, "Color: ctxd", ic.ctxd);
 
 	gdImagePng(ic.im, pngout);
 	ret = fclose(pngout);

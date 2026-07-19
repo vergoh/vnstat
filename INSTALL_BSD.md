@@ -11,7 +11,8 @@
  - user with access to kernel interface statistics
    - usually available by default but may be restricted by security settings
  - databases/sqlite3
- - graphics/gd       (optional, image output)
+ - graphics/gd       (optional, image output; for TrueType fonts in images,
+                     gd must be built with FreeType support)
  - devel/check       (optional, test suite)
  - devel/pkg-config  (optional, for check detection)
  - devel/autotools   (optional, for recreating configure and makefiles)
@@ -27,7 +28,10 @@ the daemon (`vnstatd`) and image output (`vnstati`). Executing
 will compile `vnstat` and `vnstatd` without requiring additional libraries.
 The optional image output capable binary `vnstati` will also be compiled if
 the required additional libgd2 library is found to be available and
-`--disable-image-output` isn't given as parameter for `./configure`.
+`--disable-image-output` isn't given as parameter for `./configure`. Image
+text uses libGD built-in bitmap fonts by default. Optional TrueType fonts
+(`FontFile` / `FontSize` in the configuration, or `vnstati --font`) require
+a FreeType enabled gd and a readable `.ttf` file.
 
 An example cgi (`vnstat.cgi`) to be used with a http server with the image
 output support has been provided in the `examples` directory. Configuration
