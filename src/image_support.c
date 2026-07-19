@@ -161,7 +161,7 @@ static int fontcache_ready = 0;
 
 static char *imagettfbbox(const IMAGECONTENT *ic, const double ptsize, const double angle, const char *text, int *brect)
 {
-	return gdImageStringFT(NULL, brect, 0, ic->fontctx.ttfpath, ptsize, angle, 0, 0, (char *)text);
+	return gdImageStringFT(NULL, brect, 0, (char *)ic->fontctx.ttfpath, ptsize, angle, 0, 0, (char *)text);
 }
 
 static int imagettftextwidth(const IMAGECONTENT *ic, const double ptsize, const char *text)
