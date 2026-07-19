@@ -896,6 +896,273 @@ START_TEST(invertcolor_inverts_colors)
 }
 END_TEST
 
+/* Return path of a readable system sans TTF, or NULL if none found.
+ * Order prefers fonts commonly shipped by major Linux distros. */
+static const char *find_test_ttf(void)
+{
+	static const char *candidates[] = {
+		/* Noto Sans — default on recent Fedora / Debian / Ubuntu desktops */
+		"/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
+		"/usr/share/fonts/google-noto/NotoSans-Regular.ttf",
+		"/usr/share/fonts/noto/NotoSans-Regular.ttf",
+		/* Liberation Sans — common desktop / LibreOffice seed */
+		"/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+		"/usr/share/fonts/liberation-sans/LiberationSans-Regular.ttf",
+		"/usr/share/fonts/liberation/LiberationSans-Regular.ttf",
+		/* DejaVu Sans — still common on servers and older defaults */
+		"/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+		"/usr/share/fonts/TTF/DejaVuSans.ttf",
+		"/usr/local/share/fonts/dejavu/DejaVuSans.ttf",
+		/* Droid — often present via fonts-droid-fallback */
+		"/usr/share/fonts/truetype/droid/DroidSans.ttf",
+		"/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf",
+		"/usr/share/fonts-droid-fallback/truetype/DroidSansFallback.ttf",
+		/* FreeSans — frequently pulled by fonts-freefont-ttf */
+		"/usr/share/fonts/truetype/freefont/FreeSans.ttf",
+		NULL};
+	int i;
+
+	for (i = 0; candidates[i] != NULL; i++) {
+		if (access(candidates[i], R_OK) == 0) {
+			return candidates[i];
+		}
+	}
+	return NULL;
+}
+
+START_TEST(imagefontinit_builtin_small)
+{
+	IMAGECONTENT ic;
+	gdFontPtr small, tiny, large, giant;
+
+	cfg.fontfile[0] = '\0';
+	ck_assert_int_eq(imagefontinit(&ic, 0), 1);
+
+	small = gdFontGetSmall();
+	tiny = gdFontGetTiny();
+	large = gdFontGetLarge();
+	giant = gdFontGetGiant();
+
+	ck_assert_int_eq(ic.fontctx.mode, FONT_BUILTIN);
+	ck_assert_ptr_eq(ic.fontctx.body, small);
+	ck_assert_ptr_eq(ic.fontctx.axis, tiny);
+	ck_assert_ptr_eq(ic.fontctx.title, large);
+	ck_assert_ptr_eq(ic.fontctx.header, giant);
+	ck_assert_ptr_eq(ic.fontctx.footer, tiny);
+	ck_assert_int_eq(ic.fontctx.cw, small->w);
+	ck_assert_int_eq(ic.fontctx.ch, small->h);
+	ck_assert_int_eq(ic.fontctx.header_h, 24);
+	ck_assert_int_eq(ic.fontctx.axis_num5_w, 5 * tiny->w);
+	ck_assert_int_eq(ic.lineheight, 12);
+	ck_assert(ic.fontctx.scale > 0.0);
+
+	ck_assert_int_eq(imagetextwidth(&ic, FONT_ROLE_BODY, NULL), 0);
+	ck_assert_int_eq(imagetextwidth(&ic, FONT_ROLE_BODY, ""), 0);
+	ck_assert_int_eq(imagetextwidth(&ic, FONT_ROLE_BODY, "ab"), 2 * imagefontwidth(&ic, FONT_ROLE_BODY));
+	ck_assert_int_eq(imagefontwidth(&ic, FONT_ROLE_FOOTER), tiny->w);
+	ck_assert_int_eq(imagefontheight(&ic, FONT_ROLE_FOOTER), tiny->h);
+	ck_assert_int_eq(imagefontwidth(&ic, FONT_ROLE_BODY), small->w);
+	ck_assert_int_eq(imagefontheight(&ic, FONT_ROLE_BODY), small->h);
+
+	imagefontcleanup();
+}
+END_TEST
+
+START_TEST(imagefontinit_builtin_large)
+{
+	IMAGECONTENT ic_small, ic_large;
+	gdFontPtr largefont, smallfont;
+
+	cfg.fontfile[0] = '\0';
+	ck_assert_int_eq(imagefontinit(&ic_small, 0), 1);
+	ck_assert_int_eq(imagefontinit(&ic_large, 1), 1);
+
+	largefont = gdFontGetLarge();
+	smallfont = gdFontGetSmall();
+
+	ck_assert_int_eq(ic_large.fontctx.mode, FONT_BUILTIN);
+	ck_assert_ptr_eq(ic_large.fontctx.body, largefont);
+	ck_assert_ptr_eq(ic_large.fontctx.axis, smallfont);
+	ck_assert_ptr_eq(ic_large.fontctx.title, gdFontGetGiant());
+	ck_assert_int_eq(ic_large.fontctx.cw, largefont->w);
+	ck_assert_int_eq(ic_large.fontctx.ch, largefont->h);
+	ck_assert_int_eq(ic_large.lineheight, 16);
+	ck_assert(ic_large.fontctx.scale > ic_small.fontctx.scale);
+
+	imagefontcleanup();
+}
+END_TEST
+
+START_TEST(imageextrapx_and_imageuipx_builtin)
+{
+	IMAGECONTENT ic;
+
+	cfg.fontfile[0] = '\0';
+	ck_assert_int_eq(imagefontinit(&ic, 0), 1);
+
+	ic.large = 0;
+	ck_assert_int_eq(imageextrapx(&ic, 0), 0);
+	ck_assert_int_eq(imageextrapx(&ic, 14), 0);
+	ck_assert_int_eq(imageuipx(&ic, 0), 0);
+	ck_assert_int_eq(imageuipx(&ic, -1), 0);
+	ck_assert_int_eq(imageuipx(&ic, 1), 1);
+	ck_assert_int_eq(imageuipx(&ic, 2), 2);
+
+	ic.large = 1;
+	ck_assert_int_eq(imageextrapx(&ic, 14), 14);
+	ck_assert_int_eq(imageextrapx(&ic, 0), 0);
+	/* Builtin UI thickness is not fattened by LargeFonts. */
+	ck_assert_int_eq(imageuipx(&ic, 1), 1);
+
+	imagefontcleanup();
+}
+END_TEST
+
+START_TEST(graph_geometry_helpers_builtin)
+{
+	IMAGECONTENT ic;
+	int small_hourly, large_hourly;
+
+	cfg.fontfile[0] = '\0';
+	ck_assert_int_eq(imagefontinit(&ic, 0), 1);
+
+	ic.large = 0;
+	ck_assert_int_eq(graph_axis_left(&ic), GRAPH_AXIS_BASE);
+	ck_assert_int_eq(graph_xpos_margin(&ic), 8);
+	ck_assert_int_eq(graph_extra_space(&ic), FIVEMINEXTRASPACE);
+	small_hourly = hourly_graph_width(&ic);
+	ck_assert_int_eq(small_hourly, HOURLY_CANVAS_BASE);
+
+	ic.large = 1;
+	ck_assert_int_eq(graph_xpos_margin(&ic), 8 + imageextrapx(&ic, 14));
+	ck_assert_int_eq(graph_extra_space(&ic), FIVEMINEXTRASPACE + imageextrapx(&ic, 14));
+	large_hourly = hourly_graph_width(&ic);
+	ck_assert_int_gt(large_hourly, small_hourly);
+
+	imagefontcleanup();
+}
+END_TEST
+
+START_TEST(imagefontinit_fails_for_missing_fontfile)
+{
+	IMAGECONTENT ic;
+
+	strncpy_nt(cfg.fontfile, "/nonexistent/path/vnstat-missing-font.ttf", 512);
+	cfg.fontsize = FONTSIZE;
+	fclose(stderr);
+
+	ck_assert_int_eq(imagefontinit(&ic, 0), 0);
+	imagefontcleanup();
+}
+END_TEST
+
+#if HAVE_DECL_GDIMAGESTRINGFT
+START_TEST(imagefontinit_ttf_success_and_metrics)
+{
+	IMAGECONTENT ic, ic_large, ic_big;
+	const char *font;
+	int body_w, title_w;
+
+	font = find_test_ttf();
+	if (font == NULL) {
+		return;
+	}
+
+	strncpy_nt(cfg.fontfile, font, 512);
+	cfg.fontsize = FONTSIZE;
+
+	ck_assert_int_eq(imagefontinit(&ic, 0), 1);
+	ck_assert_int_eq(ic.fontctx.mode, FONT_TTF);
+	ck_assert_str_eq(ic.fontctx.ttfpath, font);
+	ck_assert(ic.fontctx.ptsize == (double)FONTSIZE);
+	ck_assert_int_gt(ic.fontctx.cw, 0);
+	ck_assert_int_gt(ic.fontctx.ch, 0);
+	ck_assert_int_gt(ic.fontctx.header_h, 0);
+	ck_assert_int_gt(ic.lineheight, 0);
+	ck_assert(ic.fontctx.scale > 0.0);
+	ck_assert_int_gt(ic.fontctx.axis_num5_w, 0);
+
+	ck_assert_int_eq(imageuipx(&ic, 1), 1);
+	ck_assert_int_eq(imageuipx(&ic, 2), 2);
+	ck_assert_int_eq(graph_axis_left(&ic), ic.fontctx.axis_num5_w + GRAPH_AXIS_LABEL_GAP);
+	ck_assert_int_eq(graph_xpos_margin(&ic), 8);
+	ck_assert_int_eq(graph_extra_space(&ic),
+					 graph_xpos_margin(&ic) + graph_axis_left(&ic) + GRAPH_AXIS_PLOT_PAD + GRAPH_EXTRA_RIGHT);
+	ck_assert_int_eq(hourly_graph_width(&ic),
+					 12 + graph_axis_left(&ic) + HOURLY_PLOT_SPAN + imageextrapx(&ic, 145) + (HOURLY_CANVAS_BASE - 12 - GRAPH_AXIS_BASE - HOURLY_PLOT_SPAN) + imageextrapx(&ic, 168) - imageextrapx(&ic, 14) - imageextrapx(&ic, 145));
+
+	ck_assert_int_eq(imagetextwidth(&ic, FONT_ROLE_BODY, NULL), 0);
+	ck_assert_int_eq(imagetextwidth(&ic, FONT_ROLE_BODY, ""), 0);
+	ck_assert_int_gt(imagetextwidth(&ic, FONT_ROLE_BODY, "longer"), imagetextwidth(&ic, FONT_ROLE_BODY, "x"));
+
+	body_w = imagefontwidth(&ic, FONT_ROLE_BODY);
+	title_w = imagefontwidth(&ic, FONT_ROLE_TITLE);
+	ck_assert_int_ge(title_w, body_w);
+	ck_assert_int_eq(imagefontwidth(&ic, FONT_ROLE_FOOTER), gdFontGetTiny()->w);
+	ck_assert_int_eq(imagefontheight(&ic, FONT_ROLE_FOOTER), gdFontGetTiny()->h);
+
+	ck_assert_int_eq(imagefontinit(&ic_large, 1), 1);
+	ck_assert(ic_large.fontctx.ptsize == (double)FONTSIZE * 1.5);
+
+	cfg.fontsize = 24;
+	ck_assert_int_eq(imagefontinit(&ic_big, 0), 1);
+	ck_assert_int_gt(ic_big.fontctx.cw, ic.fontctx.cw);
+	ck_assert_int_gt(ic_big.fontctx.ch, ic.fontctx.ch);
+	ck_assert(ic_big.fontctx.scale > ic.fontctx.scale);
+	ck_assert_int_eq(imageuipx(&ic_big, 1), (int)lrint(1.0 * 24.0 / (double)FONTSIZE));
+
+	imagefontcleanup();
+	imagefontcleanup();
+}
+END_TEST
+#else
+START_TEST(imagefontinit_fails_without_freetype)
+{
+	IMAGECONTENT ic;
+
+	strncpy_nt(cfg.fontfile, "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 512);
+	cfg.fontsize = FONTSIZE;
+
+	ck_assert_int_eq(imagefontinit(&ic, 0), 0);
+	imagefontcleanup();
+}
+END_TEST
+#endif
+
+START_TEST(imagestring_and_draw_helpers_smoke)
+{
+	IMAGECONTENT ic;
+
+	cfg.fontfile[0] = '\0';
+	initimagecontent(&ic);
+	imageinit(&ic, 80, 60);
+
+	imagestring(&ic, FONT_ROLE_BODY, 2, 2, NULL, ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, 2, 2, "", ic.ctext);
+	imagestring(&ic, FONT_ROLE_BODY, 2, 2, "ok", ic.ctext);
+	imagestringup(&ic, FONT_ROLE_AXIS, 2, 40, NULL, ic.ctext);
+	imagestringup(&ic, FONT_ROLE_AXIS, 2, 40, "", ic.ctext);
+	imagestringup(&ic, FONT_ROLE_AXIS, 2, 40, "up", ic.ctext);
+
+	graph_draw_axis_value(&ic, 40, 20, NULL, 10, 18);
+	graph_draw_axis_value(&ic, 40, 20, "", 10, 18);
+	graph_draw_axis_value(&ic, 40, 20, "12", 10, 18);
+	graph_draw_axis_unit(&ic, 4, 4, 50, "KiB");
+
+	imagedrawhline(&ic, 5, 50, 10, ic.cline);
+	imagedrawvline(&ic, 20, 5, 40, ic.cline);
+	imagedrawrect(&ic, 5, 5, 40, 30, ic.cedge);
+	imagedrawdashedhline(&ic, 5, 50, 35, ic.clinel);
+
+	ck_assert_int_eq(gdImageGetPixel(ic.im, 10, 10), ic.cline);
+
+	drawpercentilelegend(&ic, 10, 45, 0, 1000);
+
+	gdImageDestroy(ic.im);
+	imagefontcleanup();
+}
+END_TEST
+
 void add_image_tests(Suite *s)
 {
 	TCase *tc_image = tcase_create("Image");
@@ -923,5 +1190,16 @@ void add_image_tests(Suite *s)
 	tcase_add_test(tc_image, hextorgb_can_convert);
 	tcase_add_test(tc_image, modcolor_mods_colors);
 	tcase_add_test(tc_image, invertcolor_inverts_colors);
+	tcase_add_test(tc_image, imagefontinit_builtin_small);
+	tcase_add_test(tc_image, imagefontinit_builtin_large);
+	tcase_add_test(tc_image, imageextrapx_and_imageuipx_builtin);
+	tcase_add_test(tc_image, graph_geometry_helpers_builtin);
+	tcase_add_test(tc_image, imagefontinit_fails_for_missing_fontfile);
+#if HAVE_DECL_GDIMAGESTRINGFT
+	tcase_add_test(tc_image, imagefontinit_ttf_success_and_metrics);
+#else
+	tcase_add_test(tc_image, imagefontinit_fails_without_freetype);
+#endif
+	tcase_add_test(tc_image, imagestring_and_draw_helpers_smoke);
 	suite_add_tcase(s, tc_image);
 }

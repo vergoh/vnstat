@@ -19,6 +19,7 @@ vnStat image output - Copyright (C) 2007-2025 Teemu Toivola <tst@iki.fi>
 #include "iflist.h"
 #include "dbsql.h"
 #include "image.h"
+#include "image_support.h"
 #include "cfg.h"
 #include "misc.h"
 #include "clicommon.h"
