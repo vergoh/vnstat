@@ -978,7 +978,7 @@ void handlemerge(PARAMS *p)
 
 int parsedatabaseinterface(const char *input, char *database, char *interface)
 {
-	char *charptr;
+	const char *charptr;
 	size_t len;
 
 	charptr = strchr(input, ':');
