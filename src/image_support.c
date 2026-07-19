@@ -761,7 +761,7 @@ void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int 
 	const struct tm *d;
 	char datestring[64], buffer[512];
 	int rect_top, rect_bottom, title_y, date_y;
-	int pad, edge_t, inset, footer_y;
+	int pad, edge_t, inset, bottom_margin;
 
 	/* get time in given format */
 	d = localtime(&ic->interface.updated);
@@ -770,7 +770,7 @@ void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int 
 	pad = imageuipx(ic, 2);
 	edge_t = imageuipx(ic, 1);
 	inset = pad + ic->showedge * edge_t;
-	footer_y = height - imageuipx(ic, 12) - ic->showedge * edge_t;
+	bottom_margin = 4 + ic->showedge * edge_t;
 
 	/* background, edges */
 	gdImageFill(ic->im, 0, 0, ic->cbackground);
@@ -807,13 +807,19 @@ void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int 
 
 	/* date */
 	if (!ic->showheader || ic->altdate) {
-		imagestring(ic, FONT_ROLE_AXIS, imageuipx(ic, 5) + ic->showedge * edge_t, footer_y - imageextrapx(ic, 3), datestring, ic->cvnstat);
+		int date_y_alt = height - imagefontheight(ic, FONT_ROLE_AXIS) - bottom_margin - imageextrapx(ic, 3);
+		imagestring(ic, FONT_ROLE_AXIS, imageuipx(ic, 5) + ic->showedge * edge_t, date_y_alt, datestring, ic->cvnstat);
 	} else {
 		imagestring(ic, FONT_ROLE_AXIS, width - (imagetextwidth(ic, FONT_ROLE_AXIS, datestring) + imageuipx(ic, 12)), date_y, datestring, ic->cheaderdate);
 	}
 
 	/* generator */
-	imagestring(ic, FONT_ROLE_FOOTER, width - 114 - ic->showedge * edge_t, footer_y, "vnStat / Teemu Toivola", ic->cvnstat);
+	{
+		const char *generator = "vnStat / Teemu Toivola";
+		int generator_x = width - imagetextwidth(ic, FONT_ROLE_FOOTER, generator) - bottom_margin;
+		int generator_y = height - imagefontheight(ic, FONT_ROLE_FOOTER) - bottom_margin;
+		imagestring(ic, FONT_ROLE_FOOTER, generator_x, generator_y, generator, ic->cvnstat);
+	}
 }
 
 void drawlegend(IMAGECONTENT *ic, const int x, const int y, const short israte)
