@@ -1084,10 +1084,11 @@ START_TEST(imagefontinit_ttf_success_and_metrics)
 
 	ck_assert_int_eq(imageuipx(&ic, 1), 1);
 	ck_assert_int_eq(imageuipx(&ic, 2), 2);
+	ck_assert_int_eq(imageuipx(&ic, GRAPH_AXIS_CROSS), GRAPH_AXIS_CROSS);
 	ck_assert_int_eq(graph_axis_left(&ic), ic.fontctx.axis_num5_w + GRAPH_AXIS_LABEL_GAP);
 	ck_assert_int_eq(graph_xpos_margin(&ic), 8);
 	ck_assert_int_eq(graph_extra_space(&ic),
-					 graph_xpos_margin(&ic) + graph_axis_left(&ic) + GRAPH_AXIS_PLOT_PAD + GRAPH_EXTRA_RIGHT);
+					 graph_xpos_margin(&ic) + graph_axis_left(&ic) + imageuipx(&ic, GRAPH_AXIS_CROSS) + 1 + GRAPH_EXTRA_RIGHT);
 	ck_assert_int_eq(hourly_graph_width(&ic),
 					 12 + graph_axis_left(&ic) + HOURLY_PLOT_SPAN + imageextrapx(&ic, 145) + (HOURLY_CANVAS_BASE - 12 - GRAPH_AXIS_BASE - HOURLY_PLOT_SPAN) + imageextrapx(&ic, 168) - imageextrapx(&ic, 14) - imageextrapx(&ic, 145));
 
@@ -1103,6 +1104,25 @@ START_TEST(imagefontinit_ttf_success_and_metrics)
 
 	ck_assert_int_eq(imagefontinit(&ic_large, 1), 1);
 	ck_assert(ic_large.fontctx.ptsize == (double)FONTSIZE * 1.5);
+	/* LargeFonts at 12pt → 18pt: first thickness/cross step */
+	ck_assert_int_eq(imageuipx(&ic_large, GRAPH_AXIS_CROSS), 6);
+	ck_assert_int_eq(imageuipx(&ic_large, 1), 2);
+	ck_assert_int_gt(graph_extra_space(&ic_large), graph_extra_space(&ic));
+
+	cfg.fontsize = 18;
+	{
+		IMAGECONTENT ic_18;
+		int extra_18;
+
+		ck_assert_int_eq(imagefontinit(&ic_18, 0), 1);
+		ck_assert_int_eq(imageuipx(&ic_18, GRAPH_AXIS_CROSS), 6);
+		ck_assert_int_eq(imageuipx(&ic_18, 1), 2);
+		extra_18 = graph_extra_space(&ic_18);
+		ck_assert_int_eq(extra_18,
+						 graph_xpos_margin(&ic_18) + graph_axis_left(&ic_18) + 6 + 1 + GRAPH_EXTRA_RIGHT);
+		ck_assert_int_gt(extra_18, graph_extra_space(&ic));
+		imagefontcleanup();
+	}
 
 	cfg.fontsize = 24;
 	ck_assert_int_eq(imagefontinit(&ic_big, 0), 1);
@@ -1110,6 +1130,21 @@ START_TEST(imagefontinit_ttf_success_and_metrics)
 	ck_assert_int_gt(ic_big.fontctx.ch, ic.fontctx.ch);
 	ck_assert(ic_big.fontctx.scale > ic.fontctx.scale);
 	ck_assert_int_eq(imageuipx(&ic_big, 1), (int)lrint(1.0 * 24.0 / (double)FONTSIZE));
+	ck_assert_int_eq(imageuipx(&ic_big, GRAPH_AXIS_CROSS), 8);
+	ck_assert_int_gt(graph_extra_space(&ic_big), graph_extra_space(&ic));
+
+	cfg.fontsize = 72;
+	{
+		IMAGECONTENT ic_72;
+
+		ck_assert_int_eq(imagefontinit(&ic_72, 0), 1);
+		ck_assert_int_eq(imageuipx(&ic_72, GRAPH_AXIS_CROSS), 24);
+		ck_assert_int_eq(imageuipx(&ic_72, 1), 6);
+		ck_assert_int_eq(imageuipx(&ic_72, 2), 12);
+		ck_assert_int_eq(imageuipx(&ic_72, 3), 18);
+		ck_assert_int_gt(graph_extra_space(&ic_72), graph_extra_space(&ic_big));
+		imagefontcleanup();
+	}
 
 	imagefontcleanup();
 	imagefontcleanup();

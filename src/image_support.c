@@ -593,7 +593,8 @@ int graph_extra_space(const IMAGECONTENT *ic)
 	if (ic->fontctx.mode == FONT_BUILTIN) {
 		return FIVEMINEXTRASPACE + imageextrapx(ic, 14);
 	}
-	return graph_xpos_margin(ic) + graph_axis_left(ic) + GRAPH_AXIS_PLOT_PAD + GRAPH_EXTRA_RIGHT;
+	/* Plot pad tracks scaled origin cross (cross + 1) so canvas grows with chrome. */
+	return graph_xpos_margin(ic) + graph_axis_left(ic) + imageuipx(ic, GRAPH_AXIS_CROSS) + 1 + GRAPH_EXTRA_RIGHT;
 }
 
 /* Standalone hourly canvas width: left margin + axis gutter + plot + right pad. */
@@ -1138,19 +1139,46 @@ void drawpole(IMAGECONTENT *ic, const int x, const int y, const int length, cons
 
 void drawarrowup(IMAGECONTENT *ic, const int x, const int y)
 {
-	gdImageLine(ic->im, x, y, x + 2, y + 3, ic->ctext);
-	gdImageLine(ic->im, x, y, x - 2, y + 3, ic->ctext);
-	gdImageLine(ic->im, x - 2, y + 3, x + 2, y + 3, ic->ctext);
-	gdImageLine(ic->im, x, y + 1, x, y - 1, ic->ctext);
-	gdImageLine(ic->im, x, y, x, y + 2, ic->ctext);
+	int t, wing, half, tip_x, tip_y;
+	gdPoint pts[3];
+
+	t = imageuipx(ic, 1);
+	wing = imageuipx(ic, 2);
+	half = (t - 1) / 2 + wing;
+	/* Tip on the integer center of the thick vline stroke. */
+	tip_x = (x - t / 2) + (t - 1) / 2;
+	/* One pixel past the axis end so the tip is the peak. */
+	tip_y = y - 1;
+
+	pts[0].x = tip_x;
+	pts[0].y = tip_y;
+	pts[1].x = tip_x - half;
+	pts[1].y = tip_y + imageuipx(ic, 3);
+	pts[2].x = tip_x + half;
+	pts[2].y = tip_y + imageuipx(ic, 3);
+	gdImageFilledPolygon(ic->im, pts, 3, ic->ctext);
 }
 
 void drawarrowright(IMAGECONTENT *ic, const int x, const int y)
 {
-	gdImageLine(ic->im, x, y, x - 3, y - 2, ic->ctext);
-	gdImageLine(ic->im, x, y, x - 3, y + 2, ic->ctext);
-	gdImageLine(ic->im, x - 3, y - 2, x - 3, y + 2, ic->ctext);
-	gdImageLine(ic->im, x + 1, y, x - 1, y, ic->ctext);
+	int t, wing, half, tip_x, tip_y;
+	gdPoint pts[3];
+
+	t = imageuipx(ic, 1);
+	wing = imageuipx(ic, 2);
+	half = (t - 1) / 2 + wing;
+	/* Tip on the integer center of the thick hline stroke. */
+	tip_y = (y - t / 2) + (t - 1) / 2;
+	/* One pixel past the axis end so the tip terminates the line. */
+	tip_x = x + 1;
+
+	pts[0].x = tip_x;
+	pts[0].y = tip_y;
+	pts[1].x = tip_x - imageuipx(ic, 3);
+	pts[1].y = tip_y - half;
+	pts[2].x = tip_x - imageuipx(ic, 3);
+	pts[2].y = tip_y + half;
+	gdImageFilledPolygon(ic->im, pts, 3, ic->ctext);
 }
 
 void hextorgb(const char *input, int *rgb)

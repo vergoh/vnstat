@@ -24,7 +24,8 @@
 /* Graph y-axis left chrome: builtin keeps a 36px advance; TTF sizes from 5 digits. */
 #define GRAPH_AXIS_BASE 36
 #define GRAPH_AXIS_LABEL_GAP 4
-#define GRAPH_AXIS_PLOT_PAD 5
+#define GRAPH_AXIS_CROSS 4 /* design-time overhang past origin; scale with imageuipx() */
+#define GRAPH_AXIS_PLOT_PAD 5 /* GRAPH_AXIS_CROSS + 1; plot starts 1px past stem */
 #define GRAPH_EXTRA_RIGHT 29 /* FIVEMINEXTRASPACE - 8 - GRAPH_AXIS_BASE - GRAPH_AXIS_PLOT_PAD */
 
 /* Hourly graph canvas: plot span from y-axis to rightmost hour column. */

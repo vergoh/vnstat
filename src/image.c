@@ -114,8 +114,9 @@ void scaleimage(IMAGECONTENT *ic)
 
 int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte)
 {
-	int i, tmax = 0, s = 0, step, prev = 0, diff = 0, chour;
+	int i, tmax = 0, s = 0, step, prev = 0, diff = 0, chour, cross;
 	int x = xpos, y = ypos, extrax = 0, extray = 0, xt = 0;
+	int axis_x, axis_y, axis_top, axis_right, tick_left, tick_right;
 	double ratediv;
 	uint64_t max = 1, scaleunit = 0;
 	char buffer[32];
@@ -222,8 +223,9 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 	}
 
 	xt = x + graph_axis_left(ic);
+	cross = imageuipx(ic, GRAPH_AXIS_CROSS);
 
-	for (i = step; i * s <= (124 + extray + 4); i = i + step) {
+	for (i = step; i * s <= (124 + extray + cross); i = i + step) {
 		const char *val;
 		int line_y;
 
@@ -234,7 +236,7 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 		graph_draw_axis_value(ic, xt, line_y, val, x + 16 - imageextrapx(ic, 3), line_y - 3 - imageextrapx(ic, 3));
 		prev = i * s;
 	}
-	if ((prev + (step * s) / 2) <= (124 + extray + 4)) {
+	if ((prev + (step * s) / 2) <= (124 + extray + cross)) {
 		imagedrawdashedhline(ic, xt, xt + 424 + extrax, y + 124 - prev - (step * s) / 2, ic->clinel);
 	}
 
@@ -242,12 +244,12 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 	graph_draw_axis_unit(ic, x, x - 2 - imageextrapx(ic, 14), y + 58 + (israte * 10) - (extray / 2), getimagescale(scaleunit * (unsigned int)step, israte));
 
 	/* axis */
-	imagedrawhline(ic, xt - 4, xt + 430 + extrax, y + 124, ic->ctext);
-	imagedrawvline(ic, xt, y - 10 - extray, y + 124 + 4, ic->ctext);
-
-	/* arrows */
-	drawarrowup(ic, xt, y - 9 - extray);
-	drawarrowright(ic, xt + 429 + extrax, y + 124);
+	axis_x = xt;
+	axis_y = y + 124;
+	axis_top = y - 10 - extray;
+	axis_right = xt + 430 + extrax;
+	imagedrawhline(ic, xt - cross, axis_right, axis_y, ic->ctext);
+	imagedrawvline(ic, axis_x, axis_top, axis_y + cross, ic->ctext);
 
 	/* Rightmost hour column relative to y-axis */
 	xt = xt + HOURLY_PLOT_SPAN + extrax;
@@ -279,14 +281,24 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 			imagestring(ic, FONT_ROLE_AXIS, xt, y + 128, buffer, chour);
 		}
 		drawpoles(ic, xt - 2, y - extray, 124 + extray, hourdata[s].rx, hourdata[s].tx, max);
-		imagedrawhline(ic, xt - 4 - imageextrapx(ic, 3), xt + 12 + imageextrapx(ic, 3), y + 124, chour);
+		/* Keep hour ticks from extending past the axis end (and over the arrow). */
+		tick_left = xt - cross - imageextrapx(ic, 3);
+		tick_right = xt + 12 + imageextrapx(ic, 3);
+		if (tick_right > axis_right) {
+			tick_right = axis_right;
+		}
+		imagedrawhline(ic, tick_left, tick_right, axis_y, chour);
 		if (s == 0 && i != 23) {
 			/* midnight line */
-			imagedrawvline(ic, xt - 5 - imageextrapx(ic, 3), y - 5 - extray, y + 124 - 1, ic->clinel);
+			imagedrawvline(ic, xt - 5 - imageextrapx(ic, 3), y - 5 - extray, axis_y - 1, ic->clinel);
 			xt--;
 		}
 		xt = xt - (17 + imageextrapx(ic, 6));
 	}
+
+	/* Arrows last so hour ticks/poles cannot cover or extend past them. */
+	drawarrowup(ic, axis_x, axis_top);
+	drawarrowright(ic, axis_right, axis_y);
 
 	return 1;
 }
@@ -1575,7 +1587,7 @@ void drawfivegraph(IMAGECONTENT *ic, const int israte, const int resultcount, co
 
 int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte, const int resultcount, const int height)
 {
-	int x = xpos, y = ypos, i = 0, t = 0, rxh = 0, txh = 0, step = 0, s = 0, prev = 0;
+	int x = xpos, y = ypos, i = 0, t = 0, rxh = 0, txh = 0, step = 0, s = 0, prev = 0, cross;
 	int barwidth, plot_w, b, px, axis_left, unit_x;
 	uint64_t scaleunit, max;
 	time_t timestamp;
@@ -1605,13 +1617,14 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	}
 
 	/* axis */
+	cross = imageuipx(ic, GRAPH_AXIS_CROSS);
 	x += axis_left;
 	imagedrawhline(ic, x, x + (plot_w + FIVEMINWIDTHFULLPADDING), y, ic->ctext);
-	imagedrawvline(ic, x + 4, y + 4, y - height, ic->ctext);
+	imagedrawvline(ic, x + cross, y + cross, y - height, ic->ctext);
 
-	/* arrows */
-	drawarrowup(ic, x + 4, y - 1 - height);
-	drawarrowright(ic, x + 1 + (plot_w + FIVEMINWIDTHFULLPADDING), y);
+	/* arrows — tip at axis endpoint so the head is not inset past the stroke */
+	drawarrowup(ic, x + cross, y - height);
+	drawarrowright(ic, x + (plot_w + FIVEMINWIDTHFULLPADDING), y);
 
 	max = datainfo.maxrx + datainfo.maxtx;
 
@@ -1632,8 +1645,8 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 		t = txh;
 	}
 
-	/* center line; y-axis is at x-1 after this advance (drawn at previous x+4) */
-	x += GRAPH_AXIS_PLOT_PAD;
+	/* center line; y-axis is at x-1 after this advance (drawn at previous x+cross) */
+	x += cross + 1;
 	y -= txh + FIVEMINHEIGHTOFFSET;
 	imagedrawhline(ic, x, x + (plot_w + FIVEMINWIDTHPADDING), y, ic->ctext);
 	graph_draw_axis_value(ic, x - 1, y, "  0", x - 21 - imageextrapx(ic, 3), y - 4 - imageextrapx(ic, 3));
@@ -1882,7 +1895,7 @@ void draw95thpercentilegraph(IMAGECONTENT *ic, const int mode)
 
 int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int ypos, const int height, uint64_t *percentile)
 {
-	int i, l, b, x = xpos, y = ypos, s = 0, step = 1, prev = 0, last = 0, color;
+	int i, l, b, x = xpos, y = ypos, s = 0, step = 1, prev = 0, last = 0, color, cross;
 	int barwidth, plot_w, px, label_x, label_y, line_y;
 	uint64_t scaleunit, max, percentile_val;
 	double ratediv, percentileratediv;
@@ -1971,16 +1984,17 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 	graph_draw_axis_unit(ic, x, x - 2 - imageextrapx(ic, 14), y - (height / 2), getimagescale(scaleunit * (unsigned int)step, 1));
 
 	/* axis */
+	cross = imageuipx(ic, GRAPH_AXIS_CROSS);
 	x += graph_axis_left(ic);
 	imagedrawhline(ic, x, x + (plot_w + PERCENTILEMINWIDTHFULLPADDING), y, ic->ctext);
-	imagedrawvline(ic, x + 4, y + 4, y - height, ic->ctext);
+	imagedrawvline(ic, x + cross, y + cross, y - height, ic->ctext);
 
-	/* arrows */
-	drawarrowup(ic, x + 4, y - 4 - height);
-	drawarrowright(ic, x + 1 + (plot_w + PERCENTILEMINWIDTHFULLPADDING), y);
+	/* arrows — tip at axis endpoint so the head is not inset past the stroke */
+	drawarrowup(ic, x + cross, y - height);
+	drawarrowright(ic, x + (plot_w + PERCENTILEMINWIDTHFULLPADDING), y);
 
-	/* adjust cursor to first point on graph */
-	x += GRAPH_AXIS_PLOT_PAD;
+	/* adjust cursor to first point on graph (1px past stem) */
+	x += cross + 1;
 	y -= 1;
 
 	for (i = step; i * s <= height; i = i + step) {
