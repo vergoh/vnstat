@@ -1022,7 +1022,7 @@ static int summary_ttf_compute_width(IMAGECONTENT *ic, const int layout,
 
 			r = fivegraph_x + fiveg_samples * fiveg_barwidth_val + graph_extra_space(ic) - graph_xpos_margin(ic);
 		} else {
-			r = graph_x + hourly_graph_width(ic) - 12;
+			r = graph_x + hourly_graph_width(ic) - hourly_graph_left(ic);
 		}
 		if (r > content_right) {
 			content_right = r;
@@ -1218,6 +1218,7 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 				int fiveg_x = graph_xpos_margin(ic);
 
 				if (ic->fontctx.mode == FONT_TTF) {
+					/* Same block centering as standalone: xpos = block_start + graph_xpos_margin. */
 					fiveg_x = (width - fiveg_w) / 2 + graph_xpos_margin(ic);
 					if (fiveg_x < 0) {
 						fiveg_x = 0;
@@ -1225,12 +1226,13 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 				}
 				drawfiveminutes(ic, fiveg_x, height - vs_fiveg_bottom, israte, fiveg_samples, 132 * fiveg_barwidth_val + imageextrapx(ic, 35));
 			} else {
-				int hours_x = 12;
+				int hours_x = hourly_graph_left(ic);
 
 				if (ic->fontctx.mode == FONT_TTF) {
 					int hours_w = hourly_graph_width(ic);
 
-					hours_x = (width - hours_w) / 2 + 12;
+					/* Same block centering as standalone: xpos = block_start + hourly_graph_left. */
+					hours_x = (width - hours_w) / 2 + hourly_graph_left(ic);
 					if (hours_x < 0) {
 						hours_x = 0;
 					}
