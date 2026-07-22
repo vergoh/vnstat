@@ -26,6 +26,8 @@ int graph_extra_space(const IMAGECONTENT *ic);
 int hourly_plot_extrax(const IMAGECONTENT *ic);
 int hourly_graph_left(const IMAGECONTENT *ic);
 int hourly_graph_width(const IMAGECONTENT *ic);
+int hourly_hour_step(const IMAGECONTENT *ic);
+int hourly_map_px(const IMAGECONTENT *ic, const int design);
 void graph_draw_axis_value(IMAGECONTENT *ic, const int axis_x, const int line_y, const char *val, const int builtin_x, const int builtin_y);
 void graph_draw_axis_unit(IMAGECONTENT *ic, const int x_ttf, const int x_builtin, const int y, const char *text);
 void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int height);

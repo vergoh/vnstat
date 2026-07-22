@@ -636,6 +636,23 @@ int hourly_plot_extrax(const IMAGECONTENT *ic)
 	return HOURLY_HOUR_GAPS * imageextrapx(ic, 6);
 }
 
+/* Pitch between hour columns; poles and ticks scale from this (same curve as plot width). */
+int hourly_hour_step(const IMAGECONTENT *ic)
+{
+	return HOURLY_HOUR_STEP + imageextrapx(ic, 6);
+}
+
+/* Map a design-time hourly pole/tick pixel through the current hour-column pitch. */
+int hourly_map_px(const IMAGECONTENT *ic, const int design)
+{
+	const int step = hourly_hour_step(ic);
+
+	if (design == 0) {
+		return 0;
+	}
+	return (design * step + HOURLY_HOUR_STEP / 2) / HOURLY_HOUR_STEP;
+}
+
 /* Left inset for standalone hourly graph (balanced with right tip room for TTF). */
 int hourly_graph_left(const IMAGECONTENT *ic)
 {
@@ -1101,21 +1118,24 @@ void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const ui
 
 void drawpoles(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max)
 {
-	int l, pad;
-
-	pad = imageextrapx(ic, 2);
+	int l;
+	/* Scale pole spans with hour-column pitch (same imageextrapx curve as plot width).
+	 * imageuipx() grows with ptsize faster than column pitch and clips neighbors. */
+	const int m5 = hourly_map_px(ic, 5);
+	const int m7 = hourly_map_px(ic, 7);
+	const int m12 = hourly_map_px(ic, 12);
 
 	if (rx > 0) {
 		l = (int)lrint(((double)rx / (double)max) * len);
 		if (l > 0) {
-			gdImageFilledRectangle(ic->im, x - pad, y + (len - l), x + imageuipx(ic, 7), y + len, ic->crx);
+			gdImageFilledRectangle(ic->im, x, y + (len - l), x + m7, y + len, ic->crx);
 		}
 	}
 
 	if (tx > 0) {
 		l = (int)lrint(((double)tx / (double)max) * len);
 		if (l > 0) {
-			gdImageFilledRectangle(ic->im, x + imageuipx(ic, 5), y + (len - l), x + imageuipx(ic, 12) + pad, y + len, ic->ctx);
+			gdImageFilledRectangle(ic->im, x + m5, y + (len - l), x + m12, y + len, ic->ctx);
 		}
 	}
 }
