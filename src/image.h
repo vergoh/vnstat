@@ -75,7 +75,7 @@ typedef struct {
 	interfaceinfo interface;
 	int cbackground, cedge, cheader, cheadertitle, cheaderdate, ctext, cline, clinel, cpercentileline, cvnstat;
 	int crx, crxd, ctx, ctxd, ctotal, cbgoffset, cbgoffsetmore, showheader, showedge, showlegend, altdate;
-	int lineheight, large, invert;
+	int lineheight, large, invert, commonwidth;
 	char headertext[65], databegin[18], dataend[18];
 	time_t current;
 } IMAGECONTENT;

@@ -84,6 +84,7 @@ vnstati \- image output support for vnStat
 .RI [ limit ]]
 .RB [ \-\-transparent
 .RI [ enabled ]]
+.RB [ \-\-common\-width ]
 .RB [ \-\-version ]
 .RB [ \-vs
 .RI [ graph ]]
@@ -439,6 +440,24 @@ setting in the configuration file. Alternatively, 0 or 1 can be given as paramet
 .I enabled
 for this option in order to either disable (0) or enable (1) transparency
 regardless of the configuration file setting.
+
+.TP
+.B "--common-width"
+Use a common image width for summary
+.RB ( \-s ),
+list
+.RB ( \-d / \-m / \-t / \-y ),
+hourly graph
+.RB ( \-hg )
+and 5 minute graph
+.RB ( \-5g )
+outputs based on the active font metrics. Narrower outputs are padded; list bars
+may grow or shrink slightly; the 5 minute graph sample count is chosen to match.
+When enabled, the optional limit given to
+.B \-5g
+is ignored for width calculation. Can also be enabled with
+.B CommonWidth
+in the configuration file.
 
 .TP
 .B "-v, --version"

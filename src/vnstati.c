@@ -154,6 +154,7 @@ void showihelp(const IPARAMS *p)
 	}
 	printf("\n");
 	printf("      --font <file[:size]|size>          use TTF font file and/or size\n");
+	printf("      --common-width                      use common width for summary, list, hourly and 5g outputs\n");
 	printf("      -o,  --output <file>               select output filename\n");
 	printf("      -c,  --cache <minutes>             update output only when too old\n");
 	printf("      -i,  --iface <interface>           select interface");
@@ -413,6 +414,8 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 			cfg.largefonts = 1;
 		} else if ((strcmp(argv[currentarg], "-S") == 0) || (strcmp(argv[currentarg], "--small")) == 0) {
 			cfg.largefonts = 0;
+		} else if (strcmp(argv[currentarg], "--common-width") == 0) {
+			cfg.commonwidth = 1;
 		} else if ((strcmp(argv[currentarg], "-D") == 0) || (strcmp(argv[currentarg], "--debug")) == 0) {
 			;
 		} else if ((strcmp(argv[currentarg], "-d") == 0) || (strcmp(argv[currentarg], "--days")) == 0) {

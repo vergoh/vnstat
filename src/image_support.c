@@ -706,6 +706,34 @@ int hourly_graph_width(const IMAGECONTENT *ic)
 	return left + graph_axis_left(ic) + plot + right;
 }
 
+int image_list_width(const IMAGECONTENT *ic)
+{
+	return 83 * ic->fontctx.cw + imageuipx(ic, 2) + imageextrapx(ic, 2);
+}
+
+/* Clamp canvas-vs-natural delta applied to list bars to ±50% of design bar length. */
+int image_list_bar_extra(const IMAGECONTENT *ic, const int natural_width, const int design_bar_len)
+{
+	int delta, max_adjust;
+
+	if (ic->commonwidth <= 0 || natural_width <= 0 || design_bar_len <= 0) {
+		return 0;
+	}
+
+	delta = ic->commonwidth - natural_width;
+	max_adjust = design_bar_len / 2;
+	if (max_adjust < 1) {
+		max_adjust = 1;
+	}
+	if (delta > max_adjust) {
+		return max_adjust;
+	}
+	if (delta < -max_adjust) {
+		return -max_adjust;
+	}
+	return delta;
+}
+
 /* Numeric label on a horizontal scale line (TTF right-align + ascent center;
  * builtin keeps historical x/y via builtin_x / builtin_y). */
 void graph_draw_axis_value(IMAGECONTENT *ic, const int axis_x, const int line_y, const char *val, const int builtin_x, const int builtin_y)

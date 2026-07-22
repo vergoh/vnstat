@@ -85,6 +85,7 @@ int loadcfg(const char *cfgfile, const ConfigType type)
 		 {"LargeFonts", 0, &cfg.largefonts, 0, 0},
 		 {"LineSpacingAdjustment", 0, &cfg.linespaceadjust, 0, 0},
 		 {"ImageScale", 0, &cfg.imagescale, 0, 0},
+		 {"CommonWidth", 0, &cfg.commonwidth, 0, 0},
 		 {"FontFile", cfg.fontfile, 0, 512, 0},
 		 {"FontSize", 0, &cfg.fontsize, 0, 0},
 		 {"5MinuteGraphResultCount", 0, &cfg.fivegresultcount, 0, 0},
@@ -223,6 +224,7 @@ void validatecfg(const ConfigType type)
 		validatebool("LargeFonts", &cfg.largefonts, LARGEFONTS);
 		validateint("LineSpacingAdjustment", &cfg.linespaceadjust, LINESPACEADJUST, -5, 10);
 		validateint("ImageScale", &cfg.imagescale, IMAGESCALE, 50, 500);
+		validatebool("CommonWidth", &cfg.commonwidth, COMMONWIDTH);
 		validateint("FontSize", &cfg.fontsize, FONTSIZE, 6, 72);
 		validateint("5MinuteGraphResultCount", &cfg.fivegresultcount, FIVEGRESULTCOUNT, FIVEGMINRESULTCOUNT, 2000);
 		validateint("5MinuteGraphHeight", &cfg.fivegheight, FIVEGHEIGHT, FIVEGMINHEIGHT, 2000);
@@ -424,6 +426,7 @@ void defaultcfg(void)
 	cfg.largefonts = LARGEFONTS;
 	cfg.linespaceadjust = LINESPACEADJUST;
 	cfg.imagescale = IMAGESCALE;
+	cfg.commonwidth = COMMONWIDTH;
 	strncpy_nt(cfg.fontfile, FONTFILE, 512);
 	cfg.fontsize = FONTSIZE;
 	cfg.fivegresultcount = FIVEGRESULTCOUNT;

@@ -17,6 +17,7 @@ void initimagecontent(IMAGECONTENT *ic)
 	ic->showedge = 1;
 	ic->showlegend = 1;
 	ic->altdate = 0;
+	ic->commonwidth = 0;
 	ic->headertext[0] = '\0';
 	ic->databegin[0] = '\0';
 	ic->dataend[0] = '\0';
@@ -26,6 +27,12 @@ void initimagecontent(IMAGECONTENT *ic)
 
 void drawimage(IMAGECONTENT *ic)
 {
+	if (cfg.commonwidth) {
+		ic->commonwidth = image_common_target_width(ic);
+	} else {
+		ic->commonwidth = 0;
+	}
+
 	switch (cfg.qmode) {
 		case 1:
 			drawlist(ic, "day");
@@ -357,6 +364,9 @@ void drawhourly(IMAGECONTENT *ic, const int israte)
 
 	graph_left = hourly_graph_left(ic);
 	width = hourly_graph_width(ic);
+	if (ic->commonwidth > 0) {
+		width = ic->commonwidth;
+	}
 	height = 200 + imageextrapx(ic, 48);
 
 	if (!ic->showheader) {
@@ -490,6 +500,22 @@ static void list_draw_vdividers(IMAGECONTENT *ic, const ListColumns *cols, const
 	}
 }
 
+static int list_design_bar_len(const IMAGECONTENT *ic, const ListType listtype)
+{
+	const int cw = ic->fontctx.cw;
+
+	if (listtype == LT_Top) {
+		if (cfg.ostyle > 2) {
+			return 9 * cw - 1;
+		}
+		return 23 * cw + 3;
+	}
+	if (cfg.ostyle > 2) {
+		return 13 * cw + 1;
+	}
+	return 28 * cw + 3;
+}
+
 void drawlist(IMAGECONTENT *ic, const char *listname)
 {
 	ListType listtype = LT_None;
@@ -497,6 +523,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	int textx, texty, offsetx = 0;
 	int width, height, headermod, i = 1, liney, mid_y, v_top, rowcount = 0;
 	int estimateavailable = 0, estimatevisible = 0, monthrotatenotevisible = 0;
+	int natural_width, bar_extra = 0;
 	int32_t limit;
 	uint64_t e_rx = 0, e_tx = 0, e_secs;
 	char buffer[512], datebuff[16], daybuff[16], monthrotatenote[96];
@@ -599,7 +626,12 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	}
 	rowcount += datainfo.count;
 
-	width = 83 * ic->fontctx.cw + imageuipx(ic, 2) + imageextrapx(ic, 2);
+	natural_width = image_list_width(ic);
+	width = natural_width;
+	if (ic->commonwidth > 0) {
+		width = ic->commonwidth;
+		bar_extra = image_list_bar_extra(ic, natural_width, list_design_bar_len(ic, listtype));
+	}
 	height = 62 + (ic->fontctx.header_h - 24) + 3 * ic->lineheight;
 
 	// less space needed when no estimate or sum is shown
@@ -660,6 +692,10 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	textx = 10;
 	texty = ic->fontctx.header_h + 16 - headermod;
 	listcolumns_init(ic, textx, offsetx, &cols);
+	if (bar_extra != 0) {
+		cols.hline_right_rate += bar_extra;
+		cols.hline_right_norate += bar_extra;
+	}
 
 	/* column headers */
 	if (ic->fontctx.mode == FONT_TTF) {
@@ -804,19 +840,19 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		bar_y = list_bar_y(ic, texty);
 		if (listtype == LT_Top) {
 			if (cfg.ostyle > 2) {
-				drawbar(ic, textx + (71 * ic->fontctx.cw) + 2, bar_y, 9 * ic->fontctx.cw - 1, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+				drawbar(ic, textx + (71 * ic->fontctx.cw) + 2, bar_y, 9 * ic->fontctx.cw - 1 + bar_extra, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 			} else {
-				drawbar(ic, textx + (56 * ic->fontctx.cw), bar_y, 23 * ic->fontctx.cw + 3, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+				drawbar(ic, textx + (56 * ic->fontctx.cw), bar_y, 23 * ic->fontctx.cw + 3 + bar_extra, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 			}
 		} else {
 			if (cfg.ostyle > 2) {
 				if (datalist_i->next == NULL && estimateavailable && cfg.barshowsrate) {
-					drawbar(ic, textx + (67 * ic->fontctx.cw) - 2, bar_y, 13 * ic->fontctx.cw + 1, e_rx, e_tx, datainfo.max, 0);
+					drawbar(ic, textx + (67 * ic->fontctx.cw) - 2, bar_y, 13 * ic->fontctx.cw + 1 + bar_extra, e_rx, e_tx, datainfo.max, 0);
 				} else {
-					drawbar(ic, textx + (67 * ic->fontctx.cw) - 2, bar_y, 13 * ic->fontctx.cw + 1, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+					drawbar(ic, textx + (67 * ic->fontctx.cw) - 2, bar_y, 13 * ic->fontctx.cw + 1 + bar_extra, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 				}
 			} else {
-				drawbar(ic, textx + (51 * ic->fontctx.cw) - 2, bar_y, 28 * ic->fontctx.cw + 3, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+				drawbar(ic, textx + (51 * ic->fontctx.cw) - 2, bar_y, 28 * ic->fontctx.cw + 3 + bar_extra, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 			}
 		}
 		texty += ic->lineheight + cfg.linespaceadjust;
@@ -851,11 +887,11 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 
 		if (cfg.estimatestyle) {
 			if (cfg.ostyle > 2) {
-				drawbar(ic, textx + (67 * ic->fontctx.cw) - 2, bar_y, 13 * ic->fontctx.cw + 1, e_rx, e_tx, datainfo.max, 1);
-				drawbar(ic, textx + (67 * ic->fontctx.cw) - 2, bar_y, 13 * ic->fontctx.cw + 1, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+				drawbar(ic, textx + (67 * ic->fontctx.cw) - 2, bar_y, 13 * ic->fontctx.cw + 1 + bar_extra, e_rx, e_tx, datainfo.max, 1);
+				drawbar(ic, textx + (67 * ic->fontctx.cw) - 2, bar_y, 13 * ic->fontctx.cw + 1 + bar_extra, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 			} else {
-				drawbar(ic, textx + (51 * ic->fontctx.cw) - 2, bar_y, 28 * ic->fontctx.cw + 3, e_rx, e_tx, datainfo.max, 1);
-				drawbar(ic, textx + (51 * ic->fontctx.cw) - 2, bar_y, 28 * ic->fontctx.cw + 3, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
+				drawbar(ic, textx + (51 * ic->fontctx.cw) - 2, bar_y, 28 * ic->fontctx.cw + 3 + bar_extra, e_rx, e_tx, datainfo.max, 1);
+				drawbar(ic, textx + (51 * ic->fontctx.cw) - 2, bar_y, 28 * ic->fontctx.cw + 3 + bar_extra, datalist_i->rx, datalist_i->tx, datainfo.max, 0);
 			}
 		}
 
@@ -957,7 +993,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 }
 
 /* Pixels per 5-minute sample. Builtin -L doubles; TTF widens when 2-hour labels need a gap. */
-static int fiveg_barwidth(IMAGECONTENT *ic)
+int fiveg_barwidth(IMAGECONTENT *ic)
 {
 	int label_w, gap, need, slot = 24; /* hour labels every 2 hours = 24 samples */
 
@@ -1090,6 +1126,52 @@ static int summary_ttf_compute_width(IMAGECONTENT *ic, const int layout,
 		}
 	}
 
+	return width;
+}
+
+int image_summary_width(IMAGECONTENT *ic, const int layout)
+{
+	int digest_x, alltime_x, legend_x, graph_x, fivegraph_x;
+	int digest_day_y, digest_month_y, alltime_y, legend_y;
+	int fiveg_barwidth_val = 1;
+
+	if (ic->fontctx.mode != FONT_TTF) {
+		switch (layout) {
+			case 1:
+				return 163 * ic->fontctx.cw + imageuipx(ic, 2) + imageextrapx(ic, 2);
+			case 2:
+			default:
+				return image_list_width(ic);
+		}
+	}
+
+	if (cfg.summarygraph == 1 && (layout == 1 || layout == 2)) {
+		fiveg_barwidth_val = fiveg_barwidth(ic);
+	}
+
+	summary_ttf_set_positions(ic, 0, &digest_x, &alltime_x, &legend_x, &graph_x, &fivegraph_x,
+		&digest_day_y, &digest_month_y, &alltime_y, &legend_y);
+	return summary_ttf_compute_width(ic, layout, digest_x, alltime_x, legend_x, graph_x, fivegraph_x, fiveg_barwidth_val);
+}
+
+int image_common_target_width(IMAGECONTENT *ic)
+{
+	int list_w, summary_w, hourly_w, width;
+
+	list_w = image_list_width(ic);
+	summary_w = image_summary_width(ic, 0);
+	hourly_w = hourly_graph_width(ic);
+
+	width = list_w;
+	if (summary_w > width) {
+		width = summary_w;
+	}
+	if (hourly_w > width) {
+		width = hourly_w;
+	}
+	if (width < 1) {
+		width = 1;
+	}
 	return width;
 }
 
@@ -1229,6 +1311,10 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 		digest_month_y = 29 + 7 * ic->lineheight + header_extra - headermod;
 		alltime_y = 57 + header_extra - headermod + imageextrapx(ic, 10);
 		legend_y = 155 - headermod + imageextrapx(ic, 40);
+	}
+
+	if (layout == 0 && ic->commonwidth > 0) {
+		width = ic->commonwidth;
 	}
 
 	imageinit(ic, width, height);
@@ -1612,9 +1698,25 @@ void drawfivegraph(IMAGECONTENT *ic, const int israte, const int resultcount, co
 {
 	int imagewidth, imageheight, headermod = 0, header_extra = 0;
 	int bottom, legend_y, graph_height, barwidth, base_graph, top;
+	int count = resultcount;
 
 	barwidth = fiveg_barwidth(ic);
-	imagewidth = resultcount * barwidth + graph_extra_space(ic);
+	if (ic->commonwidth > 0 && barwidth > 0) {
+		int extra = graph_extra_space(ic);
+		int usable = ic->commonwidth - extra;
+
+		if (usable < barwidth) {
+			usable = barwidth;
+		}
+		count = usable / barwidth;
+		if (count < FIVEGMINRESULTCOUNT) {
+			count = FIVEGMINRESULTCOUNT;
+		}
+	}
+	imagewidth = count * barwidth + graph_extra_space(ic);
+	if (ic->commonwidth > 0 && imagewidth < ic->commonwidth) {
+		imagewidth = ic->commonwidth;
+	}
 
 	/* Plot height from configured size (default top 38 + bottom 30), then * barwidth.
 	 * Do not derive from imageheight - chrome, or large fonts shrink the plot first. */
@@ -1674,7 +1776,7 @@ void drawfivegraph(IMAGECONTENT *ic, const int israte, const int resultcount, co
 	imageinit(ic, imagewidth, imageheight);
 	layoutinit(ic, " / 5 minute", imagewidth, imageheight);
 
-	if (drawfiveminutes(ic, graph_xpos_margin(ic), imageheight - bottom, israte, resultcount, graph_height)) {
+	if (drawfiveminutes(ic, graph_xpos_margin(ic), imageheight - bottom, israte, count, graph_height)) {
 		drawlegend(ic, imagewidth / 2 - imageextrapx(ic, 10), legend_y, 0);
 	}
 }

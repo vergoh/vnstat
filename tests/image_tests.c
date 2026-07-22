@@ -5,6 +5,8 @@
 #include "cfg.h"
 #include "image.h"
 #include "image_support.h"
+#include <stdlib.h>
+#include <unistd.h>
 
 START_TEST(initimagecontent_does_not_crash)
 {
@@ -1043,6 +1045,91 @@ START_TEST(graph_geometry_helpers_builtin)
 }
 END_TEST
 
+START_TEST(image_common_target_width_builtin)
+{
+	IMAGECONTENT ic;
+	int list_w, summary_w, hourly_w, common;
+
+	cfg.fontfile[0] = '\0';
+	ck_assert_int_eq(imagefontinit(&ic, 0), 1);
+	ic.large = 0;
+
+	list_w = image_list_width(&ic);
+	summary_w = image_summary_width(&ic, 0);
+	hourly_w = hourly_graph_width(&ic);
+	common = image_common_target_width(&ic);
+
+	ck_assert_int_eq(list_w, 83 * ic.fontctx.cw + imageuipx(&ic, 2) + imageextrapx(&ic, 2));
+	ck_assert_int_eq(list_w, HOURLY_CANVAS_BASE);
+	ck_assert_int_eq(summary_w, list_w);
+	ck_assert_int_eq(hourly_w, HOURLY_CANVAS_BASE);
+	ck_assert_int_eq(common, list_w);
+	ck_assert_int_ge(common, list_w);
+	ck_assert_int_ge(common, summary_w);
+	ck_assert_int_ge(common, hourly_w);
+
+	ic.commonwidth = common;
+	ck_assert_int_eq(image_list_bar_extra(&ic, list_w, 100), 0);
+	ic.commonwidth = list_w + 1000;
+	ck_assert_int_eq(image_list_bar_extra(&ic, list_w, 100), 50);
+	ic.commonwidth = list_w - 80;
+	ck_assert_int_eq(image_list_bar_extra(&ic, list_w, 100), -50);
+	ic.commonwidth = 0;
+	ck_assert_int_eq(image_list_bar_extra(&ic, list_w, 100), 0);
+
+	ck_assert_int_eq(imagefontinit(&ic, 1), 1);
+	ic.large = 1;
+	list_w = image_list_width(&ic);
+	summary_w = image_summary_width(&ic, 0);
+	hourly_w = hourly_graph_width(&ic);
+	common = image_common_target_width(&ic);
+
+	ck_assert_int_eq(summary_w, list_w);
+	ck_assert_int_ge(common, list_w);
+	ck_assert_int_ge(common, summary_w);
+	ck_assert_int_ge(common, hourly_w);
+	/* Builtin large list and hourly stay within a few pixels of each other. */
+	ck_assert_int_le(abs(list_w - hourly_w), 8);
+
+	imagefontcleanup();
+}
+END_TEST
+
+#if HAVE_DECL_GDIMAGESTRINGFT
+START_TEST(image_common_target_width_ttf)
+{
+	IMAGECONTENT ic;
+	int list_w, summary_w, hourly_w, common;
+	const char *font = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf";
+
+	if (access(font, R_OK) != 0) {
+		return;
+	}
+
+	strncpy_nt(cfg.fontfile, font, 512);
+	cfg.fontsize = 12;
+	ck_assert_int_eq(imagefontinit(&ic, 0), 1);
+
+	list_w = image_list_width(&ic);
+	summary_w = image_summary_width(&ic, 0);
+	hourly_w = hourly_graph_width(&ic);
+	common = image_common_target_width(&ic);
+
+	ck_assert_int_gt(list_w, 0);
+	ck_assert_int_gt(summary_w, 0);
+	ck_assert_int_gt(hourly_w, 0);
+	ck_assert_int_ge(common, list_w);
+	ck_assert_int_ge(common, summary_w);
+	ck_assert_int_ge(common, hourly_w);
+	ck_assert_int_eq(common, list_w >= summary_w
+		? (list_w >= hourly_w ? list_w : hourly_w)
+		: (summary_w >= hourly_w ? summary_w : hourly_w));
+
+	imagefontcleanup();
+}
+END_TEST
+#endif
+
 START_TEST(imagefontinit_fails_for_missing_fontfile)
 {
 	IMAGECONTENT ic;
@@ -1239,9 +1326,11 @@ void add_image_tests(Suite *s)
 	tcase_add_test(tc_image, imagefontinit_builtin_large);
 	tcase_add_test(tc_image, imageextrapx_and_imageuipx_builtin);
 	tcase_add_test(tc_image, graph_geometry_helpers_builtin);
+	tcase_add_test(tc_image, image_common_target_width_builtin);
 	tcase_add_test(tc_image, imagefontinit_fails_for_missing_fontfile);
 #if HAVE_DECL_GDIMAGESTRINGFT
 	tcase_add_test(tc_image, imagefontinit_ttf_success_and_metrics);
+	tcase_add_test(tc_image, image_common_target_width_ttf);
 #else
 	tcase_add_test(tc_image, imagefontinit_fails_without_freetype);
 #endif

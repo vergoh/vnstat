@@ -306,6 +306,8 @@ void printcfgfile(void)
 	printf("LineSpacingAdjustment %d\n", cfg.linespaceadjust);
 	defaultcomment(cfg.imagescale == IMAGESCALE);
 	printf("ImageScale %d\n", cfg.imagescale);
+	defaultcomment(cfg.commonwidth == COMMONWIDTH);
+	printf("CommonWidth %d\n", cfg.commonwidth);
 	defaultcomment(strcmp(cfg.fontfile, FONTFILE) == 0);
 	printf("FontFile \"%s\"\n", cfg.fontfile);
 	defaultcomment(cfg.fontsize == FONTSIZE);

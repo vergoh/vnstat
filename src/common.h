@@ -288,6 +288,9 @@ and most can be changed later from the config file.
 /* no image scaling by default */
 #define IMAGESCALE 100
 
+/* do not force a common image width across image outputs by default */
+#define COMMONWIDTH 0
+
 /* TTF font file empty = use libGD builtin fonts */
 #define FONTFILE ""
 
@@ -358,7 +361,7 @@ typedef struct {
 	int32_t monthrotate, monthrotateyears, monthrotatevisible, maxbw, spacecheck, trafficlessentries, transbg, ostyle;
 	int32_t defaultdecimals, hourlydecimals, hourlystyle, is64bit, waldb, dbsynchronous, useutc, imagescale;
 	int32_t largefonts, linespaceadjust, estimatebarvisible, estimatestyle, estimatevisible, barshowsrate, fivegresultcount;
-	int32_t fontsize;
+	int32_t fontsize, commonwidth;
 	int32_t fivegheight, summarygraph, hourlygmode, alwaysadd, livespinner;
 	char cfgfile[512], logfile[512], pidfile[512];
 	char daemonuser[33], daemongroup[33];
