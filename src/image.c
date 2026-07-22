@@ -277,7 +277,7 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 		} else {
 			s = 23 - i;
 		}
-		snprintf(buffer, 32, "%02d ", s);
+		snprintf(buffer, 32, "%02d", s);
 		if (hourdata[s].date == 0) {
 			chour = ic->cline;
 		} else {
