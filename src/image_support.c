@@ -927,7 +927,7 @@ void drawlegend(IMAGECONTENT *ic, const int x, const int y, const short israte)
 		}
 		gap = imageuipx(ic, 4);
 		sep = sq + 2 * gap;
-		x_cur = israte ? (x - 12) : x;
+		x_cur = israte ? (x - imageuipx(ic, 12)) : x;
 
 		/* [sq][gap][rx][sep][sq][gap][tx] — both labels share y */
 		gdImageFilledRectangle(ic->im, x_cur, sq_y, x_cur + sq - 1, sq_y + sq - 1, ic->crx);
@@ -1108,14 +1108,14 @@ void drawpoles(IMAGECONTENT *ic, const int x, const int y, const int len, const 
 	if (rx > 0) {
 		l = (int)lrint(((double)rx / (double)max) * len);
 		if (l > 0) {
-			gdImageFilledRectangle(ic->im, x - pad, y + (len - l), x + 7, y + len, ic->crx);
+			gdImageFilledRectangle(ic->im, x - pad, y + (len - l), x + imageuipx(ic, 7), y + len, ic->crx);
 		}
 	}
 
 	if (tx > 0) {
 		l = (int)lrint(((double)tx / (double)max) * len);
 		if (l > 0) {
-			gdImageFilledRectangle(ic->im, x + 5, y + (len - l), x + 12 + pad, y + len, ic->ctx);
+			gdImageFilledRectangle(ic->im, x + imageuipx(ic, 5), y + (len - l), x + imageuipx(ic, 12) + pad, y + len, ic->ctx);
 		}
 	}
 }

@@ -294,8 +294,8 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 			chour = ic->ctext;
 		}
 		if (ic->fontctx.mode == FONT_TTF) {
-			/* Center "HH" on pole-pair midpoint (xt+4) so digits sit under rx / tx. */
-			imagestring(ic, FONT_ROLE_AXIS, xt + 4 - imagetextwidth(ic, FONT_ROLE_AXIS, buffer) / 2, y + 132, buffer, chour);
+			/* Center "HH" on pole-pair midpoint so digits sit under rx / tx. */
+			imagestring(ic, FONT_ROLE_AXIS, xt + imageuipx(ic, 4) - imagetextwidth(ic, FONT_ROLE_AXIS, buffer) / 2, y + 124 + imageuipx(ic, 8), buffer, chour);
 		} else {
 			imagestring(ic, FONT_ROLE_AXIS, xt, y + 128, buffer, chour);
 		}
@@ -337,7 +337,7 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 		}
 		/* Keep hour ticks from extending past the axis end (and over the arrow). */
 		tick_left = xt - cross - imageextrapx(ic, 3);
-		tick_right = xt + 12 + imageextrapx(ic, 3);
+		tick_right = xt + imageuipx(ic, 12) + imageextrapx(ic, 3);
 		if (tick_right > axis_right) {
 			tick_right = axis_right;
 		}
@@ -395,7 +395,7 @@ typedef struct {
 	int textx, offsetx;
 	int d24, d37, d50; /* vertical divider x */
 	int hline_right_rate; /* 65*cw+offsetx+2 */
-	int hline_right_norate; /* 50*cw+offsetx-4 */
+	int hline_right_norate; /* 50*cw+offsetx-imageuipx(4) */
 	/* TTF measured edges / header decimal anchors */
 	int rx_edge, tx_edge, total_edge, rate_edge;
 	int rx_dec, tx_dec, total_dec;
@@ -412,7 +412,7 @@ static void listcolumns_init(IMAGECONTENT *ic, const int textx, const int offset
 	cols->d37 = textx + (37 * cw) + offsetx;
 	cols->d50 = textx + (50 * cw) + offsetx;
 	cols->hline_right_rate = textx + (65 * cw) + offsetx + 2;
-	cols->hline_right_norate = textx + (50 * cw) + offsetx - 4;
+	cols->hline_right_norate = textx + (50 * cw) + offsetx - imageuipx(ic, 4);
 
 	cols->rx_edge = cols->tx_edge = cols->total_edge = cols->rate_edge = 0;
 	cols->rx_dec = cols->tx_dec = cols->total_dec = 0;
@@ -449,7 +449,7 @@ static int list_bar_y(const IMAGECONTENT *ic, const int texty)
 static int list_header_rule_y(const IMAGECONTENT *ic, const int texty)
 {
 	if (ic->fontctx.mode == FONT_TTF) {
-		return texty + ic->fontctx.ch + (ic->lineheight + 8 - ic->fontctx.ch) / 2;
+		return texty + ic->fontctx.ch + (ic->lineheight + imageuipx(ic, 8) - ic->fontctx.ch) / 2;
 	}
 	return texty + ic->lineheight + 4;
 }
@@ -457,7 +457,7 @@ static int list_header_rule_y(const IMAGECONTENT *ic, const int texty)
 static int list_mid_rule_y(const IMAGECONTENT *ic, const int texty)
 {
 	if (ic->fontctx.mode == FONT_TTF) {
-		return texty - ic->lineheight + ic->fontctx.ch + (ic->lineheight + 8 - ic->fontctx.ch) / 2;
+		return texty - ic->lineheight + ic->fontctx.ch + (ic->lineheight + imageuipx(ic, 8) - ic->fontctx.ch) / 2;
 	}
 	return texty + 5 - imageextrapx(ic, 2);
 }
@@ -675,9 +675,9 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 
 	liney = list_header_rule_y(ic, texty);
 	list_draw_hline(ic, &cols, liney, cfg.ostyle > 2);
-	texty += ic->lineheight + 8;
+	texty += ic->lineheight + imageuipx(ic, 8);
 	/* Top of vdividers: into the column-header row (day/rx/tx/total), above the rule. */
-	v_top = texty - 6 - ic->lineheight;
+	v_top = texty - imageuipx(ic, 6) - ic->lineheight;
 
 	/* End vdividers on the mid rule so they meet that hline. Avoid imageextrapx()
 	 * for the end Y: for TTF it grows with cw and leaves a gap. */
@@ -846,7 +846,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 			}
 		}
 
-		texty += 8;
+		texty += imageuipx(ic, 8);
 		if (ic->fontctx.mode == FONT_TTF) {
 			int date_right;
 
@@ -887,7 +887,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	} else if (strlen(ic->dataend) > 0 && datainfo.count > 1 && listtype != LT_Top) {
 		int footer_end;
 
-		texty += 8;
+		texty += imageuipx(ic, 8);
 		if (ic->fontctx.mode == FONT_TTF) {
 			char sumlabel[16];
 			int date_right;
@@ -1087,7 +1087,7 @@ static void summary_ttf_adjust_height(IMAGECONTENT *ic, const int layout,
 			int bottom_margin;
 
 			/* Axis labels sit below the 5-min plot; grow margin + canvas together */
-			bottom_margin = ic->fontctx.axis_ch + 4 + 12 + ic->showedge;
+			bottom_margin = ic->fontctx.axis_ch + imageuipx(ic, 4) + imageuipx(ic, 12) + ic->showedge;
 			if (bottom_margin > *vs_fiveg_bottom) {
 				*height += bottom_margin - *vs_fiveg_bottom;
 				*vs_fiveg_bottom = bottom_margin;
@@ -1097,8 +1097,8 @@ static void summary_ttf_adjust_height(IMAGECONTENT *ic, const int layout,
 
 			graph_y = 215 + header_extra + imageextrapx(ic, 84) - headermod
 				+ (monthrotatenotevisible * (ic->lineheight * 2));
-			/* labels at graph_y+128; Tiny footer at height-12-showedge */
-			needed = graph_y + 128 + ic->fontctx.axis_ch + 4 + 12 + ic->showedge;
+			/* labels at graph_y+124+imageuipx(8); Tiny footer at height-12-showedge */
+			needed = graph_y + 124 + imageuipx(ic, 8) + ic->fontctx.axis_ch + imageuipx(ic, 4) + imageuipx(ic, 12) + ic->showedge;
 			if (*height < needed) {
 				*height = needed;
 			}
@@ -1234,7 +1234,7 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 				drawhours(ic, graph_x, 46 + header_extra + imageextrapx(ic, 40) - headermod, israte);
 			}
 			if (monthrotatenotevisible) {
-				imagestring(ic, FONT_ROLE_BODY, 13 - imageextrapx(ic, 4) + (ic->fontctx.cw * 2) + ic->showedge, height - 12 - ic->showedge - ic->lineheight, monthrotatenote, ic->ctext);
+				imagestring(ic, FONT_ROLE_BODY, 13 - imageextrapx(ic, 4) + (ic->fontctx.cw * 2) + ic->showedge, height - imageuipx(ic, 12) - ic->showedge - ic->lineheight, monthrotatenote, ic->ctext);
 			}
 			break;
 		// vertical
@@ -1272,7 +1272,7 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 			break;
 		default:
 			if (monthrotatenotevisible) {
-				imagestring(ic, FONT_ROLE_BODY, 13 - imageextrapx(ic, 4) + (ic->fontctx.cw * 2) + ic->showedge, height - 12 - ic->showedge - ic->lineheight, monthrotatenote, ic->ctext);
+				imagestring(ic, FONT_ROLE_BODY, 13 - imageextrapx(ic, 4) + (ic->fontctx.cw * 2) + ic->showedge, height - imageuipx(ic, 12) - ic->showedge - ic->lineheight, monthrotatenote, ic->ctext);
 			}
 			break;
 	}
@@ -1641,8 +1641,8 @@ void drawfivegraph(IMAGECONTENT *ic, const int israte, const int resultcount, co
 	if (ic->fontctx.mode == FONT_TTF) {
 		int needed_bottom;
 
-		/* Labels at ypos+8; leave room for legend + footer */
-		needed_bottom = 8 + ic->fontctx.axis_ch + 4 + ic->fontctx.ch + 4 + 12 + ic->showedge;
+		/* Labels at ypos+imageuipx(8); leave room for legend + footer */
+		needed_bottom = imageuipx(ic, 8) + ic->fontctx.axis_ch + imageuipx(ic, 4) + ic->fontctx.ch + imageuipx(ic, 4) + imageuipx(ic, 12) + ic->showedge;
 		if (needed_bottom > bottom) {
 			bottom = needed_bottom;
 		}
@@ -1854,8 +1854,8 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 					snprintf(buffer, 32, "%02d", d->tm_hour);
 					if (ic->fontctx.mode == FONT_TTF) {
 						label_x = px - imagetextwidth(ic, FONT_ROLE_AXIS, buffer) / 2;
-						/* Hourly uses axis+8; keep labels clear of the x-axis line */
-						label_y = center_y + txh + FIVEMINHEIGHTOFFSET + 8;
+						/* Hourly uses axis+imageuipx(8); keep labels clear of the x-axis line */
+						label_y = center_y + txh + FIVEMINHEIGHTOFFSET + imageuipx(ic, 8);
 					} else {
 						label_x = px - imagefontwidth(ic, FONT_ROLE_AXIS) + 1;
 						label_y = center_y + txh + imagefontheight(ic, FONT_ROLE_AXIS) - imageextrapx(ic, 5);
@@ -1991,8 +1991,8 @@ void draw95thpercentilegraph(IMAGECONTENT *ic, const int mode)
 	if (ic->fontctx.mode == FONT_TTF) {
 		int needed_bottom;
 
-		/* Labels at ypos+8; leave room for legend + footer */
-		needed_bottom = 8 + ic->fontctx.axis_ch + 4 + ic->fontctx.ch + 4 + 12 + ic->showedge;
+		/* Labels at ypos+imageuipx(8); leave room for legend + footer */
+		needed_bottom = imageuipx(ic, 8) + ic->fontctx.axis_ch + imageuipx(ic, 4) + ic->fontctx.ch + imageuipx(ic, 4) + imageuipx(ic, 12) + ic->showedge;
 		if (needed_bottom > bottom) {
 			bottom = needed_bottom;
 		}
@@ -2157,7 +2157,7 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 				}
 				if (ic->fontctx.mode == FONT_TTF) {
 					label_x = px + 12 * barwidth - imagetextwidth(ic, FONT_ROLE_AXIS, datebuff) / 2;
-					label_y = y + 8;
+					label_y = y + imageuipx(ic, 8);
 				} else {
 					label_x = px + 12 - 4 - imageextrapx(ic, 1);
 					label_y = y + 5;
@@ -2177,7 +2177,7 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 			}
 			if (ic->fontctx.mode == FONT_TTF) {
 				label_x = px + 12 * barwidth - imagetextwidth(ic, FONT_ROLE_AXIS, datebuff) / 2;
-				label_y = y + 8;
+				label_y = y + imageuipx(ic, 8);
 			} else {
 				label_x = px + 12 - 4 - imageextrapx(ic, 1);
 				label_y = y + 5;
