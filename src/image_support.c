@@ -609,12 +609,23 @@ int hourly_graph_width(const IMAGECONTENT *ic)
 	const int left = 12 + (ic->fontctx.mode == FONT_BUILTIN ? imageextrapx(ic, 14) : 0);
 	const int extrax = hourly_plot_extrax(ic);
 	const int pole_pad = imageextrapx(ic, 2);
-	/* +pole_pad shifts hours right so widened poles clear the y-axis. */
-	const int plot = HOURLY_PLOT_SPAN + extrax + pole_pad;
+	const int left_grow = (ic->fontctx.mode == FONT_TTF) ? (imageuipx(ic, 13) - 13) : 0;
+	const int axis_past = (ic->fontctx.mode == FONT_TTF) ? imageuipx(ic, HOURLY_AXIS_PAST) : HOURLY_AXIS_PAST;
+	/* +pole_pad / +left_grow shift hours right so widened poles clear the y-axis. */
+	const int plot = HOURLY_PLOT_SPAN + extrax + pole_pad + left_grow;
 	/* 48 = HOURLY_CANVAS_BASE - 12 - GRAPH_AXIS_BASE - HOURLY_PLOT_SPAN.
-	 * +pole_pad grows tip room past the widened rightmost pole. */
-	const int right = (HOURLY_CANVAS_BASE - 12 - GRAPH_AXIS_BASE - HOURLY_PLOT_SPAN)
-		+ imageextrapx(ic, 168) - imageextrapx(ic, 14) - extrax + pole_pad;
+	 * +pole_pad grows tip room past the widened rightmost pole.
+	 * -left_grow pulls the same delta from the right pad (like extrax) so opening the
+	 * left gap does not widen the canvas. Scaled axis_past uses that slack too. */
+	int right = (HOURLY_CANVAS_BASE - 12 - GRAPH_AXIS_BASE - HOURLY_PLOT_SPAN)
+		+ imageextrapx(ic, 168) - imageextrapx(ic, 14) - extrax + pole_pad
+		- left_grow;
+	const int tip_room = right - axis_past - pole_pad;
+	const int tip_need = imageuipx(ic, 8);
+
+	if (tip_room < tip_need) {
+		right += tip_need - tip_room;
+	}
 
 	return left + graph_axis_left(ic) + plot + right;
 }

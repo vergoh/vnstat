@@ -117,7 +117,7 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 	int i, tmax = 0, s = 0, step, prev = 0, diff = 0, chour, cross;
 	int x = xpos, y = ypos, extrax = 0, extray = 0, xt = 0;
 	int axis_x, axis_y, axis_top, axis_right, dash_right, tick_left, tick_right;
-	int hour_gap_extra, pole_pad, hour_step;
+	int hour_gap_extra, pole_pad, hour_step, left_grow, dash_past, axis_past;
 	double ratediv;
 	uint64_t max = 1, scaleunit = 0;
 	char buffer[32];
@@ -216,6 +216,16 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 	extrax = hourly_plot_extrax(ic);
 	pole_pad = imageextrapx(ic, 2);
 	extray = imageextrapx(ic, 35);
+	/* TTF: grow left inset and tip past with point size (0 delta at FontSize 12). */
+	if (ic->fontctx.mode == FONT_TTF) {
+		left_grow = imageuipx(ic, 13) - 13;
+		dash_past = imageuipx(ic, HOURLY_DASH_PAST);
+		axis_past = imageuipx(ic, HOURLY_AXIS_PAST);
+	} else {
+		left_grow = 0;
+		dash_past = HOURLY_DASH_PAST;
+		axis_past = HOURLY_AXIS_PAST;
+	}
 
 	/* scale values */
 	scaleunit = getscale(max, israte);
@@ -229,10 +239,10 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 
 	xt = x + graph_axis_left(ic);
 	cross = imageuipx(ic, GRAPH_AXIS_CROSS);
-	/* Hours are shifted right by pole_pad so leftmost poles clear the y-axis; tip room
-	 * also grows by pole_pad so rightmost poles do not overrun the axis / grid. */
-	dash_right = xt + HOURLY_PLOT_SPAN + extrax + pole_pad + HOURLY_DASH_PAST + pole_pad;
-	axis_right = xt + HOURLY_PLOT_SPAN + extrax + pole_pad + HOURLY_AXIS_PAST + pole_pad;
+	/* Hours are shifted right by pole_pad (+ left_grow for TTF) so leftmost poles clear
+	 * the y-axis; tip room also grows so rightmost poles do not overrun the axis / grid. */
+	dash_right = xt + HOURLY_PLOT_SPAN + extrax + pole_pad + left_grow + dash_past + pole_pad;
+	axis_right = xt + HOURLY_PLOT_SPAN + extrax + pole_pad + left_grow + axis_past + pole_pad;
 
 	for (i = step; i * s <= (124 + extray + cross); i = i + step) {
 		const char *val;
@@ -260,7 +270,7 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 	imagedrawvline(ic, axis_x, axis_top, axis_y + cross, ic->ctext);
 
 	/* Rightmost hour column: plot span + gap extras + left pole clearance */
-	xt = xt + HOURLY_PLOT_SPAN + extrax + pole_pad;
+	xt = xt + HOURLY_PLOT_SPAN + extrax + pole_pad + left_grow;
 
 	/* keep alignment when midnight line isn't shown s*/
 	if (cfg.hourlygmode || tmax - 23 == 0) {
@@ -284,7 +294,8 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 			chour = ic->ctext;
 		}
 		if (ic->fontctx.mode == FONT_TTF) {
-			imagestring(ic, FONT_ROLE_AXIS, xt - imagefontwidth(ic, FONT_ROLE_AXIS) / 2, y + 132, buffer, chour);
+			/* Center "HH" on pole-pair midpoint (xt+4) so digits sit under rx / tx. */
+			imagestring(ic, FONT_ROLE_AXIS, xt + 4 - imagetextwidth(ic, FONT_ROLE_AXIS, buffer) / 2, y + 132, buffer, chour);
 		} else {
 			imagestring(ic, FONT_ROLE_AXIS, xt, y + 128, buffer, chour);
 		}
@@ -313,7 +324,8 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 
 void drawhourly(IMAGECONTENT *ic, const int israte)
 {
-	int width, height, headermod = 0;
+	int width, height, headermod = 0, header_extra = 0;
+	int ypos, axis_top_base, min_axis_top;
 
 	width = hourly_graph_width(ic);
 	height = 200 + imageextrapx(ic, 48);
@@ -321,12 +333,23 @@ void drawhourly(IMAGECONTENT *ic, const int israte)
 	if (!ic->showheader) {
 		headermod = ic->fontctx.header_h + imageuipx(ic, 2);
 		height -= ic->fontctx.header_h - 2;
+	} else {
+		/* axis_top = ypos - 10 - extray; keep the up-arrow below the header.
+		 * imageextrapx(40)-imageextrapx(35) alone does not track header_h. */
+		ypos = 46 + imageextrapx(ic, 40);
+		axis_top_base = ypos - 10 - imageextrapx(ic, 35);
+		min_axis_top = ic->fontctx.header_h + imageuipx(ic, 8);
+		header_extra = min_axis_top - axis_top_base;
+		if (header_extra < 0) {
+			header_extra = 0;
+		}
+		height += header_extra;
 	}
 
 	imageinit(ic, width, height);
 	layoutinit(ic, " / hourly", width, height);
 
-	if (drawhours(ic, 12, 46 - headermod + imageextrapx(ic, 40), israte)) {
+	if (drawhours(ic, 12, 46 + header_extra - headermod + imageextrapx(ic, 40), israte)) {
 		if (ic->fontctx.mode == FONT_TTF) {
 			drawlegend(ic, width / 2 - imageextrapx(ic, 10), height - ic->showedge - ic->fontctx.ch * 3 / 2, 0);
 		} else {
