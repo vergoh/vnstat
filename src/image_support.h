@@ -20,9 +20,11 @@ void imagedrawvline(IMAGECONTENT *ic, const int x, const int y1, const int y2, c
 void imagedrawrect(IMAGECONTENT *ic, const int x1, const int y1, const int x2, const int y2, const int color);
 void imagedrawdashedhline(IMAGECONTENT *ic, const int x1, const int x2, const int y, const int color);
 int graph_axis_left(const IMAGECONTENT *ic);
+int graph_stroke_half(const IMAGECONTENT *ic);
 int graph_xpos_margin(const IMAGECONTENT *ic);
 int graph_extra_space(const IMAGECONTENT *ic);
 int hourly_plot_extrax(const IMAGECONTENT *ic);
+int hourly_graph_left(const IMAGECONTENT *ic);
 int hourly_graph_width(const IMAGECONTENT *ic);
 void graph_draw_axis_value(IMAGECONTENT *ic, const int axis_x, const int line_y, const char *val, const int builtin_x, const int builtin_y);
 void graph_draw_axis_unit(IMAGECONTENT *ic, const int x_ttf, const int x_builtin, const int y, const char *text);

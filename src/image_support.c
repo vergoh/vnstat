@@ -576,25 +576,58 @@ int graph_axis_left(const IMAGECONTENT *ic)
 
 	/* 5-digit field + gap to y-axis; unit text sits at xpos in the left margin
 	 * and uses the spare column vs 4-char scale values. */
-	return ic->fontctx.axis_num5_w + GRAPH_AXIS_LABEL_GAP;
+	return ic->fontctx.axis_num5_w + imageuipx(ic, GRAPH_AXIS_LABEL_GAP);
+}
+
+/* Half of UI stroke thickness; grid lines inset by this so they do not overlap axes. */
+int graph_stroke_half(const IMAGECONTENT *ic)
+{
+	return imageuipx(ic, 1) / 2;
+}
+
+/* Symmetric left/right inset for standalone 5-minute / percentile graphs.
+ * Redistributes design chrome so unit text and arrow tip have matching margins. */
+static int graph_side_pad(const IMAGECONTENT *ic)
+{
+	int cross, pad_full, after_tip, side;
+
+	if (ic->fontctx.mode == FONT_BUILTIN) {
+		return 8 + imageextrapx(ic, 14);
+	}
+
+	cross = imageuipx(ic, GRAPH_AXIS_CROSS);
+	pad_full = imageuipx(ic, FIVEMINWIDTHFULLPADDING);
+	after_tip = cross + 1 + imageuipx(ic, GRAPH_EXTRA_RIGHT) - pad_full;
+	if (after_tip < 8) {
+		after_tip = 8;
+	}
+	side = (8 + after_tip) / 2;
+	return side;
 }
 
 int graph_xpos_margin(const IMAGECONTENT *ic)
 {
-	if (ic->fontctx.mode == FONT_BUILTIN) {
-		return 8 + imageextrapx(ic, 14);
-	}
-	return 8;
+	return graph_side_pad(ic);
 }
 
 /* Non-plot width for 5-minute / percentile style graphs (left margin + chrome + right). */
 int graph_extra_space(const IMAGECONTENT *ic)
 {
+	int side, cross, pad_full, right;
+
 	if (ic->fontctx.mode == FONT_BUILTIN) {
 		return FIVEMINEXTRASPACE + imageextrapx(ic, 14);
 	}
-	/* Plot pad tracks scaled origin cross (cross + 1) so canvas grows with chrome. */
-	return graph_xpos_margin(ic) + graph_axis_left(ic) + imageuipx(ic, GRAPH_AXIS_CROSS) + 1 + GRAPH_EXTRA_RIGHT;
+
+	/* Balance side pads: left margin == space past axis tip (total width unchanged vs design). */
+	side = graph_side_pad(ic);
+	cross = imageuipx(ic, GRAPH_AXIS_CROSS);
+	pad_full = imageuipx(ic, FIVEMINWIDTHFULLPADDING);
+	right = side - cross - 1 + pad_full;
+	if (right < imageuipx(ic, 8)) {
+		right = imageuipx(ic, 8);
+	}
+	return side + graph_axis_left(ic) + cross + 1 + right;
 }
 
 /* Extra plot width matching the 23 hour-to-hour gaps (keeps bars aligned with axis). */
@@ -603,28 +636,54 @@ int hourly_plot_extrax(const IMAGECONTENT *ic)
 	return HOURLY_HOUR_GAPS * imageextrapx(ic, 6);
 }
 
+/* Left inset for standalone hourly graph (balanced with right tip room for TTF). */
+int hourly_graph_left(const IMAGECONTENT *ic)
+{
+	const int extrax = hourly_plot_extrax(ic);
+	const int pole_pad = imageextrapx(ic, 2);
+	const int left_grow = (ic->fontctx.mode == FONT_TTF) ? (imageuipx(ic, 13) - 13) : 0;
+	const int axis_past = (ic->fontctx.mode == FONT_TTF) ? imageuipx(ic, HOURLY_AXIS_PAST) : HOURLY_AXIS_PAST;
+	const int left_design = 12 + (ic->fontctx.mode == FONT_BUILTIN ? imageextrapx(ic, 14) : 0);
+	int right, tip_room, tip_need, side;
+
+	right = (HOURLY_CANVAS_BASE - 12 - GRAPH_AXIS_BASE - HOURLY_PLOT_SPAN)
+		+ imageextrapx(ic, 168) - imageextrapx(ic, 14) - extrax + pole_pad
+		- left_grow;
+	tip_room = right - axis_past - pole_pad;
+	tip_need = imageuipx(ic, 8);
+	if (tip_room < tip_need) {
+		right += tip_need - tip_room;
+		tip_room = tip_need;
+	}
+
+	if (ic->fontctx.mode == FONT_BUILTIN) {
+		return left_design;
+	}
+
+	side = (left_design + tip_room) / 2;
+	if (side < left_design) {
+		side = left_design;
+	}
+	return side;
+}
+
 /* Standalone hourly canvas width: left margin + axis gutter + plot + right pad. */
 int hourly_graph_width(const IMAGECONTENT *ic)
 {
-	const int left = 12 + (ic->fontctx.mode == FONT_BUILTIN ? imageextrapx(ic, 14) : 0);
+	const int left = hourly_graph_left(ic);
 	const int extrax = hourly_plot_extrax(ic);
 	const int pole_pad = imageextrapx(ic, 2);
 	const int left_grow = (ic->fontctx.mode == FONT_TTF) ? (imageuipx(ic, 13) - 13) : 0;
 	const int axis_past = (ic->fontctx.mode == FONT_TTF) ? imageuipx(ic, HOURLY_AXIS_PAST) : HOURLY_AXIS_PAST;
 	/* +pole_pad / +left_grow shift hours right so widened poles clear the y-axis. */
 	const int plot = HOURLY_PLOT_SPAN + extrax + pole_pad + left_grow;
-	/* 48 = HOURLY_CANVAS_BASE - 12 - GRAPH_AXIS_BASE - HOURLY_PLOT_SPAN.
-	 * +pole_pad grows tip room past the widened rightmost pole.
-	 * -left_grow pulls the same delta from the right pad (like extrax) so opening the
-	 * left gap does not widen the canvas. Scaled axis_past uses that slack too. */
-	int right = (HOURLY_CANVAS_BASE - 12 - GRAPH_AXIS_BASE - HOURLY_PLOT_SPAN)
-		+ imageextrapx(ic, 168) - imageextrapx(ic, 14) - extrax + pole_pad
-		- left_grow;
-	const int tip_room = right - axis_past - pole_pad;
-	const int tip_need = imageuipx(ic, 8);
+	/* Right pad: tip room past axis end matches left inset (TTF centering). */
+	int right = left + axis_past + pole_pad;
 
-	if (tip_room < tip_need) {
-		right += tip_need - tip_room;
+	if (ic->fontctx.mode == FONT_BUILTIN) {
+		right = (HOURLY_CANVAS_BASE - 12 - GRAPH_AXIS_BASE - HOURLY_PLOT_SPAN)
+			+ imageextrapx(ic, 168) - imageextrapx(ic, 14) - extrax + pole_pad
+			- left_grow;
 	}
 
 	return left + graph_axis_left(ic) + plot + right;
@@ -645,7 +704,7 @@ void graph_draw_axis_value(IMAGECONTENT *ic, const int axis_x, const int line_y,
 			val++;
 		}
 		label_y = line_y - ic->fontctx.axis_ascent / 2;
-		imagestring(ic, FONT_ROLE_AXIS, axis_x - GRAPH_AXIS_LABEL_GAP - imagetextwidth(ic, FONT_ROLE_AXIS, val), label_y, val, ic->ctext);
+		imagestring(ic, FONT_ROLE_AXIS, axis_x - imageuipx(ic, GRAPH_AXIS_LABEL_GAP) - imagetextwidth(ic, FONT_ROLE_AXIS, val), label_y, val, ic->ctext);
 	} else {
 		imagestring(ic, FONT_ROLE_AXIS, builtin_x, builtin_y, val, ic->ctext);
 	}

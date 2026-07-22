@@ -249,14 +249,14 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 		int line_y;
 
 		line_y = y + 124 - (i * s);
-		imagedrawdashedhline(ic, xt, dash_right, line_y, ic->cline);
-		imagedrawdashedhline(ic, xt, dash_right, y + 124 - prev - (step * s) / 2, ic->clinel);
+		imagedrawdashedhline(ic, xt + graph_stroke_half(ic), dash_right, line_y, ic->cline);
+		imagedrawdashedhline(ic, xt + graph_stroke_half(ic), dash_right, y + 124 - prev - (step * s) / 2, ic->clinel);
 		val = getimagevalue(scaleunit * (unsigned int)i, 3, israte);
 		graph_draw_axis_value(ic, xt, line_y, val, x + 16 - imageextrapx(ic, 3), line_y - 3 - imageextrapx(ic, 3));
 		prev = i * s;
 	}
 	if ((prev + (step * s) / 2) <= (124 + extray + cross)) {
-		imagedrawdashedhline(ic, xt, dash_right, y + 124 - prev - (step * s) / 2, ic->clinel);
+		imagedrawdashedhline(ic, xt + graph_stroke_half(ic), dash_right, y + 124 - prev - (step * s) / 2, ic->clinel);
 	}
 
 	/* scale text */
@@ -306,16 +306,18 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 		if (tick_right > axis_right) {
 			tick_right = axis_right;
 		}
-		imagedrawhline(ic, tick_left, tick_right, axis_y, chour);
+		imagedrawhline(ic, tick_left, tick_right, axis_y + graph_stroke_half(ic) + 1, chour);
 		if (s == 0 && i != 23) {
-			/* midnight line */
-			imagedrawvline(ic, xt - 5 - imageextrapx(ic, 3), y - 5 - extray, axis_y - 1, ic->clinel);
+			/* midnight line — stop above the thick x-axis band */
+			imagedrawvline(ic, xt - 5 - imageextrapx(ic, 3), y - 5 - extray, axis_y - graph_stroke_half(ic) - 1, ic->clinel);
 			xt--;
 		}
 		xt = xt - hour_step;
 	}
 
-	/* Arrows last so hour ticks/poles cannot cover or extend past them. */
+	/* Axes + arrows last so poles/grid cannot nick the strokes. */
+	imagedrawhline(ic, axis_x - cross, axis_right, axis_y, ic->ctext);
+	imagedrawvline(ic, axis_x, axis_top, axis_y + cross, ic->ctext);
 	drawarrowup(ic, axis_x, axis_top);
 	drawarrowright(ic, axis_right, axis_y);
 
@@ -325,8 +327,9 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 void drawhourly(IMAGECONTENT *ic, const int israte)
 {
 	int width, height, headermod = 0, header_extra = 0;
-	int ypos, axis_top_base, min_axis_top;
+	int ypos, axis_top_base, min_axis_top, graph_left;
 
+	graph_left = hourly_graph_left(ic);
 	width = hourly_graph_width(ic);
 	height = 200 + imageextrapx(ic, 48);
 
@@ -339,6 +342,9 @@ void drawhourly(IMAGECONTENT *ic, const int israte)
 		ypos = 46 + imageextrapx(ic, 40);
 		axis_top_base = ypos - 10 - imageextrapx(ic, 35);
 		min_axis_top = ic->fontctx.header_h + imageuipx(ic, 8);
+		if (ic->fontctx.mode == FONT_TTF) {
+			min_axis_top += ic->fontctx.axis_ch / 2;
+		}
 		header_extra = min_axis_top - axis_top_base;
 		if (header_extra < 0) {
 			header_extra = 0;
@@ -349,7 +355,7 @@ void drawhourly(IMAGECONTENT *ic, const int israte)
 	imageinit(ic, width, height);
 	layoutinit(ic, " / hourly", width, height);
 
-	if (drawhours(ic, 12, 46 + header_extra - headermod + imageextrapx(ic, 40), israte)) {
+	if (drawhours(ic, graph_left, 46 + header_extra - headermod + imageextrapx(ic, 40), israte)) {
 		if (ic->fontctx.mode == FONT_TTF) {
 			drawlegend(ic, width / 2 - imageextrapx(ic, 10), height - ic->showedge - ic->fontctx.ch * 3 / 2, 0);
 		} else {
@@ -1580,12 +1586,25 @@ void drawfivegraph(IMAGECONTENT *ic, const int israte, const int resultcount, co
 		if (top < 2) {
 			top = 2;
 		}
+		if (ic->fontctx.mode == FONT_TTF) {
+			int min_top = imageuipx(ic, 8) + ic->fontctx.axis_ch / 2;
+			if (top < min_top) {
+				top = min_top;
+			}
+		}
 	} else {
 		header_extra = ic->fontctx.header_h - 24;
 		if (header_extra < 0) {
 			header_extra = 0;
 		}
 		top = 38 + header_extra;
+		if (ic->fontctx.mode == FONT_TTF) {
+			/* Clear header for up-arrow and topmost scale label ascent. */
+			int min_top = ic->fontctx.header_h + imageuipx(ic, 8) + ic->fontctx.axis_ch / 2;
+			if (top < min_top) {
+				top = min_top;
+			}
+		}
 	}
 
 	bottom = 30 + imageextrapx(ic, 8);
@@ -1619,7 +1638,8 @@ void drawfivegraph(IMAGECONTENT *ic, const int israte, const int resultcount, co
 int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte, const int resultcount, const int height)
 {
 	int x = xpos, y = ypos, i = 0, t = 0, rxh = 0, txh = 0, step = 0, s = 0, prev = 0, cross;
-	int barwidth, plot_w, b, px, axis_left, unit_x;
+	int barwidth, plot_w, b, px, axis_left, unit_x, pad_full, pad_inner;
+	int axis_base_x, axis_stem_x, plot_x0, hline_x0, center_y, stroke_half;
 	uint64_t scaleunit, max;
 	time_t timestamp;
 	double ratediv, e;
@@ -1632,6 +1652,9 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	plot_w = resultcount * barwidth;
 	axis_left = graph_axis_left(ic);
 	unit_x = xpos;
+	pad_full = imageuipx(ic, FIVEMINWIDTHFULLPADDING);
+	pad_inner = imageuipx(ic, FIVEMINWIDTHPADDING);
+	stroke_half = graph_stroke_half(ic);
 
 	if (!db_getdata(&datalist, &datainfo, ic->interface.name, "fiveminute", (uint32_t)resultcount) || datainfo.count == 0) {
 		x = (plot_w + graph_extra_space(ic)) / 2 - (13 * ic->fontctx.cw);
@@ -1650,12 +1673,14 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	/* axis */
 	cross = imageuipx(ic, GRAPH_AXIS_CROSS);
 	x += axis_left;
-	imagedrawhline(ic, x, x + (plot_w + FIVEMINWIDTHFULLPADDING), y, ic->ctext);
+	axis_base_x = x;
+	axis_stem_x = x + cross;
+	imagedrawhline(ic, x, x + (plot_w + pad_full), y, ic->ctext);
 	imagedrawvline(ic, x + cross, y + cross, y - height, ic->ctext);
 
 	/* arrows — tip at axis endpoint so the head is not inset past the stroke */
 	drawarrowup(ic, x + cross, y - height);
-	drawarrowright(ic, x + (plot_w + FIVEMINWIDTHFULLPADDING), y);
+	drawarrowright(ic, x + (plot_w + pad_full), y);
 
 	max = datainfo.maxrx + datainfo.maxtx;
 
@@ -1678,9 +1703,12 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 
 	/* center line; y-axis is at x-1 after this advance (drawn at previous x+cross) */
 	x += cross + 1;
+	plot_x0 = x;
+	hline_x0 = plot_x0 + stroke_half;
 	y -= txh + FIVEMINHEIGHTOFFSET;
-	imagedrawhline(ic, x, x + (plot_w + FIVEMINWIDTHPADDING), y, ic->ctext);
-	graph_draw_axis_value(ic, x - 1, y, "  0", x - 21 - imageextrapx(ic, 3), y - 4 - imageextrapx(ic, 3));
+	center_y = y;
+	imagedrawhline(ic, hline_x0, plot_x0 + (plot_w + pad_inner), y, ic->ctext);
+	graph_draw_axis_value(ic, plot_x0 - 1, y, "  0", plot_x0 - 21 - imageextrapx(ic, 3), y - 4 - imageextrapx(ic, 3));
 
 	/* scale values */
 	scaleunit = getscale(max, israte);
@@ -1720,14 +1748,14 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 		int line_y;
 
 		line_y = y - (i * s);
-		imagedrawdashedhline(ic, x, x + (plot_w + FIVEMINWIDTHPADDING), line_y, ic->cline);
-		imagedrawdashedhline(ic, x, x + (plot_w + FIVEMINWIDTHPADDING), y - prev - (step * s) / 2, ic->clinel);
+		imagedrawdashedhline(ic, hline_x0, plot_x0 + (plot_w + pad_inner), line_y, ic->cline);
+		imagedrawdashedhline(ic, hline_x0, plot_x0 + (plot_w + pad_inner), y - prev - (step * s) / 2, ic->clinel);
 		val = getimagevalue(scaleunit * (unsigned int)i, 3, israte);
-		graph_draw_axis_value(ic, x - 1, line_y, val, x - 21 - imageextrapx(ic, 3), line_y - 3 - imageextrapx(ic, 3));
+		graph_draw_axis_value(ic, plot_x0 - 1, line_y, val, plot_x0 - 21 - imageextrapx(ic, 3), line_y - 3 - imageextrapx(ic, 3));
 		prev = i * s;
 	}
 	if ((prev + (step * s) / 2) <= rxh) {
-		imagedrawdashedhline(ic, x, x + (plot_w + FIVEMINWIDTHPADDING), y - prev - (step * s) / 2, ic->clinel);
+		imagedrawdashedhline(ic, hline_x0, plot_x0 + (plot_w + pad_inner), y - prev - (step * s) / 2, ic->clinel);
 	}
 
 	y += 2; // adjust to start below center line
@@ -1739,20 +1767,20 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 		int line_y;
 
 		line_y = y + (i * s);
-		imagedrawdashedhline(ic, x, x + (plot_w + FIVEMINWIDTHPADDING), line_y, ic->cline);
-		imagedrawdashedhline(ic, x, x + (plot_w + FIVEMINWIDTHPADDING), y + prev + (step * s) / 2, ic->clinel);
+		imagedrawdashedhline(ic, hline_x0, plot_x0 + (plot_w + pad_inner), line_y, ic->cline);
+		imagedrawdashedhline(ic, hline_x0, plot_x0 + (plot_w + pad_inner), y + prev + (step * s) / 2, ic->clinel);
 		val = getimagevalue(scaleunit * (unsigned int)i, 3, israte);
-		graph_draw_axis_value(ic, x - 1, line_y, val, x - 21 - imageextrapx(ic, 3), line_y - 3 - imageextrapx(ic, 3));
+		graph_draw_axis_value(ic, plot_x0 - 1, line_y, val, plot_x0 - 21 - imageextrapx(ic, 3), line_y - 3 - imageextrapx(ic, 3));
 		prev = i * s;
 	}
 	if ((prev + (step * s) / 2) <= txh) {
-		imagedrawdashedhline(ic, x, x + (plot_w + FIVEMINWIDTHPADDING), y + prev + (step * s) / 2, ic->clinel);
+		imagedrawdashedhline(ic, hline_x0, plot_x0 + (plot_w + pad_inner), y + prev + (step * s) / 2, ic->clinel);
 	}
 
 	y--; // y is now back on center line
 
 	/* scale text */
-	graph_draw_axis_unit(ic, unit_x, x - 39 - imageextrapx(ic, 14), ypos - height / 2 + (israte * 10), getimagescale(scaleunit * (unsigned int)step, israte));
+	graph_draw_axis_unit(ic, unit_x, plot_x0 - 39 - imageextrapx(ic, 14), ypos - height / 2 + (israte * 10), getimagescale(scaleunit * (unsigned int)step, israte));
 
 	timestamp = datainfo.maxtime - (resultcount * 300);
 
@@ -1771,14 +1799,24 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 
 		timestamp += 300;
 		d = localtime(&timestamp);
-		px = x + i * barwidth;
+		px = plot_x0 + i * barwidth;
 
 		if (d->tm_min == 0 && i > 2) {
+			/* Split around thick zero-line and bottom x-axis so hour marks do not punch holes. */
+			int line_t = imageuipx(ic, 1);
+			int center_top = center_y - line_t / 2;
+			int center_bot = center_top + line_t - 1;
+			int y_bot = ypos - stroke_half - 1;
+			int y_top = center_y - rxh - 1;
+			int hour_color;
+
 			if (d->tm_hour % 2 == 0) {
-				if (d->tm_hour == 0) {
-					imagedrawvline(ic, px, y + txh - 1 + FIVEMINHEIGHTOFFSET, y - rxh - 1, ic->cline);
-				} else {
-					imagedrawvline(ic, px, y + txh - 1 + FIVEMINHEIGHTOFFSET, y - rxh - 1, ic->cbgoffset);
+				hour_color = (d->tm_hour == 0) ? ic->cline : ic->cbgoffset;
+				if (y_bot > center_bot + 1) {
+					imagedrawvline(ic, px, y_bot, center_bot + 1, hour_color);
+				}
+				if (y_top < center_top - 1) {
+					imagedrawvline(ic, px, center_top - 1, y_top, hour_color);
 				}
 
 				if (i * barwidth > imagefontwidth(ic, FONT_ROLE_AXIS)) {
@@ -1788,10 +1826,10 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 					if (ic->fontctx.mode == FONT_TTF) {
 						label_x = px - imagetextwidth(ic, FONT_ROLE_AXIS, buffer) / 2;
 						/* Hourly uses axis+8; keep labels clear of the x-axis line */
-						label_y = y + txh + FIVEMINHEIGHTOFFSET + 8;
+						label_y = center_y + txh + FIVEMINHEIGHTOFFSET + 8;
 					} else {
 						label_x = px - imagefontwidth(ic, FONT_ROLE_AXIS) + 1;
-						label_y = y + txh + imagefontheight(ic, FONT_ROLE_AXIS) - imageextrapx(ic, 5);
+						label_y = center_y + txh + imagefontheight(ic, FONT_ROLE_AXIS) - imageextrapx(ic, 5);
 					}
 					if (datalist_i->timestamp > timestamp) {
 						label_color = ic->cline;
@@ -1801,14 +1839,18 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 					imagestring(ic, FONT_ROLE_AXIS, label_x, label_y, buffer, label_color);
 				}
 			} else {
-				imagedrawvline(ic, px, y + txh - 1 + FIVEMINHEIGHTOFFSET, y - rxh - 1, ic->cbgoffset);
+				if (y_bot > center_bot + 1) {
+					imagedrawvline(ic, px, y_bot, center_bot + 1, ic->cbgoffset);
+				}
+				if (y_top < center_top - 1) {
+					imagedrawvline(ic, px, center_top - 1, y_top, ic->cbgoffset);
+				}
 			}
-			gdImageSetPixel(ic->im, px, y, ic->ctext);
 		}
 
 		if (datalist_i->timestamp > timestamp) {
-			gdImageSetPixel(ic->im, px, y, ic->cline);
-			gdImageSetPixel(ic->im, px, y + txh + FIVEMINHEIGHTOFFSET, ic->cline);
+			gdImageSetPixel(ic->im, px, center_y, ic->cline);
+			gdImageSetPixel(ic->im, px, center_y + txh + FIVEMINHEIGHTOFFSET, ic->cline);
 			continue;
 		}
 
@@ -1827,7 +1869,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 			t = rxh;
 		}
 		for (b = 0; b < barwidth; b++) {
-			drawpole(ic, px + b, y - 1, t, 1, ic->crx);
+			drawpole(ic, px + b, center_y - 1, t, 1, ic->crx);
 		}
 
 		t = (int)lrint(((double)datalist_i->tx / e / (double)datainfo.maxtx) * txh);
@@ -1835,11 +1877,18 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 			t = txh;
 		}
 		for (b = 0; b < barwidth; b++) {
-			drawpole(ic, px + b, y + 1, t, 2, ic->ctx);
+			drawpole(ic, px + b, center_y + 1, t, 2, ic->ctx);
 		}
 
 		datalist_i = datalist_i->next;
 	}
+
+	/* Redraw axes last so thick grid marks cannot nick the strokes (mirrors hourly). */
+	imagedrawhline(ic, axis_base_x, axis_base_x + plot_w + pad_full, ypos, ic->ctext);
+	imagedrawvline(ic, axis_stem_x, ypos + cross, ypos - height, ic->ctext);
+	imagedrawhline(ic, hline_x0, plot_x0 + plot_w + pad_inner, center_y, ic->ctext);
+	drawarrowup(ic, axis_stem_x, ypos - height);
+	drawarrowright(ic, axis_base_x + plot_w + pad_full, ypos);
 
 	dbdatalistfree(&datalist);
 
@@ -1888,12 +1937,24 @@ void draw95thpercentilegraph(IMAGECONTENT *ic, const int mode)
 		if (top < 2) {
 			top = 2;
 		}
+		if (ic->fontctx.mode == FONT_TTF) {
+			int min_top = imageuipx(ic, 8) + ic->fontctx.axis_ch / 2;
+			if (top < min_top) {
+				top = min_top;
+			}
+		}
 	} else {
 		header_extra = ic->fontctx.header_h - 24;
 		if (header_extra < 0) {
 			header_extra = 0;
 		}
 		top = 38 + header_extra;
+		if (ic->fontctx.mode == FONT_TTF) {
+			int min_top = ic->fontctx.header_h + imageuipx(ic, 8) + ic->fontctx.axis_ch / 2;
+			if (top < min_top) {
+				top = min_top;
+			}
+		}
 	}
 
 	bottom = 30 + imageextrapx(ic, 8);
@@ -1927,7 +1988,8 @@ void draw95thpercentilegraph(IMAGECONTENT *ic, const int mode)
 int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int ypos, const int height, uint64_t *percentile)
 {
 	int i, l, b, x = xpos, y = ypos, s = 0, step = 1, prev = 0, last = 0, color, cross;
-	int barwidth, plot_w, px, label_x, label_y, line_y;
+	int barwidth, plot_w, px, label_x, label_y, line_y, pad_full;
+	int axis_base_x, axis_stem_x, hline_x0, axis_y, stroke_half;
 	uint64_t scaleunit, max, percentile_val;
 	double ratediv, percentileratediv;
 	const struct tm *d;
@@ -1940,6 +2002,7 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 
 	barwidth = percentile_barwidth(ic);
 	plot_w = PERCENTILEENTRYCOUNT * barwidth;
+	pad_full = imageuipx(ic, PERCENTILEMINWIDTHFULLPADDING);
 
 	if (cfg.fiveminutehours < PERCENTILEENTRYCOUNT) {
 		fprintf(stderr, "\nWarning: Configuration \"5MinuteHours\" needs to be at least %d for 100%% coverage.\n", PERCENTILEENTRYCOUNT);
@@ -2012,32 +2075,37 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 	}
 
 	/* scale text */
-	graph_draw_axis_unit(ic, x, x - 2 - imageextrapx(ic, 14), y - (height / 2), getimagescale(scaleunit * (unsigned int)step, 1));
+	graph_draw_axis_unit(ic, xpos, x - 2 - imageextrapx(ic, 14), y - (height / 2), getimagescale(scaleunit * (unsigned int)step, 1));
 
 	/* axis */
 	cross = imageuipx(ic, GRAPH_AXIS_CROSS);
+	stroke_half = graph_stroke_half(ic);
 	x += graph_axis_left(ic);
-	imagedrawhline(ic, x, x + (plot_w + PERCENTILEMINWIDTHFULLPADDING), y, ic->ctext);
+	axis_base_x = x;
+	axis_stem_x = x + cross;
+	axis_y = y;
+	imagedrawhline(ic, x, x + (plot_w + pad_full), y, ic->ctext);
 	imagedrawvline(ic, x + cross, y + cross, y - height, ic->ctext);
 
 	/* arrows — tip at axis endpoint so the head is not inset past the stroke */
 	drawarrowup(ic, x + cross, y - height);
-	drawarrowright(ic, x + (plot_w + PERCENTILEMINWIDTHFULLPADDING), y);
+	drawarrowright(ic, x + (plot_w + pad_full), y);
 
 	/* adjust cursor to first point on graph (1px past stem) */
 	x += cross + 1;
+	hline_x0 = x + stroke_half;
 	y -= 1;
 
 	for (i = step; i * s <= height; i = i + step) {
 		line_y = y - (i * s);
-		imagedrawdashedhline(ic, x, x + (plot_w + PERCENTILEMINWIDTHFULLPADDING) - 5, line_y, ic->cline);
-		imagedrawdashedhline(ic, x, x + (plot_w + PERCENTILEMINWIDTHFULLPADDING) - 5, y - prev - (step * s) / 2, ic->clinel);
+		imagedrawdashedhline(ic, hline_x0, x + (plot_w + pad_full) - 5, line_y, ic->cline);
+		imagedrawdashedhline(ic, hline_x0, x + (plot_w + pad_full) - 5, y - prev - (step * s) / 2, ic->clinel);
 		val = getimagevalue(scaleunit * (unsigned int)i, 3, 1);
 		graph_draw_axis_value(ic, x - 1, line_y, val, x - 22 - imageextrapx(ic, 3), line_y - 4 - imageextrapx(ic, 3));
 		prev = i * s;
 	}
 	if ((prev + (step * s) / 2) <= height) {
-		imagedrawdashedhline(ic, x, x + (plot_w + PERCENTILEMINWIDTHFULLPADDING) - 5, y - prev - (step * s) / 2, ic->clinel);
+		imagedrawdashedhline(ic, hline_x0, x + (plot_w + pad_full) - 5, y - prev - (step * s) / 2, ic->clinel);
 	}
 
 	datalist_i = datalist;
@@ -2107,6 +2175,10 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 		datalist_i = datalist_i->next;
 	}
 
+	/* Redraw axes so day markers / thick dashes do not nick the strokes. */
+	imagedrawhline(ic, axis_base_x, axis_base_x + plot_w + pad_full, axis_y, ic->ctext);
+	imagedrawvline(ic, axis_stem_x, axis_y + cross, axis_y - height, ic->ctext);
+
 	dbdatalistfree(&datalist);
 
 	/* 95th percentile line */
@@ -2117,6 +2189,9 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 		l = 1;
 	}
 	imagedrawhline(ic, x, x + (last + 1) * barwidth - 1, y - l, ic->cpercentileline);
+
+	drawarrowup(ic, axis_stem_x, axis_y - height);
+	drawarrowright(ic, axis_base_x + plot_w + pad_full, axis_y);
 
 	if (debug) {
 		printf("s:   %d\n", s);

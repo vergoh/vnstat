@@ -1085,15 +1085,20 @@ START_TEST(imagefontinit_ttf_success_and_metrics)
 	ck_assert_int_eq(imageuipx(&ic, 1), 1);
 	ck_assert_int_eq(imageuipx(&ic, 2), 2);
 	ck_assert_int_eq(imageuipx(&ic, GRAPH_AXIS_CROSS), GRAPH_AXIS_CROSS);
-	ck_assert_int_eq(graph_axis_left(&ic), ic.fontctx.axis_num5_w + GRAPH_AXIS_LABEL_GAP);
-	ck_assert_int_eq(graph_xpos_margin(&ic), 8);
+	ck_assert_int_eq(graph_axis_left(&ic), ic.fontctx.axis_num5_w + imageuipx(&ic, GRAPH_AXIS_LABEL_GAP));
+	/* At 12pt, side pad redistributes design left vs after_tip; total chrome unchanged. */
+	ck_assert_int_eq(graph_xpos_margin(&ic),
+					 (8 + imageuipx(&ic, GRAPH_AXIS_CROSS) + 1 + imageuipx(&ic, GRAPH_EXTRA_RIGHT)
+					  - imageuipx(&ic, FIVEMINWIDTHFULLPADDING))
+						 / 2);
 	ck_assert_int_eq(graph_extra_space(&ic),
-					 graph_xpos_margin(&ic) + graph_axis_left(&ic) + imageuipx(&ic, GRAPH_AXIS_CROSS) + 1 + GRAPH_EXTRA_RIGHT);
+					 graph_xpos_margin(&ic) + graph_axis_left(&ic) + imageuipx(&ic, GRAPH_AXIS_CROSS) + 1
+						 + (graph_xpos_margin(&ic) - imageuipx(&ic, GRAPH_AXIS_CROSS) - 1 + imageuipx(&ic, FIVEMINWIDTHFULLPADDING)));
+	ck_assert_int_ge(hourly_graph_left(&ic), 12);
 	ck_assert_int_eq(hourly_graph_width(&ic),
-					 12 + graph_axis_left(&ic) + HOURLY_PLOT_SPAN + hourly_plot_extrax(&ic) + imageextrapx(&ic, 2)
-						 + (HOURLY_CANVAS_BASE - 12 - GRAPH_AXIS_BASE - HOURLY_PLOT_SPAN)
-						 + imageextrapx(&ic, 168) - imageextrapx(&ic, 14) - hourly_plot_extrax(&ic)
-						 + imageextrapx(&ic, 2));
+					 hourly_graph_left(&ic) + graph_axis_left(&ic) + HOURLY_PLOT_SPAN + hourly_plot_extrax(&ic)
+						 + imageextrapx(&ic, 2) + (imageuipx(&ic, 13) - 13)
+						 + hourly_graph_left(&ic) + imageuipx(&ic, HOURLY_AXIS_PAST) + imageextrapx(&ic, 2));
 	ck_assert_int_eq(hourly_plot_extrax(&ic), HOURLY_HOUR_GAPS * imageextrapx(&ic, 6));
 
 	ck_assert_int_eq(imagetextwidth(&ic, FONT_ROLE_BODY, NULL), 0);
@@ -1116,14 +1121,15 @@ START_TEST(imagefontinit_ttf_success_and_metrics)
 	cfg.fontsize = 18;
 	{
 		IMAGECONTENT ic_18;
-		int extra_18;
+		int extra_18, side_18, right_18;
 
 		ck_assert_int_eq(imagefontinit(&ic_18, 0), 1);
 		ck_assert_int_eq(imageuipx(&ic_18, GRAPH_AXIS_CROSS), 6);
 		ck_assert_int_eq(imageuipx(&ic_18, 1), 2);
+		side_18 = graph_xpos_margin(&ic_18);
+		right_18 = side_18 - 6 - 1 + imageuipx(&ic_18, FIVEMINWIDTHFULLPADDING);
 		extra_18 = graph_extra_space(&ic_18);
-		ck_assert_int_eq(extra_18,
-						 graph_xpos_margin(&ic_18) + graph_axis_left(&ic_18) + 6 + 1 + GRAPH_EXTRA_RIGHT);
+		ck_assert_int_eq(extra_18, side_18 + graph_axis_left(&ic_18) + 6 + 1 + right_18);
 		ck_assert_int_gt(extra_18, graph_extra_space(&ic));
 		imagefontcleanup();
 	}
