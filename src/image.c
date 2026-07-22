@@ -991,13 +991,13 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	dbdatalistfree(&datalist);
 }
 
-/* Pixels per 5-minute sample. Builtin -L doubles; TTF widens when 2-hour labels need a gap. */
+/* Pixels per 5-minute sample. Builtin stays 1px (master sizing); TTF widens for 2-hour labels. */
 int fiveg_barwidth(IMAGECONTENT *ic)
 {
 	int label_w, gap, need, slot = 24; /* hour labels every 2 hours = 24 samples */
 
 	if (ic->fontctx.mode == FONT_BUILTIN) {
-		return 1 + imageextrapx(ic, 1);
+		return 1;
 	}
 
 	/* Gap grows with label size (min 4px) so large fonts stay readable between hours */
@@ -2040,13 +2040,13 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	return 1;
 }
 
-/* Pixels per hour. Builtin -L doubles; TTF widens when day labels need a gap. */
+/* Pixels per hour. Builtin stays 1px (master sizing); TTF widens for day labels. */
 static int percentile_barwidth(IMAGECONTENT *ic)
 {
 	int label_w, gap, need, slot = 24; /* day labels every 24 hours */
 
 	if (ic->fontctx.mode == FONT_BUILTIN) {
-		return 1 + imageextrapx(ic, 1);
+		return 1;
 	}
 
 	/* Gap grows with label size (min 4px) so large fonts stay readable between days */
