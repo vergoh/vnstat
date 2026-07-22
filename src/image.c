@@ -116,7 +116,8 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 {
 	int i, tmax = 0, s = 0, step, prev = 0, diff = 0, chour, cross;
 	int x = xpos, y = ypos, extrax = 0, extray = 0, xt = 0;
-	int axis_x, axis_y, axis_top, axis_right, tick_left, tick_right;
+	int axis_x, axis_y, axis_top, axis_right, dash_right, tick_left, tick_right;
+	int hour_gap_extra, pole_pad, hour_step;
 	double ratediv;
 	uint64_t max = 1, scaleunit = 0;
 	char buffer[32];
@@ -209,7 +210,11 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 	if (ic->fontctx.mode == FONT_BUILTIN) {
 		x += imageextrapx(ic, 14);
 	}
-	extrax = imageextrapx(ic, 145);
+	/* Plot width extra must match sum of hour-gap extras so bars stay aligned with the axis. */
+	hour_gap_extra = imageextrapx(ic, 6);
+	hour_step = HOURLY_HOUR_STEP + hour_gap_extra;
+	extrax = hourly_plot_extrax(ic);
+	pole_pad = imageextrapx(ic, 2);
 	extray = imageextrapx(ic, 35);
 
 	/* scale values */
@@ -224,20 +229,24 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 
 	xt = x + graph_axis_left(ic);
 	cross = imageuipx(ic, GRAPH_AXIS_CROSS);
+	/* Hours are shifted right by pole_pad so leftmost poles clear the y-axis; tip room
+	 * also grows by pole_pad so rightmost poles do not overrun the axis / grid. */
+	dash_right = xt + HOURLY_PLOT_SPAN + extrax + pole_pad + HOURLY_DASH_PAST + pole_pad;
+	axis_right = xt + HOURLY_PLOT_SPAN + extrax + pole_pad + HOURLY_AXIS_PAST + pole_pad;
 
 	for (i = step; i * s <= (124 + extray + cross); i = i + step) {
 		const char *val;
 		int line_y;
 
 		line_y = y + 124 - (i * s);
-		imagedrawdashedhline(ic, xt, xt + 424 + extrax, line_y, ic->cline);
-		imagedrawdashedhline(ic, xt, xt + 424 + extrax, y + 124 - prev - (step * s) / 2, ic->clinel);
+		imagedrawdashedhline(ic, xt, dash_right, line_y, ic->cline);
+		imagedrawdashedhline(ic, xt, dash_right, y + 124 - prev - (step * s) / 2, ic->clinel);
 		val = getimagevalue(scaleunit * (unsigned int)i, 3, israte);
 		graph_draw_axis_value(ic, xt, line_y, val, x + 16 - imageextrapx(ic, 3), line_y - 3 - imageextrapx(ic, 3));
 		prev = i * s;
 	}
 	if ((prev + (step * s) / 2) <= (124 + extray + cross)) {
-		imagedrawdashedhline(ic, xt, xt + 424 + extrax, y + 124 - prev - (step * s) / 2, ic->clinel);
+		imagedrawdashedhline(ic, xt, dash_right, y + 124 - prev - (step * s) / 2, ic->clinel);
 	}
 
 	/* scale text */
@@ -247,12 +256,11 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 	axis_x = xt;
 	axis_y = y + 124;
 	axis_top = y - 10 - extray;
-	axis_right = xt + 430 + extrax;
 	imagedrawhline(ic, xt - cross, axis_right, axis_y, ic->ctext);
 	imagedrawvline(ic, axis_x, axis_top, axis_y + cross, ic->ctext);
 
-	/* Rightmost hour column relative to y-axis */
-	xt = xt + HOURLY_PLOT_SPAN + extrax;
+	/* Rightmost hour column: plot span + gap extras + left pole clearance */
+	xt = xt + HOURLY_PLOT_SPAN + extrax + pole_pad;
 
 	/* keep alignment when midnight line isn't shown s*/
 	if (cfg.hourlygmode || tmax - 23 == 0) {
@@ -293,7 +301,7 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 			imagedrawvline(ic, xt - 5 - imageextrapx(ic, 3), y - 5 - extray, axis_y - 1, ic->clinel);
 			xt--;
 		}
-		xt = xt - (17 + imageextrapx(ic, 6));
+		xt = xt - hour_step;
 	}
 
 	/* Arrows last so hour ticks/poles cannot cover or extend past them. */

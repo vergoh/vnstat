@@ -597,14 +597,24 @@ int graph_extra_space(const IMAGECONTENT *ic)
 	return graph_xpos_margin(ic) + graph_axis_left(ic) + imageuipx(ic, GRAPH_AXIS_CROSS) + 1 + GRAPH_EXTRA_RIGHT;
 }
 
+/* Extra plot width matching the 23 hour-to-hour gaps (keeps bars aligned with axis). */
+int hourly_plot_extrax(const IMAGECONTENT *ic)
+{
+	return HOURLY_HOUR_GAPS * imageextrapx(ic, 6);
+}
+
 /* Standalone hourly canvas width: left margin + axis gutter + plot + right pad. */
 int hourly_graph_width(const IMAGECONTENT *ic)
 {
 	const int left = 12 + (ic->fontctx.mode == FONT_BUILTIN ? imageextrapx(ic, 14) : 0);
-	const int plot = HOURLY_PLOT_SPAN + imageextrapx(ic, 145);
-	/* 48 = HOURLY_CANVAS_BASE - 12 - GRAPH_AXIS_BASE - HOURLY_PLOT_SPAN */
+	const int extrax = hourly_plot_extrax(ic);
+	const int pole_pad = imageextrapx(ic, 2);
+	/* +pole_pad shifts hours right so widened poles clear the y-axis. */
+	const int plot = HOURLY_PLOT_SPAN + extrax + pole_pad;
+	/* 48 = HOURLY_CANVAS_BASE - 12 - GRAPH_AXIS_BASE - HOURLY_PLOT_SPAN.
+	 * +pole_pad grows tip room past the widened rightmost pole. */
 	const int right = (HOURLY_CANVAS_BASE - 12 - GRAPH_AXIS_BASE - HOURLY_PLOT_SPAN)
-		+ imageextrapx(ic, 168) - imageextrapx(ic, 14) - imageextrapx(ic, 145);
+		+ imageextrapx(ic, 168) - imageextrapx(ic, 14) - extrax + pole_pad;
 
 	return left + graph_axis_left(ic) + plot + right;
 }

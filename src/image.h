@@ -28,9 +28,15 @@
 #define GRAPH_AXIS_PLOT_PAD 5 /* GRAPH_AXIS_CROSS + 1; plot starts 1px past stem */
 #define GRAPH_EXTRA_RIGHT 29 /* FIVEMINEXTRASPACE - 8 - GRAPH_AXIS_BASE - GRAPH_AXIS_PLOT_PAD */
 
-/* Hourly graph canvas: plot span from y-axis to rightmost hour column. */
+/* Hourly graph canvas: plot span from y-axis to rightmost hour column.
+ * HOURLY_PLOT_SPAN = leftmost_offset(13) + HOURLY_HOUR_GAPS * HOURLY_HOUR_STEP. */
 #define HOURLY_CANVAS_BASE 500
-#define HOURLY_PLOT_SPAN (440 - GRAPH_AXIS_BASE)
+#define HOURLY_HOUR_STEP 17
+#define HOURLY_HOUR_COUNT 24
+#define HOURLY_HOUR_GAPS (HOURLY_HOUR_COUNT - 1) /* 23 gaps between 24 hours */
+#define HOURLY_PLOT_SPAN (440 - GRAPH_AXIS_BASE) /* 404 */
+#define HOURLY_DASH_PAST 20 /* dashed grid ends this far past rightmost hour center */
+#define HOURLY_AXIS_PAST 26 /* x-axis line ends this far past rightmost hour center */
 
 typedef enum {
 	FONT_BUILTIN = 0,

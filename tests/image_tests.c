@@ -1090,7 +1090,11 @@ START_TEST(imagefontinit_ttf_success_and_metrics)
 	ck_assert_int_eq(graph_extra_space(&ic),
 					 graph_xpos_margin(&ic) + graph_axis_left(&ic) + imageuipx(&ic, GRAPH_AXIS_CROSS) + 1 + GRAPH_EXTRA_RIGHT);
 	ck_assert_int_eq(hourly_graph_width(&ic),
-					 12 + graph_axis_left(&ic) + HOURLY_PLOT_SPAN + imageextrapx(&ic, 145) + (HOURLY_CANVAS_BASE - 12 - GRAPH_AXIS_BASE - HOURLY_PLOT_SPAN) + imageextrapx(&ic, 168) - imageextrapx(&ic, 14) - imageextrapx(&ic, 145));
+					 12 + graph_axis_left(&ic) + HOURLY_PLOT_SPAN + hourly_plot_extrax(&ic) + imageextrapx(&ic, 2)
+						 + (HOURLY_CANVAS_BASE - 12 - GRAPH_AXIS_BASE - HOURLY_PLOT_SPAN)
+						 + imageextrapx(&ic, 168) - imageextrapx(&ic, 14) - hourly_plot_extrax(&ic)
+						 + imageextrapx(&ic, 2));
+	ck_assert_int_eq(hourly_plot_extrax(&ic), HOURLY_HOUR_GAPS * imageextrapx(&ic, 6));
 
 	ck_assert_int_eq(imagetextwidth(&ic, FONT_ROLE_BODY, NULL), 0);
 	ck_assert_int_eq(imagetextwidth(&ic, FONT_ROLE_BODY, ""), 0);
