@@ -4,6 +4,9 @@
 #include "common.h"
 #include "image.h"
 
+#define FONT_SIZE_MIN 6
+#define FONT_SIZE_MAX 72
+
 typedef struct {
 	int cache, help;
 	int32_t limit;

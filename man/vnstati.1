@@ -317,14 +317,14 @@ or
 this multiplies the font size by 1.5.
 
 .TP
-.BI "--font " "file[:size]|:size"
+.BI "--font " "file[:size]|size"
 Use TrueType font
 .I file
 for image text, optionally with point
 .IR size .
-Specifying only
-.BI : size
-overrides the configured
+A bare
+.I size
+value (digits only) overrides the configured
 .B FontSize
 while keeping
 .BR FontFile .

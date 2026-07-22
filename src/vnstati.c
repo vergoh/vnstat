@@ -153,7 +153,7 @@ void showihelp(const IPARAMS *p)
 		printf(" (default)");
 	}
 	printf("\n");
-	printf("      --font <file[:size]|:size>         use TTF font file and/or size\n");
+	printf("      --font <file[:size]|size>          use TTF font file and/or size\n");
 	printf("      -o,  --output <file>               select output filename\n");
 	printf("      -c,  --cache <minutes>             update output only when too old\n");
 	printf("      -i,  --iface <interface>           select interface");
@@ -331,44 +331,74 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 			if (currentarg + 1 < argc) {
 				const char *spec = argv[currentarg + 1];
 				const char *colon = strrchr(spec, ':');
-				int size_only = 0, has_size = 0;
-				int fontsize = 0;
+				const char *sizep;
+				int fontsize = 0, is_digits = 0;
+				size_t pathlen;
 
-				if (colon != NULL && colon[1] != '\0') {
-					const char *sizep = colon + 1;
-					has_size = 1;
-					while (*sizep != '\0') {
-						if (!isdigit((unsigned char)*sizep)) {
-							has_size = 0;
-							break;
-						}
-						sizep++;
-					}
-					if (has_size) {
-						fontsize = atoi(colon + 1);
-						if (fontsize < 6 || fontsize > 72) {
-							fprintf(stderr, "Error: Invalid font size \"%s\" for --font. Supported value range: 6 <= N <= 72\n", colon + 1);
-							exit(EXIT_FAILURE);
-						}
-						if (colon == spec) {
-							size_only = 1;
+				if (colon != NULL) {
+					/* file:size */
+					sizep = colon + 1;
+					if (*sizep != '\0') {
+						is_digits = 1;
+						while (*sizep != '\0') {
+							if (!isdigit((unsigned char)*sizep)) {
+								is_digits = 0;
+								break;
+							}
+							sizep++;
 						}
 					}
-				}
+					if (!is_digits) {
+						fprintf(stderr, "Error: Invalid font size \"%s\" for --font. Supported value range: %d <= N <= %d\n", colon + 1, FONT_SIZE_MIN, FONT_SIZE_MAX);
+						exit(EXIT_FAILURE);
+					}
+					fontsize = atoi(colon + 1);
+					if (fontsize < FONT_SIZE_MIN || fontsize > FONT_SIZE_MAX) {
+						fprintf(stderr, "Error: Invalid font size \"%s\" for --font. Supported value range: %d <= N <= %d\n", colon + 1, FONT_SIZE_MIN, FONT_SIZE_MAX);
+						exit(EXIT_FAILURE);
+					}
 
-				if (size_only) {
-					cfg.fontsize = fontsize;
-				} else if (has_size) {
-					size_t pathlen = (size_t)(colon - spec);
+					pathlen = (size_t)(colon - spec);
 					if (pathlen == 0 || pathlen >= sizeof(cfg.fontfile)) {
 						fprintf(stderr, "Error: Invalid font file path for --font.\n");
 						exit(EXIT_FAILURE);
 					}
 					memcpy(cfg.fontfile, spec, pathlen);
 					cfg.fontfile[pathlen] = '\0';
+					if (access(cfg.fontfile, R_OK) != 0) {
+						fprintf(stderr, "Error: Unable to read FontFile \"%s\": %s\n", cfg.fontfile, strerror(errno));
+						exit(EXIT_FAILURE);
+					}
 					cfg.fontsize = fontsize;
 				} else {
-					strncpy_nt(cfg.fontfile, spec, 512);
+					/* bare size or file path */
+					is_digits = (spec[0] != '\0');
+					sizep = spec;
+					while (*sizep != '\0') {
+						if (!isdigit((unsigned char)*sizep)) {
+							is_digits = 0;
+							break;
+						}
+						sizep++;
+					}
+					if (is_digits) {
+						fontsize = atoi(spec);
+						if (fontsize < FONT_SIZE_MIN || fontsize > FONT_SIZE_MAX) {
+							fprintf(stderr, "Error: Invalid font size \"%s\" for --font. Supported value range: %d <= N <= %d\n", spec, FONT_SIZE_MIN, FONT_SIZE_MAX);
+							exit(EXIT_FAILURE);
+						}
+						cfg.fontsize = fontsize;
+					} else {
+						if (strlen(spec) == 0 || strlen(spec) >= sizeof(cfg.fontfile)) {
+							fprintf(stderr, "Error: Invalid font file path for --font.\n");
+							exit(EXIT_FAILURE);
+						}
+						if (access(spec, R_OK) != 0) {
+							fprintf(stderr, "Error: Unable to read font file \"%s\": %s\n", spec, strerror(errno));
+							exit(EXIT_FAILURE);
+						}
+						strncpy_nt(cfg.fontfile, spec, 512);
+					}
 				}
 
 				if (debug) {
