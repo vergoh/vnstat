@@ -300,13 +300,6 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 			imagestring(ic, FONT_ROLE_AXIS, xt, y + 128, buffer, chour);
 		}
 		drawpoles(ic, xt - 2, y - extray, 124 + extray, hourdata[s].rx, hourdata[s].tx, max);
-		/* Keep hour ticks from extending past the axis end (and over the arrow). */
-		tick_left = xt - cross - imageextrapx(ic, 3);
-		tick_right = xt + 12 + imageextrapx(ic, 3);
-		if (tick_right > axis_right) {
-			tick_right = axis_right;
-		}
-		imagedrawhline(ic, tick_left, tick_right, axis_y + graph_stroke_half(ic) + 1, chour);
 		if (s == 0 && i != 23) {
 			/* midnight line — stop above the thick x-axis band */
 			imagedrawvline(ic, xt - 5 - imageextrapx(ic, 3), y - 5 - extray, axis_y - graph_stroke_half(ic) - 1, ic->clinel);
@@ -320,6 +313,40 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 	imagedrawvline(ic, axis_x, axis_top, axis_y + cross, ic->ctext);
 	drawarrowup(ic, axis_x, axis_top);
 	drawarrowright(ic, axis_right, axis_y);
+
+	/* Hour ticks on the axis after the final redraw so missing-data hours dim
+	 * that segment (ctext ticks are a no-op). Drawing below the thick stroke
+	 * made a second incomplete rule at large TTF sizes. */
+	xt = axis_x + HOURLY_PLOT_SPAN + extrax + pole_pad + left_grow;
+	if (cfg.hourlygmode || tmax - 23 == 0) {
+		xt--;
+	}
+	for (i = 0; i < 24; i++) {
+		if (cfg.hourlygmode == 0) {
+			s = tmax - i;
+			if (s < 0) {
+				s += 24;
+			}
+		} else {
+			s = 23 - i;
+		}
+		if (hourdata[s].date == 0) {
+			chour = ic->cline;
+		} else {
+			chour = ic->ctext;
+		}
+		/* Keep hour ticks from extending past the axis end (and over the arrow). */
+		tick_left = xt - cross - imageextrapx(ic, 3);
+		tick_right = xt + 12 + imageextrapx(ic, 3);
+		if (tick_right > axis_right) {
+			tick_right = axis_right;
+		}
+		imagedrawhline(ic, tick_left, tick_right, axis_y, chour);
+		if (s == 0 && i != 23) {
+			xt--;
+		}
+		xt = xt - hour_step;
+	}
 
 	return 1;
 }
