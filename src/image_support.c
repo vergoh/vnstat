@@ -669,7 +669,6 @@ int hourly_graph_left(const IMAGECONTENT *ic)
 	tip_room = right - axis_past - pole_pad;
 	tip_need = imageuipx(ic, 8);
 	if (tip_room < tip_need) {
-		right += tip_need - tip_room;
 		tip_room = tip_need;
 	}
 
