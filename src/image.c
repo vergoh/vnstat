@@ -308,7 +308,7 @@ void drawhourly(IMAGECONTENT *ic, const int israte)
 
 	if (drawhours(ic, 12, 46 - headermod + imageextrapx(ic, 40), israte)) {
 		if (ic->fontctx.mode == FONT_TTF) {
-			drawlegend(ic, width / 2 - imageextrapx(ic, 10), height - ic->showedge - ic->fontctx.ch * 1.5, 0);
+			drawlegend(ic, width / 2 - imageextrapx(ic, 10), height - ic->showedge - ic->fontctx.ch * 3 / 2, 0);
 		} else {
 			drawlegend(ic, width / 2 - imageextrapx(ic, 10), 183 - headermod + imageextrapx(ic, 46), 0);
 		}
@@ -1235,7 +1235,7 @@ void drawsummary_alltime(IMAGECONTENT *ic, const int x, const int y)
 		drawsummary_stack_ttf(ic, x, col_right,
 			y + (2 * ic->lineheight),
 			y + (3 * ic->lineheight),
-			y + (4.5 * ic->lineheight),
+			y + (ic->lineheight * 9 / 2),
 			ic->interface.rxtotal, ic->interface.txtotal);
 
 		d = localtime(&ic->interface.created);
@@ -1257,7 +1257,7 @@ void drawsummary_alltime(IMAGECONTENT *ic, const int x, const int y)
 	imagestring(ic, FONT_ROLE_BODY, x, y + (3 * ic->lineheight), buffer, ic->ctext);
 	snprintf(buffer, 4, " = ");
 	strncat(buffer, getvalue(ic->interface.rxtotal + ic->interface.txtotal, 12, RT_Normal), 32);
-	imagestring(ic, FONT_ROLE_BODY, x, y + (4.5 * ic->lineheight), buffer, ic->ctext);
+	imagestring(ic, FONT_ROLE_BODY, x, y + (ic->lineheight * 9 / 2), buffer, ic->ctext);
 	d = localtime(&ic->interface.created);
 	strftime(datebuff, 16, cfg.tformat, d);
 	snprintf(daytemp, 24, "since %s", datebuff);

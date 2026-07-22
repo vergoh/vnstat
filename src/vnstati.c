@@ -335,14 +335,14 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 				int fontsize = 0;
 
 				if (colon != NULL && colon[1] != '\0') {
-					const char *p = colon + 1;
+					const char *sizep = colon + 1;
 					has_size = 1;
-					while (*p != '\0') {
-						if (!isdigit((unsigned char)*p)) {
+					while (*sizep != '\0') {
+						if (!isdigit((unsigned char)*sizep)) {
 							has_size = 0;
 							break;
 						}
-						p++;
+						sizep++;
 					}
 					if (has_size) {
 						fontsize = atoi(colon + 1);

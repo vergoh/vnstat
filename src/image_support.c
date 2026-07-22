@@ -151,6 +151,7 @@ static double imageroleptsize(const IMAGECONTENT *ic, const fontrole_t role)
 		case FONT_ROLE_HEADER:
 			return ic->fontctx.ptsize * ic->fontctx.title_scale;
 		case FONT_ROLE_BODY:
+		case FONT_ROLE_FOOTER:
 		default:
 			return ic->fontctx.ptsize;
 	}
@@ -383,6 +384,7 @@ void imagestring(IMAGECONTENT *ic, const fontrole_t role, const int x, const int
 			ascent = ic->fontctx.header_ascent;
 			break;
 		case FONT_ROLE_BODY:
+		case FONT_ROLE_FOOTER:
 		default:
 			ascent = ic->fontctx.ascent;
 			break;
@@ -429,6 +431,7 @@ void imagestringup(IMAGECONTENT *ic, const fontrole_t role, const int x, const i
 			ascent = ic->fontctx.header_ascent;
 			break;
 		case FONT_ROLE_BODY:
+		case FONT_ROLE_FOOTER:
 		default:
 			ascent = ic->fontctx.ascent;
 			break;
@@ -666,6 +669,7 @@ int imagefontwidth(IMAGECONTENT *ic, const fontrole_t role)
 		case FONT_ROLE_HEADER:
 			return (int)(ic->fontctx.cw * ic->fontctx.title_scale + 0.5);
 		case FONT_ROLE_BODY:
+		case FONT_ROLE_FOOTER:
 		default:
 			return ic->fontctx.cw;
 	}
@@ -684,6 +688,7 @@ int imagefontheight(IMAGECONTENT *ic, const fontrole_t role)
 		case FONT_ROLE_HEADER:
 			return ic->fontctx.header_ch;
 		case FONT_ROLE_BODY:
+		case FONT_ROLE_FOOTER:
 		default:
 			return ic->fontctx.ch;
 	}
@@ -709,6 +714,7 @@ static int imagecentery(IMAGECONTENT *ic, const fontrole_t role, const char *tex
 				ascent = ic->fontctx.header_ascent;
 				break;
 			case FONT_ROLE_BODY:
+			case FONT_ROLE_FOOTER:
 			default:
 				ascent = ic->fontctx.ascent;
 				break;
