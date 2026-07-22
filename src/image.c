@@ -1062,7 +1062,9 @@ static int summary_ttf_compute_width(IMAGECONTENT *ic, const int layout,
 
 			r = fivegraph_x + fiveg_samples * fiveg_barwidth_val + graph_extra_space(ic) - graph_xpos_margin(ic);
 		} else {
-			r = graph_x + hourly_graph_width(ic) - hourly_graph_left(ic);
+			/* Standalone width includes a left-matching right pad; when embedded at
+			 * graph_x that pad must not extend past the axis tip (subtract left twice). */
+			r = graph_x + hourly_graph_width(ic) - 2 * hourly_graph_left(ic);
 		}
 		if (r > content_right) {
 			content_right = r;
