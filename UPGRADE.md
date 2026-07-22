@@ -1,7 +1,7 @@
 
 # New configuration settings
 
- * 2.14: MonthRotateVisible
+ * 2.14: CommonWidth, FontFile, FontSize, MonthRotateVisible
 
  * 2.13: (none)
 
