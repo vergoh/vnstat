@@ -21,6 +21,9 @@
 
 #define SCALEMINPIXELS 25
 
+#define FONT_SIZE_MIN 6
+#define FONT_SIZE_MAX 72
+
 /* Graph y-axis left chrome: builtin keeps a 36px advance; TTF sizes from 5 digits. */
 #define GRAPH_AXIS_BASE 36
 #define GRAPH_AXIS_LABEL_GAP 4

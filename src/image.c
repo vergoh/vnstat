@@ -4,7 +4,6 @@
 #include "percentile.h"
 #include "image.h"
 #include "image_support.h"
-#include "vnstati.h"
 
 void initimagecontent(IMAGECONTENT *ic)
 {
