@@ -75,28 +75,34 @@ START_TEST(validatecfg_restores_invalid_fontscales)
 	cfg.fontscaleheader = 0;
 	cfg.fontscaletitle = 0;
 	cfg.fontscaleaxis = 0;
+	cfg.fontscaletimestamp = 0;
 	suppress_output();
 	validatecfg(CT_Image);
 	ck_assert_int_eq(cfg.fontscaleheader, FONTSCALEHEADER);
 	ck_assert_int_eq(cfg.fontscaletitle, FONTSCALETITLE);
 	ck_assert_int_eq(cfg.fontscaleaxis, FONTSCALEAXIS);
+	ck_assert_int_eq(cfg.fontscaletimestamp, FONTSCALETIMESTAMP);
 
 	cfg.fontscaleheader = 301;
 	cfg.fontscaletitle = 301;
 	cfg.fontscaleaxis = 301;
+	cfg.fontscaletimestamp = 301;
 	suppress_output();
 	validatecfg(CT_Image);
 	ck_assert_int_eq(cfg.fontscaleheader, FONTSCALEHEADER);
 	ck_assert_int_eq(cfg.fontscaletitle, FONTSCALETITLE);
 	ck_assert_int_eq(cfg.fontscaleaxis, FONTSCALEAXIS);
+	ck_assert_int_eq(cfg.fontscaletimestamp, FONTSCALETIMESTAMP);
 
 	cfg.fontscaleheader = 50;
 	cfg.fontscaletitle = 200;
 	cfg.fontscaleaxis = 300;
+	cfg.fontscaletimestamp = 100;
 	validatecfg(CT_Image);
 	ck_assert_int_eq(cfg.fontscaleheader, 50);
 	ck_assert_int_eq(cfg.fontscaletitle, 200);
 	ck_assert_int_eq(cfg.fontscaleaxis, 300);
+	ck_assert_int_eq(cfg.fontscaletimestamp, 100);
 }
 END_TEST
 

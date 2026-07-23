@@ -121,6 +121,7 @@ static gdFontPtr imagerolefont(const IMAGECONTENT *ic, const fontrole_t role)
 {
 	switch (role) {
 		case FONT_ROLE_AXIS:
+		case FONT_ROLE_TIMESTAMP:
 			return ic->fontctx.axis;
 		case FONT_ROLE_TITLE:
 			return ic->fontctx.title;
@@ -147,6 +148,8 @@ static double imageroleptsize(const IMAGECONTENT *ic, const fontrole_t role)
 	switch (role) {
 		case FONT_ROLE_AXIS:
 			return ic->fontctx.ptsize * ic->fontctx.axis_scale;
+		case FONT_ROLE_TIMESTAMP:
+			return ic->fontctx.ptsize * ic->fontctx.timestamp_scale;
 		case FONT_ROLE_HEADER:
 			return ic->fontctx.ptsize * ic->fontctx.header_scale;
 		case FONT_ROLE_TITLE:
@@ -163,6 +166,8 @@ static int imageroleascent(const IMAGECONTENT *ic, const fontrole_t role)
 	switch (role) {
 		case FONT_ROLE_AXIS:
 			return ic->fontctx.axis_ascent;
+		case FONT_ROLE_TIMESTAMP:
+			return ic->fontctx.timestamp_ascent;
 		case FONT_ROLE_HEADER:
 			return ic->fontctx.header_ascent;
 		case FONT_ROLE_TITLE:
@@ -299,6 +304,18 @@ static int imagettfinitmetrics(IMAGECONTENT *ic)
 	}
 	ic->fontctx.axis_ascent = -brect[7];
 
+	err = imagettfbbox(ic, ic->fontctx.ptsize * ic->fontctx.timestamp_scale, 0.0, "Ayjp", brect);
+	if (err != NULL) {
+		fprintf(stderr, "%s \"%s\": %s\n", errprefix, ic->fontctx.ttfpath, err);
+		imagefontcleanup();
+		return 0;
+	}
+	ic->fontctx.timestamp_ch = brect[1] - brect[7];
+	if (ic->fontctx.timestamp_ch < 1) {
+		ic->fontctx.timestamp_ch = 1;
+	}
+	ic->fontctx.timestamp_ascent = -brect[7];
+
 	ic->fontctx.axis_num5_w = imagettftextwidth(ic, ic->fontctx.ptsize * ic->fontctx.axis_scale, "99999");
 	if (ic->fontctx.axis_num5_w < 1) {
 		ic->fontctx.axis_num5_w = 1;
@@ -317,10 +334,12 @@ int imagefontinit(IMAGECONTENT *ic, const int largefonts)
 	ic->fontctx.header_scale = cfg.fontscaleheader / 100.0;
 	ic->fontctx.title_scale = cfg.fontscaletitle / 100.0;
 	ic->fontctx.axis_scale = cfg.fontscaleaxis / 100.0;
+	ic->fontctx.timestamp_scale = cfg.fontscaletimestamp / 100.0;
 	ic->fontctx.ascent = 0;
 	ic->fontctx.header_ascent = 0;
 	ic->fontctx.title_ascent = 0;
 	ic->fontctx.axis_ascent = 0;
+	ic->fontctx.timestamp_ascent = 0;
 	ic->fontctx.axis_num5_w = 0;
 	ic->fontctx.ttfpath[0] = '\0';
 	ic->fontctx.ptsize = 0.0;
@@ -342,6 +361,7 @@ int imagefontinit(IMAGECONTENT *ic, const int largefonts)
 		ic->fontctx.header_ch = ic->fontctx.header->h;
 		ic->fontctx.title_ch = ic->fontctx.title->h;
 		ic->fontctx.axis_ch = ic->fontctx.axis->h;
+		ic->fontctx.timestamp_ch = ic->fontctx.axis_ch;
 		ic->fontctx.axis_num5_w = 5 * ic->fontctx.axis->w;
 		ic->fontctx.header_h = 24;
 		ic->fontctx.scale = (double)ic->fontctx.cw / 6.0;
@@ -794,6 +814,8 @@ int imagefontwidth(IMAGECONTENT *ic, const fontrole_t role)
 	switch (role) {
 		case FONT_ROLE_AXIS:
 			return (int)(ic->fontctx.cw * ic->fontctx.axis_scale + 0.5);
+		case FONT_ROLE_TIMESTAMP:
+			return (int)(ic->fontctx.cw * ic->fontctx.timestamp_scale + 0.5);
 		case FONT_ROLE_HEADER:
 			return (int)(ic->fontctx.cw * ic->fontctx.header_scale + 0.5);
 		case FONT_ROLE_TITLE:
@@ -814,6 +836,8 @@ int imagefontheight(IMAGECONTENT *ic, const fontrole_t role)
 	switch (role) {
 		case FONT_ROLE_AXIS:
 			return ic->fontctx.axis_ch;
+		case FONT_ROLE_TIMESTAMP:
+			return ic->fontctx.timestamp_ch;
 		case FONT_ROLE_HEADER:
 			return ic->fontctx.header_ch;
 		case FONT_ROLE_TITLE:
@@ -922,7 +946,7 @@ void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int 
 
 		if (ic->fontctx.mode == FONT_TTF) {
 			title_y = imagecentery(ic, FONT_ROLE_HEADER, buffer, rect_top, rect_bottom);
-			date_y = imagecentery(ic, FONT_ROLE_AXIS, datestring, rect_top, rect_bottom);
+			date_y = imagecentery(ic, FONT_ROLE_TIMESTAMP, datestring, rect_top, rect_bottom);
 		}
 
 		gdImageFilledRectangle(ic->im, inset, rect_top, width - 1 - inset, rect_bottom, ic->cheader);
@@ -931,10 +955,10 @@ void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int 
 
 	/* date */
 	if (!ic->showheader || ic->altdate) {
-		int date_y_alt = height - imagefontheight(ic, FONT_ROLE_AXIS) - bottom_margin - imageextrapx(ic, 3);
-		imagestring(ic, FONT_ROLE_AXIS, imageuipx(ic, 5) + ic->showedge * edge_t, date_y_alt, datestring, ic->cvnstat);
+		int date_y_alt = height - imagefontheight(ic, FONT_ROLE_TIMESTAMP) - bottom_margin - imageextrapx(ic, 3);
+		imagestring(ic, FONT_ROLE_TIMESTAMP, imageuipx(ic, 5) + ic->showedge * edge_t, date_y_alt, datestring, ic->cvnstat);
 	} else {
-		imagestring(ic, FONT_ROLE_AXIS, width - (imagetextwidth(ic, FONT_ROLE_AXIS, datestring) + imageuipx(ic, 12)), date_y, datestring, ic->cheaderdate);
+		imagestring(ic, FONT_ROLE_TIMESTAMP, width - (imagetextwidth(ic, FONT_ROLE_TIMESTAMP, datestring) + imageuipx(ic, 12)), date_y, datestring, ic->cheaderdate);
 	}
 
 	/* generator */

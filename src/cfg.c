@@ -91,6 +91,7 @@ int loadcfg(const char *cfgfile, const ConfigType type)
 		 {"FontScaleHeader", 0, &cfg.fontscaleheader, 0, 0},
 		 {"FontScaleTitle", 0, &cfg.fontscaletitle, 0, 0},
 		 {"FontScaleAxis", 0, &cfg.fontscaleaxis, 0, 0},
+		 {"FontScaleTimestamp", 0, &cfg.fontscaletimestamp, 0, 0},
 		 {"5MinuteGraphResultCount", 0, &cfg.fivegresultcount, 0, 0},
 		 {"5MinuteGraphHeight", 0, &cfg.fivegheight, 0, 0},
 		 {"HourlyGraphMode", 0, &cfg.hourlygmode, 0, 0},
@@ -232,6 +233,7 @@ void validatecfg(const ConfigType type)
 		validateint("FontScaleHeader", &cfg.fontscaleheader, FONTSCALEHEADER, 50, 300);
 		validateint("FontScaleTitle", &cfg.fontscaletitle, FONTSCALETITLE, 50, 300);
 		validateint("FontScaleAxis", &cfg.fontscaleaxis, FONTSCALEAXIS, 50, 300);
+		validateint("FontScaleTimestamp", &cfg.fontscaletimestamp, FONTSCALETIMESTAMP, 50, 300);
 		validateint("5MinuteGraphResultCount", &cfg.fivegresultcount, FIVEGRESULTCOUNT, FIVEGMINRESULTCOUNT, 2000);
 		validateint("5MinuteGraphHeight", &cfg.fivegheight, FIVEGHEIGHT, FIVEGMINHEIGHT, 2000);
 		validateint("HourlyGraphMode", &cfg.hourlygmode, HOURLYGMODE, 0, 1);
@@ -438,6 +440,7 @@ void defaultcfg(void)
 	cfg.fontscaleheader = FONTSCALEHEADER;
 	cfg.fontscaletitle = FONTSCALETITLE;
 	cfg.fontscaleaxis = FONTSCALEAXIS;
+	cfg.fontscaletimestamp = FONTSCALETIMESTAMP;
 	cfg.fivegresultcount = FIVEGRESULTCOUNT;
 	cfg.fivegheight = FIVEGHEIGHT;
 	cfg.hourlygmode = HOURLYGMODE;

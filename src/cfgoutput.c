@@ -317,7 +317,9 @@ void printcfgfile(void)
 	defaultcomment(cfg.fontscaletitle == FONTSCALETITLE);
 	printf("FontScaleTitle %d\n", cfg.fontscaletitle);
 	defaultcomment(cfg.fontscaleaxis == FONTSCALEAXIS);
-	printf("FontScaleAxis %d\n\n", cfg.fontscaleaxis);
+	printf("FontScaleAxis %d\n", cfg.fontscaleaxis);
+	defaultcomment(cfg.fontscaletimestamp == FONTSCALETIMESTAMP);
+	printf("FontScaleTimestamp %d\n\n", cfg.fontscaletimestamp);
 
 	printf("# 5 minutes graph size control\n");
 	defaultcomment(cfg.fivegresultcount == FIVEGRESULTCOUNT);

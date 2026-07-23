@@ -48,7 +48,8 @@ typedef enum {
 
 typedef enum {
 	FONT_ROLE_BODY = 0, /* Small / Large */
-	FONT_ROLE_AXIS,     /* Tiny / Small — graph labels + header date */
+	FONT_ROLE_AXIS,     /* Tiny / Small — graph labels */
+	FONT_ROLE_TIMESTAMP, /* Tiny / Small — header / alt date */
 	FONT_ROLE_TITLE,    /* Large / Giant — summary section titles */
 	FONT_ROLE_HEADER,   /* always Giant — layoutinit title bar */
 	FONT_ROLE_FOOTER    /* always Tiny — credit line */
@@ -62,9 +63,11 @@ typedef struct {
 	int header_ascent; /* header role baseline offset */
 	int title_ascent; /* title role baseline offset */
 	int axis_ascent; /* axis role baseline offset */
+	int timestamp_ascent; /* timestamp role baseline offset */
 	int header_ch; /* measured header glyph height */
 	int title_ch; /* measured title glyph height */
-	int axis_ch; /* measured axis/date glyph height */
+	int axis_ch; /* measured axis glyph height */
+	int timestamp_ch; /* measured timestamp/date glyph height */
 	int axis_num5_w; /* width of "99999" at axis size (TTF gutter) */
 	int header_h; /* title bar height in pixels */
 	char ttfpath[512];
@@ -73,6 +76,7 @@ typedef struct {
 	double header_scale; /* header size ratio vs body */
 	double title_scale; /* title size ratio vs body */
 	double axis_scale; /* axis label size ratio vs body */
+	double timestamp_scale; /* header/alt date size ratio vs body */
 } IMAGEFONT;
 
 typedef struct {

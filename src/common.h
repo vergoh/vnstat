@@ -301,6 +301,7 @@ and most can be changed later from the config file.
 #define FONTSCALEHEADER 165
 #define FONTSCALETITLE 150
 #define FONTSCALEAXIS 85
+#define FONTSCALETIMESTAMP 85
 
 /* image output estimate bar style */
 /* 0 = not shown, 1 = continuation of existing bar, 2 = separate bar */
@@ -366,7 +367,7 @@ typedef struct {
 	int32_t monthrotate, monthrotateyears, monthrotatevisible, maxbw, spacecheck, trafficlessentries, transbg, ostyle;
 	int32_t defaultdecimals, hourlydecimals, hourlystyle, is64bit, waldb, dbsynchronous, useutc, imagescale;
 	int32_t largefonts, linespaceadjust, estimatebarvisible, estimatestyle, estimatevisible, barshowsrate, fivegresultcount;
-	int32_t fontsize, fontscaleheader, fontscaletitle, fontscaleaxis, commonwidth;
+	int32_t fontsize, fontscaleheader, fontscaletitle, fontscaleaxis, fontscaletimestamp, commonwidth;
 	int32_t fivegheight, summarygraph, hourlygmode, alwaysadd, livespinner;
 	char cfgfile[512], logfile[512], pidfile[512];
 	char daemonuser[33], daemongroup[33];
