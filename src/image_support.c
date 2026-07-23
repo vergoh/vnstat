@@ -1014,19 +1014,46 @@ void drawlegend(IMAGECONTENT *ic, const int x, const int y, const short israte)
 	}
 }
 
+/* TTF legend: [sq][gap][mode][sep][sq][gap][95th percentile: rate] */
+static int percentile_legend_ttf_width(IMAGECONTENT *ic, const char *modetext, const char *percentiletext)
+{
+	const int sq = ic->fontctx.cw;
+	const int gap = imageuipx(ic, 4);
+	const int sep = sq + 2 * gap;
+
+	return 2 * (sq + gap) + imagetextwidth(ic, FONT_ROLE_BODY, modetext) + sep + imagetextwidth(ic, FONT_ROLE_BODY, percentiletext);
+}
+
+static void percentile_legend_texts(const int mode, const uint64_t percentile, char *modetext, const size_t modelen, char *percentiletext, const size_t perclen)
+{
+	if (mode == 0) {
+		snprintf(modetext, modelen, "rx");
+	} else if (mode == 1) {
+		snprintf(modetext, modelen, "tx");
+	} else {
+		snprintf(modetext, modelen, "total");
+	}
+	snprintf(percentiletext, perclen, "95th percentile: %s", gettrafficrate(percentile, 300, 0));
+}
+
+int percentilelegendwidth(IMAGECONTENT *ic, const int mode, const uint64_t percentile)
+{
+	char modetext[6], percentiletext[64];
+
+	percentile_legend_texts(mode, percentile, modetext, sizeof(modetext), percentiletext, sizeof(percentiletext));
+	return percentile_legend_ttf_width(ic, modetext, percentiletext);
+}
+
 void drawpercentilelegend(IMAGECONTENT *ic, const int x, const int y, const int mode, const uint64_t percentile)
 {
 	int color, xoffset = 0, sq, sq_y;
 	char modetext[6], percentiletext[64];
 
 	if (mode == 0) {
-		snprintf(modetext, 6, "rx");
 		color = ic->crx;
 	} else if (mode == 1) {
-		snprintf(modetext, 6, "tx");
 		color = ic->ctx;
 	} else {
-		snprintf(modetext, 6, "total");
 		color = ic->ctotal;
 		xoffset = 18 + imageextrapx(ic, 6);
 	}
@@ -1034,6 +1061,8 @@ void drawpercentilelegend(IMAGECONTENT *ic, const int x, const int y, const int 
 	sq = ic->fontctx.cw;
 	if (ic->fontctx.mode == FONT_TTF) {
 		int gap, sep, x_cur, label_w;
+
+		percentile_legend_texts(mode, percentile, modetext, sizeof(modetext), percentiletext, sizeof(percentiletext));
 
 		sq_y = y + (ic->fontctx.ch - sq) / 2;
 		if (sq_y < y) {
@@ -1054,9 +1083,16 @@ void drawpercentilelegend(IMAGECONTENT *ic, const int x, const int y, const int 
 		gdImageFilledRectangle(ic->im, x_cur, sq_y, x_cur + sq - 1, sq_y + sq - 1, ic->cpercentileline);
 		imagedrawrect(ic, x_cur, sq_y, x_cur + sq - 1, sq_y + sq - 1, ic->ctext);
 		x_cur += sq + gap;
-		snprintf(percentiletext, 64, "95th percentile: %s", gettrafficrate(percentile, 300, 0));
 		imagestring(ic, FONT_ROLE_BODY, x_cur, y, percentiletext, ic->ctext);
 		return;
+	}
+
+	if (mode == 0) {
+		snprintf(modetext, 6, "rx");
+	} else if (mode == 1) {
+		snprintf(modetext, 6, "tx");
+	} else {
+		snprintf(modetext, 6, "total");
 	}
 
 	snprintf(percentiletext, 64, "%s     95th percentile: %s", modetext, gettrafficrate(percentile, 300, 0));

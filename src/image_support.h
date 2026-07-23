@@ -37,6 +37,7 @@ void graph_draw_axis_value(IMAGECONTENT *ic, const int axis_x, const int line_y,
 void graph_draw_axis_unit(IMAGECONTENT *ic, const int x_ttf, const int x_builtin, const int y, const char *text);
 void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int height);
 void drawlegend(IMAGECONTENT *ic, const int x, const int y, const short israte);
+int percentilelegendwidth(IMAGECONTENT *ic, const int mode, const uint64_t percentile);
 void drawpercentilelegend(IMAGECONTENT *ic, const int x, const int y, const int mode, const uint64_t percentile);
 void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max, const short isestimate);
 void drawpoles(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max);

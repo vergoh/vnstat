@@ -2126,7 +2126,15 @@ void draw95thpercentilegraph(IMAGECONTENT *ic, const int mode)
 	layoutinit(ic, " / 95th percentile", imagewidth, imageheight);
 
 	if (drawpercentile(ic, mode, graph_xpos_margin(ic), imageheight - bottom, graph_height, &percentile)) {
-		drawpercentilelegend(ic, imagewidth / 2 - imageextrapx(ic, 50), legend_y, mode, percentile);
+		int legend_x;
+
+		/* Builtin: historical half-width guess. TTF: measure real legend width. */
+		if (ic->fontctx.mode == FONT_TTF) {
+			legend_x = imagewidth / 2 - percentilelegendwidth(ic, mode, percentile) / 2;
+		} else {
+			legend_x = imagewidth / 2 - imageextrapx(ic, 50);
+		}
+		drawpercentilelegend(ic, legend_x, legend_y, mode, percentile);
 	}
 }
 
