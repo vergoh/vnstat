@@ -147,13 +147,30 @@ static double imageroleptsize(const IMAGECONTENT *ic, const fontrole_t role)
 	switch (role) {
 		case FONT_ROLE_AXIS:
 			return ic->fontctx.ptsize * ic->fontctx.axis_scale;
-		case FONT_ROLE_TITLE:
 		case FONT_ROLE_HEADER:
+			return ic->fontctx.ptsize * ic->fontctx.header_scale;
+		case FONT_ROLE_TITLE:
 			return ic->fontctx.ptsize * ic->fontctx.title_scale;
 		case FONT_ROLE_BODY:
 		case FONT_ROLE_FOOTER:
 		default:
 			return ic->fontctx.ptsize;
+	}
+}
+
+static int imageroleascent(const IMAGECONTENT *ic, const fontrole_t role)
+{
+	switch (role) {
+		case FONT_ROLE_AXIS:
+			return ic->fontctx.axis_ascent;
+		case FONT_ROLE_HEADER:
+			return ic->fontctx.header_ascent;
+		case FONT_ROLE_TITLE:
+			return ic->fontctx.title_ascent;
+		case FONT_ROLE_BODY:
+		case FONT_ROLE_FOOTER:
+		default:
+			return ic->fontctx.ascent;
 	}
 }
 
@@ -242,7 +259,7 @@ static int imagettfinitmetrics(IMAGECONTENT *ic)
 	ic->fontctx.ascent = -brect[7];
 	ic->fontctx.scale = (double)ic->fontctx.cw / 6.0;
 
-	err = imagettfbbox(ic, ic->fontctx.ptsize * ic->fontctx.title_scale, 0.0, "Ayjp", brect);
+	err = imagettfbbox(ic, ic->fontctx.ptsize * ic->fontctx.header_scale, 0.0, "Ayjp", brect);
 	if (err != NULL) {
 		fprintf(stderr, "%s \"%s\": %s\n", errprefix, ic->fontctx.ttfpath, err);
 		imagefontcleanup();
@@ -257,6 +274,18 @@ static int imagettfinitmetrics(IMAGECONTENT *ic)
 	if (ic->fontctx.header_h < 24) {
 		ic->fontctx.header_h = 24;
 	}
+
+	err = imagettfbbox(ic, ic->fontctx.ptsize * ic->fontctx.title_scale, 0.0, "Ayjp", brect);
+	if (err != NULL) {
+		fprintf(stderr, "%s \"%s\": %s\n", errprefix, ic->fontctx.ttfpath, err);
+		imagefontcleanup();
+		return 0;
+	}
+	ic->fontctx.title_ch = brect[1] - brect[7];
+	if (ic->fontctx.title_ch < 1) {
+		ic->fontctx.title_ch = 1;
+	}
+	ic->fontctx.title_ascent = -brect[7];
 
 	err = imagettfbbox(ic, ic->fontctx.ptsize * ic->fontctx.axis_scale, 0.0, "Ayjp", brect);
 	if (err != NULL) {
@@ -285,10 +314,12 @@ int imagefontinit(IMAGECONTENT *ic, const int largefonts)
 {
 	ic->fontctx.header = gdFontGetGiant();
 	ic->fontctx.footer = gdFontGetTiny();
-	ic->fontctx.title_scale = 1.5;
-	ic->fontctx.axis_scale = 0.83;
+	ic->fontctx.header_scale = FONT_SCALE_HEADER;
+	ic->fontctx.title_scale = FONT_SCALE_TITLE;
+	ic->fontctx.axis_scale = FONT_SCALE_AXIS;
 	ic->fontctx.ascent = 0;
 	ic->fontctx.header_ascent = 0;
+	ic->fontctx.title_ascent = 0;
 	ic->fontctx.axis_ascent = 0;
 	ic->fontctx.axis_num5_w = 0;
 	ic->fontctx.ttfpath[0] = '\0';
@@ -309,6 +340,7 @@ int imagefontinit(IMAGECONTENT *ic, const int largefonts)
 		ic->fontctx.cw = ic->fontctx.body->w;
 		ic->fontctx.ch = ic->fontctx.body->h;
 		ic->fontctx.header_ch = ic->fontctx.header->h;
+		ic->fontctx.title_ch = ic->fontctx.title->h;
 		ic->fontctx.axis_ch = ic->fontctx.axis->h;
 		ic->fontctx.axis_num5_w = 5 * ic->fontctx.axis->w;
 		ic->fontctx.header_h = 24;
@@ -360,7 +392,7 @@ void imagefontcleanup(void)
 void imagestring(IMAGECONTENT *ic, const fontrole_t role, const int x, const int y, const char *text, const int color)
 {
 #if HAVE_DECL_GDIMAGESTRINGFT
-	int brect[8], baseline_y, ascent;
+	int brect[8], baseline_y;
 	double ptsize;
 	char *err;
 #endif
@@ -375,22 +407,8 @@ void imagestring(IMAGECONTENT *ic, const fontrole_t role, const int x, const int
 	}
 
 #if HAVE_DECL_GDIMAGESTRINGFT
-	switch (role) {
-		case FONT_ROLE_AXIS:
-			ascent = ic->fontctx.axis_ascent;
-			break;
-		case FONT_ROLE_TITLE:
-		case FONT_ROLE_HEADER:
-			ascent = ic->fontctx.header_ascent;
-			break;
-		case FONT_ROLE_BODY:
-		case FONT_ROLE_FOOTER:
-		default:
-			ascent = ic->fontctx.ascent;
-			break;
-	}
 	ptsize = imageroleptsize(ic, role);
-	baseline_y = y + ascent;
+	baseline_y = y + imageroleascent(ic, role);
 	err = gdImageStringFT(ic->im, brect, color, ic->fontctx.ttfpath, ptsize, 0.0, x, baseline_y, (char *)text);
 	if (err != NULL && debug) {
 		printf("gdImageStringFT failed: %s\n", err);
@@ -405,7 +423,7 @@ void imagestring(IMAGECONTENT *ic, const fontrole_t role, const int x, const int
 void imagestringup(IMAGECONTENT *ic, const fontrole_t role, const int x, const int y, const char *text, const int color)
 {
 #if HAVE_DECL_GDIMAGESTRINGFT
-	int brect[8], ascent, pen_x;
+	int brect[8], pen_x;
 	double ptsize;
 	char *err;
 #endif
@@ -422,22 +440,8 @@ void imagestringup(IMAGECONTENT *ic, const fontrole_t role, const int x, const i
 #if HAVE_DECL_GDIMAGESTRINGFT
 	/* At angle π/2 glyphs extend left of the pen by roughly ascent; shift so
 	 * the visual left edge matches gdImageStringUp's x anchor. */
-	switch (role) {
-		case FONT_ROLE_AXIS:
-			ascent = ic->fontctx.axis_ascent;
-			break;
-		case FONT_ROLE_TITLE:
-		case FONT_ROLE_HEADER:
-			ascent = ic->fontctx.header_ascent;
-			break;
-		case FONT_ROLE_BODY:
-		case FONT_ROLE_FOOTER:
-		default:
-			ascent = ic->fontctx.ascent;
-			break;
-	}
 	ptsize = imageroleptsize(ic, role);
-	pen_x = x + ascent;
+	pen_x = x + imageroleascent(ic, role);
 	err = gdImageStringFT(ic->im, brect, color, ic->fontctx.ttfpath, ptsize, M_PI / 2.0, pen_x, y, (char *)text);
 	if (err != NULL && debug) {
 		printf("gdImageStringFT (vertical) failed: %s\n", err);
@@ -790,8 +794,9 @@ int imagefontwidth(IMAGECONTENT *ic, const fontrole_t role)
 	switch (role) {
 		case FONT_ROLE_AXIS:
 			return (int)(ic->fontctx.cw * ic->fontctx.axis_scale + 0.5);
-		case FONT_ROLE_TITLE:
 		case FONT_ROLE_HEADER:
+			return (int)(ic->fontctx.cw * ic->fontctx.header_scale + 0.5);
+		case FONT_ROLE_TITLE:
 			return (int)(ic->fontctx.cw * ic->fontctx.title_scale + 0.5);
 		case FONT_ROLE_BODY:
 		case FONT_ROLE_FOOTER:
@@ -809,9 +814,10 @@ int imagefontheight(IMAGECONTENT *ic, const fontrole_t role)
 	switch (role) {
 		case FONT_ROLE_AXIS:
 			return ic->fontctx.axis_ch;
-		case FONT_ROLE_TITLE:
 		case FONT_ROLE_HEADER:
 			return ic->fontctx.header_ch;
+		case FONT_ROLE_TITLE:
+			return ic->fontctx.title_ch;
 		case FONT_ROLE_BODY:
 		case FONT_ROLE_FOOTER:
 		default:
@@ -830,20 +836,7 @@ static int imagecentery(IMAGECONTENT *ic, const fontrole_t role, const char *tex
 		char *err;
 		double ptsize = imageroleptsize(ic, role);
 
-		switch (role) {
-			case FONT_ROLE_AXIS:
-				ascent = ic->fontctx.axis_ascent;
-				break;
-			case FONT_ROLE_TITLE:
-			case FONT_ROLE_HEADER:
-				ascent = ic->fontctx.header_ascent;
-				break;
-			case FONT_ROLE_BODY:
-			case FONT_ROLE_FOOTER:
-			default:
-				ascent = ic->fontctx.ascent;
-				break;
-		}
+		ascent = imageroleascent(ic, role);
 
 		/* Center the ascent→baseline band (ignore descenders) so cap-height
 		 * text gets equal padding above/below in the header bar. */

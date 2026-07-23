@@ -24,6 +24,10 @@
 #define FONT_SIZE_MIN 6
 #define FONT_SIZE_MAX 72
 
+#define FONT_SCALE_HEADER 1.65
+#define FONT_SCALE_TITLE 1.5
+#define FONT_SCALE_AXIS 0.85
+
 /* Graph y-axis left chrome: builtin keeps a 36px advance; TTF sizes from 5 digits. */
 #define GRAPH_AXIS_BASE 36
 #define GRAPH_AXIS_LABEL_GAP 4
@@ -59,16 +63,19 @@ typedef struct {
 	gdFontPtr body, axis, title, header, footer;
 	int cw, ch; /* body metrics for layout */
 	int ascent; /* body: shared TTF baseline offset from y */
-	int header_ascent; /* title/header role baseline offset */
+	int header_ascent; /* header role baseline offset */
+	int title_ascent; /* title role baseline offset */
 	int axis_ascent; /* axis role baseline offset */
-	int header_ch; /* measured header/title glyph height */
+	int header_ch; /* measured header glyph height */
+	int title_ch; /* measured title glyph height */
 	int axis_ch; /* measured axis/date glyph height */
 	int axis_num5_w; /* width of "99999" at axis size (TTF gutter) */
 	int header_h; /* title bar height in pixels */
 	char ttfpath[512];
 	double ptsize; /* effective body point size after LargeFonts */
 	double scale; /* cw / 6.0 relative to small builtin */
-	double title_scale; /* title/header size ratio vs body */
+	double header_scale; /* header size ratio vs body */
+	double title_scale; /* title size ratio vs body */
 	double axis_scale; /* axis label size ratio vs body */
 } IMAGEFONT;
 
