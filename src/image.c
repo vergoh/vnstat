@@ -1420,7 +1420,7 @@ void drawsummary_alltime(IMAGECONTENT *ic, const int x, const int y)
 		strftime(datebuff, 16, cfg.tformat, d);
 		snprintf(daytemp, 24, "since %s", datebuff);
 		since_x = col_right + 2 * ic->fontctx.cw - imagetextwidth(ic, FONT_ROLE_BODY, daytemp);
-		imagestring(ic, FONT_ROLE_BODY, since_x, y + (6 * ic->lineheight), daytemp, ic->ctext);
+		imagestring(ic, FONT_ROLE_BODY, since_x, y + (7 * ic->lineheight), daytemp, ic->ctext);
 		return;
 	}
 
