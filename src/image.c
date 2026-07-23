@@ -369,8 +369,12 @@ void drawhourly(IMAGECONTENT *ic, const int israte)
 	height = 200 + imageextrapx(ic, 48);
 
 	if (!ic->showheader) {
-		headermod = ic->fontctx.header_h + imageuipx(ic, 2);
-		height -= ic->fontctx.header_h - 2;
+		/* graph_y is from a 24px-header layout; shift by that chrome only.
+		 * Full TTF header_h would over-shift the plot into the top edge. */
+		headermod = 24 + imageuipx(ic, 2);
+		/* Base height assumes the 24px builtin header; TTF header growth is
+		 * only applied when the header is shown (else branch). */
+		height -= 24 - 2;
 	} else {
 		/* axis_top = ypos - 10 - extray; keep the up-arrow below the header.
 		 * imageextrapx(40)-imageextrapx(35) alone does not track header_h. */
@@ -1207,7 +1211,7 @@ static void summary_ttf_adjust_height(IMAGECONTENT *ic, const int layout,
 
 void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 {
-	int width, height, headermod, header_extra, digest_x, alltime_x, legend_x, legend_y, graph_x, fivegraph_x;
+	int width, height, headermod, graph_headermod, header_extra, digest_x, alltime_x, legend_x, legend_y, graph_x, fivegraph_x;
 	int digest_day_y, digest_month_y, alltime_y;
 	int monthrotatenotevisible = 0;
 	int vs_fiveg_bottom, fiveg_barwidth_val = 1;
@@ -1249,18 +1253,30 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 		height += ic->lineheight * 2;
 	}
 
+	/* Tall TTF headers grow the canvas; apply that growth before the noheader
+	 * subtraction so --noheader only removes the baseline 24px chrome (same
+	 * net as list outputs), not the TTF growth that was never drawn. */
+	header_extra = ic->fontctx.header_h - 24;
+	if (header_extra < 0) {
+		header_extra = 0;
+	}
+	height += header_extra;
+
 	if (!ic->showheader) {
+		/* Text at header_h + N needs full header_h cancelled; hourly graph
+		 * Y (46 / 215) is a 24px-header layout and must not use TTF header_h. */
 		headermod = ic->fontctx.header_h + imageuipx(ic, 2);
+		graph_headermod = 24 + imageuipx(ic, 2);
+		/* Positioning must not keep header_extra when the bar is absent. */
 		header_extra = 0;
 		height -= ic->fontctx.header_h - 2;
 	} else {
 		headermod = 0;
-		header_extra = ic->fontctx.header_h - 24;
-		height += header_extra;
+		graph_headermod = 0;
 	}
 
 	if (ic->fontctx.mode == FONT_TTF) {
-		summary_ttf_adjust_height(ic, layout, header_extra, headermod, monthrotatenotevisible, &height, &vs_fiveg_bottom);
+		summary_ttf_adjust_height(ic, layout, header_extra, graph_headermod, monthrotatenotevisible, &height, &vs_fiveg_bottom);
 	}
 
 	/* Scale fiveg plot height with barwidth to keep aspect ratio (stable base, not chrome) */
@@ -1331,7 +1347,7 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 			if (cfg.summarygraph == 1) {
 				drawfiveminutes(ic, fivegraph_x, height - 30 - imageextrapx(ic, 8) - (monthrotatenotevisible * ic->lineheight), israte, 422 + imageextrapx(ic, 154), height - 68 + headermod - imageextrapx(ic, 8) - (monthrotatenotevisible * (ic->lineheight + 2)));
 			} else {
-				drawhours(ic, graph_x, 46 + header_extra + imageextrapx(ic, 40) - headermod, israte);
+				drawhours(ic, graph_x, 46 + header_extra + imageextrapx(ic, 40) - graph_headermod, israte);
 			}
 			if (monthrotatenotevisible) {
 				imagestring(ic, FONT_ROLE_BODY, 13 - imageextrapx(ic, 4) + (ic->fontctx.cw * 2) + ic->showedge, height - imageuipx(ic, 12) - ic->showedge - ic->lineheight, monthrotatenote, ic->ctext);
@@ -1364,10 +1380,10 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 						hours_x = 0;
 					}
 				}
-				drawhours(ic, hours_x, 215 + header_extra + imageextrapx(ic, 84) - headermod + (monthrotatenotevisible * (ic->lineheight * 2)), israte);
+				drawhours(ic, hours_x, 215 + header_extra + imageextrapx(ic, 84) - graph_headermod + (monthrotatenotevisible * (ic->lineheight * 2)), israte);
 			}
 			if (monthrotatenotevisible) {
-				imagestring(ic, FONT_ROLE_BODY, 13 - imageextrapx(ic, 4) + (ic->fontctx.cw * 2) + ic->showedge, 215 + header_extra + imageextrapx(ic, 84) - headermod - (ic->lineheight * (1 + imageextrapx(ic, 2))), monthrotatenote, ic->ctext);
+				imagestring(ic, FONT_ROLE_BODY, 13 - imageextrapx(ic, 4) + (ic->fontctx.cw * 2) + ic->showedge, 215 + header_extra + imageextrapx(ic, 84) - graph_headermod - (ic->lineheight * (1 + imageextrapx(ic, 2))), monthrotatenote, ic->ctext);
 			}
 			break;
 		default:
