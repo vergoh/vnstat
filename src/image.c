@@ -643,7 +643,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		height = 62 + (ic->fontctx.header_h - 24) + 3 * ic->lineheight;
 	}
 
-	if (ismonthrotatenoteneeded()) {
+	if (monthrotatenotevisible) {
 		height += ic->lineheight * 2;
 	}
 
