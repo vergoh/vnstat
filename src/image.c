@@ -2297,7 +2297,7 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 			strftime(datebuff, DATEBUFFLEN, "%d", d);
 			drawpole(ic, px, y, height, 1, ic->cbgoffset);
 			if (i > 0) {
-				imagedrawvline(ic, px, y + 1, y + 4, ic->ctext);
+				imagedrawvline(ic, px, y + 1, y + imageuipx(ic, 4), ic->ctext);
 			}
 			if (ic->fontctx.mode == FONT_TTF) {
 				label_x = px + 12 * barwidth - imagetextwidth(ic, FONT_ROLE_AXIS, datebuff) / 2;
