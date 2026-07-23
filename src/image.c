@@ -1060,6 +1060,53 @@ static int summary_ttf_digest_right(IMAGECONTENT *ic, const int digest_x)
 	return col_right + donut_size + donut_size / 2;
 }
 
+/* Design-time 15px gap below the header (or from the top with --noheader). */
+static int summary_ttf_top_gap(const IMAGECONTENT *ic)
+{
+	return imageuipx(ic, 15);
+}
+
+/* Extra Y so summary / hourly plot track the scaled top gap (0 at FontSize 12). */
+static int summary_ttf_top_gap_extra(const IMAGECONTENT *ic)
+{
+	return summary_ttf_top_gap(ic) - 15;
+}
+
+/* Embedded hourly ypos for -hs (layout 1). */
+static int summary_hours_y_hs(const IMAGECONTENT *ic, const int header_extra, const int graph_headermod)
+{
+	int hours_y = 46 + header_extra + imageextrapx(ic, 40) - graph_headermod;
+
+	if (ic->fontctx.mode == FONT_TTF) {
+		hours_y += summary_ttf_top_gap_extra(ic);
+	}
+	return hours_y;
+}
+
+/* Embedded hourly ypos for -vs (layout 2). Axis tip is at ypos-10-extray; keep it
+ * below the month digest (rate line) after the scaled top gap moves that block. */
+static int summary_hours_y_vs(const IMAGECONTENT *ic, const int header_extra, const int graph_headermod,
+	const int monthrotatenotevisible, const int digest_month_y)
+{
+	int hours_y = 215 + header_extra + imageextrapx(ic, 84) - graph_headermod
+		+ (monthrotatenotevisible * (ic->lineheight * 2));
+
+	if (ic->fontctx.mode == FONT_TTF) {
+		const int extray = imageextrapx(ic, 35);
+		/* Rate line + body ink; axis tip is ypos-10-extray and scale labels sit near it. */
+		const int clear = digest_month_y + 5 * ic->lineheight + 10 + ic->fontctx.ch
+			+ ic->fontctx.axis_ch + imageuipx(ic, 12);
+		int min_hours_y;
+
+		hours_y += summary_ttf_top_gap_extra(ic);
+		min_hours_y = clear + 10 + extray;
+		if (hours_y < min_hours_y) {
+			hours_y = min_hours_y;
+		}
+	}
+	return hours_y;
+}
+
 static void summary_ttf_set_positions(IMAGECONTENT *ic, const int headermod,
 	int *digest_x, int *alltime_x, int *legend_x, int *graph_x, int *fivegraph_x,
 	int *digest_day_y, int *digest_month_y, int *alltime_y, int *legend_y)
@@ -1070,8 +1117,8 @@ static void summary_ttf_set_positions(IMAGECONTENT *ic, const int headermod,
 	*fivegraph_x = *graph_x;
 	/* body at textx - (12*cw+2) stays near the builtin left margin (~26). */
 	*digest_x = (14 * ic->fontctx.cw + 2) + 26;
-	/* Clear tall header title; builtin keeps y=30. */
-	*digest_day_y = ic->fontctx.header_h + 15 - headermod;
+	/* Scale with FontSize so TITLE role text clears the edge (fixed 15px clips). */
+	*digest_day_y = ic->fontctx.header_h + summary_ttf_top_gap(ic) - headermod;
 	*digest_month_y = *digest_day_y - 1 + 8 * ic->lineheight;
 	*alltime_y = *digest_day_y + 27 + imageextrapx(ic, 10);
 	/* Under all-time "since" line, matching builtin legend vs since gap */
@@ -1179,9 +1226,12 @@ int image_common_target_width(IMAGECONTENT *ic)
 }
 
 static void summary_ttf_adjust_height(IMAGECONTENT *ic, const int layout,
-	const int header_extra, const int headermod, const int monthrotatenotevisible,
-	int *height, int *vs_fiveg_bottom)
+	const int header_extra, const int graph_headermod, const int monthrotatenotevisible,
+	const int digest_month_y, int *height, int *vs_fiveg_bottom)
 {
+	/* Match summary_ttf_set_positions / hourly graph Y shifts below. */
+	*height += summary_ttf_top_gap_extra(ic);
+
 	if (layout == 2) {
 		if (cfg.summarygraph == 1) {
 			int bottom_margin;
@@ -1195,8 +1245,7 @@ static void summary_ttf_adjust_height(IMAGECONTENT *ic, const int layout,
 		} else {
 			int graph_y, needed;
 
-			graph_y = 215 + header_extra + imageextrapx(ic, 84) - headermod
-				+ (monthrotatenotevisible * (ic->lineheight * 2));
+			graph_y = summary_hours_y_vs(ic, header_extra, graph_headermod, monthrotatenotevisible, digest_month_y);
 			/* labels at graph_y+124+imageuipx(8); Tiny footer at height-12-showedge */
 			needed = graph_y + 124 + imageuipx(ic, 8) + ic->fontctx.axis_ch + imageuipx(ic, 4) + imageuipx(ic, 12) + ic->showedge;
 			if (*height < needed) {
@@ -1276,26 +1325,10 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 	}
 
 	if (ic->fontctx.mode == FONT_TTF) {
-		summary_ttf_adjust_height(ic, layout, header_extra, graph_headermod, monthrotatenotevisible, &height, &vs_fiveg_bottom);
-	}
-
-	/* Scale fiveg plot height with barwidth to keep aspect ratio (stable base, not chrome) */
-	if (cfg.summarygraph == 1 && (layout == 1 || layout == 2) && fiveg_barwidth_val > 1) {
-		int fiveg_h;
-
-		if (layout == 2) {
-			fiveg_h = 132;
-		} else {
-			fiveg_h = height - 68 + headermod - imageextrapx(ic, 8) - (monthrotatenotevisible * (ic->lineheight + 2));
-		}
-		if (fiveg_h > 0) {
-			height += (fiveg_barwidth_val - 1) * fiveg_h;
-		}
-	}
-
-	if (ic->fontctx.mode == FONT_TTF) {
 		summary_ttf_set_positions(ic, headermod, &digest_x, &alltime_x, &legend_x, &graph_x, &fivegraph_x,
 			&digest_day_y, &digest_month_y, &alltime_y, &legend_y);
+		summary_ttf_adjust_height(ic, layout, header_extra, graph_headermod, monthrotatenotevisible,
+			digest_month_y, &height, &vs_fiveg_bottom);
 		width = summary_ttf_compute_width(ic, layout, digest_x, alltime_x, legend_x, graph_x, fivegraph_x, fiveg_barwidth_val);
 	} else {
 		switch (layout) {
@@ -1328,6 +1361,20 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 		legend_y = 155 - headermod + imageextrapx(ic, 40);
 	}
 
+	/* Scale fiveg plot height with barwidth to keep aspect ratio (stable base, not chrome) */
+	if (cfg.summarygraph == 1 && (layout == 1 || layout == 2) && fiveg_barwidth_val > 1) {
+		int fiveg_h;
+
+		if (layout == 2) {
+			fiveg_h = 132;
+		} else {
+			fiveg_h = height - 68 + headermod - imageextrapx(ic, 8) - (monthrotatenotevisible * (ic->lineheight + 2));
+		}
+		if (fiveg_h > 0) {
+			height += (fiveg_barwidth_val - 1) * fiveg_h;
+		}
+	}
+
 	if (layout == 0 && ic->commonwidth > 0) {
 		width = ic->commonwidth;
 	}
@@ -1347,7 +1394,7 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 			if (cfg.summarygraph == 1) {
 				drawfiveminutes(ic, fivegraph_x, height - 30 - imageextrapx(ic, 8) - (monthrotatenotevisible * ic->lineheight), israte, 422 + imageextrapx(ic, 154), height - 68 + headermod - imageextrapx(ic, 8) - (monthrotatenotevisible * (ic->lineheight + 2)));
 			} else {
-				drawhours(ic, graph_x, 46 + header_extra + imageextrapx(ic, 40) - graph_headermod, israte);
+				drawhours(ic, graph_x, summary_hours_y_hs(ic, header_extra, graph_headermod), israte);
 			}
 			if (monthrotatenotevisible) {
 				imagestring(ic, FONT_ROLE_BODY, 13 - imageextrapx(ic, 4) + (ic->fontctx.cw * 2) + ic->showedge, height - imageuipx(ic, 12) - ic->showedge - ic->lineheight, monthrotatenote, ic->ctext);
@@ -1370,6 +1417,7 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 				drawfiveminutes(ic, fiveg_x, height - vs_fiveg_bottom, israte, fiveg_samples, 132 * fiveg_barwidth_val + imageextrapx(ic, 35));
 			} else {
 				int hours_x = hourly_graph_left(ic);
+				int hours_y = summary_hours_y_vs(ic, header_extra, graph_headermod, monthrotatenotevisible, digest_month_y);
 
 				if (ic->fontctx.mode == FONT_TTF) {
 					int hours_w = hourly_graph_width(ic);
@@ -1380,10 +1428,14 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 						hours_x = 0;
 					}
 				}
-				drawhours(ic, hours_x, 215 + header_extra + imageextrapx(ic, 84) - graph_headermod + (monthrotatenotevisible * (ic->lineheight * 2)), israte);
+				drawhours(ic, hours_x, hours_y, israte);
 			}
 			if (monthrotatenotevisible) {
-				imagestring(ic, FONT_ROLE_BODY, 13 - imageextrapx(ic, 4) + (ic->fontctx.cw * 2) + ic->showedge, 215 + header_extra + imageextrapx(ic, 84) - graph_headermod - (ic->lineheight * (1 + imageextrapx(ic, 2))), monthrotatenote, ic->ctext);
+				/* hours_y already includes +2*lineheight for this note; sit above the plot. */
+				int hours_y = summary_hours_y_vs(ic, header_extra, graph_headermod, monthrotatenotevisible, digest_month_y);
+				int note_y = hours_y - (ic->lineheight * (3 + imageextrapx(ic, 2)));
+
+				imagestring(ic, FONT_ROLE_BODY, 13 - imageextrapx(ic, 4) + (ic->fontctx.cw * 2) + ic->showedge, note_y, monthrotatenote, ic->ctext);
 			}
 			break;
 		default:
