@@ -314,9 +314,9 @@ int imagefontinit(IMAGECONTENT *ic, const int largefonts)
 {
 	ic->fontctx.header = gdFontGetGiant();
 	ic->fontctx.footer = gdFontGetTiny();
-	ic->fontctx.header_scale = FONT_SCALE_HEADER;
-	ic->fontctx.title_scale = FONT_SCALE_TITLE;
-	ic->fontctx.axis_scale = FONT_SCALE_AXIS;
+	ic->fontctx.header_scale = cfg.fontscaleheader / 100.0;
+	ic->fontctx.title_scale = cfg.fontscaletitle / 100.0;
+	ic->fontctx.axis_scale = cfg.fontscaleaxis / 100.0;
 	ic->fontctx.ascent = 0;
 	ic->fontctx.header_ascent = 0;
 	ic->fontctx.title_ascent = 0;

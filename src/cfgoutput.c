@@ -311,7 +311,13 @@ void printcfgfile(void)
 	defaultcomment(strcmp(cfg.fontfile, FONTFILE) == 0);
 	printf("FontFile \"%s\"\n", cfg.fontfile);
 	defaultcomment(cfg.fontsize == FONTSIZE);
-	printf("FontSize %d\n\n", cfg.fontsize);
+	printf("FontSize %d\n", cfg.fontsize);
+	defaultcomment(cfg.fontscaleheader == FONTSCALEHEADER);
+	printf("FontScaleHeader %d\n", cfg.fontscaleheader);
+	defaultcomment(cfg.fontscaletitle == FONTSCALETITLE);
+	printf("FontScaleTitle %d\n", cfg.fontscaletitle);
+	defaultcomment(cfg.fontscaleaxis == FONTSCALEAXIS);
+	printf("FontScaleAxis %d\n\n", cfg.fontscaleaxis);
 
 	printf("# 5 minutes graph size control\n");
 	defaultcomment(cfg.fivegresultcount == FIVEGRESULTCOUNT);

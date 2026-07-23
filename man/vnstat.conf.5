@@ -608,10 +608,39 @@ alignment better than a proportional font.
 .B FontSize
 Point size used for the body text when
 .B FontFile
-is set. Value range: 6..72. Default: 12. Title and axis labels use fixed
-ratios relative to this size. Has no effect when
+is set. Value range: 6..72. Default: 12. Title, header and axis label sizes are
+controlled by
+.BR FontScaleHeader ,
+.B FontScaleTitle
+and
+.BR FontScaleAxis .
+Has no effect when
 .B FontFile
 is empty.
+
+.TP
+.B FontScaleHeader
+Header text size as a percentage of
+.B FontSize
+when
+.B FontFile
+is set. Value range: 50..300. Default: 165.
+
+.TP
+.B FontScaleTitle
+Title text size as a percentage of
+.B FontSize
+when
+.B FontFile
+is set. Value range: 50..300. Default: 150.
+
+.TP
+.B FontScaleAxis
+Axis label and header date text size as a percentage of
+.B FontSize
+when
+.B FontFile
+is set. Value range: 50..300. Default: 85.
 
 .TP
 .B LargeFonts
