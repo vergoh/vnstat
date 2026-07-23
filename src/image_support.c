@@ -955,8 +955,19 @@ void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int 
 
 	/* date */
 	if (!ic->showheader || ic->altdate) {
-		int date_y_alt = height - imagefontheight(ic, FONT_ROLE_TIMESTAMP) - bottom_margin - imageextrapx(ic, 3);
-		imagestring(ic, FONT_ROLE_TIMESTAMP, imageuipx(ic, 5) + ic->showedge * edge_t, date_y_alt, datestring, ic->cvnstat);
+		int date_x_alt, date_y_alt;
+
+		if (ic->fontctx.mode == FONT_TTF) {
+			/* Equal left/bottom clearance; both scale with FontSize via imageuipx(). */
+			int alt_margin = imageuipx(ic, 1) + ic->showedge * edge_t;
+
+			date_x_alt = alt_margin + imageuipx(ic, 2);
+			date_y_alt = height - imagefontheight(ic, FONT_ROLE_TIMESTAMP) - alt_margin;
+		} else {
+			date_x_alt = imageuipx(ic, 5) + ic->showedge * edge_t;
+			date_y_alt = height - imagefontheight(ic, FONT_ROLE_TIMESTAMP) - bottom_margin - imageextrapx(ic, 3);
+		}
+		imagestring(ic, FONT_ROLE_TIMESTAMP, date_x_alt, date_y_alt, datestring, ic->cvnstat);
 	} else {
 		imagestring(ic, FONT_ROLE_TIMESTAMP, width - (imagetextwidth(ic, FONT_ROLE_TIMESTAMP, datestring) + imageuipx(ic, 12)), date_y, datestring, ic->cheaderdate);
 	}
