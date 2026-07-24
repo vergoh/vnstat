@@ -426,6 +426,7 @@ typedef struct {
 	int rx_edge, tx_edge, total_edge, rate_edge;
 	int rx_dec, tx_dec, total_dec;
 	int date_field_right, header_field_right;
+	int rank_center; /* top list # column center; 0 if unused */
 } ListColumns;
 
 static void listcolumns_init(IMAGECONTENT *ic, const int textx, const int offsetx, ListColumns *cols)
@@ -443,6 +444,7 @@ static void listcolumns_init(IMAGECONTENT *ic, const int textx, const int offset
 	cols->rx_edge = cols->tx_edge = cols->total_edge = cols->rate_edge = 0;
 	cols->rx_dec = cols->tx_dec = cols->total_dec = 0;
 	cols->date_field_right = cols->header_field_right = 0;
+	cols->rank_center = 0;
 
 	if (ic->fontctx.mode == FONT_TTF) {
 		const int colpad = imageuipx(ic, 8);
@@ -453,8 +455,16 @@ static void listcolumns_init(IMAGECONTENT *ic, const int textx, const int offset
 		cols->tx_edge = cols->d37 - colpad;
 		cols->total_edge = cols->d50 - colpad;
 		cols->rate_edge = textx + (65 * cw) + offsetx - colpad;
-		cols->date_field_right = textx + 10 * cw;
-		cols->header_field_right = textx + 9 * cw;
+		cols->date_field_right = textx + 10 * cw + offsetx;
+		cols->header_field_right = textx + 9 * cw + offsetx;
+
+		/* Top list: center-align #; right-align day with a clear gap after #.
+		 * Date field ends at 16*cw so 10-char dates clear the rank column. */
+		if (offsetx > 0) {
+			cols->rank_center = textx + 3 * cw;
+			cols->date_field_right = textx + 11 * cw + offsetx;
+			cols->header_field_right = textx + 10 * cw + offsetx;
+		}
 
 		sample_w = imagetextwidth(ic, FONT_ROLE_BODY, sample);
 		prefix_w = imagetextwidth(ic, FONT_ROLE_BODY, "00");
@@ -703,7 +713,8 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	/* column headers */
 	if (ic->fontctx.mode == FONT_TTF) {
 		if (listtype == LT_Top) {
-			imagestring(ic, FONT_ROLE_BODY, textx, texty, "   #      day", ic->ctext);
+			imagestring(ic, FONT_ROLE_BODY, cols.rank_center - imagetextwidth(ic, FONT_ROLE_BODY, "#") / 2, texty, "#", ic->ctext);
+			imagestring(ic, FONT_ROLE_BODY, cols.header_field_right - imagetextwidth(ic, FONT_ROLE_BODY, "day"), texty, "day", ic->ctext);
 		} else {
 			imagestring(ic, FONT_ROLE_BODY, cols.header_field_right - imagetextwidth(ic, FONT_ROLE_BODY, colname), texty, colname, ic->ctext);
 		}
@@ -755,7 +766,9 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 
 		if (ic->fontctx.mode == FONT_TTF) {
 			if (listtype == LT_Top) {
-				int short_stamp = (strftime(datebuff, 16, stampformat, d) <= 8);
+				char rankbuf[16];
+
+				strftime(datebuff, 16, stampformat, d);
 
 				if (strcmp(datebuff, daybuff) == 0) {
 					int pad2 = imageuipx(ic, 2);
@@ -766,14 +779,9 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 						gdImageFilledRectangle(ic->im, textx + pad2, texty + pad2, textx + (50 * ic->fontctx.cw) + offsetx - imageuipx(ic, 4), texty + ic->fontctx.ch - pad2, ic->cbgoffset);
 					}
 				}
-				if (short_stamp) {
-					snprintf(buffer, 32, "  %2d", i);
-					imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
-					imagestring(ic, FONT_ROLE_BODY, textx + 15 * ic->fontctx.cw - imagetextwidth(ic, FONT_ROLE_BODY, datebuff), texty, datebuff, ic->ctext);
-				} else {
-					snprintf(buffer, 32, "  %2d  %-*s", i, getpadding(11, datebuff), datebuff);
-					imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
-				}
+				snprintf(rankbuf, 16, "%d", i);
+				imagestring(ic, FONT_ROLE_BODY, cols.rank_center - imagetextwidth(ic, FONT_ROLE_BODY, rankbuf) / 2, texty, rankbuf, ic->ctext);
+				imagestring(ic, FONT_ROLE_BODY, cols.date_field_right - imagetextwidth(ic, FONT_ROLE_BODY, datebuff), texty, datebuff, ic->ctext);
 			} else {
 				strftime(datebuff, 16, stampformat, d);
 				imagestring(ic, FONT_ROLE_BODY, cols.date_field_right - imagetextwidth(ic, FONT_ROLE_BODY, datebuff), texty, datebuff, ic->ctext);
