@@ -1060,13 +1060,73 @@ static int summary_ttf_top_gap_extra(const IMAGECONTENT *ic)
 	return summary_ttf_top_gap(ic) - 15;
 }
 
-/* Embedded hourly ypos for -hs (layout 1). */
-static int summary_hours_y_hs(const IMAGECONTENT *ic, const int header_extra, const int graph_headermod)
+/* Vertical extents of drawhours() relative to ypos: tip is ypos-above, labels end at ypos+below. */
+static void hourly_graph_y_extents(const IMAGECONTENT *ic, int *above, int *below)
+{
+	*above = 10 + imageextrapx(ic, 35);
+	*below = 124 + imageuipx(ic, 8) + ic->fontctx.axis_ch;
+}
+
+/* Tiny footer clearance matching layoutinit() generator placement. */
+static int summary_hs_footer_clearance(const IMAGECONTENT *ic)
+{
+	return ic->fontctx.footer->h + 4 + ic->showedge * imageuipx(ic, 1);
+}
+
+/* Content band for embedding the hourly plot in -hs (below header, above bottom edge/note). */
+static void summary_hs_hourly_content_band(const IMAGECONTENT *ic, const int height,
+	const int monthrotatenotevisible, int *content_top, int *content_bottom)
+{
+	if (ic->showheader) {
+		*content_top = ic->fontctx.header_h;
+	} else {
+		*content_top = ic->showedge * imageuipx(ic, 1);
+	}
+	/* Center to the image edge so header→poles and labels→edge gaps match. */
+	*content_bottom = height - ic->showedge;
+	if (monthrotatenotevisible) {
+		*content_bottom -= ic->lineheight;
+	}
+}
+
+/* Embedded hourly ypos for -hs (layout 1). TTF: center pole-tops→labels in the content band. */
+static int summary_hours_y_hs(const IMAGECONTENT *ic, const int header_extra, const int graph_headermod,
+	const int height, const int monthrotatenotevisible)
 {
 	int hours_y = 46 + header_extra + imageextrapx(ic, 40) - graph_headermod;
 
 	if (ic->fontctx.mode == FONT_TTF) {
-		hours_y += summary_ttf_top_gap_extra(ic);
+		int tip_above, pole_above, below, span, content_top, content_bottom, available;
+		int min_hours_y, max_hours_y, bottom_clear;
+
+		hourly_graph_y_extents(ic, &tip_above, &below);
+		/* Center the visible plot (pole tops → hour labels). The axis tip sits
+		 * a fixed 10px above the poles and is only clamped into the band. */
+		pole_above = tip_above - 10;
+		if (pole_above < 0) {
+			pole_above = 0;
+		}
+		span = pole_above + below;
+		summary_hs_hourly_content_band(ic, height, monthrotatenotevisible, &content_top, &content_bottom);
+		available = content_bottom - content_top;
+		if (available > span) {
+			hours_y = content_top + (available - span) / 2 + pole_above;
+		} else {
+			hours_y = content_top + tip_above;
+		}
+
+		min_hours_y = content_top + tip_above;
+		bottom_clear = summary_hs_footer_clearance(ic);
+		if (monthrotatenotevisible) {
+			bottom_clear += ic->lineheight;
+		}
+		max_hours_y = height - bottom_clear - below;
+		if (hours_y < min_hours_y) {
+			hours_y = min_hours_y;
+		}
+		if (hours_y > max_hours_y) {
+			hours_y = max_hours_y;
+		}
 	}
 	return hours_y;
 }
@@ -1243,6 +1303,26 @@ static void summary_ttf_adjust_height(IMAGECONTENT *ic, const int layout,
 	} else {
 		/* Extra bottom pad so rate/legend clear the footer */
 		*height += 2 * ic->lineheight;
+
+		/* Hourly -hs: grow canvas if the plot span cannot fit the content band. */
+		if (cfg.summarygraph == 0) {
+			int above, below, content_top, needed;
+			int bottom_clear = summary_hs_footer_clearance(ic);
+
+			if (monthrotatenotevisible) {
+				bottom_clear += ic->lineheight;
+			}
+			hourly_graph_y_extents(ic, &above, &below);
+			if (ic->showheader) {
+				content_top = ic->fontctx.header_h;
+			} else {
+				content_top = ic->showedge * imageuipx(ic, 1);
+			}
+			needed = content_top + above + below + bottom_clear;
+			if (*height < needed) {
+				*height = needed;
+			}
+		}
 	}
 }
 
@@ -1382,7 +1462,7 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 			if (cfg.summarygraph == 1) {
 				drawfiveminutes(ic, fivegraph_x, height - 30 - imageextrapx(ic, 8) - (monthrotatenotevisible * ic->lineheight), israte, 422 + imageextrapx(ic, 154), height - 68 + headermod - imageextrapx(ic, 8) - (monthrotatenotevisible * (ic->lineheight + 2)));
 			} else {
-				drawhours(ic, graph_x, summary_hours_y_hs(ic, header_extra, graph_headermod), israte);
+				drawhours(ic, graph_x, summary_hours_y_hs(ic, header_extra, graph_headermod, height, monthrotatenotevisible), israte);
 			}
 			if (monthrotatenotevisible) {
 				imagestring(ic, FONT_ROLE_BODY, 13 - imageextrapx(ic, 4) + (ic->fontctx.cw * 2) + ic->showedge, height - imageuipx(ic, 12) - ic->showedge - ic->lineheight, monthrotatenote, ic->ctext);
