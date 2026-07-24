@@ -775,12 +775,8 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 					imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
 				}
 			} else {
-				if (strftime(datebuff, 16, stampformat, d) <= 8) {
-					imagestring(ic, FONT_ROLE_BODY, cols.date_field_right - imagetextwidth(ic, FONT_ROLE_BODY, datebuff), texty, datebuff, ic->ctext);
-				} else {
-					snprintf(buffer, 32, " %-*s", getpadding(11, datebuff), datebuff);
-					imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
-				}
+				strftime(datebuff, 16, stampformat, d);
+				imagestring(ic, FONT_ROLE_BODY, cols.date_field_right - imagetextwidth(ic, FONT_ROLE_BODY, datebuff), texty, datebuff, ic->ctext);
 			}
 
 			strncpy_nt(rxbuf, getvalue(datalist_i->rx, 10, RT_Normal), 64);
@@ -900,19 +896,11 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 
 		texty += imageuipx(ic, 8);
 		if (ic->fontctx.mode == FONT_TTF) {
-			int date_right;
-
 			strncpy_nt(rxbuf, getvalue(e_rx, 10, RT_Estimate), 64);
 			strncpy_nt(txbuf, getvalue(e_tx, 10, RT_Estimate), 64);
 			strncpy_nt(totalbuf, getvalue(e_rx + e_tx, 10, RT_Estimate), 64);
 
-			if (strlen(datebuff) <= 8) {
-				date_right = cols.date_field_right;
-			} else {
-				snprintf(buffer, 32, " %s", datebuff);
-				date_right = textx + imagetextwidth(ic, FONT_ROLE_BODY, buffer);
-			}
-			imagestring(ic, FONT_ROLE_BODY, date_right - imagetextwidth(ic, FONT_ROLE_BODY, cfg.estimatetext), texty, cfg.estimatetext, ic->ctext);
+			imagestring(ic, FONT_ROLE_BODY, cols.date_field_right - imagetextwidth(ic, FONT_ROLE_BODY, cfg.estimatetext), texty, cfg.estimatetext, ic->ctext);
 			imagestring(ic, FONT_ROLE_BODY, cols.rx_edge - imagetextwidth(ic, FONT_ROLE_BODY, rxbuf), texty, rxbuf, ic->ctext);
 			imagestring(ic, FONT_ROLE_BODY, cols.tx_edge - imagetextwidth(ic, FONT_ROLE_BODY, txbuf), texty, txbuf, ic->ctext);
 			imagestring(ic, FONT_ROLE_BODY, cols.total_edge - imagetextwidth(ic, FONT_ROLE_BODY, totalbuf), texty, totalbuf, ic->ctext);
@@ -942,14 +930,6 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		texty += imageuipx(ic, 8);
 		if (ic->fontctx.mode == FONT_TTF) {
 			char sumlabel[16];
-			int date_right;
-
-			if (strlen(datebuff) <= 8) {
-				date_right = cols.date_field_right;
-			} else {
-				snprintf(buffer, 32, " %s", datebuff);
-				date_right = textx + imagetextwidth(ic, FONT_ROLE_BODY, buffer);
-			}
 
 			if (datainfo.count < 100) {
 				snprintf(sumlabel, 16, "sum of %" PRIu32 "", datainfo.count);
@@ -960,7 +940,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 			strncpy_nt(txbuf, getvalue(datainfo.sumtx, 10, RT_Normal), 64);
 			strncpy_nt(totalbuf, getvalue(datainfo.sumrx + datainfo.sumtx, 10, RT_Normal), 64);
 
-			imagestring(ic, FONT_ROLE_BODY, date_right - imagetextwidth(ic, FONT_ROLE_BODY, sumlabel), texty, sumlabel, ic->ctext);
+			imagestring(ic, FONT_ROLE_BODY, cols.date_field_right - imagetextwidth(ic, FONT_ROLE_BODY, sumlabel), texty, sumlabel, ic->ctext);
 			imagestring(ic, FONT_ROLE_BODY, cols.rx_edge - imagetextwidth(ic, FONT_ROLE_BODY, rxbuf), texty, rxbuf, ic->ctext);
 			imagestring(ic, FONT_ROLE_BODY, cols.tx_edge - imagetextwidth(ic, FONT_ROLE_BODY, txbuf), texty, txbuf, ic->ctext);
 			imagestring(ic, FONT_ROLE_BODY, cols.total_edge - imagetextwidth(ic, FONT_ROLE_BODY, totalbuf), texty, totalbuf, ic->ctext);
