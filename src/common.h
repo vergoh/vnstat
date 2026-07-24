@@ -298,8 +298,8 @@ and most can be changed later from the config file.
 #define FONTSIZE 12
 
 /* TTF role size as percent of body FontSize */
-#define FONTSCALEHEADER 165
-#define FONTSCALETITLE 150
+#define FONTSCALEHEADER 130
+#define FONTSCALETITLE 130
 #define FONTSCALEAXIS 85
 #define FONTSCALETIMESTAMP 85
 
