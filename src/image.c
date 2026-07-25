@@ -2316,8 +2316,14 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 		}
 
 		if (datalist_i->timestamp > timestamp) {
-			gdImageSetPixel(ic->im, px, center_y, ic->cline);
-			gdImageSetPixel(ic->im, px, center_y + txh + FIVEMINHEIGHTOFFSET, ic->cline);
+			/* Scale future / no-data marks with UI stroke thickness. */
+			int t = imageuipx(ic, 1);
+			int x0 = px - t / 2;
+			int y0 = center_y - t / 2;
+			int y1 = center_y + txh + FIVEMINHEIGHTOFFSET - t / 2;
+
+			gdImageFilledRectangle(ic->im, x0, y0, x0 + t - 1, y0 + t - 1, ic->cline);
+			gdImageFilledRectangle(ic->im, x0, y1, x0 + t - 1, y1 + t - 1, ic->cline);
 			continue;
 		}
 
@@ -2589,6 +2595,8 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 
 	/* draw data */
 	for (i = 0; i < PERCENTILEENTRYCOUNT; i++, current += 3600) {
+		int day_boundary = 0;
+
 		px = x + i * barwidth;
 
 		if (datalist_i == NULL || current < datalist_i->timestamp) {
@@ -2599,7 +2607,8 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 				d = localtime(&current);
 				strftime(datebuff, DATEBUFFLEN, "%d", d);
 				if (i > 0) {
-					drawpole(ic, px, y + 4, height, 1, ic->cbgoffset);
+					/* Same center/thickness as x-axis ticks (imagedrawvline). */
+					imagedrawvline(ic, px, y - height + 1, y, ic->cbgoffset);
 				}
 				if (ic->fontctx.mode == FONT_TTF) {
 					label_x = px + 12 * barwidth - imagetextwidth(ic, FONT_ROLE_AXIS, datebuff) / 2;
@@ -2615,9 +2624,9 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 		}
 
 		if (i >= prev + 24 && i % 24 == 0) {
+			day_boundary = 1;
 			d = localtime(&current);
 			strftime(datebuff, DATEBUFFLEN, "%d", d);
-			drawpole(ic, px, y, height, 1, ic->cbgoffset);
 			if (i > 0) {
 				imagedrawvline(ic, px, y + 1, y + imageuipx(ic, 4), ic->ctext);
 			}
@@ -2642,6 +2651,17 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 		if (l > height) {
 			l = height;
 		}
+
+		/* Day separator above the pole only (like 5min hour marks: never paint over traffic). */
+		if (day_boundary && i > 0) {
+			int sep_top = y - height + 1;
+			int sep_bottom = y - l;
+
+			if (sep_bottom >= sep_top) {
+				imagedrawvline(ic, px, sep_top, sep_bottom, ic->cbgoffset);
+			}
+		}
+
 		for (b = 0; b < barwidth; b++) {
 			drawpole(ic, px + b, y, l, 1, color);
 		}
