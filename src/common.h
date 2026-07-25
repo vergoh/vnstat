@@ -296,6 +296,8 @@ and most can be changed later from the config file.
 
 /* default TTF body point size when FontFile is set */
 #define FONTSIZE 12
+#define FONT_SIZE_MIN 6
+#define FONT_SIZE_MAX 72
 
 /* TTF role size as percent of body FontSize */
 #define FONTSCALEHEADER 130

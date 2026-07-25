@@ -229,7 +229,7 @@ void validatecfg(const ConfigType type)
 		validateint("LineSpacingAdjustment", &cfg.linespaceadjust, LINESPACEADJUST, -5, 10);
 		validateint("ImageScale", &cfg.imagescale, IMAGESCALE, 50, 500);
 		validatebool("CommonWidth", &cfg.commonwidth, COMMONWIDTH);
-		validateint("FontSize", &cfg.fontsize, FONTSIZE, 6, 72);
+		validateint("FontSize", &cfg.fontsize, FONTSIZE, FONT_SIZE_MIN, FONT_SIZE_MAX);
 		validateint("FontScaleHeader", &cfg.fontscaleheader, FONTSCALEHEADER, 50, 300);
 		validateint("FontScaleTitle", &cfg.fontscaletitle, FONTSCALETITLE, 50, 300);
 		validateint("FontScaleAxis", &cfg.fontscaleaxis, FONTSCALEAXIS, 50, 300);
