@@ -2470,7 +2470,7 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 {
 	int i, l, b, x = xpos, y = ypos, s = 0, step = 1, prev = 0, last = 0, color, cross;
 	int barwidth, plot_w, px, label_x, label_y, line_y, pad_full;
-	int axis_base_x, axis_stem_x, hline_x0, axis_y, stroke_half;
+	int axis_base_x, axis_stem_x, hline_x0, dash_x1, axis_y, stroke_half;
 	uint64_t scaleunit, max, percentile_val;
 	double ratediv, percentileratediv;
 	const struct tm *d;
@@ -2575,18 +2575,20 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 	/* adjust cursor to first point on graph (1px past stem) */
 	x += cross + 1;
 	hline_x0 = x + stroke_half;
+	/* Axis tip; do not use x after the cross+1 advance with a fixed inset. */
+	dash_x1 = axis_base_x + plot_w + pad_full;
 	y -= 1;
 
 	for (i = step; i * s <= height; i = i + step) {
 		line_y = y - (i * s);
-		imagedrawdashedhline(ic, hline_x0, x + (plot_w + pad_full) - 5, line_y, ic->cline);
-		imagedrawdashedhline(ic, hline_x0, x + (plot_w + pad_full) - 5, y - prev - (step * s) / 2, ic->clinel);
+		imagedrawdashedhline(ic, hline_x0, dash_x1, line_y, ic->cline);
+		imagedrawdashedhline(ic, hline_x0, dash_x1, y - prev - (step * s) / 2, ic->clinel);
 		val = getimagevalue(scaleunit * (unsigned int)i, 3, 1);
 		graph_draw_axis_value(ic, x - 1, line_y, val, x - 22 - imageextrapx(ic, 3), line_y - 4 - imageextrapx(ic, 3));
 		prev = i * s;
 	}
 	if ((prev + (step * s) / 2) <= height) {
-		imagedrawdashedhline(ic, hline_x0, x + (plot_w + pad_full) - 5, y - prev - (step * s) / 2, ic->clinel);
+		imagedrawdashedhline(ic, hline_x0, dash_x1, y - prev - (step * s) / 2, ic->clinel);
 	}
 
 	datalist_i = datalist;
