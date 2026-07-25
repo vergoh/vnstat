@@ -580,6 +580,23 @@ void imagedrawrect(IMAGECONTENT *ic, const int x1, const int y1, const int x2, c
 	gdImageFilledRectangle(ic->im, xb - t + 1, ya, xb, yb, color);
 }
 
+/* Draw an edged arc outline of UI stroke thickness.
+ * step = -2: outer edge at diameter, grow inward (into ring).
+ * step = +2: edge at diameter, grow outward (into ring from hole). */
+static void imagedrawedgedarc(IMAGECONTENT *ic, const int x, const int y, const int diameter, const int s, const int e, const int color, const int step)
+{
+	int t, i, d;
+
+	t = imageuipx(ic, 1);
+	for (i = 0; i < t; i++) {
+		d = diameter + step * i;
+		if (d < 1) {
+			break;
+		}
+		gdImageFilledArc(ic->im, x, y, d, d, s, e, color, gdEdged | gdNoFill);
+	}
+}
+
 void imagedrawdashedhline(IMAGECONTENT *ic, const int x1, const int x2, const int y, const int color)
 {
 	int t, i, y0;
@@ -1194,16 +1211,31 @@ void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const ui
 	}
 
 	if (rxl) {
+		int rx2, ya, yb;
+
 		if (txl > 0) {
 			overlap = 1;
 		}
-		gdImageFilledRectangle(ic->im, x, y + ybeginoffset, x + rxl - 1 + overlap, y + yendoffset, crx);
-		gdImageRectangle(ic->im, x, y + ybeginoffset, x + rxl - 1 + overlap, y + yendoffset, crxd);
+		rx2 = x + rxl - 1 + overlap;
+		ya = y + ybeginoffset;
+		yb = y + yendoffset;
+		gdImageFilledRectangle(ic->im, x, ya, rx2, yb, crx);
+		if (txl > 0) {
+			/* Omit right edge so the tx left outline forms the join, matching
+			 * historical 1px gdImageRectangle behaviour (tx overwrote that edge). */
+			int t = imageuipx(ic, 1);
+
+			gdImageFilledRectangle(ic->im, x, ya, rx2, ya + t - 1, crxd);
+			gdImageFilledRectangle(ic->im, x, yb - t + 1, rx2, yb, crxd);
+			gdImageFilledRectangle(ic->im, x, ya, x + t - 1, yb, crxd);
+		} else {
+			imagedrawrect(ic, x, ya, rx2, yb, crxd);
+		}
 	}
 
 	if (txl) {
 		gdImageFilledRectangle(ic->im, x + rxl, y + ybeginoffset, x + rxl + txl - 1, y + yendoffset, ctx);
-		gdImageRectangle(ic->im, x + rxl, y + ybeginoffset, x + rxl + txl - 1, y + yendoffset, ctxd);
+		imagedrawrect(ic, x + rxl, y + ybeginoffset, x + rxl + txl - 1, y + yendoffset, ctxd);
 	}
 }
 
@@ -1259,19 +1291,19 @@ void drawdonut_libgd_bug_workaround(IMAGECONTENT *ic, const int x, const int y, 
 	gdImageFilledArc(ic->im, x, y, size, size, 0, 360, ic->cbgoffset, 0);
 
 	if (txarc) {
-		gdImageFilledArc(ic->im, x, y, size, size, 270, 270 + txarc, ic->ctxd, gdEdged | gdNoFill);
+		imagedrawedgedarc(ic, x, y, size, 270, 270 + txarc, ic->ctxd, -2);
 		if (txarc >= 5) {
 			gdImageFill(ic->im, x + 1, y - (size / 2 - 3), ic->ctx);
 		}
-		gdImageFilledArc(ic->im, x, y, holesize, holesize, 270, 270 + txarc, ic->ctxd, gdEdged | gdNoFill);
+		imagedrawedgedarc(ic, x, y, holesize, 270, 270 + txarc, ic->ctxd, 2);
 	}
 
 	if (rxarc) {
-		gdImageFilledArc(ic->im, x, y, size, size, 270 + txarc, 270 + txarc + rxarc, ic->crxd, gdEdged | gdNoFill);
+		imagedrawedgedarc(ic, x, y, size, 270 + txarc, 270 + txarc + rxarc, ic->crxd, -2);
 		if (rxarc >= 5) {
 			gdImageFill(ic->im, (int)(x + (size / 2.0 - 3) * cos((int)((270 * 2 + 2 * txarc + rxarc) / 2) * M_PI / 180)), (int)(y + (size / 2.0 - 3) * sin((int)((270 * 2 + 2 * txarc + rxarc) / 2) * M_PI / 180)), ic->crx);
 		}
-		gdImageFilledArc(ic->im, x, y, holesize, holesize, 270 + txarc, 270 + txarc + rxarc, ic->crxd, gdEdged | gdNoFill);
+		imagedrawedgedarc(ic, x, y, holesize, 270 + txarc, 270 + txarc + rxarc, ic->crxd, 2);
 	}
 
 	// remove center from background filled circle, making it a donut
@@ -1296,14 +1328,14 @@ void drawdonut_libgd_native(IMAGECONTENT *ic, const int x, const int y, const fl
 
 	if (txarc) {
 		gdImageFilledArc(ic->im, x, y, size, size, 270, 270 + txarc, ic->ctx, 0);
-		gdImageFilledArc(ic->im, x, y, size, size, 270, 270 + txarc, ic->ctxd, gdEdged | gdNoFill);
-		gdImageFilledArc(ic->im, x, y, holesize, holesize, 270, 270 + txarc, ic->ctxd, gdEdged | gdNoFill);
+		imagedrawedgedarc(ic, x, y, size, 270, 270 + txarc, ic->ctxd, -2);
+		imagedrawedgedarc(ic, x, y, holesize, 270, 270 + txarc, ic->ctxd, 2);
 	}
 
 	if (rxarc) {
 		gdImageFilledArc(ic->im, x, y, size, size, 270 + txarc, 270 + txarc + rxarc, ic->crx, 0);
-		gdImageFilledArc(ic->im, x, y, size, size, 270 + txarc, 270 + txarc + rxarc, ic->crxd, gdEdged | gdNoFill);
-		gdImageFilledArc(ic->im, x, y, holesize, holesize, 270 + txarc, 270 + txarc + rxarc, ic->crxd, gdEdged | gdNoFill);
+		imagedrawedgedarc(ic, x, y, size, 270 + txarc, 270 + txarc + rxarc, ic->crxd, -2);
+		imagedrawedgedarc(ic, x, y, holesize, 270 + txarc, 270 + txarc + rxarc, ic->crxd, 2);
 	}
 
 	// remove center from background filled circle, making it a donut
