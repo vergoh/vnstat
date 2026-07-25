@@ -916,6 +916,9 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 			strncpy_nt(rxbuf, getvalue(e_rx, 10, RT_Estimate), 64);
 			strncpy_nt(txbuf, getvalue(e_tx, 10, RT_Estimate), 64);
 			strncpy_nt(totalbuf, getvalue(e_rx + e_tx, 10, RT_Estimate), 64);
+			rtrimspaces(rxbuf);
+			rtrimspaces(txbuf);
+			rtrimspaces(totalbuf);
 
 			imagestring(ic, FONT_ROLE_BODY, cols.date_field_right - imagetextwidth(ic, FONT_ROLE_BODY, cfg.estimatetext), texty, cfg.estimatetext, ic->ctext);
 			imagestring(ic, FONT_ROLE_BODY, cols.rx_edge - imagetextwidth(ic, FONT_ROLE_BODY, rxbuf), texty, rxbuf, ic->ctext);

@@ -50,6 +50,7 @@ void drawarrowright(IMAGECONTENT *ic, const int x, const int y);
 void hextorgb(const char *input, int *rgb);
 void modcolor(int *rgb, const int offset, const int force);
 void invertcolor(int *rgb);
+void rtrimspaces(char *s);
 char *getimagevalue(const uint64_t b, const int len, const int israte);
 char *getimagescale(const uint64_t b, const int israte);
 uint64_t getscale(const uint64_t input, const int israte);

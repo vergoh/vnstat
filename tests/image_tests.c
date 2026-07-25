@@ -1295,6 +1295,38 @@ START_TEST(imagestring_and_draw_helpers_smoke)
 }
 END_TEST
 
+START_TEST(rtrimspaces_trims_trailing_spaces)
+{
+	char buf[32];
+
+	rtrimspaces(NULL);
+
+	buf[0] = '\0';
+	rtrimspaces(buf);
+	ck_assert_str_eq(buf, "");
+
+	strncpy_nt(buf, "   --     ", 32);
+	rtrimspaces(buf);
+	ck_assert_str_eq(buf, "   --");
+
+	strncpy_nt(buf, "    --    ", 32);
+	rtrimspaces(buf);
+	ck_assert_str_eq(buf, "    --");
+
+	strncpy_nt(buf, "  1.00 GiB", 32);
+	rtrimspaces(buf);
+	ck_assert_str_eq(buf, "  1.00 GiB");
+
+	strncpy_nt(buf, "     ", 32);
+	rtrimspaces(buf);
+	ck_assert_str_eq(buf, "");
+
+	strncpy_nt(buf, "notrail", 32);
+	rtrimspaces(buf);
+	ck_assert_str_eq(buf, "notrail");
+}
+END_TEST
+
 void add_image_tests(Suite *s)
 {
 	TCase *tc_image = tcase_create("Image");
@@ -1335,5 +1367,6 @@ void add_image_tests(Suite *s)
 	tcase_add_test(tc_image, imagefontinit_fails_without_freetype);
 #endif
 	tcase_add_test(tc_image, imagestring_and_draw_helpers_smoke);
+	tcase_add_test(tc_image, rtrimspaces_trims_trailing_spaces);
 	suite_add_tcase(s, tc_image);
 }

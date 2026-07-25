@@ -1488,6 +1488,19 @@ void invertcolor(int *rgb)
 	}
 }
 
+void rtrimspaces(char *s)
+{
+	size_t n;
+
+	if (s == NULL || s[0] == '\0') {
+		return;
+	}
+	n = strlen(s);
+	while (n > 0 && s[n - 1] == ' ') {
+		s[--n] = '\0';
+	}
+}
+
 char *getimagevalue(const uint64_t b, const int len, const int israte)
 {
 	static char buffer[64];

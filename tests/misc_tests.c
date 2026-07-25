@@ -187,19 +187,19 @@ START_TEST(getvalue_zero_values)
 {
 	cfg.unitmode = 0;
 	ck_assert_str_eq(getvalue(0, 0, RT_Normal), "0 B");
-	ck_assert_str_eq(getvalue(0, 10, RT_Estimate), "        --");
+	ck_assert_str_eq(getvalue(0, 10, RT_Estimate), "   --     ");
 	ck_assert_int_eq((int)strlen(getvalue(0, 10, RT_Estimate)), 10);
 	ck_assert_int_eq((int)strlen(getvalue(0, 20, RT_Estimate)), 20);
 	ck_assert_str_eq(getvalue(0, 0, RT_ImageScale), "0 B");
 	cfg.unitmode = 1;
 	ck_assert_str_eq(getvalue(0, 0, RT_Normal), "0 B");
-	ck_assert_str_eq(getvalue(0, 10, RT_Estimate), "        --");
+	ck_assert_str_eq(getvalue(0, 10, RT_Estimate), "    --    ");
 	ck_assert_int_eq((int)strlen(getvalue(0, 10, RT_Estimate)), 10);
 	ck_assert_int_eq((int)strlen(getvalue(0, 20, RT_Estimate)), 20);
 	ck_assert_str_eq(getvalue(0, 0, RT_ImageScale), "0 B");
 	cfg.unitmode = 2;
 	ck_assert_str_eq(getvalue(0, 0, RT_Normal), "0 B");
-	ck_assert_str_eq(getvalue(0, 10, RT_Estimate), "        --");
+	ck_assert_str_eq(getvalue(0, 10, RT_Estimate), "    --    ");
 	ck_assert_int_eq((int)strlen(getvalue(0, 10, RT_Estimate)), 10);
 	ck_assert_int_eq((int)strlen(getvalue(0, 20, RT_Estimate)), 20);
 	ck_assert_str_eq(getvalue(0, 0, RT_ImageScale), "0 B");
