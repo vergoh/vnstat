@@ -456,15 +456,16 @@ static void listcolumns_init(IMAGECONTENT *ic, const int textx, const int offset
 		cols->total_edge = cols->d50 - colpad;
 		cols->rate_edge = textx + (65 * cw) + offsetx - colpad;
 		cols->date_field_right = textx + 10 * cw + offsetx;
-		cols->header_field_right = textx + 9 * cw + offsetx;
 
 		/* Top list: center-align #; right-align day with a clear gap after #.
 		 * Date field ends at 16*cw so 10-char dates clear the rank column. */
 		if (offsetx > 0) {
 			cols->rank_center = textx + 3 * cw;
 			cols->date_field_right = textx + 11 * cw + offsetx;
-			cols->header_field_right = textx + 10 * cw + offsetx;
 		}
+
+		/* One measured digit left of values - mirrors builtin " %8s" vs "  %8s". */
+		cols->header_field_right = cols->date_field_right - imagetextwidth(ic, FONT_ROLE_BODY, "0");
 
 		sample_w = imagetextwidth(ic, FONT_ROLE_BODY, sample);
 		prefix_w = imagetextwidth(ic, FONT_ROLE_BODY, "00");
@@ -757,8 +758,16 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		if (listtype == LT_5min || listtype == LT_Hour) {
 			strftime(datebuff, 16, cfg.dformat, d);
 			if (strcmp(daybuff, datebuff) != 0) {
-				snprintf(buffer, 32, " %s", datebuff);
-				imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
+				/* Builtin: " %s" left at textx → 10-char dates end one cell past values.
+				 * TTF: right-align to the same edge (date_field_right + one digit). */
+				if (ic->fontctx.mode == FONT_TTF) {
+					imagestring(ic, FONT_ROLE_BODY,
+						cols.date_field_right + imagetextwidth(ic, FONT_ROLE_BODY, "0") - imagetextwidth(ic, FONT_ROLE_BODY, datebuff),
+						texty, datebuff, ic->ctext);
+				} else {
+					snprintf(buffer, 32, " %s", datebuff);
+					imagestring(ic, FONT_ROLE_BODY, textx, texty, buffer, ic->ctext);
+				}
 				texty += ic->lineheight + cfg.linespaceadjust;
 				strcpy(daybuff, datebuff);
 			}
