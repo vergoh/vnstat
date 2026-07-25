@@ -216,12 +216,12 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 	if (ic->fontctx.mode == FONT_BUILTIN) {
 		x += imageextrapx(ic, 14);
 	}
-	/* Plot width extra must match sum of hour-gap extras so bars stay aligned with the axis. */
+	/* plot width extra must match sum of hour-gap extras so bars stay aligned with the axis */
 	hour_step = hourly_hour_step(ic);
 	extrax = hourly_plot_extrax(ic);
 	pole_pad = imageextrapx(ic, 2);
 	extray = imageextrapx(ic, 35);
-	/* TTF: grow left inset and tip past with point size (0 delta at FontSize 12). */
+	/* TTF: grow left inset and tip past with point size (0 delta at FontSize 12) */
 	if (ic->fontctx.mode == FONT_TTF) {
 		left_grow = imageuipx(ic, 13) - 13;
 		dash_past = imageuipx(ic, HOURLY_DASH_PAST);
@@ -244,8 +244,8 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 
 	xt = x + graph_axis_left(ic);
 	cross = imageuipx(ic, GRAPH_AXIS_CROSS);
-	/* Hours are shifted right by pole_pad (+ left_grow for TTF) so leftmost poles clear
-	 * the y-axis; tip room also grows so rightmost poles do not overrun the axis / grid. */
+	/* hours are shifted right by pole_pad (+ left_grow for TTF) so leftmost poles clear
+	 * the y-axis; tip room also grows so rightmost poles do not overrun the axis / grid */
 	dash_right = xt + HOURLY_PLOT_SPAN + extrax + pole_pad + left_grow + dash_past + pole_pad;
 	axis_right = xt + HOURLY_PLOT_SPAN + extrax + pole_pad + left_grow + axis_past + pole_pad;
 
@@ -274,10 +274,10 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 	imagedrawhline(ic, xt - cross, axis_right, axis_y, ic->ctext);
 	imagedrawvline(ic, axis_x, axis_top, axis_y + cross, ic->ctext);
 
-	/* Rightmost hour column: plot span + gap extras + left pole clearance */
+	/* rightmost hour column: plot span + gap extras + left pole clearance */
 	xt = xt + HOURLY_PLOT_SPAN + extrax + pole_pad + left_grow;
 
-	/* keep alignment when midnight line isn't shown s*/
+	/* keep alignment when midnight line isn't shown */
 	if (cfg.hourlygmode || tmax - 23 == 0) {
 		xt--;
 	}
@@ -299,29 +299,28 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 			chour = ic->ctext;
 		}
 		if (ic->fontctx.mode == FONT_TTF) {
-			/* Center "HH" on pole-pair midpoint so digits sit under rx / tx. */
+			/* center "HH" on pole-pair midpoint so digits sit under rx / tx */
 			imagestring(ic, FONT_ROLE_AXIS, xt + hourly_map_px(ic, 4) - imagetextwidth(ic, FONT_ROLE_AXIS, buffer) / 2, y + 124 + imageuipx(ic, 8), buffer, chour);
 		} else {
 			imagestring(ic, FONT_ROLE_AXIS, xt, y + 128, buffer, chour);
 		}
 		drawpoles(ic, xt - hourly_map_px(ic, 2), y - extray, 124 + extray, hourdata[s].rx, hourdata[s].tx, max);
 		if (s == 0 && i != 23) {
-			/* midnight line — stop above the thick x-axis band */
+			/* midnight line: stop above the thick x-axis band */
 			imagedrawvline(ic, xt - hourly_map_px(ic, 5) - imageextrapx(ic, 3), y - 5 - extray, axis_y - graph_stroke_half(ic) - 1, ic->clinel);
 			xt--;
 		}
 		xt = xt - hour_step;
 	}
 
-	/* Axes + arrows last so poles/grid cannot nick the strokes. */
+	/* axes + arrows last so poles/grid cannot nick the strokes */
 	imagedrawhline(ic, axis_x - cross, axis_right, axis_y, ic->ctext);
 	imagedrawvline(ic, axis_x, axis_top, axis_y + cross, ic->ctext);
 	drawarrowup(ic, axis_x, axis_top);
 	drawarrowright(ic, axis_right, axis_y);
 
-	/* Hour ticks on the axis after the final redraw so missing-data hours dim
-	 * that segment (ctext ticks are a no-op). Drawing below the thick stroke
-	 * made a second incomplete rule at large TTF sizes. */
+	/* hour ticks on the axis after the final redraw so missing-data hours dim
+	 * that segment (ctext ticks are a no-op) */
 	xt = axis_x + HOURLY_PLOT_SPAN + extrax + pole_pad + left_grow;
 	if (cfg.hourlygmode || tmax - 23 == 0) {
 		xt--;
@@ -340,7 +339,7 @@ int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte
 		} else {
 			chour = ic->ctext;
 		}
-		/* Keep hour ticks from extending past the axis end (and over the arrow). */
+		/* keep hour ticks from extending past the axis end (and over the arrow) */
 		tick_left = xt - cross - imageextrapx(ic, 3);
 		tick_right = xt + hourly_map_px(ic, 12) - hourly_map_px(ic, 2) + imageextrapx(ic, 3);
 		if (tick_right > axis_right) {
@@ -369,15 +368,15 @@ void drawhourly(IMAGECONTENT *ic, const int israte)
 	height = 200 + imageextrapx(ic, 48);
 
 	if (!ic->showheader) {
-		/* graph_y is from a 24px-header layout; shift by that chrome only.
-		 * Full TTF header_h would over-shift the plot into the top edge. */
+		/* graph_y is from a 24px-header layout; shift by that chrome only,
+		 * full TTF header_h would over-shift the plot into the top edge */
 		headermod = 24 + imageuipx(ic, 2);
-		/* Base height assumes the 24px builtin header; TTF header growth is
-		 * only applied when the header is shown (else branch). */
+		/* base height assumes the 24px built-in header; TTF header growth is
+		 * only applied when the header is shown (else branch) */
 		height -= 24 - 2;
 	} else {
-		/* axis_top = ypos - 10 - extray; keep the up-arrow below the header.
-		 * imageextrapx(40)-imageextrapx(35) alone does not track header_h. */
+		/* axis_top = ypos - 10 - extray; keep the up-arrow below the header,
+		 * imageextrapx(40)-imageextrapx(35) alone does not track header_h */
 		ypos = 46 + imageextrapx(ic, 40);
 		axis_top_base = ypos - 10 - imageextrapx(ic, 35);
 		min_axis_top = ic->fontctx.header_h + imageuipx(ic, 8);
@@ -393,7 +392,7 @@ void drawhourly(IMAGECONTENT *ic, const int israte)
 
 	graph_y = 46 + header_extra - headermod + imageextrapx(ic, 40);
 
-	/* TTF: room below the x-axis for hour labels, legend, and footer clearance. */
+	/* TTF: room below the x-axis for hour labels, legend, and footer clearance */
 	if (ic->fontctx.mode == FONT_TTF) {
 		int label_bottom, min_height;
 
@@ -416,18 +415,6 @@ void drawhourly(IMAGECONTENT *ic, const int israte)
 		}
 	}
 }
-
-typedef struct {
-	int textx, offsetx;
-	int d24, d37, d50; /* vertical divider x */
-	int hline_right_rate; /* 65*cw+offsetx+2 */
-	int hline_right_norate; /* 50*cw+offsetx-imageuipx(4) */
-	/* TTF measured edges / header decimal anchors */
-	int rx_edge, tx_edge, total_edge, rate_edge;
-	int rx_dec, tx_dec, total_dec;
-	int date_field_right, header_field_right;
-	int rank_center; /* top list # column center; 0 if unused */
-} ListColumns;
 
 static void listcolumns_init(IMAGECONTENT *ic, const int textx, const int offsetx, ListColumns *cols)
 {
@@ -457,14 +444,14 @@ static void listcolumns_init(IMAGECONTENT *ic, const int textx, const int offset
 		cols->rate_edge = textx + (65 * cw) + offsetx - colpad;
 		cols->date_field_right = textx + 10 * cw + offsetx;
 
-		/* Top list: center-align #; right-align day with a clear gap after #.
-		 * Date field ends at 16*cw so 10-char dates clear the rank column. */
+		/* top list: center-align #; right-align day with a clear gap after #,
+		 * date field ends at 16*cw so 10-char dates clear the rank column */
 		if (offsetx > 0) {
 			cols->rank_center = textx + 3 * cw;
 			cols->date_field_right = textx + 11 * cw + offsetx;
 		}
 
-		/* One measured digit left of values - mirrors builtin " %8s" vs "  %8s". */
+		/* one measured digit left of values, mirrors built-in alignment */
 		cols->header_field_right = cols->date_field_right - imagetextwidth(ic, FONT_ROLE_BODY, "0");
 
 		sample_w = imagetextwidth(ic, FONT_ROLE_BODY, sample);
@@ -740,11 +727,11 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	liney = list_header_rule_y(ic, texty);
 	list_draw_hline(ic, &cols, liney, cfg.ostyle > 2);
 	texty += ic->lineheight + imageuipx(ic, 8);
-	/* Top of vdividers: into the column-header row (day/rx/tx/total), above the rule. */
+	/* top of vdividers: into the column-header row (day/rx/tx/total), above the rule */
 	v_top = texty - imageuipx(ic, 6) - ic->lineheight;
 
-	/* End vdividers on the mid rule so they meet that hline. Avoid imageextrapx()
-	 * for the end Y: for TTF it grows with cw and leaves a gap. */
+	/* end vdividers on the mid rule so they meet that hline, avoid imageextrapx()
+	 * for the end Y: for TTF it grows with cw and leaves a gap */
 	if (datainfo.count) {
 		mid_y = list_mid_rule_y(ic, texty + ((ic->lineheight + cfg.linespaceadjust) * rowcount) - cfg.linespaceadjust);
 		list_draw_vdividers(ic, &cols, v_top, mid_y, cfg.ostyle > 2);
@@ -758,8 +745,8 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 		if (listtype == LT_5min || listtype == LT_Hour) {
 			strftime(datebuff, 16, cfg.dformat, d);
 			if (strcmp(daybuff, datebuff) != 0) {
-				/* Builtin: " %s" left at textx → 10-char dates end one cell past values.
-				 * TTF: right-align to the same edge (date_field_right + one digit). */
+				/* built-in: " %s" left at textx -> 10-char dates end one cell past values,
+				 * TTF: right-align to the same edge (date_field_right + one digit) */
 				if (ic->fontctx.mode == FONT_TTF) {
 					imagestring(ic, FONT_ROLE_BODY,
 						cols.date_field_right + imagetextwidth(ic, FONT_ROLE_BODY, "0") - imagetextwidth(ic, FONT_ROLE_BODY, datebuff),
@@ -995,7 +982,7 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	dbdatalistfree(&datalist);
 }
 
-/* Space needed for one axis hour label ("00") plus a readable gap. */
+/* space needed for one axis hour label ("00") plus a readable gap */
 static int fiveg_label_need(IMAGECONTENT *ic)
 {
 	int label_w, gap;
@@ -1008,8 +995,8 @@ static int fiveg_label_need(IMAGECONTENT *ic)
 	return label_w + gap;
 }
 
-/* Pixels per 5-minute sample. Builtin stays 1px (master sizing); standalone TTF
- * widens for 2-hour labels. Embedded -vs/-hs use summary_fiveg_barwidth(). */
+/* pixels per 5-minute sample, built-in stays 1px (master sizing); standalone TTF
+ * widens for 2-hour labels, embedded -vs/-hs use summary_fiveg_barwidth() */
 int fiveg_barwidth(IMAGECONTENT *ic)
 {
 	int need, slot = 24; /* hour labels every 2 hours = 24 samples */
@@ -1022,7 +1009,7 @@ int fiveg_barwidth(IMAGECONTENT *ic)
 	return (need + slot - 1) / slot;
 }
 
-/* Hours between x-axis labels so "00"+gap fits in hours*12*barwidth pixels. */
+/* hours between x-axis labels so "00"+gap fits in hours*12*barwidth pixels */
 static int fiveg_label_hours(IMAGECONTENT *ic, const int barwidth)
 {
 	static const int intervals[] = {2, 4, 6, 12};
@@ -1046,8 +1033,8 @@ static int fiveg_label_hours(IMAGECONTENT *ic, const int barwidth)
 	return 12;
 }
 
-/* Embedded summary sample count: builtin small/large maps to 422/576;
- * TTF keeps a fixed 576 so FontSize does not inflate sample history. */
+/* embedded summary sample count, built-in small/large maps to 422/576;
+ * TTF keeps a fixed 576 so FontSize does not inflate sample history */
 static int summary_fiveg_samples(const IMAGECONTENT *ic)
 {
 	if (ic->fontctx.mode == FONT_BUILTIN) {
@@ -1056,10 +1043,10 @@ static int summary_fiveg_samples(const IMAGECONTENT *ic)
 	return 576;
 }
 
-/* Matches old left-aligned "rx " + getvalue(..., 12) width ("  999.99 YiB" pad). */
+/* matches old left-aligned "rx " + getvalue(..., 12) width ("  999.99 YiB" pad) */
 static const char summary_stack_sample[] = "rx   999.99 YiB";
 
-/* Left inset of digest/all-time stacks (digest_x - bodyoff). */
+/* left inset of digest/all time stacks (digest_x - bodyoff) */
 static int summary_ttf_content_left(const IMAGECONTENT *ic)
 {
 	const int digest_x = (14 * ic->fontctx.cw + 2) + 26;
@@ -1068,13 +1055,13 @@ static int summary_ttf_content_left(const IMAGECONTENT *ic)
 	return digest_x - bodyoff;
 }
 
-/* Right edge of a value stack including the +2*cw pad used for values/since/rate. */
+/* right edge of a value stack including the +2*cw pad used for values/since/rate */
 static int summary_ttf_stack_right(IMAGECONTENT *ic, const int body_left)
 {
 	return body_left + imagetextwidth(ic, FONT_ROLE_BODY, summary_stack_sample) + 2 * ic->fontctx.cw;
 }
 
-/* Right edge of TTF drawlegend at legend_x (non-rate). */
+/* right edge of TTF drawlegend at legend_x (non-rate) */
 static int summary_ttf_legend_right(IMAGECONTENT *ic, const int legend_x)
 {
 	const int sq = ic->fontctx.cw;
@@ -1089,7 +1076,7 @@ static int summary_ttf_legend_right(IMAGECONTENT *ic, const int legend_x)
 	return x_cur;
 }
 
-/* Right ink of the second digest column donut (normal two-entry case). */
+/* right ink of the second digest column donut (normal two-entry case) */
 static int summary_ttf_digest_right(IMAGECONTENT *ic, const int digest_x)
 {
 	const int bodyoff = 12 * ic->fontctx.cw + 2;
@@ -1098,45 +1085,45 @@ static int summary_ttf_digest_right(IMAGECONTENT *ic, const int digest_x)
 	const int body_left = textx - bodyoff;
 	const int col_right = body_left + imagetextwidth(ic, FONT_ROLE_BODY, summary_stack_sample);
 
-	/* Center at col_right + donut_size; radius donut_size/2. */
+	/* center at col_right + donut_size; radius donut_size/2 */
 	return col_right + donut_size + donut_size / 2;
 }
 
-/* Design-time 15px gap below the header (or from the top with --noheader). */
+/* design time 15px gap below the header (or from the top with --noheader) */
 static int summary_ttf_top_gap(const IMAGECONTENT *ic)
 {
 	return imageuipx(ic, 15);
 }
 
-/* Extra Y so summary / hourly plot track the scaled top gap (0 at FontSize 12). */
+/* extra Y so summary / hourly plot track the scaled top gap (0 at FontSize 12) */
 static int summary_ttf_top_gap_extra(const IMAGECONTENT *ic)
 {
 	return summary_ttf_top_gap(ic) - 15;
 }
 
-/* Vertical extents of drawhours() relative to ypos: tip is ypos-above, labels end at ypos+below. */
+/* vertical extents of drawhours() relative to ypos: tip is ypos-above, labels end at ypos+below */
 static void hourly_graph_y_extents(const IMAGECONTENT *ic, int *above, int *below)
 {
 	*above = 10 + imageextrapx(ic, 35);
 	*below = 124 + imageuipx(ic, 8) + ic->fontctx.axis_ch;
 }
 
-/* Vertical extents of embedded 5-min plot relative to ypos (x-axis):
+/* vertical extents of embedded 5-min plot relative to ypos (x-axis):
  * tip at ypos-plot_h; leave imageuipx(8)+axis_ch/2 above tip for arrow and
- * top scale labels (same clearance as standalone -5g). */
+ * top scale labels (same clearance as standalone -5g) */
 static void summary_hs_fiveg_y_extents(const IMAGECONTENT *ic, const int plot_h, int *above, int *below)
 {
 	*above = plot_h + imageuipx(ic, 8) + ic->fontctx.axis_ch / 2;
 	*below = imageuipx(ic, 8) + ic->fontctx.axis_ch;
 }
 
-/* Tiny footer clearance matching layoutinit() generator placement. */
+/* tiny footer clearance matching layoutinit() generator placement */
 static int summary_hs_footer_clearance(const IMAGECONTENT *ic)
 {
 	return ic->fontctx.footer->h + 4 + ic->showedge * imageuipx(ic, 1);
 }
 
-/* Content band for embedding the hourly plot in -hs (below header, above bottom edge/note). */
+/* content band for embedding the hourly plot in -hs (below header, above bottom edge/note) */
 static void summary_hs_hourly_content_band(const IMAGECONTENT *ic, const int height,
 	const int monthrotatenotevisible, int *content_top, int *content_bottom)
 {
@@ -1145,14 +1132,14 @@ static void summary_hs_hourly_content_band(const IMAGECONTENT *ic, const int hei
 	} else {
 		*content_top = ic->showedge * imageuipx(ic, 1);
 	}
-	/* Center to the image edge so header→poles and labels→edge gaps match. */
+	/* center to the image edge so header→poles and labels→edge gaps match */
 	*content_bottom = height - ic->showedge;
 	if (monthrotatenotevisible) {
 		*content_bottom -= ic->lineheight;
 	}
 }
 
-/* Embedded hourly ypos for -hs (layout 1). TTF: center pole-tops→labels in the content band. */
+/* embedded hourly ypos for -hs (layout 1), TTF: center pole-tops→labels in the content band */
 static int summary_hours_y_hs(const IMAGECONTENT *ic, const int header_extra, const int graph_headermod,
 	const int height, const int monthrotatenotevisible)
 {
@@ -1163,8 +1150,8 @@ static int summary_hours_y_hs(const IMAGECONTENT *ic, const int header_extra, co
 		int min_hours_y, max_hours_y, bottom_clear;
 
 		hourly_graph_y_extents(ic, &tip_above, &below);
-		/* Center the visible plot (pole tops → hour labels). The axis tip sits
-		 * a fixed 10px above the poles and is only clamped into the band. */
+		/* center the visible plot (pole tops → hour labels), the axis tip sits
+		 * a fixed 10px above the poles and is only clamped into the band */
 		pole_above = tip_above - 10;
 		if (pole_above < 0) {
 			pole_above = 0;
@@ -1194,8 +1181,8 @@ static int summary_hours_y_hs(const IMAGECONTENT *ic, const int header_extra, co
 	return hours_y;
 }
 
-/* Embedded hourly ypos for -vs (layout 2). Axis tip is at ypos-10-extray; keep it
- * below the month digest (rate line) after the scaled top gap moves that block. */
+/* embedded hourly ypos for -vs (layout 2), axis tip is at ypos-10-extray; keep it
+ * below the month digest (rate line) after the scaled top gap moves that block */
 static int summary_hours_y_vs(const IMAGECONTENT *ic, const int header_extra, const int graph_headermod,
 	const int monthrotatenotevisible, const int digest_month_y)
 {
@@ -1204,7 +1191,7 @@ static int summary_hours_y_vs(const IMAGECONTENT *ic, const int header_extra, co
 
 	if (ic->fontctx.mode == FONT_TTF) {
 		const int extray = imageextrapx(ic, 35);
-		/* Rate line + body ink; axis tip is ypos-10-extray and scale labels sit near it. */
+		/* rate line + body ink; axis tip is ypos-10-extray and scale labels sit near it */
 		const int clear = digest_month_y + 5 * ic->lineheight + 10 + ic->fontctx.ch
 			+ ic->fontctx.axis_ch + imageuipx(ic, 12);
 		int min_hours_y;
@@ -1226,17 +1213,17 @@ static void summary_ttf_set_positions(IMAGECONTENT *ic, const int headermod,
 	*legend_x = 69 * ic->fontctx.cw;
 	*graph_x = 84 * ic->fontctx.cw;
 	*fivegraph_x = *graph_x;
-	/* body at textx - (12*cw+2) stays near the builtin left margin (~26). */
+	/* body at textx - (12*cw+2) stays near the built-in left margin (~26). */
 	*digest_x = (14 * ic->fontctx.cw + 2) + 26;
-	/* Scale with FontSize so TITLE role text clears the edge (fixed 15px clips). */
+	/* scale with FontSize so TITLE role text clears the edge (fixed 15px clips) */
 	*digest_day_y = ic->fontctx.header_h + summary_ttf_top_gap(ic) - headermod;
 	*digest_month_y = *digest_day_y - 1 + 8 * ic->lineheight;
 	*alltime_y = *digest_day_y + 27 + imageextrapx(ic, 10);
-	/* Under all-time "since" line, matching builtin legend vs since gap */
+	/* under all time "since" line, matching built-in legend vs since gap */
 	*legend_y = *alltime_y + 9 * ic->lineheight;
 }
 
-/* Text-only summary content width (stacks/legend/digest), excluding embedded graphs. */
+/* text-only summary content width (stacks/legend/digest), excluding embedded graphs */
 static int summary_ttf_text_width(IMAGECONTENT *ic, const int digest_x, const int alltime_x, const int legend_x)
 {
 	int content_left, content_right, r, width;
@@ -1259,8 +1246,8 @@ static int summary_ttf_text_width(IMAGECONTENT *ic, const int digest_x, const in
 	return width;
 }
 
-/* Embedded -vs/-hs bar width. TTF grows bars so the plot tracks text-only -vs width;
- * builtin uses fiveg_barwidth() (usually 1). Same value for -vs and -hs. */
+/* embedded -vs/-hs bar width, TTF grows bars so the plot tracks text-only -vs width;
+ * built-in uses fiveg_barwidth() (usually 1), same value for -vs and -hs */
 static int summary_fiveg_barwidth(IMAGECONTENT *ic)
 {
 	int digest_x, alltime_x, legend_x, graph_x, fivegraph_x;
@@ -1313,8 +1300,8 @@ static int summary_ttf_compute_width(IMAGECONTENT *ic, const int layout,
 			r = fivegraph_x + fiveg_samples * fiveg_barwidth_val + graph_extra_space(ic)
 				- graph_xpos_margin(ic) - imageuipx(ic, 20);
 		} else {
-			/* Standalone width includes a left-matching right pad; when embedded at
-			 * graph_x that pad must not extend past the axis tip (subtract left twice). */
+			/* standalone width includes a left-matching right pad; when embedded at
+			 * graph_x that pad must not extend past the axis tip (subtract left twice) */
 			r = graph_x + hourly_graph_width(ic) - 2 * hourly_graph_left(ic);
 		}
 		if (r > content_right) {
@@ -1327,7 +1314,7 @@ static int summary_ttf_compute_width(IMAGECONTENT *ic, const int layout,
 		width = 1;
 	}
 
-	/* Vertical graph may be wider than the text block (esp. multi-pixel 5-min bars). */
+	/* vertical graph may be wider than the text block (especially multi-pixel 5-min bars) */
 	if (layout == 2) {
 		int graph_w;
 
@@ -1394,21 +1381,21 @@ static void summary_ttf_adjust_height(IMAGECONTENT *ic, const int layout,
 	const int header_extra, const int graph_headermod, const int monthrotatenotevisible,
 	const int digest_month_y, int *height, int *vs_fiveg_bottom)
 {
-	/* Match summary_ttf_set_positions / hourly graph Y shifts below. */
+	/* match summary_ttf_set_positions / hourly graph Y shifts below */
 	*height += summary_ttf_top_gap_extra(ic);
 
 	if (layout == 2) {
 		if (cfg.summarygraph == 1) {
 			int bottom_margin, plot_h, clear, needed;
 
-			/* Axis labels sit below the 5-min plot; grow margin + canvas together */
+			/* axis labels sit below the 5-min plot; grow margin + canvas together */
 			bottom_margin = ic->fontctx.axis_ch + imageuipx(ic, 4) + imageuipx(ic, 12) + ic->showedge;
 			if (bottom_margin > *vs_fiveg_bottom) {
 				*height += bottom_margin - *vs_fiveg_bottom;
 				*vs_fiveg_bottom = bottom_margin;
 			}
 
-			/* Plot tip must clear the month digest (same clear band as hourly). */
+			/* plot tip must clear the month digest (same clear band as hourly) */
 			plot_h = 132 + imageextrapx(ic, 35);
 			clear = digest_month_y + 5 * ic->lineheight + 10 + ic->fontctx.ch
 				+ ic->fontctx.axis_ch + imageuipx(ic, 12);
@@ -1427,10 +1414,10 @@ static void summary_ttf_adjust_height(IMAGECONTENT *ic, const int layout,
 			}
 		}
 	} else {
-		/* Extra bottom pad so rate/legend clear the footer */
+		/* extra bottom pad so rate/legend clear the footer */
 		*height += 2 * ic->lineheight;
 
-		/* Grow canvas if the embedded plot span cannot fit the content band. */
+		/* grow canvas if the embedded plot span cannot fit the content band */
 		if (cfg.summarygraph == 0) {
 			int above, below, content_top, needed;
 			int bottom_clear = summary_hs_footer_clearance(ic);
@@ -1449,10 +1436,10 @@ static void summary_ttf_adjust_height(IMAGECONTENT *ic, const int layout,
 				*height = needed;
 			}
 		} else {
-			/* 5-min -hs: same content-band fit as hourly (tip→labels + footer). */
+			/* 5-min -hs: same content-band fit as hourly (tip→labels + footer) */
 			int content_top, above, below, needed;
 			int bottom_clear = summary_hs_footer_clearance(ic);
-			/* Design-time plot height used when growing the canvas. */
+			/* design time plot height used when growing the canvas */
 			const int min_plot = 132;
 
 			if (monthrotatenotevisible) {
@@ -1516,9 +1503,9 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 		height += ic->lineheight * 2;
 	}
 
-	/* Tall TTF headers grow the canvas; apply that growth before the noheader
+	/* tall TTF headers grow the canvas; apply that growth before the noheader
 	 * subtraction so --noheader only removes the baseline 24px chrome (same
-	 * net as list outputs), not the TTF growth that was never drawn. */
+	 * net as list outputs), not the TTF growth that was never drawn */
 	header_extra = ic->fontctx.header_h - 24;
 	if (header_extra < 0) {
 		header_extra = 0;
@@ -1526,11 +1513,11 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 	height += header_extra;
 
 	if (!ic->showheader) {
-		/* Text at header_h + N needs full header_h cancelled; hourly graph
-		 * Y (46 / 215) is a 24px-header layout and must not use TTF header_h. */
+		/* text at header_h + N needs full header_h cancelled; hourly graph
+		 * Y (46 / 215) is a 24px-header layout and must not use TTF header_h */
 		headermod = ic->fontctx.header_h + imageuipx(ic, 2);
 		graph_headermod = 24 + imageuipx(ic, 2);
-		/* Positioning must not keep header_extra when the bar is absent. */
+		/* positioning must not keep header_extra when the bar is absent */
 		header_extra = 0;
 		height -= ic->fontctx.header_h - 2;
 	} else {
@@ -1557,7 +1544,7 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 				break;
 		}
 
-		/* Multi-pixel bars widen the 5-min plot; grow canvas so it is not clipped */
+		/* multi-pixel bars widen the 5-min plot; grow canvas so it is not clipped */
 		if (cfg.summarygraph == 1 && (layout == 1 || layout == 2)) {
 			width += (fiveg_barwidth_val - 1) * summary_fiveg_samples(ic);
 		}
@@ -1573,8 +1560,8 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 		legend_y = 155 - headermod + imageextrapx(ic, 40);
 	}
 
-	/* Scale fiveg plot height with barwidth to keep aspect ratio (stable base, not chrome).
-	 * Builtin multi-pixel bars only; TTF embeds widen bars for width fill without growing height. */
+	/* scale fiveg plot height with barwidth to keep aspect ratio (stable base, not chrome),
+	 * built-in multi-pixel bars only; TTF embeds widen bars for width fill without growing height */
 	if (cfg.summarygraph == 1 && (layout == 1 || layout == 2) && fiveg_barwidth_val > 1
 		&& ic->fontctx.mode == FONT_BUILTIN) {
 		int fiveg_h;
@@ -1622,23 +1609,23 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 					if (monthrotatenotevisible) {
 						bottom_clear += ic->lineheight;
 					}
-					/* End the label band above the footer (not at the image edge). */
+					/* end the label band above the footer (not at the image edge) */
 					content_bottom = height - bottom_clear;
 					available = content_bottom - content_top;
 
-					/* Same top clearance as standalone -5g: pad + half axis glyph. */
+					/* same top clearance as standalone -5g: pad + half axis glyph */
 					top_clear = imageuipx(ic, 8) + ic->fontctx.axis_ch / 2;
 					below = imageuipx(ic, 8) + ic->fontctx.axis_ch;
 					fiveg_h = available - top_clear - below;
 					if (fiveg_h < 1) {
 						fiveg_h = 1;
 					}
-					/* Tip below header; labels end at content_bottom. */
+					/* tip below header; labels end at content_bottom */
 					fiveg_y = content_top + top_clear + fiveg_h;
 				} else {
 					int fiveg_bottom = 30 + imageextrapx(ic, 8);
 
-					/* Builtin: preserve tip at 38 - headermod. */
+					/* built-in: preserve tip at 38 - headermod */
 					fiveg_h = height - 68 + headermod - imageextrapx(ic, 8)
 						- (monthrotatenotevisible * (ic->lineheight + 2));
 					if (fiveg_h < 1) {
@@ -1663,12 +1650,12 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 				int fiveg_plot_h;
 
 				if (ic->fontctx.mode == FONT_TTF) {
-					/* Same block centering as standalone: xpos = block_start + graph_xpos_margin. */
+					/* same block centering as standalone: xpos = block_start + graph_xpos_margin */
 					fiveg_x = (width - fiveg_w) / 2 + graph_xpos_margin(ic);
 					if (fiveg_x < 0) {
 						fiveg_x = 0;
 					}
-					/* Width fill uses barwidth; keep the previous 1px-bar plot height. */
+					/* width fill uses barwidth; keep the previous 1px-bar plot height */
 					fiveg_plot_h = 132 + imageextrapx(ic, 35);
 				} else {
 					fiveg_plot_h = 132 * fiveg_barwidth_val + imageextrapx(ic, 35);
@@ -1682,7 +1669,7 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 				if (ic->fontctx.mode == FONT_TTF) {
 					int hours_w = hourly_graph_width(ic);
 
-					/* Same block centering as standalone: xpos = block_start + hourly_graph_left. */
+					/* same block centering as standalone: xpos = block_start + hourly_graph_left */
 					hours_x = (width - hours_w) / 2 + hourly_graph_left(ic);
 					if (hours_x < 0) {
 						hours_x = 0;
@@ -1691,7 +1678,7 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 				drawhours(ic, hours_x, hours_y, israte);
 			}
 			if (monthrotatenotevisible) {
-				/* hours_y already includes +2*lineheight for this note; sit above the plot. */
+				/* hours_y already includes +2*lineheight for this note; sit above the plot */
 				int hours_y = summary_hours_y_vs(ic, header_extra, graph_headermod, monthrotatenotevisible, digest_month_y);
 				int note_y = hours_y - (ic->lineheight * (3 + imageextrapx(ic, 2)));
 
@@ -1710,7 +1697,7 @@ static void drawsummary_stack_ttf(IMAGECONTENT *ic, const int body_left, const i
 	const int y_rx, const int y_tx, const int y_eq, const uint64_t rx, const uint64_t tx)
 {
 	const int label_edge = body_left + imagetextwidth(ic, FONT_ROLE_BODY, "rx");
-	/* Shift values right by 2*cw; callers keep donut/title anchors on value_edge. */
+	/* shift values right by 2*cw; callers keep donut/title anchors on value_edge */
 	const int padded_edge = value_edge + 2 * ic->fontctx.cw;
 	char valbuf[64];
 
@@ -1785,7 +1772,7 @@ void drawsummary_digest(IMAGECONTENT *ic, const int x, const int y, const char *
 	dbdatalistinfo datainfo;
 
 	yesterday = ic->current - 86400;
-	/* Builtin keeps historical 74px; TTF scales with cell width (12*6+2 == 74). */
+	/* built-in keeps historical 74px; TTF scales with cell width (12*6+2 == 74) */
 	bodyoff = (ic->fontctx.mode == FONT_TTF) ? (12 * ic->fontctx.cw + 2) : 74;
 
 	switch(mode[0]) {
@@ -2045,8 +2032,8 @@ void drawfivegraph(IMAGECONTENT *ic, const int israte, const int resultcount, co
 		imagewidth = ic->commonwidth;
 	}
 
-	/* Plot height from configured size (default top 38 + bottom 30), then * barwidth.
-	 * Do not derive from imageheight - chrome, or large fonts shrink the plot first. */
+	/* plot height from configured size (default top 38 + bottom 30), then * barwidth,
+	 * do not derive from imageheight - chrome, or large fonts shrink the plot first */
 	base_graph = height - 68;
 	if (base_graph < 1) {
 		base_graph = 1;
@@ -2072,7 +2059,7 @@ void drawfivegraph(IMAGECONTENT *ic, const int israte, const int resultcount, co
 		}
 		top = 38 + header_extra;
 		if (ic->fontctx.mode == FONT_TTF) {
-			/* Clear header for up-arrow and topmost scale label ascent. */
+			/* clear header for up-arrow and topmost scale label ascent */
 			int min_top = ic->fontctx.header_h + imageuipx(ic, 8) + ic->fontctx.axis_ch / 2;
 			if (top < min_top) {
 				top = min_top;
@@ -2085,7 +2072,7 @@ void drawfivegraph(IMAGECONTENT *ic, const int israte, const int resultcount, co
 	if (ic->fontctx.mode == FONT_TTF) {
 		int needed_bottom;
 
-		/* Labels at ypos+imageuipx(8); leave room for legend + footer */
+		/* labels at ypos+imageuipx(8); leave room for legend + footer */
 		needed_bottom = imageuipx(ic, 8) + ic->fontctx.axis_ch + imageuipx(ic, 4) + ic->fontctx.ch + imageuipx(ic, 4) + imageuipx(ic, 12) + ic->showedge;
 		if (needed_bottom > bottom) {
 			bottom = needed_bottom;
@@ -2155,7 +2142,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	imagedrawhline(ic, x, x + (plot_w + pad_full), y, ic->ctext);
 	imagedrawvline(ic, x + cross, y + cross, y - height, ic->ctext);
 
-	/* arrows — tip at axis endpoint so the head is not inset past the stroke */
+	/* arrows: tip at axis endpoint so the head is not inset past the stroke */
 	drawarrowup(ic, x + cross, y - height);
 	drawarrowright(ic, x + (plot_w + pad_full), y);
 
@@ -2197,7 +2184,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	{
 		int min_step_px = SCALEMINPIXELS;
 
-		/* Tall TTF axis digits need more vertical space between scale labels */
+		/* tall TTF axis digits need more vertical space between scale labels */
 		if (ic->fontctx.mode == FONT_TTF && ic->fontctx.axis_ch + 4 > min_step_px) {
 			min_step_px = ic->fontctx.axis_ch + 4;
 		}
@@ -2280,7 +2267,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 		px = plot_x0 + i * bw;
 
 		if (d->tm_min == 0 && i > 2) {
-			/* Split around thick zero-line and bottom x-axis so hour marks do not punch holes. */
+			/* split around thick zero-line and bottom x-axis so hour marks do not punch holes */
 			int line_t = imageuipx(ic, 1);
 			int center_top = center_y - line_t / 2;
 			int center_bot = center_top + line_t - 1;
@@ -2304,7 +2291,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 					snprintf(buffer, 32, "%02d", d->tm_hour);
 					if (ic->fontctx.mode == FONT_TTF) {
 						label_x = px - imagetextwidth(ic, FONT_ROLE_AXIS, buffer) / 2;
-						/* Hourly uses axis+imageuipx(8); keep labels clear of the x-axis line */
+						/* hourly uses axis+imageuipx(8); keep labels clear of the x-axis line */
 						label_y = center_y + txh + FIVEMINHEIGHTOFFSET + imageuipx(ic, 8);
 					} else {
 						label_x = px - imagefontwidth(ic, FONT_ROLE_AXIS) + 1;
@@ -2328,7 +2315,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 		}
 
 		if (datalist_i->timestamp > timestamp) {
-			/* Scale future / no-data marks with UI stroke thickness. */
+			/* scale future / no-data marks with UI stroke thickness */
 			int t = imageuipx(ic, 1);
 			int x0 = px - t / 2;
 			int y0 = center_y - t / 2;
@@ -2368,7 +2355,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 		datalist_i = datalist_i->next;
 	}
 
-	/* Redraw axes last so thick grid marks cannot nick the strokes (mirrors hourly). */
+	/* redraw axes last so thick grid marks cannot nick the strokes (mirrors hourly) */
 	imagedrawhline(ic, axis_base_x, axis_base_x + plot_w + pad_full, ypos, ic->ctext);
 	imagedrawvline(ic, axis_stem_x, ypos + cross, ypos - height, ic->ctext);
 	imagedrawhline(ic, hline_x0, plot_x0 + plot_w + pad_inner, center_y, ic->ctext);
@@ -2380,7 +2367,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 	return 1;
 }
 
-/* Pixels per hour. Builtin stays 1px (master sizing); TTF widens for day labels. */
+/* pixels per hour, built-in stays 1px (master sizing); TTF widens for day labels */
 static int percentile_barwidth(IMAGECONTENT *ic)
 {
 	int label_w, gap, need, slot = 24; /* day labels every 24 hours */
@@ -2389,7 +2376,7 @@ static int percentile_barwidth(IMAGECONTENT *ic)
 		return 1;
 	}
 
-	/* Gap grows with label size (min 4px) so large fonts stay readable between days */
+	/* gap grows with label size (min 4px) so large fonts stay readable between days */
 	label_w = imagetextwidth(ic, FONT_ROLE_AXIS, "00");
 	gap = label_w / 4;
 	if (gap < 4) {
@@ -2408,8 +2395,8 @@ void draw95thpercentilegraph(IMAGECONTENT *ic, const int mode)
 	barwidth = percentile_barwidth(ic);
 	imagewidth = PERCENTILEENTRYCOUNT * barwidth + graph_extra_space(ic);
 
-	/* Plot height from base size (default top 38 + bottom 30), then * barwidth.
-	 * Do not derive from imageheight - chrome, or large fonts shrink the plot first. */
+	/* plot height from base size (default top 38 + bottom 30), then * barwidth,
+	 * do not derive from imageheight - chrome, or large fonts shrink the plot first */
 	base_graph = 300 - 68;
 	if (base_graph < 1) {
 		base_graph = 1;
@@ -2447,7 +2434,7 @@ void draw95thpercentilegraph(IMAGECONTENT *ic, const int mode)
 	if (ic->fontctx.mode == FONT_TTF) {
 		int needed_bottom;
 
-		/* Labels at ypos+imageuipx(8); leave room for legend + footer */
+		/* labels at ypos+imageuipx(8); leave room for legend + footer */
 		needed_bottom = imageuipx(ic, 8) + ic->fontctx.axis_ch + imageuipx(ic, 4) + ic->fontctx.ch + imageuipx(ic, 4) + imageuipx(ic, 12) + ic->showedge;
 		if (needed_bottom > bottom) {
 			bottom = needed_bottom;
@@ -2468,7 +2455,7 @@ void draw95thpercentilegraph(IMAGECONTENT *ic, const int mode)
 	if (drawpercentile(ic, mode, graph_xpos_margin(ic), imageheight - bottom, graph_height, &percentile)) {
 		int legend_x;
 
-		/* Builtin: historical half-width guess. TTF: measure real legend width. */
+		/* built-in: historical half-width guess, TTF: measure real legend width */
 		if (ic->fontctx.mode == FONT_TTF) {
 			legend_x = imagewidth / 2 - percentilelegendwidth(ic, mode, percentile) / 2;
 		} else {
@@ -2558,7 +2545,7 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 	{
 		int min_step_px = SCALEMINPIXELS;
 
-		/* Tall TTF axis digits need more vertical space between scale labels */
+		/* tall TTF axis digits need more vertical space between scale labels */
 		if (ic->fontctx.mode == FONT_TTF && ic->fontctx.axis_ch + 4 > min_step_px) {
 			min_step_px = ic->fontctx.axis_ch + 4;
 		}
@@ -2580,14 +2567,14 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 	imagedrawhline(ic, x, x + (plot_w + pad_full), y, ic->ctext);
 	imagedrawvline(ic, x + cross, y + cross, y - height, ic->ctext);
 
-	/* arrows — tip at axis endpoint so the head is not inset past the stroke */
+	/* arrows: tip at axis endpoint so the head is not inset past the stroke */
 	drawarrowup(ic, x + cross, y - height);
 	drawarrowright(ic, x + (plot_w + pad_full), y);
 
-	/* adjust cursor to first point on graph (1px past stem) */
+	/* adjust cursor to first point on graph (1 px past stem) */
 	x += cross + 1;
 	hline_x0 = x + stroke_half;
-	/* Axis tip; do not use x after the cross+1 advance with a fixed inset. */
+	/* axis tip; do not use x after the cross+1 advance with a fixed inset */
 	dash_x1 = axis_base_x + plot_w + pad_full;
 	y -= 1;
 
@@ -2621,7 +2608,7 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 				d = localtime(&current);
 				strftime(datebuff, DATEBUFFLEN, "%d", d);
 				if (i > 0) {
-					/* Same center/thickness as x-axis ticks (imagedrawvline). */
+					/* same center/thickness as x-axis ticks (imagedrawvline) */
 					imagedrawvline(ic, px, y - height + 1, y, ic->cbgoffset);
 				}
 				if (ic->fontctx.mode == FONT_TTF) {
@@ -2666,7 +2653,7 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 			l = height;
 		}
 
-		/* Day separator above the pole only (like 5min hour marks: never paint over traffic). */
+		/* day separator above the pole only (like 5min hour marks: never paint over traffic) */
 		if (day_boundary && i > 0) {
 			int sep_top = y - height + 1;
 			int sep_bottom = y - l;
@@ -2684,7 +2671,7 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 		datalist_i = datalist_i->next;
 	}
 
-	/* Redraw axes so day markers / thick dashes do not nick the strokes. */
+	/* redraw axes so day markers / thick dashes do not nick the strokes */
 	imagedrawhline(ic, axis_base_x, axis_base_x + plot_w + pad_full, axis_y, ic->ctext);
 	imagedrawvline(ic, axis_stem_x, axis_y + cross, axis_y - height, ic->ctext);
 

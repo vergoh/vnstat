@@ -898,28 +898,28 @@ START_TEST(invertcolor_inverts_colors)
 }
 END_TEST
 
-/* Return path of a readable system sans TTF, or NULL if none found.
- * Order prefers fonts commonly shipped by major Linux distros. */
+/* return path of a readable system sans TTF, or NULL if none found,
+ * order prefers fonts commonly shipped by major Linux distros */
 static const char *find_test_ttf(void)
 {
 	static const char *candidates[] = {
-		/* Noto Sans — default on recent Fedora / Debian / Ubuntu desktops */
+		/* Noto Sans: often the default on Fedora / Debian / Ubuntu desktops */
 		"/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
 		"/usr/share/fonts/google-noto/NotoSans-Regular.ttf",
 		"/usr/share/fonts/noto/NotoSans-Regular.ttf",
-		/* Liberation Sans — common desktop / LibreOffice seed */
+		/* Liberation Sans: common desktop / LibreOffice seed */
 		"/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
 		"/usr/share/fonts/liberation-sans/LiberationSans-Regular.ttf",
 		"/usr/share/fonts/liberation/LiberationSans-Regular.ttf",
-		/* DejaVu Sans — still common on servers and older defaults */
+		/* DejaVu Sans: still common on servers and older defaults */
 		"/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
 		"/usr/share/fonts/TTF/DejaVuSans.ttf",
 		"/usr/local/share/fonts/dejavu/DejaVuSans.ttf",
-		/* Droid — often present via fonts-droid-fallback */
+		/* Droid: often present via fonts-droid-fallback */
 		"/usr/share/fonts/truetype/droid/DroidSans.ttf",
 		"/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf",
 		"/usr/share/fonts-droid-fallback/truetype/DroidSansFallback.ttf",
-		/* FreeSans — frequently pulled by fonts-freefont-ttf */
+		/* FreeSans: another alternative */
 		"/usr/share/fonts/truetype/freefont/FreeSans.ttf",
 		NULL};
 	int i;
@@ -1013,7 +1013,7 @@ START_TEST(imageextrapx_and_imageuipx_builtin)
 	ic.large = 1;
 	ck_assert_int_eq(imageextrapx(&ic, 14), 14);
 	ck_assert_int_eq(imageextrapx(&ic, 0), 0);
-	/* Builtin UI thickness is not fattened by LargeFonts. */
+	/* built-in UI thickness is not fattened by LargeFonts */
 	ck_assert_int_eq(imageuipx(&ic, 1), 1);
 
 	imagefontcleanup();
@@ -1088,7 +1088,7 @@ START_TEST(image_common_target_width_builtin)
 	ck_assert_int_ge(common, list_w);
 	ck_assert_int_ge(common, summary_w);
 	ck_assert_int_ge(common, hourly_w);
-	/* Builtin large list and hourly stay within a few pixels of each other. */
+	/* built-in large list and hourly stay within a few pixels of each other */
 	ck_assert_int_le(abs(list_w - hourly_w), 8);
 
 	imagefontcleanup();
@@ -1173,7 +1173,7 @@ START_TEST(imagefontinit_ttf_success_and_metrics)
 	ck_assert_int_eq(imageuipx(&ic, 2), 2);
 	ck_assert_int_eq(imageuipx(&ic, GRAPH_AXIS_CROSS), GRAPH_AXIS_CROSS);
 	ck_assert_int_eq(graph_axis_left(&ic), ic.fontctx.axis_num5_w + imageuipx(&ic, GRAPH_AXIS_LABEL_GAP));
-	/* At 12pt, side pad redistributes design left vs after_tip; total chrome unchanged. */
+	/* at 12pt, side pad redistributes design left vs after_tip; total chrome unchanged */
 	ck_assert_int_eq(graph_xpos_margin(&ic),
 					 (8 + imageuipx(&ic, GRAPH_AXIS_CROSS) + 1 + imageuipx(&ic, GRAPH_EXTRA_RIGHT)
 					  - imageuipx(&ic, FIVEMINWIDTHFULLPADDING))
@@ -1200,7 +1200,7 @@ START_TEST(imagefontinit_ttf_success_and_metrics)
 
 	ck_assert_int_eq(imagefontinit(&ic_large, 1), 1);
 	ck_assert(ic_large.fontctx.ptsize == (double)FONTSIZE * 1.5);
-	/* LargeFonts at 12pt → 18pt: first thickness/cross step */
+	/* LargeFonts at 12pt -> 18pt: first expected thickness/cross step */
 	ck_assert_int_eq(imageuipx(&ic_large, GRAPH_AXIS_CROSS), 6);
 	ck_assert_int_eq(imageuipx(&ic_large, 1), 2);
 	ck_assert_int_gt(graph_extra_space(&ic_large), graph_extra_space(&ic));

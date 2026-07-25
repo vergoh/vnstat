@@ -201,9 +201,9 @@ static int imagettftextwidth(const IMAGECONTENT *ic, const double ptsize, const 
 		return 0;
 	}
 
-	/* Pen-origin to right edge. Do not use brect[2]-brect[0]: a positive left
+	/* pen-origin to right edge. Do not use brect[2]-brect[0]: a positive left
 	 * bearing (common on digit-leading strings) would shrink the width and
-	 * shift right-aligned values like "155.27 GiB" off the unit column. */
+	 * shift right-aligned values like "155.27 GiB" off the unit column */
 	return brect[2];
 }
 
@@ -219,7 +219,7 @@ static int imagettfinitmetrics(IMAGECONTENT *ic)
 	}
 	fontcache_ready = 1;
 
-	/* Template-average cell width for space-padded layouts. */
+	/* template-average cell width for space-padded layouts */
 	err = imagettfbbox(ic, ic->fontctx.ptsize, 0.0, "  0000-00-00   000.00 GiB   000.00 GiB   000.00 GiB", brect);
 	if (err != NULL) {
 		fprintf(stderr, "%s \"%s\": %s\n", errprefix, ic->fontctx.ttfpath, err);
@@ -244,14 +244,14 @@ static int imagettfinitmetrics(IMAGECONTENT *ic)
 		ic->fontctx.cw = 1;
 	}
 
-	/* Ensure a worst-case value field fits with 4px margin before the next divider. */
+	/* ensure a worst-case value field fits with 4px margin before the next divider */
 	value_w = imagettftextwidth(ic, ic->fontctx.ptsize, "999.99 YiB");
 	while (10 * ic->fontctx.cw < value_w + 4) {
 		ic->fontctx.cw++;
 	}
 
-	/* Body height with ascenders and descenders */
-	err = imagettfbbox(ic, ic->fontctx.ptsize, 0.0, "Ayjp", brect);
+	/* body height with ascenders and descenders */
+	err = imagettfbbox(ic, ic->fontctx.ptsize, 0.0, TTF_HEIGHT_SAMPLE, brect);
 	if (err != NULL) {
 		fprintf(stderr, "%s \"%s\": %s\n", errprefix, ic->fontctx.ttfpath, err);
 		imagefontcleanup();
@@ -264,7 +264,7 @@ static int imagettfinitmetrics(IMAGECONTENT *ic)
 	ic->fontctx.ascent = -brect[7];
 	ic->fontctx.scale = (double)ic->fontctx.cw / 6.0;
 
-	err = imagettfbbox(ic, ic->fontctx.ptsize * ic->fontctx.header_scale, 0.0, "Ayjp", brect);
+	err = imagettfbbox(ic, ic->fontctx.ptsize * ic->fontctx.header_scale, 0.0, TTF_HEIGHT_SAMPLE, brect);
 	if (err != NULL) {
 		fprintf(stderr, "%s \"%s\": %s\n", errprefix, ic->fontctx.ttfpath, err);
 		imagefontcleanup();
@@ -280,7 +280,7 @@ static int imagettfinitmetrics(IMAGECONTENT *ic)
 		ic->fontctx.header_h = 24;
 	}
 
-	err = imagettfbbox(ic, ic->fontctx.ptsize * ic->fontctx.title_scale, 0.0, "Ayjp", brect);
+	err = imagettfbbox(ic, ic->fontctx.ptsize * ic->fontctx.title_scale, 0.0, TTF_HEIGHT_SAMPLE, brect);
 	if (err != NULL) {
 		fprintf(stderr, "%s \"%s\": %s\n", errprefix, ic->fontctx.ttfpath, err);
 		imagefontcleanup();
@@ -292,7 +292,7 @@ static int imagettfinitmetrics(IMAGECONTENT *ic)
 	}
 	ic->fontctx.title_ascent = -brect[7];
 
-	err = imagettfbbox(ic, ic->fontctx.ptsize * ic->fontctx.axis_scale, 0.0, "Ayjp", brect);
+	err = imagettfbbox(ic, ic->fontctx.ptsize * ic->fontctx.axis_scale, 0.0, TTF_HEIGHT_SAMPLE, brect);
 	if (err != NULL) {
 		fprintf(stderr, "%s \"%s\": %s\n", errprefix, ic->fontctx.ttfpath, err);
 		imagefontcleanup();
@@ -304,7 +304,7 @@ static int imagettfinitmetrics(IMAGECONTENT *ic)
 	}
 	ic->fontctx.axis_ascent = -brect[7];
 
-	err = imagettfbbox(ic, ic->fontctx.ptsize * ic->fontctx.timestamp_scale, 0.0, "Ayjp", brect);
+	err = imagettfbbox(ic, ic->fontctx.ptsize * ic->fontctx.timestamp_scale, 0.0, TTF_HEIGHT_SAMPLE, brect);
 	if (err != NULL) {
 		fprintf(stderr, "%s \"%s\": %s\n", errprefix, ic->fontctx.ttfpath, err);
 		imagefontcleanup();
@@ -394,7 +394,7 @@ int imagefontinit(IMAGECONTENT *ic, const int largefonts)
 
 	return 1;
 #else
-	fprintf(stderr, "Error: FontFile is set but libGD was built without FreeType/TTF support.\n");
+	fprintf(stderr, "Error: FontFile is set but libGD lacks FreeType/TTF support.\n");
 	return 0;
 #endif
 }
@@ -458,8 +458,8 @@ void imagestringup(IMAGECONTENT *ic, const fontrole_t role, const int x, const i
 	}
 
 #if HAVE_DECL_GDIMAGESTRINGFT
-	/* At angle π/2 glyphs extend left of the pen by roughly ascent; shift so
-	 * the visual left edge matches gdImageStringUp's x anchor. */
+	/* at angle pi/2 (90 degrees) glyphs extend left of the pen by roughly ascent; shift so
+	 * the visual left edge matches gdImageStringUp's x anchor */
 	ptsize = imageroleptsize(ic, role);
 	pen_x = x + imageroleascent(ic, role);
 	err = gdImageStringFT(ic->im, brect, color, ic->fontctx.ttfpath, ptsize, M_PI / 2.0, pen_x, y, (char *)text);
@@ -493,12 +493,12 @@ int imageextrapx(const IMAGECONTENT *ic, const int extra)
 	return (int)lrint(t * (double)extra);
 }
 
-/* Scale a design-time pixel (usually 1 or 2) with body point size.
- * Builtin fonts and default FontSize (12pt) → returns base unchanged.
- * Larger TTF → grows with ptsize/FONTSIZE (e.g. base=1 at 40pt → 3).
+/* Scale a design time pixel (usually 1 or 2) with body point size.
+ * Built-in fonts and default FontSize (12pt) returns base unchanged.
+ * Larger TTF grows with ptsize/FONTSIZE (e.g. base=1 at 40pt -> 3).
  * Uses ptsize rather than fontctx.scale (cw/6): TTF cell width is already
- * wider than the builtin baseline at 12pt, so scale would thicken too early.
- * Builtin large uses imageextrapx() for layout fattening, not this. */
+ * wider than the built-in baseline at 12pt, so scale would thicken too early.
+ * Built-in large uses imageextrapx() for layout fattening, not this. */
 int imageuipx(const IMAGECONTENT *ic, const int base)
 {
 	int n;
@@ -523,7 +523,7 @@ void imagedrawhline(IMAGECONTENT *ic, const int x1, const int x2, const int y, c
 	int t, y1, y2, xa, xb;
 
 	t = imageuipx(ic, 1);
-	/* Center on y; use t/2 so even thicknesses do not grow only downward. */
+	/* center on y; use t/2 so even thicknesses do not grow only downward */
 	y1 = y - t / 2;
 	y2 = y1 + t - 1;
 	if (x1 <= x2) {
@@ -573,16 +573,16 @@ void imagedrawrect(IMAGECONTENT *ic, const int x1, const int y1, const int x2, c
 		yb = y1;
 	}
 
-	/* Outer edge of the border sits on the given rectangle. */
+	/* outer edge of the border sits on the given rectangle */
 	gdImageFilledRectangle(ic->im, xa, ya, xb, ya + t - 1, color);
 	gdImageFilledRectangle(ic->im, xa, yb - t + 1, xb, yb, color);
 	gdImageFilledRectangle(ic->im, xa, ya, xa + t - 1, yb, color);
 	gdImageFilledRectangle(ic->im, xb - t + 1, ya, xb, yb, color);
 }
 
-/* Draw an edged arc outline of UI stroke thickness.
- * step = -2: outer edge at diameter, grow inward (into ring).
- * step = +2: edge at diameter, grow outward (into ring from hole). */
+/* draw an edged arc outline of UI stroke thickness
+ * step = -2: outer edge at diameter, grow inward (into ring)
+ * step = +2: edge at diameter, grow outward (into ring from hole) */
 static void imagedrawedgedarc(IMAGECONTENT *ic, const int x, const int y, const int diameter, const int s, const int e, const int color, const int step)
 {
 	int t, i, d;
@@ -608,7 +608,7 @@ void imagedrawdashedhline(IMAGECONTENT *ic, const int x1, const int x2, const in
 	}
 }
 
-/* Pixels from graph xpos to axis base (builtin historical GRAPH_AXIS_BASE). */
+/* pixels from graph xpos to axis base (built-in historical GRAPH_AXIS_BASE) */
 int graph_axis_left(const IMAGECONTENT *ic)
 {
 	if (ic->fontctx.mode == FONT_BUILTIN) {
@@ -616,18 +616,18 @@ int graph_axis_left(const IMAGECONTENT *ic)
 	}
 
 	/* 5-digit field + gap to y-axis; unit text sits at xpos in the left margin
-	 * and uses the spare column vs 4-char scale values. */
+	 * and uses the spare column vs 4-char scale values */
 	return ic->fontctx.axis_num5_w + imageuipx(ic, GRAPH_AXIS_LABEL_GAP);
 }
 
-/* Half of UI stroke thickness; grid lines inset by this so they do not overlap axes. */
+/* half of UI stroke thickness; grid lines inset by this so they do not overlap axes */
 int graph_stroke_half(const IMAGECONTENT *ic)
 {
 	return imageuipx(ic, 1) / 2;
 }
 
-/* Symmetric left/right inset for standalone 5-minute / percentile graphs.
- * Redistributes design chrome so unit text and arrow tip have matching margins. */
+/* symmetric left/right inset for standalone 5-minute / percentile graphs,
+ * redistributes design chrome so unit text and arrow tip have matching margins */
 static int graph_side_pad(const IMAGECONTENT *ic)
 {
 	int cross, pad_full, after_tip, side;
@@ -651,7 +651,7 @@ int graph_xpos_margin(const IMAGECONTENT *ic)
 	return graph_side_pad(ic);
 }
 
-/* Non-plot width for 5-minute / percentile style graphs (left margin + chrome + right). */
+/* non-plot width for 5-minute / percentile style graphs (left margin + chrome + right) */
 int graph_extra_space(const IMAGECONTENT *ic)
 {
 	int side, cross, pad_full, right;
@@ -660,7 +660,7 @@ int graph_extra_space(const IMAGECONTENT *ic)
 		return FIVEMINEXTRASPACE + imageextrapx(ic, 14);
 	}
 
-	/* Balance side pads: left margin == space past axis tip (total width unchanged vs design). */
+	/* balance side pads: left margin == space past axis tip (total width unchanged vs design) */
 	side = graph_side_pad(ic);
 	cross = imageuipx(ic, GRAPH_AXIS_CROSS);
 	pad_full = imageuipx(ic, FIVEMINWIDTHFULLPADDING);
@@ -671,19 +671,19 @@ int graph_extra_space(const IMAGECONTENT *ic)
 	return side + graph_axis_left(ic) + cross + 1 + right;
 }
 
-/* Extra plot width matching the 23 hour-to-hour gaps (keeps bars aligned with axis). */
+/* extra plot width matching the 23 hour-to-hour gaps (keeps bars aligned with axis) */
 int hourly_plot_extrax(const IMAGECONTENT *ic)
 {
 	return HOURLY_HOUR_GAPS * imageextrapx(ic, 6);
 }
 
-/* Pitch between hour columns; poles and ticks scale from this (same curve as plot width). */
+/* pitch between hour columns; poles and ticks scale from this (same curve as plot width) */
 int hourly_hour_step(const IMAGECONTENT *ic)
 {
 	return HOURLY_HOUR_STEP + imageextrapx(ic, 6);
 }
 
-/* Map a design-time hourly pole/tick pixel through the current hour-column pitch. */
+/* map a design time hourly pole/tick pixel through the current hour-column pitch */
 int hourly_map_px(const IMAGECONTENT *ic, const int design)
 {
 	const int step = hourly_hour_step(ic);
@@ -694,7 +694,7 @@ int hourly_map_px(const IMAGECONTENT *ic, const int design)
 	return (design * step + HOURLY_HOUR_STEP / 2) / HOURLY_HOUR_STEP;
 }
 
-/* Left inset for standalone hourly graph (balanced with right tip room for TTF). */
+/* left inset for standalone hourly graph (balanced with right tip room for TTF) */
 int hourly_graph_left(const IMAGECONTENT *ic)
 {
 	const int extrax = hourly_plot_extrax(ic);
@@ -724,7 +724,7 @@ int hourly_graph_left(const IMAGECONTENT *ic)
 	return side;
 }
 
-/* Standalone hourly canvas width: left margin + axis gutter + plot + right pad. */
+/* standalone hourly canvas width: left margin + axis gutter + plot + right pad */
 int hourly_graph_width(const IMAGECONTENT *ic)
 {
 	const int left = hourly_graph_left(ic);
@@ -732,9 +732,9 @@ int hourly_graph_width(const IMAGECONTENT *ic)
 	const int pole_pad = imageextrapx(ic, 2);
 	const int left_grow = (ic->fontctx.mode == FONT_TTF) ? (imageuipx(ic, 13) - 13) : 0;
 	const int axis_past = (ic->fontctx.mode == FONT_TTF) ? imageuipx(ic, HOURLY_AXIS_PAST) : HOURLY_AXIS_PAST;
-	/* +pole_pad / +left_grow shift hours right so widened poles clear the y-axis. */
+	/* +pole_pad / +left_grow shift hours right so widened poles clear the y-axis */
 	const int plot = HOURLY_PLOT_SPAN + extrax + pole_pad + left_grow;
-	/* Right pad: tip room past axis end matches left inset (TTF centering). */
+	/* right pad: tip room past axis end matches left inset (TTF centering) */
 	int right = left + axis_past + pole_pad;
 
 	if (ic->fontctx.mode == FONT_BUILTIN) {
@@ -751,7 +751,7 @@ int image_list_width(const IMAGECONTENT *ic)
 	return 83 * ic->fontctx.cw + imageuipx(ic, 2) + imageextrapx(ic, 2);
 }
 
-/* Clamp canvas-vs-natural delta applied to list bars to ±50% of design bar length. */
+/* clamp canvas-vs-natural delta applied to list bars to +/-50% of design bar length */
 int image_list_bar_extra(const IMAGECONTENT *ic, const int natural_width, const int design_bar_len)
 {
 	int delta, max_adjust;
@@ -774,8 +774,8 @@ int image_list_bar_extra(const IMAGECONTENT *ic, const int natural_width, const 
 	return delta;
 }
 
-/* Numeric label on a horizontal scale line (TTF right-align + ascent center;
- * builtin keeps historical x/y via builtin_x / builtin_y). */
+/* numeric label on a horizontal scale line (TTF right-align + ascent center;
+ * built-in keeps historical x/y via builtin_x / builtin_y) */
 void graph_draw_axis_value(IMAGECONTENT *ic, const int axis_x, const int line_y, const char *val, const int builtin_x, const int builtin_y)
 {
 	int label_y;
@@ -795,7 +795,7 @@ void graph_draw_axis_value(IMAGECONTENT *ic, const int axis_x, const int line_y,
 	}
 }
 
-/* Vertical unit label; callers pass mode-specific x (anchors differ per graph). */
+/* vertical unit label; callers pass mode-specific x (anchors differ per graph) */
 void graph_draw_axis_unit(IMAGECONTENT *ic, const int x_ttf, const int x_builtin, const int y, const char *text)
 {
 	if (ic->fontctx.mode == FONT_TTF) {
@@ -866,7 +866,7 @@ int imagefontheight(IMAGECONTENT *ic, const fontrole_t role)
 	}
 }
 
-/* Center role text vertically in [rect_top, rect_bottom] (TTF ink-band aware). */
+/* center role text vertically in [rect_top, rect_bottom] (TTF ink-band aware) */
 static int imagecentery(IMAGECONTENT *ic, const fontrole_t role, const char *text, const int rect_top, const int rect_bottom)
 {
 	int text_h, y;
@@ -879,8 +879,8 @@ static int imagecentery(IMAGECONTENT *ic, const fontrole_t role, const char *tex
 
 		ascent = imageroleascent(ic, role);
 
-		/* Center the ascent→baseline band (ignore descenders) so cap-height
-		 * text gets equal padding above/below in the header bar. */
+		/* center the ascent→baseline band (ignore descenders) so cap-height
+		 * text gets equal padding above/below in the header bar */
 		err = imagettfbbox(ic, ptsize, 0.0, text, brect);
 		if (err == NULL) {
 			int clamp = imageuipx(ic, 1);
@@ -975,7 +975,7 @@ void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int 
 		int date_x_alt, date_y_alt;
 
 		if (ic->fontctx.mode == FONT_TTF) {
-			/* Equal left/bottom clearance; both scale with FontSize via imageuipx(). */
+			/* equal left/bottom clearance; both scale with FontSize via imageuipx() */
 			int alt_margin = imageuipx(ic, 1) + ic->showedge * edge_t;
 
 			date_x_alt = alt_margin + imageuipx(ic, 2);
@@ -989,7 +989,7 @@ void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int 
 		imagestring(ic, FONT_ROLE_TIMESTAMP, width - (imagetextwidth(ic, FONT_ROLE_TIMESTAMP, datestring) + imageuipx(ic, 12)), date_y, datestring, ic->cheaderdate);
 	}
 
-	/* generator */
+	/* generator, always using built-in tiny font */
 	{
 		const char *generator = "vnStat / Teemu Toivola";
 		int generator_x = width - imagetextwidth(ic, FONT_ROLE_FOOTER, generator) - bottom_margin;
@@ -1018,7 +1018,7 @@ void drawlegend(IMAGECONTENT *ic, const int x, const int y, const short israte)
 		sep = sq + 2 * gap;
 		x_cur = israte ? (x - imageuipx(ic, 12)) : x;
 
-		/* [sq][gap][rx][sep][sq][gap][tx] — both labels share y */
+		/* [sq][gap][rx][sep][sq][gap][tx]: both labels share y */
 		gdImageFilledRectangle(ic->im, x_cur, sq_y, x_cur + sq - 1, sq_y + sq - 1, ic->crx);
 		imagedrawrect(ic, x_cur, sq_y, x_cur + sq - 1, sq_y + sq - 1, ic->ctext);
 		x_cur += sq + gap;
@@ -1221,8 +1221,8 @@ void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const ui
 		yb = y + yendoffset;
 		gdImageFilledRectangle(ic->im, x, ya, rx2, yb, crx);
 		if (txl > 0) {
-			/* Omit right edge so the tx left outline forms the join, matching
-			 * historical 1px gdImageRectangle behaviour (tx overwrote that edge). */
+			/* omit right edge so the tx left outline forms the join, matching
+			 * historical 1px gdImageRectangle behaviour (tx overwrote that edge) */
 			int t = imageuipx(ic, 1);
 
 			gdImageFilledRectangle(ic->im, x, ya, rx2, ya + t - 1, crxd);
@@ -1242,8 +1242,8 @@ void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const ui
 void drawpoles(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max)
 {
 	int l;
-	/* Scale pole spans with hour-column pitch (same imageextrapx curve as plot width).
-	 * imageuipx() grows with ptsize faster than column pitch and clips neighbors. */
+	/* scale pole spans with hour-column pitch (same imageextrapx curve as plot width),
+	 * imageuipx() grows with ptsize faster than column pitch and clips neighbors */
 	const int m5 = hourly_map_px(ic, 5);
 	const int m7 = hourly_map_px(ic, 7);
 	const int m12 = hourly_map_px(ic, 12);
@@ -1368,9 +1368,9 @@ void drawarrowup(IMAGECONTENT *ic, const int x, const int y)
 	t = imageuipx(ic, 1);
 	wing = imageuipx(ic, 2);
 	half = (t - 1) / 2 + wing;
-	/* Tip on the integer center of the thick vline stroke. */
+	/* tip on the integer center of the thick vline stroke */
 	tip_x = (x - t / 2) + (t - 1) / 2;
-	/* One pixel past the axis end so the tip is the peak. */
+	/* one pixel past the axis end so the tip is the peak */
 	tip_y = y - 1;
 
 	pts[0].x = tip_x;
@@ -1390,9 +1390,9 @@ void drawarrowright(IMAGECONTENT *ic, const int x, const int y)
 	t = imageuipx(ic, 1);
 	wing = imageuipx(ic, 2);
 	half = (t - 1) / 2 + wing;
-	/* Tip on the integer center of the thick hline stroke. */
+	/* tip on the integer center of the thick hline stroke */
 	tip_y = (y - t / 2) + (t - 1) / 2;
-	/* One pixel past the axis end so the tip terminates the line. */
+	/* one pixel past the axis end so the tip terminates the line */
 	tip_x = x + 1;
 
 	pts[0].x = tip_x;

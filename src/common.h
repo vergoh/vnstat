@@ -291,10 +291,10 @@ and most can be changed later from the config file.
 /* do not force a common image width across image outputs by default */
 #define COMMONWIDTH 0
 
-/* TTF font file empty = use libGD builtin fonts */
+/* no font file set = use libGD built-in fonts */
 #define FONTFILE ""
 
-/* default TTF body point size when FontFile is set */
+/* default TTF body point size and limits when FontFile is set */
 #define FONTSIZE 12
 #define FONT_SIZE_MIN 6
 #define FONT_SIZE_MAX 72

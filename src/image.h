@@ -21,15 +21,15 @@
 
 #define SCALEMINPIXELS 25
 
-/* Graph y-axis left chrome: builtin keeps a 36px advance; TTF sizes from 5 digits. */
+/* graph y-axis left chrome: built-in keeps a 36px advance; TTF sizes from 5 digits */
 #define GRAPH_AXIS_BASE 36
 #define GRAPH_AXIS_LABEL_GAP 4
-#define GRAPH_AXIS_CROSS 4 /* design-time overhang past origin; scale with imageuipx() */
+#define GRAPH_AXIS_CROSS 4 /* design time overhang past origin; scale with imageuipx() */
 #define GRAPH_AXIS_PLOT_PAD 5 /* GRAPH_AXIS_CROSS + 1; plot starts 1px past stem */
 #define GRAPH_EXTRA_RIGHT 29 /* FIVEMINEXTRASPACE - 8 - GRAPH_AXIS_BASE - GRAPH_AXIS_PLOT_PAD */
 
-/* Hourly graph canvas: plot span from y-axis to rightmost hour column.
- * HOURLY_PLOT_SPAN = leftmost_offset(13) + HOURLY_HOUR_GAPS * HOURLY_HOUR_STEP. */
+/* hourly graph canvas: plot span from y-axis to rightmost hour column
+ * HOURLY_PLOT_SPAN = leftmost_offset(13) + HOURLY_HOUR_GAPS * HOURLY_HOUR_STEP */
 #define HOURLY_CANVAS_BASE 500
 #define HOURLY_HOUR_STEP 17
 #define HOURLY_HOUR_COUNT 24
@@ -45,12 +45,24 @@ typedef enum {
 
 typedef enum {
 	FONT_ROLE_BODY = 0, /* Small / Large */
-	FONT_ROLE_AXIS,     /* Tiny / Small — graph labels */
-	FONT_ROLE_TIMESTAMP, /* Tiny / Small — header / alt date */
-	FONT_ROLE_TITLE,    /* Large / Giant — summary section titles */
-	FONT_ROLE_HEADER,   /* always Giant — layoutinit title bar */
-	FONT_ROLE_FOOTER    /* always Tiny — credit line */
+	FONT_ROLE_AXIS,     /* graph labels: Tiny / Small */
+	FONT_ROLE_TIMESTAMP, /* header / alt date: Tiny / Small */
+	FONT_ROLE_TITLE,    /* summary section titles: Large / Giant */
+	FONT_ROLE_HEADER,   /* layoutinit title bar: always Giant */
+	FONT_ROLE_FOOTER    /* credit line: always Tiny */
 } fontrole_t;
+
+typedef struct {
+	int textx, offsetx;
+	int d24, d37, d50; /* vertical divider x */
+	int hline_right_rate; /* 65*cw+offsetx+2 */
+	int hline_right_norate; /* 50*cw+offsetx-imageuipx(4) */
+	/* TTF measured edges / header decimal anchors */
+	int rx_edge, tx_edge, total_edge, rate_edge;
+	int rx_dec, tx_dec, total_dec;
+	int date_field_right, header_field_right;
+	int rank_center; /* top list # column center; 0 if unused */
+} ListColumns;
 
 typedef struct {
 	fontmode_t mode;
@@ -69,7 +81,7 @@ typedef struct {
 	int header_h; /* title bar height in pixels */
 	char ttfpath[512];
 	double ptsize; /* effective body point size after LargeFonts */
-	double scale; /* cw / 6.0 relative to small builtin */
+	double scale; /* cw / 6.0 relative to small built-in */
 	double header_scale; /* header size ratio vs body */
 	double title_scale; /* title size ratio vs body */
 	double axis_scale; /* axis label size ratio vs body */

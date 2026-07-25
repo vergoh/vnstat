@@ -4,6 +4,9 @@
 #include <stdint.h>
 #include "image.h"
 
+/* sample text for TTF height measurement with ascenders and descenders */
+#define TTF_HEIGHT_SAMPLE "Ayjp"
+
 void imageinit(IMAGECONTENT *ic, const int width, const int height);
 void colorinitcheck(const char *color, const int value, const char *cfgtext, const int *rgb);
 int imagefontinit(IMAGECONTENT *ic, const int largefonts);
