@@ -22,6 +22,7 @@ void initimagecontent(IMAGECONTENT *ic)
 	ic->dataend[0] = '\0';
 	ic->interface.name[0] = '\0';
 	ic->interface.alias[0] = '\0';
+	ic->current = time(NULL);
 }
 
 void drawimage(IMAGECONTENT *ic)
