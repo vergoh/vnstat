@@ -8,8 +8,23 @@
 #include "image_widget.h"
 #include "image_support.h"
 #include "image_summary.h"
+#include "image_graph.h"
 #include <stdlib.h>
 #include <unistd.h>
+
+static const int image_output_qmodes[] = {
+	1, 2, 3, 4, 5, 51, 52, 7, 8, 9, 10, 130, 131, 132
+};
+
+static void assert_drawimage_produces_image(IMAGECONTENT *ic)
+{
+	drawimage(ic);
+	ck_assert_ptr_ne(ic->im, NULL);
+	ck_assert_int_gt(gdImageSX(ic->im), 0);
+	ck_assert_int_gt(gdImageSY(ic->im), 0);
+	gdImageDestroy(ic->im);
+	ic->im = NULL;
+}
 
 START_TEST(initimagecontent_does_not_crash)
 {
@@ -1330,12 +1345,328 @@ START_TEST(rtrimspaces_trims_trailing_spaces)
 }
 END_TEST
 
+START_TEST(image_outputs_do_not_crash)
+{
+	IMAGECONTENT ic;
+	int ret, i, o, n;
+	static const int list_qmodes[] = {1, 2, 3, 4, 8, 9};
+	static const int graph_qmodes[] = {7, 10};
+	static const int summary_layout_qmodes[] = {51, 52};
+	static const int commonwidth_qmodes[] = {1, 5, 7};
+
+	cfg.fontfile[0] = '\0';
+	initimagecontent(&ic);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("something");
+	ck_assert_int_eq(ret, 1);
+
+	for (i = 1; i < 100; i++) {
+		ret = db_addtraffic_dated("something", (uint64_t)i * 1234, (uint64_t)i * 2345, (uint64_t)i * 85000);
+		ck_assert_int_eq(ret, 1);
+	}
+	ret = db_setupdated("something", (time_t)i * 85000);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getinterfaceinfo("something", &ic.interface);
+	ck_assert_int_eq(ret, 1);
+
+	/* avoid percentile graph coverage warnings on stderr */
+	cfg.fiveminutehours = PERCENTILEENTRYCOUNT;
+
+	suppress_output();
+
+	n = (int)(sizeof(image_output_qmodes) / sizeof(image_output_qmodes[0]));
+	for (i = 0; i < n; i++) {
+		cfg.qmode = image_output_qmodes[i];
+		cfg.ostyle = 0;
+		cfg.hourlyrate = 0;
+		cfg.summarygraph = 0;
+		cfg.transbg = 0;
+		cfg.commonwidth = 0;
+		assert_drawimage_produces_image(&ic);
+	}
+
+	n = (int)(sizeof(list_qmodes) / sizeof(list_qmodes[0]));
+	for (i = 0; i < n; i++) {
+		for (o = 0; o <= 3; o++) {
+			cfg.qmode = list_qmodes[i];
+			cfg.ostyle = o;
+			assert_drawimage_produces_image(&ic);
+		}
+	}
+	cfg.ostyle = 0;
+
+	n = (int)(sizeof(graph_qmodes) / sizeof(graph_qmodes[0]));
+	for (i = 0; i < n; i++) {
+		for (o = 0; o <= 1; o++) {
+			cfg.qmode = graph_qmodes[i];
+			cfg.hourlyrate = o;
+			assert_drawimage_produces_image(&ic);
+		}
+	}
+	cfg.hourlyrate = 0;
+
+	n = (int)(sizeof(summary_layout_qmodes) / sizeof(summary_layout_qmodes[0]));
+	for (i = 0; i < n; i++) {
+		for (o = 0; o <= 1; o++) {
+			cfg.qmode = summary_layout_qmodes[i];
+			cfg.summarygraph = o;
+			assert_drawimage_produces_image(&ic);
+		}
+	}
+	cfg.summarygraph = 0;
+
+	cfg.qmode = 5;
+	cfg.transbg = 1;
+	assert_drawimage_produces_image(&ic);
+	cfg.transbg = 0;
+
+	cfg.commonwidth = 1;
+	n = (int)(sizeof(commonwidth_qmodes) / sizeof(commonwidth_qmodes[0]));
+	for (i = 0; i < n; i++) {
+		cfg.qmode = commonwidth_qmodes[i];
+		assert_drawimage_produces_image(&ic);
+	}
+	cfg.commonwidth = 0;
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+	imagefontcleanup();
+}
+END_TEST
+
+START_TEST(image_outputs_do_not_crash_without_data)
+{
+	IMAGECONTENT ic;
+	int ret, i, n;
+
+	cfg.fontfile[0] = '\0';
+	initimagecontent(&ic);
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("something");
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_getinterfaceinfo("something", &ic.interface);
+	ck_assert_int_eq(ret, 1);
+
+	cfg.fiveminutehours = PERCENTILEENTRYCOUNT;
+
+	suppress_output();
+
+	n = (int)(sizeof(image_output_qmodes) / sizeof(image_output_qmodes[0]));
+	for (i = 0; i < n; i++) {
+		cfg.qmode = image_output_qmodes[i];
+		assert_drawimage_produces_image(&ic);
+	}
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+	imagefontcleanup();
+}
+END_TEST
+
+START_TEST(layoutinit_respects_chrome_flags)
+{
+	IMAGECONTENT ic;
+	int invert;
+
+	cfg.fontfile[0] = '\0';
+	initimagecontent(&ic);
+	ic.interface.updated = (time_t)get_timestamp(2012, 3, 4, 5, 6);
+
+	for (invert = 0; invert <= 2; invert++) {
+		ic.invert = invert;
+		ic.showheader = (invert == 0) ? 1 : 0;
+		ic.showedge = (invert == 1) ? 0 : 1;
+		ic.showlegend = (invert == 2) ? 0 : 1;
+		ic.altdate = (invert > 0) ? 1 : 0;
+
+		imageinit(&ic, 320, 200);
+		ck_assert_ptr_ne(ic.im, NULL);
+		layoutinit(&ic, "chrome flags", 320, 200);
+		drawlegend(&ic, 40, 40, 0);
+		drawlegend(&ic, 40, 60, 1);
+		gdImageDestroy(ic.im);
+		ic.im = NULL;
+	}
+
+	imagefontcleanup();
+}
+END_TEST
+
+START_TEST(drawbar_estimate_styles)
+{
+	IMAGECONTENT ic;
+	int style;
+
+	cfg.fontfile[0] = '\0';
+	initimagecontent(&ic);
+	imageinit(&ic, 120, 80);
+
+	for (style = 0; style <= 2; style++) {
+		cfg.estimatestyle = style;
+		drawbar(&ic, 10, 20, 80, 40, 40, 100, 1);
+	}
+
+	cfg.estimatestyle = 1;
+	drawbar(&ic, 10, 40, 80, 10, 10, 0, 0);
+	drawbar(&ic, 10, 50, 80, 80, 80, 100, 0);
+
+	gdImageDestroy(ic.im);
+	imagefontcleanup();
+}
+END_TEST
+
+#if HAVE_DECL_GD_NEAREST_NEIGHBOUR
+START_TEST(scaleimage_behavior)
+{
+	IMAGECONTENT ic;
+	gdImagePtr original;
+	int sx, sy;
+
+	cfg.fontfile[0] = '\0';
+	initimagecontent(&ic);
+	imageinit(&ic, 200, 200);
+	original = ic.im;
+
+	cfg.imagescale = 100;
+	scaleimage(&ic);
+	ck_assert_ptr_eq(ic.im, original);
+	ck_assert_int_eq(gdImageSX(ic.im), 200);
+	ck_assert_int_eq(gdImageSY(ic.im), 200);
+
+	cfg.imagescale = 200;
+	scaleimage(&ic);
+	ck_assert_int_eq(gdImageSX(ic.im), 400);
+	ck_assert_int_eq(gdImageSY(ic.im), 400);
+
+	sx = gdImageSX(ic.im);
+	sy = gdImageSY(ic.im);
+	cfg.imagescale = 10;
+	scaleimage(&ic);
+	ck_assert_int_eq(gdImageSX(ic.im), sx);
+	ck_assert_int_eq(gdImageSY(ic.im), sy);
+
+	cfg.imagescale = 500;
+	original = ic.im;
+	sx = gdImageSX(ic.im);
+	sy = gdImageSY(ic.im);
+	scaleimage(&ic);
+	/* 400 * 5 = 2000, within limits */
+	ck_assert_int_eq(gdImageSX(ic.im), 2000);
+	ck_assert_int_eq(gdImageSY(ic.im), 2000);
+
+	cfg.imagescale = 300;
+	sx = gdImageSX(ic.im);
+	sy = gdImageSY(ic.im);
+	scaleimage(&ic);
+	/* 2000 * 3 = 6000 > 5000, early return */
+	ck_assert_int_eq(gdImageSX(ic.im), sx);
+	ck_assert_int_eq(gdImageSY(ic.im), sy);
+
+	gdImageDestroy(ic.im);
+	imagefontcleanup();
+}
+END_TEST
+#endif
+
+START_TEST(image_summary_width_layouts_builtin)
+{
+	IMAGECONTENT ic;
+	int list_w, layout0, layout1, layout2;
+
+	cfg.fontfile[0] = '\0';
+	ck_assert_int_eq(imagefontinit(&ic, 0), 1);
+	ic.large = 0;
+
+	list_w = image_list_width(&ic);
+	layout0 = image_summary_width(&ic, 0);
+	layout1 = image_summary_width(&ic, 1);
+	layout2 = image_summary_width(&ic, 2);
+
+	ck_assert_int_eq(layout0, list_w);
+	ck_assert_int_eq(layout2, list_w);
+	ck_assert_int_eq(layout1, 163 * ic.fontctx.cw + imageuipx(&ic, 2) + imageextrapx(&ic, 2));
+	ck_assert_int_gt(layout1, layout0);
+
+	cfg.summarygraph = 1;
+	ck_assert_int_gt(image_summary_width(&ic, 1), 0);
+	ck_assert_int_gt(image_summary_width(&ic, 2), 0);
+	cfg.summarygraph = 0;
+
+	ck_assert_int_eq(imagefontinit(&ic, 1), 1);
+	ic.large = 1;
+	list_w = image_list_width(&ic);
+	layout0 = image_summary_width(&ic, 0);
+	layout1 = image_summary_width(&ic, 1);
+	layout2 = image_summary_width(&ic, 2);
+	ck_assert_int_eq(layout0, list_w);
+	ck_assert_int_eq(layout2, list_w);
+	ck_assert_int_eq(layout1, 163 * ic.fontctx.cw + imageuipx(&ic, 2) + imageextrapx(&ic, 2));
+	ck_assert_int_gt(layout1, layout0);
+
+	imagefontcleanup();
+}
+END_TEST
+
+START_TEST(fiveg_barwidth_builtin)
+{
+	IMAGECONTENT ic;
+
+	cfg.fontfile[0] = '\0';
+	ck_assert_int_eq(imagefontinit(&ic, 0), 1);
+	ck_assert_int_eq(fiveg_barwidth(&ic), 1);
+	imagefontcleanup();
+}
+END_TEST
+
+START_TEST(percentilelegend_helpers)
+{
+	IMAGECONTENT ic;
+	int mode;
+
+	cfg.fontfile[0] = '\0';
+	initimagecontent(&ic);
+	imageinit(&ic, 200, 80);
+
+	for (mode = 0; mode <= 2; mode++) {
+		ck_assert_int_gt(percentilelegendwidth(&ic, mode, 1000), 0);
+	}
+
+	drawpercentilelegend(&ic, 20, 20, 1, 2000);
+	drawpercentilelegend(&ic, 20, 40, 2, 3000);
+
+	gdImageDestroy(ic.im);
+	imagefontcleanup();
+}
+END_TEST
+
+START_TEST(imagecentery_builtin)
+{
+	IMAGECONTENT ic;
+	int y;
+
+	cfg.fontfile[0] = '\0';
+	ck_assert_int_eq(imagefontinit(&ic, 0), 1);
+
+	y = imagecentery(&ic, FONT_ROLE_BODY, "Ay", 10, 40);
+	ck_assert_int_ge(y, 10);
+	ck_assert_int_le(y, 40);
+
+	imagefontcleanup();
+}
+END_TEST
+
 void add_image_tests(Suite *s)
 {
 	TCase *tc_image = tcase_create("Image");
 	tcase_add_checked_fixture(tc_image, setup, teardown);
 	tcase_add_unchecked_fixture(tc_image, setup, teardown);
-	tcase_set_timeout(tc_image, 10);
+	tcase_set_timeout(tc_image, 60);
 	tcase_add_test(tc_image, initimagecontent_does_not_crash);
 	tcase_add_test(tc_image, imageinit_does_not_crash);
 	tcase_add_test(tc_image, layoutinit_does_not_crash);
@@ -1371,5 +1702,16 @@ void add_image_tests(Suite *s)
 #endif
 	tcase_add_test(tc_image, imagestring_and_draw_helpers_smoke);
 	tcase_add_test(tc_image, rtrimspaces_trims_trailing_spaces);
+	tcase_add_test(tc_image, image_outputs_do_not_crash);
+	tcase_add_test(tc_image, image_outputs_do_not_crash_without_data);
+	tcase_add_test(tc_image, layoutinit_respects_chrome_flags);
+	tcase_add_test(tc_image, drawbar_estimate_styles);
+#if HAVE_DECL_GD_NEAREST_NEIGHBOUR
+	tcase_add_test(tc_image, scaleimage_behavior);
+#endif
+	tcase_add_test(tc_image, image_summary_width_layouts_builtin);
+	tcase_add_test(tc_image, fiveg_barwidth_builtin);
+	tcase_add_test(tc_image, percentilelegend_helpers);
+	tcase_add_test(tc_image, imagecentery_builtin);
 	suite_add_tcase(s, tc_image);
 }
