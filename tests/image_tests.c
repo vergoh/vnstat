@@ -4,7 +4,10 @@
 #include "dbsql.h"
 #include "cfg.h"
 #include "image.h"
+#include "image_font.h"
+#include "image_widget.h"
 #include "image_support.h"
+#include "image_summary.h"
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -226,7 +229,7 @@ START_TEST(getscale_nonzero_1000)
 }
 END_TEST
 
-/* this function needs to match the logic used in image.c drawhours() */
+/* this function needs to match the logic used in image_graph.c drawhours() */
 /* in order to test the right thing */
 char *hourly_imagescale_logic(const uint64_t max, const int rate)
 {

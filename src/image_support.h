@@ -4,20 +4,8 @@
 #include <stdint.h>
 #include "image.h"
 
-/* sample text for TTF height measurement with ascenders and descenders */
-#define TTF_HEIGHT_SAMPLE "Ayjp"
-
 void imageinit(IMAGECONTENT *ic, const int width, const int height);
 void colorinitcheck(const char *color, const int value, const char *cfgtext, const int *rgb);
-int imagefontinit(IMAGECONTENT *ic, const int largefonts);
-void imagefontcleanup(void);
-void imagestring(IMAGECONTENT *ic, const fontrole_t role, const int x, const int y, const char *text, const int color);
-void imagestringup(IMAGECONTENT *ic, const fontrole_t role, const int x, const int y, const char *text, const int color);
-int imagetextwidth(IMAGECONTENT *ic, const fontrole_t role, const char *text);
-int imagefontwidth(IMAGECONTENT *ic, const fontrole_t role);
-int imagefontheight(IMAGECONTENT *ic, const fontrole_t role);
-int imageextrapx(const IMAGECONTENT *ic, const int extra);
-int imageuipx(const IMAGECONTENT *ic, const int base);
 void imagedrawhline(IMAGECONTENT *ic, const int x1, const int x2, const int y, const int color);
 void imagedrawvline(IMAGECONTENT *ic, const int x, const int y1, const int y2, const int color);
 void imagedrawrect(IMAGECONTENT *ic, const int x1, const int y1, const int x2, const int y2, const int color);
@@ -32,24 +20,8 @@ int hourly_graph_width(const IMAGECONTENT *ic);
 int hourly_hour_step(const IMAGECONTENT *ic);
 int hourly_map_px(const IMAGECONTENT *ic, const int design);
 int image_list_width(const IMAGECONTENT *ic);
-int image_summary_width(IMAGECONTENT *ic, const int layout);
-int image_common_target_width(IMAGECONTENT *ic);
-int fiveg_barwidth(IMAGECONTENT *ic);
 int image_list_bar_extra(const IMAGECONTENT *ic, const int natural_width, const int design_bar_len);
-void graph_draw_axis_value(IMAGECONTENT *ic, const int axis_x, const int line_y, const char *val, const int builtin_x, const int builtin_y);
-void graph_draw_axis_unit(IMAGECONTENT *ic, const int x_ttf, const int x_builtin, const int y, const char *text);
 void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int height);
-void drawlegend(IMAGECONTENT *ic, const int x, const int y, const short israte);
-int percentilelegendwidth(IMAGECONTENT *ic, const int mode, const uint64_t percentile);
-void drawpercentilelegend(IMAGECONTENT *ic, const int x, const int y, const int mode, const uint64_t percentile);
-void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max, const short isestimate);
-void drawpoles(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max);
-void drawdonut(IMAGECONTENT *ic, const int x, const int y, const float rxp, const float txp, const int size, const int holesize);
-void drawdonut_libgd_bug_workaround(IMAGECONTENT *ic, const int x, const int y, const float rxp, const float txp, const int size, const int holesize);
-void drawdonut_libgd_native(IMAGECONTENT *ic, const int x, const int y, const float rxp, const float txp, const int size, const int holesize);
-void drawpole(IMAGECONTENT *ic, const int x, const int y, const int length, const int direction, const int color);
-void drawarrowup(IMAGECONTENT *ic, const int x, const int y);
-void drawarrowright(IMAGECONTENT *ic, const int x, const int y);
 void hextorgb(const char *input, int *rgb);
 void modcolor(int *rgb, const int offset, const int force);
 void invertcolor(int *rgb);

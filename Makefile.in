@@ -99,6 +99,11 @@ sbin_PROGRAMS = vnstatd$(EXEEXT)
 @HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@am__append_3 = @IMAGELIBS@
 @HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@am__append_4 = tests/image_tests.c tests/image_tests.h \
 @HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@  src/image.c src/image.h \
+@HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@  src/image_list.c src/image_list.h \
+@HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@  src/image_summary.c src/image_summary.h \
+@HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@  src/image_graph.c src/image_graph.h \
+@HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@  src/image_font.c src/image_font.h \
+@HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@  src/image_widget.c src/image_widget.h \
 @HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@  src/image_support.c src/image_support.h
 
 subdir = .
@@ -143,10 +148,19 @@ am__check_vnstat_SOURCES_DIST = tests/vnstat_tests.c \
 	src/fs.h src/id.c src/id.h src/vnstat_func.c src/vnstat_func.h \
 	src/traffic.c src/traffic.h src/clicommon.c src/clicommon.h \
 	tests/image_tests.c tests/image_tests.h src/image.c \
-	src/image.h src/image_support.c src/image_support.h
+	src/image.h src/image_list.c src/image_list.h \
+	src/image_summary.c src/image_summary.h src/image_graph.c \
+	src/image_graph.h src/image_font.c src/image_font.h \
+	src/image_widget.c src/image_widget.h src/image_support.c \
+	src/image_support.h
 am__dirstamp = $(am__leading_dot)dirstamp
 @HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@am__objects_1 = tests/check_vnstat-image_tests.$(OBJEXT) \
 @HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@	src/check_vnstat-image.$(OBJEXT) \
+@HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@	src/check_vnstat-image_list.$(OBJEXT) \
+@HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@	src/check_vnstat-image_summary.$(OBJEXT) \
+@HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@	src/check_vnstat-image_graph.$(OBJEXT) \
+@HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@	src/check_vnstat-image_font.$(OBJEXT) \
+@HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@	src/check_vnstat-image_widget.$(OBJEXT) \
 @HAVE_CHECK_TRUE@@HAVE_LIBGD_TRUE@	src/check_vnstat-image_support.$(OBJEXT)
 @HAVE_CHECK_TRUE@am_check_vnstat_OBJECTS =  \
 @HAVE_CHECK_TRUE@	tests/check_vnstat-vnstat_tests.$(OBJEXT) \
@@ -211,9 +225,12 @@ vnstatd_OBJECTS = $(am_vnstatd_OBJECTS)
 vnstatd_LDADD = $(LDADD)
 am_vnstati_OBJECTS = src/vnstati.$(OBJEXT) src/iflist.$(OBJEXT) \
 	src/percentile.$(OBJEXT) src/image.$(OBJEXT) \
-	src/image_support.$(OBJEXT) src/dbsql.$(OBJEXT) \
-	src/common.$(OBJEXT) src/misc.$(OBJEXT) src/fs.$(OBJEXT) \
-	src/id.$(OBJEXT) src/cfg.$(OBJEXT) src/clicommon.$(OBJEXT)
+	src/image_list.$(OBJEXT) src/image_summary.$(OBJEXT) \
+	src/image_graph.$(OBJEXT) src/image_font.$(OBJEXT) \
+	src/image_widget.$(OBJEXT) src/image_support.$(OBJEXT) \
+	src/dbsql.$(OBJEXT) src/common.$(OBJEXT) src/misc.$(OBJEXT) \
+	src/fs.$(OBJEXT) src/id.$(OBJEXT) src/cfg.$(OBJEXT) \
+	src/clicommon.$(OBJEXT)
 vnstati_OBJECTS = $(am_vnstati_OBJECTS)
 vnstati_DEPENDENCIES =
 AM_V_P = $(am__v_P_@AM_V@)
@@ -250,7 +267,12 @@ am__depfiles_remade = src/$(DEPDIR)/cfg.Po src/$(DEPDIR)/cfgoutput.Po \
 	src/$(DEPDIR)/check_vnstat-ifinfo.Po \
 	src/$(DEPDIR)/check_vnstat-iflist.Po \
 	src/$(DEPDIR)/check_vnstat-image.Po \
+	src/$(DEPDIR)/check_vnstat-image_font.Po \
+	src/$(DEPDIR)/check_vnstat-image_graph.Po \
+	src/$(DEPDIR)/check_vnstat-image_list.Po \
+	src/$(DEPDIR)/check_vnstat-image_summary.Po \
 	src/$(DEPDIR)/check_vnstat-image_support.Po \
+	src/$(DEPDIR)/check_vnstat-image_widget.Po \
 	src/$(DEPDIR)/check_vnstat-misc.Po \
 	src/$(DEPDIR)/check_vnstat-percentile.Po \
 	src/$(DEPDIR)/check_vnstat-traffic.Po \
@@ -262,11 +284,13 @@ am__depfiles_remade = src/$(DEPDIR)/cfg.Po src/$(DEPDIR)/cfgoutput.Po \
 	src/$(DEPDIR)/dbsql.Po src/$(DEPDIR)/dbxml.Po \
 	src/$(DEPDIR)/fs.Po src/$(DEPDIR)/ibw.Po src/$(DEPDIR)/id.Po \
 	src/$(DEPDIR)/ifinfo.Po src/$(DEPDIR)/iflist.Po \
-	src/$(DEPDIR)/image.Po src/$(DEPDIR)/image_support.Po \
-	src/$(DEPDIR)/misc.Po src/$(DEPDIR)/percentile.Po \
-	src/$(DEPDIR)/traffic.Po src/$(DEPDIR)/vnstat.Po \
-	src/$(DEPDIR)/vnstat_func.Po src/$(DEPDIR)/vnstatd.Po \
-	src/$(DEPDIR)/vnstati.Po \
+	src/$(DEPDIR)/image.Po src/$(DEPDIR)/image_font.Po \
+	src/$(DEPDIR)/image_graph.Po src/$(DEPDIR)/image_list.Po \
+	src/$(DEPDIR)/image_summary.Po src/$(DEPDIR)/image_support.Po \
+	src/$(DEPDIR)/image_widget.Po src/$(DEPDIR)/misc.Po \
+	src/$(DEPDIR)/percentile.Po src/$(DEPDIR)/traffic.Po \
+	src/$(DEPDIR)/vnstat.Po src/$(DEPDIR)/vnstat_func.Po \
+	src/$(DEPDIR)/vnstatd.Po src/$(DEPDIR)/vnstati.Po \
 	tests/$(DEPDIR)/check_vnstat-cli_tests.Po \
 	tests/$(DEPDIR)/check_vnstat-common_tests.Po \
 	tests/$(DEPDIR)/check_vnstat-config_tests.Po \
@@ -757,6 +781,11 @@ vnstati_SOURCES = src/vnstati.c src/vnstati.h \
   src/iflist.c src/iflist.h \
   src/percentile.c src/percentile.h \
   src/image.c src/image.h \
+  src/image_list.c src/image_list.h \
+  src/image_summary.c src/image_summary.h \
+  src/image_graph.c src/image_graph.h \
+  src/image_font.c src/image_font.h \
+  src/image_widget.c src/image_widget.h \
   src/image_support.c src/image_support.h \
   src/dbsql.c src/dbsql.h \
   src/common.c src/common.h \
@@ -1067,6 +1096,16 @@ tests/check_vnstat-image_tests.$(OBJEXT): tests/$(am__dirstamp) \
 	tests/$(DEPDIR)/$(am__dirstamp)
 src/check_vnstat-image.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
+src/check_vnstat-image_list.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/check_vnstat-image_summary.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/check_vnstat-image_graph.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/check_vnstat-image_font.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/check_vnstat-image_widget.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
 src/check_vnstat-image_support.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 
@@ -1123,6 +1162,16 @@ vnstatd$(EXEEXT): $(vnstatd_OBJECTS) $(vnstatd_DEPENDENCIES) $(EXTRA_vnstatd_DEP
 src/vnstati.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/image.$(OBJEXT): src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
+src/image_list.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/image_summary.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/image_graph.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/image_font.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/image_widget.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
 src/image_support.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 
@@ -1158,7 +1207,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-ifinfo.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-iflist.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-image.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-image_font.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-image_graph.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-image_list.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-image_summary.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-image_support.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-image_widget.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-misc.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-percentile.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/check_vnstat-traffic.Po@am__quote@ # am--include-marker
@@ -1179,7 +1233,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/ifinfo.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/iflist.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/image.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/image_font.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/image_graph.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/image_list.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/image_summary.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/image_support.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/image_widget.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/misc.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/percentile.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/traffic.Po@am__quote@ # am--include-marker
@@ -1772,6 +1831,76 @@ src/check_vnstat-image.obj: src/image.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/image.c' object='src/check_vnstat-image.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o src/check_vnstat-image.obj `if test -f 'src/image.c'; then $(CYGPATH_W) 'src/image.c'; else $(CYGPATH_W) '$(srcdir)/src/image.c'; fi`
+
+src/check_vnstat-image_list.o: src/image_list.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT src/check_vnstat-image_list.o -MD -MP -MF src/$(DEPDIR)/check_vnstat-image_list.Tpo -c -o src/check_vnstat-image_list.o `test -f 'src/image_list.c' || echo '$(srcdir)/'`src/image_list.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/check_vnstat-image_list.Tpo src/$(DEPDIR)/check_vnstat-image_list.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/image_list.c' object='src/check_vnstat-image_list.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o src/check_vnstat-image_list.o `test -f 'src/image_list.c' || echo '$(srcdir)/'`src/image_list.c
+
+src/check_vnstat-image_list.obj: src/image_list.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT src/check_vnstat-image_list.obj -MD -MP -MF src/$(DEPDIR)/check_vnstat-image_list.Tpo -c -o src/check_vnstat-image_list.obj `if test -f 'src/image_list.c'; then $(CYGPATH_W) 'src/image_list.c'; else $(CYGPATH_W) '$(srcdir)/src/image_list.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/check_vnstat-image_list.Tpo src/$(DEPDIR)/check_vnstat-image_list.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/image_list.c' object='src/check_vnstat-image_list.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o src/check_vnstat-image_list.obj `if test -f 'src/image_list.c'; then $(CYGPATH_W) 'src/image_list.c'; else $(CYGPATH_W) '$(srcdir)/src/image_list.c'; fi`
+
+src/check_vnstat-image_summary.o: src/image_summary.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT src/check_vnstat-image_summary.o -MD -MP -MF src/$(DEPDIR)/check_vnstat-image_summary.Tpo -c -o src/check_vnstat-image_summary.o `test -f 'src/image_summary.c' || echo '$(srcdir)/'`src/image_summary.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/check_vnstat-image_summary.Tpo src/$(DEPDIR)/check_vnstat-image_summary.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/image_summary.c' object='src/check_vnstat-image_summary.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o src/check_vnstat-image_summary.o `test -f 'src/image_summary.c' || echo '$(srcdir)/'`src/image_summary.c
+
+src/check_vnstat-image_summary.obj: src/image_summary.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT src/check_vnstat-image_summary.obj -MD -MP -MF src/$(DEPDIR)/check_vnstat-image_summary.Tpo -c -o src/check_vnstat-image_summary.obj `if test -f 'src/image_summary.c'; then $(CYGPATH_W) 'src/image_summary.c'; else $(CYGPATH_W) '$(srcdir)/src/image_summary.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/check_vnstat-image_summary.Tpo src/$(DEPDIR)/check_vnstat-image_summary.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/image_summary.c' object='src/check_vnstat-image_summary.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o src/check_vnstat-image_summary.obj `if test -f 'src/image_summary.c'; then $(CYGPATH_W) 'src/image_summary.c'; else $(CYGPATH_W) '$(srcdir)/src/image_summary.c'; fi`
+
+src/check_vnstat-image_graph.o: src/image_graph.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT src/check_vnstat-image_graph.o -MD -MP -MF src/$(DEPDIR)/check_vnstat-image_graph.Tpo -c -o src/check_vnstat-image_graph.o `test -f 'src/image_graph.c' || echo '$(srcdir)/'`src/image_graph.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/check_vnstat-image_graph.Tpo src/$(DEPDIR)/check_vnstat-image_graph.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/image_graph.c' object='src/check_vnstat-image_graph.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o src/check_vnstat-image_graph.o `test -f 'src/image_graph.c' || echo '$(srcdir)/'`src/image_graph.c
+
+src/check_vnstat-image_graph.obj: src/image_graph.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT src/check_vnstat-image_graph.obj -MD -MP -MF src/$(DEPDIR)/check_vnstat-image_graph.Tpo -c -o src/check_vnstat-image_graph.obj `if test -f 'src/image_graph.c'; then $(CYGPATH_W) 'src/image_graph.c'; else $(CYGPATH_W) '$(srcdir)/src/image_graph.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/check_vnstat-image_graph.Tpo src/$(DEPDIR)/check_vnstat-image_graph.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/image_graph.c' object='src/check_vnstat-image_graph.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o src/check_vnstat-image_graph.obj `if test -f 'src/image_graph.c'; then $(CYGPATH_W) 'src/image_graph.c'; else $(CYGPATH_W) '$(srcdir)/src/image_graph.c'; fi`
+
+src/check_vnstat-image_font.o: src/image_font.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT src/check_vnstat-image_font.o -MD -MP -MF src/$(DEPDIR)/check_vnstat-image_font.Tpo -c -o src/check_vnstat-image_font.o `test -f 'src/image_font.c' || echo '$(srcdir)/'`src/image_font.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/check_vnstat-image_font.Tpo src/$(DEPDIR)/check_vnstat-image_font.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/image_font.c' object='src/check_vnstat-image_font.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o src/check_vnstat-image_font.o `test -f 'src/image_font.c' || echo '$(srcdir)/'`src/image_font.c
+
+src/check_vnstat-image_font.obj: src/image_font.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT src/check_vnstat-image_font.obj -MD -MP -MF src/$(DEPDIR)/check_vnstat-image_font.Tpo -c -o src/check_vnstat-image_font.obj `if test -f 'src/image_font.c'; then $(CYGPATH_W) 'src/image_font.c'; else $(CYGPATH_W) '$(srcdir)/src/image_font.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/check_vnstat-image_font.Tpo src/$(DEPDIR)/check_vnstat-image_font.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/image_font.c' object='src/check_vnstat-image_font.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o src/check_vnstat-image_font.obj `if test -f 'src/image_font.c'; then $(CYGPATH_W) 'src/image_font.c'; else $(CYGPATH_W) '$(srcdir)/src/image_font.c'; fi`
+
+src/check_vnstat-image_widget.o: src/image_widget.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT src/check_vnstat-image_widget.o -MD -MP -MF src/$(DEPDIR)/check_vnstat-image_widget.Tpo -c -o src/check_vnstat-image_widget.o `test -f 'src/image_widget.c' || echo '$(srcdir)/'`src/image_widget.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/check_vnstat-image_widget.Tpo src/$(DEPDIR)/check_vnstat-image_widget.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/image_widget.c' object='src/check_vnstat-image_widget.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o src/check_vnstat-image_widget.o `test -f 'src/image_widget.c' || echo '$(srcdir)/'`src/image_widget.c
+
+src/check_vnstat-image_widget.obj: src/image_widget.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT src/check_vnstat-image_widget.obj -MD -MP -MF src/$(DEPDIR)/check_vnstat-image_widget.Tpo -c -o src/check_vnstat-image_widget.obj `if test -f 'src/image_widget.c'; then $(CYGPATH_W) 'src/image_widget.c'; else $(CYGPATH_W) '$(srcdir)/src/image_widget.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/check_vnstat-image_widget.Tpo src/$(DEPDIR)/check_vnstat-image_widget.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/image_widget.c' object='src/check_vnstat-image_widget.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -c -o src/check_vnstat-image_widget.obj `if test -f 'src/image_widget.c'; then $(CYGPATH_W) 'src/image_widget.c'; else $(CYGPATH_W) '$(srcdir)/src/image_widget.c'; fi`
 
 src/check_vnstat-image_support.o: src/image_support.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_vnstat_CFLAGS) $(CFLAGS) -MT src/check_vnstat-image_support.o -MD -MP -MF src/$(DEPDIR)/check_vnstat-image_support.Tpo -c -o src/check_vnstat-image_support.o `test -f 'src/image_support.c' || echo '$(srcdir)/'`src/image_support.c
@@ -2480,7 +2609,12 @@ distclean: distclean-recursive
 	-rm -f src/$(DEPDIR)/check_vnstat-ifinfo.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-iflist.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-image.Po
+	-rm -f src/$(DEPDIR)/check_vnstat-image_font.Po
+	-rm -f src/$(DEPDIR)/check_vnstat-image_graph.Po
+	-rm -f src/$(DEPDIR)/check_vnstat-image_list.Po
+	-rm -f src/$(DEPDIR)/check_vnstat-image_summary.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-image_support.Po
+	-rm -f src/$(DEPDIR)/check_vnstat-image_widget.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-misc.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-percentile.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-traffic.Po
@@ -2501,7 +2635,12 @@ distclean: distclean-recursive
 	-rm -f src/$(DEPDIR)/ifinfo.Po
 	-rm -f src/$(DEPDIR)/iflist.Po
 	-rm -f src/$(DEPDIR)/image.Po
+	-rm -f src/$(DEPDIR)/image_font.Po
+	-rm -f src/$(DEPDIR)/image_graph.Po
+	-rm -f src/$(DEPDIR)/image_list.Po
+	-rm -f src/$(DEPDIR)/image_summary.Po
 	-rm -f src/$(DEPDIR)/image_support.Po
+	-rm -f src/$(DEPDIR)/image_widget.Po
 	-rm -f src/$(DEPDIR)/misc.Po
 	-rm -f src/$(DEPDIR)/percentile.Po
 	-rm -f src/$(DEPDIR)/traffic.Po
@@ -2594,7 +2733,12 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f src/$(DEPDIR)/check_vnstat-ifinfo.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-iflist.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-image.Po
+	-rm -f src/$(DEPDIR)/check_vnstat-image_font.Po
+	-rm -f src/$(DEPDIR)/check_vnstat-image_graph.Po
+	-rm -f src/$(DEPDIR)/check_vnstat-image_list.Po
+	-rm -f src/$(DEPDIR)/check_vnstat-image_summary.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-image_support.Po
+	-rm -f src/$(DEPDIR)/check_vnstat-image_widget.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-misc.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-percentile.Po
 	-rm -f src/$(DEPDIR)/check_vnstat-traffic.Po
@@ -2615,7 +2759,12 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f src/$(DEPDIR)/ifinfo.Po
 	-rm -f src/$(DEPDIR)/iflist.Po
 	-rm -f src/$(DEPDIR)/image.Po
+	-rm -f src/$(DEPDIR)/image_font.Po
+	-rm -f src/$(DEPDIR)/image_graph.Po
+	-rm -f src/$(DEPDIR)/image_list.Po
+	-rm -f src/$(DEPDIR)/image_summary.Po
 	-rm -f src/$(DEPDIR)/image_support.Po
+	-rm -f src/$(DEPDIR)/image_widget.Po
 	-rm -f src/$(DEPDIR)/misc.Po
 	-rm -f src/$(DEPDIR)/percentile.Po
 	-rm -f src/$(DEPDIR)/traffic.Po

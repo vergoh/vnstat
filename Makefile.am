@@ -50,6 +50,11 @@ vnstati_SOURCES = src/vnstati.c src/vnstati.h \
   src/iflist.c src/iflist.h \
   src/percentile.c src/percentile.h \
   src/image.c src/image.h \
+  src/image_list.c src/image_list.h \
+  src/image_summary.c src/image_summary.h \
+  src/image_graph.c src/image_graph.h \
+  src/image_font.c src/image_font.h \
+  src/image_widget.c src/image_widget.h \
   src/image_support.c src/image_support.h \
   src/dbsql.c src/dbsql.h \
   src/common.c src/common.h \
@@ -115,6 +120,11 @@ check_vnstat_CFLAGS += -DHAVE_IMAGE
 check_vnstat_LDADD += @IMAGELIBS@
 check_vnstat_SOURCES += tests/image_tests.c tests/image_tests.h \
   src/image.c src/image.h \
+  src/image_list.c src/image_list.h \
+  src/image_summary.c src/image_summary.h \
+  src/image_graph.c src/image_graph.h \
+  src/image_font.c src/image_font.h \
+  src/image_widget.c src/image_widget.h \
   src/image_support.c src/image_support.h
 endif
 endif
