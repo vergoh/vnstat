@@ -6,8 +6,8 @@
    - Some higher traffic days could be missing from top days output when the
      interface merge syntax (interface1+interface2) was used
  - New
-   - Add TTF font support to image output with image size scaling based on
-     used font size, configurable with FontFile and FontSize or --font
+   - Add TrueType font support to image output with image size scaling based
+     on used font size, configurable with FontFile and FontSize or --font
    - Add --common-width to vnstati for getting images padded to common width
      from different outputs when same font and font size is used
    - Add XDG Base Directory support for configuration file,

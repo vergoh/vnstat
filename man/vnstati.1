@@ -1,4 +1,4 @@
-.TH VNSTATI 1 "JUNE 2026" "version 2.14" "User Manuals"
+.TH VNSTATI 1 "JULY 2026" "version 2.14" "User Manuals"
 .SH NAME
 vnstati \- image output support for vnStat
 
@@ -16,6 +16,7 @@ vnstati \- image output support for vnStat
 .IR date ]
 .RB [ \-\-cache
 .IR time ]
+.RB [ \-\-common\-width ]
 .RB [ \-\-config
 .IR file ]
 .RB [ \-\-days
@@ -86,7 +87,6 @@ vnstati \- image output support for vnStat
 .RI [ limit ]]
 .RB [ \-\-transparent
 .RI [ enabled ]]
-.RB [ \-\-common\-width ]
 .RB [ \-\-version ]
 .RB [ \-vs
 .RI [ graph ]]
@@ -148,6 +148,24 @@ Update output file only if at least
 .I time
 minutes have passed since the previous file update. This option is ignored if
 stdout is used as output.
+
+.TP
+.B "--common-width"
+Use a common image width for summary
+.RB ( \-s ),
+list
+.RB ( \-d / \-m / \-t / \-y ),
+hourly graph
+.RB ( \-hg )
+and 5 minute graph
+.RB ( \-5g )
+outputs based on the active font metrics. Narrower outputs are padded; list bars
+may grow or shrink slightly and the 5 minute graph sample count is chosen to match.
+When enabled, the optional limit given to
+.B \-5g
+is ignored for width calculation. Can also be enabled with
+.B CommonWidth
+in the configuration file. Useful when vertical alignment of multiple images is needed.
 
 .TP
 .BI "--config " file
@@ -237,6 +255,20 @@ parameter is used. All entries stored in the database will be shown if
 is set to 0.
 
 .TP
+.BI "--font " "file[:size]|size"
+Use TrueType font
+.I file
+for image text, optionally set point
+.IR size .
+A bare
+.I size
+value (digits only) overrides the configured
+.B FontSize
+while keeping
+.BR FontFile .
+libGD must provide FreeType support and the font file must be readable.
+
+.TP
 .BI "--headertext " text
 Show
 .I text
@@ -318,20 +350,6 @@ Use large fonts in output. When a TrueType font is selected with
 or
 .BR FontFile ,
 this multiplies the font size by 1.5.
-
-.TP
-.BI "--font " "file[:size]|size"
-Use TrueType font
-.I file
-for image text, optionally with point
-.IR size .
-A bare
-.I size
-value (digits only) overrides the configured
-.B FontSize
-while keeping
-.BR FontFile .
-libGD must provide FreeType support and the font file must be readable.
 
 .TP
 .BI "--limit " limit
@@ -444,24 +462,6 @@ for this option in order to either disable (0) or enable (1) transparency
 regardless of the configuration file setting.
 
 .TP
-.B "--common-width"
-Use a common image width for summary
-.RB ( \-s ),
-list
-.RB ( \-d / \-m / \-t / \-y ),
-hourly graph
-.RB ( \-hg )
-and 5 minute graph
-.RB ( \-5g )
-outputs based on the active font metrics. Narrower outputs are padded; list bars
-may grow or shrink slightly; the 5 minute graph sample count is chosen to match.
-When enabled, the optional limit given to
-.B \-5g
-is ignored for width calculation. Can also be enabled with
-.B CommonWidth
-in the configuration file.
-
-.TP
 .B "-v, --version"
 Show current version.
 
@@ -535,7 +535,7 @@ or
 .B "--font"
 avoids this limitation for rendered UTF-8 text.
 .PP
-Using long date output formats may cause misalignment in shown columns if the
+Using long date output formats may cause misalignment or clipping in shown columns if the
 length of the date exceeds the fixed size allocation.
 .PP
 Scaling an image when background transparency is enabled may not result in

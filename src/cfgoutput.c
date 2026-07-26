@@ -205,7 +205,7 @@ void printcfgfile(void)
 	defaultcomment(cfg.monthrotateyears == MONTHROTATEYEARS);
 	printf("MonthRotateAffectsYears %d\n", cfg.monthrotateyears);
 	printf("# visibility of note about MonthRotate in outputs showing monthly data\n");
-	printf("# 0 = never, 1 = when MonthRotate != 1, 2 = always\n");
+	printf("# (0 = never, 1 = when MonthRotate != 1, 2 = always)\n");
 	defaultcomment(cfg.monthrotatevisible == MONTHROTATEVISIBLE);
 	printf("MonthRotateVisible %d\n\n", cfg.monthrotatevisible);
 
