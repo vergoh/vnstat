@@ -623,16 +623,19 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 			int center_bot = center_top + line_t - 1;
 			int y_bot = ypos - stroke_half - 1;
 			int y_top = center_y - rxh - 1;
+			/* imagedrawvline centers a thick stroke; shift so the left edge sits on
+			 * the bar boundary and cannot nick the previous sample's poles */
+			int line_x = px + line_t / 2;
 			int hour_color;
 			int is_label_hour = (label_hours > 0 && (d->tm_hour % label_hours) == 0);
 
 			if (d->tm_hour % 2 == 0) {
 				hour_color = (d->tm_hour == 0) ? ic->cline : ic->cbgoffset;
 				if (y_bot > center_bot + 1) {
-					imagedrawvline(ic, px, y_bot, center_bot + 1, hour_color);
+					imagedrawvline(ic, line_x, y_bot, center_bot + 1, hour_color);
 				}
 				if (y_top < center_top - 1) {
-					imagedrawvline(ic, px, center_top - 1, y_top, hour_color);
+					imagedrawvline(ic, line_x, center_top - 1, y_top, hour_color);
 				}
 
 				if (is_label_hour && i * bw > imagefontwidth(ic, FONT_ROLE_AXIS)) {
@@ -656,10 +659,10 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 				}
 			} else {
 				if (y_bot > center_bot + 1) {
-					imagedrawvline(ic, px, y_bot, center_bot + 1, ic->cbgoffset);
+					imagedrawvline(ic, line_x, y_bot, center_bot + 1, ic->cbgoffset);
 				}
 				if (y_top < center_top - 1) {
-					imagedrawvline(ic, px, center_top - 1, y_top, ic->cbgoffset);
+					imagedrawvline(ic, line_x, center_top - 1, y_top, ic->cbgoffset);
 				}
 			}
 		}
@@ -958,8 +961,8 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 				d = localtime(&current);
 				strftime(datebuff, DATEBUFFLEN, "%d", d);
 				if (i > 0) {
-					/* same center/thickness as x-axis ticks (imagedrawvline) */
-					imagedrawvline(ic, px, y - height + 1, y, ic->cbgoffset);
+					/* left-align thick stroke on bar edge (same as 5min hour marks) */
+					imagedrawvline(ic, px + stroke_half, y - height + 1, y, ic->cbgoffset);
 				}
 				if (ic->fontctx.mode == FONT_TTF) {
 					label_x = px + 12 * barwidth - imagetextwidth(ic, FONT_ROLE_AXIS, datebuff) / 2;
@@ -979,7 +982,7 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 			d = localtime(&current);
 			strftime(datebuff, DATEBUFFLEN, "%d", d);
 			if (i > 0) {
-				imagedrawvline(ic, px, y + 1, y + imageuipx(ic, 4), ic->ctext);
+				imagedrawvline(ic, px + stroke_half, y + 1, y + imageuipx(ic, 4), ic->ctext);
 			}
 			if (ic->fontctx.mode == FONT_TTF) {
 				label_x = px + 12 * barwidth - imagetextwidth(ic, FONT_ROLE_AXIS, datebuff) / 2;
@@ -1009,7 +1012,8 @@ int drawpercentile(IMAGECONTENT *ic, const int mode, const int xpos, const int y
 			int sep_bottom = y - l;
 
 			if (sep_bottom >= sep_top) {
-				imagedrawvline(ic, px, sep_top, sep_bottom, ic->cbgoffset);
+				/* left-align thick stroke on bar edge so it cannot nick the previous pole */
+				imagedrawvline(ic, px + stroke_half, sep_top, sep_bottom, ic->cbgoffset);
 			}
 		}
 
