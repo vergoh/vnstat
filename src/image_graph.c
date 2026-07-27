@@ -307,7 +307,7 @@ void drawhourly(IMAGECONTENT *ic, const int israte)
 
 
 /* space needed for one axis hour label ("00") plus a readable gap */
-static int fiveg_label_need(IMAGECONTENT *ic)
+static int fiveg_label_need(const IMAGECONTENT *ic)
 {
 	int label_w, gap;
 
@@ -321,7 +321,7 @@ static int fiveg_label_need(IMAGECONTENT *ic)
 
 /* pixels per 5-minute sample, built-in stays 1px (master sizing); standalone TTF
  * widens for 2-hour labels, embedded -vs/-hs use summary_fiveg_barwidth() */
-int fiveg_barwidth(IMAGECONTENT *ic)
+int fiveg_barwidth(const IMAGECONTENT *ic)
 {
 	int need, slot = 24; /* hour labels every 2 hours = 24 samples */
 
@@ -334,7 +334,7 @@ int fiveg_barwidth(IMAGECONTENT *ic)
 }
 
 /* hours between x-axis labels so "00"+gap fits in hours*12*barwidth pixels */
-static int fiveg_label_hours(IMAGECONTENT *ic, const int barwidth)
+static int fiveg_label_hours(const IMAGECONTENT *ic, const int barwidth)
 {
 	static const int intervals[] = {2, 4, 6, 12};
 	int need, i, bw, slot;
@@ -669,13 +669,13 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 
 		if (datalist_i->timestamp > timestamp) {
 			/* scale future / no-data marks with UI stroke thickness */
-			int t = imageuipx(ic, 1);
-			int x0 = px - t / 2;
-			int y0 = center_y - t / 2;
-			int y1 = center_y + txh + FIVEMINHEIGHTOFFSET - t / 2;
+			int mark = imageuipx(ic, 1);
+			int x0 = px - mark / 2;
+			int y0 = center_y - mark / 2;
+			int y1 = center_y + txh + FIVEMINHEIGHTOFFSET - mark / 2;
 
-			gdImageFilledRectangle(ic->im, x0, y0, x0 + t - 1, y0 + t - 1, ic->cline);
-			gdImageFilledRectangle(ic->im, x0, y1, x0 + t - 1, y1 + t - 1, ic->cline);
+			gdImageFilledRectangle(ic->im, x0, y0, x0 + mark - 1, y0 + mark - 1, ic->cline);
+			gdImageFilledRectangle(ic->im, x0, y1, x0 + mark - 1, y1 + mark - 1, ic->cline);
 			continue;
 		}
 
@@ -721,7 +721,7 @@ int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int 
 }
 
 /* pixels per hour, built-in stays 1px (master sizing); TTF widens for day labels */
-static int percentile_barwidth(IMAGECONTENT *ic)
+static int percentile_barwidth(const IMAGECONTENT *ic)
 {
 	int label_w, gap, need, slot = 24; /* day labels every 24 hours */
 
@@ -751,9 +751,6 @@ void draw95thpercentilegraph(IMAGECONTENT *ic, const int mode)
 	/* plot height from base size (default top 38 + bottom 30), then * barwidth,
 	 * do not derive from imageheight - chrome, or large fonts shrink the plot first */
 	base_graph = 300 - 68;
-	if (base_graph < 1) {
-		base_graph = 1;
-	}
 	graph_height = base_graph * barwidth;
 
 	if (!ic->showheader) {

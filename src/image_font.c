@@ -74,7 +74,7 @@ static char *imagettfbbox(const IMAGECONTENT *ic, const double ptsize, const dou
 static int imagettftextwidth(const IMAGECONTENT *ic, const double ptsize, const char *text)
 {
 	int brect[8];
-	char *err;
+	const char *err;
 
 	if (text == NULL || text[0] == '\0') {
 		return 0;
@@ -94,7 +94,7 @@ static int imagettftextwidth(const IMAGECONTENT *ic, const double ptsize, const 
 static int imagettfinitmetrics(IMAGECONTENT *ic)
 {
 	int brect[8], template_cw, digit_cw, value_w;
-	char *err;
+	const char *err;
 	const char *errprefix = "Error: Unable to use FontFile";
 
 	if (gdFontCacheSetup() != 0) {
@@ -298,7 +298,7 @@ void imagestring(IMAGECONTENT *ic, const fontrole_t role, const int x, const int
 #if HAVE_DECL_GDIMAGESTRINGFT
 	int brect[8], baseline_y;
 	double ptsize;
-	char *err;
+	const char *err;
 #endif
 
 	if (text == NULL || text[0] == '\0') {
@@ -329,7 +329,7 @@ void imagestringup(IMAGECONTENT *ic, const fontrole_t role, const int x, const i
 #if HAVE_DECL_GDIMAGESTRINGFT
 	int brect[8], pen_x;
 	double ptsize;
-	char *err;
+	const char *err;
 #endif
 
 	if (text == NULL || text[0] == '\0') {
@@ -402,7 +402,7 @@ int imageuipx(const IMAGECONTENT *ic, const int base)
 	return n;
 }
 
-int imagetextwidth(IMAGECONTENT *ic, const fontrole_t role, const char *text)
+int imagetextwidth(const IMAGECONTENT *ic, const fontrole_t role, const char *text)
 {
 	if (text == NULL || text[0] == '\0') {
 		return 0;
@@ -471,7 +471,7 @@ int imagecentery(IMAGECONTENT *ic, const fontrole_t role, const char *text, cons
 #if HAVE_DECL_GDIMAGESTRINGFT
 	if (ic->fontctx.mode == FONT_TTF && !imageroleusesbuiltin(ic, role)) {
 		int brect[8], ink_h, ink_top, ink_bot, ascent;
-		char *err;
+		const char *err;
 		double ptsize = imageroleptsize(ic, role);
 
 		ascent = imageroleascent(ic, role);

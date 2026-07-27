@@ -6,7 +6,7 @@
 
 int drawhours(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte);
 void drawhourly(IMAGECONTENT *ic, const int israte);
-int fiveg_barwidth(IMAGECONTENT *ic);
+int fiveg_barwidth(const IMAGECONTENT *ic);
 void drawfivegraph(IMAGECONTENT *ic, const int israte, const int resultcount, const int height);
 int drawfiveminutes(IMAGECONTENT *ic, const int xpos, const int ypos, const int israte, const int resultcount, const int height, const int barwidth);
 void draw95thpercentilegraph(IMAGECONTENT *ic, const int mode);
