@@ -1,6 +1,8 @@
 #ifndef IFLIST_H
 #define IFLIST_H
 
+#include "common.h"
+
 typedef struct iflist {
 	char interface[MAXIFLEN];
 	int64_t id;

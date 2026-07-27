@@ -1,6 +1,9 @@
 #ifndef CFG_H
 #define CFG_H
 
+#include <stdio.h>
+#include <stdint.h>
+
 struct cfgsetting {
 	const char *name;
 	char *locc;

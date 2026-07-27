@@ -10,7 +10,8 @@ By default, traffic statistics are stored on a five minute level for the last
 last 2 full months and on a yearly level forever. The data retention durations
 are fully user configurable. Total seen traffic and a top days listing is also
 provided. Optional image output is available in systems with the
-[GD library](https://libgd.github.io/) installed.
+[GD Graphics Library](https://libgd.github.io/) installed. Image output support
+uses of TrueType fonts if support is included in used GD Graphics Library.
 
 See the [official webpage](https://humdi.net/vnstat/) for additional details
 and output examples.

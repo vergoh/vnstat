@@ -1,4 +1,4 @@
-.TH VNSTAT.CONF 5 "JUNE 2026" "version 2.14" "User Manuals"
+.TH VNSTAT.CONF 5 "JULY 2026" "version 2.14" "User Manuals"
 .SH NAME
 vnstat.conf \- vnStat configuration file
 
@@ -25,9 +25,10 @@ will be used if a keyword can't be found from the configuration file or
 if the configured value cannot be parsed or is outside supported value range.
 .PP
 The configuration file is divided into three sections based on the
-usage of each keyword. The first section contains keywords that are
-considered common for all commands, the second section is for
-daemon related keywords and the last section is for image output.
+usage of each keyword. The first section ("COMMON KEYWORDS") contains
+keywords that are considered common for all commands, the second section
+("DAEMON RELATED KEYWORDS") is for daemon related keywords and the last section
+("IMAGE OUTPUT RELATED KEYWORDS") is for image output.
 
 .SH COMMON KEYWORDS
 
@@ -588,16 +589,84 @@ Show hours with rate instead of transferred amount. 1 = enabled, 0 = disabled.
 
 .TP
 .B ImageScale
-Scale output to given percent. Value range: 50..500
+Scale output to given percent after rendering the image. Doesn't improve output
+quality, only changes the size of the image. Value range: 50..500
+
+.TP
+.B CommonWidth
+Use a common image width for summary, list, hourly graph and 5 minute graph
+image outputs based on the active font metrics. Useful when vertical alignment of
+multiple images is needed. 1 = enabled, 0 = disabled.
+
+.TP
+.B FontFile
+Path to a TrueType font (.ttf) file to be used for image text rendering.
+Leave empty to use the libGD built-in bitmap fonts. When set, libGD must have
+been built with FreeType support and the font file must be readable;
+otherwise
+.B vnstati
+exits with error. Both monospace and proportional fonts are supported.
+
+.TP
+.B FontSize
+Point size used for the body text when
+.B FontFile
+is set. Title, header, axis label and
+timestamp size scaling is controlled with
+.BR FontScaleHeader ,
+.BR FontScaleTitle ,
+.B FontScaleAxis
+and
+.BR FontScaleTimestamp .
+Has no effect when
+.B FontFile
+is empty. Value range: 6..72
+
+.TP
+.B FontScaleHeader
+Header text size as a percentage of
+.B FontSize
+when
+.B FontFile
+is set. Value range: 50..300
+
+.TP
+.B FontScaleTitle
+Title text size as a percentage of
+.B FontSize
+when
+.B FontFile
+is set. Value range: 50..300
+
+.TP
+.B FontScaleAxis
+Axis label text size as a percentage of
+.B FontSize
+when
+.B FontFile
+is set. Value range: 50..300
+
+.TP
+.B FontScaleTimestamp
+Header and alternative date text size as a percentage of
+.B FontSize
+when
+.B FontFile
+is set. Value range: 50..300
 
 .TP
 .B LargeFonts
-Increase the size of used fonts. 1 = enabled, 0 = disabled.
+Increase the size of used fonts. When a
+.B FontFile
+is configured, this multiplies
+.B FontSize
+by 1.5 instead of switching built-in font faces. 1 = enabled, 0 = disabled
 
 .TP
 .B LineSpacingAdjustment
 Adjust line spacing in list format outputs. Positive values increase the
-space between lines while negative values reduce it. Value range: -5..10
+space between lines while negative values reduce it. Supports both built-in
+and TrueType fonts. Value range: -5..10
 
 .TP
 .B SummaryGraph
@@ -652,7 +721,7 @@ Used when no earlier location was found.
 
 .SH RESTRICTIONS
 
-Using long date output formats may cause misalignment in shown columns if the
+Using long date output formats may cause misalignment or clipping in shown columns if the
 length of the date exceeds the fixed size allocation.
 
 .SH AUTHOR

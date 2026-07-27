@@ -6,7 +6,10 @@
    - Some higher traffic days could be missing from top days output when the
      interface merge syntax (interface1+interface2) was used
  - New
-   - Increase debug verbosity if -D / --debug is used multiples times
+   - Add TrueType font support to image output with image size scaling based
+     on used font size, configurable with FontFile and FontSize or --font
+   - Add --common-width to vnstati for getting images padded to common width
+     from different outputs when same font and font size is used
    - Add XDG Base Directory support for configuration file,
      $XDG_CONFIG_HOME/vnstat/vnstat.conf and $HOME/.config/vnstat/vnstat.conf
      are tried before $HOME/.vnstatrc, /etc/vnstat.conf and
@@ -18,6 +21,7 @@
      MonthRotate has been configured with a value other than 1, note visibility
      is configurable with MonthRotateVisible configuration option
    - Add monthrotate field to --json and --xml output interface section
+   - Increase debug verbosity if -D / --debug is used multiples times
 
 
 2.13 / 8-Feb-2025

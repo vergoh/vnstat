@@ -19,6 +19,7 @@ vnStat image output - Copyright (C) 2007-2025 Teemu Toivola <tst@iki.fi>
 #include "iflist.h"
 #include "dbsql.h"
 #include "image.h"
+#include "image_font.h"
 #include "cfg.h"
 #include "misc.h"
 #include "clicommon.h"
@@ -85,6 +86,7 @@ int main(int argc, char *argv[])
 	db_close();
 
 	if (ic.im == NULL) {
+		imagefontcleanup();
 		return 1;
 	}
 
@@ -92,6 +94,7 @@ int main(int argc, char *argv[])
 	scaleimage(&ic);
 #endif
 	writeoutput(&p, &ic);
+	imagefontcleanup();
 
 	if (debug)
 		printf("File written, all done\n");
@@ -150,6 +153,8 @@ void showihelp(const IPARAMS *p)
 		printf(" (default)");
 	}
 	printf("\n");
+	printf("      --font <file[:size]|size>          use TTF font file and/or size\n");
+	printf("      --common-width                      use common width for summary, list, hourly and 5g outputs\n");
 	printf("      -o,  --output <file>               select output filename\n");
 	printf("      -c,  --cache <minutes>             update output only when too old\n");
 	printf("      -i,  --iface <interface>           select interface");
@@ -323,10 +328,94 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 			}
 		} else if (strcmp(argv[currentarg], "--altdate") == 0) {
 			ic->altdate = 1;
+		} else if (strcmp(argv[currentarg], "--font") == 0) {
+			if (currentarg + 1 < argc) {
+				const char *spec = argv[currentarg + 1];
+				const char *colon = strrchr(spec, ':');
+				const char *sizep;
+				int fontsize = 0, is_digits = 0;
+				size_t pathlen;
+
+				if (colon != NULL) {
+					/* file:size */
+					sizep = colon + 1;
+					if (*sizep != '\0') {
+						is_digits = 1;
+						while (*sizep != '\0') {
+							if (!isdigit((unsigned char)*sizep)) {
+								is_digits = 0;
+								break;
+							}
+							sizep++;
+						}
+					}
+					if (!is_digits) {
+						fprintf(stderr, "Error: Invalid font size \"%s\" for --font. Supported value range: %d <= N <= %d\n", colon + 1, FONT_SIZE_MIN, FONT_SIZE_MAX);
+						exit(EXIT_FAILURE);
+					}
+					fontsize = atoi(colon + 1);
+					if (fontsize < FONT_SIZE_MIN || fontsize > FONT_SIZE_MAX) {
+						fprintf(stderr, "Error: Invalid font size \"%s\" for --font. Supported value range: %d <= N <= %d\n", colon + 1, FONT_SIZE_MIN, FONT_SIZE_MAX);
+						exit(EXIT_FAILURE);
+					}
+
+					pathlen = (size_t)(colon - spec);
+					if (pathlen == 0 || pathlen >= sizeof(cfg.fontfile)) {
+						fprintf(stderr, "Error: Invalid font file path for --font.\n");
+						exit(EXIT_FAILURE);
+					}
+					memcpy(cfg.fontfile, spec, pathlen);
+					cfg.fontfile[pathlen] = '\0';
+					if (access(cfg.fontfile, R_OK) != 0) {
+						fprintf(stderr, "Error: Unable to read FontFile \"%s\": %s\n", cfg.fontfile, strerror(errno));
+						exit(EXIT_FAILURE);
+					}
+					cfg.fontsize = fontsize;
+				} else {
+					/* bare size or file path */
+					is_digits = (spec[0] != '\0');
+					sizep = spec;
+					while (*sizep != '\0') {
+						if (!isdigit((unsigned char)*sizep)) {
+							is_digits = 0;
+							break;
+						}
+						sizep++;
+					}
+					if (is_digits) {
+						fontsize = atoi(spec);
+						if (fontsize < FONT_SIZE_MIN || fontsize > FONT_SIZE_MAX) {
+							fprintf(stderr, "Error: Invalid font size \"%s\" for --font. Supported value range: %d <= N <= %d\n", spec, FONT_SIZE_MIN, FONT_SIZE_MAX);
+							exit(EXIT_FAILURE);
+						}
+						cfg.fontsize = fontsize;
+					} else {
+						if (strlen(spec) == 0 || strlen(spec) >= sizeof(cfg.fontfile)) {
+							fprintf(stderr, "Error: Invalid font file path for --font.\n");
+							exit(EXIT_FAILURE);
+						}
+						if (access(spec, R_OK) != 0) {
+							fprintf(stderr, "Error: Unable to read font file \"%s\": %s\n", spec, strerror(errno));
+							exit(EXIT_FAILURE);
+						}
+						strncpy_nt(cfg.fontfile, spec, 512);
+					}
+				}
+
+				if (debug) {
+					printf("Font: file \"%s\", size %d\n", cfg.fontfile, cfg.fontsize);
+				}
+				currentarg++;
+			} else {
+				fprintf(stderr, "Error: Font parameter for --font missing.\n");
+				exit(EXIT_FAILURE);
+			}
 		} else if ((strcmp(argv[currentarg], "-L") == 0) || (strcmp(argv[currentarg], "--large")) == 0) {
 			cfg.largefonts = 1;
 		} else if ((strcmp(argv[currentarg], "-S") == 0) || (strcmp(argv[currentarg], "--small")) == 0) {
 			cfg.largefonts = 0;
+		} else if (strcmp(argv[currentarg], "--common-width") == 0) {
+			cfg.commonwidth = 1;
 		} else if ((strcmp(argv[currentarg], "-D") == 0) || (strcmp(argv[currentarg], "--debug")) == 0) {
 			;
 		} else if ((strcmp(argv[currentarg], "-d") == 0) || (strcmp(argv[currentarg], "--days")) == 0) {
@@ -615,13 +704,12 @@ void parseargs(IPARAMS *p, IMAGECONTENT *ic, int argc, char **argv)
 	}
 
 	if (cfg.largefonts) {
-		ic->font = gdFontGetLarge();
-		ic->lineheight = 16;
 		ic->large = 1;
 	} else {
-		ic->font = gdFontGetSmall();
-		ic->lineheight = 12;
 		ic->large = 0;
+	}
+	if (!imagefontinit(ic, cfg.largefonts)) {
+		exit(EXIT_FAILURE);
 	}
 }
 

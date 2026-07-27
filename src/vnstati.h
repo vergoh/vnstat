@@ -1,6 +1,9 @@
 #ifndef VNSTATI_H
 #define VNSTATI_H
 
+#include "common.h"
+#include "image.h"
+
 typedef struct {
 	int cache, help;
 	int32_t limit;

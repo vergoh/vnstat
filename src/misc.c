@@ -14,6 +14,7 @@
 #define _XOPEN_SOURCE
 #endif
 #include "common.h"
+#include "dbsql.h"
 #include "misc.h"
 #include <wchar.h>
 

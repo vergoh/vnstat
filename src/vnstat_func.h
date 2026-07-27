@@ -1,6 +1,8 @@
 #ifndef VNSTAT_FUNC_H
 #define VNSTAT_FUNC_H
 
+#include "common.h"
+
 typedef struct {
 	int query, setalias;
 	int addiface, force, traffic;

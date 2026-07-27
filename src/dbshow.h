@@ -4,6 +4,7 @@
 #define HGLINES 15
 #define ALERTUSAGELEN 59
 
+#include "dbsql.h"
 #include "misc.h"
 #include "percentile.h"
 

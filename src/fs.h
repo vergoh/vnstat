@@ -1,6 +1,8 @@
 #ifndef FS_H
 #define FS_H
 
+#include <sys/types.h>
+
 /* O_CLOEXEC is specified starting POSIX.1-2008 / glibc 2.12 / Linux 2.6.23 */
 #if HAVE_DECL_O_CLOEXEC
 #define FS_OPEN_RO_FLAGS O_RDONLY | O_CLOEXEC

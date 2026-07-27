@@ -1,6 +1,8 @@
 #ifndef ID_H
 #define ID_H
 
+#include <sys/types.h>
+
 uid_t getuser(const char *user);
 gid_t getgroup(const char *group);
 void setuser(const char *user);

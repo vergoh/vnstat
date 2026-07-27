@@ -10,6 +10,10 @@
    don't. */
 #undef HAVE_DECL_GDIMAGEFILE
 
+/* Define to 1 if you have the declaration of 'gdImageStringFT', and to 0 if
+   you don't. */
+#undef HAVE_DECL_GDIMAGESTRINGFT
+
 /* Define to 1 if you have the declaration of 'GD_NEAREST_NEIGHBOUR', and to 0
    if you don't. */
 #undef HAVE_DECL_GD_NEAREST_NEIGHBOUR

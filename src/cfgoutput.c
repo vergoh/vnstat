@@ -205,7 +205,7 @@ void printcfgfile(void)
 	defaultcomment(cfg.monthrotateyears == MONTHROTATEYEARS);
 	printf("MonthRotateAffectsYears %d\n", cfg.monthrotateyears);
 	printf("# visibility of note about MonthRotate in outputs showing monthly data\n");
-	printf("# 0 = never, 1 = when MonthRotate != 1, 2 = always\n");
+	printf("# (0 = never, 1 = when MonthRotate != 1, 2 = always)\n");
 	defaultcomment(cfg.monthrotatevisible == MONTHROTATEVISIBLE);
 	printf("MonthRotateVisible %d\n\n", cfg.monthrotatevisible);
 
@@ -305,7 +305,21 @@ void printcfgfile(void)
 	defaultcomment(cfg.linespaceadjust == LINESPACEADJUST);
 	printf("LineSpacingAdjustment %d\n", cfg.linespaceadjust);
 	defaultcomment(cfg.imagescale == IMAGESCALE);
-	printf("ImageScale %d\n\n", cfg.imagescale);
+	printf("ImageScale %d\n", cfg.imagescale);
+	defaultcomment(cfg.commonwidth == COMMONWIDTH);
+	printf("CommonWidth %d\n", cfg.commonwidth);
+	defaultcomment(strcmp(cfg.fontfile, FONTFILE) == 0);
+	printf("FontFile \"%s\"\n", cfg.fontfile);
+	defaultcomment(cfg.fontsize == FONTSIZE);
+	printf("FontSize %d\n", cfg.fontsize);
+	defaultcomment(cfg.fontscaleheader == FONTSCALEHEADER);
+	printf("FontScaleHeader %d\n", cfg.fontscaleheader);
+	defaultcomment(cfg.fontscaletitle == FONTSCALETITLE);
+	printf("FontScaleTitle %d\n", cfg.fontscaletitle);
+	defaultcomment(cfg.fontscaleaxis == FONTSCALEAXIS);
+	printf("FontScaleAxis %d\n", cfg.fontscaleaxis);
+	defaultcomment(cfg.fontscaletimestamp == FONTSCALETIMESTAMP);
+	printf("FontScaleTimestamp %d\n\n", cfg.fontscaletimestamp);
 
 	printf("# 5 minutes graph size control\n");
 	defaultcomment(cfg.fivegresultcount == FIVEGRESULTCOUNT);

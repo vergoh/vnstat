@@ -1,9 +1,8 @@
 #include "common.h"
 #include "dbsql.h"
 #include "misc.h"
-#include "image.h"
 #include "image_support.h"
-#include "vnstati.h"
+#include "image_font.h"
 
 void imageinit(IMAGECONTENT *ic, const int width, const int height)
 {
@@ -118,27 +117,272 @@ void colorinitcheck(const char *color, const int value, const char *cfgtext, con
 	}
 }
 
+
+void imagedrawhline(IMAGECONTENT *ic, const int x1, const int x2, const int y, const int color)
+{
+	int t, y1, y2, xa, xb;
+
+	t = imageuipx(ic, 1);
+	/* center on y; use t/2 so even thicknesses do not grow only downward */
+	y1 = y - t / 2;
+	y2 = y1 + t - 1;
+	if (x1 <= x2) {
+		xa = x1;
+		xb = x2;
+	} else {
+		xa = x2;
+		xb = x1;
+	}
+	gdImageFilledRectangle(ic->im, xa, y1, xb, y2, color);
+}
+
+void imagedrawvline(IMAGECONTENT *ic, const int x, const int y1, const int y2, const int color)
+{
+	int t, x1, x2, ya, yb;
+
+	t = imageuipx(ic, 1);
+	x1 = x - t / 2;
+	x2 = x1 + t - 1;
+	if (y1 <= y2) {
+		ya = y1;
+		yb = y2;
+	} else {
+		ya = y2;
+		yb = y1;
+	}
+	gdImageFilledRectangle(ic->im, x1, ya, x2, yb, color);
+}
+
+void imagedrawrect(IMAGECONTENT *ic, const int x1, const int y1, const int x2, const int y2, const int color)
+{
+	int t, xa, xb, ya, yb;
+
+	t = imageuipx(ic, 1);
+	if (x1 <= x2) {
+		xa = x1;
+		xb = x2;
+	} else {
+		xa = x2;
+		xb = x1;
+	}
+	if (y1 <= y2) {
+		ya = y1;
+		yb = y2;
+	} else {
+		ya = y2;
+		yb = y1;
+	}
+
+	/* outer edge of the border sits on the given rectangle */
+	gdImageFilledRectangle(ic->im, xa, ya, xb, ya + t - 1, color);
+	gdImageFilledRectangle(ic->im, xa, yb - t + 1, xb, yb, color);
+	gdImageFilledRectangle(ic->im, xa, ya, xa + t - 1, yb, color);
+	gdImageFilledRectangle(ic->im, xb - t + 1, ya, xb, yb, color);
+}
+
+void imagedrawdashedhline(IMAGECONTENT *ic, const int x1, const int x2, const int y, const int color)
+{
+	int t, i, y0;
+
+	t = imageuipx(ic, 1);
+	y0 = y - t / 2;
+	for (i = 0; i < t; i++) {
+		gdImageDashedLine(ic->im, x1, y0 + i, x2, y0 + i, color);
+	}
+}
+
+/* pixels from graph xpos to axis base (built-in historical GRAPH_AXIS_BASE) */
+int graph_axis_left(const IMAGECONTENT *ic)
+{
+	if (ic->fontctx.mode == FONT_BUILTIN) {
+		return GRAPH_AXIS_BASE;
+	}
+
+	/* 5-digit field + gap to y-axis; unit text sits at xpos in the left margin
+	 * and uses the spare column vs 4-char scale values */
+	return ic->fontctx.axis_num5_w + imageuipx(ic, GRAPH_AXIS_LABEL_GAP);
+}
+
+/* half of UI stroke thickness; grid lines inset by this so they do not overlap axes */
+int graph_stroke_half(const IMAGECONTENT *ic)
+{
+	return imageuipx(ic, 1) / 2;
+}
+
+/* symmetric left/right inset for standalone 5-minute / percentile graphs,
+ * redistributes design chrome so unit text and arrow tip have matching margins */
+static int graph_side_pad(const IMAGECONTENT *ic)
+{
+	int cross, pad_full, after_tip, side;
+
+	if (ic->fontctx.mode == FONT_BUILTIN) {
+		return 8 + imageextrapx(ic, 14);
+	}
+
+	cross = imageuipx(ic, GRAPH_AXIS_CROSS);
+	pad_full = imageuipx(ic, FIVEMINWIDTHFULLPADDING);
+	after_tip = cross + 1 + imageuipx(ic, GRAPH_EXTRA_RIGHT) - pad_full;
+	if (after_tip < 8) {
+		after_tip = 8;
+	}
+	side = (8 + after_tip) / 2;
+	return side;
+}
+
+int graph_xpos_margin(const IMAGECONTENT *ic)
+{
+	return graph_side_pad(ic);
+}
+
+/* non-plot width for 5-minute / percentile style graphs (left margin + chrome + right) */
+int graph_extra_space(const IMAGECONTENT *ic)
+{
+	int side, cross, pad_full, right;
+
+	if (ic->fontctx.mode == FONT_BUILTIN) {
+		return FIVEMINEXTRASPACE + imageextrapx(ic, 14);
+	}
+
+	/* balance side pads: left margin == space past axis tip (total width unchanged vs design) */
+	side = graph_side_pad(ic);
+	cross = imageuipx(ic, GRAPH_AXIS_CROSS);
+	pad_full = imageuipx(ic, FIVEMINWIDTHFULLPADDING);
+	right = side - cross - 1 + pad_full;
+	if (right < imageuipx(ic, 8)) {
+		right = imageuipx(ic, 8);
+	}
+	return side + graph_axis_left(ic) + cross + 1 + right;
+}
+
+/* extra plot width matching the 23 hour-to-hour gaps (keeps bars aligned with axis) */
+int hourly_plot_extrax(const IMAGECONTENT *ic)
+{
+	return HOURLY_HOUR_GAPS * imageextrapx(ic, 6);
+}
+
+/* pitch between hour columns; poles and ticks scale from this (same curve as plot width) */
+int hourly_hour_step(const IMAGECONTENT *ic)
+{
+	return HOURLY_HOUR_STEP + imageextrapx(ic, 6);
+}
+
+/* map a design time hourly pole/tick pixel through the current hour-column pitch */
+int hourly_map_px(const IMAGECONTENT *ic, const int design)
+{
+	const int step = hourly_hour_step(ic);
+
+	if (design == 0) {
+		return 0;
+	}
+	return (design * step + HOURLY_HOUR_STEP / 2) / HOURLY_HOUR_STEP;
+}
+
+/* left inset for standalone hourly graph (balanced with right tip room for TTF) */
+int hourly_graph_left(const IMAGECONTENT *ic)
+{
+	const int extrax = hourly_plot_extrax(ic);
+	const int pole_pad = imageextrapx(ic, 2);
+	const int left_grow = (ic->fontctx.mode == FONT_TTF) ? (imageuipx(ic, 13) - 13) : 0;
+	const int axis_past = (ic->fontctx.mode == FONT_TTF) ? imageuipx(ic, HOURLY_AXIS_PAST) : HOURLY_AXIS_PAST;
+	const int left_design = 12 + (ic->fontctx.mode == FONT_BUILTIN ? imageextrapx(ic, 14) : 0);
+	int right, tip_room, tip_need, side;
+
+	right = (HOURLY_CANVAS_BASE - 12 - GRAPH_AXIS_BASE - HOURLY_PLOT_SPAN)
+		+ imageextrapx(ic, 168) - imageextrapx(ic, 14) - extrax + pole_pad
+		- left_grow;
+	tip_room = right - axis_past - pole_pad;
+	tip_need = imageuipx(ic, 8);
+	if (tip_room < tip_need) {
+		tip_room = tip_need;
+	}
+
+	if (ic->fontctx.mode == FONT_BUILTIN) {
+		return left_design;
+	}
+
+	side = (left_design + tip_room) / 2;
+	if (side < left_design) {
+		side = left_design;
+	}
+	return side;
+}
+
+/* standalone hourly canvas width: left margin + axis gutter + plot + right pad */
+int hourly_graph_width(const IMAGECONTENT *ic)
+{
+	const int left = hourly_graph_left(ic);
+	const int extrax = hourly_plot_extrax(ic);
+	const int pole_pad = imageextrapx(ic, 2);
+	const int left_grow = (ic->fontctx.mode == FONT_TTF) ? (imageuipx(ic, 13) - 13) : 0;
+	const int axis_past = (ic->fontctx.mode == FONT_TTF) ? imageuipx(ic, HOURLY_AXIS_PAST) : HOURLY_AXIS_PAST;
+	/* +pole_pad / +left_grow shift hours right so widened poles clear the y-axis */
+	const int plot = HOURLY_PLOT_SPAN + extrax + pole_pad + left_grow;
+	/* right pad: tip room past axis end matches left inset (TTF centering) */
+	int right = left + axis_past + pole_pad;
+
+	if (ic->fontctx.mode == FONT_BUILTIN) {
+		right = (HOURLY_CANVAS_BASE - 12 - GRAPH_AXIS_BASE - HOURLY_PLOT_SPAN)
+			+ imageextrapx(ic, 168) - imageextrapx(ic, 14) - extrax + pole_pad
+			- left_grow;
+	}
+
+	return left + graph_axis_left(ic) + plot + right;
+}
+
+int image_list_width(const IMAGECONTENT *ic)
+{
+	return 83 * ic->fontctx.cw + imageuipx(ic, 2) + imageextrapx(ic, 2);
+}
+
+/* clamp canvas-vs-natural delta applied to list bars to +/-50% of design bar length */
+int image_list_bar_extra(const IMAGECONTENT *ic, const int natural_width, const int design_bar_len)
+{
+	int delta, max_adjust;
+
+	if (ic->commonwidth <= 0 || natural_width <= 0 || design_bar_len <= 0) {
+		return 0;
+	}
+
+	delta = ic->commonwidth - natural_width;
+	max_adjust = design_bar_len / 2;
+	if (max_adjust < 1) {
+		max_adjust = 1;
+	}
+	if (delta > max_adjust) {
+		return max_adjust;
+	}
+	if (delta < -max_adjust) {
+		return -max_adjust;
+	}
+	return delta;
+}
+
 void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int height)
 {
 	const struct tm *d;
 	char datestring[64], buffer[512];
-	gdFontPtr datefont;
-
-	if (ic->large) {
-		datefont = gdFontGetSmall();
-	} else {
-		datefont = gdFontGetTiny();
-	}
+	int rect_top, rect_bottom, title_y, date_y;
+	int pad, edge_t, inset, bottom_margin;
 
 	/* get time in given format */
 	d = localtime(&ic->interface.updated);
 	strftime(datestring, 64, cfg.hformat, d);
 
+	pad = imageuipx(ic, 2);
+	edge_t = imageuipx(ic, 1);
+	inset = pad + ic->showedge * edge_t;
+	bottom_margin = 4 + ic->showedge * edge_t;
+
 	/* background, edges */
 	gdImageFill(ic->im, 0, 0, ic->cbackground);
 	if (ic->showedge) {
-		gdImageRectangle(ic->im, 0, 0, width - 1, height - 1, ic->cedge);
+		imagedrawrect(ic, 0, 0, width - 1, height - 1, ic->cedge);
 	}
+
+	rect_top = inset;
+	rect_bottom = ic->fontctx.header_h;
+	title_y = imageuipx(ic, 5) + ic->showedge * edge_t;
+	date_y = imageuipx(ic, 9) + ic->showedge * edge_t - imageextrapx(ic, 3);
 
 	/* titlebox with title */
 	if (ic->showheader) {
@@ -153,269 +397,41 @@ void layoutinit(IMAGECONTENT *ic, const char *title, const int width, const int 
 			}
 		}
 
-		gdImageFilledRectangle(ic->im, 2 + ic->showedge, 2 + ic->showedge, width - 3 - ic->showedge, 24, ic->cheader);
-		gdImageString(ic->im, gdFontGetGiant(), 12, 5 + ic->showedge, (unsigned char *)buffer, ic->cheadertitle);
+		if (ic->fontctx.mode == FONT_TTF) {
+			title_y = imagecentery(ic, FONT_ROLE_HEADER, buffer, rect_top, rect_bottom);
+			date_y = imagecentery(ic, FONT_ROLE_TIMESTAMP, datestring, rect_top, rect_bottom);
+		}
+
+		gdImageFilledRectangle(ic->im, inset, rect_top, width - 1 - inset, rect_bottom, ic->cheader);
+		imagestring(ic, FONT_ROLE_HEADER, imageuipx(ic, 12), title_y, buffer, ic->cheadertitle);
 	}
 
 	/* date */
 	if (!ic->showheader || ic->altdate) {
-		gdImageString(ic->im, datefont, 5 + ic->showedge, height - 12 - ic->showedge - (ic->large * 3), (unsigned char *)datestring, ic->cvnstat);
-	} else {
-		gdImageString(ic->im, datefont, width - (((int)strlen(datestring)) * datefont->w + 12), 9 + ic->showedge - (ic->large * 3), (unsigned char *)datestring, ic->cheaderdate);
-	}
+		int date_x_alt, date_y_alt;
 
-	/* generator */
-	gdImageString(ic->im, gdFontGetTiny(), width - 114 - ic->showedge, height - 12 - ic->showedge, (unsigned char *)"vnStat / Teemu Toivola", ic->cvnstat);
-}
+		if (ic->fontctx.mode == FONT_TTF) {
+			/* equal left/bottom clearance; both scale with FontSize via imageuipx() */
+			int alt_margin = imageuipx(ic, 1) + ic->showedge * edge_t;
 
-void drawlegend(IMAGECONTENT *ic, const int x, const int y, const short israte)
-{
-	if (!ic->showlegend) {
-		return;
-	}
-
-	if (!israte) {
-		gdImageString(ic->im, ic->font, x, y, (unsigned char *)"rx     tx", ic->ctext);
-
-		gdImageFilledRectangle(ic->im, x - 12 - (ic->large * 2), y + 4, x - 12 + ic->font->w - (ic->large * 2), y + 4 + ic->font->w, ic->crx);
-		gdImageRectangle(ic->im, x - 12 - (ic->large * 2), y + 4, x - 12 + ic->font->w - (ic->large * 2), y + 4 + ic->font->w, ic->ctext);
-
-		gdImageFilledRectangle(ic->im, x + 30 + (ic->large * 12), y + 4, x + 30 + ic->font->w + (ic->large * 12), y + 4 + ic->font->w, ic->ctx);
-		gdImageRectangle(ic->im, x + 30 + (ic->large * 12), y + 4, x + 30 + ic->font->w + (ic->large * 12), y + 4 + ic->font->w, ic->ctext);
-	} else {
-		gdImageString(ic->im, ic->font, x - 12, y, (unsigned char *)"rx   tx rate", ic->ctext);
-
-		gdImageFilledRectangle(ic->im, x - 22 - (ic->large * 3), y + 4, x - 22 + ic->font->w - (ic->large * 3), y + 4 + ic->font->w, ic->crx);
-		gdImageRectangle(ic->im, x - 22 - (ic->large * 3), y + 4, x - 22 + ic->font->w - (ic->large * 3), y + 4 + ic->font->w, ic->ctext);
-
-		gdImageFilledRectangle(ic->im, x + 8 + (ic->large * 7), y + 4, x + 8 + ic->font->w + (ic->large * 7), y + 4 + ic->font->w, ic->ctx);
-		gdImageRectangle(ic->im, x + 8 + (ic->large * 7), y + 4, x + 8 + ic->font->w + (ic->large * 7), y + 4 + ic->font->w, ic->ctext);
-	}
-}
-
-void drawpercentilelegend(IMAGECONTENT *ic, const int x, const int y, const int mode, const uint64_t percentile)
-{
-	int color, xoffset = 0;
-	char modetext[6], percentiletext[64];
-
-	if (mode == 0) {
-		snprintf(modetext, 6, "rx");
-		color = ic->crx;
-	} else if (mode == 1) {
-		snprintf(modetext, 6, "tx");
-		color = ic->ctx;
-	} else {
-		snprintf(modetext, 6, "total");
-		color = ic->ctotal;
-		xoffset = 18 + (ic->large * 6);
-	}
-
-	snprintf(percentiletext, 64, "%s     95th percentile: %s", modetext, gettrafficrate(percentile, 300, 0));
-	gdImageString(ic->im, ic->font, x, y, (unsigned char *)percentiletext, ic->ctext);
-
-	gdImageFilledRectangle(ic->im, x - 12 - (ic->large * 2), y + 4, x - 12 + ic->font->w - (ic->large * 2), y + 4 + ic->font->w, color);
-	gdImageRectangle(ic->im, x - 12 - (ic->large * 2), y + 4, x - 12 + ic->font->w - (ic->large * 2), y + 4 + ic->font->w, ic->ctext);
-
-	gdImageFilledRectangle(ic->im, x + 30 + (ic->large * 12) + xoffset, y + 4, x + 30 + ic->font->w + (ic->large * 12) + xoffset, y + 4 + ic->font->w, ic->cpercentileline);
-	gdImageRectangle(ic->im, x + 30 + (ic->large * 12) + xoffset, y + 4, x + 30 + ic->font->w + (ic->large * 12) + xoffset, y + 4 + ic->font->w, ic->ctext);
-}
-
-void drawbar(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max, const short isestimate)
-{
-	int rxl, txl, width = len, overlap = 0;
-	int crx = ic->crx, ctx = ic->ctx, crxd = ic->crxd, ctxd = ic->ctxd;
-	int ybeginoffset = YBEGINOFFSET, yendoffset = YBEGINOFFSET + ic->font->h - 6 - ic->large;
-
-	if (isestimate) {
-
-		switch (cfg.estimatestyle) {
-			case 0:
-				return;
-			case 1:
-				crx = ic->cbgoffsetmore;
-				ctx = ic->cbgoffsetmore;
-				crxd = ic->cbgoffsetmore;
-				ctxd = ic->cbgoffsetmore;
-				break;
-			case 2:
-				ybeginoffset += 19;
-				yendoffset += 19;
-				crxd = ic->crx;
-				ctxd = ic->ctx;
-				crx = ic->cbgoffset;
-				ctx = ic->cbgoffset;
-				break;
-			default:
-				return;
-		}
-	}
-
-	if ((rx + tx) < max) {
-		width = (int)lrint(((double)(rx + tx) / (double)max) * len);
-	} else if ((rx + tx) > max || max == 0) {
-		if (debug && (rx + tx) > max) {
-			printf("Warning: Bar rx + tx sum exceeds given maximum, no bar shown\n");
-		}
-		return;
-	}
-
-	if (width <= 0) {
-		return;
-	}
-
-	if (tx > rx) {
-		rxl = (int)lrint(((double)rx / (double)(rx + tx) * width));
-		txl = width - rxl;
-	} else {
-		txl = (int)lrint(((double)tx / (double)(rx + tx) * width));
-		rxl = width - txl;
-	}
-
-	if (rxl) {
-		if (txl > 0) {
-			overlap = 1;
-		}
-		gdImageFilledRectangle(ic->im, x, y + ybeginoffset, x + rxl - 1 + overlap, y + yendoffset, crx);
-		gdImageRectangle(ic->im, x, y + ybeginoffset, x + rxl - 1 + overlap, y + yendoffset, crxd);
-	}
-
-	if (txl) {
-		gdImageFilledRectangle(ic->im, x + rxl, y + ybeginoffset, x + rxl + txl - 1, y + yendoffset, ctx);
-		gdImageRectangle(ic->im, x + rxl, y + ybeginoffset, x + rxl + txl - 1, y + yendoffset, ctxd);
-	}
-}
-
-void drawpoles(IMAGECONTENT *ic, const int x, const int y, const int len, const uint64_t rx, const uint64_t tx, const uint64_t max)
-{
-	int l;
-
-	if (rx > 0) {
-		l = (int)lrint(((double)rx / (double)max) * len);
-		if (l > 0) {
-			gdImageFilledRectangle(ic->im, x - (ic->large * 2), y + (len - l), x + 7 + (ic->large * 0), y + len, ic->crx);
-		}
-	}
-
-	if (tx > 0) {
-		l = (int)lrint(((double)tx / (double)max) * len);
-		if (l > 0) {
-			gdImageFilledRectangle(ic->im, x + 5 - (ic->large * 0), y + (len - l), x + 12 + (ic->large * 2), y + len, ic->ctx);
-		}
-	}
-}
-
-void drawdonut(IMAGECONTENT *ic, const int x, const int y, const float rxp, const float txp, const int size, const int holesize)
-{
-	// libgd versions 2.2.3 - 2.2.5 have bug in gdImageFilledArc() https://github.com/libgd/libgd/issues/351
-	// so workaround needs to be used, 2.2 version series ends with 2.2.5 and the bug is fixed starting from 2.3.0
-	if (GD_MAJOR_VERSION == 2 && GD_MINOR_VERSION == 2 && GD_RELEASE_VERSION >= 3) {
-		drawdonut_libgd_bug_workaround(ic, x, y, rxp, txp, size, holesize);
-	} else {
-		drawdonut_libgd_native(ic, x, y, rxp, txp, size, holesize);
-	}
-}
-
-void drawdonut_libgd_bug_workaround(IMAGECONTENT *ic, const int x, const int y, const float rxp, const float txp, const int size, const int holesize)
-{
-	int rxarc = 0, txarc = 0;
-
-	if ((int)(rxp + txp) > 0) {
-		rxarc = (int)lrintf(360 * (rxp / (float)100));
-		if ((int)(rxp + txp) == 100) {
-			txarc = 360 - rxarc;
+			date_x_alt = alt_margin + imageuipx(ic, 2);
+			date_y_alt = height - imagefontheight(ic, FONT_ROLE_TIMESTAMP) - alt_margin;
 		} else {
-			txarc = (int)lrintf(360 * (txp / (float)100));
+			date_x_alt = imageuipx(ic, 5) + ic->showedge * edge_t;
+			date_y_alt = height - imagefontheight(ic, FONT_ROLE_TIMESTAMP) - bottom_margin - imageextrapx(ic, 3);
 		}
+		imagestring(ic, FONT_ROLE_TIMESTAMP, date_x_alt, date_y_alt, datestring, ic->cvnstat);
+	} else {
+		imagestring(ic, FONT_ROLE_TIMESTAMP, width - (imagetextwidth(ic, FONT_ROLE_TIMESTAMP, datestring) + imageuipx(ic, 12)), date_y, datestring, ic->cheaderdate);
 	}
 
-	// background filled circle
-	gdImageFilledArc(ic->im, x, y, size, size, 0, 360, ic->cbgoffset, 0);
-
-	if (txarc) {
-		gdImageFilledArc(ic->im, x, y, size, size, 270, 270 + txarc, ic->ctxd, gdEdged | gdNoFill);
-		if (txarc >= 5) {
-			gdImageFill(ic->im, x + 1, y - (size / 2 - 3), ic->ctx);
-		}
-		gdImageFilledArc(ic->im, x, y, holesize, holesize, 270, 270 + txarc, ic->ctxd, gdEdged | gdNoFill);
+	/* generator, always using built-in tiny font */
+	{
+		const char *generator = "vnStat / Teemu Toivola";
+		int generator_x = width - imagetextwidth(ic, FONT_ROLE_FOOTER, generator) - bottom_margin;
+		int generator_y = height - imagefontheight(ic, FONT_ROLE_FOOTER) - bottom_margin;
+		imagestring(ic, FONT_ROLE_FOOTER, generator_x, generator_y, generator, ic->cvnstat);
 	}
-
-	if (rxarc) {
-		gdImageFilledArc(ic->im, x, y, size, size, 270 + txarc, 270 + txarc + rxarc, ic->crxd, gdEdged | gdNoFill);
-		if (rxarc >= 5) {
-			gdImageFill(ic->im, (int)(x + (size / 2 - 3) * cos((int)((270 * 2 + 2 * txarc + rxarc) / 2) * M_PI / 180)), (int)(y + (size / 2 - 3) * sin((int)((270 * 2 + 2 * txarc + rxarc) / 2) * M_PI / 180)), ic->crx);
-		}
-		gdImageFilledArc(ic->im, x, y, holesize, holesize, 270 + txarc, 270 + txarc + rxarc, ic->crxd, gdEdged | gdNoFill);
-	}
-
-	// remove center from background filled circle, making it a donut
-	gdImageFilledArc(ic->im, x, y, holesize - 2, holesize - 2, 0, 360, ic->cbackground, 0);
-}
-
-void drawdonut_libgd_native(IMAGECONTENT *ic, const int x, const int y, const float rxp, const float txp, const int size, const int holesize)
-{
-	int rxarc = 0, txarc = 0;
-
-	if ((int)(rxp + txp) > 0) {
-		rxarc = (int)(360 * (rxp / (float)100));
-		if ((int)(rxp + txp) == 100) {
-			txarc = 360 - rxarc;
-		} else {
-			txarc = (int)(360 * (txp / (float)100));
-		}
-	}
-
-	// background filled circle
-	gdImageFilledArc(ic->im, x, y, size, size, 0, 360, ic->cbgoffset, 0);
-
-	if (txarc) {
-		gdImageFilledArc(ic->im, x, y, size, size, 270, 270 + txarc, ic->ctx, 0);
-		gdImageFilledArc(ic->im, x, y, size, size, 270, 270 + txarc, ic->ctxd, gdEdged | gdNoFill);
-		gdImageFilledArc(ic->im, x, y, holesize, holesize, 270, 270 + txarc, ic->ctxd, gdEdged | gdNoFill);
-	}
-
-	if (rxarc) {
-		gdImageFilledArc(ic->im, x, y, size, size, 270 + txarc, 270 + txarc + rxarc, ic->crx, 0);
-		gdImageFilledArc(ic->im, x, y, size, size, 270 + txarc, 270 + txarc + rxarc, ic->crxd, gdEdged | gdNoFill);
-		gdImageFilledArc(ic->im, x, y, holesize, holesize, 270 + txarc, 270 + txarc + rxarc, ic->crxd, gdEdged | gdNoFill);
-	}
-
-	// remove center from background filled circle, making it a donut
-	gdImageFilledArc(ic->im, x, y, holesize - 2, holesize - 2, 0, 360, ic->cbackground, 0);
-}
-
-void drawpole(IMAGECONTENT *ic, const int x, const int y, const int length, const int direction, const int color)
-{
-	int len = length - 1;
-
-	if (length > 0) {
-		switch (direction) {
-			case 1:
-				gdImageLine(ic->im, x, y, x, y - len, color);
-				break;
-			case 2:
-				gdImageLine(ic->im, x, y, x, y + len, color);
-				break;
-			default:
-				break;
-		}
-	}
-}
-
-void drawarrowup(IMAGECONTENT *ic, const int x, const int y)
-{
-	gdImageLine(ic->im, x, y, x + 2, y + 3, ic->ctext);
-	gdImageLine(ic->im, x, y, x - 2, y + 3, ic->ctext);
-	gdImageLine(ic->im, x - 2, y + 3, x + 2, y + 3, ic->ctext);
-	gdImageLine(ic->im, x, y + 1, x, y - 1, ic->ctext);
-	gdImageLine(ic->im, x, y, x, y + 2, ic->ctext);
-}
-
-void drawarrowright(IMAGECONTENT *ic, const int x, const int y)
-{
-	gdImageLine(ic->im, x, y, x - 3, y - 2, ic->ctext);
-	gdImageLine(ic->im, x, y, x - 3, y + 2, ic->ctext);
-	gdImageLine(ic->im, x - 3, y - 2, x - 3, y + 2, ic->ctext);
-	gdImageLine(ic->im, x + 1, y, x - 1, y, ic->ctext);
 }
 
 void hextorgb(const char *input, int *rgb)
@@ -499,6 +515,19 @@ void invertcolor(int *rgb)
 
 	if (debug) {
 		printf("%d, %d, %d\n", rgb[0], rgb[1], rgb[2]);
+	}
+}
+
+void rtrimspaces(char *s)
+{
+	size_t n;
+
+	if (s == NULL || s[0] == '\0') {
+		return;
+	}
+	n = strlen(s);
+	while (n > 0 && s[n - 1] == ' ') {
+		s[--n] = '\0';
 	}
 }
 

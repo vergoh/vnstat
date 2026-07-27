@@ -52,6 +52,60 @@ START_TEST(validatecfg_restores_invalid_values_back_to_default)
 }
 END_TEST
 
+START_TEST(validatecfg_restores_invalid_fontsize)
+{
+	cfg.fontsize = 0;
+	suppress_output();
+	validatecfg(CT_Image);
+	ck_assert_int_eq(cfg.fontsize, FONTSIZE);
+
+	cfg.fontsize = 100;
+	suppress_output();
+	validatecfg(CT_Image);
+	ck_assert_int_eq(cfg.fontsize, FONTSIZE);
+
+	cfg.fontsize = 24;
+	validatecfg(CT_Image);
+	ck_assert_int_eq(cfg.fontsize, 24);
+}
+END_TEST
+
+START_TEST(validatecfg_restores_invalid_fontscales)
+{
+	cfg.fontscaleheader = 0;
+	cfg.fontscaletitle = 0;
+	cfg.fontscaleaxis = 0;
+	cfg.fontscaletimestamp = 0;
+	suppress_output();
+	validatecfg(CT_Image);
+	ck_assert_int_eq(cfg.fontscaleheader, FONTSCALEHEADER);
+	ck_assert_int_eq(cfg.fontscaletitle, FONTSCALETITLE);
+	ck_assert_int_eq(cfg.fontscaleaxis, FONTSCALEAXIS);
+	ck_assert_int_eq(cfg.fontscaletimestamp, FONTSCALETIMESTAMP);
+
+	cfg.fontscaleheader = 301;
+	cfg.fontscaletitle = 301;
+	cfg.fontscaleaxis = 301;
+	cfg.fontscaletimestamp = 301;
+	suppress_output();
+	validatecfg(CT_Image);
+	ck_assert_int_eq(cfg.fontscaleheader, FONTSCALEHEADER);
+	ck_assert_int_eq(cfg.fontscaletitle, FONTSCALETITLE);
+	ck_assert_int_eq(cfg.fontscaleaxis, FONTSCALEAXIS);
+	ck_assert_int_eq(cfg.fontscaletimestamp, FONTSCALETIMESTAMP);
+
+	cfg.fontscaleheader = 50;
+	cfg.fontscaletitle = 200;
+	cfg.fontscaleaxis = 300;
+	cfg.fontscaletimestamp = 100;
+	validatecfg(CT_Image);
+	ck_assert_int_eq(cfg.fontscaleheader, 50);
+	ck_assert_int_eq(cfg.fontscaletitle, 200);
+	ck_assert_int_eq(cfg.fontscaleaxis, 300);
+	ck_assert_int_eq(cfg.fontscaletimestamp, 100);
+}
+END_TEST
+
 START_TEST(validatecfg_can_tune_updateinterval_to_avoid_rollover_issues)
 {
 	cfg.updateinterval = 60;
@@ -696,6 +750,8 @@ void add_config_tests(Suite *s)
 	tcase_add_test(tc_config, validatecfg_default_image);
 	tcase_add_test(tc_config, validatecfg_does_not_modify_valid_changes);
 	tcase_add_test(tc_config, validatecfg_restores_invalid_values_back_to_default);
+	tcase_add_test(tc_config, validatecfg_restores_invalid_fontsize);
+	tcase_add_test(tc_config, validatecfg_restores_invalid_fontscales);
 	tcase_add_test(tc_config, validatecfg_can_tune_updateinterval_to_avoid_rollover_issues);
 	tcase_add_test(tc_config, validatecfg_has_fallback_for_updateinterval_for_very_fast_interfaces);
 	tcase_add_test(tc_config, validatecfg_can_change_estimatestyle_for_images_depending_on_settings);

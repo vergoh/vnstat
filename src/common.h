@@ -1,7 +1,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#include <config.h>
+#include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -288,6 +288,23 @@ and most can be changed later from the config file.
 /* no image scaling by default */
 #define IMAGESCALE 100
 
+/* do not force a common image width across image outputs by default */
+#define COMMONWIDTH 0
+
+/* no font file set = use libGD built-in fonts */
+#define FONTFILE ""
+
+/* default TTF body point size and limits when FontFile is set */
+#define FONTSIZE 12
+#define FONT_SIZE_MIN 6
+#define FONT_SIZE_MAX 72
+
+/* TTF role size as percent of body FontSize */
+#define FONTSCALEHEADER 130
+#define FONTSCALETITLE 130
+#define FONTSCALEAXIS 85
+#define FONTSCALETIMESTAMP 85
+
 /* image output estimate bar style */
 /* 0 = not shown, 1 = continuation of existing bar, 2 = separate bar */
 #define ESTIMATESTYLE 1
@@ -347,10 +364,12 @@ typedef struct {
 	char rxchar[2], txchar[2], rxhourchar[2], txhourchar[2], estimatetext[10];
 	char cbg[8], cedge[8], cheader[8], cheadertitle[8], cheaderdate[8], ctext[8];
 	char cline[8], clinel[8], cpercentileline[8], cvnstat[8], crx[8], crxd[8], ctx[8], ctxd[8], ctotal[8];
+	char fontfile[512];
 	int32_t unitmode, rateunitmode, rateunit, bvar, qmode, ifacematchmethod, sampletime, hourlyrate, summaryrate;
 	int32_t monthrotate, monthrotateyears, monthrotatevisible, maxbw, spacecheck, trafficlessentries, transbg, ostyle;
 	int32_t defaultdecimals, hourlydecimals, hourlystyle, is64bit, waldb, dbsynchronous, useutc, imagescale;
 	int32_t largefonts, linespaceadjust, estimatebarvisible, estimatestyle, estimatevisible, barshowsrate, fivegresultcount;
+	int32_t fontsize, fontscaleheader, fontscaletitle, fontscaleaxis, fontscaletimestamp, commonwidth;
 	int32_t fivegheight, summarygraph, hourlygmode, alwaysadd, livespinner;
 	char cfgfile[512], logfile[512], pidfile[512];
 	char daemonuser[33], daemongroup[33];

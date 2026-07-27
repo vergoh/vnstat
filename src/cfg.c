@@ -85,6 +85,13 @@ int loadcfg(const char *cfgfile, const ConfigType type)
 		 {"LargeFonts", 0, &cfg.largefonts, 0, 0},
 		 {"LineSpacingAdjustment", 0, &cfg.linespaceadjust, 0, 0},
 		 {"ImageScale", 0, &cfg.imagescale, 0, 0},
+		 {"CommonWidth", 0, &cfg.commonwidth, 0, 0},
+		 {"FontFile", cfg.fontfile, 0, 512, 0},
+		 {"FontSize", 0, &cfg.fontsize, 0, 0},
+		 {"FontScaleHeader", 0, &cfg.fontscaleheader, 0, 0},
+		 {"FontScaleTitle", 0, &cfg.fontscaletitle, 0, 0},
+		 {"FontScaleAxis", 0, &cfg.fontscaleaxis, 0, 0},
+		 {"FontScaleTimestamp", 0, &cfg.fontscaletimestamp, 0, 0},
 		 {"5MinuteGraphResultCount", 0, &cfg.fivegresultcount, 0, 0},
 		 {"5MinuteGraphHeight", 0, &cfg.fivegheight, 0, 0},
 		 {"HourlyGraphMode", 0, &cfg.hourlygmode, 0, 0},
@@ -221,6 +228,12 @@ void validatecfg(const ConfigType type)
 		validatebool("LargeFonts", &cfg.largefonts, LARGEFONTS);
 		validateint("LineSpacingAdjustment", &cfg.linespaceadjust, LINESPACEADJUST, -5, 10);
 		validateint("ImageScale", &cfg.imagescale, IMAGESCALE, 50, 500);
+		validatebool("CommonWidth", &cfg.commonwidth, COMMONWIDTH);
+		validateint("FontSize", &cfg.fontsize, FONTSIZE, FONT_SIZE_MIN, FONT_SIZE_MAX);
+		validateint("FontScaleHeader", &cfg.fontscaleheader, FONTSCALEHEADER, 50, 300);
+		validateint("FontScaleTitle", &cfg.fontscaletitle, FONTSCALETITLE, 50, 300);
+		validateint("FontScaleAxis", &cfg.fontscaleaxis, FONTSCALEAXIS, 50, 300);
+		validateint("FontScaleTimestamp", &cfg.fontscaletimestamp, FONTSCALETIMESTAMP, 50, 300);
 		validateint("5MinuteGraphResultCount", &cfg.fivegresultcount, FIVEGRESULTCOUNT, FIVEGMINRESULTCOUNT, 2000);
 		validateint("5MinuteGraphHeight", &cfg.fivegheight, FIVEGHEIGHT, FIVEGMINHEIGHT, 2000);
 		validateint("HourlyGraphMode", &cfg.hourlygmode, HOURLYGMODE, 0, 1);
@@ -421,6 +434,13 @@ void defaultcfg(void)
 	cfg.largefonts = LARGEFONTS;
 	cfg.linespaceadjust = LINESPACEADJUST;
 	cfg.imagescale = IMAGESCALE;
+	cfg.commonwidth = COMMONWIDTH;
+	strncpy_nt(cfg.fontfile, FONTFILE, 512);
+	cfg.fontsize = FONTSIZE;
+	cfg.fontscaleheader = FONTSCALEHEADER;
+	cfg.fontscaletitle = FONTSCALETITLE;
+	cfg.fontscaleaxis = FONTSCALEAXIS;
+	cfg.fontscaletimestamp = FONTSCALETIMESTAMP;
 	cfg.fivegresultcount = FIVEGRESULTCOUNT;
 	cfg.fivegheight = FIVEGHEIGHT;
 	cfg.hourlygmode = HOURLYGMODE;

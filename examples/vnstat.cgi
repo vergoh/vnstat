@@ -89,6 +89,7 @@ sub graph
 	if ($largefonts == '1') {
 		$fontparam = '--large';
 	}
+	$fontparam .= ' --common-width';
 
 	if (defined $interface and defined $file and defined $param) {
 		$result = `"$vnstati_cmd" -i "$interface" -c $cachetime $param $fontparam --invert-colors $darkmode -o "$file"`;
@@ -402,11 +403,7 @@ sub main
 			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_5.png", "-5 $listlength");
 		}
 		elsif ($query =~ /^(\d+)-5g$/) {
-			if ($largefonts == '1') {
-				handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_5g.png", "-5g 576 300");
-			} else {
-				handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_5g.png", "-5g 422 250");
-			}
+			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_5g.png", "-5g");
 		}
 		elsif ($query =~ /^(\d+)-y$/) {
 			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_y.png", "-y 5");
