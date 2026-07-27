@@ -1469,10 +1469,82 @@ START_TEST(image_outputs_do_not_crash_without_data)
 }
 END_TEST
 
-START_TEST(layoutinit_respects_chrome_flags)
+START_TEST(layoutinit_showedge_pixel_color)
 {
 	IMAGECONTENT ic;
-	int invert;
+	int pix;
+
+	cfg.fontfile[0] = '\0';
+	initimagecontent(&ic);
+	ic.interface.updated = (time_t)get_timestamp(2012, 3, 4, 5, 6);
+
+	ic.showedge = 1;
+	imageinit(&ic, 320, 200);
+	ck_assert_ptr_ne(ic.im, NULL);
+	layoutinit(&ic, "showedge on", 320, 200);
+	pix = gdImageGetPixel(ic.im, 0, 0);
+	ck_assert_int_eq(pix, ic.cedge);
+	ck_assert_int_eq(gdImageRed(ic.im, pix), 174);
+	ck_assert_int_eq(gdImageGreen(ic.im, pix), 174);
+	ck_assert_int_eq(gdImageBlue(ic.im, pix), 174);
+	gdImageDestroy(ic.im);
+	ic.im = NULL;
+
+	ic.showedge = 0;
+	imageinit(&ic, 320, 200);
+	ck_assert_ptr_ne(ic.im, NULL);
+	layoutinit(&ic, "showedge off", 320, 200);
+	pix = gdImageGetPixel(ic.im, 0, 0);
+	ck_assert_int_eq(pix, ic.cbackground);
+	ck_assert_int_eq(gdImageRed(ic.im, pix), 255);
+	ck_assert_int_eq(gdImageGreen(ic.im, pix), 255);
+	ck_assert_int_eq(gdImageBlue(ic.im, pix), 255);
+	gdImageDestroy(ic.im);
+
+	imagefontcleanup();
+}
+END_TEST
+
+START_TEST(layoutinit_showheader_pixel_color)
+{
+	IMAGECONTENT ic;
+	int pix;
+
+	cfg.fontfile[0] = '\0';
+	initimagecontent(&ic);
+	ic.interface.updated = (time_t)get_timestamp(2012, 3, 4, 5, 6);
+
+	ic.showheader = 1;
+	imageinit(&ic, 320, 200);
+	ck_assert_ptr_ne(ic.im, NULL);
+	layoutinit(&ic, "showheader on", 320, 200);
+	pix = gdImageGetPixel(ic.im, 10, 12);
+	ck_assert_int_eq(pix, ic.cheader);
+	ck_assert_int_eq(gdImageRed(ic.im, pix), 96);
+	ck_assert_int_eq(gdImageGreen(ic.im, pix), 96);
+	ck_assert_int_eq(gdImageBlue(ic.im, pix), 96);
+	gdImageDestroy(ic.im);
+	ic.im = NULL;
+
+	ic.showheader = 0;
+	imageinit(&ic, 320, 200);
+	ck_assert_ptr_ne(ic.im, NULL);
+	layoutinit(&ic, "showheader off", 320, 200);
+	pix = gdImageGetPixel(ic.im, 10, 12);
+	ck_assert_int_eq(pix, ic.cbackground);
+	ck_assert_int_eq(gdImageRed(ic.im, pix), 255);
+	ck_assert_int_eq(gdImageGreen(ic.im, pix), 255);
+	ck_assert_int_eq(gdImageBlue(ic.im, pix), 255);
+	gdImageDestroy(ic.im);
+
+	imagefontcleanup();
+}
+END_TEST
+
+START_TEST(layoutinit_invert_pixel_color)
+{
+	IMAGECONTENT ic;
+	int invert, edge_pix, header_pix, rx_pix;
 
 	cfg.fontfile[0] = '\0';
 	initimagecontent(&ic);
@@ -1480,10 +1552,67 @@ START_TEST(layoutinit_respects_chrome_flags)
 
 	for (invert = 0; invert <= 2; invert++) {
 		ic.invert = invert;
-		ic.showheader = (invert == 0) ? 1 : 0;
-		ic.showedge = (invert == 1) ? 0 : 1;
-		ic.showlegend = (invert == 2) ? 0 : 1;
-		ic.altdate = (invert > 0) ? 1 : 0;
+		imageinit(&ic, 320, 200);
+		ck_assert_ptr_ne(ic.im, NULL);
+		layoutinit(&ic, "invert colors", 320, 200);
+		drawlegend(&ic, 40, 40, 0);
+
+		edge_pix = gdImageGetPixel(ic.im, 0, 0);
+		header_pix = gdImageGetPixel(ic.im, 10, 12);
+		rx_pix = gdImageGetPixel(ic.im, 29, 45);
+
+		ck_assert_int_eq(edge_pix, ic.cedge);
+		ck_assert_int_eq(header_pix, ic.cheader);
+		ck_assert_int_eq(rx_pix, ic.crx);
+
+		if (invert == 0) {
+			ck_assert_int_eq(gdImageRed(ic.im, edge_pix), 174);
+			ck_assert_int_eq(gdImageGreen(ic.im, edge_pix), 174);
+			ck_assert_int_eq(gdImageBlue(ic.im, edge_pix), 174);
+			ck_assert_int_eq(gdImageRed(ic.im, header_pix), 96);
+			ck_assert_int_eq(gdImageGreen(ic.im, header_pix), 96);
+			ck_assert_int_eq(gdImageBlue(ic.im, header_pix), 96);
+			ck_assert_int_eq(gdImageRed(ic.im, rx_pix), 146);
+			ck_assert_int_eq(gdImageGreen(ic.im, rx_pix), 207);
+			ck_assert_int_eq(gdImageBlue(ic.im, rx_pix), 0);
+		} else {
+			ck_assert_int_eq(gdImageRed(ic.im, edge_pix), 81);
+			ck_assert_int_eq(gdImageGreen(ic.im, edge_pix), 81);
+			ck_assert_int_eq(gdImageBlue(ic.im, edge_pix), 81);
+			ck_assert_int_eq(gdImageRed(ic.im, header_pix), 159);
+			ck_assert_int_eq(gdImageGreen(ic.im, header_pix), 159);
+			ck_assert_int_eq(gdImageBlue(ic.im, header_pix), 159);
+			if (invert == 1) {
+				ck_assert_int_eq(gdImageRed(ic.im, rx_pix), 146);
+				ck_assert_int_eq(gdImageGreen(ic.im, rx_pix), 207);
+				ck_assert_int_eq(gdImageBlue(ic.im, rx_pix), 0);
+			} else {
+				ck_assert_int_eq(gdImageRed(ic.im, rx_pix), 109);
+				ck_assert_int_eq(gdImageGreen(ic.im, rx_pix), 48);
+				ck_assert_int_eq(gdImageBlue(ic.im, rx_pix), 255);
+			}
+		}
+
+		gdImageDestroy(ic.im);
+		ic.im = NULL;
+	}
+
+	imagefontcleanup();
+}
+END_TEST
+
+START_TEST(layoutinit_respects_chrome_flags)
+{
+	IMAGECONTENT ic;
+	int toggle;
+
+	cfg.fontfile[0] = '\0';
+	initimagecontent(&ic);
+	ic.interface.updated = (time_t)get_timestamp(2012, 3, 4, 5, 6);
+
+	for (toggle = 0; toggle <= 1; toggle++) {
+		ic.showlegend = toggle;
+		ic.altdate = toggle;
 
 		imageinit(&ic, 320, 200);
 		ck_assert_ptr_ne(ic.im, NULL);
@@ -1704,6 +1833,9 @@ void add_image_tests(Suite *s)
 	tcase_add_test(tc_image, rtrimspaces_trims_trailing_spaces);
 	tcase_add_test(tc_image, image_outputs_do_not_crash);
 	tcase_add_test(tc_image, image_outputs_do_not_crash_without_data);
+	tcase_add_test(tc_image, layoutinit_showedge_pixel_color);
+	tcase_add_test(tc_image, layoutinit_showheader_pixel_color);
+	tcase_add_test(tc_image, layoutinit_invert_pixel_color);
 	tcase_add_test(tc_image, layoutinit_respects_chrome_flags);
 	tcase_add_test(tc_image, drawbar_estimate_styles);
 #if HAVE_DECL_GD_NEAREST_NEIGHBOUR
