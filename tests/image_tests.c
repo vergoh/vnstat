@@ -928,11 +928,14 @@ static const char *find_test_ttf(void)
 		/* Liberation Sans: common desktop / LibreOffice seed */
 		"/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
 		"/usr/share/fonts/liberation-sans/LiberationSans-Regular.ttf",
+		"/usr/share/fonts/liberation-sans-fonts/LiberationSans-Regular.ttf",
 		"/usr/share/fonts/liberation/LiberationSans-Regular.ttf",
 		/* DejaVu Sans: still common on servers and older defaults */
 		"/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
 		"/usr/share/fonts/TTF/DejaVuSans.ttf",
+		"/usr/share/fonts/dejavu/DejaVuSans.ttf",
 		"/usr/local/share/fonts/dejavu/DejaVuSans.ttf",
+		"/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf",
 		/* Droid: often present via fonts-droid-fallback */
 		"/usr/share/fonts/truetype/droid/DroidSans.ttf",
 		"/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf",
