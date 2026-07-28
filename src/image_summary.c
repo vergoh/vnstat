@@ -673,19 +673,19 @@ static void drawsummary_stack_ttf(IMAGECONTENT *ic, const int body_left, const i
 	const int label_edge = body_left + imagetextwidth(ic, FONT_ROLE_BODY, "rx");
 	/* shift values right by 2*cw; callers keep donut/title anchors on value_edge */
 	const int padded_edge = value_edge + 2 * ic->fontctx.cw;
-	char valbuf[64];
+	char num[64], unit[16];
 
 	imagestring(ic, FONT_ROLE_BODY, label_edge - imagetextwidth(ic, FONT_ROLE_BODY, "rx"), y_rx, "rx", ic->ctext);
-	strncpy_nt(valbuf, getvalue(rx, 12, RT_Normal), 64);
-	imagestring(ic, FONT_ROLE_BODY, padded_edge - imagetextwidth(ic, FONT_ROLE_BODY, valbuf), y_rx, valbuf, ic->ctext);
+	getvalueparts(rx, RT_Normal, num, sizeof(num), unit, sizeof(unit), NULL);
+	imagestring_value_right(ic, FONT_ROLE_BODY, padded_edge, y_rx, num, unit, ic->ctext);
 
 	imagestring(ic, FONT_ROLE_BODY, label_edge - imagetextwidth(ic, FONT_ROLE_BODY, "tx"), y_tx, "tx", ic->ctext);
-	strncpy_nt(valbuf, getvalue(tx, 12, RT_Normal), 64);
-	imagestring(ic, FONT_ROLE_BODY, padded_edge - imagetextwidth(ic, FONT_ROLE_BODY, valbuf), y_tx, valbuf, ic->ctext);
+	getvalueparts(tx, RT_Normal, num, sizeof(num), unit, sizeof(unit), NULL);
+	imagestring_value_right(ic, FONT_ROLE_BODY, padded_edge, y_tx, num, unit, ic->ctext);
 
 	imagestring(ic, FONT_ROLE_BODY, label_edge - imagetextwidth(ic, FONT_ROLE_BODY, "="), y_eq, "=", ic->ctext);
-	strncpy_nt(valbuf, getvalue(rx + tx, 12, RT_Normal), 64);
-	imagestring(ic, FONT_ROLE_BODY, padded_edge - imagetextwidth(ic, FONT_ROLE_BODY, valbuf), y_eq, valbuf, ic->ctext);
+	getvalueparts(rx + tx, RT_Normal, num, sizeof(num), unit, sizeof(unit), NULL);
+	imagestring_value_right(ic, FONT_ROLE_BODY, padded_edge, y_eq, num, unit, ic->ctext);
 }
 
 void drawsummary_alltime(IMAGECONTENT *ic, const int x, const int y)

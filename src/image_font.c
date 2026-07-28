@@ -324,6 +324,67 @@ void imagestring(IMAGECONTENT *ic, const fontrole_t role, const int x, const int
 #endif
 }
 
+void imagestring_value_right(IMAGECONTENT *ic, const fontrole_t role, const int edge, const int y, const char *num, const char *unit, const int color)
+{
+	int suffix_x, body_x, num_x;
+	size_t ulen, suffix_len, prefix_len;
+	const char *suffix;
+	char prefix[32];
+
+	if (num == NULL || num[0] == '\0') {
+		return;
+	}
+
+	if (unit == NULL || unit[0] == '\0') {
+		imagestring(ic, role, edge - imagetextwidth(ic, role, num), y, num, color);
+		return;
+	}
+
+	/* Pin a shared trailing suffix so mixed units (MiB vs GiB, MiB/s vs GiB/s)
+	 * share one right edge. Measuring whole unit strings independently still
+	 * allows ±1px FreeType/libgd bbox drift between different prefixes. */
+	ulen = strlen(unit);
+	if (ulen >= 2 && strcmp(unit + ulen - 2, "/s") == 0) {
+		suffix = "/s";
+	} else if (unit[ulen - 1] == 'B') {
+		suffix = "B";
+	} else {
+		suffix = NULL;
+	}
+
+	if (suffix == NULL) {
+		suffix_x = edge - imagetextwidth(ic, role, unit);
+		num_x = suffix_x - imagetextwidth(ic, role, " ") - imagetextwidth(ic, role, num);
+		imagestring(ic, role, num_x, y, num, color);
+		imagestring(ic, role, suffix_x, y, unit, color);
+		return;
+	}
+
+	suffix_len = strlen(suffix);
+	prefix_len = ulen - suffix_len;
+	if (prefix_len >= sizeof(prefix)) {
+		prefix_len = sizeof(prefix) - 1;
+	}
+	if (prefix_len > 0) {
+		memcpy(prefix, unit, prefix_len);
+		prefix[prefix_len] = '\0';
+	} else {
+		prefix[0] = '\0';
+	}
+
+	suffix_x = edge - imagetextwidth(ic, role, suffix);
+	if (prefix_len > 0) {
+		body_x = suffix_x - imagetextwidth(ic, role, prefix);
+		imagestring(ic, role, body_x, y, prefix, color);
+	} else {
+		body_x = suffix_x;
+	}
+	imagestring(ic, role, suffix_x, y, suffix, color);
+
+	num_x = body_x - imagetextwidth(ic, role, " ") - imagetextwidth(ic, role, num);
+	imagestring(ic, role, num_x, y, num, color);
+}
+
 void imagestringup(IMAGECONTENT *ic, const fontrole_t role, const int x, const int y, const char *text, const int color)
 {
 #if HAVE_DECL_GDIMAGESTRINGFT

@@ -173,13 +173,127 @@ END_TEST
 
 START_TEST(getvalue_padding)
 {
+	/* bytes chosen so current getvalue() formats as 2.27 / 15.50 / 243.11 GiB and 991.52 MiB */
+	const uint64_t bytes_2_27_gib = 2437393940ULL;
+	const uint64_t bytes_15_50_gib = 16642998272ULL;
+	const uint64_t bytes_243_11_gib = 261037374832ULL;
+	const uint64_t bytes_991_52_mib = 1039684075ULL;
+
 	cfg.defaultdecimals = 2;
 	cfg.unitmode = 0;
+
+	/* image list width (len=10) */
+	ck_assert_str_eq(getvalue(100, 10, RT_Normal), "     100 B");
 	ck_assert_str_eq(getvalue(1024, 10, RT_Normal), "  1.00 KiB");
+	ck_assert_str_eq(getvalue(bytes_991_52_mib, 10, RT_Normal), "991.52 MiB");
+	ck_assert_str_eq(getvalue(bytes_2_27_gib, 10, RT_Normal), "  2.27 GiB");
+	ck_assert_str_eq(getvalue(bytes_15_50_gib, 10, RT_Normal), " 15.50 GiB");
+	ck_assert_str_eq(getvalue(bytes_243_11_gib, 10, RT_Normal), "243.11 GiB");
+
+	/* summary stack width (len=12) */
+	ck_assert_str_eq(getvalue(100, 12, RT_Normal), "       100 B");
+	ck_assert_str_eq(getvalue(1024, 12, RT_Normal), "    1.00 KiB");
+	ck_assert_str_eq(getvalue(bytes_2_27_gib, 12, RT_Normal), "    2.27 GiB");
+	ck_assert_str_eq(getvalue(bytes_15_50_gib, 12, RT_Normal), "   15.50 GiB");
+	ck_assert_str_eq(getvalue(bytes_243_11_gib, 12, RT_Normal), "  243.11 GiB");
+
+	/* CLI list width (len=11) */
+	ck_assert_str_eq(getvalue(1024, 11, RT_Normal), "   1.00 KiB");
+	ck_assert_str_eq(getvalue(bytes_15_50_gib, 11, RT_Normal), "  15.50 GiB");
+
+	/* JEDEC / SI prefix length differences at list width */
 	cfg.unitmode = 1;
 	ck_assert_str_eq(getvalue(1024, 10, RT_Normal), "   1.00 KB");
+	ck_assert_str_eq(getvalue(bytes_15_50_gib, 10, RT_Normal), "  15.50 GB");
 	cfg.unitmode = 2;
 	ck_assert_str_eq(getvalue(1000, 10, RT_Normal), "   1.00 kB");
+	ck_assert_str_eq(getvalue(15500000000ULL, 10, RT_Normal), "  15.50 GB");
+}
+END_TEST
+
+START_TEST(getvalue_estimate_padding)
+{
+	const uint64_t bytes_15_50_gib = 16642998272ULL;
+
+	cfg.defaultdecimals = 2;
+	cfg.unitmode = 0;
+	/* estimate uses declen=0 for KiB-scale values */
+	ck_assert_str_eq(getvalue(1024, 10, RT_Estimate), "     1 KiB");
+	ck_assert_str_eq(getvalue(1024, 11, RT_Estimate), "      1 KiB");
+	ck_assert_str_eq(getvalue(bytes_15_50_gib, 10, RT_Estimate), " 15.50 GiB");
+	ck_assert_str_eq(getvalue(bytes_15_50_gib, 11, RT_Estimate), "  15.50 GiB");
+}
+END_TEST
+
+START_TEST(getvalue_unit_thresholds)
+{
+	cfg.defaultdecimals = 2;
+	cfg.unitmode = 0;
+	/* scale switches at 1000 * previous unit divisor, not at 1024 */
+	ck_assert_str_eq(getvalue(1024ULL * 999, 0, RT_Normal), "999.00 KiB");
+	ck_assert_str_eq(getvalue(1024ULL * 1000, 0, RT_Normal), "0.98 MiB");
+	ck_assert_str_eq(getvalue(1048576ULL * 999, 0, RT_Normal), "999.00 MiB");
+	ck_assert_str_eq(getvalue(1048576ULL * 1000, 0, RT_Normal), "0.98 GiB");
+}
+END_TEST
+
+START_TEST(getvalueparts_splits_number_and_unit)
+{
+	char num[64], unit[16];
+	const uint64_t bytes_15_50_gib = 16642998272ULL;
+
+	cfg.defaultdecimals = 2;
+	cfg.unitmode = 0;
+
+	getvalueparts(100, RT_Normal, num, sizeof(num), unit, sizeof(unit), NULL);
+	ck_assert_str_eq(num, "100");
+	ck_assert_str_eq(unit, "B");
+
+	getvalueparts(1024, RT_Normal, num, sizeof(num), unit, sizeof(unit), NULL);
+	ck_assert_str_eq(num, "1.00");
+	ck_assert_str_eq(unit, "KiB");
+
+	getvalueparts(bytes_15_50_gib, RT_Normal, num, sizeof(num), unit, sizeof(unit), NULL);
+	ck_assert_str_eq(num, "15.50");
+	ck_assert_str_eq(unit, "GiB");
+
+	getvalueparts(1024, RT_Estimate, num, sizeof(num), unit, sizeof(unit), NULL);
+	ck_assert_str_eq(num, "1");
+	ck_assert_str_eq(unit, "KiB");
+
+	getvalueparts(0, RT_Estimate, num, sizeof(num), unit, sizeof(unit), NULL);
+	ck_assert_str_eq(num, "--");
+	ck_assert_str_eq(unit, "");
+
+	getvalueparts(1024, RT_ImageScale, num, sizeof(num), unit, sizeof(unit), NULL);
+	ck_assert_str_eq(num, "1");
+	ck_assert_str_eq(unit, "KiB");
+}
+END_TEST
+
+START_TEST(getrateparts_and_trafficrateparts)
+{
+	char num[64], unit[16];
+
+	cfg.defaultdecimals = 2;
+	cfg.rateunit = 0;
+	cfg.unitmode = 0;
+
+	getrateparts(1048576, 2, num, sizeof(num), unit, sizeof(unit), NULL);
+	ck_assert_str_eq(num, "1.00");
+	ck_assert_str_eq(unit, "MiB/s");
+
+	getrateparts(900, 2, num, sizeof(num), unit, sizeof(unit), NULL);
+	ck_assert_str_eq(num, "900");
+	ck_assert_str_eq(unit, "B/s");
+
+	gettrafficrateparts(1, 0, num, sizeof(num), unit, sizeof(unit));
+	ck_assert_str_eq(num, "n/a");
+	ck_assert_str_eq(unit, "");
+
+	gettrafficrateparts(1048576, 1, num, sizeof(num), unit, sizeof(unit));
+	ck_assert_str_eq(num, "1.00");
+	ck_assert_str_eq(unit, "MiB/s");
 }
 END_TEST
 
@@ -1131,6 +1245,10 @@ void add_misc_tests(Suite *s)
 	tcase_add_test(tc_misc, getvalue_estimate);
 	tcase_add_test(tc_misc, getvalue_imagescale);
 	tcase_add_test(tc_misc, getvalue_padding);
+	tcase_add_test(tc_misc, getvalue_estimate_padding);
+	tcase_add_test(tc_misc, getvalue_unit_thresholds);
+	tcase_add_test(tc_misc, getvalueparts_splits_number_and_unit);
+	tcase_add_test(tc_misc, getrateparts_and_trafficrateparts);
 	tcase_add_test(tc_misc, getvalue_zero_values);
 	tcase_add_test(tc_misc, gettrafficrate_zero_interval);
 	tcase_add_test(tc_misc, gettrafficrate_bytes);

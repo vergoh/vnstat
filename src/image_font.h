@@ -10,6 +10,7 @@ int imagefontinit(IMAGECONTENT *ic, const int largefonts);
 void imagefontcleanup(void);
 void imagestring(IMAGECONTENT *ic, const fontrole_t role, const int x, const int y, const char *text, const int color);
 void imagestringup(IMAGECONTENT *ic, const fontrole_t role, const int x, const int y, const char *text, const int color);
+void imagestring_value_right(IMAGECONTENT *ic, const fontrole_t role, const int edge, const int y, const char *num, const char *unit, const int color);
 int imagetextwidth(const IMAGECONTENT *ic, const fontrole_t role, const char *text);
 int imagefontwidth(IMAGECONTENT *ic, const fontrole_t role);
 int imagefontheight(IMAGECONTENT *ic, const fontrole_t role);

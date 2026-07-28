@@ -142,11 +142,19 @@ uint64_t getbtime(void)
 	return result;
 }
 
-char *getvalue(const uint64_t bytes, const int len, const RequestType type)
+void getvalueparts(const uint64_t bytes, const RequestType type, char *num, const size_t numlen, char *unit, const size_t unitlen, int *spacingindex)
 {
-	static char buffer[64];
-	int i, declen = cfg.defaultdecimals, p = 1024;
+	int i, declen = cfg.defaultdecimals, p = 1024, spidx = 1;
 	uint64_t limit;
+	const char *prefix;
+
+	if (num == NULL || numlen == 0) {
+		return;
+	}
+	num[0] = '\0';
+	if (unit != NULL && unitlen > 0) {
+		unit[0] = '\0';
+	}
 
 	if (type == RT_ImageScale) {
 		declen = 0;
@@ -157,29 +165,73 @@ char *getvalue(const uint64_t bytes, const int len, const RequestType type)
 	}
 
 	if ((type == RT_Estimate) && (bytes == 0)) {
+		snprintf(num, numlen, "--");
+		if (spacingindex != NULL) {
+			*spacingindex = 2;
+		}
+		return;
+	}
+
+	for (i = UNITPREFIXCOUNT - 1; i > 0; i--) {
+		limit = (uint64_t)(pow(p, i - 1)) * 1000;
+		if (bytes >= limit) {
+			if (i > 1) {
+				spidx = 5;
+				prefix = getunitprefix(i + 1);
+				snprintf(num, numlen, "%" DECCONV ".*f", declen, (double)bytes / (double)(getunitdivisor(cfg.unitmode, i + 1)));
+			} else {
+				if (type == RT_Estimate) {
+					declen = 0;
+				}
+				spidx = 2;
+				prefix = getunitprefix(i + 1);
+				snprintf(num, numlen, "%" DECCONV ".*f", declen, (double)bytes / (double)(getunitdivisor(cfg.unitmode, i + 1)));
+			}
+			if (unit != NULL && unitlen > 0) {
+				snprintf(unit, unitlen, "%s", prefix);
+			}
+			if (spacingindex != NULL) {
+				*spacingindex = spidx;
+			}
+			return;
+		}
+	}
+
+	snprintf(num, numlen, "%" PRIu64, bytes);
+	if (unit != NULL && unitlen > 0) {
+		snprintf(unit, unitlen, "%s", getunitprefix(1));
+	}
+	if (spacingindex != NULL) {
+		*spacingindex = 1;
+	}
+}
+
+char *getvalue(const uint64_t bytes, const int len, const RequestType type)
+{
+	static char buffer[64];
+	char num[64], unit[16];
+	int spacingindex, declen;
+
+	if ((type == RT_Estimate) && (bytes == 0)) {
 		declen = len - (int)strlen(getunitprefix(2)) - 2;
 		if (declen < 2) {
 			declen = 2;
 		}
 		snprintf(buffer, 64, "%*s  %*s", declen, "--", (int)strlen(getunitprefix(2)), " ");
-	} else {
-		for (i = UNITPREFIXCOUNT - 1; i > 0; i--) {
-			limit = (uint64_t)(pow(p, i - 1)) * 1000;
-			if (bytes >= limit) {
-				if (i > 1) {
-					snprintf(buffer, 64, "%" DECCONV "*.*f %s", getunitspacing(len, 5), declen, (double)bytes / (double)(getunitdivisor(cfg.unitmode, i + 1)), getunitprefix(i + 1));
-				} else {
-					if (type == RT_Estimate) {
-						declen = 0;
-					}
-					snprintf(buffer, 64, "%" DECCONV "*.*f %s", getunitspacing(len, 2), declen, (double)bytes / (double)(getunitdivisor(cfg.unitmode, i + 1)), getunitprefix(i + 1));
-				}
-				return buffer;
-			}
-		}
-		snprintf(buffer, 64, "%" DECCONV "*" PRIu64 " %s", getunitspacing(len, 1), bytes, getunitprefix(1));
+		return buffer;
 	}
 
+	getvalueparts(bytes, type, num, sizeof(num), unit, sizeof(unit), &spacingindex);
+	{
+		int sp = getunitspacing(len, spacingindex);
+
+		if (sp > 48) {
+			sp = 48;
+		}
+		snprintf(buffer, 64, "%*s", sp, num);
+		strncat(buffer, " ", sizeof(buffer) - strlen(buffer) - 1);
+		strncat(buffer, unit, sizeof(buffer) - strlen(buffer) - 1);
+	}
 	return buffer;
 }
 
@@ -195,6 +247,29 @@ int getunitspacing(const int len, const int index)
 	}
 
 	return l;
+}
+
+void gettrafficrateparts(const uint64_t bytes, const time_t interval, char *num, const size_t numlen, char *unit, const size_t unitlen)
+{
+	uint64_t b = bytes;
+
+	if (num == NULL || numlen == 0) {
+		return;
+	}
+
+	if (interval == 0) {
+		snprintf(num, numlen, "n/a");
+		if (unit != NULL && unitlen > 0) {
+			unit[0] = '\0';
+		}
+		return;
+	}
+
+	if (cfg.rateunit == 1) {
+		b *= 8;
+	}
+
+	getrateparts(b / (uint64_t)interval, cfg.defaultdecimals, num, numlen, unit, unitlen, NULL);
 }
 
 char *gettrafficrate(const uint64_t bytes, const time_t interval, const int len)
@@ -276,29 +351,69 @@ int getunit(void)
 	return unit;
 }
 
-char *getratestring(const uint64_t rate, const int len, const int declen)
+void getrateparts(const uint64_t rate, const int declen, char *num, const size_t numlen, char *unit, const size_t unitlen, int *unitindex)
 {
-	int l, i, unit, p = 1024;
-	static char buffer[64];
+	int i, unitmode, p = 1024, idx = 1;
 	uint64_t limit;
+	const char *prefix;
 
-	unit = getunit();
+	if (num == NULL || numlen == 0) {
+		return;
+	}
+	num[0] = '\0';
+	if (unit != NULL && unitlen > 0) {
+		unit[0] = '\0';
+	}
 
-	if (unit == 2 || unit == 4) {
+	unitmode = getunit();
+	if (unitmode == 2 || unitmode == 4) {
 		p = 1000;
 	}
 
 	for (i = UNITPREFIXCOUNT - 1; i > 0; i--) {
 		limit = (uint64_t)(pow(p, i - 1)) * 1000;
 		if (rate >= limit) {
-			l = getratespacing(len, unit, i + 1);
-			snprintf(buffer, 64, "%" DECCONV "*.*f %s", l, declen, (double)rate / (double)(getunitdivisor(unit, i + 1)), getrateunitprefix(unit, i + 1));
-			return buffer;
+			idx = i + 1;
+			prefix = getrateunitprefix(unitmode, idx);
+			snprintf(num, numlen, "%" DECCONV ".*f", declen, (double)rate / (double)(getunitdivisor(unitmode, idx)));
+			if (unit != NULL && unitlen > 0) {
+				snprintf(unit, unitlen, "%s", prefix);
+			}
+			if (unitindex != NULL) {
+				*unitindex = idx;
+			}
+			return;
 		}
 	}
 
-	l = getratespacing(len, unit, 1);
-	snprintf(buffer, 64, "%" DECCONV "*.0f %s", l, (double)rate / (double)(getunitdivisor(unit, 1)), getrateunitprefix(unit, 1));
+	idx = 1;
+	prefix = getrateunitprefix(unitmode, idx);
+	snprintf(num, numlen, "%.0f", (double)rate / (double)(getunitdivisor(unitmode, idx)));
+	if (unit != NULL && unitlen > 0) {
+		snprintf(unit, unitlen, "%s", prefix);
+	}
+	if (unitindex != NULL) {
+		*unitindex = idx;
+	}
+}
+
+char *getratestring(const uint64_t rate, const int len, const int declen)
+{
+	static char buffer[64];
+	char num[64], unit[16];
+	int unitindex;
+
+	getrateparts(rate, declen, num, sizeof(num), unit, sizeof(unit), &unitindex);
+	{
+		int sp = getratespacing(len, getunit(), unitindex);
+
+		if (sp > 48) {
+			sp = 48;
+		}
+		snprintf(buffer, 64, "%*s", sp, num);
+		strncat(buffer, " ", sizeof(buffer) - strlen(buffer) - 1);
+		strncat(buffer, unit, sizeof(buffer) - strlen(buffer) - 1);
+	}
 	return buffer;
 }
 

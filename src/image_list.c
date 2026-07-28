@@ -119,7 +119,6 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 	uint64_t e_rx = 0, e_tx = 0, e_secs;
 	char buffer[512], datebuff[16], daybuff[16], monthrotatenote[96];
 	char stampformat[64], titlename[16], colname[8];
-	char rxbuf[64], txbuf[64], totalbuf[64], ratebuf[64];
 	const struct tm *d;
 	time_t current;
 	dbdatalist *datalist = NULL, *datalist_i = NULL;
@@ -373,20 +372,22 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 				imagestring(ic, FONT_ROLE_BODY, cols.date_field_right - imagetextwidth(ic, FONT_ROLE_BODY, datebuff), texty, datebuff, ic->ctext);
 			}
 
-			strncpy_nt(rxbuf, getvalue(datalist_i->rx, 10, RT_Normal), 64);
-			imagestring(ic, FONT_ROLE_BODY, cols.rx_edge - imagetextwidth(ic, FONT_ROLE_BODY, rxbuf), texty, rxbuf, ic->ctext);
-			strncpy_nt(txbuf, getvalue(datalist_i->tx, 10, RT_Normal), 64);
-			imagestring(ic, FONT_ROLE_BODY, cols.tx_edge - imagetextwidth(ic, FONT_ROLE_BODY, txbuf), texty, txbuf, ic->ctext);
-			strncpy_nt(totalbuf, getvalue(datalist_i->rx + datalist_i->tx, 10, RT_Normal), 64);
-			imagestring(ic, FONT_ROLE_BODY, cols.total_edge - imagetextwidth(ic, FONT_ROLE_BODY, totalbuf), texty, totalbuf, ic->ctext);
+			char num[64], unit[16];
+
+			getvalueparts(datalist_i->rx, RT_Normal, num, sizeof(num), unit, sizeof(unit), NULL);
+			imagestring_value_right(ic, FONT_ROLE_BODY, cols.rx_edge, texty, num, unit, ic->ctext);
+			getvalueparts(datalist_i->tx, RT_Normal, num, sizeof(num), unit, sizeof(unit), NULL);
+			imagestring_value_right(ic, FONT_ROLE_BODY, cols.tx_edge, texty, num, unit, ic->ctext);
+			getvalueparts(datalist_i->rx + datalist_i->tx, RT_Normal, num, sizeof(num), unit, sizeof(unit), NULL);
+			imagestring_value_right(ic, FONT_ROLE_BODY, cols.total_edge, texty, num, unit, ic->ctext);
 			if (cfg.ostyle > 2) {
 				if (datalist_i->next == NULL && issametimeslot(listtype, datalist_i->timestamp, ic->interface.updated)) {
 					e_secs = getperiodseconds(listtype, datalist_i->timestamp, ic->interface.updated, ic->interface.created, 1);
 				} else {
 					e_secs = getperiodseconds(listtype, datalist_i->timestamp, ic->interface.updated, ic->interface.created, 0);
 				}
-				strncpy_nt(ratebuf, gettrafficrate(datalist_i->rx + datalist_i->tx, (time_t)e_secs, 14), 64);
-				imagestring(ic, FONT_ROLE_BODY, cols.rate_edge - imagetextwidth(ic, FONT_ROLE_BODY, ratebuf), texty, ratebuf, ic->ctext);
+				gettrafficrateparts(datalist_i->rx + datalist_i->tx, (time_t)e_secs, num, sizeof(num), unit, sizeof(unit));
+				imagestring_value_right(ic, FONT_ROLE_BODY, cols.rate_edge, texty, num, unit, ic->ctext);
 			}
 		} else {
 			if (listtype == LT_Top) {
@@ -490,17 +491,15 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 
 		texty += imageuipx(ic, 8);
 		if (ic->fontctx.mode == FONT_TTF) {
-			strncpy_nt(rxbuf, getvalue(e_rx, 10, RT_Estimate), 64);
-			strncpy_nt(txbuf, getvalue(e_tx, 10, RT_Estimate), 64);
-			strncpy_nt(totalbuf, getvalue(e_rx + e_tx, 10, RT_Estimate), 64);
-			rtrimspaces(rxbuf);
-			rtrimspaces(txbuf);
-			rtrimspaces(totalbuf);
+			char num[64], unit[16];
 
+			getvalueparts(e_rx, RT_Estimate, num, sizeof(num), unit, sizeof(unit), NULL);
 			imagestring(ic, FONT_ROLE_BODY, cols.date_field_right - imagetextwidth(ic, FONT_ROLE_BODY, cfg.estimatetext), texty, cfg.estimatetext, ic->ctext);
-			imagestring(ic, FONT_ROLE_BODY, cols.rx_edge - imagetextwidth(ic, FONT_ROLE_BODY, rxbuf), texty, rxbuf, ic->ctext);
-			imagestring(ic, FONT_ROLE_BODY, cols.tx_edge - imagetextwidth(ic, FONT_ROLE_BODY, txbuf), texty, txbuf, ic->ctext);
-			imagestring(ic, FONT_ROLE_BODY, cols.total_edge - imagetextwidth(ic, FONT_ROLE_BODY, totalbuf), texty, totalbuf, ic->ctext);
+			imagestring_value_right(ic, FONT_ROLE_BODY, cols.rx_edge, texty, num, unit, ic->ctext);
+			getvalueparts(e_tx, RT_Estimate, num, sizeof(num), unit, sizeof(unit), NULL);
+			imagestring_value_right(ic, FONT_ROLE_BODY, cols.tx_edge, texty, num, unit, ic->ctext);
+			getvalueparts(e_rx + e_tx, RT_Estimate, num, sizeof(num), unit, sizeof(unit), NULL);
+			imagestring_value_right(ic, FONT_ROLE_BODY, cols.total_edge, texty, num, unit, ic->ctext);
 		} else {
 			if (strlen(datebuff) <= 9) {
 				snprintf(buffer, 32, " %9s   ", cfg.estimatetext);
@@ -526,21 +525,20 @@ void drawlist(IMAGECONTENT *ic, const char *listname)
 
 		texty += imageuipx(ic, 8);
 		if (ic->fontctx.mode == FONT_TTF) {
-			char sumlabel[16];
+			char sumlabel[16], num[64], unit[16];
 
 			if (datainfo.count < 100) {
 				snprintf(sumlabel, 16, "sum of %" PRIu32 "", datainfo.count);
 			} else {
 				snprintf(sumlabel, 16, "sum");
 			}
-			strncpy_nt(rxbuf, getvalue(datainfo.sumrx, 10, RT_Normal), 64);
-			strncpy_nt(txbuf, getvalue(datainfo.sumtx, 10, RT_Normal), 64);
-			strncpy_nt(totalbuf, getvalue(datainfo.sumrx + datainfo.sumtx, 10, RT_Normal), 64);
-
 			imagestring(ic, FONT_ROLE_BODY, cols.date_field_right - imagetextwidth(ic, FONT_ROLE_BODY, sumlabel), texty, sumlabel, ic->ctext);
-			imagestring(ic, FONT_ROLE_BODY, cols.rx_edge - imagetextwidth(ic, FONT_ROLE_BODY, rxbuf), texty, rxbuf, ic->ctext);
-			imagestring(ic, FONT_ROLE_BODY, cols.tx_edge - imagetextwidth(ic, FONT_ROLE_BODY, txbuf), texty, txbuf, ic->ctext);
-			imagestring(ic, FONT_ROLE_BODY, cols.total_edge - imagetextwidth(ic, FONT_ROLE_BODY, totalbuf), texty, totalbuf, ic->ctext);
+			getvalueparts(datainfo.sumrx, RT_Normal, num, sizeof(num), unit, sizeof(unit), NULL);
+			imagestring_value_right(ic, FONT_ROLE_BODY, cols.rx_edge, texty, num, unit, ic->ctext);
+			getvalueparts(datainfo.sumtx, RT_Normal, num, sizeof(num), unit, sizeof(unit), NULL);
+			imagestring_value_right(ic, FONT_ROLE_BODY, cols.tx_edge, texty, num, unit, ic->ctext);
+			getvalueparts(datainfo.sumrx + datainfo.sumtx, RT_Normal, num, sizeof(num), unit, sizeof(unit), NULL);
+			imagestring_value_right(ic, FONT_ROLE_BODY, cols.total_edge, texty, num, unit, ic->ctext);
 		} else {
 			if (datainfo.count < 100) {
 				snprintf(datebuff, 16, "sum of %" PRIu32 "", datainfo.count);
