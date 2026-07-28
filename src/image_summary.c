@@ -670,16 +670,20 @@ void drawsummary(IMAGECONTENT *ic, const int layout, const int israte)
 static void drawsummary_stack_ttf(IMAGECONTENT *ic, const int body_left, const int value_edge,
 	const int y_rx, const int y_tx, const int y_eq, const uint64_t rx, const uint64_t tx)
 {
+	/* right edge of the label column; pin trailing "x" so rx/tx share one column */
 	const int label_edge = body_left + imagetextwidth(ic, FONT_ROLE_BODY, "rx");
+	const int x_glyph_x = label_edge - imagetextwidth(ic, FONT_ROLE_BODY, "x");
 	/* shift values right by 2*cw; callers keep donut/title anchors on value_edge */
 	const int padded_edge = value_edge + 2 * ic->fontctx.cw;
 	char num[64], unit[16];
 
-	imagestring(ic, FONT_ROLE_BODY, label_edge - imagetextwidth(ic, FONT_ROLE_BODY, "rx"), y_rx, "rx", ic->ctext);
+	imagestring(ic, FONT_ROLE_BODY, x_glyph_x - imagetextwidth(ic, FONT_ROLE_BODY, "r"), y_rx, "r", ic->ctext);
+	imagestring(ic, FONT_ROLE_BODY, x_glyph_x, y_rx, "x", ic->ctext);
 	getvalueparts(rx, RT_Normal, num, sizeof(num), unit, sizeof(unit), NULL);
 	imagestring_value_right(ic, FONT_ROLE_BODY, padded_edge, y_rx, num, unit, ic->ctext);
 
-	imagestring(ic, FONT_ROLE_BODY, label_edge - imagetextwidth(ic, FONT_ROLE_BODY, "tx"), y_tx, "tx", ic->ctext);
+	imagestring(ic, FONT_ROLE_BODY, x_glyph_x - imagetextwidth(ic, FONT_ROLE_BODY, "t"), y_tx, "t", ic->ctext);
+	imagestring(ic, FONT_ROLE_BODY, x_glyph_x, y_tx, "x", ic->ctext);
 	getvalueparts(tx, RT_Normal, num, sizeof(num), unit, sizeof(unit), NULL);
 	imagestring_value_right(ic, FONT_ROLE_BODY, padded_edge, y_tx, num, unit, ic->ctext);
 
