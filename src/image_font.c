@@ -1,4 +1,5 @@
 #include "common.h"
+#include "misc.h"
 #include "image_font.h"
 
 static gdFontPtr imagerolefont(const IMAGECONTENT *ic, const fontrole_t role)
@@ -336,7 +337,23 @@ void imagestring_value_right(IMAGECONTENT *ic, const fontrole_t role, const int 
 	}
 
 	if (unit == NULL || unit[0] == '\0') {
-		imagestring(ic, role, edge - imagetextwidth(ic, role, num), y, num, color);
+		/* no unit (estimate "--", rate "n/a"): sit in the number column, matching
+		 * getvalue()'s blank unit field sized to getunitprefix(2) */
+		const char *ref = getunitprefix(2);
+		size_t reflen = strlen(ref);
+		char refprefix[16];
+		size_t prelen = (reflen > 0 && ref[reflen - 1] == 'B') ? reflen - 1 : reflen;
+
+		if (prelen >= sizeof(refprefix)) {
+			prelen = sizeof(refprefix) - 1;
+		}
+		memcpy(refprefix, ref, prelen);
+		refprefix[prelen] = '\0';
+
+		suffix_x = edge - imagetextwidth(ic, role, "B");
+		body_x = (prelen > 0) ? suffix_x - imagetextwidth(ic, role, refprefix) : suffix_x;
+		num_x = body_x - imagetextwidth(ic, role, " ") - imagetextwidth(ic, role, num);
+		imagestring(ic, role, num_x, y, num, color);
 		return;
 	}
 
