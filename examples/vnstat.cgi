@@ -73,13 +73,27 @@ my $scriptname = '';
 ################ no user configurable settings below this line ################
 
 
-my $VERSION = "1.21";
+my $VERSION = "1.22";
 my $cssbody = "html { background-color: $bgcolor; color-scheme: light; }\nbody { background-color: $bgcolor; text-align: left; display: block; }";
 my $csscommonstyle = "a { text-decoration: underline; }\ntable { border: 0px; border-spacing: 0px; display: inline; }\ntd { vertical-align: top; padding: 0px; }\nimg { border: 0px; vertical-align: top; margin: 4px 4px; }";
 my $csscolors = "a:link { color: #b0b0b0; }\na:visited { color: #b0b0b0; }\na:hover { color: #000000; }\nsmall { display: inline; font-size: 8px; color: #cbcbcb; padding: 0px 4px; }";
+my $cssthemeswitch = "";
 my $metarefresh = "";
 my $themeheaders = "";
 my $themecookiescript = "";
+my $themetogglescript = "\n<script>\n"
+	. "document.addEventListener('DOMContentLoaded', function () {\n"
+	. "\tvar sw = document.getElementById('theme-switch');\n"
+	. "\tif (!sw) {\n"
+	. "\t\treturn;\n"
+	. "\t}\n"
+	. "\tsw.addEventListener('click', function () {\n"
+	. "\t\tvar next = sw.getAttribute('aria-checked') === 'true' ? 'light' : 'dark';\n"
+	. "\t\tdocument.cookie = 'vnstat_theme=' + next + '; Path=/; Max-Age=31536000; SameSite=Lax';\n"
+	. "\t\tlocation.reload();\n"
+	. "\t});\n"
+	. "});\n"
+	. "</script>";
 
 sub client_color_scheme
 {
@@ -95,7 +109,19 @@ sub client_color_scheme
 	return ('', 0);
 }
 
-if ($autodarkmode == '1') {
+my $configured_darkmode = $darkmode;
+my $themeoverride = '';
+if (defined $ENV{HTTP_COOKIE} and $ENV{HTTP_COOKIE} =~ /(?:^|;\s*)vnstat_theme=(dark|light)(?:;|$)/) {
+	$themeoverride = $1;
+}
+
+if ($themeoverride eq 'dark') {
+	if ($configured_darkmode != '1') {
+		$darkmode = '2';
+	}
+} elsif ($themeoverride eq 'light') {
+	$darkmode = '0';
+} elsif ($autodarkmode == '1') {
 	my ($colorscheme, $colorschemefromhint) = client_color_scheme();
 	if ($colorscheme eq 'dark') {
 		if ($darkmode != '1') {
@@ -104,8 +130,6 @@ if ($autodarkmode == '1') {
 	} elsif ($colorscheme eq 'light') {
 		$darkmode = '0';
 	}
-
-	$themeheaders = "Accept-CH: Sec-CH-Prefers-Color-Scheme\nCritical-CH: Sec-CH-Prefers-Color-Scheme\nVary: Sec-CH-Prefers-Color-Scheme\n";
 
 	if ($colorschemefromhint == 0) {
 		$themecookiescript = "\n<script>\n"
@@ -127,11 +151,38 @@ if ($autodarkmode == '1') {
 	}
 }
 
+if ($autodarkmode == '1') {
+	$themeheaders = "Accept-CH: Sec-CH-Prefers-Color-Scheme\nCritical-CH: Sec-CH-Prefers-Color-Scheme\nVary: Sec-CH-Prefers-Color-Scheme\n";
+}
+
+my $switch_track = "#e6e6e6";
+my $switch_border = "#c8c8c8";
+my $switch_thumb = "#ffffff";
+my $switch_icon = "#1a1a1a";
+my $switch_focus = "#1a1a1a";
+my $switch_shadow = "0 1px 2px rgba(0, 0, 0, 0.28)";
+
 if ($darkmode == '1' or $darkmode == '2') {
 	$bgcolor = "black";
 	$cssbody = "html { background-color: $bgcolor; color-scheme: dark; }\nbody { background-color: $bgcolor; text-align: left; display: block; }";
 	$csscolors = "a:link { color: #707070; }\na:visited { color: #707070; }\na:hover { color: #ffffff; }\nsmall { display: inline; font-size: 8px; color: #606060; padding: 0px 4px; }";
+	$switch_track = "#242424";
+	$switch_border = "#3a3a3a";
+	$switch_thumb = "#3c3c3c";
+	$switch_icon = "#c8c8c8";
+	$switch_focus = "#a0a0a0";
+	$switch_shadow = "none";
 }
+
+$cssthemeswitch = "button.theme-switch { position: fixed; top: 10px; right: 10px; z-index: 2; width: 52px; height: 28px; margin: 0; padding: 0; border: 1px solid $switch_border; border-radius: 999px; background: $switch_track; color: $switch_icon; cursor: pointer; box-sizing: border-box; appearance: none; -webkit-appearance: none; }\n"
+	. "button.theme-switch:focus-visible { outline: 2px solid $switch_focus; outline-offset: 2px; }\n"
+	. "button.theme-switch .theme-switch-thumb { position: absolute; top: 2px; left: 2px; z-index: 0; width: 22px; height: 22px; border-radius: 50%; background: $switch_thumb; box-shadow: $switch_shadow; }\n"
+	. "button.theme-switch[aria-checked=true] .theme-switch-thumb { left: 26px; }\n"
+	. "button.theme-switch .theme-switch-sun, button.theme-switch .theme-switch-moon { position: absolute; top: 6px; z-index: 1; width: 14px; height: 14px; pointer-events: none; }\n"
+	. "button.theme-switch .theme-switch-sun { left: 6px; }\n"
+	. "button.theme-switch .theme-switch-moon { left: 30px; }\n"
+	. "button.theme-switch[aria-checked=false] .theme-switch-moon, button.theme-switch[aria-checked=true] .theme-switch-sun { display: none; }\n"
+	. "button.theme-switch svg { display: block; width: 14px; height: 14px; }\n";
 
 sub graph
 {
@@ -187,7 +238,7 @@ sub handle_image
 
 	if ($cachetime == '0') {
 		$file = '-';
-	} elsif ($autodarkmode == '1') {
+	} else {
 		$file =~ s/\.png$/_dm$darkmode.png/;
 	}
 
@@ -206,9 +257,8 @@ sub print_html_headers
 {
 	print "Content-Type: text/html\n";
 	print $themeheaders;
-	if ($autodarkmode == '1') {
-		print "Cache-Control: private, no-cache\n";
-	}
+	print "Vary: Cookie\n";
+	print "Cache-Control: private, no-cache\n";
 	print "\n";
 }
 
@@ -216,10 +266,24 @@ sub image_query
 {
 	my ($query) = @_;
 
-	if ($autodarkmode == '1') {
-		return "${scriptname}?${query}&dm=${darkmode}";
+	return "${scriptname}?${query}&dm=${darkmode}";
+}
+
+sub theme_switch_html
+{
+	my $checked = 'false';
+	if ($darkmode == '1' or $darkmode == '2') {
+		$checked = 'true';
 	}
-	return "${scriptname}?${query}";
+
+	my $sun = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>';
+	my $moon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
+
+	return "<button type=\"button\" id=\"theme-switch\" class=\"theme-switch\" role=\"switch\" aria-checked=\"$checked\" aria-label=\"Dark mode\">"
+		. "<span class=\"theme-switch-sun\" aria-hidden=\"true\">$sun</span>"
+		. "<span class=\"theme-switch-moon\" aria-hidden=\"true\">$moon</span>"
+		. "<span class=\"theme-switch-thumb\" aria-hidden=\"true\"></span>"
+		. "</button>\n";
 }
 
 sub print_interface_list_html
@@ -233,18 +297,21 @@ sub print_interface_list_html
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">$metarefresh
-<meta name="generator" content="vnstat.cgi $VERSION">$themecookiescript
+<meta name="generator" content="vnstat.cgi $VERSION">$themecookiescript$themetogglescript
 <title>Traffic Statistics for $servername</title>
 <style>
 <!--
 $csscommonstyle
 $csscolors
 $cssbody
+$cssthemeswitch
 -->
 </style>
 </head>
 HEADER
-	print "<body>\n<br>\n";
+	print "<body>\n";
+	print theme_switch_html();
+	print "<br>\n";
 	my $interfacesshown = 0;
 	my $lineended = 0;
 	for my $i (0..$#interfaces) {
@@ -286,18 +353,21 @@ sub print_single_interface_html
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">$metarefresh
-<meta name="generator" content="vnstat.cgi $VERSION">$themecookiescript
+<meta name="generator" content="vnstat.cgi $VERSION">$themecookiescript$themetogglescript
 <title>Traffic Statistics for $servername - $interfaces[${interface}]</title>
 <style>
 <!--
 $csscommonstyle
 $csscolors
 $cssbody
+$cssthemeswitch
 -->
 </style>
 </head>
 HEADER
-	print "<body>\n<br>\n";
+	print "<body>\n";
+	print theme_switch_html();
+	print "<br>\n";
 	print "<table>\n<tr><td>\n";
 	print "<img src=\"" . image_query("${interface}-s") . "\" alt=\"$interfaces[${interface}] summary\"><br>\n";
 	print "<a href=\"${scriptname}?s-${interface}-d-l\"><img src=\"" . image_query("${interface}-d") . "\" alt=\"$interfaces[${interface}] daily\"></a><br>\n";
@@ -353,18 +423,21 @@ sub print_single_image_html
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">$metarefresh
-<meta name="generator" content="vnstat.cgi $VERSION">$themecookiescript
+<meta name="generator" content="vnstat.cgi $VERSION">$themecookiescript$themetogglescript
 <title>$content Traffic Statistics for $servername - $interfaces[${interface}]</title>
 <style>
 <!--
 $csscommonstyle
 $csscolors
 $cssbody
+$cssthemeswitch
 -->
 </style>
 </head>
 HEADER
-	print "<body>\n<br>\n";
+	print "<body>\n";
+	print theme_switch_html();
+	print "<br>\n";
 	print "<table>\n<tr><td>\n";
 	print "<img src=\"" . image_query($image) . "\" alt=\"$interfaces[${interface}] ", lc($content), "\">\n";
 	print "</td></tr>\n</table>\n";
@@ -421,9 +494,7 @@ sub main
 	my $listlength = '';
 	if (defined $query and $query =~ /\S/) {
 		if ($query =~ s/&dm=([012])$//) {
-			if ($autodarkmode == '1') {
-				$darkmode = $1;
-			}
+			$darkmode = $1;
 		}
 		if ($query =~ /^(\d+)-s$/) {
 			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1.png", "-s");
