@@ -42,6 +42,11 @@ my $bgcolor = "white";
 # set 1 to enable without inverting rx and tx color, set 2 to enable and invert all colors
 my $darkmode = '0';
 
+# follow browser or system light/dark theme, set 0 to disable,
+# set 1 to enable: dark theme keeps $darkmode when it is 1 and otherwise uses 2,
+# light theme forces $darkmode to 0
+my $autodarkmode = '1';
+
 # page auto refresh interval in seconds, set 0 to disable
 my $pagerefresh = '0';
 
@@ -68,15 +73,63 @@ my $scriptname = '';
 ################ no user configurable settings below this line ################
 
 
-my $VERSION = "1.20";
-my $cssbody = "body { background-color: $bgcolor; text-align: left; display: block; }";
+my $VERSION = "1.21";
+my $cssbody = "html { background-color: $bgcolor; color-scheme: light; }\nbody { background-color: $bgcolor; text-align: left; display: block; }";
 my $csscommonstyle = "a { text-decoration: underline; }\ntable { border: 0px; border-spacing: 0px; display: inline; }\ntd { vertical-align: top; padding: 0px; }\nimg { border: 0px; vertical-align: top; margin: 4px 4px; }";
 my $csscolors = "a:link { color: #b0b0b0; }\na:visited { color: #b0b0b0; }\na:hover { color: #000000; }\nsmall { display: inline; font-size: 8px; color: #cbcbcb; padding: 0px 4px; }";
 my $metarefresh = "";
+my $themeheaders = "";
+my $themecookiescript = "";
+
+sub client_color_scheme
+{
+	if (defined $ENV{HTTP_SEC_CH_PREFERS_COLOR_SCHEME}) {
+		my $hint = lc($ENV{HTTP_SEC_CH_PREFERS_COLOR_SCHEME});
+		if ($hint eq 'dark' or $hint eq 'light') {
+			return ($hint, 1);
+		}
+	}
+	if (defined $ENV{HTTP_COOKIE} and $ENV{HTTP_COOKIE} =~ /(?:^|;\s*)vnstat_color_scheme=(dark|light)(?:;|$)/) {
+		return ($1, 0);
+	}
+	return ('', 0);
+}
+
+if ($autodarkmode == '1') {
+	my ($colorscheme, $colorschemefromhint) = client_color_scheme();
+	if ($colorscheme eq 'dark') {
+		if ($darkmode != '1') {
+			$darkmode = '2';
+		}
+	} elsif ($colorscheme eq 'light') {
+		$darkmode = '0';
+	}
+
+	$themeheaders = "Accept-CH: Sec-CH-Prefers-Color-Scheme\nCritical-CH: Sec-CH-Prefers-Color-Scheme\nVary: Sec-CH-Prefers-Color-Scheme\n";
+
+	if ($colorschemefromhint == 0) {
+		$themecookiescript = "\n<script>\n"
+			. "(function () {\n"
+			. "\tvar want = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';\n"
+			. "\tvar detected = '$colorscheme';\n"
+			. "\tif (detected !== want) {\n"
+			. "\t\tdocument.cookie = 'vnstat_color_scheme=' + want + '; Path=/; SameSite=Lax';\n"
+			. "\t\tif (document.cookie.indexOf('vnstat_color_scheme=' + want) !== -1) {\n"
+			. "\t\t\tlocation.reload();\n"
+			. "\t\t}\n"
+			. "\t}\n"
+			. "\twindow.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {\n"
+			. "\t\tdocument.cookie = 'vnstat_color_scheme=' + (e.matches ? 'dark' : 'light') + '; Path=/; SameSite=Lax';\n"
+			. "\t\tlocation.reload();\n"
+			. "\t});\n"
+			. "})();\n"
+			. "</script>";
+	}
+}
 
 if ($darkmode == '1' or $darkmode == '2') {
 	$bgcolor = "black";
-	$cssbody = "body { background-color: $bgcolor; text-align: left; display: block; }";
+	$cssbody = "html { background-color: $bgcolor; color-scheme: dark; }\nbody { background-color: $bgcolor; text-align: left; display: block; }";
 	$csscolors = "a:link { color: #707070; }\na:visited { color: #707070; }\na:hover { color: #ffffff; }\nsmall { display: inline; font-size: 8px; color: #606060; padding: 0px 4px; }";
 }
 
@@ -110,6 +163,7 @@ sub send_image
 
 		print "Content-type: image/png\n";
 		print "Content-length: ".((stat($file))[7])."\n";
+		print $themeheaders;
 		print "\n";
 		open(my $IMG_FILE, "<", $file) or die;
 		my $data;
@@ -121,6 +175,7 @@ sub send_image
 
 		print "Content-type: image/png\n";
 		print "Content-length: ".(length($output))."\n";
+		print $themeheaders;
 		print "\n";
 		print $output;
 	}
@@ -132,6 +187,8 @@ sub handle_image
 
 	if ($cachetime == '0') {
 		$file = '-';
+	} elsif ($autodarkmode == '1') {
+		$file =~ s/\.png$/_dm$darkmode.png/;
 	}
 
 	my $output = graph($interface, $file, $param);
@@ -145,18 +202,38 @@ sub show_error
 	exit 1;
 }
 
+sub print_html_headers
+{
+	print "Content-Type: text/html\n";
+	print $themeheaders;
+	if ($autodarkmode == '1') {
+		print "Cache-Control: private, no-cache\n";
+	}
+	print "\n";
+}
+
+sub image_query
+{
+	my ($query) = @_;
+
+	if ($autodarkmode == '1') {
+		return "${scriptname}?${query}&dm=${darkmode}";
+	}
+	return "${scriptname}?${query}";
+}
+
 sub print_interface_list_html
 {
 	my @interfaces = @vnStatCGI::interfaces;
 
-	print "Content-Type: text/html\n\n";
+	print_html_headers();
 
 	print <<HEADER;
 <!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">$metarefresh
-<meta name="generator" content="vnstat.cgi $VERSION">
+<meta name="generator" content="vnstat.cgi $VERSION">$themecookiescript
 <title>Traffic Statistics for $servername</title>
 <style>
 <!--
@@ -177,7 +254,7 @@ HEADER
 		if (length($indexhiddeninterfaces) > 0 && $interfaces[${i}] =~ /$indexhiddeninterfaces/) {
 			next;
 		}
-		print "<a href=\"${scriptname}?${i}-f\"><img src=\"${scriptname}?${i}-$indeximageoutput\" alt=\"$interfaces[${i}]\"></a>";
+		print "<a href=\"${scriptname}?${i}-f\"><img src=\"" . image_query("${i}-$indeximageoutput") . "\" alt=\"$interfaces[${i}]\"></a>";
 		$interfacesshown++;
 		if ($indeximagesperrow > 0 && $interfacesshown % $indeximagesperrow == 0) {
 			print "<br>\n";
@@ -202,14 +279,14 @@ sub print_single_interface_html
 	my ($interface) = @_;
 	my @interfaces = @vnStatCGI::interfaces;
 
-	print "Content-Type: text/html\n\n";
+	print_html_headers();
 
 	print <<HEADER;
 <!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">$metarefresh
-<meta name="generator" content="vnstat.cgi $VERSION">
+<meta name="generator" content="vnstat.cgi $VERSION">$themecookiescript
 <title>Traffic Statistics for $servername - $interfaces[${interface}]</title>
 <style>
 <!--
@@ -222,14 +299,14 @@ $cssbody
 HEADER
 	print "<body>\n<br>\n";
 	print "<table>\n<tr><td>\n";
-	print "<img src=\"${scriptname}?${interface}-s\" alt=\"$interfaces[${interface}] summary\"><br>\n";
-	print "<a href=\"${scriptname}?s-${interface}-d-l\"><img src=\"${scriptname}?${interface}-d\" alt=\"$interfaces[${interface}] daily\"></a><br>\n";
-	print "<a href=\"${scriptname}?s-${interface}-t-l\"><img src=\"${scriptname}?${interface}-t\" alt=\"$interfaces[${interface}] top 10\"></a><br>\n";
+	print "<img src=\"" . image_query("${interface}-s") . "\" alt=\"$interfaces[${interface}] summary\"><br>\n";
+	print "<a href=\"${scriptname}?s-${interface}-d-l\"><img src=\"" . image_query("${interface}-d") . "\" alt=\"$interfaces[${interface}] daily\"></a><br>\n";
+	print "<a href=\"${scriptname}?s-${interface}-t-l\"><img src=\"" . image_query("${interface}-t") . "\" alt=\"$interfaces[${interface}] top 10\"></a><br>\n";
 	print "</td><td>\n";
-	print "<a href=\"${scriptname}?s-${interface}-h\"><img src=\"${scriptname}?${interface}-hg\" alt=\"$interfaces[${interface}] hourly\"></a><br>\n";
-	print "<a href=\"${scriptname}?s-${interface}-5\"><img src=\"${scriptname}?${interface}-5g\" alt=\"$interfaces[${interface}] 5 minute\"></a><br>\n";
-	print "<a href=\"${scriptname}?s-${interface}-m-l\"><img src=\"${scriptname}?${interface}-m\" alt=\"$interfaces[${interface}] monthly\"></a><br>\n";
-	print "<a href=\"${scriptname}?s-${interface}-y-l\"><img src=\"${scriptname}?${interface}-y\" alt=\"$interfaces[${interface}] yearly\"></a><br>\n";
+	print "<a href=\"${scriptname}?s-${interface}-h\"><img src=\"" . image_query("${interface}-hg") . "\" alt=\"$interfaces[${interface}] hourly\"></a><br>\n";
+	print "<a href=\"${scriptname}?s-${interface}-5\"><img src=\"" . image_query("${interface}-5g") . "\" alt=\"$interfaces[${interface}] 5 minute\"></a><br>\n";
+	print "<a href=\"${scriptname}?s-${interface}-m-l\"><img src=\"" . image_query("${interface}-m") . "\" alt=\"$interfaces[${interface}] monthly\"></a><br>\n";
+	print "<a href=\"${scriptname}?s-${interface}-y-l\"><img src=\"" . image_query("${interface}-y") . "\" alt=\"$interfaces[${interface}] yearly\"></a><br>\n";
 	print "</td></tr>\n</table>\n";
 
 	print <<FOOTER;
@@ -269,14 +346,14 @@ sub print_single_image_html
 		show_error("ERROR: invalid query type");
 	}
 
-	print "Content-Type: text/html\n\n";
+	print_html_headers();
 
 	print <<HEADER;
 <!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">$metarefresh
-<meta name="generator" content="vnstat.cgi $VERSION">
+<meta name="generator" content="vnstat.cgi $VERSION">$themecookiescript
 <title>$content Traffic Statistics for $servername - $interfaces[${interface}]</title>
 <style>
 <!--
@@ -289,7 +366,7 @@ $cssbody
 HEADER
 	print "<body>\n<br>\n";
 	print "<table>\n<tr><td>\n";
-	print "<img src=\"${scriptname}?${image}\" alt=\"$interfaces[${interface}] ", lc($content), "\">\n";
+	print "<img src=\"" . image_query($image) . "\" alt=\"$interfaces[${interface}] ", lc($content), "\">\n";
 	print "</td></tr>\n</table>\n";
 
 	print <<FOOTER;
@@ -325,7 +402,11 @@ sub main
 	}
 
 	if ($aligncenter != '0') {
-		$cssbody = "body { background-color: $bgcolor; text-align: center; display: block; }";
+		my $cssscheme = "light";
+		if ($darkmode == '1' or $darkmode == '2') {
+			$cssscheme = "dark";
+		}
+		$cssbody = "html { background-color: $bgcolor; color-scheme: $cssscheme; }\nbody { background-color: $bgcolor; text-align: center; display: block; }";
 	}
 
 	if ($pagerefresh != '0') {
@@ -339,6 +420,11 @@ sub main
 	my $query = $ENV{QUERY_STRING};
 	my $listlength = '';
 	if (defined $query and $query =~ /\S/) {
+		if ($query =~ s/&dm=([012])$//) {
+			if ($autodarkmode == '1') {
+				$darkmode = $1;
+			}
+		}
 		if ($query =~ /^(\d+)-s$/) {
 			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1.png", "-s");
 		}

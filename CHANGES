@@ -16,6 +16,7 @@
      /usr/local/etc/vnstat.conf
    - Add option for selecting use of configuration file defined list lengths
      instead of hardcoded values in single image pages (examples/vnstat.cgi)
+   - Add automatic dark mode option, enabled by default (examples/vnstat.cgi)
    - Increased maximum supported MaxBandwidth value from 5000 to 400000
    - Show additional note at the end of outputs containing monthly data if
      MonthRotate has been configured with a value other than 1, note visibility
