@@ -5,6 +5,7 @@
 # released under the GNU General Public License
 
 use strict;
+use JSON::PP;
 
 # location of vnstat binary
 my $vnstat_cmd = '/usr/bin/vnstat';
@@ -26,6 +27,41 @@ sub plain_response
 	}
 	print "Content-Type: text/plain\n\n$message\n";
 	exit 0;
+}
+
+sub run_command
+{
+	my @cmd = @_;
+	my $stdout = '';
+	my $stderr = '';
+
+	pipe(my $err_read, my $err_write) or return ('', $!, -1);
+	my $pid = open(my $out, "-|");
+	if (!defined $pid) {
+		close $err_read;
+		close $err_write;
+		return ('', $!, -1);
+	}
+	if ($pid == 0) {
+		close $err_read;
+		open(STDERR, ">&", $err_write) or exit 127;
+		close $err_write;
+		exec {$cmd[0]} @cmd or exit 127;
+	}
+	close $err_write;
+	binmode $out;
+	binmode $err_read;
+	{
+		local $/;
+		$stdout = <$out>;
+		$stderr = <$err_read>;
+	}
+	$stdout = '' unless defined $stdout;
+	$stderr = '' unless defined $stderr;
+	close $out;
+	my $status = $?;
+	close $err_read;
+	return ($stdout, $stderr, $status);
 }
 
 sub load_interfaces
@@ -87,6 +123,18 @@ sub load_interfaces
 		push @command, "-i", $iface;
 	}
 
+	my ($json_data, $command_stderr, $command_status) = run_command(@command);
+	print STDERR $command_stderr if length($command_stderr);
+
+	if ($command_status != 0) {
+		plain_response("500 Internal Server Error", "Failed to read vnStat data.");
+	}
+
+	eval { decode_json($json_data) };
+	if ($@) {
+		plain_response("500 Internal Server Error", "Invalid command output.");
+	}
+
 	print "Content-Type: application/json\n\n";
-	exec @command;
+	print $json_data;
 }

@@ -98,7 +98,14 @@ if ($selected) {
 	array_push($command, "-i", $iface);
 }
 
-header("Content-Type: application/json");
 list($json, $json_err, $json_status) = vnstat_run($command);
+if ($json_status !== 0) {
+	plain_response("500 Internal Server Error", "Failed to read vnStat data.");
+}
+json_decode($json);
+if (json_last_error() !== JSON_ERROR_NONE) {
+	plain_response("500 Internal Server Error", "Invalid command output.");
+}
+header("Content-Type: application/json");
 echo $json;
 ?>

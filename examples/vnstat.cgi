@@ -184,10 +184,54 @@ $cssthemeswitch = "button.theme-switch { position: fixed; top: 10px; right: 10px
 	. "button.theme-switch[aria-checked=false] .theme-switch-moon, button.theme-switch[aria-checked=true] .theme-switch-sun { display: none; }\n"
 	. "button.theme-switch svg { display: block; width: 14px; height: 14px; }\n";
 
+sub run_command
+{
+	my @cmd = @_;
+	my $stdout = '';
+	my $stderr = '';
+
+	pipe(my $err_read, my $err_write) or return ('', $!, -1);
+	my $pid = open(my $out, "-|");
+	if (!defined $pid) {
+		close $err_read;
+		close $err_write;
+		return ('', $!, -1);
+	}
+	if ($pid == 0) {
+		close $err_read;
+		open(STDERR, ">&", $err_write) or exit 127;
+		close $err_write;
+		exec {$cmd[0]} @cmd or exit 127;
+	}
+	close $err_write;
+	binmode $out;
+	binmode $err_read;
+	{
+		local $/;
+		$stdout = <$out>;
+		$stderr = <$err_read>;
+	}
+	$stdout = '' unless defined $stdout;
+	$stderr = '' unless defined $stderr;
+	close $out;
+	my $status = $?;
+	close $err_read;
+	return ($stdout, $stderr, $status);
+}
+
+sub one_line
+{
+	my ($text) = @_;
+	return '' unless defined $text;
+	$text =~ s/\s+/ /g;
+	$text =~ s/^ //;
+	$text =~ s/ $//;
+	return $text;
+}
+
 sub graph
 {
 	my ($interface, $file, $param) = @_;
-	my $result = '';
 
 	my $fontparam = '--small';
 	if ($largefonts == '1') {
@@ -202,38 +246,33 @@ sub graph
 			split(/\s+/, $fontparam),
 			"--invert-colors", $darkmode, "-o", $file
 		);
-		if (open(my $img, "-|", @args)) {
-			binmode $img;
-			{
-				local $/;
-				$result = <$img>;
-			}
-			$result = '' unless defined $result;
-			close $img;
-		}
-	} else {
-		show_error("ERROR: invalid input");
+		return run_command(@args);
 	}
-	return $result;
+	show_error("ERROR: invalid input");
 }
 
 sub send_image
 {
-	my ($file, $output) = @_;
+	my ($file, $output, $stderr, $status) = @_;
 
 	if ($file ne '-') {
-		-r $file or do {
-			show_error("ERROR: can't find $file");
-		};
+		open(my $IMG_FILE, "<", $file) or show_error("ERROR: can't find $file");
 
 		print "Content-type: image/png\n";
-		print "Content-length: ".((stat($file))[7])."\n";
+		print "Content-length: ".((stat($IMG_FILE))[7])."\n";
 		print $themeheaders;
 		print "\n";
-		open(my $IMG_FILE, "<", $file) or die;
 		my $data;
 		print $data while read($IMG_FILE, $data, 16384)>0;
+		close $IMG_FILE;
 	} else {
+		if ($status != 0) {
+			my $detail = one_line($stderr);
+			if (length($detail)) {
+				show_error("ERROR: command failed: $detail");
+			}
+			show_error("ERROR: command failed");
+		}
 		if (length($output) < 1000) {
 			show_error("ERROR: command failed: $output");
 		}
@@ -256,15 +295,15 @@ sub handle_image
 		$file =~ s/\.png$/_dm$darkmode.png/;
 	}
 
-	my $output = graph($interface, $file, $param);
-	send_image($file, $output);
+	my ($output, $stderr, $status) = graph($interface, $file, $param);
+	send_image($file, $output, $stderr, $status);
 }
 
 sub show_error
 {
-	my ($error_msg) = @_;
-	print "Content-type: text/plain\n\n$error_msg\n";
-	exit 1;
+	my ($error_msg, $status) = @_;
+	$status = "500 Internal Server Error" unless defined $status;
+	plain_response($status, $error_msg);
 }
 
 sub plain_response
@@ -465,7 +504,7 @@ sub print_single_image_html
 	if ($image =~ /^(\d+)-/) {
 		$interface = $1;
 	} else {
-		show_error("ERROR: invalid query");
+		show_error("ERROR: invalid query", "400 Bad Request");
 	}
 
 	if ($image =~ /^\d+-5/) {
@@ -481,7 +520,7 @@ sub print_single_image_html
 	} elsif ($image =~ /^\d+-t/) {
 		$content = "Daily Top";
 	} else {
-		show_error("ERROR: invalid query type");
+		show_error("ERROR: invalid query type", "400 Bad Request");
 	}
 
 	print_html_headers();
@@ -660,7 +699,7 @@ sub main
 			print_single_image_html($1);
 		}
 		else {
-			show_error("ERROR: invalid argument");
+			show_error("ERROR: invalid argument", "400 Bad Request");
 		}
 	}
 	else {
@@ -676,7 +715,7 @@ sub main
 				}
 			}
 			if ($html_shown == 0) {
-				show_error("ERROR: no such interface: $interface");
+				show_error("ERROR: no such interface: $interface", "404 Not Found");
 			}
 		}
 

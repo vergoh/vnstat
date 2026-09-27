@@ -116,34 +116,48 @@ sub run_command
 	return ($stdout, $stderr, $status);
 }
 
-my @data_resolutions = ('fiveminute', 'hour', 'day', 'month', 'year');
+sub plain_response
+{
+	my ($status, $message) = @_;
 
-print "Content-Type: text/plain\n\n";
+	if (defined $status) {
+		print "Status: $status\n";
+	}
+	print "Content-Type: text/plain\n\n$message\n";
+	exit 0;
+}
+
+my @data_resolutions = ('fiveminute', 'hour', 'day', 'month', 'year');
 
 my ($json_data, $command_stderr, $command_status) = run_command($vnstat_cmd, "--json", "s", "1");
 print STDERR $command_stderr if length($command_stderr);
 
+if ($command_status != 0) {
+	plain_response("500 Internal Server Error", "Failed to read vnStat data.");
+}
+
 my $data = "";
 eval { $data = decode_json($json_data) };
 if ($@) {
-	print "# Error: Invalid command output: $json_data\n";
-	exit 1;
+	plain_response("500 Internal Server Error", "Invalid command output.");
 }
 
-if (not defined $data->{'vnstatversion'}) {
-	print "# Error: Expected content from command output missing\n";
-	exit 1;
+if (ref($data) ne 'HASH' or not defined $data->{'vnstatversion'}) {
+	plain_response("500 Internal Server Error", "Expected content from command output missing.");
 }
 
-if (not defined $data->{'interfaces'}[0]) {
-	print "# Error: No interfaces found in command output\n";
-	exit 1;
+if (ref($data->{'interfaces'}) ne 'ARRAY' or not defined $data->{'interfaces'}[0]) {
+	plain_response("500 Internal Server Error", "No interfaces found in command output.");
 }
 
-if (not defined $data->{'interfaces'}[0]{'created'}{'timestamp'}) {
-	print "# Error: Incompatible vnStat version used\n";
-	exit 1;
+my $first_interface = $data->{'interfaces'}[0];
+if (ref($first_interface) ne 'HASH'
+	or ref($first_interface->{'created'}) ne 'HASH'
+	or not defined $first_interface->{'created'}{'timestamp'}) {
+	plain_response("500 Internal Server Error", "Incompatible vnStat version used.");
 }
+
+print "Content-Type: text/plain\n\n";
 
 print "# vnStat version: ".$data->{'vnstatversion'}."\n";
 
