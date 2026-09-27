@@ -41,9 +41,44 @@ function vnstat_run($command)
 	return array($stdout, $stderr, $status);
 }
 
+function plain_response($status, $message)
+{
+	if ($status !== null) {
+		header("Status: ".$status);
+	}
+	header("Content-Type: text/plain");
+	echo $message, "\n";
+	exit(0);
+}
+
 if (!isset($interfaces) || count($interfaces) == 0) {
 	list($list_out, $list_err, $list_status) = vnstat_run(array($vnstat_cmd, "--dbiflist", "1"));
-	$interfaces = explode("\n", trim($list_out));
+	if (!is_string($list_out)) {
+		$list_out = "";
+	}
+	if ($list_status !== 0) {
+		plain_response("500 Internal Server Error", "Failed to list interfaces.");
+	}
+	$list_out = trim($list_out);
+	if ($list_out === "") {
+		$interfaces = array();
+	} else {
+		$names = array();
+		foreach (explode("\n", $list_out) as $name) {
+			if ($name === "") {
+				continue;
+			}
+			if (strncmp($name, "Error:", 6) === 0) {
+				plain_response("500 Internal Server Error", "Failed to list interfaces.");
+			}
+			$names[] = $name;
+		}
+		$interfaces = $names;
+	}
+}
+
+if (count($interfaces) == 0) {
+	plain_response(null, "Database is empty.");
 }
 
 $iface = "";

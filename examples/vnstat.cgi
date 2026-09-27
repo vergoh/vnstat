@@ -267,6 +267,60 @@ sub show_error
 	exit 1;
 }
 
+sub plain_response
+{
+	my ($status, $message) = @_;
+
+	if (defined $status) {
+		print "Status: $status\n";
+	}
+	print "Content-Type: text/plain\n\n$message\n";
+	exit 0;
+}
+
+sub load_interface_list
+{
+	open(my $iflist, "-|", $vnstati_cmd, "--dbiflist", "1")
+		or plain_response("500 Internal Server Error", "Failed to list interfaces.");
+	my @lines = <$iflist>;
+	close $iflist;
+	my $failed = ($? != 0);
+	chomp @lines;
+	@lines = grep { length $_ } @lines;
+	if ($failed or grep { /^Error:/ } @lines) {
+		plain_response("500 Internal Server Error", "Failed to list interfaces.");
+	}
+	return @lines;
+}
+
+sub print_empty_database_html
+{
+	print_html_headers();
+
+	print <<HEADER;
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">$metarefresh
+<meta name="generator" content="vnstat.cgi $VERSION">$themecookiescript$themetogglescript
+<title>Traffic Statistics for $servername</title>
+<style>
+<!--
+$csscommonstyle
+$csscolors
+$cssbody
+$cssthemeswitch
+-->
+</style>
+</head>
+HEADER
+	print "<body>\n";
+	print theme_switch_html();
+	print "<br>\n";
+	print "Database is empty.\n";
+	print "</body>\n</html>\n";
+}
+
 sub print_html_headers
 {
 	print "Content-Type: text/html\n";
@@ -478,7 +532,7 @@ sub main
 	}
 
 	if (not defined $vnStatCGI::interfaces) {
-		our @interfaces = `$vnstati_cmd --dbiflist 1`;
+		our @interfaces = load_interface_list();
 	}
 	chomp @vnStatCGI::interfaces;
 	my @interfaces = @vnStatCGI::interfaces;
@@ -502,6 +556,11 @@ sub main
 
 	if ($cachetime != '0') {
 		mkdir $tmp_dir, 0755 unless -d $tmp_dir;
+	}
+
+	if (scalar @interfaces == 0) {
+		print_empty_database_html();
+		return;
 	}
 
 	my $query = $ENV{QUERY_STRING};

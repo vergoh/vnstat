@@ -17,12 +17,38 @@ my $vnstat_cmd = '/usr/bin/vnstat';
 ################
 
 
+sub plain_response
+{
+	my ($status, $message) = @_;
+
+	if (defined $status) {
+		print "Status: $status\n";
+	}
+	print "Content-Type: text/plain\n\n$message\n";
+	exit 0;
+}
+
+sub load_interfaces
+{
+	open(my $iflist, "-|", $vnstat_cmd, "--dbiflist", "1")
+		or plain_response("500 Internal Server Error", "Failed to list interfaces.");
+	my @lines = <$iflist>;
+	close $iflist;
+	my $failed = ($? != 0);
+	chomp @lines;
+	@lines = grep { length $_ } @lines;
+	if ($failed or grep { /^Error:/ } @lines) {
+		plain_response("500 Internal Server Error", "Failed to list interfaces.");
+	}
+	if (!@lines) {
+		plain_response(undef, "Database is empty.");
+	}
+	return @lines;
+}
+
 {
 	if (!@main::interfaces) {
-		if (open(my $iflist, "-|", $vnstat_cmd, "--dbiflist", "1")) {
-			@main::interfaces = <$iflist>;
-			close $iflist;
-		}
+		@main::interfaces = load_interfaces();
 	}
 
 	my @interfaces = @main::interfaces;
