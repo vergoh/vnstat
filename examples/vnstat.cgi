@@ -196,7 +196,21 @@ sub graph
 	$fontparam .= ' --common-width';
 
 	if (defined $interface and defined $file and defined $param) {
-		$result = `"$vnstati_cmd" -i "$interface" -c $cachetime $param $fontparam --invert-colors $darkmode -o "$file"`;
+		my @args = (
+			$vnstati_cmd, "-i", $interface, "-c", $cachetime,
+			split(/\s+/, $param),
+			split(/\s+/, $fontparam),
+			"--invert-colors", $darkmode, "-o", $file
+		);
+		if (open(my $img, "-|", @args)) {
+			binmode $img;
+			{
+				local $/;
+				$result = <$img>;
+			}
+			$result = '' unless defined $result;
+			close $img;
+		}
 	} else {
 		show_error("ERROR: invalid input");
 	}

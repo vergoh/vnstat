@@ -81,11 +81,47 @@ sub print_data_resolution
 	}
 }
 
+sub run_command
+{
+	my @cmd = @_;
+	my $stdout = '';
+	my $stderr = '';
+
+	pipe(my $err_read, my $err_write) or return ('', $!, -1);
+	my $pid = open(my $out, "-|");
+	if (!defined $pid) {
+		close $err_read;
+		close $err_write;
+		return ('', $!, -1);
+	}
+	if ($pid == 0) {
+		close $err_read;
+		open(STDERR, ">&", $err_write) or exit 127;
+		close $err_write;
+		exec {$cmd[0]} @cmd or exit 127;
+	}
+	close $err_write;
+	binmode $out;
+	binmode $err_read;
+	{
+		local $/;
+		$stdout = <$out>;
+		$stderr = <$err_read>;
+	}
+	$stdout = '' unless defined $stdout;
+	$stderr = '' unless defined $stderr;
+	close $out;
+	my $status = $?;
+	close $err_read;
+	return ($stdout, $stderr, $status);
+}
+
 my @data_resolutions = ('fiveminute', 'hour', 'day', 'month', 'year');
 
 print "Content-Type: text/plain\n\n";
 
-my $json_data = `$vnstat_cmd --json s 1`;
+my ($json_data, $command_stderr, $command_status) = run_command($vnstat_cmd, "--json", "s", "1");
+print STDERR $command_stderr if length($command_stderr);
 
 my $data = "";
 eval { $data = decode_json($json_data) };
