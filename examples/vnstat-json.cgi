@@ -94,27 +94,45 @@ sub load_interfaces
 
 	if (defined $ENV{PATH_INFO}) {
 		my @fields = split(/\//, $ENV{PATH_INFO});
-		my $interface = $fields[-1];
-		for my $i (0..$#interfaces) {
-			if ($interfaces[${i}] eq $interface) {
-				$iface = $interface;
-				last;
+		my $interface = '';
+		if (@fields and defined $fields[-1]) {
+			$interface = $fields[-1];
+		}
+		if (length $interface) {
+			my $found = 0;
+			for my $name (@interfaces) {
+				if ($name eq $interface) {
+					$iface = $interface;
+					$found = 1;
+					last;
+				}
+			}
+			if (!$found) {
+				plain_response("404 Not Found", "Unknown interface.");
 			}
 		}
 	}
 
 	if (!defined $iface and defined $ENV{QUERY_STRING}) {
-		my $getiface = "";
+		my $saw_interface = 0;
+		my $getiface;
 		my @values = split(/&/, $ENV{QUERY_STRING});
 		foreach my $i (@values) {
 			my ($varname, $varvalue) = split(/=/, $i);
-			if ($varname eq 'interface' && $varvalue =~ /^(\d+)$/) {
-				$getiface = $varvalue;
+			next unless defined $varname and $varname eq 'interface';
+			$saw_interface = 1;
+			if (defined $varvalue and $varvalue =~ /^(\d+)$/) {
+				$getiface = $1;
+			} else {
+				undef $getiface;
 			}
 		}
 
-		if (length($getiface) > 0 && $getiface >= 0 && $getiface <= $#interfaces) {
-			$iface = $interfaces[int($getiface)];
+		if ($saw_interface) {
+			if (!defined $getiface or $getiface > $#interfaces) {
+				plain_response("400 Bad Request", "Invalid interface selector.");
+			}
+			$iface = $interfaces[$getiface];
 		}
 	}
 

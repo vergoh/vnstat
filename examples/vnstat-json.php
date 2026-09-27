@@ -83,14 +83,13 @@ if (count($interfaces) == 0) {
 
 $iface = "";
 $selected = false;
-$getiface = "";
-if (isset($_GET['interface']) && ctype_digit($_GET['interface'])) {
-	$getiface = $_GET['interface'];
-}
-
-if (strlen($getiface) > 0 && $getiface >= 0 && $getiface < count($interfaces)) {
+if (isset($_GET['interface'])) {
+	$raw = $_GET['interface'];
+	if (!is_string($raw) || !ctype_digit($raw) || (int)$raw >= count($interfaces)) {
+		plain_response("400 Bad Request", "Invalid interface selector.");
+	}
 	$selected = true;
-	$iface = $interfaces[$getiface];
+	$iface = $interfaces[(int)$raw];
 }
 
 $command = array($vnstat_cmd, "--json");

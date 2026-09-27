@@ -317,6 +317,15 @@ sub plain_response
 	exit 0;
 }
 
+sub interface_by_index
+{
+	my ($index, $interfaces) = @_;
+	if ($index > $#$interfaces) {
+		show_error("ERROR: no such interface", "404 Not Found");
+	}
+	return $interfaces->[$index];
+}
+
 sub load_interface_list
 {
 	open(my $iflist, "-|", $vnstati_cmd, "--dbiflist", "1")
@@ -507,18 +516,30 @@ sub print_single_image_html
 		show_error("ERROR: invalid query", "400 Bad Request");
 	}
 
-	if ($image =~ /^\d+-5/) {
+	if ($interface > $#interfaces) {
+		show_error("ERROR: no such interface", "404 Not Found");
+	}
+
+	if ($image =~ /^\d+-(5g|5)$/) {
 		$content = "5 Minute";
-	} elsif ($image =~ /^\d+-h/) {
+	} elsif ($image =~ /^\d+-(hsh|hs5|hs|hg|h)$/) {
 		$content = "Hourly";
-	} elsif ($image =~ /^\d+-d/) {
+	} elsif ($image =~ /^\d+-(d-l|d)$/) {
 		$content = "Daily";
-	} elsif ($image =~ /^\d+-m/) {
+	} elsif ($image =~ /^\d+-(m-l|m)$/) {
 		$content = "Monthly";
-	} elsif ($image =~ /^\d+-y/) {
+	} elsif ($image =~ /^\d+-(y-l|y)$/) {
 		$content = "Yearly";
-	} elsif ($image =~ /^\d+-t/) {
+	} elsif ($image =~ /^\d+-(t-l|t)$/) {
 		$content = "Daily Top";
+	} elsif ($image =~ /^\d+-(vs5|vsh|vs|s)$/) {
+		$content = "Summary";
+	} elsif ($image =~ /^\d+-95rx$/) {
+		$content = "95th RX";
+	} elsif ($image =~ /^\d+-95tx$/) {
+		$content = "95th TX";
+	} elsif ($image =~ /^\d+-95total$/) {
+		$content = "95th Total";
 	} else {
 		show_error("ERROR: invalid query type", "400 Bad Request");
 	}
@@ -609,94 +630,96 @@ sub main
 			$darkmode = $1;
 		}
 		if ($query =~ /^(\d+)-s$/) {
-			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1.png", "-s");
+			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1.png", "-s");
 		}
 		elsif ($query =~ /^(\d+)-hs$/) {
-			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_hs.png", "-hs");
+			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_hs.png", "-hs");
 		}
 		elsif ($query =~ /^(\d+)-hsh$/) {
-			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_hsh.png", "-hs 0");
+			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_hsh.png", "-hs 0");
 		}
 		elsif ($query =~ /^(\d+)-hs5$/) {
-			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_hs5.png", "-hs 1");
+			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_hs5.png", "-hs 1");
 		}
 		elsif ($query =~ /^(\d+)-vs$/) {
-			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_vs.png", "-vs");
+			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_vs.png", "-vs");
 		}
 		elsif ($query =~ /^(\d+)-vsh$/) {
-			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_vsh.png", "-vs 0");
+			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_vsh.png", "-vs 0");
 		}
 		elsif ($query =~ /^(\d+)-vs5$/) {
-			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_vs5.png", "-vs 1");
+			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_vs5.png", "-vs 1");
 		}
 		elsif ($query =~ /^(\d+)-d$/) {
-			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_d.png", "-d 30");
+			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_d.png", "-d 30");
 		}
 		elsif ($query =~ /^(\d+)-d-l$/) {
 			if ($usecfglengthonsingleimagepages == '0') {
 				$listlength = '60';
 			}
-			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_d_l.png", "-d $listlength");
+			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_d_l.png", "-d $listlength");
 		}
 		elsif ($query =~ /^(\d+)-m$/) {
-			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_m.png", "-m 12");
+			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_m.png", "-m 12");
 		}
 		elsif ($query =~ /^(\d+)-m-l$/) {
 			if ($usecfglengthonsingleimagepages == '0') {
 				$listlength = '24';
 			}
-			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_m_l.png", "-m $listlength");
+			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_m_l.png", "-m $listlength");
 		}
 		elsif ($query =~ /^(\d+)-t$/) {
-			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_t.png", "-t 10");
+			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_t.png", "-t 10");
 		}
 		elsif ($query =~ /^(\d+)-t-l$/) {
 			if ($usecfglengthonsingleimagepages == '0') {
 				$listlength = '20';
 			}
-			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_t_l.png", "-t $listlength");
+			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_t_l.png", "-t $listlength");
 		}
 		elsif ($query =~ /^(\d+)-h$/) {
 			if ($usecfglengthonsingleimagepages == '0') {
 				$listlength = '48';
 			}
-			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_h.png", "-h $listlength");
+			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_h.png", "-h $listlength");
 		}
 		elsif ($query =~ /^(\d+)-hg$/) {
-			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_hg.png", "-hg");
+			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_hg.png", "-hg");
 		}
 		elsif ($query =~ /^(\d+)-5$/) {
 			if ($usecfglengthonsingleimagepages == '0') {
 				$listlength = '60';
 			}
-			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_5.png", "-5 $listlength");
+			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_5.png", "-5 $listlength");
 		}
 		elsif ($query =~ /^(\d+)-5g$/) {
-			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_5g.png", "-5g");
+			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_5g.png", "-5g");
 		}
 		elsif ($query =~ /^(\d+)-y$/) {
-			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_y.png", "-y 5");
+			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_y.png", "-y 5");
 		}
 		elsif ($query =~ /^(\d+)-y-l$/) {
 			if ($usecfglengthonsingleimagepages == '0') {
 				$listlength = '0';
 			}
-			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_y_l.png", "-y $listlength");
+			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_y_l.png", "-y $listlength");
 		}
 		elsif ($query =~ /^(\d+)-95rx$/) {
-			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_95rx.png", "--95th 0");
+			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_95rx.png", "--95th 0");
 		}
 		elsif ($query =~ /^(\d+)-95tx$/) {
-			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_95tx.png", "--95th 1");
+			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_95tx.png", "--95th 1");
 		}
 		elsif ($query =~ /^(\d+)-95total$/) {
-			handle_image($interfaces[$1], "$tmp_dir/vnstat_$1_95total.png", "--95th 2");
+			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_95total.png", "--95th 2");
 		}
 		elsif ($query =~ /^(\d+)-f$/) {
+			interface_by_index($1, \@interfaces);
 			print_single_interface_html($1);
 		}
-		elsif ($query =~ /^s-(.+)/) {
-			print_single_image_html($1);
+		elsif ($query =~ /^s-(\d+)-(hsh|hs5|hs|hg|h|vs5|vsh|vs|d-l|d|m-l|m|t-l|t|5g|5|y-l|y|95rx|95tx|95total|s)$/) {
+			interface_by_index($1, \@interfaces);
+			print_single_image_html("$1-$2");
 		}
 		else {
 			show_error("ERROR: invalid argument", "400 Bad Request");
