@@ -24,6 +24,22 @@ sub get_interface_alias
 	return $interface_alias;
 }
 
+sub prom_escape
+{
+	my ($value) = @_;
+	$value = '' unless defined $value;
+	$value =~ s/\\/\\\\/g;
+	$value =~ s/"/\\"/g;
+	$value =~ s/\n/\\n/g;
+	return $value;
+}
+
+sub prom_interface_labels
+{
+	my ($name, $alias) = @_;
+	return 'interface="' . prom_escape($name) . '",alias="' . prom_escape($alias) . '"';
+}
+
 sub print_totals
 {
 	my ($data) = @_;
@@ -33,7 +49,7 @@ sub print_totals
 
 	foreach my $interface ( @{ $data->{'interfaces'} } ) {
 		my $interface_alias = get_interface_alias($interface);
-		print "vnstat_interface_total_received_bytes{interface=\"$interface->{'name'}\",alias=\"$interface_alias\"} $interface->{'traffic'}{'total'}{'rx'} $interface->{'updated'}{'timestamp'}000\n";
+		print "vnstat_interface_total_received_bytes{" . prom_interface_labels($interface->{'name'}, $interface_alias) . "} $interface->{'traffic'}{'total'}{'rx'} $interface->{'updated'}{'timestamp'}000\n";
 	}
 
 	print "\n# HELP vnstat_interface_total_transmitted_bytes All time total transmitted (tx) bytes\n";
@@ -41,7 +57,7 @@ sub print_totals
 
 	foreach my $interface ( @{ $data->{'interfaces'} } ) {
 		my $interface_alias = get_interface_alias($interface);
-		print "vnstat_interface_total_transmitted_bytes{interface=\"$interface->{'name'}\",alias=\"$interface_alias\"} $interface->{'traffic'}{'total'}{'tx'} $interface->{'updated'}{'timestamp'}000\n";
+		print "vnstat_interface_total_transmitted_bytes{" . prom_interface_labels($interface->{'name'}, $interface_alias) . "} $interface->{'traffic'}{'total'}{'tx'} $interface->{'updated'}{'timestamp'}000\n";
 	}
 }
 
@@ -57,7 +73,7 @@ sub print_data_resolution
 	foreach my $interface ( @{ $data->{'interfaces'} } ) {
 		my $interface_alias = get_interface_alias($interface);
 		if (defined $interface->{'traffic'}{$resolution}) {
-			print "vnstat_interface_".$resolution."_received_bytes{interface=\"$interface->{'name'}\",alias=\"$interface_alias\"} $interface->{'traffic'}{$resolution}[0]{'rx'} $interface->{'updated'}{'timestamp'}000\n";
+			print "vnstat_interface_".$resolution."_received_bytes{" . prom_interface_labels($interface->{'name'}, $interface_alias) . "} $interface->{'traffic'}{$resolution}[0]{'rx'} $interface->{'updated'}{'timestamp'}000\n";
 			$output_count++;
 		}
 	}
@@ -72,7 +88,7 @@ sub print_data_resolution
 	foreach my $interface ( @{ $data->{'interfaces'} } ) {
 		my $interface_alias = get_interface_alias($interface);
 		if (defined $interface->{'traffic'}{$resolution}) {
-			print "vnstat_interface_".$resolution."_transmitted_bytes{interface=\"$interface->{'name'}\",alias=\"$interface_alias\"} $interface->{'traffic'}{$resolution}[0]{'tx'} $interface->{'updated'}{'timestamp'}000\n";
+			print "vnstat_interface_".$resolution."_transmitted_bytes{" . prom_interface_labels($interface->{'name'}, $interface_alias) . "} $interface->{'traffic'}{$resolution}[0]{'tx'} $interface->{'updated'}{'timestamp'}000\n";
 			$output_count++;
 		}
 	}

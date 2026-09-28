@@ -229,6 +229,26 @@ sub one_line
 	return $text;
 }
 
+sub html_escape
+{
+	my ($text) = @_;
+	return '' unless defined $text;
+	$text =~ s/&/&amp;/g;
+	$text =~ s/"/&quot;/g;
+	$text =~ s/</&lt;/g;
+	$text =~ s/>/&gt;/g;
+	return $text;
+}
+
+sub plain_escape
+{
+	my ($text) = @_;
+	return '' unless defined $text;
+	$text =~ s/\r/\\r/g;
+	$text =~ s/\n/\\n/g;
+	return $text;
+}
+
 sub graph
 {
 	my ($interface, $file, $param) = @_;
@@ -344,6 +364,7 @@ sub load_interface_list
 sub print_empty_database_html
 {
 	print_html_headers();
+	my $title_server = html_escape($servername);
 
 	print <<HEADER;
 <!DOCTYPE html>
@@ -351,7 +372,7 @@ sub print_empty_database_html
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">$metarefresh
 <meta name="generator" content="vnstat.cgi $VERSION">$themecookiescript$themetogglescript
-<title>Traffic Statistics for $servername</title>
+<title>Traffic Statistics for $title_server</title>
 <style>
 <!--
 $csscommonstyle
@@ -382,7 +403,14 @@ sub image_query
 {
 	my ($query) = @_;
 
-	return "${scriptname}?${query}&dm=${darkmode}";
+	return html_escape($scriptname) . "?${query}&dm=${darkmode}";
+}
+
+sub page_query
+{
+	my ($query) = @_;
+
+	return html_escape($scriptname) . "?${query}";
 }
 
 sub theme_switch_html
@@ -405,6 +433,7 @@ sub theme_switch_html
 sub print_interface_list_html
 {
 	my @interfaces = @vnStatCGI::interfaces;
+	my $title_server = html_escape($servername);
 
 	print_html_headers();
 
@@ -414,7 +443,7 @@ sub print_interface_list_html
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">$metarefresh
 <meta name="generator" content="vnstat.cgi $VERSION">$themecookiescript$themetogglescript
-<title>Traffic Statistics for $servername</title>
+<title>Traffic Statistics for $title_server</title>
 <style>
 <!--
 $csscommonstyle
@@ -437,7 +466,7 @@ HEADER
 		if (length($indexhiddeninterfaces) > 0 && $interfaces[${i}] =~ /$indexhiddeninterfaces/) {
 			next;
 		}
-		print "<a href=\"${scriptname}?${i}-f\"><img src=\"" . image_query("${i}-$indeximageoutput") . "\" alt=\"$interfaces[${i}]\"></a>";
+		print "<a href=\"" . page_query("${i}-f") . "\"><img src=\"" . image_query("${i}-$indeximageoutput") . "\" alt=\"" . html_escape($interfaces[$i]) . "\"></a>";
 		$interfacesshown++;
 		if ($indeximagesperrow > 0 && $interfacesshown % $indeximagesperrow == 0) {
 			print "<br>\n";
@@ -461,6 +490,8 @@ sub print_single_interface_html
 {
 	my ($interface) = @_;
 	my @interfaces = @vnStatCGI::interfaces;
+	my $title_server = html_escape($servername);
+	my $iface_name = html_escape($interfaces[$interface]);
 
 	print_html_headers();
 
@@ -470,7 +501,7 @@ sub print_single_interface_html
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">$metarefresh
 <meta name="generator" content="vnstat.cgi $VERSION">$themecookiescript$themetogglescript
-<title>Traffic Statistics for $servername - $interfaces[${interface}]</title>
+<title>Traffic Statistics for $title_server - $iface_name</title>
 <style>
 <!--
 $csscommonstyle
@@ -485,14 +516,14 @@ HEADER
 	print theme_switch_html();
 	print "<br>\n";
 	print "<table>\n<tr><td>\n";
-	print "<img src=\"" . image_query("${interface}-s") . "\" alt=\"$interfaces[${interface}] summary\"><br>\n";
-	print "<a href=\"${scriptname}?s-${interface}-d-l\"><img src=\"" . image_query("${interface}-d") . "\" alt=\"$interfaces[${interface}] daily\"></a><br>\n";
-	print "<a href=\"${scriptname}?s-${interface}-t-l\"><img src=\"" . image_query("${interface}-t") . "\" alt=\"$interfaces[${interface}] top 10\"></a><br>\n";
+	print "<img src=\"" . image_query("${interface}-s") . "\" alt=\"$iface_name summary\"><br>\n";
+	print "<a href=\"" . page_query("s-${interface}-d-l") . "\"><img src=\"" . image_query("${interface}-d") . "\" alt=\"$iface_name daily\"></a><br>\n";
+	print "<a href=\"" . page_query("s-${interface}-t-l") . "\"><img src=\"" . image_query("${interface}-t") . "\" alt=\"$iface_name top 10\"></a><br>\n";
 	print "</td><td>\n";
-	print "<a href=\"${scriptname}?s-${interface}-h\"><img src=\"" . image_query("${interface}-hg") . "\" alt=\"$interfaces[${interface}] hourly\"></a><br>\n";
-	print "<a href=\"${scriptname}?s-${interface}-5\"><img src=\"" . image_query("${interface}-5g") . "\" alt=\"$interfaces[${interface}] 5 minute\"></a><br>\n";
-	print "<a href=\"${scriptname}?s-${interface}-m-l\"><img src=\"" . image_query("${interface}-m") . "\" alt=\"$interfaces[${interface}] monthly\"></a><br>\n";
-	print "<a href=\"${scriptname}?s-${interface}-y-l\"><img src=\"" . image_query("${interface}-y") . "\" alt=\"$interfaces[${interface}] yearly\"></a><br>\n";
+	print "<a href=\"" . page_query("s-${interface}-h") . "\"><img src=\"" . image_query("${interface}-hg") . "\" alt=\"$iface_name hourly\"></a><br>\n";
+	print "<a href=\"" . page_query("s-${interface}-5") . "\"><img src=\"" . image_query("${interface}-5g") . "\" alt=\"$iface_name 5 minute\"></a><br>\n";
+	print "<a href=\"" . page_query("s-${interface}-m-l") . "\"><img src=\"" . image_query("${interface}-m") . "\" alt=\"$iface_name monthly\"></a><br>\n";
+	print "<a href=\"" . page_query("s-${interface}-y-l") . "\"><img src=\"" . image_query("${interface}-y") . "\" alt=\"$iface_name yearly\"></a><br>\n";
 	print "</td></tr>\n</table>\n";
 
 	print <<FOOTER;
@@ -544,6 +575,9 @@ sub print_single_image_html
 		show_error("ERROR: invalid query type", "400 Bad Request");
 	}
 
+	my $title_server = html_escape($servername);
+	my $iface_name = html_escape($interfaces[$interface]);
+
 	print_html_headers();
 
 	print <<HEADER;
@@ -552,7 +586,7 @@ sub print_single_image_html
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">$metarefresh
 <meta name="generator" content="vnstat.cgi $VERSION">$themecookiescript$themetogglescript
-<title>$content Traffic Statistics for $servername - $interfaces[${interface}]</title>
+<title>$content Traffic Statistics for $title_server - $iface_name</title>
 <style>
 <!--
 $csscommonstyle
@@ -567,7 +601,7 @@ HEADER
 	print theme_switch_html();
 	print "<br>\n";
 	print "<table>\n<tr><td>\n";
-	print "<img src=\"" . image_query($image) . "\" alt=\"$interfaces[${interface}] ", lc($content), "\">\n";
+	print "<img src=\"" . image_query($image) . "\" alt=\"$iface_name ", lc($content), "\">\n";
 	print "</td></tr>\n</table>\n";
 
 	print <<FOOTER;
@@ -738,7 +772,7 @@ sub main
 				}
 			}
 			if ($html_shown == 0) {
-				show_error("ERROR: no such interface: $interface", "404 Not Found");
+				show_error("ERROR: no such interface: " . plain_escape($interface), "404 Not Found");
 			}
 		}
 
