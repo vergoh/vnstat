@@ -139,7 +139,8 @@ sub plain_response
 	if (defined $status) {
 		print "Status: $status\n";
 	}
-	print "Content-Type: text/plain\n\n$message\n";
+	print "Content-Type: text/plain\n";
+	print "Cache-Control: private, no-cache\n\n$message\n";
 	exit 0;
 }
 
@@ -173,7 +174,8 @@ if (ref($first_interface) ne 'HASH'
 	plain_response("500 Internal Server Error", "Incompatible vnStat version used.");
 }
 
-print "Content-Type: text/plain\n\n";
+print "Content-Type: text/plain\n";
+print "Cache-Control: private, no-cache\n\n";
 
 print "# vnStat version: ".$data->{'vnstatversion'}."\n";
 

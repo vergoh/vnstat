@@ -47,6 +47,7 @@ function plain_response($status, $message)
 		header("Status: ".$status);
 	}
 	header("Content-Type: text/plain");
+	header("Cache-Control: private, no-cache");
 	echo $message, "\n";
 	exit(0);
 }
@@ -106,5 +107,6 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 	plain_response("500 Internal Server Error", "Invalid command output.");
 }
 header("Content-Type: application/json");
+header("Cache-Control: private, no-cache");
 echo $json;
 ?>

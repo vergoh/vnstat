@@ -25,7 +25,8 @@ sub plain_response
 	if (defined $status) {
 		print "Status: $status\n";
 	}
-	print "Content-Type: text/plain\n\n$message\n";
+	print "Content-Type: text/plain\n";
+	print "Cache-Control: private, no-cache\n\n$message\n";
 	exit 0;
 }
 
@@ -153,6 +154,7 @@ sub load_interfaces
 		plain_response("500 Internal Server Error", "Invalid command output.");
 	}
 
-	print "Content-Type: application/json\n\n";
+	print "Content-Type: application/json\n";
+	print "Cache-Control: private, no-cache\n\n";
 	print $json_data;
 }

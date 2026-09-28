@@ -278,8 +278,10 @@ sub send_image
 	if ($file ne '-') {
 		open(my $IMG_FILE, "<", $file) or show_error("ERROR: can't find $file");
 
+		my @imgstat = stat($IMG_FILE);
 		print "Content-type: image/png\n";
-		print "Content-length: ".((stat($IMG_FILE))[7])."\n";
+		print "Content-length: ".$imgstat[7]."\n";
+		print image_cache_control($imgstat[9]);
 		print $themeheaders;
 		print "\n";
 		my $data;
@@ -299,10 +301,32 @@ sub send_image
 
 		print "Content-type: image/png\n";
 		print "Content-length: ".(length($output))."\n";
+		print image_cache_control();
 		print $themeheaders;
 		print "\n";
 		print $output;
 	}
+}
+
+sub image_cache_control
+{
+	my ($mtime) = @_;
+
+	if ($cachetime == 0) {
+		return "Cache-Control: no-store\n";
+	}
+
+	my $window = $cachetime * 60;
+	my $max_age = $window;
+	if (defined $mtime) {
+		$max_age = $window - (time() - $mtime);
+	}
+	if ($max_age < 0) {
+		$max_age = 0;
+	} elsif ($max_age > $window) {
+		$max_age = $window;
+	}
+	return "Cache-Control: max-age=".int($max_age)."\n";
 }
 
 sub handle_image
