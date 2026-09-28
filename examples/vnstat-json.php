@@ -8,7 +8,7 @@
 /* location of vnstat binary */
 $vnstat_cmd = "/usr/bin/vnstat";
 
-/* individually accessible interfaces with ?interface=N */
+/* individually accessible interfaces with ?interface=N or /interfacename */
 /* for static list, uncomment and update the list */
 //$interfaces = array("eth0", "eth1");
 
@@ -84,7 +84,25 @@ if (count($interfaces) == 0) {
 
 $iface = "";
 $selected = false;
-if (isset($_GET['interface'])) {
+if (isset($_SERVER['PATH_INFO']) && is_string($_SERVER['PATH_INFO'])) {
+	$fields = explode('/', $_SERVER['PATH_INFO']);
+	$interface = $fields[count($fields) - 1];
+	if ($interface !== '') {
+		$found = false;
+		foreach ($interfaces as $name) {
+			if ($name === $interface) {
+				$iface = $interface;
+				$selected = true;
+				$found = true;
+				break;
+			}
+		}
+		if (!$found) {
+			plain_response("404 Not Found", "Unknown interface.");
+		}
+	}
+}
+if (!$selected && isset($_GET['interface'])) {
 	$raw = $_GET['interface'];
 	if (!is_string($raw) || !ctype_digit($raw) || (int)$raw >= count($interfaces)) {
 		plain_response("400 Bad Request", "Invalid interface selector.");

@@ -329,14 +329,20 @@ sub image_cache_control
 	return "Cache-Control: max-age=".int($max_age)."\n";
 }
 
+sub cache_file
+{
+	my ($interface, $kind) = @_;
+	my $safe = $interface;
+	$safe =~ s/([^A-Za-z0-9._-])/sprintf("%%%02X", ord($1))/ge;
+	return "$tmp_dir/vnstat_${safe}_${kind}_dm${darkmode}.png";
+}
+
 sub handle_image
 {
 	my ($interface, $file, $param) = @_;
 
 	if ($cachetime == '0') {
 		$file = '-';
-	} else {
-		$file =~ s/\.png$/_dm$darkmode.png/;
 	}
 
 	my ($output, $stderr, $status) = graph($interface, $file, $param);
@@ -688,88 +694,110 @@ sub main
 			$darkmode = $1;
 		}
 		if ($query =~ /^(\d+)-s$/) {
-			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1.png", "-s");
+			my $iface = interface_by_index($1, \@interfaces);
+			handle_image($iface, cache_file($iface, "s"), "-s");
 		}
 		elsif ($query =~ /^(\d+)-hs$/) {
-			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_hs.png", "-hs");
+			my $iface = interface_by_index($1, \@interfaces);
+			handle_image($iface, cache_file($iface, "hs"), "-hs");
 		}
 		elsif ($query =~ /^(\d+)-hsh$/) {
-			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_hsh.png", "-hs 0");
+			my $iface = interface_by_index($1, \@interfaces);
+			handle_image($iface, cache_file($iface, "hsh"), "-hs 0");
 		}
 		elsif ($query =~ /^(\d+)-hs5$/) {
-			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_hs5.png", "-hs 1");
+			my $iface = interface_by_index($1, \@interfaces);
+			handle_image($iface, cache_file($iface, "hs5"), "-hs 1");
 		}
 		elsif ($query =~ /^(\d+)-vs$/) {
-			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_vs.png", "-vs");
+			my $iface = interface_by_index($1, \@interfaces);
+			handle_image($iface, cache_file($iface, "vs"), "-vs");
 		}
 		elsif ($query =~ /^(\d+)-vsh$/) {
-			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_vsh.png", "-vs 0");
+			my $iface = interface_by_index($1, \@interfaces);
+			handle_image($iface, cache_file($iface, "vsh"), "-vs 0");
 		}
 		elsif ($query =~ /^(\d+)-vs5$/) {
-			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_vs5.png", "-vs 1");
+			my $iface = interface_by_index($1, \@interfaces);
+			handle_image($iface, cache_file($iface, "vs5"), "-vs 1");
 		}
 		elsif ($query =~ /^(\d+)-d$/) {
-			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_d.png", "-d 30");
+			my $iface = interface_by_index($1, \@interfaces);
+			handle_image($iface, cache_file($iface, "d"), "-d 30");
 		}
 		elsif ($query =~ /^(\d+)-d-l$/) {
 			if ($usecfglengthonsingleimagepages == '0') {
 				$listlength = '60';
 			}
-			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_d_l.png", "-d $listlength");
+			my $iface = interface_by_index($1, \@interfaces);
+			handle_image($iface, cache_file($iface, "d_l"), "-d $listlength");
 		}
 		elsif ($query =~ /^(\d+)-m$/) {
-			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_m.png", "-m 12");
+			my $iface = interface_by_index($1, \@interfaces);
+			handle_image($iface, cache_file($iface, "m"), "-m 12");
 		}
 		elsif ($query =~ /^(\d+)-m-l$/) {
 			if ($usecfglengthonsingleimagepages == '0') {
 				$listlength = '24';
 			}
-			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_m_l.png", "-m $listlength");
+			my $iface = interface_by_index($1, \@interfaces);
+			handle_image($iface, cache_file($iface, "m_l"), "-m $listlength");
 		}
 		elsif ($query =~ /^(\d+)-t$/) {
-			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_t.png", "-t 10");
+			my $iface = interface_by_index($1, \@interfaces);
+			handle_image($iface, cache_file($iface, "t"), "-t 10");
 		}
 		elsif ($query =~ /^(\d+)-t-l$/) {
 			if ($usecfglengthonsingleimagepages == '0') {
 				$listlength = '20';
 			}
-			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_t_l.png", "-t $listlength");
+			my $iface = interface_by_index($1, \@interfaces);
+			handle_image($iface, cache_file($iface, "t_l"), "-t $listlength");
 		}
 		elsif ($query =~ /^(\d+)-h$/) {
 			if ($usecfglengthonsingleimagepages == '0') {
 				$listlength = '48';
 			}
-			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_h.png", "-h $listlength");
+			my $iface = interface_by_index($1, \@interfaces);
+			handle_image($iface, cache_file($iface, "h"), "-h $listlength");
 		}
 		elsif ($query =~ /^(\d+)-hg$/) {
-			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_hg.png", "-hg");
+			my $iface = interface_by_index($1, \@interfaces);
+			handle_image($iface, cache_file($iface, "hg"), "-hg");
 		}
 		elsif ($query =~ /^(\d+)-5$/) {
 			if ($usecfglengthonsingleimagepages == '0') {
 				$listlength = '60';
 			}
-			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_5.png", "-5 $listlength");
+			my $iface = interface_by_index($1, \@interfaces);
+			handle_image($iface, cache_file($iface, "5"), "-5 $listlength");
 		}
 		elsif ($query =~ /^(\d+)-5g$/) {
-			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_5g.png", "-5g");
+			my $iface = interface_by_index($1, \@interfaces);
+			handle_image($iface, cache_file($iface, "5g"), "-5g");
 		}
 		elsif ($query =~ /^(\d+)-y$/) {
-			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_y.png", "-y 5");
+			my $iface = interface_by_index($1, \@interfaces);
+			handle_image($iface, cache_file($iface, "y"), "-y 5");
 		}
 		elsif ($query =~ /^(\d+)-y-l$/) {
 			if ($usecfglengthonsingleimagepages == '0') {
 				$listlength = '0';
 			}
-			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_y_l.png", "-y $listlength");
+			my $iface = interface_by_index($1, \@interfaces);
+			handle_image($iface, cache_file($iface, "y_l"), "-y $listlength");
 		}
 		elsif ($query =~ /^(\d+)-95rx$/) {
-			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_95rx.png", "--95th 0");
+			my $iface = interface_by_index($1, \@interfaces);
+			handle_image($iface, cache_file($iface, "95rx"), "--95th 0");
 		}
 		elsif ($query =~ /^(\d+)-95tx$/) {
-			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_95tx.png", "--95th 1");
+			my $iface = interface_by_index($1, \@interfaces);
+			handle_image($iface, cache_file($iface, "95tx"), "--95th 1");
 		}
 		elsif ($query =~ /^(\d+)-95total$/) {
-			handle_image(interface_by_index($1, \@interfaces), "$tmp_dir/vnstat_$1_95total.png", "--95th 2");
+			my $iface = interface_by_index($1, \@interfaces);
+			handle_image($iface, cache_file($iface, "95total"), "--95th 2");
 		}
 		elsif ($query =~ /^(\d+)-f$/) {
 			interface_by_index($1, \@interfaces);
