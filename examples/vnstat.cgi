@@ -296,7 +296,6 @@ sub send_image
 		print "Content-type: image/png\n";
 		print "Content-length: ".$imgstat[7]."\n";
 		print image_cache_control($imgstat[9]);
-		print $themeheaders;
 		print "\n";
 		binmode STDOUT;
 		my $data;
@@ -310,7 +309,6 @@ sub send_image
 		print "Content-type: image/png\n";
 		print "Content-length: ".(length($output))."\n";
 		print image_cache_control();
-		print $themeheaders;
 		print "\n";
 		binmode STDOUT;
 		print $output;
