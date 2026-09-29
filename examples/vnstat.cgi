@@ -73,6 +73,8 @@ my $scriptname = '';
 ################ no user configurable settings below this line ################
 
 
+my $indexshown_re;
+my $indexhidden_re;
 my $VERSION = "1.22";
 my $cssbody = "html { background-color: $bgcolor; color-scheme: light; }\nbody { background-color: $bgcolor; text-align: left; display: block; }";
 my $csscommonstyle = "a { text-decoration: underline; }\ntable { border: 0px; border-spacing: 0px; display: inline; }\ntd { vertical-align: top; padding: 0px; }\nimg { border: 0px; vertical-align: top; margin: 4px 4px; }";
@@ -521,10 +523,10 @@ HEADER
 	my $interfacesshown = 0;
 	my $lineended = 0;
 	for my $i (0..$#interfaces) {
-		if (length($indexshowninterfaces) > 0 && $interfaces[${i}] !~ /$indexshowninterfaces/) {
+		if (defined $indexshown_re && $interfaces[${i}] !~ $indexshown_re) {
 			next;
 		}
-		if (length($indexhiddeninterfaces) > 0 && $interfaces[${i}] =~ /$indexhiddeninterfaces/) {
+		if (defined $indexhidden_re && $interfaces[${i}] =~ $indexhidden_re) {
 			next;
 		}
 		print "<a href=\"" . page_query("${i}-f") . "\"><img src=\"" . image_query("${i}-$indeximageoutput") . "\" alt=\"" . html_escape($interfaces[$i]) . "\"></a>";
@@ -673,8 +675,25 @@ HEADER
 FOOTER
 }
 
+sub compile_index_filter
+{
+	my ($pattern, $setting) = @_;
+	return unless length $pattern;
+	if ($pattern =~ /\(\?\??\{/) {
+		show_error("ERROR: invalid \$$setting regular expression: code execution groups are not allowed");
+	}
+	my $re = eval { qr/$pattern/ };
+	if ($@) {
+		show_error("ERROR: invalid \$$setting regular expression: " . one_line($@));
+	}
+	return $re;
+}
+
 sub main
 {
+	$indexshown_re = compile_index_filter($indexshowninterfaces, 'indexshowninterfaces');
+	$indexhidden_re = compile_index_filter($indexhiddeninterfaces, 'indexhiddeninterfaces');
+
 	if (length($scriptname) == 0) {
 		if (defined $ENV{REQUEST_URI}) {
 			($scriptname) = split(/\?/, $ENV{REQUEST_URI});
