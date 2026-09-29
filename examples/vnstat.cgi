@@ -27,7 +27,7 @@ my $cachetime = '0';
 # shown interfaces, interface specific pages can be accessed directly
 # by using /interfacename as suffix for the cgi if the httpd supports PATH_INFO
 # for static list, uncomment and update the list
-#my @interfaces = ('eth0', 'eth1');
+#our @interfaces = ('eth0', 'eth1');
 
 # center images on page instead of left alignment, set 0 to disable
 my $aligncenter = '1';
@@ -655,8 +655,8 @@ sub main
 		}
 	}
 
-	if (not defined $vnStatCGI::interfaces) {
-		our @interfaces = load_interface_list();
+	if (!@vnStatCGI::interfaces) {
+		@vnStatCGI::interfaces = load_interface_list();
 	}
 	chomp @vnStatCGI::interfaces;
 	my @interfaces = @vnStatCGI::interfaces;
