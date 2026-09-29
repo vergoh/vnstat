@@ -271,11 +271,25 @@ sub graph
 	show_error("ERROR: invalid input");
 }
 
+sub command_failed
+{
+	my ($stderr) = @_;
+	my $detail = one_line($stderr);
+	if (length($detail)) {
+		show_error("ERROR: command failed: $detail");
+	}
+	show_error("ERROR: command failed");
+}
+
 sub send_image
 {
 	my ($file, $output, $stderr, $status) = @_;
 
 	if ($file ne '-') {
+		if ($status != 0) {
+			command_failed($stderr);
+		}
+
 		open(my $IMG_FILE, "<:raw", $file) or show_error("ERROR: can't find $file");
 
 		my @imgstat = stat($IMG_FILE);
@@ -290,11 +304,7 @@ sub send_image
 		close $IMG_FILE;
 	} else {
 		if ($status != 0 || !defined $output || $output !~ /^\x89PNG\r\n\x1a\n/) {
-			my $detail = one_line($stderr);
-			if (length($detail)) {
-				show_error("ERROR: command failed: $detail");
-			}
-			show_error("ERROR: command failed");
+			command_failed($stderr);
 		}
 
 		print "Content-type: image/png\n";
