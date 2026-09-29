@@ -724,7 +724,10 @@ sub main
 	my $listlength = '';
 	if (defined $query and $query =~ /\S/) {
 		if ($query =~ s/&dm=([012])$//) {
-			$darkmode = $1;
+			my $dm = $1;
+			if ($query =~ /^\d+-/ and $query !~ /^\d+-f$/) {
+				$darkmode = $dm;
+			}
 		}
 		if ($query =~ /^(\d+)-s$/) {
 			my $iface = interface_by_index($1, \@interfaces);
