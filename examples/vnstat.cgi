@@ -276,7 +276,7 @@ sub send_image
 	my ($file, $output, $stderr, $status) = @_;
 
 	if ($file ne '-') {
-		open(my $IMG_FILE, "<", $file) or show_error("ERROR: can't find $file");
+		open(my $IMG_FILE, "<:raw", $file) or show_error("ERROR: can't find $file");
 
 		my @imgstat = stat($IMG_FILE);
 		print "Content-type: image/png\n";
@@ -284,19 +284,17 @@ sub send_image
 		print image_cache_control($imgstat[9]);
 		print $themeheaders;
 		print "\n";
+		binmode STDOUT;
 		my $data;
 		print $data while read($IMG_FILE, $data, 16384)>0;
 		close $IMG_FILE;
 	} else {
-		if ($status != 0) {
+		if ($status != 0 || !defined $output || $output !~ /^\x89PNG\r\n\x1a\n/) {
 			my $detail = one_line($stderr);
 			if (length($detail)) {
 				show_error("ERROR: command failed: $detail");
 			}
 			show_error("ERROR: command failed");
-		}
-		if (length($output) < 1000) {
-			show_error("ERROR: command failed: $output");
 		}
 
 		print "Content-type: image/png\n";
@@ -304,6 +302,7 @@ sub send_image
 		print image_cache_control();
 		print $themeheaders;
 		print "\n";
+		binmode STDOUT;
 		print $output;
 	}
 }
