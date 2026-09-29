@@ -328,6 +328,30 @@ sub image_cache_control
 	return "Cache-Control: max-age=".int($max_age)."\n";
 }
 
+sub ensure_cache_dir
+{
+	my @st = lstat($tmp_dir);
+	if (!@st) {
+		mkdir $tmp_dir, 0700 or show_error("ERROR: failed to create cache directory: $!");
+		@st = lstat($tmp_dir);
+		if (!@st) {
+			show_error("ERROR: failed to create cache directory: $!");
+		}
+	}
+	if (-l _) {
+		show_error("ERROR: cache directory is a symlink");
+	}
+	if (!-d _) {
+		show_error("ERROR: cache path is not a directory");
+	}
+	if ($st[4] != $>) {
+		show_error("ERROR: cache directory is owned by another user");
+	}
+	if (($st[2] & 07777) != 0700) {
+		chmod 0700, $tmp_dir or show_error("ERROR: failed to set cache directory mode: $!");
+	}
+}
+
 sub cache_file
 {
 	my ($interface, $kind) = @_;
@@ -678,7 +702,7 @@ sub main
 	}
 
 	if ($cachetime != '0') {
-		mkdir $tmp_dir, 0755 unless -d $tmp_dir;
+		ensure_cache_dir();
 	}
 
 	if (scalar @interfaces == 0) {
