@@ -184,7 +184,11 @@ $cssthemeswitch = "button.theme-switch { position: fixed; top: 10px; right: 10px
 	. "button.theme-switch .theme-switch-sun { left: 6px; }\n"
 	. "button.theme-switch .theme-switch-moon { left: 30px; }\n"
 	. "button.theme-switch[aria-checked=false] .theme-switch-moon, button.theme-switch[aria-checked=true] .theme-switch-sun { display: none; }\n"
-	. "button.theme-switch svg { display: block; width: 14px; height: 14px; }\n";
+	. "button.theme-switch svg { display: block; width: 14px; height: 14px; }\n"
+	. "a.image-back { position: fixed; top: 10px; left: 10px; z-index: 2; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; margin: 0; padding: 0; border: 1px solid $switch_border; border-radius: 999px; background: $switch_track; color: $switch_icon; box-sizing: border-box; text-decoration: none; }\n"
+	. "a.image-back:link, a.image-back:visited, a.image-back:hover { color: $switch_icon; text-decoration: none; }\n"
+	. "a.image-back:focus-visible { outline: 2px solid $switch_focus; outline-offset: 2px; }\n"
+	. "a.image-back svg { display: block; width: 14px; height: 14px; }\n";
 
 sub run_command
 {
@@ -662,6 +666,9 @@ $cssthemeswitch
 HEADER
 	print "<body>\n";
 	print theme_switch_html();
+	print "<a href=\"" . page_query("${interface}-f") . "\" class=\"image-back\" aria-label=\"Back to summary\">"
+		. "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M19 12H5M12 19l-7-7 7-7\"></path></svg>"
+		. "</a>\n";
 	print "<br>\n";
 	print "<table>\n<tr><td>\n";
 	print "<img src=\"" . image_query($image) . "\" alt=\"$iface_name ", lc($content), "\">\n";
