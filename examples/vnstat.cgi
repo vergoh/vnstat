@@ -75,7 +75,7 @@ my $scriptname = '';
 
 my $indexshown_re;
 my $indexhidden_re;
-my $VERSION = "1.22";
+my $VERSION = "1.23";
 my $cssbody = "html { background-color: $bgcolor; color-scheme: light; }\nbody { background-color: $bgcolor; text-align: left; display: block; }";
 my $csscommonstyle = "a { text-decoration: underline; }\ntable { border: 0px; border-spacing: 0px; display: inline; }\ntd { vertical-align: top; padding: 0px; }\nimg { border: 0px; vertical-align: top; margin: 4px 4px; }";
 my $csscolors = "a:link { color: #b0b0b0; }\na:visited { color: #b0b0b0; }\na:hover { color: #000000; }\nsmall { display: inline; font-size: 8px; color: #cbcbcb; padding: 0px 4px; }";
