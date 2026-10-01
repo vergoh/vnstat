@@ -226,6 +226,8 @@ if ($command_status != 0) {
 }
 
 my $data = "";
+# Keep rx and tx as the decimal digits from the JSON text.
+$json_data =~ s/("(?:rx|tx)":)(\d+)/$1"$2"/g;
 eval { $data = decode_json($json_data) };
 if ($@) {
 	plain_response("500 Internal Server Error", "Invalid command output.");
@@ -246,7 +248,7 @@ if (ref($first_interface) ne 'HASH'
 	plain_response("500 Internal Server Error", "Incompatible vnStat version used.");
 }
 
-print "Content-Type: text/plain\n";
+print "Content-Type: text/plain; version=0.0.4; charset=utf-8\n";
 print "Cache-Control: private, no-cache\n\n";
 
 print "# vnStat version: ".$data->{'vnstatversion'}."\n";
