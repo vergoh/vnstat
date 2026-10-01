@@ -6,6 +6,7 @@
 
 use strict;
 use JSON::PP;
+use Time::Local qw(timelocal_nocheck);
 
 # location of vnstat binary
 my $vnstat_cmd = '/usr/bin/vnstat';
@@ -74,6 +75,62 @@ sub print_updated
 	}
 }
 
+sub normalized_monthrotate
+{
+	my ($monthrotate) = @_;
+	if (!defined $monthrotate || $monthrotate !~ /^\d+$/ || $monthrotate < 1 || $monthrotate > 28) {
+		return 1;
+	}
+	return int($monthrotate);
+}
+
+# Bucket label vnStat stores for $when. Five-minute labels use round(minute/5)*5,
+# which can sit ahead of the clock; flooring to 300 seconds would drop a live row.
+# timelocal_nocheck normalizes minute 60 and a day shifted before the 1st.
+sub current_bucket_timestamp
+{
+	my ($resolution, $monthrotate, $when) = @_;
+	$when = time() unless defined $when;
+	my ($sec, $min, $hour, $mday, $mon, $year) = localtime($when);
+
+	if ($resolution eq 'fiveminute') {
+		$min = int($min / 5 + 0.5) * 5;
+		return timelocal_nocheck(0, $min, $hour, $mday, $mon, $year);
+	}
+	if ($resolution eq 'hour') {
+		return timelocal_nocheck(0, 0, $hour, $mday, $mon, $year);
+	}
+	if ($resolution eq 'day') {
+		return timelocal_nocheck(0, 0, 0, $mday, $mon, $year);
+	}
+	if ($resolution eq 'month') {
+		my $shift = normalized_monthrotate($monthrotate) - 1;
+		if ($shift) {
+			($sec, $min, $hour, $mday, $mon, $year) = localtime(timelocal_nocheck($sec, $min, $hour, $mday - $shift, $mon, $year));
+		}
+		return timelocal_nocheck(0, 0, 0, 1, $mon, $year);
+	}
+	if ($resolution eq 'year') {
+		return timelocal_nocheck(0, 0, 0, 1, 0, $year);
+	}
+	return undef;
+}
+
+sub current_resolution_value
+{
+	my ($interface, $resolution, $field) = @_;
+	my $rows = $interface->{'traffic'}{$resolution};
+	return undef unless ref($rows) eq 'ARRAY' && @{$rows};
+	my $row = $rows->[0];
+	return undef unless ref($row) eq 'HASH';
+	return undef unless defined $row->{$field};
+	my $timestamp = $row->{'timestamp'};
+	return undef unless defined $timestamp && $timestamp =~ /^-?\d+$/;
+	my $bucket = current_bucket_timestamp($resolution, $interface->{'monthrotate'});
+	return undef unless defined $bucket && $timestamp == $bucket;
+	return $row->{$field};
+}
+
 sub print_data_resolution
 {
 	my ($resolution, $data) = @_;
@@ -84,9 +141,10 @@ sub print_data_resolution
 
 	$output_count = 0;
 	foreach my $interface ( @{ $data->{'interfaces'} } ) {
-		my $interface_alias = get_interface_alias($interface);
-		if (defined $interface->{'traffic'}{$resolution}) {
-			print "vnstat_interface_".$resolution."_received_bytes{" . prom_interface_labels($interface->{'name'}, $interface_alias) . "} $interface->{'traffic'}{$resolution}[0]{'rx'}\n";
+		my $rx = current_resolution_value($interface, $resolution, 'rx');
+		if (defined $rx) {
+			my $interface_alias = get_interface_alias($interface);
+			print "vnstat_interface_".$resolution."_received_bytes{" . prom_interface_labels($interface->{'name'}, $interface_alias) . "} $rx\n";
 			$output_count++;
 		}
 	}
@@ -99,9 +157,10 @@ sub print_data_resolution
 
 	$output_count = 0;
 	foreach my $interface ( @{ $data->{'interfaces'} } ) {
-		my $interface_alias = get_interface_alias($interface);
-		if (defined $interface->{'traffic'}{$resolution}) {
-			print "vnstat_interface_".$resolution."_transmitted_bytes{" . prom_interface_labels($interface->{'name'}, $interface_alias) . "} $interface->{'traffic'}{$resolution}[0]{'tx'}\n";
+		my $tx = current_resolution_value($interface, $resolution, 'tx');
+		if (defined $tx) {
+			my $interface_alias = get_interface_alias($interface);
+			print "vnstat_interface_".$resolution."_transmitted_bytes{" . prom_interface_labels($interface->{'name'}, $interface_alias) . "} $tx\n";
 			$output_count++;
 		}
 	}
