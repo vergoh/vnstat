@@ -400,7 +400,8 @@ sub plain_response
 	if (defined $status) {
 		print "Status: $status\n";
 	}
-	print "Content-Type: text/plain\n\n$message\n";
+	print "Content-Type: text/plain\n";
+	print "Cache-Control: private, no-cache\n\n$message\n";
 	exit 0;
 }
 
