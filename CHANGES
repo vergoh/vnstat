@@ -5,6 +5,12 @@
      configured with non-default value of either 1 or 2
    - Some higher traffic days could be missing from top days output when the
      interface merge syntax (interface1+interface2) was used
+   - Command execution, error reporting, interface selection, output escaping
+     and caching fixes in all example output scripts (vnstat.cgi,
+     vnstat-json.cgi, vnstat-json.php and vnstat-metrics.cgi)
+   - Sample timestamps, empty resolutions, rx and tx value precision and year
+     sample alignment when MonthRotateAffectsYears is enabled in Prometheus
+     metrics example (examples/vnstat-metrics.cgi)
  - New
    - Add TrueType font support to image output with image size scaling based
      on used font size, configurable with FontFile and FontSize or --font
@@ -26,6 +32,10 @@
        instead of hardcoded values in single image pages
      - Add automatic dark mode option, enabled by default
      - Add dark mode toggle to top right corner
+     - Add back to summary link to single image pages
+   - Prometheus metrics example (examples/vnstat-metrics.cgi) improvements
+     - Add interface database updated timestamp gauge
+     - Add Prometheus text format version to content type
 
 
 2.13 / 8-Feb-2025
