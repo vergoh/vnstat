@@ -18,7 +18,8 @@
    - Show additional note at the end of outputs containing monthly data if
      MonthRotate has been configured with a value other than 1, note visibility
      is configurable with MonthRotateVisible configuration option
-   - Add monthrotate field to --json and --xml output interface section
+   - Add monthrotate and monthrotateaffectsyears fields to --json and --xml output
+     interface section
    - Increase debug verbosity if -D / --debug is used multiples times
    - Image output example cgi (examples/vnstat.cgi) improvements
      - Add option for selecting use of configuration file defined list lengths

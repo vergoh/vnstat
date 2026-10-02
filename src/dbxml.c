@@ -29,6 +29,7 @@ void showxml(const char *interface, const char mode, const char *databegin, cons
 	xmldate(&ifaceinfo.updated, 2);
 	printf("</updated>\n");
 	printf("  <monthrotate>%" PRId32 "</monthrotate>\n", cfg.monthrotate);
+	printf("  <monthrotateaffectsyears>%" PRId32 "</monthrotateaffectsyears>\n", cfg.monthrotateyears);
 
 	if (mode == 'p') {
 		xmlpercentile(&ifaceinfo);
