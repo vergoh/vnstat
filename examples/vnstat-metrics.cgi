@@ -84,12 +84,20 @@ sub normalized_monthrotate
 	return int($monthrotate);
 }
 
+# JSON true only. false, a missing field, and an integer leave the year unshifted.
+sub monthrotate_affects_years
+{
+	my ($value) = @_;
+	return ref($value) eq 'JSON::PP::Boolean' && $value ? 1 : 0;
+}
+
 # Bucket label vnStat stores for $when. Five-minute labels use round(minute/5)*5,
 # which can sit ahead of the clock; flooring to 300 seconds would drop a live row.
 # timelocal_nocheck normalizes minute 60 and a day shifted before the 1st.
+# The year label uses that day shift only when monthrotateaffectsyears is JSON true.
 sub current_bucket_timestamp
 {
-	my ($resolution, $monthrotate, $when) = @_;
+	my ($resolution, $monthrotate, $monthrotateyears, $when) = @_;
 	$when = time() unless defined $when;
 	my ($sec, $min, $hour, $mday, $mon, $year) = localtime($when);
 
@@ -111,6 +119,13 @@ sub current_bucket_timestamp
 		return timelocal_nocheck(0, 0, 0, 1, $mon, $year);
 	}
 	if ($resolution eq 'year') {
+		my $shift = 0;
+		if (monthrotate_affects_years($monthrotateyears)) {
+			$shift = normalized_monthrotate($monthrotate) - 1;
+		}
+		if ($shift) {
+			($sec, $min, $hour, $mday, $mon, $year) = localtime(timelocal_nocheck($sec, $min, $hour, $mday - $shift, $mon, $year));
+		}
 		return timelocal_nocheck(0, 0, 0, 1, 0, $year);
 	}
 	return undef;
@@ -126,7 +141,7 @@ sub current_resolution_value
 	return undef unless defined $row->{$field};
 	my $timestamp = $row->{'timestamp'};
 	return undef unless defined $timestamp && $timestamp =~ /^-?\d+$/;
-	my $bucket = current_bucket_timestamp($resolution, $interface->{'monthrotate'});
+	my $bucket = current_bucket_timestamp($resolution, $interface->{'monthrotate'}, $interface->{'monthrotateaffectsyears'});
 	return undef unless defined $bucket && $timestamp == $bucket;
 	return $row->{$field};
 }
