@@ -298,12 +298,20 @@ sub send_image
 
 		open(my $IMG_FILE, "<:raw", $file) or show_error("ERROR: can't find $file");
 
+		my $signature;
+		my $siglen = read($IMG_FILE, $signature, 8);
+		if (!defined $siglen || $siglen != 8 || $signature !~ /^\x89PNG\r\n\x1a\n/) {
+			close $IMG_FILE;
+			command_failed($stderr);
+		}
+
 		my @imgstat = stat($IMG_FILE);
 		print "Content-type: image/png\n";
 		print "Content-length: ".$imgstat[7]."\n";
 		print image_cache_control($imgstat[9]);
 		print "\n";
 		binmode STDOUT;
+		print $signature;
 		my $data;
 		print $data while read($IMG_FILE, $data, 16384)>0;
 		close $IMG_FILE;
