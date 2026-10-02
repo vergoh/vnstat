@@ -875,16 +875,21 @@ sub main
 		my $html_shown = 0;
 		if (defined $ENV{PATH_INFO}) {
 			my @fields = split(/\//, $ENV{PATH_INFO});
-			my $interface = $fields[-1];
-			for my $i (0..$#interfaces) {
-				if ($interfaces[${i}] eq $interface) {
-					print_single_interface_html($i);
-					$html_shown = 1;
-					last;
-				}
+			my $interface = '';
+			if (@fields and defined $fields[-1]) {
+				$interface = $fields[-1];
 			}
-			if ($html_shown == 0) {
-				show_error("ERROR: no such interface: " . plain_escape($interface), "404 Not Found");
+			if (length $interface) {
+				for my $i (0..$#interfaces) {
+					if ($interfaces[${i}] eq $interface) {
+						print_single_interface_html($i);
+						$html_shown = 1;
+						last;
+					}
+				}
+				if ($html_shown == 0) {
+					show_error("ERROR: no such interface: " . plain_escape($interface), "404 Not Found");
+				}
 			}
 		}
 
