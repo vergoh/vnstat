@@ -369,7 +369,7 @@ sub ensure_cache_dir
 	if ($st[4] != $>) {
 		show_error("ERROR: cache directory is owned by another user");
 	}
-	if (($st[2] & 07777) != 0700) {
+	if (($st[2] & oct('07777')) != oct('0700')) {
 		chmod 0700, $tmp_dir or show_error("ERROR: failed to set cache directory mode: $!");
 	}
 }

@@ -128,21 +128,21 @@ sub current_bucket_timestamp
 		}
 		return timelocal_nocheck(0, 0, 0, 1, 0, $year);
 	}
-	return undef;
+	return;
 }
 
 sub current_resolution_value
 {
 	my ($interface, $resolution, $field) = @_;
 	my $rows = $interface->{'traffic'}{$resolution};
-	return undef unless ref($rows) eq 'ARRAY' && @{$rows};
+	return unless ref($rows) eq 'ARRAY' && @{$rows};
 	my $row = $rows->[0];
-	return undef unless ref($row) eq 'HASH';
-	return undef unless defined $row->{$field};
+	return unless ref($row) eq 'HASH';
+	return unless defined $row->{$field};
 	my $timestamp = $row->{'timestamp'};
-	return undef unless defined $timestamp && $timestamp =~ /^-?\d+$/;
+	return unless defined $timestamp && $timestamp =~ /^-?\d+$/;
 	my $bucket = current_bucket_timestamp($resolution, $interface->{'monthrotate'}, $interface->{'monthrotateaffectsyears'});
-	return undef unless defined $bucket && $timestamp == $bucket;
+	return unless defined $bucket && $timestamp == $bucket;
 	return $row->{$field};
 }
 
