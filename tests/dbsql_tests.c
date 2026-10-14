@@ -2715,6 +2715,107 @@ START_TEST(db_getinterfaceidin_can_handle_error_situations)
 }
 END_TEST
 
+START_TEST(db_getinterfaceidin_can_handle_long_merge_within_parameter_limit)
+{
+	int i, ret, pos;
+	char name[16], merge[MAXIFPARAMLEN], expected[64];
+	char *result;
+	interfaceinfo info;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	pos = 0;
+	for (i = 0; i < 19; i++) {
+		snprintf(name, sizeof(name), "vlan%04d", i);
+		ck_assert_int_eq((int)strlen(name), 8);
+		ret = db_addtraffic(name, 1, 1);
+		ck_assert_int_eq(ret, 1);
+		if (i > 0) {
+			merge[pos++] = '+';
+		}
+		memcpy(merge + pos, name, 8);
+		pos += 8;
+	}
+	merge[pos] = '\0';
+	ck_assert_int_lt(pos, MAXIFPARAMLEN);
+
+	ret = (int)db_getinterfacecountbyname(merge);
+	ck_assert_int_eq(ret, 19);
+
+	pos = 0;
+	for (i = 1; i <= 19; i++) {
+		if (i > 1) {
+			expected[pos++] = ',';
+		}
+		pos += snprintf(expected + pos, sizeof(expected) - (size_t)pos, "%d", i);
+	}
+	result = db_getinterfaceidin(merge);
+	ck_assert_ptr_ne(result, NULL);
+	ck_assert_str_eq(result, expected);
+	free(result);
+
+	ret = db_getinterfaceinfo(merge, &info);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(info.rxtotal, 19);
+	ck_assert_int_eq(info.txtotal, 19);
+	ck_assert_str_eq(info.name, merge);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(db_getinterfacecountbyname_can_handle_max_length_merge)
+{
+	int ret, i, count, commas;
+	unsigned int c;
+	char name[2], merge[MAXIFPARAMLEN];
+	char *result;
+	size_t pos;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	pos = 0;
+	count = 0;
+	for (c = 32; count < 128 && c < 255; c++) {
+		if (c == '+' || c == '\'' || c == '"' || c == '<' || c == '>' || c == ';' || c == '\\' || c == 127) {
+			continue;
+		}
+		name[0] = (char)c;
+		name[1] = '\0';
+		ret = db_addinterface(name);
+		ck_assert_int_eq(ret, 1);
+		if (count > 0) {
+			merge[pos++] = '+';
+		}
+		merge[pos++] = (char)c;
+		count++;
+	}
+	merge[pos] = '\0';
+	ck_assert_int_eq(count, 128);
+	ck_assert_int_eq(pos, MAXIFPARAMLEN - 1);
+
+	ret = (int)db_getinterfacecountbyname(merge);
+	ck_assert_int_eq(ret, 128);
+
+	result = db_getinterfaceidin(merge);
+	ck_assert_ptr_ne(result, NULL);
+	commas = 0;
+	for (i = 0; result[i] != '\0'; i++) {
+		if (result[i] == ',') {
+			commas++;
+		}
+	}
+	ck_assert_int_eq(commas, 127);
+	free(result);
+
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 START_TEST(db_getinterfaceinfo_can_handle_interface_merges)
 {
 	int ret;
@@ -4502,6 +4603,8 @@ void add_dbsql_tests(Suite *s)
 	tcase_add_test(tc_dbsql, db_getinterfaceid_can_get_ids);
 	tcase_add_test(tc_dbsql, db_getinterfaceidin_can_get_in_groups);
 	tcase_add_test(tc_dbsql, db_getinterfaceidin_can_handle_error_situations);
+	tcase_add_test(tc_dbsql, db_getinterfaceidin_can_handle_long_merge_within_parameter_limit);
+	tcase_add_test(tc_dbsql, db_getinterfacecountbyname_can_handle_max_length_merge);
 	tcase_add_test(tc_dbsql, db_getinterfaceinfo_can_handle_interface_merges);
 	tcase_add_test(tc_dbsql, db_getinterfaceinfo_can_handle_interface_merges_with_long_name);
 	tcase_add_test(tc_dbsql, db_getinterfaceinfo_can_handle_invalid_input);

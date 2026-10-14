@@ -442,21 +442,21 @@ uint64_t db_getinterfacecountbyname(const char *iface)
 {
 	int rc;
 	uint64_t result = 0;
-	char sql[512], *inquery = NULL;
+	char sql[768], *inquery = NULL;
 	sqlite3_stmt *sqlstmt;
 
 	if (strchr(iface, '+') == NULL) {
 		if (strlen(iface) > 0) {
-			sqlite3_snprintf(512, sql, "select count(*) from interface where name='%q'", iface);
+			sqlite3_snprintf(768, sql, "select count(*) from interface where name='%q'", iface);
 		} else {
-			sqlite3_snprintf(512, sql, "select count(*) from interface");
+			sqlite3_snprintf(768, sql, "select count(*) from interface");
 		}
 	} else {
 		inquery = getifaceinquery(iface);
 		if (inquery == NULL) {
 			return 0;
 		}
-		sqlite3_snprintf(512, sql, "select count(*) from interface where name in (%s)", inquery);
+		sqlite3_snprintf(768, sql, "select count(*) from interface where name in (%s)", inquery);
 		free(inquery);
 	}
 
@@ -527,7 +527,7 @@ sqlite3_int64 db_getinterfaceid(const char *iface, const int createifnotfound)
 char *db_getinterfaceidin(const char *iface)
 {
 	int rc;
-	char sql[256], *result, *inquery;
+	char sql[768], *result, *inquery;
 	sqlite3_stmt *sqlstmt;
 
 	result = NULL;
@@ -536,7 +536,7 @@ char *db_getinterfaceidin(const char *iface)
 		return NULL;
 	}
 
-	sqlite3_snprintf(256, sql, "select group_concat(id) from interface where name in (%s)", inquery);
+	sqlite3_snprintf(768, sql, "select group_concat(id) from interface where name in (%s)", inquery);
 	free(inquery);
 
 	if (debug > 1) {

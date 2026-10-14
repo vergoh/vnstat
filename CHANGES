@@ -5,6 +5,8 @@
      configured with non-default value of either 1 or 2
    - Some higher traffic days could be missing from top days output when the
      interface merge syntax (interface1+interface2) was used
+   - Database query with many short interfaces using merge syntax could fail
+     even when input length was within the 255 character limit
    - Command execution, error reporting, interface selection, output escaping
      and caching fixes in all example output scripts (vnstat.cgi,
      vnstat-json.cgi, vnstat-json.php and vnstat-metrics.cgi)
