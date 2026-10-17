@@ -780,8 +780,8 @@ void showhours(const interfaceinfo *ifaceinfo)
 	} else {
 		i = snprintf(matrix[0], 81, " %s (%s)", ifaceinfo->alias, ifaceinfo->name);
 	}
-	if (ifaceinfo->active == 0) {
-		snprintf(matrix[0] + i, 81 - i, " [disabled]");
+	if (ifaceinfo->active == 0 && i >= 0 && i < 81) {
+		snprintf(matrix[0] + i, 81 - (size_t)i, " [disabled]");
 	}
 
 	/* time to the corner */
