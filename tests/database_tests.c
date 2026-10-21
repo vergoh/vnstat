@@ -225,6 +225,82 @@ START_TEST(database_outputs_do_not_crash)
 }
 END_TEST
 
+static void alias_test_setup(const char *alias)
+{
+	int ret;
+
+	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+	ret = db_addinterface("eth0");
+	ck_assert_int_eq(ret, 1);
+	ret = db_setalias("eth0", alias);
+	ck_assert_int_eq(ret, 1);
+}
+
+START_TEST(showxml_escapes_alias)
+{
+	/* <alias>Café&apos;s &quot;Guest &amp; IoT&quot; &lt;5G&gt;</alias> */
+	const char *expected = "<alias>Café&apos;s &quot;Guest &amp; IoT&quot; &lt;5G&gt;</alias>";
+	char buffer[2048];
+	int ret, pipe, len;
+	memset(&buffer, '\0', sizeof(buffer));
+
+	alias_test_setup("Café's \"Guest & IoT\" <5G>");
+	pipe = pipe_output();
+	showxml("eth0", 'h', "", "");
+	fflush(stdout);
+	len = (int)read(pipe, buffer, sizeof(buffer) - 1);
+	ck_assert_int_gt(len, 1);
+
+	ck_assert_msg(strstr(buffer, expected) != NULL, "expected [%s] in output:\n%s", expected, buffer);
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+START_TEST(showjson_escapes_alias)
+{
+	/* "alias":"Café's \"Guest & IoT\" <5G>", */
+	const char *expected = "\"alias\":\"Café's \\\"Guest & IoT\\\" <5G>\",";
+	char buffer[2048];
+	int ret, pipe, len;
+	memset(&buffer, '\0', sizeof(buffer));
+
+	alias_test_setup("Café's \"Guest & IoT\" <5G>");
+	pipe = pipe_output();
+	showjson("eth0", 0, 'h', "", "");
+	fflush(stdout);
+	len = (int)read(pipe, buffer, sizeof(buffer) - 1);
+	ck_assert_int_gt(len, 1);
+
+	ck_assert_msg(strstr(buffer, expected) != NULL, "expected [%s] in output:\n%s", expected, buffer);
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
+/* edge case: unescaped backslash or control char produces invalid JSON */
+START_TEST(showjson_escapes_backslash_and_control_chars_in_alias)
+{
+	/* "alias":"WAN\u0009backup\\", */
+	const char *expected = "\"alias\":\"WAN\\u0009backup\\\\\",";
+	char buffer[2048];
+	int ret, pipe, len;
+	memset(&buffer, '\0', sizeof(buffer));
+
+	alias_test_setup("WAN\tbackup\\");
+	pipe = pipe_output();
+	showjson("eth0", 0, 'h', "", "");
+	fflush(stdout);
+	len = (int)read(pipe, buffer, sizeof(buffer) - 1);
+	ck_assert_int_gt(len, 1);
+
+	ck_assert_msg(strstr(buffer, expected) != NULL, "expected [%s] in output:\n%s", expected, buffer);
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 START_TEST(database_showdb_exists_for_invalid_interface)
 {
 	int ret, i;
@@ -1208,6 +1284,9 @@ void add_database_tests(Suite *s)
 	tcase_add_test(tc_db, validatedb_with_invalid_totals);
 	tcase_add_test(tc_db, validatedb_with_top10_use);
 	tcase_add_test(tc_db, database_outputs_do_not_crash);
+	tcase_add_test(tc_db, showxml_escapes_alias);
+	tcase_add_test(tc_db, showjson_escapes_alias);
+	tcase_add_test(tc_db, showjson_escapes_backslash_and_control_chars_in_alias);
 	tcase_add_exit_test(tc_db, database_showdb_exists_for_invalid_interface, 1);
 	tcase_add_exit_test(tc_db, database_showjson_exists_for_invalid_interface, 1);
 	tcase_add_exit_test(tc_db, database_showxml_exists_for_invalid_interface, 1);
