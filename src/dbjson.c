@@ -331,8 +331,11 @@ void jsonpercentilealert(const alertdata *adata, const AlertCondition condition,
 
 void jsoninterfaceinfo(const interfaceinfo *ifaceinfo)
 {
-	printf("\"name\":\"%s\",", ifaceinfo->name);
-	printf("\"alias\":\"%s\",", ifaceinfo->alias);
+	printf("\"name\":");
+	jsonstring(ifaceinfo->name);
+	printf(",\"alias\":");
+	jsonstring(ifaceinfo->alias);
+	printf(",");
 
 	printf("\"created\":{");
 	jsondate(&ifaceinfo->created, 1);
@@ -376,6 +379,30 @@ void jsondate(const time_t *date, const int type)
 			break;
 	}
 	printf("\"timestamp\":%" PRId64 "", (int64_t)*date);
+}
+
+void jsonstring(const char *s)
+{
+	unsigned char c;
+
+	putchar('"');
+	for (; *s; s++) {
+		c = (unsigned char)*s;
+		switch (c) {
+			case '"':
+			case '\\':
+				printf("\\%c", c);
+				break;
+			default:
+				if (c < 0x20) {
+					printf("\\u%04x", c);
+				} else {
+					putchar(c);
+				}
+				break;
+		}
+	}
+	putchar('"');
 }
 
 void jsonheader(const char *version)
