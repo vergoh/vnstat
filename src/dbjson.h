@@ -14,6 +14,7 @@ void jsonalert(const alertdata *adata, const uint64_t limit);
 void jsonpercentilealert(const alertdata *adata, const AlertCondition condition, const uint64_t limit);
 void jsoninterfaceinfo(const interfaceinfo *info);
 void jsondate(const time_t *date, const int type);
+void jsonstring(const char *s);
 void jsonheader(const char *version);
 void jsonfooter(void);
 

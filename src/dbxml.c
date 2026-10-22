@@ -17,10 +17,16 @@ void showxml(const char *interface, const char mode, const char *databegin, cons
 		exit(EXIT_FAILURE);
 	}
 
-	printf(" <interface name=\"%s\">\n", ifaceinfo.name);
+	printf(" <interface name=\"");
+	xmlstring(ifaceinfo.name);
+	printf("\">\n");
 
-	printf("  <name>%s</name>\n", ifaceinfo.name);
-	printf("  <alias>%s</alias>\n", ifaceinfo.alias);
+	printf("  <name>");
+	xmlstring(ifaceinfo.name);
+	printf("</name>\n");
+	printf("  <alias>");
+	xmlstring(ifaceinfo.alias);
+	printf("</alias>\n");
 
 	printf("  <created>");
 	xmldate(&ifaceinfo.created, 1);
@@ -184,6 +190,38 @@ void xmldate(const time_t *date, const int type)
 			break;
 	}
 	printf("<timestamp>%" PRId64 "</timestamp>", (int64_t)*date);
+}
+
+void xmlstring(const char *s)
+{
+	unsigned char c;
+
+	for (; *s; s++) {
+		c = (unsigned char)*s;
+		switch (c) {
+			case '&':
+				printf("&amp;");
+				break;
+			case '<':
+				printf("&lt;");
+				break;
+			case '>':
+				printf("&gt;");
+				break;
+			case '"':
+				printf("&quot;");
+				break;
+			case '\'':
+				printf("&apos;");
+				break;
+			default:
+				/* strip control chars (invalid in xml 1.0) */
+				if (c >= 0x20 || c == '\t' || c == '\n' || c == '\r') {
+					putchar(c);
+				}
+				break;
+		}
+	}
 }
 
 void xmlheader(void)
