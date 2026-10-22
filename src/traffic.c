@@ -1,6 +1,7 @@
 #include "common.h"
 #include "ifinfo.h"
 #include "misc.h"
+#include "dbjson.h"
 #include "traffic.h"
 
 void trafficmeter(const char *iface, unsigned int sampletime)
@@ -98,7 +99,9 @@ void trafficmeter(const char *iface, unsigned int sampletime)
 	} else {
 		printf("{\"jsonversion\":\"%d\",", JSONVERSION_TR);
 		printf("\"vnstatversion\":\"%s\",", getversion());
-		printf("\"interface\":\"%s\",", iface);
+		printf("\"interface\":");
+		jsonstring(iface);
+		printf(",");
 		printf("\"sampletime\":%u,", sampletime);
 		printf("\"rx\":{");
 		printf("\"ratestring\":\"%s\",", gettrafficrate(rx, sampletime, 0));
@@ -180,7 +183,9 @@ void livetrafficmeter(const char *iface, const int mode)
 	} else {
 		printf("{\"jsonversion\":\"%d\",", JSONVERSION_LIVE);
 		printf("\"vnstatversion\":\"%s\",", getversion());
-		printf("\"interface\":\"%s\",", iface);
+		printf("\"interface\":");
+		jsonstring(iface);
+		printf(",");
 		printf("\"sampletime\":%d}\n", LIVETIME);
 	}
 

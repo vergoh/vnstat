@@ -620,6 +620,33 @@ START_TEST(vnstat_handletrafficmeters_can_calculate_traffic_and_output_json)
 }
 END_TEST
 
+START_TEST(vnstat_handletrafficmeters_json_escapes_interface_name)
+{
+	const char *expected = "\"interface\":\"a\\\"b\\\\c\"";
+	PARAMS p;
+	char buffer[2048];
+	int pipe, len;
+	memset(&buffer, '\0', sizeof(buffer));
+
+	initparams(&p);
+	p.traffic = 1;
+	p.defaultiface = 0;
+	cfg.qmode = 10;
+	cfg.sampletime = 0;
+	strncpy_nt(p.interface, "a\"b\\c", 32);
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_proc_net_dev("w", "a\"b\\c", 0, 0, 0, 0);
+
+	pipe = pipe_output();
+	handletrafficmeters(&p);
+	fflush(stdout);
+	len = (int)read(pipe, buffer, sizeof(buffer) - 1);
+	ck_assert_int_gt(len, 1);
+	ck_assert_msg(strstr(buffer, expected) != NULL, "expected [%s] in output:\n%s", expected, buffer);
+}
+END_TEST
+
 START_TEST(vnstat_handletrafficmeters_livetraffic_does_not_crash)
 {
 	PARAMS p;
@@ -694,6 +721,35 @@ START_TEST(vnstat_handletrafficmeters_livetraffic_does_not_crash_with_json)
 
 	suppress_output();
 	handletrafficmeters(&p);
+}
+END_TEST
+
+START_TEST(vnstat_handletrafficmeters_livetraffic_json_escapes_interface_name)
+{
+	const char *expected = "\"interface\":\"a\\\"b\\\\c\"";
+	PARAMS p;
+	char buffer[2048];
+	int pipe, len;
+	memset(&buffer, '\0', sizeof(buffer));
+
+	initparams(&p);
+	p.livetraffic = 1;
+	p.livemode = 0;
+	p.defaultiface = 0;
+	cfg.qmode = 10;
+	cfg.ostyle = 0;
+	cfg.sampletime = 0;
+	strncpy_nt(p.interface, "a\"b\\c", 32);
+
+	ck_assert_int_eq(remove_directory(TESTDIR), 1);
+	fake_proc_net_dev("w", "a\"b\\c", 0, 0, 0, 0);
+
+	pipe = pipe_output();
+	handletrafficmeters(&p);
+	fflush(stdout);
+	len = (int)read(pipe, buffer, sizeof(buffer) - 1);
+	ck_assert_int_gt(len, 1);
+	ck_assert_msg(strstr(buffer, expected) != NULL, "expected [%s] in output:\n%s", expected, buffer);
 }
 END_TEST
 
@@ -1759,10 +1815,12 @@ void add_cli_tests(Suite *s)
 	tcase_add_test(tc_cli, vnstat_handletrafficmeters_can_calculate_traffic);
 	tcase_add_test(tc_cli, vnstat_handletrafficmeters_can_handle_interface_merge_using_first_interface);
 	tcase_add_test(tc_cli, vnstat_handletrafficmeters_can_calculate_traffic_and_output_json);
+	tcase_add_test(tc_cli, vnstat_handletrafficmeters_json_escapes_interface_name);
 	tcase_add_test(tc_cli, vnstat_handletrafficmeters_livetraffic_does_not_crash);
 	tcase_add_test(tc_cli, vnstat_handletrafficmeters_livetraffic_does_not_crash_with_alternative_mode);
 	tcase_add_test(tc_cli, vnstat_handletrafficmeters_livetraffic_does_not_crash_with_interface_merge);
 	tcase_add_test(tc_cli, vnstat_handletrafficmeters_livetraffic_does_not_crash_with_json);
+	tcase_add_test(tc_cli, vnstat_handletrafficmeters_livetraffic_json_escapes_interface_name);
 	tcase_add_test(tc_cli, handleifselection_does_nothing_when_interface_has_already_been_selected);
 	tcase_add_test(tc_cli, handleifselection_selects_default_interface_if_field_is_filled);
 	tcase_add_exit_test(tc_cli, handleifselection_exits_when_no_suitable_interface_is_available_for_query, 1);

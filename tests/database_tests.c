@@ -258,6 +258,27 @@ START_TEST(showxml_escapes_alias)
 }
 END_TEST
 
+START_TEST(showxml_strips_control_chars_in_alias)
+{
+	/* <alias>WAN<tab>backup\</alias> */
+	const char *expected = "<alias>WAN\tbackup\\</alias>";
+	char buffer[2048];
+	int ret, pipe, len;
+	memset(&buffer, '\0', sizeof(buffer));
+
+	alias_test_setup("WAN\t\001backup\\");
+	pipe = pipe_output();
+	showxml("eth0", 'h', "", "");
+	fflush(stdout);
+	len = (int)read(pipe, buffer, sizeof(buffer) - 1);
+	ck_assert_int_gt(len, 1);
+
+	ck_assert_msg(strstr(buffer, expected) != NULL, "expected [%s] in output:\n%s", expected, buffer);
+	ret = db_close();
+	ck_assert_int_eq(ret, 1);
+}
+END_TEST
+
 START_TEST(showjson_escapes_alias)
 {
 	/* "alias":"Café's \"Guest & IoT\" <5G>", */
@@ -1285,6 +1306,7 @@ void add_database_tests(Suite *s)
 	tcase_add_test(tc_db, validatedb_with_top10_use);
 	tcase_add_test(tc_db, database_outputs_do_not_crash);
 	tcase_add_test(tc_db, showxml_escapes_alias);
+	tcase_add_test(tc_db, showxml_strips_control_chars_in_alias);
 	tcase_add_test(tc_db, showjson_escapes_alias);
 	tcase_add_test(tc_db, showjson_escapes_backslash_and_control_chars_in_alias);
 	tcase_add_exit_test(tc_db, database_showdb_exists_for_invalid_interface, 1);
