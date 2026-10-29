@@ -2773,8 +2773,14 @@ START_TEST(db_getinterfacecountbyname_can_handle_max_length_merge)
 	char name[2], merge[MAXIFPARAMLEN];
 	char *result;
 	size_t pos;
+	interfaceinfo info;
+	dbdatalist *datalist = NULL;
+	dbdatalistinfo datainfo;
 
 	ret = db_open_rw(1);
+	ck_assert_int_eq(ret, 1);
+
+	ret = db_exec("insert into interface (id, name, active, created, updated, rxcounter, txcounter, rxtotal, txtotal) values (999, 'pad', 1, '2000-01-01', '2000-01-01', 0, 0, 0, 0)");
 	ck_assert_int_eq(ret, 1);
 
 	pos = 0;
@@ -2785,7 +2791,7 @@ START_TEST(db_getinterfacecountbyname_can_handle_max_length_merge)
 		}
 		name[0] = (char)c;
 		name[1] = '\0';
-		ret = db_addinterface(name);
+		ret = db_addtraffic_dated(name, 1, 1, get_timestamp(2000, 2, 1, 12, 0));
 		ck_assert_int_eq(ret, 1);
 		if (count > 0) {
 			merge[pos++] = '+';
@@ -2802,6 +2808,7 @@ START_TEST(db_getinterfacecountbyname_can_handle_max_length_merge)
 
 	result = db_getinterfaceidin(merge);
 	ck_assert_ptr_ne(result, NULL);
+	ck_assert_int_eq(strncmp(result, "1000,", 5), 0);
 	commas = 0;
 	for (i = 0; result[i] != '\0'; i++) {
 		if (result[i] == ',') {
@@ -2810,6 +2817,19 @@ START_TEST(db_getinterfacecountbyname_can_handle_max_length_merge)
 	}
 	ck_assert_int_eq(commas, 127);
 	free(result);
+
+	ret = db_getinterfaceinfo(merge, &info);
+	ck_assert_int_eq(ret, 1);
+	ck_assert_str_eq(info.name, merge);
+	ck_assert_int_eq(info.rxtotal, 128);
+	ck_assert_int_eq(info.txtotal, 128);
+
+	ret = db_getdata_range(&datalist, &datainfo, merge, "top", 10, "1990-01-01", "2100-01-01");
+	ck_assert_int_eq(ret, 1);
+	ck_assert_int_eq(datainfo.count, 1);
+	ck_assert_int_eq(datainfo.sumrx, 128);
+	ck_assert_int_eq(datainfo.sumtx, 128);
+	dbdatalistfree(&datalist);
 
 	ret = db_close();
 	ck_assert_int_eq(ret, 1);

@@ -8,6 +8,10 @@ sqlite3 *db;
 int db_errcode;
 int db_intransaction;
 
+/* query buffer for functions that need to build queries for up to 128 interfaces, */
+/* each id up to 19 digits + a 255-character merge string + the longest date filtered template */
+#define SQLBUFLEN 4096
+
 int db_open_ro(void)
 {
 	return db_open(0, 1);
@@ -696,7 +700,7 @@ int db_getcounters(const char *iface, uint64_t *rxcounter, uint64_t *txcounter)
 int db_getinterfaceinfo(const char *iface, interfaceinfo *info)
 {
 	int rc;
-	char sql[768], *ifaceidin = NULL;
+	char sql[SQLBUFLEN], *ifaceidin = NULL;
 	sqlite3_int64 ifaceid;
 	sqlite3_stmt *sqlstmt;
 
@@ -705,14 +709,14 @@ int db_getinterfaceinfo(const char *iface, interfaceinfo *info)
 		if (ifaceid == 0) {
 			return 0;
 		}
-		sqlite3_snprintf(768, sql, "select name, alias, active, strftime('%%s', created, 'utc'), strftime('%%s', updated, 'utc'), rxcounter, txcounter, rxtotal, txtotal from interface where id=%" PRId64 "", (int64_t)ifaceid);
+		sqlite3_snprintf(SQLBUFLEN, sql, "select name, alias, active, strftime('%%s', created, 'utc'), strftime('%%s', updated, 'utc'), rxcounter, txcounter, rxtotal, txtotal from interface where id=%" PRId64 "", (int64_t)ifaceid);
 	} else {
 		ifaceidin = db_getinterfaceidin(iface);
 		if (ifaceidin == NULL || strlen(ifaceidin) < 1) {
 			free(ifaceidin);
 			return 0;
 		}
-		sqlite3_snprintf(768, sql, "select '%q', NULL, max(active), max(strftime('%%s', created, 'utc')), min(strftime('%%s', updated, 'utc')), 0, 0, sum(rxtotal), sum(txtotal) from interface where id in (%s)", iface, ifaceidin);
+		sqlite3_snprintf(SQLBUFLEN, sql, "select '%q', NULL, max(active), max(strftime('%%s', created, 'utc')), min(strftime('%%s', updated, 'utc')), 0, 0, sum(rxtotal), sum(txtotal) from interface where id in (%s)", iface, ifaceidin);
 		free(ifaceidin);
 	}
 
@@ -1324,7 +1328,7 @@ int db_getdata_range(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *
 {
 	int ret, i, rc;
 	const char *datatables[] = {"fiveminute", "hour", "day", "month", "year", "top", "percentile"};
-	char sql[768], limit[64], dbegin[38], dend[45], *ifaceidin = NULL;
+	char sql[SQLBUFLEN], limit[64], dbegin[38], dend[45], *ifaceidin = NULL;
 	sqlite3_stmt *sqlstmt;
 	time_t timestamp;
 	int64_t rowid;
@@ -1379,22 +1383,22 @@ int db_getdata_range(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *
 			if (resultlimit > 0) {
 				snprintf(limit, 64, "limit %" PRIu32 "", resultlimit);
 			}
-			sqlite3_snprintf(768, sql, "select * from (select id, strftime('%%s', date, 'utc') as unixdate, sum(rx) as sumrx, sum(tx) as sumtx, date from day where interface in (%s)%s%s group by date order by sumrx+sumtx desc, date asc %s) order by sumrx+sumtx asc, date desc", ifaceidin, dbegin, dend, limit);
+			sqlite3_snprintf(SQLBUFLEN, sql, "select * from (select id, strftime('%%s', date, 'utc') as unixdate, sum(rx) as sumrx, sum(tx) as sumtx, date from day where interface in (%s)%s%s group by date order by sumrx+sumtx desc, date asc %s) order by sumrx+sumtx asc, date desc", ifaceidin, dbegin, dend, limit);
 		} else {
-			sqlite3_snprintf(768, sql, "select * from (select id, strftime('%%s', date, 'utc') as unixdate, sum(rx) as sumrx, sum(tx) as sumtx, date from top where interface in (%s) group by date order by sumrx+sumtx desc, date asc %s) order by sumrx+sumtx asc, date desc", ifaceidin, limit);
+			sqlite3_snprintf(SQLBUFLEN, sql, "select * from (select id, strftime('%%s', date, 'utc') as unixdate, sum(rx) as sumrx, sum(tx) as sumtx, date from top where interface in (%s) group by date order by sumrx+sumtx desc, date asc %s) order by sumrx+sumtx asc, date desc", ifaceidin, limit);
 		}
 	} else if (strcmp(table, "percentile") == 0) {
 		/* 'percentile' is a meta table collected from 'fiveminute' grouped as hours requiring as different query */
 		if (strlen(dbegin) && strlen(limit)) {
-			sqlite3_snprintf(768, sql, "select * from (select id, strftime('%%s', date, 'utc') as unixdate, sum(rx), sum(tx), date from fiveminute where interface in (%s)%s%s group by strftime('%%Y-%%m-%%d %%H', date, 'utc') order by date asc %s) order by date desc", ifaceidin, dbegin, dend, limit);
+			sqlite3_snprintf(SQLBUFLEN, sql, "select * from (select id, strftime('%%s', date, 'utc') as unixdate, sum(rx), sum(tx), date from fiveminute where interface in (%s)%s%s group by strftime('%%Y-%%m-%%d %%H', date, 'utc') order by date asc %s) order by date desc", ifaceidin, dbegin, dend, limit);
 		} else {
-			sqlite3_snprintf(768, sql, "select id, strftime('%%s', date, 'utc') as unixdate, sum(rx), sum(tx) from fiveminute where interface in (%s)%s%s group by strftime('%%Y-%%m-%%d %%H', date, 'utc') order by date desc %s", ifaceidin, dbegin, dend, limit);
+			sqlite3_snprintf(SQLBUFLEN, sql, "select id, strftime('%%s', date, 'utc') as unixdate, sum(rx), sum(tx) from fiveminute where interface in (%s)%s%s group by strftime('%%Y-%%m-%%d %%H', date, 'utc') order by date desc %s", ifaceidin, dbegin, dend, limit);
 		}
 	} else {
 		if (strlen(dbegin) && strlen(limit)) {
-			sqlite3_snprintf(768, sql, "select * from (select id, strftime('%%s', date, 'utc') as unixdate, sum(rx), sum(tx), date from %s where interface in (%s)%s%s group by date order by date asc %s) order by date desc", table, ifaceidin, dbegin, dend, limit);
+			sqlite3_snprintf(SQLBUFLEN, sql, "select * from (select id, strftime('%%s', date, 'utc') as unixdate, sum(rx), sum(tx), date from %s where interface in (%s)%s%s group by date order by date asc %s) order by date desc", table, ifaceidin, dbegin, dend, limit);
 		} else {
-			sqlite3_snprintf(768, sql, "select id, strftime('%%s', date, 'utc') as unixdate, sum(rx), sum(tx) from %s where interface in (%s)%s%s group by date order by date desc %s", table, ifaceidin, dbegin, dend, limit);
+			sqlite3_snprintf(SQLBUFLEN, sql, "select id, strftime('%%s', date, 'utc') as unixdate, sum(rx), sum(tx) from %s where interface in (%s)%s%s group by date order by date desc %s", table, ifaceidin, dbegin, dend, limit);
 		}
 	}
 	free(ifaceidin);
