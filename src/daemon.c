@@ -17,10 +17,17 @@ static int max_open_fds(void)
 	struct rlimit rl;
 	long maxfd;
 
-	if (getrlimit(RLIMIT_NOFILE, &rl) == 0 && rl.rlim_cur != RLIM_INFINITY)
+	/* The fd close loop counts with int. A value above INT_MAX wraps negative
+	   on every supported platform. FreeBSD's rlim_t is signed, so a negative
+	   soft limit would do the same. Both take the unlimited fallback. */
+	if (getrlimit(RLIMIT_NOFILE, &rl) == 0 && rl.rlim_cur != RLIM_INFINITY && rl.rlim_cur > 0 && rl.rlim_cur <= (rlim_t)INT_MAX)
 		return (int)rl.rlim_cur;
 
 	maxfd = sysconf(_SC_OPEN_MAX);
+#if LONG_MAX > INT_MAX
+	if (maxfd > INT_MAX)
+		maxfd = 0;
+#endif
 	if (maxfd > 0)
 		return (int)maxfd;
 
