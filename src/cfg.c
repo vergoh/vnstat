@@ -469,6 +469,7 @@ void defaultcfg(void)
 int opencfgfile(const char *cfgfile, FILE **fd)
 {
 	char buffer[512];
+	const char *xdg_config_home;
 	int i;
 
 	/* clear buffer */
@@ -480,6 +481,7 @@ int opencfgfile(const char *cfgfile, FILE **fd)
 	/* possible config files:
 		1) --config
 		2) $XDG_CONFIG_HOME/vnstat/vnstat.conf
+		   (empty XDG_CONFIG_HOME is treated as unset)
 		3) $HOME/.config/vnstat/vnstat.conf
 		4) $HOME/.vnstatrc
 		5) /etc/vnstat.conf
@@ -502,9 +504,10 @@ int opencfgfile(const char *cfgfile, FILE **fd)
 	} else {
 		/* try to open first available config file */
 
-		if (getenv("XDG_CONFIG_HOME")) {
+		xdg_config_home = getenv("XDG_CONFIG_HOME");
+		if (xdg_config_home != NULL && xdg_config_home[0] != '\0') {
 			/* $XDG_CONFIG_HOME/vnstat/vnstat.conf */
-			strncpy_nt(buffer, getenv("XDG_CONFIG_HOME"), 492);
+			strncpy_nt(buffer, xdg_config_home, 492);
 			strcat(buffer, "/vnstat/vnstat.conf");
 			if ((*fd = fopen(buffer, "r")) != NULL) {
 				strncpy_nt(cfg.cfgfile, buffer, 512);

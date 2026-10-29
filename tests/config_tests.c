@@ -236,6 +236,66 @@ START_TEST(opencfgfile_with_all_envs_set)
 }
 END_TEST
 
+static void write_empty_file(const char *path)
+{
+	FILE *fp;
+
+	if ((fp = fopen(path, "w")) == NULL) {
+		ck_abort_msg("error \"%s\" while opening file \"%s\" for writing", strerror(errno), path);
+	}
+	fclose(fp);
+}
+
+START_TEST(opencfgfile_search_order)
+{
+	FILE *fd;
+	int ret;
+	char home[512], path[512], expected[512];
+
+	suppress_output();
+	ck_assert_int_eq(create_testdir(), 1);
+	snprintf(home, 512, "%s/cfghome", TESTDIR);
+	ck_assert_int_eq(remove_directory(home), 1);
+	ck_assert_int_eq(create_directory(home), 1);
+	setenv("HOME", home, 1);
+
+	/* empty XDG_CONFIG_HOME selects $HOME/.config/vnstat/vnstat.conf */
+	setenv("XDG_CONFIG_HOME", "", 1);
+	snprintf(path, 512, "%s/.config", home);
+	ck_assert_int_eq(create_directory(path), 1);
+	snprintf(path, 512, "%s/.config/vnstat", home);
+	ck_assert_int_eq(create_directory(path), 1);
+	snprintf(path, 512, "%s/.config/vnstat/vnstat.conf", home);
+	write_empty_file(path);
+	snprintf(path, 512, "%s/.vnstatrc", home);
+	write_empty_file(path);
+	ret = opencfgfile("", &fd);
+	snprintf(expected, 512, "%s/.config/vnstat/vnstat.conf", home);
+	ck_assert_int_eq(ret, 2);
+	ck_assert_str_eq(cfg.cfgfile, expected);
+	fclose(fd);
+
+	/* empty XDG_CONFIG_HOME with only ~/.vnstatrc does not use /vnstat/vnstat.conf */
+	snprintf(path, 512, "%s/.config/vnstat/vnstat.conf", home);
+	ck_assert_int_eq(unlink(path), 0);
+	ret = opencfgfile("", &fd);
+	snprintf(expected, 512, "%s/.vnstatrc", home);
+	ck_assert_int_eq(ret, 2);
+	ck_assert_str_eq(cfg.cfgfile, expected);
+	fclose(fd);
+
+	/* non-empty XDG_CONFIG_HOME with a missing file falls through to ~/.vnstatrc */
+	snprintf(path, 512, "%s/xdg-missing", TESTDIR);
+	setenv("XDG_CONFIG_HOME", path, 1);
+	ret = opencfgfile("", &fd);
+	ck_assert_int_eq(ret, 2);
+	ck_assert_str_eq(cfg.cfgfile, expected);
+	fclose(fd);
+
+	ck_assert_int_eq(remove_directory(home), 1);
+}
+END_TEST
+
 START_TEST(loadcfg_included_default)
 {
 	defaultcfg();
@@ -761,6 +821,7 @@ void add_config_tests(Suite *s)
 	tcase_add_test(tc_config, printcfgfile_default);
 	tcase_add_test(tc_config, printcfgfile_experimental);
 	tcase_add_test(tc_config, opencfgfile_with_all_envs_set);
+	tcase_add_test(tc_config, opencfgfile_search_order);
 	tcase_add_test(tc_config, loadcfg_included_default);
 	tcase_add_test(tc_config, loadcfg_no_file);
 	tcase_add_test(tc_config, loadcfg_nonexistent_file);

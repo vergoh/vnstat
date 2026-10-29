@@ -695,9 +695,9 @@ Command-line option path, when given, overrides automatic search.
 .I $XDG_CONFIG_HOME/vnstat/vnstat.conf
 Used only when the
 .I XDG_CONFIG_HOME
-environment variable is set and
+environment variable is set to a non-empty value and
 .B --config
-has not been used.
+has not been used. An empty value is treated as unset.
 
 .TP
 .I $HOME/.config/vnstat/vnstat.conf
