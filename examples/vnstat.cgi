@@ -728,7 +728,7 @@ sub main
 	my @interfaces = @vnStatCGI::interfaces;
 
 	if (length($servername) == 0) {
-		$servername = `hostname`;
+		($servername) = run_command('hostname');
 		chomp $servername;
 	}
 
