@@ -12,6 +12,10 @@ int db_intransaction;
 /* each id up to 19 digits + a 255-character merge string + the longest date filtered template */
 #define SQLBUFLEN 4096
 
+/* portion of a query copied into errorstring (1024 bytes), the shorter of the two */
+/* prefixes in db_getdata_range leaves 946 bytes, keep the fragment under that */
+#define SQLERRLEN 900
+
 int db_open_ro(void)
 {
 	return db_open(0, 1);
@@ -1410,14 +1414,14 @@ int db_getdata_range(dbdatalist **dbdata, dbdatalistinfo *listinfo, const char *
 	rc = sqlite3_prepare_v2(db, sql, -1, &sqlstmt, NULL);
 	if (rc != SQLITE_OK) {
 		db_errcode = rc;
-		snprintf(errorstring, 1024, "Get data prepare failed (%d: %s): \"%s\"", rc, sqlite3_errmsg(db), sql);
+		snprintf(errorstring, 1024, "Get data prepare failed (%d: %s): \"%.*s\"", rc, sqlite3_errmsg(db), SQLERRLEN, sql);
 		printe(PT_Error);
 		return 0;
 	}
 
 	rc = sqlite3_column_count(sqlstmt);
 	if (rc < 4) {
-		snprintf(errorstring, 1024, "Get data returned unexpected column count %d instead of at least 4: \"%s\"", rc, sql);
+		snprintf(errorstring, 1024, "Get data returned unexpected column count %d instead of at least 4: \"%.*s\"", rc, SQLERRLEN, sql);
 		printe(PT_Error);
 		sqlite3_finalize(sqlstmt);
 		return 0;

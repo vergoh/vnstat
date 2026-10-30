@@ -250,42 +250,43 @@ START_TEST(opencfgfile_search_order)
 {
 	FILE *fd;
 	int ret;
-	char home[512], path[512], expected[512];
+	char home[512], path[512 + 32], expected[512 + 32];
 
 	suppress_output();
 	ck_assert_int_eq(create_testdir(), 1);
-	snprintf(home, 512, "%s/cfghome", TESTDIR);
+	snprintf(home, sizeof(home), "%s/cfghome", TESTDIR);
 	ck_assert_int_eq(remove_directory(home), 1);
 	ck_assert_int_eq(create_directory(home), 1);
 	setenv("HOME", home, 1);
 
 	/* empty XDG_CONFIG_HOME selects $HOME/.config/vnstat/vnstat.conf */
 	setenv("XDG_CONFIG_HOME", "", 1);
-	snprintf(path, 512, "%s/.config", home);
+	snprintf(path, sizeof(path), "%s/.config", home);
 	ck_assert_int_eq(create_directory(path), 1);
-	snprintf(path, 512, "%s/.config/vnstat", home);
+	snprintf(path, sizeof(path), "%s/.config/vnstat", home);
 	ck_assert_int_eq(create_directory(path), 1);
-	snprintf(path, 512, "%s/.config/vnstat/vnstat.conf", home);
+	snprintf(path, sizeof(path), "%s/.config/vnstat/vnstat.conf", home);
 	write_empty_file(path);
-	snprintf(path, 512, "%s/.vnstatrc", home);
+	snprintf(path, sizeof(path), "%s/.vnstatrc", home);
 	write_empty_file(path);
 	ret = opencfgfile("", &fd);
-	snprintf(expected, 512, "%s/.config/vnstat/vnstat.conf", home);
+	snprintf(expected, sizeof(expected), "%s/.config/vnstat/vnstat.conf", home);
 	ck_assert_int_eq(ret, 2);
 	ck_assert_str_eq(cfg.cfgfile, expected);
 	fclose(fd);
 
 	/* empty XDG_CONFIG_HOME with only ~/.vnstatrc does not use /vnstat/vnstat.conf */
-	snprintf(path, 512, "%s/.config/vnstat/vnstat.conf", home);
-	ck_assert_int_eq(unlink(path), 0);
+	snprintf(path, sizeof(path), "%s/.config/vnstat/vnstat.conf", home);
+	ret = unlink(path);
+	ck_assert_int_eq(ret, 0);
 	ret = opencfgfile("", &fd);
-	snprintf(expected, 512, "%s/.vnstatrc", home);
+	snprintf(expected, sizeof(expected), "%s/.vnstatrc", home);
 	ck_assert_int_eq(ret, 2);
 	ck_assert_str_eq(cfg.cfgfile, expected);
 	fclose(fd);
 
 	/* non-empty XDG_CONFIG_HOME with a missing file falls through to ~/.vnstatrc */
-	snprintf(path, 512, "%s/xdg-missing", TESTDIR);
+	snprintf(path, sizeof(path), "%s/xdg-missing", TESTDIR);
 	setenv("XDG_CONFIG_HOME", path, 1);
 	ret = opencfgfile("", &fd);
 	ck_assert_int_eq(ret, 2);

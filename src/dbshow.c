@@ -765,7 +765,7 @@ void showhours(const interfaceinfo *ifaceinfo)
 	snprintf(matrix[11], 81, " -+--------------------------------------------------------------------------->");
 	for (i = 0; i < 3; i++) {
 		snprintf(matrix[14] + (i * 28), 14, " h %*srx (%s)", unitmodepadding, " ", unit);
-		snprintf(matrix[14] + (i * 28) + 14 + unitmodepadding, 11 - unitmodepadding, "tx (%s)", unit);
+		snprintf(matrix[14] + (i * 28) + 14 + unitmodepadding, 11 - (size_t)unitmodepadding, "tx (%s)", unit);
 	}
 
 	for (i = 10; i > 1; i--)
